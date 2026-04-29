@@ -30,7 +30,7 @@
         "ext-openssl": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "5.7.*",
+        "phpunit/phpunit": "8.5.52",
         "psy/psysh": "0.4.*"
     },
     "autoload": {
