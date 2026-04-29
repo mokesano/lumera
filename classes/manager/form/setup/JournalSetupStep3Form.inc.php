@@ -119,11 +119,6 @@ class JournalSetupStep3Form extends JournalSetupForm {
 
     /**
      * Display the form.
-     * [WIZDAM MODERNIZED]
-     * - Removed obsolete PHP 5.0 check.
-     * - Fixed Logic: Unconditional execution of Filter Grids.
-     * - Type Safe: Handles Dispatcher correctly to generate URLs.
-     *
      * @param PKPRequest|null $request 
      * @param Dispatcher|null $dispatcher 
      */
@@ -173,6 +168,25 @@ class JournalSetupStep3Form extends JournalSetupForm {
         }
 
         $templateMgr->assign('ccLicenseOptions', Application::getCCLicenseOptions());
+
+        // --- VAKSINASI ANTI-ERROR PHP 8 ---
+        // Memastikan field multi-bahasa tidak bernilai null sebelum dilempar ke template
+        $localizedFields = [
+            'metaSubjectClassTitle',
+            'metaSubjectClassUrl',
+            'metaSubjectExamples',
+            'metaCoverageGeoExamples',
+            'metaCoverageChronExamples',
+            'metaCoverageResearchSampleExamples',
+            'metaTypeExamples'
+        ];
+
+        foreach ($localizedFields as $field) {
+            if (!isset($this->_data[$field]) || !is_array($this->_data[$field])) {
+                $this->_data[$field] = [];
+            }
+        }
+        // ----------------------------------
 
         // [WIZDAM FINAL] Template null agar tidak konflik dengan parent
         $template = null;
