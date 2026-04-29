@@ -570,10 +570,33 @@ class RegistrationForm extends Form {
 
                 $mail = new MailTemplate('USER_VALIDATE');
                 $mail->setFrom($journal->getSetting('contactEmail'), $journal->getSetting('contactName'));
+                
+                // --- KODE BARU UNTUK ROLE DINAMIS ---
+                $rolesSelected = [];
+                if ($this->getData('readerRole')) {
+                    $rolesSelected[] = __('user.role.reader');
+                }
+                if ($this->getData('authorRole')) {
+                    $rolesSelected[] = __('user.role.author');
+                }
+                if ($this->getData('reviewerRole')) {
+                    $rolesSelected[] = __('user.role.reviewer');
+                }
+                
+                $userRole = !empty($rolesSelected) ? implode(', ', $rolesSelected) : 'Registered User';
+                // ------------------------------------
+                
                 $mail->assignParams(array(
-                    'userFullName' => $user->getFullName(),
-                    'activateUrl' => Request::url($journal->getPath(), 'user', 'activateUser', array($this->getData('username'), $accessKey))
+                    'userFullName'   => $user->getFullName(),
+                    'activateUrl'    => Request::url($journal->getPath(), 'user', 'activateUser', array($this->getData('username'), $accessKey)),
+                    
+                    // Variabel untuk Email Template:
+                    'userEmail'      => $user->getEmail(),
+                    'username'       => $this->getData('username'),
+                    'dateRegistered' => Core::getCurrentDate(),
+                    'userRole'       => $userRole 
                 ));
+                
                 $mail->addRecipient($user->getEmail(), $user->getFullName());
                 $mail->send();
                 unset($mail);
