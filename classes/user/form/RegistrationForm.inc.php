@@ -593,7 +593,7 @@ class RegistrationForm extends Form {
                     // Variabel untuk Email Template:
                     'userEmail'      => $user->getEmail(),
                     'username'       => $this->getData('username'),
-                    'dateRegistered' => Core::getCurrentDate(),
+                    'dateRegistered' => date('d-m-Y', strtotime($user->getDateRegistered())),
                     'userRole'       => $userRole 
                 ));
                 
