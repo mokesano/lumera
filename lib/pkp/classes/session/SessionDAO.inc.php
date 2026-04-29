@@ -81,28 +81,60 @@ class SessionDAO extends DAO {
      * @param $session Session
      */
     public function insertSession($session) {
-        try {
-            return $this->update(
-                'INSERT INTO sessions
-                    (session_id, ip_address, user_agent, created, last_used, remember, data, domain)
-                    VALUES
-                    (?, ?, ?, ?, ?, ?, ?, ?)',
-                array(
-                    $session->getId(),
-                    $session->getIpAddress(),
-                    substr($session->getUserAgent(), 0, 255),
-                    (int) $session->getSecondsCreated(),
-                    (int) $session->getSecondsLastUsed(),
-                    $session->getRemember() ? 1 : 0,
-                    $session->getSessionData(),
-                    $session->getDomain()
-                )
-            );
-        } catch (\Exception $e) {
-            // Menangkap error Duplicate Entry (race condition dari bot)
-            // dan mengalihkannya menjadi operasi update agar terhindar dari Fatal Error.
-            return $this->updateObject($session);
+        $userAgent = $session->getUserAgent();
+
+        // [WIZDAM EDITION] 1. VAKSINASI ANTI-BOT DINAMIS DARI REGISTRY
+        static $botRegex = null;
+        
+        // Baca file botAgents.txt hanya SATU KALI per request menggunakan static
+        if ($botRegex === null) {
+            $botFile = Core::getBaseDir() . '/lib/pkp/registry/botAgents.txt';
+            
+            if (file_exists($botFile)) {
+                $lines = file($botFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                $patterns = array();
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    // Abaikan baris kosong dan baris komentar yang berawalan '#'
+                    if ($line !== '' && strpos($line, '#') !== 0) {
+                        // Escape karakter '/' agar tidak merusak delimiter regex PHP
+                        $patterns[] = str_replace('/', '\/', $line);
+                    }
+                }
+                // Rangkai menjadi satu regex besar: /(bot1|bot2|bot3)/i
+                $botRegex = '/' . implode('|', $patterns) . '/i';
+            } else {
+                // Fallback aman jika file tidak sengaja terhapus
+                $botRegex = '/(bot|crawler|spider|slurp)/i'; 
+            }
         }
+
+        // Eksekusi: Jika User-Agent terdeteksi sebagai bot, BYPASS database!
+        if (!empty($userAgent) && preg_match($botRegex, $userAgent)) {
+            return true; 
+        }
+
+        // [WIZDAM EDITION] 2. OPERASI UPSERT TINGKAT DATABASE
+        return $this->update(
+            'INSERT INTO sessions
+                (session_id, ip_address, user_agent, created, last_used, remember, data, domain)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+                ip_address = VALUES(ip_address),
+                user_agent = VALUES(user_agent),
+                last_used = VALUES(last_used),
+                data = VALUES(data)',
+            array(
+                $session->getId(),
+                $session->getIpAddress(),
+                substr($userAgent, 0, 255),
+                (int) $session->getSecondsCreated(),
+                (int) $session->getSecondsLastUsed(),
+                $session->getRemember() ? 1 : 0,
+                $session->getSessionData(),
+                $session->getDomain()
+            )
+        );
     }
 
     /**
