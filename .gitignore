@@ -5,6 +5,7 @@ vendor/
 # Logs and temp files
 *.log
 *.tmp
+error_log
 
 # cache files
 cache/*.html
