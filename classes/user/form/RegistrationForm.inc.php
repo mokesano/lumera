@@ -571,7 +571,7 @@ class RegistrationForm extends Form {
                 $mail = new MailTemplate('USER_VALIDATE');
                 $mail->setFrom($journal->getSetting('contactEmail'), $journal->getSetting('contactName'));
                 
-                // --- KODE BARU UNTUK ROLE DINAMIS ---
+                // --- KODE UNTUK ROLE DINAMIS ---
                 $rolesSelected = [];
                 if ($this->getData('readerRole')) {
                     $rolesSelected[] = __('user.role.reader');
@@ -590,11 +590,15 @@ class RegistrationForm extends Form {
                     'userFullName'   => $user->getFullName(),
                     'activateUrl'    => Request::url($journal->getPath(), 'user', 'activateUser', array($this->getData('username'), $accessKey)),
                     
-                    // Variabel untuk Email Template:
+                    // --- VARIABEL USER ---
                     'userEmail'      => $user->getEmail(),
                     'username'       => $this->getData('username'),
-                    'dateRegistered' => date('d-m-Y', strtotime($user->getDateRegistered())),
-                    'userRole'       => $userRole 
+                    'dateRegistered' => date('d-m-Y', strtotime($user->getDateRegistered())), // Format tanggal yang lebih rapi
+                    'userRole'       => $userRole,
+                    
+                    // --- VARIABEL JURNAL (TAMBAHAN BARU) ---
+                    'journalContactEmail'     => $journal->getSetting('contactEmail'),
+                    'journalContactSignature' => $journal->getSetting('contactName') . '<br />' . $journal->getLocalizedName()
                 ));
                 
                 $mail->addRecipient($user->getEmail(), $user->getFullName());
