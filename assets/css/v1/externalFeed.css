@@ -1,0 +1,141 @@
+#externalFeedsHome {
+	width: 100%;
+	margin: 2em 0 2em 0;	
+	background-color: #f2f2f2;
+	margin-top: 0;
+}
+
+#externalFeedsHome h3:after {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translate(0, 0);
+    content: "\f086";
+    margin-left: .25em;
+    color: currentColor;
+    font-size: inherit;
+    text-align: left;
+}
+
+#externalFeedsHome h3 {
+	text-align: left !important;
+	background-color: #fcfcfc;
+	padding-bottom: .5em;
+	border-bottom: 1px solid;
+	padding-right: 1em;
+	padding-top: .27em;
+}
+
+#externalFeeds {
+	width: 100%;
+}
+
+#externalFeeds h4 {
+}
+
+#externalFeedsHome .externalFeeds img {
+	display: flex !important;
+}
+
+.attachment-thumbnail, .wp-post-image {
+	float: left;
+	margin-right: 20px;
+	margin-bottom: 10px;
+}
+
+table.externalFeeds {
+	width: 100%;
+	margin-top: -1em;
+}
+
+table.externalFeeds td {
+	padding: 0.25em 1em;
+}
+
+table.externalFeeds td.headseparator {
+	border-top: 1px dotted #000;
+	font-size: 0.1em;
+	line-height: 1%;
+}
+
+table.externalFeeds td.separator {
+	border-top: 1px dotted #DDDDD0;
+	font-size: 0.1em;
+	line-height: 1%;
+}
+
+table.externalFeeds td.endseparator {
+	border-top: 1px dotted #000;
+	font-size: 0.25em;
+	line-height: 10%;
+}
+
+table.externalFeeds tr.title {
+	vertical-align: top; 
+}
+
+table.externalFeeds td.title {
+	/*! padding: 0.25em; */
+	margin-bottom: 0;
+}
+
+table.externalFeeds td.title h4 {
+	padding: 0 .65em;
+	line-height: 1.2em;
+	margin-top: .7em;
+	font-family: "Bliss Regular", "Gill Sans", Calibri, "Helvetica Neue", Arial, sans-serif;
+	font-size: 2.5rem;
+}
+
+table.externalFeeds tr.description {
+	vertical-align: top;
+	padding: 1em 0;
+}
+
+table.externalFeeds td.description {
+	line-height: 1.3em;
+	padding: 0 1.27em;
+	font-family: 'NexusSans',Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
+}
+
+table.externalFeeds tr.details {
+	vertical-align: bottom;
+	padding-left: 1em;
+	border-bottom: 3px solid #fff;
+	padding-top: .369em;
+}
+
+table.externalFeeds td.posted {
+	width: 15%;
+	text-align: left;
+	font-style: unset;
+	padding-top: .5em;
+	padding: .25em 1.27em;
+	padding-bottom: .69em;
+	font-family: 'NexusSans',Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
+}
+
+table.externalFeeds td.more {
+	width: 15%;
+	text-align: right;
+	font-style: normal;
+	margin-bottom: 0;
+	padding-bottom: 0;
+	padding-right: 1em;
+	padding-top: .369em;
+	font-family: 'NexusSans',Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
+}
+
+
+/* Block display */
+
+#sidebarExternalFeed {
+}
+
+#sidebarExternalFeed ul {
+}
+
+#sidebarExternalFeed li {
+}

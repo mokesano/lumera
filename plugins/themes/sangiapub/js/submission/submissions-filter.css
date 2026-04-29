@@ -1,0 +1,807 @@
+/**
+ * submissions-filter.css
+ * Modern styling for Wizdam OJS v7 submissions filter
+ * Namespace: .filter-container to avoid conflicts
+ */
+
+/* Base container styling - scoped to avoid conflicts */
+#wizdamFilterContainer.filter-container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #e9ecef;
+    position: relative;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Prevent conflicts with existing OJS styles */
+#wizdamFilterContainer * {
+    box-sizing: border-box;
+}
+
+/* Header styling */
+#wizdamFilterContainer .filter-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+#wizdamFilterContainer .filter-header h4 {
+    color: #2c3e50;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    font-family: inherit;
+}
+
+/* Grid layout for form sections */
+#wizdamFilterContainer .filter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+/* Form group styling */
+#wizdamFilterContainer .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#wizdamFilterContainer .form-group label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+/* Form controls - scoped to container */
+#wizdamFilterContainer .form-control {
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: #ffffff;
+    font-family: inherit;
+    line-height: 1.4;
+    width: 100%;
+}
+
+#wizdamFilterContainer .form-control:focus {
+    outline: none !important;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+#wizdamFilterContainer .form-control:hover {
+    border-color: #adb5bd;
+}
+
+/* Modern select styling */
+#wizdamFilterContainer .modern-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23495057' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px !important;
+    cursor: pointer;
+}
+
+#wizdamFilterContainer .modern-select:focus {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007bff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+/* Search section */
+#wizdamFilterContainer .search-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+}
+
+#wizdamFilterContainer .search-row {
+    display: grid;
+    grid-template-columns: 1fr auto 2fr;
+    gap: 16px;
+    align-items: end;
+}
+
+/* Date section */
+#wizdamFilterContainer .date-section {
+    background: #f1f3f4;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+}
+
+#wizdamFilterContainer .date-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 16px;
+    align-items: end;
+}
+
+/* Date input wrapper */
+#wizdamFilterContainer .date-input-wrapper {
+    position: relative;
+}
+
+#wizdamFilterContainer .date-input {
+    width: 100%;
+    padding: 12px 40px 12px 16px !important;
+    cursor: pointer;
+}
+
+#wizdamFilterContainer .date-input:focus {
+    cursor: text;
+}
+
+#wizdamFilterContainer .date-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+#wizdamFilterContainer .date-input:focus + .date-icon {
+    color: #007bff;
+}
+
+/* Connector text */
+#wizdamFilterContainer .connector-text {
+    text-align: center;
+    color: #6c757d;
+    font-weight: 500;
+    padding: 12px 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Active filters */
+#wizdamFilterContainer .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    min-height: 20px;
+}
+
+#wizdamFilterContainer .filter-tag {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #bbdefb;
+    animation: wizdamFadeIn 0.3s ease;
+}
+
+#wizdamFilterContainer .filter-tag .remove {
+    cursor: pointer;
+    color: #1976d2;
+    font-weight: bold;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#wizdamFilterContainer .filter-tag .remove:hover {
+    background: #d32f2f;
+    color: white;
+}
+
+/* Button styling */
+#wizdamFilterContainer .button-group {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+#wizdamFilterContainer .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    font-family: inherit;
+}
+
+#wizdamFilterContainer .btn-primary {
+    background: #007bff;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+#wizdamFilterContainer .btn-primary:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+#wizdamFilterContainer .btn-primary:active {
+    transform: translateY(0);
+}
+
+#wizdamFilterContainer .btn-secondary {
+    background: #6c757d;
+    color: white;
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+}
+
+#wizdamFilterContainer .btn-secondary:hover {
+    background: #545b62;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+/* Flatpickr customization - scoped */
+.flatpickr-calendar {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 8px !important;
+    z-index: 9999 !important;
+}
+
+.flatpickr-day.selected {
+    background: #007bff !important;
+    border-color: #007bff !important;
+}
+
+.flatpickr-day.selected:hover {
+    background: #0056b3 !important;
+    border-color: #0056b3 !important;
+}
+
+/* Animation keyframes */
+@keyframes wizdamFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Loading state */
+#wizdamFilterContainer.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+#wizdamFilterContainer.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: wizdamSpin 1s linear infinite;
+}
+
+@keyframes wizdamSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 992px) {
+    #wizdamFilterContainer .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    #wizdamFilterContainer .search-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    #wizdamFilterContainer .date-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    #wizdamFilterContainer .connector-text {
+        text-align: left;
+        padding: 8px 0;
+    }
+}
+
+@media (max-width: 768px) {
+    #wizdamFilterContainer.filter-container {
+        padding: 16px;
+        margin: 0 0 24px;
+        border-radius: 8px;
+    }
+    
+    #wizdamFilterContainer .button-group {
+        flex-direction: column;
+    }
+    
+    #wizdamFilterContainer .btn {
+        width: 100%;
+    }
+    
+    #wizdamFilterContainer .active-filters {
+        gap: 6px;
+    }
+    
+    #wizdamFilterContainer .filter-tag {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}
+
+/* Focus management for accessibility */
+#wizdamFilterContainer .form-control:focus-visible {
+    outline: 2px solid #007bff !important;
+    outline-offset: 2px;
+}
+
+#wizdamFilterContainer .btn:focus-visible {
+    outline: 2px solid #007bff !important;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    #wizdamFilterContainer.filter-container {
+        border: 2px solid #000;
+    }
+    
+    #wizdamFilterContainer .form-control {
+        border: 2px solid #000;
+    }
+    
+    #wizdamFilterContainer .btn-primary {
+        background: #000;
+        color: #fff;
+    }
+}
+
+/* Prevent style bleeding to other elements */
+#wizdamFilterContainer table,
+#wizdamFilterContainer .table {
+    margin: 0;
+}
+
+#wizdamFilterContainer input:not(.form-control),
+#wizdamFilterContainer select:not(.form-control) {
+    /* Reset any global OJS styles that might interfere */
+    padding: initial;
+    border: initial;
+    background: initial;
+}
+
+/* Header styling */
+.filter-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.filter-header h4 {
+    color: #2c3e50;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Grid layout for form sections */
+.filter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+/* Form group styling */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+/* Form controls */
+.form-control {
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: #ffffff;
+    font-family: inherit;
+    line-height: 1.4;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-control:hover {
+    border-color: #adb5bd;
+}
+
+/* Modern select styling */
+.modern-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23495057' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+.modern-select:focus {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007bff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+/* Search section */
+.search-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.search-row {
+    display: grid;
+    grid-template-columns: 1fr auto 2fr;
+    gap: 16px;
+    align-items: end;
+}
+
+/* Date section */
+.date-section {
+    background: #f1f3f4;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+}
+
+.date-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 16px;
+    align-items: end;
+}
+
+/* Date input wrapper */
+.date-input-wrapper {
+    position: relative;
+}
+
+.date-input {
+    width: 100%;
+    padding: 12px 40px 12px 16px;
+    cursor: pointer;
+}
+
+.date-input:focus {
+    cursor: text;
+}
+
+.date-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.date-input:focus + .date-icon {
+    color: #007bff;
+}
+
+/* Connector text */
+.connector-text {
+    text-align: center;
+    color: #6c757d;
+    font-weight: 500;
+    padding: 12px 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Active filters */
+.active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    min-height: 20px;
+}
+
+.filter-tag {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #bbdefb;
+    animation: fadeIn 0.3s ease;
+}
+
+.filter-tag .remove {
+    cursor: pointer;
+    color: #1976d2;
+    font-weight: bold;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.filter-tag .remove:hover {
+    background: #d32f2f;
+    color: white;
+}
+
+/* Button styling */
+.button-group {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+/* Flatpickr customization */
+.flatpickr-calendar {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.flatpickr-day.selected {
+    background: #007bff;
+    border-color: #007bff;
+}
+
+.flatpickr-day.selected:hover {
+    background: #0056b3;
+    border-color: #0056b3;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Loading state */
+.filter-container.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.filter-container.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 992px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .search-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .date-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .connector-text {
+        text-align: left;
+        padding: 8px 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-container {
+        padding: 16px;
+        margin: 0 -16px 24px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .active-filters {
+        gap: 6px;
+    }
+    
+    .filter-tag {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}
+
+/* Focus management for accessibility */
+.form-control:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.btn:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .filter-container {
+        border: 2px solid #000;
+    }
+    
+    .form-control {
+        border: 2px solid #000;
+    }
+    
+    .btn-primary {
+        background: #000;
+        color: #fff;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .filter-container {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .form-control {
+        background: #4a5568;
+        border-color: #718096;
+        color: #e2e8f0;
+    }
+    
+    .form-control:focus {
+        border-color: #63b3ed;
+        box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.1);
+    }
+    
+    .search-section,
+    .date-section {
+        background: #4a5568;
+        border-color: #718096;
+    }
+    
+    .filter-tag {
+        background: #2b6cb0;
+        color: #bee3f8;
+        border-color: #3182ce;
+    }
+}

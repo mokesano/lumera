@@ -1,0 +1,75 @@
+/**
+ * rt.css
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2000-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * Stylesheet for reading tools
+ * DEPRECATED. Do not modify.
+ *
+ */
+
+#headerTitle {
+	width: 100%;
+}
+
+#header h1 {
+	font-size: 1.7em;
+	padding: 0.25em 1em 0.25em 0em;
+	text-align: right;
+}
+
+#container {
+	min-width: 180px !important;
+}
+
+#main {
+	width: 95%;
+	margin: 24px 0;
+}
+
+#main h2 {
+	font-size: 1.7em;
+	padding-top: 0;
+}
+
+#content h3 {
+	font-size: 1.5em;
+	line-height: 1.57em;
+	text-align: center;
+}
+
+#captureCite form {
+    display: flex;
+    gap: 32px;
+    align-items: center
+}
+  
+#captureCite #citation {
+    font-family: SourceCodePro, monospace;
+    letter-spacing: -.027em;
+    font-size: 0.778rem;
+    line-height: 1.57;
+    padding: 20px;
+    min-height: 170px;
+    border-top: 4px solid #CB4851;
+    border-bottom: 2px solid #F0F0E8;
+    background-color: #f7f6f5;
+}
+
+#citation textarea {
+    padding: 27px;
+}
+
+#citation pre {
+    background-color: #f7f6f5;
+    border-left: 1px dotted #1f161c;
+    padding: 0 1rem;
+    font-family: SourceCodePro, monospace;
+}
+
+select option:checked,
+option:checked {
+    font-weight: 700;
+}

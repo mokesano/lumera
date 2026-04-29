@@ -1,0 +1,17 @@
+# KAMUS STRUKTUR (INDONESIA)
+# Format: TIPE|Kata Kunci
+INTRO|pendahuluan
+INTRO|latar belakang
+METHOD|metode
+METHOD|metodologi
+METHOD|bahan dan metode
+RESULT|hasil
+RESULT|hasil penelitian
+DISCUSSION|pembahasan
+DISCUSSION|diskusi
+CONCLUSION|kesimpulan
+CONCLUSION|simpulan
+CONCLUSION|penutup
+ACK|ucapan terima kasih
+REF|daftar pustaka
+REF|referensi

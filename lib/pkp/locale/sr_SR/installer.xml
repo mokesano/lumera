@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/sr_SR/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the sr_SR (Cрпски) locale.
+  *
+  -->
+
+<locale name="sr_SR" full_name="Cрпски">
+	<message key="installer.additionalLocales">Dodatne lokalizacije</message>
+	<message key="installer.administratorAccount">Administratorski nalog</message>
+	<message key="installer.administratorAccountInstructions">Ovaj korisnički nalog će postati administrator sajta i imati potpuni pristup sistemu. Dodatni korisnički nalozi mogu biti kreirani nakon instalacije.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="formError">NE</span>]]></message>
+	<message key="installer.checkYes">Da</message>
+	<message key="installer.clientCharset">Skup znakova klijenta</message>
+	<message key="installer.clientCharsetInstructions">Enkoding koji se koristi za slanje i primanje podataka iz browser-a.</message>
+	<message key="installer.configFileError"><![CDATA[Konfiguracioni fajl <tt>config.inc.php</tt> ne postoji ili je nečitljiv.]]></message>
+	<message key="installer.connectionCharset">Skup znakova konekcije</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[Kodna stranica koja se koristi za slanje i primanje podataka iz baze podataka. To bi trebalo biti isto kao i skup znakova klijenta. Uzmite u obzir da je ova mogućnost podržana sa MySQL-om >= 5.x ili PostgreSQL-om >= 8.x. Odaberite "nije primenjivo" ako server baze podataka ne podržava ove zahteve.]]></message>
+	<message key="installer.contentsOfConfigFile">Sadržaj konfiguracionog fajla</message>
+	<message key="installer.createDatabase">Kreiraj novu bazu podataka</message>
+	<message key="installer.createDatabaseInstructions">Da biste koristili ovu opciju, sistem vaše baze podataka mora podržavati kreiranje udaljene baze podataka i vaš koristički nalog mora imati adekvatne dozvole za kreiranje nove baze podataka. Ukoliko instalacija nije uspela sa ovom odabranom mogućnošću, ručno kreirajte bazu podataka na vašem serveru i ponovno pokrenite instalacioni program bez ove opcije.</message>
+	<message key="installer.databaseCharset">Skup znakova baze podataka</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[Enkoding koji se koristi za podatke sačuvane u bazi podataka. Uzmite u obzir da je ova mogućnost podržana sa MySQL-om >= 5.x ili PostgreSQL-om >= 8.x. Odaberite "nije primenjivo" ako vaš server baze podataka ne podržava ove zahteve.]]></message>
+	<message key="installer.databaseDriver">Drajveri baze podataka</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>Sistem trenutno podržava samo MySQL i PostgreSQL. Ukoliko ne možete da izaberete nijedan od njih, kontaktirajte svog sistemskog administratora kako biste osigurali da vaš server ima potrebne PHP ekstenzije.</strong>]]></message>
+	<message key="installer.databaseHost">Host</message>
+	<message key="installer.databaseHostInstructions">Ostavite ime glavnog računara prazno da bi se spojili koristeći spojnice domena umesto preko TCP/IP-a. Ovo nije neophodno sa MySQL-om, koji će automatski koristiti spojnice ako je upisano "localhost", ali je obavezno sa nekim drugim serverima baza podataka kao što je PostgreSQL.</message>
+	<message key="installer.databaseName">Ime baze podataka</message>
+	<message key="installer.databasePassword">Lozinka</message>
+	<message key="installer.databaseSettings">Podešavanje baze podataka</message>
+	<message key="installer.databaseUsername">Korisničko ime</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Šifrovanje lozinke koristi <strong>bcrypt</strong> — bezbedan heš algoritam koji je industrijski standard. Nije potrebna dodatna konfiguracija.]]></message>
+	<message key="installer.encryption">Algoritam enkripcije lozinke</message>
+	
+
+	<!--  Installer  -->
+	<message key="installer.appInstallation">Instalacija ScholarWizdam</message>
+	<message key="installer.appUpgrade">Nadogradnja ScholarWizdam</message>
+	
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>ScholarWizdam verzija {$version}</h4>
+    
+    <p>Hvala vam na preuzimanju <strong>ScholarWizdam</strong> od Sangia Publishing House. Pre postupka, molimo vas da pročitate <a href="{$baseUrl}/docs/README" target="_blank">README</a> fajl koji dolazi uz ovaj program. Za više informacija o Sangia Publishing House (SPH) i njegovim programskim projektima, posetite <a href="http://wizdam.sangia.org/" target="_blank">SPH sajt</a>. Ako primite izveštaj o greški u programu ili tražite tehničku podršku za ScholarWizdam, pogledajte <a href="http://forum.wizdam.sangia.org" target="_blank">forum za podršku</a> ili posetite SPH-ov online <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">sistem za prijavljivanje greške</a>. Iako je forum za podršku korišćenija metoda kontaktiranja, možete poslati i imejl stručnom timu na <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[Šifrovanje lozinke koristi <strong>bcrypt</strong> — bezbedan heš algoritam koji je industrijski standard. Nije potrebna dodatna konfiguracija.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Nadogradnja</h4>
+    
+    <p>Ako nadograđujete postojeću instalaciju ScholarWizdam ili prethodnih verzija, <a href="{$upgradeUrl}">kliknite ovde</a> za nastavak.</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Preporučeni uslovi za sistem</h4>
+    
+    <ul>
+    	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; trenutno koristite PHP {$phpVersion}{$wrongPhpText}</li>
+    	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x ili <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (uključujući PostgreSQL 8.x)</li>
+    	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x ili >= 2.0.4x ili Microsoft IIS 6</li>
+    	<li>Operativni sistem: bilo koji OS koji podržava gore navedene programe, uključujući <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+    </ul>
+    
+    <p>Budući da SPH nema sredstava da testira svaku moguću kombinaciju programskih verzija i platformi, nije garantovana potpuna ispravnost postupka ili podrške.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>Nakon instalacije ova podešavanja se mogu promeniti, uređivanjem fajla <tt>config.inc.php</tt> u glavnom ScholarWizdam direktorijumu ili korišćenjem administratorskog interfejsa.</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Podržani sistemi baza podataka</h4>
+    
+    <p>ScholarWizdam je trenutno testiran na MySQL i PostgreSQL, iako drugi sistemi za upravljanje bazama podataka podržani od <a href="http://adodb.org/" target="_blank">ADOdb</a> mogu funkcionisati (u potpunosti ili delimično). Izveštaji o kompatibilnosti i/ili zakrpe koda za alternativne sisteme za upravljanje bazama podataka mogu biti poslati ScholarWizdam timu.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Predinstalacijski koraci</h4>
+    
+    <p>1. Sledeći fajlovi i direktorijumi (i njihovi sadržaji) moraju biti omogućeni za pisanje:</p>
+    <ul>
+    	<li><tt>config.inc.php</tt> je omogućen za pisanje (po izboru): {$writable_config}</li>
+    	<li><tt>public/</tt> je omogućen za pisanje: {$writable_public}</li>
+    	<li><tt>cache/</tt> je omogućen za pisanje: {$writable_cache}</li>
+    	<li><tt>cache/t_cache/</tt> je omogućen za pisanje: {$writable_templates_cache}</li>
+    	<li><tt>cache/t_compile/</tt> je omogućen za pisanje: {$writable_templates_compile}</li>
+    	<li><tt>cache/_db</tt> je omogućen za pisanje: {$writable_db_cache}</li>
+    </ul>
+    
+    <p>2. Direktorijum za čuvanje poslatih fajlova mora biti kreiran i omogućen za pisanje (vidite ispod "podešavanja fajl sistema").</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>ScholarWizdam verzija {$version}</h4>
+    	
+    <p>Hvala Vam što ste preuzeli <strong>ScholarWizdam</strong> od Sangia Publishing House. Pre postupka, molimo pročitajte <a href="{$baseUrl}/docs/README" target="_blank">README</a> i <a href="{$baseUrl}/docs/UPGRADE" target="_blank">UPGRADE</a> fajlove uključene u paketu sa ovim softverom. Za više informacija o Sangia Publishing House (SPH) i njegovim softverskim projektima, molimo posetite <a href="http://wizdam.sangia.org/" target="_blank">SPH sajt</a>. Ako imate prijavu o grešci ili tražite tehničku podršku za ScholarWizdam, pogledajte <a href="http://forum.wizdam.sangia.org" target="_blank">forum podrške</a> ili posetite SPH-ov online <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">sistem prijave grešaka</a>. Iako je forum podrške preferirana metoda kontakta, takođe možete timu poslati imejl na <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+    
+    <p><strong>Preporučljivo je</strong> da napravite sigurnosnu kopiju vaše baze podataka, direktorijuma sa fajlovima i ScholarWizdam instalacionog direktorijuma pre nastavka.</p>
+    <p>Ako imate pokrenut <a href="http://www.php.net/features.safe-mode" target="_blank">PHP sigurnosni mod</a>, molimo osigurajte da je max_execution_time direktiva u vašoj php.ini konfiguracionom fajlu postavljena na visok limit. Ako je taj ili bilo koji drugi vremenski limit (npr. Apacheva "timeout" direktiva) dosegnut i postupak nadogradnje prekinut, biće potrebna ručna intervencija.</p>]]></message>
+
+	<message key="installer.localeSettingsInstructions"><![CDATA[Za kompletnu Unicode (UTF-8) podršku, odaberite UTF-8 za postavku skupa svih znakova. Uzmite u obzir da ova podrška trenutno zahteva MySQL >= 5.x ili PostgreSQL >= 8.x server baza podataka. Takođe, uzmite u obzir da potpuna Unicode podrška zahteva PHP >= 7.4.0 izrađen s podrškom za <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> biblioteku (uobičajeno omogućeno u većini aktualnih PHP instalacija). Možete imati problema ukoliko koristite proširene skupove znakova ako vaš server ne podržava ove zahteve. 
+    <br /><br />
+    Vaš server trenutno podržava mbstring: <strong>{$supportsMBString}</strong>]]></message>
+
+	<message key="installer.localeInstructions">Primarni jezik za korišćenje u ovom sistemu. Molimo pogledajte ScholarWizdam dokumentaciju ako ste zainteresovani za podršku za jezike koji nisu izlistani ovde.</message>
+	<message key="installer.additionalLocalesInstructions">Odaberite bilo koji dodatni jezik koji želite podržati u ovom sistemu. Ti jezici će biti omogućeni za korišćenje za časopise koji se nalaze na sajtu. Dodatni jezici takođe mogu biti instalirani u bilo koje vreme iz administratorskog interfejsa.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Unesite puno ime putanje prema postojećem direktorijumu gde će se čuvati poslati fajlovi. Taj direktorijum ne bi smeo biti direktno dostupan preko mreže. <strong>Molimo osigurajte da taj direktorijum postoji i da se može pisati po njemu pre instalacije.</strong> Imena Windows putanji moraju koristiti kose crte unapred, npr. "C:/mojicasopisi/fajlovi".]]></message>
+	<message key="installer.databaseSettingsInstructions">ScholarWizdam za čuvanje podataka zahteva pristup SQL bazi. Pregledajte gore navedene sistemske zahteve za popis baza koje ScholarWizdam podržava. U niže priloženim poljima navedite parametre koji će se koristiti za povezivanje s bazom.</message>
+	<message key="installer.installApplication">Instaliraj ScholarWizdam</message>
+	<message key="installer.upgradeApplication">Nadogradi ScholarWizdam</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Upozorenje:</strong> Ako instalacija nije uspela delimično prilikom instalacije baze podataka moraćete izbrisati vašu ScholarWizdam bazu podataka ili tabele baze podataka pre ponovnog pokušaja instalacije baze podataka.]]></message>
+	
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>VAŽNO!</h4>
+    <p>Instalacioni program ne može automatski pisati preko konfiguracionog fajla. Pre pokušaja korišćenja sistema, molimo otvorite <tt>config.inc.php</tt> u odgovarajućem editoru teksta i zamenite njegov sadržaj sa sadržajem teksta koji se nalazi u polju ispod.</p>]]></message>
+
+	<message key="installer.installationComplete"><![CDATA[<p>Instalacija ScholarWizdam je uspešno dovršena.</p>
+    <p>Da biste započeli sa korišćenjem sistema, <a href="{$loginUrl}">prijavite se</a> sa Vašim korisničkim imenom i lozinkom navedenim na prošloj stranici.</p>
+    <p>Ako želite da primate vesti i nadogradnje, možete:</p>
+    <ol>
+    	<li><a href="http://wizdam.sangia.org/wizdam/register" target="_new">Registrujte</a> vaš časopis, konferenciju ili sakupljač i primajte ažuriranja o nadogradnjama softvera, bezbednosnim zakrpama i još mnogo toga.</li>
+    	<li>Pridružite se našoj <a href="http://wizdam.sangia.org/informed" target="_new">diskusnoj listi</a> za ScholarWizdam.</li>
+    	<li>Pratite <a href="http://wizdam.sangia.org/blog" target="_new">SPH blog</a> <a href="http://wizdam.sangia.org/blog/feed" target="_new">RSS kanal</a>.</li>
+    </ol>
+    <p>Ako imate pitanja ili komentare, posetite <a href="http://forum.wizdam.sangia.org" target="_new">forum podrške</a>.</p>]]></message>
+
+	<message key="installer.upgradeComplete"><![CDATA[<p>Nadogradnja ScholarWizdam na verziju {$version} je uspešno završena.</p>
+    <p>Ne zaboravite postaviti "installed" podešavanje u vašem config.inc.php konfiguracionom fajlu nazad na <em>On</em>.</p>
+    <p>Ako se još niste registrovali, a želite primati vesti i nadogradnje, <strong>molimo Vas da se registrujte na <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> Ako imate pitanja ili komentare, molimo Vas da posetite <a href="http://forum.wizdam.sangia.org" target="_new">forum podrške</a>.</p>]]></message>
+
+	<message key="installer.filesDir">Folder za dodate fajlove</message>
+	<message key="installer.fileSettings">Podešavanje fajlova</message>
+	<message key="installer.form.clientCharsetRequired">Klijentski skup znakova mora biti odabran.</message>
+	<message key="installer.form.databaseDriverRequired">Drajver baze podataka mora biti odabran.</message>
+	<message key="installer.form.databaseNameRequired">Ime baze podataka je obavezno.</message>
+	<message key="installer.form.emailRequired">Ispravna imejl adresa za administratorski nalog je obavezna.</message>
+	<message key="installer.form.encryptionRequired">Algoritam koji se koristi za šifriranje korisničkih lozinki mora biti odabran.</message>
+	<message key="installer.form.filesDirRequired">Folder koji će se koristiti za čuvanje poslanih fajlova je obavezan.</message>
+	<message key="installer.form.localeRequired">Barem jedna lokalizacija mora biti odabrana.</message>
+	<message key="installer.form.passwordRequired">Lozinka za administratorski nalog je obavezna.</message>
+	<message key="installer.form.passwordsDoNotMatch">Administratorske lozinke se ne podudaraju.</message>
+	<message key="installer.form.separateMultiple">Razdvojite višestruke vrednosti zarezima.</message>
+	<message key="installer.form.usernameAlphaNumeric">Administratorsko korisničko ime može da sadrži samo slovne i brojčane znake, podvlačenja i crtice, a mora početi i završiti sa slovnim ili brojčanim znakom.</message>
+	<message key="installer.form.usernameRequired">Korisničko ime za administratorski nalog je obavezno.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>UPOZORENJE: Vaša trenutna verzija PHP-a ne odgovara minimalnim zahtevima instalacije. Preporučujemo da instalirate noviju verziju PHP-a.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">Pojavile su se greške u instalaciji</message>
+	<message key="installer.installerSQLStatements">SQL izjave za instalaciju</message>
+	<message key="installer.installFileError"><![CDATA[Instalacioni fajl <tt>dbscripts/xml/install.xml</tt> ne postoji ili je nečitljiv.]]></message>
+	<message key="installer.installFilesDirError">Folder određen za poslate fajlove ne postoji ili se ne može pisati u njega.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Greška kod sintaksičke analize instalacijskog fajla baze podataka: <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[Greška prilikom analiziranja fajla šablona imejla <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[Greška prilikom analiziranja konfiguracionog fajla filtera <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Prevod</message>
+	<message key="installer.locale.maybeIncomplete">Označene lokalizacije mogu biti nepotpune.</message>
+	<message key="installer.localeSettings">Podešavanje lokalizacije</message>
+	<message key="installer.miscSettings">Ostala podešavanja</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[Jedinstveni identifikator koji se koristi za identifikaciju zapisa metapodataka indeksiranih na ovom sajtu koristeći <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a>, Protokol za sakupljanje metapodataka.]]></message>
+	<message key="installer.oaiRepositoryId">Identifikator OAI repozitorijuma</message>
+	<message key="installer.oaiSettings">OAI podešavanja</message>
+	<message key="installer.publicFilesDirError">Folder javnih fajlova ne postoji ili se ne može pisati po njemu.</message>
+	<message key="installer.releaseNotes">Napomene o izdanju</message>
+	<message key="installer.securitySettings">Sigurnosna podešavanja</message>
+	<message key="installer.allowFileUploads"><![CDATA[Vaš server podržava postavljanje datoteka: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[Vaš server trenutno podržava maksimalnu veličinu datoteke: <strong>{$maxFileUploadSize}</strong>]]></message>
+	<message key="installer.beacon">Beacon</message>
+	<message key="installer.beacon.enable">Navedite jedinstveni ID sajta i osnovni OAI URL izdavačkoj kući Sangia Publishing House isključivo u statističke svrhe i za bezbednosna upozorenja.</message>
+	
+	<message key="site.upgradeAvailable.admin"><![CDATA[Dostupna je nova verzija ScholarWizdam! Trenutno koristite ScholarWizdam {$currentVersion}. Najnovija verzija ScholarWizdam je {$latestVersion}. Posetite <a href="http://wizdam.sangia.org/download" target="_new">ovu stranu</a> da preuzmete poslednju verziju i da nađete uputstvo za nadogradnju.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[Dostupna je nova verzija ScholarWizdam! Trenutno koristite ScholarWizdam {$currentVersion}. Obratite se vašem administratoru sajta ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) i obavestite ga o novom izdanju. Više informacija možete naći <a href="http://wizdam.sangia.org/download" target="_new">ovde</a>.]]></message>
+</locale>

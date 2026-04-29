@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/el_GR/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the el_GR (ελληνικά) locale.
+  *
+  -->
+
+<locale name="el_GR" full_name="ελληνικά">
+	<message key="installer.additionalLocales">Πρόσθετες γλώσσες</message>
+	<message key="installer.administratorAccount">Λογαριασμός διαχειριστή</message>
+	<message key="installer.administratorAccountInstructions">Ο συγκεκριμένος λογαριασμός χρήστη θα αποτελεί τον τεχνικό διαχειριστή του ιστοτόπου και θα έχει πλήρη πρόσβαση στο σύστημα. Πρόσθετοι λογαριασμοί χρηστών μπορούν να δημιουργηθούν μετά από την εγκατάσταση.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="formError">Όχι</span>]]></message>
+	<message key="installer.checkYes">Ναι</message>
+	<message key="installer.clientCharset">Σύνολο χαρακτήρων για το σύστημα πελάτης</message>
+	<message key="installer.clientCharsetInstructions">Κωδικοποίηση για τα δεδομένα που αποστέλλονται και λαμβάνονται από προγράμματα φυλλομέτρησης.</message>
+	<message key="installer.configFileError"><![CDATA[Το αρχείο ρυθμίσεων <tt>config.inc.php</tt> δεν υπάρχει ή δεν είναι αναγνώσιμο.]]></message>
+	<message key="installer.connectionCharset">Σύνολο χαρακτήρων σύνδεσης</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[Κωδικοποίηση για τα δεδομένα που αποστέλλονται και λαμβάνονται από τη βάση δεδομένων. Πρέπει να είναι ίδια με το σύνολο χαρακτήρων για το σύστημα πελάτη. Η συγκεκριμένη δυνατότητα υποστηρίζεται μόνο με MySQL >= 4.x ή PostgreSQL >= 7.x Επιλέξτε "Μη εφαρμόσιμο" σε περίπτωση όπου ο εξυπηρετητής της βάσης δεδομένων δεν ανταποκρίνεται  στις συγκεκριμένες απαιτήσεις.]]></message>
+	<message key="installer.contentsOfConfigFile">Περιεχόμενα αρχείου ρυθμίσεων</message>
+	<message key="installer.createDatabase">Δημιουργία βάσης δεδομένων</message>
+	<message key="installer.createDatabaseInstructions">Για να χρησιμοποιήσετε αυτή την επιλογή, το σύστημά σας πρέπει να υποστηρίζει την απομακρυσμένη δημιουργία βάσης δεδομένων και ο λογαριασμός χρήστη πρέπει να διαθέτει τα απαραίτητα δικαιώματα για τη δημιουργία νέας βάσης δεδομένων. Εάν η εγκατάσταση δεν ολοκληρωθεί επιτυχώς με την συγκεκριμένη επιλογή ενεργοποιημένη, δημιουργήστε βάση δεδομένων στον διακομιστή σας χειροκίνητα και εκτελέστε το πρόγραμμα εγκατάστασης ξανά έχοντας την συγκεκριμένη επιλογή απενεργοποιημένη.</message>
+	<message key="installer.databaseCharset">Σύνολο χαρακτήρων βάσης δεδομένων</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[Κωδικοποίηση για τα δεδομένα που αποθηκεύονται στη βάση δεδομένων. Η συγκεκριμένη δυνατότητα υποστηρίζεται μόνο με MySQL >= 4.x ή PostgreSQL >= 7.x Επιλέξτε "Μη εφαρμόσιμο" σε περίπτωση όπου ο εξυπηρετητής της βάσης δεδομένων δεν ανταποκρίνεται στις συγκεκριμένες απαιτήσεις.]]></message>
+	<message key="installer.databaseDriver">Οδηγός βάσης δεδομένων</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>Το σύστημα υποστηρίζει προς το παρόν μόνο MySQL και PostgreSQL. Σε περίπτωση που δεν μπορείτε να επιλέξετε κάποια από αυτές, επικοινωνήστε με τον διαχειριστή συστήματός σας για να βεβαιωθείτε ότι ο διακομιστής σας διαθέτει τις απαιτούμενες επεκτάσεις PHP.</strong>]]></message>
+	<message key="installer.databaseHost">Εξυπηρετητής</message>
+	<message key="installer.databaseHostInstructions">Αφήστε το όνομα του εξυπηρετητή κενό για να συνδεθείτε χρησιμοποιώντας υποδοχές τομέα (domain sockets) αντί μέσω TCP/IP. Η ενέργεια αυτή δεν είναι απαραίτητη με την MySQL, η οποία χρησιμοποιεί αυτόματα υποδοχές αν γίνει καταχώριση "localhost", αλλά είναι απαραίτητη με κάποιους άλλους εξυπηρετητές βάσης δεδομένων όπως PostgreSQL.</message>
+	<message key="installer.databaseName">Όνομα βάσης δεδομένων</message>
+	<message key="installer.databasePassword">Κωδικός πρόσβασης</message>
+	<message key="installer.databaseSettings">Ρυθμίσεις βάσης δεδομένων</message>
+	<message key="installer.databaseUsername">Όνομα χρήστη</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Το Bcrypt εφαρμόζεται με ασφάλεια ως ο τυπικός αλγόριθμος κρυπτογράφησης κωδικών πρόσβασης σύμφωνα με τα πρότυπα του ScholarWizdam.]]></message>
+	<message key="installer.encryption">Αλγόριθμος κρυπτογράφησης (encryption) κωδικού πρόσβασης</message>
+
+    <!-- Installer -->
+    <message key="installer.appInstallation">Εγκατάσταση ScholarWizdam</message>
+    <message key="installer.appUpgrade">Αναβάθμιση ScholarWizdam</message>
+    
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>Έκδοση ScholarWizdam {$version}</h4>
+    <p>Σας ευχαριστούμε που προτιμήσατε το <strong>ScholarWizdam</strong> του Sangia Publishing House. Πριν να προχωρήσετε, συμβουλευτείτε το αρχείο <a href="{$baseUrl}/docs/README">README</a> που παρέχεται μαζί με το λογισμικό. Για περισσότερες πληροφορίες σχετικά με το Sangia Publishing House και τα έργα λογισμικού του, επισκεφτείτε τον <a href="http://wizdam.sangia.org/" target="_blank">ιστότοπο του Sangia Publishing House</a>. Εάν έχετε αναφορές σφαλμάτων ή ερωτήματα για την τεχνική υποστήριξη σχετικά με το ScholarWizdam, ανατρέξτε στο  <a href="http://forum.wizdam.sangia.org">φόρουμ υποστήριξης</a> ή επισκεφτείτε το <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">σύστημα σύνταξης αναφορών</a> του ScholarWizdam στο διαδίκτυο. Αν και το φόρουμ υποστήριξης είναι η προτιμώμενη μέθοδος επικοινωνίας, μπορείτε επίσης να επικοινωνήσετε με την ομάδα μέσω ηλεκτρονικού ταχυδρομείου στη διεύθυνση <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[Η κρυπτογράφηση κωδικού πρόσβασης χρησιμοποιεί <strong>bcrypt</strong> — έναν ασφαλή αλγόριθμο κατακερματισμού που αποτελεί βιομηχανικό πρότυπο. Δεν απαιτείται καμία διαμόρφωση.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Αναβάθμιση</h4>
+    <p>Εάν πραγματοποιείτε αναβάθμιση μιας υπάρχουσας εγκατάστασης του ScholarWizdam ή OJS 2.x, <a href="{$upgradeUrl}">πατήστε εδώ</a> για να προχωρήσετε.</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4> Συνιστώμενες απαιτήσεις συστήματος</h4>
+    <ul>
+        <li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}. Αυτή τη στιγμή χρησιμοποιείτε την PHP {$phpVersion}{$wrongPhpText}</li>
+        <li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 4.x ή <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (συμπεριλαμβανομένου του PostgreSQL 8.x)</li>
+        <li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x ή >= 2.0.4x ή Microsoft IIS 6</li>
+        <li>Λειτουργικό σύστημα: οποιοδήποτε λειτουργικό σύστημα υποστηρίζει το προαναφερόμενο λογισμικό, συμπεριλαμβανομένων των <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+    </ul>
+    <p>Εφόσον το ScholarWizdam δεν διαθέτει τους πόρους για να δοκιμάσει κάθε πιθανό συνδυασμό εκδόσεων λογισμικού και πλατφορμών, δεν υπάρχει εγγύηση σωστής λειτουργίας ή υποστήριξης.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>Αλλαγές στις συγκεκριμένες ρυθμίσεις μπορούν να πραγματοποιηθούν μετά από την εγκατάσταση, μέσω του αρχείου <tt>config.inc.php</tt> στον βασικό φάκελο του ScholarWizdam, ή χρησιμοποιώντας τη διεπαφή διαχείρισης του ιστοτόπου.</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Υποστηριζόμενα συστήματα βάσης δεδομένων</h4>
+    <p>Το ScholarWizdam έχει προς το παρόν δοκιμαστεί σε MySQL και PostgreSQL, παρόλο που και άλλα συστήματα διαχείρισης βάσεων δεδομένων που υποστηρίζονται από <a href="http://adodb.org/" target="_blank">ADOdb</a> ενδέχεται να λειτουργούν (πλήρως ή εν μέρει). Αναφορές συμβατότητας ή/και επιρράματα κώδικα για εναλλακτικά DBMS μπορούν αποσταλούν στην ομάδα του ScholarWizdam.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Στάδια προετοιμασίας της εγκατάστασης</h4>
+    <p>1. Τα ακόλουθα αρχεία και κατάλογοι (και τα περιεχόμενα αυτών) πρέπει να καταστούν εγγράψιμα:</p>
+    <ul>
+        <li><tt>config.inc.php</tt> είναι εγγράψιμο (προαιρετικό): {$writable_config}</li>
+        <li><tt>public/</tt> είναι εγγράψιμο: {$writable_public}</li>
+        <li><tt>cache/</tt> είναι εγγράψιμο: {$writable_cache}</li>
+        <li><tt>cache/t_cache/</tt> είναι εγγράψιμο: {$writable_templates_cache}</li>
+        <li><tt>cache/t_compile/</tt> είναι εγγράψιμο: {$writable_templates_compile}</li>
+        <li><tt>cache/_db</tt> είναι εγγράψιμο: {$writable_db_cache}</li>
+    </ul>
+    <p>2. Πρέπει να δημιουργηθεί κατάλογος για αποθήκευση αρχείων που έχουν μεταφορτωθεί και να καταστεί εγγράψιμος (βλέπε «Ρυθμίσεις αρχείου» παρακάτω).</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>Έκδοση ScholarWizdam {$version}</h4>
+		<p>Σας ευχαριστούμε που προτιμήσατε το <strong>ScholarWizdam</strong> του Sangia Publishing House. Πριν να προχωρήσετε παρακάτω, συμβουλευτείτε τα αρχεία <a href="{$baseUrl}/docs/README" target="_blank">README</a> και <a href="{$baseUrl}/docs/UPGRADE" target="_blank">UPGRADE</a> που παρέχονται μαζί με αυτό το λογισμικό. Για περισσότερες πληροφορίες σχετικά με το Sangia Publishing House και τα έργα λογισμικού αυτού, επισκεφτείτε τον <a href="http://wizdam.sangia.org/" target="_blank"> ιστότοπο του Sangia Publishing House</a>. Εάν έχετε αναφορές σφαλμάτων ή ερωτήματα για την τεχνική υποστήριξη σχετικά με το ScholarWizdam, ανατρέξτε στο <a href="http://forum.wizdam.sangia.org">φόρουμ υποστήριξης</a> ή επισκεφτείτε το <a href="https://github.com/wizdam/wizdam-lib#issues" target="_blank">σύστημα σύνταξης αναφορών</a> του Sangia Publishing House στο διαδίκτυο. Αν και που το φόρουμ υποστήριξης είναι η προτιμώμενη μέθοδος επικοινωνίας, μπορείτε επίσης να επικοινωνήσετε με την ομάδα μέσω ηλεκτρονικού ταχυδρομείου στη διεύθυνση <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+		<p><strong>Συνίσταται αυστηρώς</strong> η δημιουργία εφεδρικών αντιγράφων ασφαλείας της βάσης δεδομένων, του καταλόγου αρχείων και του καταλόγου εγκατάστασης του ScholarWizdam πριν να προχωρήσετε παρακάτω.</p>
+		<p>Εάν εκτελείτε το πρόγραμμα σε <a href="http://www.php.net/features.safe-mode" target="_blank">Ασφαλή λειτουργία PHP</a>, βεβαιωθείτε ότι η οδηγία max_execution_time στο αρχείο ρυθμίσεων php.ini έχει οριστεί σε υψηλό όριο. Εάν η αναβάθμιση φτάσει το συγκεκριμένο χρονικό όριο ή οποιοδήποτε άλλο (π.χ. η οδηγία "Timeout" του Apache) και διακοπεί, θα χρειαστεί χειροκίνητη παρέμβαση.</p>]]></message>
+
+	<message key="installer.localeSettingsInstructions"><![CDATA[Για ολοκληρωμένη υποστήριξη Unicode (UTF-8), επιλέξτε UTF-8 για όλες τις ρυθμίσεις του συνόλου χαρακτήρων. Λάβετε υπόψη ότι η συγκεκριμένη υποστήριξη απαιτεί για την ώρα την MySQL >= 4.x ή PostgreSQL >= 7.x Λάβετε, επίσης, υπόψη ότι η πλήρης υποστήριξη Unicode απαιτεί PHP >= 7.4.0 που έχει μεταγλωττιστεί με υποστήριξη για την <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> βιβλιοθήκη (είναι ενεργοποιημένη εξ'ορισμού στις πιο πρόσφατες εγκαταστάσεις της PHP). Ενδέχεται να αντιμετωπίσετε προβλήματα με τη χρήση των επεκτάσεων συνόλων χαρακτήρων σε περίπτωση όπου ο εξυπηρετητής σας δεν ανταποκρίνεται στις συγκεκριμένες απαιτήσεις.
+		<br /><br />
+		Ο διακομιστής σας υποστηρίζει mbstring: <strong>{$supportsMBString}</strong>]]></message>
+				
+    <message key="installer.localeInstructions">Η κύρια γλώσσα για χρήση από το συγκεκριμένο σύστημα. Ανατρέξτε στα έγγραφα τεκμηρίωσης του ScholarWizdam, εάν επιθυμείτε να υποστηρίξετε γλώσσες που δεν περιλαμβάνονται εδώ.</message>
+    <message key="installer.additionalLocalesInstructions">Επιλογή άλλων πρόσθετων γλωσσών για υποστήριξη στο συγκεκριμένο σύστημα. Οι γλώσσες αυτές θα είναι διαθέσιμες για χρήση από περιοδικά που φιλοξενούνται στον ιστότοπο. Επιπρόσθετες γλώσσες μπορούν επίσης να εγκατασταθούν ανά πάσα στιγμή από τη διεπαφή διαχείρισης.</message>
+    <message key="installer.filesDirInstructions"><![CDATA[Εισαγάγετε την πλήρη διαδρομή προς έναν υπάρχοντα φάκελο όπου θα φυλάσσονται τα αρχεία που έχουν μεταφορτωθεί. Ο φάκελος αυτός δεν πρέπει να είναι άμεσα προσβάσιμος μέσω του Παγκόσμιου Ιστού.<strong>Βεβαιωθείτε ότι ο φάκελος αυτός υπάρχει ήδη και είναι εγγράψιμος πριν από αυτή την εγκατάσταση.</strong> Τα ονόματα των διαδρομών των Windows πρέπει στην αρχή να χρησιμοποιούν καθέτους, π.χ. "C:/myjournal/files".]]></message>
+	<message key="installer.databaseSettingsInstructions">Το ScholarWizdam απαιτεί πρόσβαση σε μια SQL βάση δεδομένων για να αποθηκεύσει τα δεδομένα του. Συμβουλευτείτε τις απαιτήσεις συστήματος παραπάνω για μια λίστα με τις υποστηριζόμενες βάσεις δεδομένων. Στα παρακάτω πεδία, συμπληρώστε τις απαραίτητες ρυθμίσεις για την σύνδεση με την βάση δεδομένων.</message>
+    <message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Προσοχή:</strong> Αν η διαδικασία εγκατάστασης απέτυχε μετά το στάδιο της εγκατάστασης της βάσης δεδομένων, ίσως χρειαστεί να διαγράψετε τη βάση δεδομένων του ScholarWizdam ή τους πίνακες της βάσης που δημιουργήθηκαν πριν επιχειρήσετε εκ νέου εγκατάσταση της βάσης δεδομένων.]]></message>
+    <message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>ΣΗΜΑΝΤΙΚΟ!</h4>
+        <p>Το πρόγραμμα εγκατάστασης δεν κατάφερε να αντικαταστήσει αυτόματα το αρχείο ρυθμίσεων. Πριν επιχειρήσετε να χρησιμοποιήσετε το σύστημα, ανοίξτε το αρχείο <tt>config.inc.php</tt> με κατάλληλο πρόγραμμα επεξεργασίας κειμένου και αντικαταστήστε τα περιεχόμενά του με τα περιεχόμενα του παρακάτω πεδίου κειμένου.</p>]]></message>
+        <message key="installer.installationComplete"><![CDATA[<p>Η εγκατάσταση του ScholarWizdam έχει ολοκληρωθεί επιτυχώς.</p>
+        <p>Για να ξεκινήσετε τη χρήση του συστήματος, <a href="{$loginUrl}">συνδεθείτε</a> με το όνομα χρήστη και τον κωδικό πρόσβασης που εισάγατε στην προηγούμενη σελίδα.</p>
+        <p>Εάν επιθυμείτε να λαμβάνετε νέα και ενημερώσεις, μπορείτε να </p>
+        <ol>
+        	<li><a href="http://wizdam.sangia.org/wizdam/register" target="_new">εγγραφείτε εδώ</a> και να λαμβάνετε νέες εκδόσεις ή αναβαθμίσεις του λογισμικού, επιρράματα ασφάλειας κ.α.</li>
+        	<li>εγγραφείτε στην <a href="http://wizdam.sangia.org/informed" target="_new">λίστα συζητήσεων</a> για το  ScholarWizdam, το Harvester, το Lemon8-XML, ή όλα τα προηγούμενα.</li>
+        	<li>εγγραφείτε στο <a href="http://wizdam.sangia.org/blog" target="_new">χρονολόγιο του Sangia Publishing house</a> ή το <a href="http://wizdam.sangia.org/blog/feed" target="_new">RSS feed</a>.</li>
+        </ol>
+        <p> Εάν έχετε σχόλια και ερωτήσεις, επισκεφτείτε το <a href="http://forum.wizdam.sangia.org" target="_new">φόρουμ υποστήριξης</a>.</p>]]></message>
+
+    <message key="installer.upgradeComplete"><![CDATA[<p>Η αναβάθμιση του ScholarWizdam στην έκδοση{$version} ολοκληρώθηκε επιτυχώς.</p>
+        <p>Μην ξεχάσετε να τροποποιήσετε την ρύθμιση "installed" στο αρχείο ρυθμίσεων "config.inc.php" ξανά σε <em>On</em>.</p>
+        <p>Εάν δεν έχετε ήδη εγγραφεί και επιθυμείτε να λαμβάνετε ειδήσεις και ενημερώσεις, <strong>εγγραφείτε στο <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> Εάν έχετε σχόλια και ερωτήσεις, επισκεφτείτε το <a href="http://forum.wizdam.sangia.org" target="_new">φόρουμ υποστήριξης</a>.</p>]]></message>
+	<message key="installer.installApplication">Εγκατάσταση ScholarWizdam</message>
+	<message key="installer.upgradeApplication">Αναβάθμιση ScholarWizdam</message>
+	<message key="installer.allowFileUploads"><![CDATA[Ο server σας επιτρέπει ανέβασμα αρχείων : <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[Ο server σας επιτρέπει το ανέβασμα αρχείου με μέγιστο μέγεθος: <strong>{$maxFileUploadSize}</strong>]]></message>
+
+	<message key="installer.filesDir">Κατάλογος για μεταφόρτωση αρχείων</message>
+	<message key="installer.fileSettings">Ρυθμίσεις αρχείου</message>
+	<message key="installer.form.clientCharsetRequired">Πρέπει να επιλεχθεί ένα σύνολο χαρακτήρων πελάτη.</message>
+	<message key="installer.form.databaseDriverRequired">Πρέπει να επιλεχθεί οδηγός (driver) βάσης δεδομένων.</message>
+	<message key="installer.form.databaseNameRequired">Απαιτείται όνομα βάσης δεδομένων.</message>
+	<message key="installer.form.emailRequired">Απαιτείται έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου για τον λογαριασμό του διαχειριστή.</message>
+	<message key="installer.form.encryptionRequired">Πρέπει να επιλεχθεί ο αλγόριθμος που θα χρησιμοποιηθεί για κρυπτογράφηση των κωδικών πρόσβασης χρηστών.</message>
+	<message key="installer.form.filesDirRequired">Απαιτείται ο ορισμός του καταλόγου που θα χρησιμοποιηθεί για την αποθήκευση των αρχείων που έχουν μεταφορτωθεί.</message>
+	<message key="installer.form.localeRequired">Πρέπει να επιλεχθεί μια γλώσσα.</message>
+	<message key="installer.form.passwordRequired">Απαιτείται κωδικός πρόσβασης για τον το λογαριασμό διαχειριστή.</message>
+	<message key="installer.form.passwordsDoNotMatch">Οι κωδικοί πρόσβασης του διαχειριστή δεν ταιριάζουν</message>
+	<message key="installer.form.separateMultiple">Διαχωρίστε πολλαπλές τιμές με κόμματα</message>
+	<message key="installer.form.usernameAlphaNumeric">Το όνομα χρήστη του διαχειριστή μπορεί να περιέχει μόνο αλφαριθμητικούς χαρακτήρες, κάτω και πάνω παύλες και πρέπει να αρχίζει και να τελειώνει με έναν αλφαριθμητικό χαρακτήρα.</message>
+	<message key="installer.form.usernameRequired">Απαιτείται όνομα χρήστη για το λογαριασμό διαχειριστή.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>ΕΙΔΟΠΟΙΗΣΗ: Η τρέχουσα έκδοση της PHP στον υπολογιστή σας δεν ικανοποιεί τις ελάχιστες προδιαγραφές εγκατάστασης. Συνιστάται η αναβάθμιση σε μια νεώτερη έκδοση PHP.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">Σφάλματα που προέκυψαν κατά την εγκατάσταση</message>
+	<message key="installer.installerSQLStatements">Εντολές SQL για την εγκατάσταση</message>
+	<message key="installer.installFileError"><![CDATA[Το αρχείο εγκατάστασης <tt>dbscripts/xml/install.xml</tt> δεν υπάρχει ή δεν είναι αναγνώσιμο.]]></message>
+	<message key="installer.installFilesDirError">Ο καθορισμένος κατάλογος για μεταφόρτωση αρχείων δεν υπάρχει ή δεν είναι εγγράψιμος.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Σφάλμα κατά την ανάλυση (parsing) του αρχείου εγκατάστασης της βάσης δεδομένων <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Γλώσσες</message>
+	<message key="installer.localeSettings">Ρυθμίσεις Γλωσσών</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[Ένα μοναδικό αναγνωριστικό χρησιμοποιείται για την ταυτοποίηση των εγγραφών μεταδεδομένων των ευρετηρίων του συγκεκριμένου ιστότοπου με χρήση του <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a> Protocol for Metadata Harvesting.]]></message>
+	<message key="installer.oaiRepositoryId">Αναγνωριστικό OAI καταθετηρίου</message>
+	<message key="installer.publicFilesDirError">Ο κατάλογος των δημόσιων αρχείων δεν υπάρχει ή δεν είναι εγγράψιμος.</message>
+	<message key="installer.releaseNotes">Σημειώσεις έκδοσης</message>
+	<message key="installer.securitySettings">Ρυθμίσεις ασφαλείας</message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[Σφάλμα κατά την ανάλυση του πρότυπου αρχείου για email <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale.maybeIncomplete">Οι επιλεγμένες γλώσσες μπορεί να μην είναι ολοκληρωμένες.</message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[Σφάλμα ανάλυσης αρχείου ρύθμισης φίλτρου <tt>{$file}</tt>.]]></message>
+	<message key="installer.oaiSettings">Ρυθμίσεις OAI</message>
+	
+	<message key="installer.beacon">Φάρος</message>
+	<message key="installer.beacon.enable">Παρέχετε ένα μοναδικό αναγνωριστικό ιστότοπου και τη βασική διεύθυνση URL OAI στον Εκδοτικό Οίκο Sangia αποκλειστικά για στατιστικούς σκοπούς και ειδοποιήσεις ασφαλείας.</message>
+
+	<message key="site.upgradeAvailable.admin"><![CDATA[Υπάρχει διαθέσιμη μια νέα έκδοση ScholarWizdam! Αυτήν τη στιγμή χρησιμοποιείτε το ScholarWizdam {$currentVersion}. Η τελευταία έκδοση είναι η {$latestVersion}. Παρακαλούμε επισκεφτείτε <a href="http://pkp.sfu.ca/ojs_download" target="_new">αυτή τη σελίδα</a> για να κατεβάσετε την τελευταία έκδοση και βρείτε τις οδηγίες αναβάθμσης.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[Υπάρχει διαθέσιμη μια νέα έκδοση ScholarWizdam! Αυτήν τη στιγμή χρησιμοποιείτε το ScholarWizdam  {$currentVersion}. Η τελευταία έκδοση είναι η {$latestVersion}. Παρακαλούμε επικοινωνήστε με τον διαχειριστή του ιστοτόπου σας  ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) για να τον ενημερώσετε για την νέα αυτή έκδοησ. Περισσότερες πληροφορίες μπορείτε να βρείτε <a href="http://pkp.sfu.ca/ojs_download" target="_new">εδώ</a>.]]></message>
+</locale>

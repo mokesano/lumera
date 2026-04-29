@@ -1,0 +1,18 @@
+# KAMUS STRUKTUR (INGGRIS)
+INTRO|introduction
+INTRO|background
+METHOD|method
+METHOD|methods
+METHOD|methodology
+METHOD|materials and methods
+RESULT|result
+RESULT|results
+RESULT|findings
+DISCUSSION|discussion
+CONCLUSION|conclusion
+CONCLUSION|summary
+ACK|acknowledgment
+ACK|acknowledgements
+REF|references
+REF|bibliography
+INTRO_CUSTOM|url:

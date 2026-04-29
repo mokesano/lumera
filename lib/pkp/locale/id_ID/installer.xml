@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/id_ID/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2003-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings.
+  -->
+
+<locale name="id_ID" full_name="Bahasa Indonesia">
+    <message key="installer.additionalLocales">Bahasa Tambahan</message>
+    <message key="installer.administratorAccount">Akun Administrator</message>
+	<message key="installer.administratorAccountInstructions">Akun pengguna ini akan menjadi administrator situs dan memiliki akses penuh ke sistem. Akun pengguna tambahan dapat dibuat setelah instalasi. </message>
+	<message key="installer.checkNo"><![CDATA[<span class="formError">Tidak</span>]]></message>
+	<message key="installer.checkYes">Ya</message>
+	<message key="installer.clientCharset">Klien karakter set</message>
+	<message key="installer.clientCharsetInstructions">Kode karakter yang dikirim dan diterima perambah.</message>
+	<message key="installer.configFileError"><![CDATA[Konfigurasi file <tt>config.inc.php</tt> tidak ada atau tidak terbaca.]]></message>
+	<message key="installer.connectionCharset">Koneksi karakter set </message>
+	<message key="installer.connectionCharsetInstructions">Kode karakter yang dikirim dan diterima database. Pengkodean harus sama dengan klien karakter set yang digunakan. Perhatikan bahwa pengkodean ini hanya disupport oleh MySQL >= 5.x atau PostgreSQL >= 8.x. Pilih "Tidak bisa diterapkan" jika server database Anda tidak memenuhi persyaratan.</message>
+	<message key="installer.contentsOfConfigFile">Isi file konfigurasi</message>
+	<message key="installer.createDatabase">Membuat database baru</message>
+	<message key="installer.createDatabaseInstructions">Untuk menggunakan opsi ini sistem database Anda harus support pembuatan database dengan kendali jauh dan akun Anda harus memiliki hak akses yang sesuai untuk membuat database baru. Jika instalasi gagal dengan opsi ini, buat database secara manual pada server Anda dan lakukan instalasi lagi dengan menonaktifkan pilihan ini.</message>
+	<message key="installer.databaseCharset">Database karakter set</message>
+	<message key="installer.databaseCharsetInstructions">Kode karakter database. Perhatikan bahwa pengkodean ini hanya didukung oleh MySQL >= 5.x atau PostgreSQL >= 8.x. Pilih "Tidak bisa diterapkan" jika server database Anda tidak memenuhi persyaratan.</message>
+	<message key="installer.databaseDriver">Database Driver</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>Sistem saat ini hanya mendukung MySql dan PostgreSQL, bila Anda tidak bisa memilih salah satu pilihan, hubungi administrator sistem Anda untuk memastikan server memiliki ekstensi PHP yan dipersyatatkan.</strong>]]></message>
+	<message key="installer.databaseHost">Host</message>
+	<message key="installer.databaseHostInstructions">Biarkan nama host kosong untuk terhubung menggunakan soket domain dan bukan melalui TCP/IP. Tidak perlu melakukan perubahan nama host jika Anda menggunakan MySQL yang secara otomatis menggunakan soket jika [localhost] dimasukkan, namun perubahan nama host diperlukan jika server database Anda adalah PostgreSQL atau yang lainnya.</message>
+	<message key="installer.databaseName">Database</message>
+	<message key="installer.databasePassword">Kata Sandi</message>
+	<message key="installer.databaseSettings">Pengaturan Database</message>
+	<message key="installer.databaseUsername">Nama Pengguna</message>
+	<message key="installer.encryptionInstructions">Bycript sebagai default eksripsi utama dari standar ScholarWizdam.</message>
+	<message key="installer.encryption">Algoritma Enkripsi Kata Sandi</message>
+
+	<!-- Installer -->
+	<message key="installer.appInstallation">Instalasi ScholarWizdam</message>
+	<message key="installer.appUpgrade">Updgrade ScholarWizdam</message>
+    
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>Versi ScholarWizdam {$version}</h4>
+    <p>Terima kasih telah mengunduh <strong>ScholarWizdam</strong> dari Sangia Publishing House. Sebelum melanjutkan, silakan membaca file <a href="{$baseUrl}/docs/README" target="_blank">README</a> yang disertakan dalam perangkat lunak ini. Untuk informasi lebih lanjut tentang Sangia Publishing House (SPH) dan proyek perangkat lunaknya, silakan kunjungi <a href="http://wizdam.sangia.org/" target="_blank">situs web Sangia Publishing House</a>. Jika Anda memiliki laporan bug atau pertanyaan dukungan teknis tentang ScholarWizdam, lihat <a href="http://forum.wizdam.sangia.org" target="_blank">forum dukungan</a> atau kunjungi <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">sistem pelaporan bug</a> daring SPH. Meskipun forum dukungan adalah metode kontak yang disarankan, Anda juga dapat mengirim email ke tim di <a href="mailto:wizdam.contact@sangia.org">wizdam.contact@sangia.org</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[Enkripsi kata sandi menggunakan <strong>bcrypt</strong> — algoritma hashing yang aman dan sesuai standar industri. Tidak diperlukan konfigurasi tambahan.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Peningkatan Versi</h4>
+    <p>Jika Anda meningkatkan instalasi ScholarWizdam yang sudah ada atau dari OJS 2.x, <a href="{$upgradeUrl}">klik di sini</a> untuk melanjutkan. Untuk peningkatan dari OJS 3.x (dalam pengembangan).</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Persyaratan sistem yang direkomendasikan</h4>
+    <ul>
+    	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; saat ini Anda menggunakan <strong>PHP {$phpVersion}{$wrongPhpText}</strong></li>
+    	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x atau <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 8.x</li>
+    	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x atau >= 2.0.4x atau Microsoft IIS 6</li>
+    	<li>Sistem operasi: Sistem operasi apa pun yang mendukung perangkat lunak di atas, termasuk <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+    </ul>
+    <p>Karena SPH tidak memiliki sumber daya untuk menguji setiap kemungkinan kombinasi versi perangkat lunak dan platform, tidak ada jaminan pengoperasian yang benar atau dukungan yang tersirat.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[Perubahan pada pengaturan ini dapat dilakukan setelah instalasi dengan mengedit file <code>config.inc.php</code> di direktori dasar ScholarWizdam, atau menggunakan antarmuka web administrasi situs.]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Sistem database yang didukung</h4>
+    <p>ScholarWizdam saat ini hanya diuji pada MySQL dan PostgreSQL, meskipun sistem manajemen database lain yang didukung oleh <a href="http://adodb.org/" target="_blank">ADOdb</a> mungkin berfungsi (secara penuh atau sebagian). Laporan kompatibilitas dan/atau tambalan kode untuk DBMS alternatif dapat dikirimkan ke tim ScholarWizdam.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Langkah-Langkah Pra-Instalasi</h4>
+    <p>1. Berkas dan direktori berikut (beserta isinya) harus dapat ditulis:</p>
+    <ul>
+    	<li><code>config.inc.php</code> dapat ditulis (opsional): {$writable_config}</li>
+    	<li><code>public/</code> dapat ditulis: {$writable_public}</li>
+    	<li><code>cache/</code> dapat ditulis: {$writable_cache}</li>
+    	<li><code>cache/t_cache/</code> dapat ditulis: {$writable_templates_cache}</li>
+    	<li><code>cache/t_compile/</code> dapat ditulis: {$writable_templates_compile}</li>
+    	<li><code>cache/_db</code> dapat ditulis: {$writable_db_cache}</li>
+    </ul>
+    <p>2. Direktori untuk menyimpan berkas yang diunggah harus dibuat dan dapat ditulis (lihat "Pengaturan Berkas" di bawah).</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>Versi ScholarWizdam {$version}</h4>
+    <p>Terima kasih telah mengunduh <strong>ScholarWizdam</strong>. Sebelum melanjutkan, silahkan membaca <a href="{$baseUrl}/docs/README" target="_blank">README</a>. Berkas disertakan dalam perangkat lunak ini. Untuk informasi lebih lanjut tentang Sangia Publishing House dan perangkat lunak ini, silahkan kunjungi <a href="http://wizdam.sangia.org/" target="_blank">website Sangia Publishing House</a>. Jika Anda memiliki laporan bug atau butuh dukungan teknis mengenai ScholarWizdam, lihat <a href="http://forum.wizdam.sangia.org" target="_blank">forum dukungan</a> atau kunjungi SPH online <a href="https://github.com/wizdam/wizdam-lib#issues" target="_blank">Laporkan bug sistem</a>. Selain itu Anda dapat mengontak tim pengembang ScholarWizdam melalui <a href="mailto:wizdam.contact@sangia.org">wizdam.contact@sangia.org</a>.</p>
+    <p><strong>Sangat disarankan agar</strong> Anda memback up database Anda, direktori berkas, dan direktori instalasi ScholarWizdam sebelum melanjutkan.</p>
+    <p>Jika Anda sudah menjalankan <a href="http://www.php.net/features.safe-mode" target="_blank">PHP Safe Mode</a>, pastikan perintah waktu eksekusi maksimal di berkas konfigurasi php.ini diatur hingga batas tinggi. Jika batas ini atau batas lain (contoh: perintah Apache's "Timeout") telah tercapai dan proses upgrade terganggu, interfensi manual akan dibutuhkan.</p>]]></message>
+        
+	<message key="installer.localeSettingsInstructions"><![CDATA[Untuk melengkapi dukungan Unicode (UTF-8), pilih UTF-8 untuk semua pengaturan karakter set. Perhatikan bahwa dukungan ini membutuhkan server database MySQL >= 5.x atau PostgreSQL >= 8.x Perhatikan juga bahwa dukungan Unicode penuh membutuhkan PHP >= 7.4.0 dengan dukungan untuk <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> (secara default tersedia pada instalasi PHP terbaru). Anda mungkin akan menemui masalah saat menggunakan rangkaian karakter ini jika server Anda tidak memenuhi persyaratan.
+    <br /><br />
+    Server Anda sekarang support mbstring: <strong>{$supportsMBString}</strong>]]></message>
+    
+    <message key="installer.allowFileUploads"><![CDATA[Server anda saat ini mendukung unggah file: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[Server anda saat ini mendukung unggah file ukuran maksimum: <strong>{$maxFileUploadSize}</strong>]]></message>
+	<message key="installer.localeInstructions">Bahasa utama yang digunakan untuk sistem ini.</message>
+	<message key="installer.additionalLocalesInstructions">Centang bahasa tambahan yang support sistem ini.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Masukkan path name lengkap ke direktori untuk menyimpan file yang diunggah. Direktori ini seharusnya tidak bisa diakses melalui web secara langsung. <strong>Pastikan direktori ini ada dan dapat ditulis sebelum instalasi.</strong> Jendela path name seharusnya menggunakan tanda miring di depan, contoh "C:/myjournal/files".]]></message>
+	<message key="installer.databaseSettingsInstructions">ScholarWizdam membutuhkan akses ke database SQL untuk menyimpan datanya. Lihat persyaratan sistem di atas untuk daftar sistem database yang support. Di bawah ini, disediakan pengaturan untuk koneksi ke database.</message>
+	<message key="installer.installApplication">Install ScholarWizdam</message>
+	<message key="installer.upgradeApplication">Upgrade ScholarWizdam</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Peringatan:</strong> Jika instalasi gagal ditengah jalan, Anda harus menghapus database ScholarWizdam atau tabel yang sudah dibuat sebelum menginstal ulang database.]]></message>
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>PENTING!</h4>
+    <p>Installer tidak bisa secara otomatis menimpa file konfigurasi. Sebelum mencoba untuk menggunakan sistem, buka <tt>config.inc.php</tt> dalam text editor dan gantikan isinya dengan isi text field di bawah ini.</p>]]></message>
+
+	<message key="installer.manualSQLInstructions"><![CDATA[<h4>Instalasi Manual</h4>
+        <p>Pernyataan SQL untuk membuat skema database dan data awal ScholarWizdam ditampilkan di bawah ini. Perhatikan bahwa sistem akan tidak dapat digunakan hingga pernyataan ini telah dieksekusi secara manual. Anda juga akan harus mengatur secara manual file konfigurasi <tt>config.inc.php</tt>.</p>]]></message>
+
+	<message key="installer.installationComplete"><![CDATA[<p>Instalasi ScholarWizdam berhasil.</p>
+    <p>Untuk memulai, <a href="{$loginUrl}">login</a> dengan Nama Pengguna dan Kata Sandi Administrator Situs.</p>]]></message>
+
+	<message key="installer.upgradeComplete"><![CDATA[<p>Upgrade ScholarWizdam ke versi {$version} selesai dengan sukses.</p>
+    <p>Jangan lupa untuk mengelola pengaturan "installed" dalam file konfigurasi Anda config.inc.php.</p>]]></message>
+
+	<message key="installer.filesDir">Direktori untuk unggah</message>
+	<message key="installer.fileSettings">Pengaturan File</message>
+	<message key="installer.form.clientCharsetRequired">Klien karakter set harus.</message>
+	<message key="installer.form.databaseDriverRequired">Driver database harus dipilih.</message>
+	<message key="installer.form.databaseNameRequired">Nama database diperlukan.</message>
+	<message key="installer.form.emailRequired">Alamat email yang valid untuk akun administrator diperlukan.</message>
+	<message key="installer.form.encryptionRequired">Algoritma untuk enkripsi kata sandi harus dipilih.</message>
+	<message key="installer.form.filesDirRequired">Direktori untuk menyimpan file unggahan.</message>
+	<message key="installer.form.localeRequired">Bahasa harus dipilih.</message>
+	<message key="installer.form.passwordRequired">Kata Sandi untuk akun administrator diperlukan.</message>
+	<message key="installer.form.passwordsDoNotMatch">Kata Sandi administrator tersebut tidak cocok.</message>
+	<message key="installer.form.separateMultiple">Pisahkan beberapa nilai dengan koma.</message>
+	<message key="installer.form.usernameAlphaNumeric">Nama administrator hanya dapat berisi karakter alfanumeik, garis bawah, dan tanda hubung, dan harus dimulai dan diakhiri dengan karakter alfanumerik.</message>
+	<message key="installer.form.usernameRequired">Nama pengguna untuk akun administrator diperlukan.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>PERINGATAN: Versi PHP Anda saat ini tidak memenuhi persyaratan minimum untuk instalasi. Disarankan untuk memperbaharui menjadi versi PHP terbaru.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">Kesalahan terjadi pada saat instalasi</message>
+	<message key="installer.installerSQLStatements">Laporan SQL untuk instalasi</message>
+	<message key="installer.installFileError"><![CDATA[File instalasi <tt>dbscripts/xml/install.xml</tt> Tidak ada atau tidak dapat terbaca.]]></message>
+	<message key="installer.installFilesDirError">Direktori khusus untuk file unggah tidak ada atau tidak dapat diisi</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Kesalahan penguraian file instalasi database<tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[Kesalaha penguraian file template email<tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Bahasa</message>
+	<message key="installer.locale.maybeIncomplete">Bahasa yang ditandai mungkin tidak lengkap.</message>
+	<message key="installer.localeSettings">Setting Bahasa</message>
+	<message key="installer.oaiSettings">Setting OAI</message>
+	<message key="installer.manualInstall">Instal Manual</message>
+	<message key="installer.miscSettings">Pengaturan Lain</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[Repositori yang menyimpan OAI identifier untuk memudahkan metadata harvesting situs Anda oleh <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a> Protokol untuk Metadata Harvesting.]]></message>
+	<message key="installer.oaiRepositoryId">Repositori identifier OAI</message>
+	<message key="installer.pleaseUpgradeAfterManualInstall">Silahkan jalankan alat upgrade setelah Anda menginstal database Anda. Jalankan 'php tools/upgrade.php upgrade' dari dalam direktori instalasi utama untuk upgrade ini.</message>
+	<message key="installer.publicFilesDirError">Direktori file umum tidak ada atau tidak dapat diisi.</message>
+	<message key="installer.releaseNotes">Catatan Release</message>
+	<message key="installer.securitySettings">Security Setting</message>
+	<message key="installer.skipFilesDir">Jangan membuat sub direktori (hanya berguna untuk instalasi manual). </message>
+	<message key="installer.manualUpgrade">Upgrade Manual</message>
+	<message key="installer.beacon">Beacon</message>
+	<message key="installer.beacon.enable">Berikan ID situs unik dan URL berbasiskan OAI ke Sangia Publishing House untuk tujuan statistik dan peringatan keamanan.</message>
+	
+	<!-- Installation upgrade warnings -->
+    <message key="site.upgradeAvailable.admin"><![CDATA[Versi baru ScholarWizdam tersedia! Anda saat ini menggunakan ScholarWizdam {$currentVersion}. Versi terbaru adalah ScholarWizdam {$latestVersion}. Silakan kunjungi <a href="http://wizdam.sangia.org/download" target="_new">halaman ini</a> untuk mengunduh versi terbaru dan menemukan petunjuk peningkatan.]]></message>
+    <message key="site.upgradeAvailable.manager"><![CDATA[Versi baru ScholarWizdam tersedia! Anda saat ini menggunakan ScholarWizdam {$currentVersion}. Versi terbaru adalah ScholarWizdam {$latestVersion}. Silakan hubungi Administrator Situs Anda ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) untuk memberi tahu mereka tentang rilis baru ini. Informasi lebih lanjut dapat ditemukan <a href="http://wizdam.sangia.org/download" target="_new">di sini</a>.]]></message>
+</locale>

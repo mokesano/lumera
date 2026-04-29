@@ -1,0 +1,39 @@
+/**
+ * Lazyload css
+ *
+ * theme/[nama tema]/css/lazyload.css
+ * bagian dari 
+ * theme/[nama tema]/js/lazyload.js
+ *
+ * @subpackage js
+ *
+ */
+body {
+    font-family: Arial, sans-serif;
+}
+
+.u-container, .main-contents, .live-area, .issue-contents {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 4s ease-out, transform 4s ease-out;
+}
+
+.content-loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.c-card__image img {
+    width: 100%;
+    height: auto;
+    transition: opacity 4s ease-out;
+}
+
+.lazyload {
+    opacity: 0;
+}
+
+.lazyloaded {
+    opacity: 1;
+}
+

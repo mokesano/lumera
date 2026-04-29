@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/mk_MK/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the mk_MK (Македонски) locale.
+  *
+  -->
+
+<locale name="mk_MK" full_name="Македонски">
+	<message key="installer.additionalLocales">Дополнителни локации</message>
+	<message key="installer.administratorAccount">Администраторска сметка</message>
+	<message key="installer.administratorAccountInstructions">Оваа корисничка сметка ќе стане администратор на страницата и ќе има целосен пристап до системот. Дополнителни кориснички сметки може да се креираат по инсталацијата.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="pkp_form_error formError">НЕ</span>]]></message>
+	<message key="installer.checkYes">Да</message>
+	<message key="installer.clientCharset">Клиентски сет на знаци</message>
+	<message key="installer.clientCharsetInstructions">Кодирањето што се користи за податоци испратени и примени од прелистувачите.</message>
+	<message key="installer.configFileError"><![CDATA[Конфигурациската датотека <tt>config.inc.php</tt> не постои или не може да се чита.]]></message>
+	<message key="installer.connectionCharset">Сет на знаци за поврзување</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[Кодирањето што се користи за податоци испратени до и примени од базата на податоци. Ова треба да биде исто како клиентскиот сет на знаци. Забележете дека оваа функционалност е поддржана само со MySQL >= 5.x или PostgreSQL >= 8.x. Изберете "Не е применливо" ако вашиот сервер за база на податоци не ги исполнува овие барања.]]></message>
+	<message key="installer.contentsOfConfigFile">Содржина на конфигурациската датотека</message>
+	<message key="installer.createDatabase">Креирај нова база на податоци</message>
+	<message key="installer.createDatabaseInstructions">За да ја користите оваа опција, вашиот систем за база на податоци мора да поддржува далечинско креирање на база на податоци и вашата корисничка сметка мора да има соодветни дозволи за креирање нови бази на податоци. Ако инсталацијата не успее со оваа избрана опција, рачно креирајте ја базата на податоци на вашиот сервер и повторно стартувајте го инсталерот со оваа опција оневозможена.</message>
+	<message key="installer.databaseCharset">Сет на знаци на базата на податоци</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[Кодирањето што се користи за податоци складирани во базата на податоци. Забележете дека оваа функционалност е поддржана само со MySQL >= 5.x или PostgreSQL >= 8.x. Изберете "Не е применливо" ако вашиот сервер за база на податоци не ги исполнува овие барања.]]></message>
+	<message key="installer.databaseDriver">Возач за база на податоци</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>Системот моментално поддржува само MySQL и PostgreSQL. Во случај да не можете да изберете еден, контактирајте го вашиот систем администратор за да се уверите дека вашиот сервер ги има потребните PHP екстензии.</strong>]]></message>
+	<message key="installer.databaseHost">Домаќин</message>
+	<message key="installer.databaseHostInstructions">Оставете го името на домаќинот празно за да се поврзете користејќи домен сокети наместо преку TCP/IP. Ова не е потребно со MySQL, кој автоматски ќе користи сокети ако се внесе "localhost", но е потребно со некои други сервери за бази на податоци како PostgreSQL.</message>
+	<message key="installer.databaseName">Име на база на податоци</message>
+	<message key="installer.databasePassword">Лозинка</message>
+	<message key="installer.databaseSettings">Подесувања на базата на податоци</message>
+	<message key="installer.databaseUsername">Корисничко име</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Шифрирањето на лозинка користи <strong>bcrypt</strong> — безбеден алгоритам за хаширање што е стандард во индустријата. Не е потребна дополнителна конфигурација.]]></message>
+	<message key="installer.encryption">Алгоритам за шифрирање на лозинка</message>
+	<message key="installer.allowFileUploads"><![CDATA[Вашиот сервер моментално дозволува прикачување на датотеки: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[Вашиот сервер моментално дозволува максимална големина на датотеки за прикачување од: <strong>{$maxFileUploadSize}</strong>]]></message>
+
+	<!-- Installer -->
+	<message key="installer.appInstallation">Инсталација на Виздам Уредувачки Системи</message>
+	<message key="installer.appUpgrade">Надградба на Виздам Уредувачки Системи</message>
+	
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>Виздам Уредувачки Системи Верзија {$version}</h4>
+
+<p>Ви благодариме што го преземавте <strong>Виздам Уредувачки Системи</strong> од Сангија Паблишинг Хаус. Пред да продолжите, прочитајте ја <a href="{$baseUrl}/docs/README" target="_blank">README</a> датотеката вклучена во овој софтвер. За повеќе информации за Сангија Паблишинг Хаус (SPH) и неговите софтверски проекти, посетете ја <a href="http://wizdam.sangia.org/" target="_blank">SPH веб страницата</a>. Ако имате пријави за грешки или прашања за техничка поддршка за Виздам Уредувачки Системи, погледнете го <a href="http://forum.wizdam.sangia.org" target="_blank">форумот за поддршка</a> или посетете го SPH онлајн <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">системот за пријавување грешки</a>. Иако форумот за поддршка е префериран метод за контакт, исто така можете да испратите е-пошта до тимот на <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[Шифрирањето на лозинка користи <strong>bcrypt</strong> — безбеден алгоритам за хаширање што е стандард во индустријата. Не е потребна дополнителна конфигурација.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Надградба</h4>
+
+<p>Ако вршите надградба на постоечка инсталација на Виздам Уредувачки Системи или од претходни верзии, <a href="{$upgradeUrl}">кликнете овде</a> за да продолжите.</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Препорачани системски барања</h4>
+
+<ul>
+	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; моментално користите PHP {$phpVersion}{$wrongPhpText}</li>
+	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x или <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (вклучувајќи PostgreSQL 8.x)</li>
+	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x или >= 2.0.4x или Microsoft IIS 6</li>
+	<li>Оперативен систем: Било кој оперативен систем кој ги поддржува горенаведените софтвери, вклучувајќи <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+</ul>
+
+<p>Бидејќи SPH нема ресурси да тестира секоја можна комбинација на софтверски верзии и платформи, не се гарантира правилно функционирање или поддршка.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>Промена на овие подесувања може да се направи по инсталацијата со уредување на датотеката <tt>config.inc.php</tt> во основниот директориум на Виздам Уредувачки Системи, или со користење на веб интерфејсот за администрација на страницата.</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Поддржани системи за бази на податоци</h4>
+
+<p>Виздам Уредувачки Системи моментално е тестиран само на MySQL и PostgreSQL, иако други системи за управување со бази на податоци поддржани од <a href="http://adodb.org/" target="_blank">ADOdb</a> може да работат (целосно или делумно). Извештаи за компатибилност и/или кодни закрпи за алтернативни DBMS може да се испратат до тимот на Виздам Уредувачки Системи.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Пред-инсталациски чекори</h4>
+
+<p>1. Следниве датотеки и директориуми (и нивните содржини) мора да бидат овозможени за запишување:</p>
+<ul>
+	<li><tt>config.inc.php</tt> може да запишува (опционално): {$writable_config}</li>
+	<li><tt>public/</tt> може да запишува: {$writable_public}</li>
+	<li><tt>cache/</tt> може да запишува: {$writable_cache}</li>
+	<li><tt>cache/t_cache/</tt> може да запишува: {$writable_templates_cache}</li>
+	<li><tt>cache/t_compile/</tt> може да запишува: {$writable_templates_compile}</li>
+	<li><tt>cache/_db</tt> може да запишува: {$writable_db_cache}</li>
+</ul>
+
+<p>2. Директориум за чување на прикачени датотеки мора да се креира и да биде овозможен за запишување (видете "Подесувања на датотеки" подолу).</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>Виздам Уредувачки Системи Верзија {$version}</h4>
+
+<p>Ви благодариме што го преземавте <strong>Виздам Уредувачки Системи</strong> од Сангија Паблишинг Хаус. Пред да продолжите, прочитајте ги <a href="{$baseUrl}/docs/README" target="_blank">README</a> и <a href="{$baseUrl}/docs/UPGRADE" target="_blank">UPGRADE</a> датотеките вклучени во овој софтвер. За повеќе информации за Сангија Паблишинг Хаус (SPH) и неговите софтверски проекти, посетете ја <a href="http://wizdam.sangia.org/" target="_blank">SPH веб страницата</a>. Ако имате пријави за грешки или прашања за техничка поддршка за Виздам Уредувачки Системи, погледнете го <a href="http://forum.wizdam.sangia.org" target="_blank">форумот за поддршка</a> или посетете го SPH онлајн <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">системот за пријавување грешки</a>. Иако форумот за поддршка е префериран метод за контакт, исто така можете да испратите е-пошта до тимот на <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+<p><strong>Строго се препорачува</strong> да направите резервна копија на вашата база на податоци, директориумот со датотеки и директориумот за инсталација на Виздам Уредувачки Системи пред да продолжите.</p>
+<p>Ако работите во <a href="http://www.php.net/features.safe-mode" target="_blank">PHP Safe Mode</a>, осигурете се дека директивата max_execution_time во вашата php.ini конфигурациска датотека е поставена на висока граница. Ако ова или било кое друго временско ограничување (на пр. Apache-овата "Timeout" директива) се достигне и процесот на надградба се прекине, ќе биде потребна рачна интервенција.</p>]]></message>
+	<message key="installer.localeSettingsInstructions"><![CDATA[За целосна Unicode (UTF-8) поддршка, изберете UTF-8 за сите подесувања на сетови на знаци. Забележете дека оваа поддршка моментално бара MySQL >= 5.x или PostgreSQL >= 8.x сервер за бази на податоци. Исто така забележете дека целосната Unicode поддршка бара PHP >= 7.4.0 компајлиран со поддршка за <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> библиотеката (овозможена стандардно во најновите PHP инсталации). Може да имате проблеми со користење на проширени сетови на знаци ако вашиот сервер не ги исполнува овие барања.
+<br /><br />
+Вашиот сервер моментално поддржува mbstring: <strong>{$supportsMBString}</strong>]]></message>
+	<message key="installer.localeInstructions">Примарниот јазик што се користи за овој систем. Ве молиме консултирајте се со документацијата на Виздам Уредувачки Системи ако сте заинтересирани за поддршка на јазици кои не се наведени овде.</message>
+	<message key="installer.additionalLocalesInstructions">Изберете дополнителни јазици што сакате да ги поддржува овој систем. Овие јазици ќе бидат достапни за употреба од списанијата хостирани на страницата. Дополнителни јазици може да се инсталираат во секое време од интерфејсот за администрација на страницата.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Внесете ја целосната патека до постоечки директориум каде прикачените датотеки треба да се чуваат. Овој директориум не треба да биде директно достапен преку веб. <strong>Ве молиме осигурете се дека овој директориум постои и може да запишува пред инсталацијата.</strong> Windows имињата на патеки треба да користат прави коси црти, на пр. "C:/myjournal/files".]]></message>
+	<message key="installer.databaseSettingsInstructions">Виздам Уредувачки Системи бара пристап до SQL база на податоци за складирање на своите податоци. Погледнете ги системските барања погоре за листа на поддржани бази на податоци. Во полињата подолу, обезбедете ги подесувањата што ќе се користат за поврзување со базата на податоци.</message>
+	<message key="installer.installApplication">Инсталирај Виздам Уредувачки Системи</message>
+	<message key="installer.upgradeApplication">Надгради Виздам Уредувачки Системи</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Предупредување:</strong> Ако инсталацијата не успее делумно за време на инсталацијата на базата на податоци, можеби ќе треба да ја отфрлите вашата база на податоци на Виздам Уредувачки Системи или табелите во базата на податоци пред да се обидете повторно да ја инсталирате базата на податоци.]]></message>
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>ВАЖНО!</h4>
+<p>Инсталерот не може автоматски да ја презапише конфигурациската датотека. Пред да се обидете да го користите системот, отворете ја <tt>config.inc.php</tt> во соодветен уредувач на текст и заменете ја нејзината содржина со содржината на полето за текст подолу.</p>]]></message>
+	<message key="installer.installationComplete"><![CDATA[<p>Инсталацијата на Виздам Уредувачки Системи заврши успешно.</p>
+<p>За да започнете со користење на системот, <a href="{$loginUrl}">најавете се</a> со корисничкото име и лозинка внесени на претходната страница.</p>
+<p>Ако сакате да добивате новости и надградби, можете:</p>
+<ol>
+	<li><a href="http://wizdam.sangia.org/wizdam/register" target="_new">Регистрирајте го</a> вашето списание, конференција или собирач и добивајте ажурирања за софтверски надградби, безбедносни закрпи и повеќе.</li>
+	<li>Придружете се на нашата <a href="http://wizdam.sangia.org/informed" target="_new">листа за дискусија</a> за Виздам Уредувачки Системи.</li>
+	<li>Претплатете се на <a href="http://wizdam.sangia.org/blog" target="_new">SPH блогот</a> <a href="http://wizdam.sangia.org/blog/feed" target="_new">RSS доводот</a>.</li>
+</ol>
+<p>Ако имате прашања или коментари, посетете го <a href="http://forum.wizdam.sangia.org" target="_new">форумот за поддршка</a>.</p>]]></message>
+	<message key="installer.upgradeComplete"><![CDATA[<p>Надградбата на Виздам Уредувачки Системи на верзија {$version} заврши успешно.</p>
+<p>Не заборавајте да го поставите "installed" подесувањето во вашата config.inc.php конфигурациска датотека назад на <em>On</em>.</p>
+<p>Ако сè уште не сте регистрирани и сакате да добивате новости и надградби, <strong>регистрирајте се на <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> Ако имате прашања или коментари, посетете го <a href="http://forum.wizdam.sangia.org" target="_new">форумот за поддршка</a>.</p>]]></message>
+
+	<message key="installer.filesDir">Директориум за прикачување</message>
+	<message key="installer.fileSettings">Подесувања на датотеки</message>
+	<message key="installer.form.clientCharsetRequired">Мора да се избере клиентски сет на знаци.</message>
+	<message key="installer.form.databaseDriverRequired">Мора да се избере возач за база на податоци.</message>
+	<message key="installer.form.databaseNameRequired">Името на базата на податоци е потребно.</message>
+	<message key="installer.form.emailRequired">Потребна е валидна е-пошта за администраторската сметка.</message>
+	<message key="installer.form.encryptionRequired">Мора да се избере алгоритам за шифрирање на корисничките лозинки.</message>
+	<message key="installer.form.filesDirRequired">Потребен е директориум за чување на прикачени датотеки.</message>
+	<message key="installer.form.localeRequired">Мора да се избере локација.</message>
+	<message key="installer.form.passwordRequired">Потребна е лозинка за администраторската сметка.</message>
+	<message key="installer.form.passwordsDoNotMatch">Администраторските лозинки не се совпаѓаат.</message>
+	<message key="installer.form.separateMultiple">Одделете повеќе вредности со запирки</message>
+	<message key="installer.form.usernameAlphaNumeric">Администраторското корисничко име може да содржи само алфанумерички знаци, долни црти и цртички, и мора да започнува и завршува со алфанумерички знак.</message>
+	<message key="installer.form.usernameRequired">Потребно е корисничко име за администраторската сметка.</message>
+	<message key="installer.installErrorsOccurred">Се појавија грешки за време на инсталацијата</message>
+	<message key="installer.installerSQLStatements">SQL изјави за инсталација</message>
+	<message key="installer.installFileError"><![CDATA[Инсталациската датотека <tt>dbscripts/xml/install.xml</tt> не постои или не може да се чита.]]></message>
+	<message key="installer.installFilesDirError">Наведениот директориум за прикачени датотеки не постои или не може да запишува.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Грешка при парсирање на инсталациската датотека за база на податоци <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[Грешка при парсирање на датотеката за шаблон на е-пошта <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[Грешка при парсирање на конфигурациската датотека за филтер <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Локација</message>
+	<message key="installer.locale.maybeIncomplete">Означените локации може да се нецелосни.</message>
+	<message key="installer.localeSettings">Подесувања на локација</message>
+	<message key="installer.miscSettings">Различни подесувања</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[Уникатен идентификатор што се користи за идентификување на записите на метаподатоци индексирани од оваа страница користејќи го <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a> протоколот за собирање метаподатоци.]]></message>
+	<message key="installer.oaiRepositoryId">OAI идентификатор на складиштето</message>
+	<message key="installer.oaiSettings">OAI подесувања</message>
+	<message key="installer.publicFilesDirError">Директориумот за јавни датотеки не постои или не може да запишува.</message>
+	<message key="installer.releaseNotes">Белешки за изданието</message>
+	<message key="installer.securitySettings">Безбедносни подесувања</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>ПРЕДУПРЕДУВАЊЕ:</strong> Вашата моментална верзија на PHP не ги исполнува минималните барања за инсталација. Се препорачува да надградите на понова верзија на PHP.]]></message>
+	<message key="installer.beacon">Бикон</message>
+	<message key="installer.beacon.enable">Обезбедете единствен ID на страницата и OAI основна URL адреса до Сангија Паблишинг Хаус само за статистички цели и безбедносни известувања.</message>
+	
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[Достапна е нова верзија на Виздам Уредувачки Системи! Моментално ја користите Виздам Уредувачки Системи {$currentVersion}. Најновата верзија е Виздам Уредувачки Системи {$latestVersion}. Посетете ја <a href="http://wizdam.sangia.org/download" target="_new">оваа страница</a> за да ја преземете најновата верзија и да ги најдете упатствата за надградба.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[Достапна е нова верзија на Виздам Уредувачки Системи! Моментално ја користите Виздам Уредувачки Системи {$currentVersion}. Најновата верзија е Виздам Уредувачки Системи {$latestVersion}. Ве молиме контактирајте го вашиот администратор на страницата ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) за да ги известите за ова ново издание. Повеќе информации може да најдете <a href="http://wizdam.sangia.org/download" target="_new">тука</a>.]]></message>
+</locale>

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/vi_VN/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the vi_VN (Tiếng Việt) locale.
+  *
+  -->
+
+<locale name="vi_VN" full_name="Tiếng Việt">
+	<message key="installer.additionalLocales">Các ngôn ngữ khác</message>
+	<message key="installer.administratorAccount">Tài khoản của Người quản trị </message>
+	<message key="installer.administratorAccountInstructions">Tài khoản người dùng này sẽ trở thành người quản trị website và có quyền truy cập toàn bộ hệ thống. Các tài khoản người dùng khác có thể thêm sau khi cài đặt.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="form_error formError">Sai</span>]]></message>
+	<message key="installer.checkYes">Đúng</message>
+	<message key="installer.clientCharset">Bộ mã ký tự trên máy khách</message>
+	<message key="installer.clientCharsetInstructions">Bộ mã ký tự dùng cho dữ liệu gửi và nhận từ các trình duyệt</message>
+	<message key="installer.configFileError"><![CDATA[File cấu hình <tt>config.inc.php</tt> không tồn tại hoặc không đọc được.]]></message>
+	<message key="installer.connectionCharset">Bộ mã ký tự kết nối</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[Kiểu mã hoá dùng cho dữ liệu nhận được và gửi đi từ cơ sở dữ liệu này. Kiểu mã hoá này nên giống mã hoá trình duyệt người dùng sử dụng. Lưu ý rằng chức năng này cho được hỗ trợ với phiên bản MySQL >= 4.1.1 hoặc PostgreSQL >= 7.1. Chọn "Không áp dụng" nếu máy chủ cơ sở dữ liệu không đáp ứng yêu cầu này.]]></message>
+	<message key="installer.contentsOfConfigFile">Nội dung của file cấu hình</message>
+	<message key="installer.createDatabase">Tạo CSDL mới</message>
+	<message key="installer.createDatabaseInstructions">Để sử dụng lựa chọn này hệ CSDL của quý vị phải hỗ trợ việc tạo CSDL từ xa và tài khoản của quý vị phải có đủ quyền để tạo các CSDL mới. Nếu việc cài đặt không thành công với lựa chọn này, hãy tự tạo bằng tay CSDL trên máy chủ của quý vị và chạy bộ cài đặt và vô hiệu lựa chọn này.</message>
+	<message key="installer.databaseCharset">Bộ mã ký tự của CSDL</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[Kiểu mã hoá dùng cho dữ liệu lưu trong cơ sở dữ liệu này. Kiểu mã hoá này nên giống mã hoá trình duyệt người dùng sử dụng. Lưu ý rằng chức năng này cho được hỗ trợ với phiên bản MySQL >= 4.1.1 hoặc PostgreSQL >= 7.1. Chọn "Không áp dụng" nếu máy chủ cơ sở dữ liệu không đáp ứng yêu cầu này.]]></message>
+	<message key="installer.databaseDriver">Driver của CSDL</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>Hệ thống hiện chỉ hỗ trợ MySQL và PostgreSQL. Trong trường hợp bạn không thể chọn một trong hai, hãy liên hệ với quản trị viên hệ thống của bạn để đảm bảo máy chủ của bạn có các tiện ích mở rộng PHP cần thiết.</strong>]]></message>
+	<message key="installer.databaseHost">Máy chủ</message>
+	<message key="installer.databaseHostInstructions">Để tên máy chủ trông để kết nối sử dụng domain sockets thay vì qua giao thức TCP/IP. Điều này không cần thiết đối với MySQL, vốn tự động sử dụng sockets nếu máy chủ là "localhost", nhưng cần thiết đối với các máy chủ CSDL khác như PostgreSQL.</message>
+	<message key="installer.databaseName">Tên CSDL</message>
+	<message key="installer.databasePassword">Mật khẩu</message>
+	<message key="installer.databaseSettings">Tham số cho CSDL</message>
+	<message key="installer.databaseUsername">Bí đanh</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Bcrypt được áp dụng một cách an toàn như thuật toán mã hóa mật khẩu tiêu chuẩn theo các tiêu chuẩn của ScholarWizdam.]]></message>
+	<message key="installer.encryption">Thuật toán mã hóa mật khẩu</message>
+
+	<!-- Installer -->
+	<message key="installer.appInstallation">Cài đặt ScholarWizdam</message>
+	<message key="installer.appUpgrade">Nâng cấp ScholarWizdam</message>
+
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>Phiên bản ScholarWizdam {$version}</h4>
+    <p>Cảm ơn quý vị đã tải xuống <strong>ScholarWizdam</strong> của Sangia Publishing House. Trước khi tiếp tục, xin vui lòng đọc tài liệu <a href="{$baseUrl}/docs/README" target="_blank">README</a> đi kèm phần mềm này. Để biết thêm thông tin về Sangia Publishing House (SPH) và các dự án phần mềm của tổ chức này, vui lòng truy cập <a href="http://wizdam.sangia.org/" target="_blank">trang web Sangia Publishing House</a>. Nếu quý vị phát hiện lỗi hoặc cần hỗ trợ kỹ thuật về ScholarWizdam, hãy xem <a href="http://forum.wizdam.sangia.org" target="_blank">Diễn đàn Hỗ trợ</a> hoặc truy cập <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">hệ thống báo lỗi trực tuyến</a> của SPH. Mặc dù diễn đàn hỗ trợ là phương thức liên lạc được ưu tiên, quý vị cũng có thể gửi email đến nhóm phát triển tại <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[Mã hóa mật khẩu sử dụng <strong>bcrypt</strong> — một thuật toán băm an toàn theo tiêu chuẩn ngành. Không yêu cầu cấu hình thêm.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Nâng cấp</h4>
+    <p>Nếu quý vị đang nâng cấp một bản cài đặt ScholarWizdam hiện có hoặc từ OJS 2.x, <a href="{$upgradeUrl}">nhấp vào đây</a> để tiếp tục. Để nâng cấp từ OJS 3.x (đang trong quá trình phát triển).</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Yêu cầu hệ thống được khuyến nghị</h4>
+    <ul>
+    	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; bạn hiện đang sử dụng PHP {$phpVersion}{$wrongPhpText}</li>
+    	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x hoặc <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (bao gồm PostgreSQL 8.x)</li>
+    	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x hoặc >= 2.0.4x hoặc Microsoft IIS 6</li>
+    	<li>Hệ điều hành: Bất kỳ hệ điều hành nào hỗ trợ các phần mềm trên, bao gồm <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+    </ul>
+    <p>Vì SPH không có nguồn lực để kiểm tra mọi tổ hợp phiên bản phần mềm và nền tảng, không có bảo đảm về hoạt động chính xác hoặc hỗ trợ ngụ ý.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[Những thay đổi đối với các cài đặt này có thể được thực hiện sau khi cài đặt bằng cách chỉnh sửa tệp <tt>config.inc.php</tt> trong thư mục gốc của ScholarWizdam, hoặc sử dụng giao diện web quản trị trang web.]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Các hệ thống cơ sở dữ liệu được hỗ trợ</h4>
+    <p>ScholarWizdam hiện chỉ mới được kiểm thử trên MySQL và PostgreSQL, mặc dù các hệ quản trị cơ sở dữ liệu khác được hỗ trợ bởi <a href="http://adodb.org/" target="_blank">ADOdb</a> có thể hoạt động (toàn bộ hoặc một phần). Báo cáo tương thích và/hoặc mã vá cho các DBMS thay thế có thể được gửi đến nhóm ScholarWizdam.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Các bước trước khi cài đặt</h4>
+    <p>1. Các tệp và thư mục sau đây (và nội dung của chúng) phải được thiết lập ở trạng thái có thể ghi:</p>
+    <ul>
+    	<li><tt>config.inc.php</tt> có thể ghi (tùy chọn): {$writable_config}</li>
+    	<li><tt>public/</tt> có thể ghi: {$writable_public}</li>
+    	<li><tt>cache/</tt> có thể ghi: {$writable_cache}</li>
+    	<li><tt>cache/t_cache/</tt> có thể ghi: {$writable_templates_cache}</li>
+    	<li><tt>cache/t_compile/</tt> có thể ghi: {$writable_templates_compile}</li>
+    	<li><tt>cache/_db</tt> có thể ghi: {$writable_db_cache}</li>
+    </ul>
+    <p>2. Phải tạo một thư mục để lưu trữ các tệp đã tải lên và thiết lập thư mục đó ở trạng thái có thể ghi (xem "Cài đặt Tệp" bên dưới).</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>Phiên bản ScholarWizdam {$version}</h4>
+	    <p>Cảm ơn đã tải về Phần mềm Tạp chí Mở <strong>ScholarWizdam</strong> của Dự án Tri thức Công cộng (Sangia Publishing House). Trước khi tiếp tục, vui lòng đọc các tài liệu <a href="{$baseUrl}/docs/README">Giới thiệu</a> và <a href="{$baseUrl}/docs/UPGRADE">Nâng cấp </a> đi kèm với phần mềm này. Để biết thêm thông tin về Dự án Tri thức Công cộng và các phần mềm của dự án, vui lòng ghé thăm <a href="http://wizdam.sangia.org/" target="_blank">Website của Sangia Publishing House</a>. Nếu quý vị phát hiện lỗi hoặc có yêu cầu hỗ trợ kỹ thuật, xem <a href="http://forum.wizdam.sangia.org">Diễn đàn hỗ trợ</a> hoặc mở <a href="https://github.com/wizdam/wizdam-lib#issues" target="_blank">hệ thống báo lỗi trực tuyến</a> của Sangia Publishing House. Mặc dù tham khảo diễn đàn hỗ trợ là cách tốt nhất, quý vị vẫn có thể liên hệ với nhóm phát triển phần mềm này ở địa chỉ email: <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+	    <p>Chúng tôi <strong>hết sức khuyến nghị</strong> rằng quý vị sao lưu CSDL, thư mục file và thư mục cài đặt ScholarWizdam trước khi tiếp tục.</p>
+	    <p>Nếu máy chủ của quý vị chạy ở chế độ <a href="http://www.php.net/features.safe-mode" target="_blank">PHP Safe Mode</a>, vui lòng đảm bảo rằng chỉ thị max_execution_time trong file cấu hình php.ini được đặt ở giới hạn cao. Nếu chỉ số đạt tới giới hạn này hoặc bất kỳ giới hạn thời gian nào ( (v.d. chỉ thị "Timeout" Apache) và quá trình nâng cấp bị gián đoạn, quý vị sẽ cần phải can thiệp bằng tay.</p>]]></message>
+	
+	<message key="installer.installApplication">Cài đặt phần mềm ScholarWizdam</message>
+	<message key="installer.upgradeApplication">Nâng cấp phần mềm ScholarWizdam</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Cảnh báo:</strong> Nếu cài đặt CSDL thất bại giữa chừng, quý vị có thể cần bỏ CSDL ScholarWizdam hoặc các bảng trong CSDL trước khi cài đặt lại CSDL.]]></message>
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>QUAN TRỌNG!</h4>
+	    <p>Bộ cài đặt không thể tự động ghi đè lên file cấu hình. Trước khi thử sử dụng phần mềm, vui lòng mở file <tt>config.inc.php</tt> bằng một phần mềm soạn thảo văn bản thô (text) phù hợp và thay thế nội dung của file bằng nội dung sau đây.</p>]]></message>
+
+	<message key="installer.installationComplete"><![CDATA[<p>Cài đặt phần mềm ScholarWizdam đã hoàn thành.</p>
+	    <p>Để bắt đầu sử dụng phần mềm, hãy <a href="{$loginUrl}">đăng nhập</a> bằng bí danh và mật khẩu đã khai báo ở trang trước.</p>
+	    <p>Nếu quý vị muốn nhận được tin tức và cập nhật, <strong>vui lòng đăng ký tại <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> Nếu quý vị có câu hỏi hoặc bình luận, vui lòng ghé thăm <a href="http://forum.wizdam.sangia.org" target="_new">diễn đàn hỗ trợ</a>.</p>]]></message>
+	    
+	<message key="installer.upgradeComplete"><![CDATA[<p>Nâng cấp phần mềm ScholarWizdam lên phiên bản {$version} đã thành công.</p>
+	    <p>Đừng quên chuyển tham số "installed" trong file config.inc.php trở về <em>On</em>.</p>
+	    <p>Nếu quý vị chưa đăng ký và muốn nhận tin tức và cập nhật, <strong> vui lòng đăng ký tại <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> Nếu quý vị có câu hỏi hoặc bình luận, vui lòng ghé thăm <a href="http://forum.wizdam.sangia.org" target="_new">diễn đàn hỗ trợ</a>.</p>]]></message>
+
+	<message key="installer.localeSettingsInstructions"><![CDATA[Để hỗ trợ toàn toàn đối với Unicode (UTF-8), lựa chọn UTF-8 cho tất cả các cài đặt bộ mã ký tự (character set). Lưu ý hỗ trợ này đòi hỏi phải có phiên bản phần mềm CSDL MySQL >= 4.1.1 hoặc PostgreSQL >= 7.1. Cũng xin lưu ý rằng hỗ trợ Unicode hoàn toàn cần có phiên bản PHP >= 7.4.0 được biên dịch với <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> library (được kích hoạt sẵn trong các bộ cài đặt PHP). Quý vị có thể gặp phải lỗi khi sử dụng các bộ mã ký tự nếu máy chủ của quý vị không đáp ứng những yêu cầu này.
+        <br /><br />
+        Máy chủ của quý vị hiện có hỗ trợ mbstring: <strong>{$supportsMBString}</strong>]]></message>
+        
+	<message key="installer.localeInstructions">Ngôn ngữ chủ đạo dùng cho phần mềm này. Vui lòng tham khảo tài liệu hướng dẫn ScholarWizdam nến quý vị quan tâm tới việc hỗ trợ các ngôn ngữ khác không liệt kê ở đây.</message>
+	<message key="installer.additionalLocalesInstructions">Lựa chọn bất kỳ ngôn ngữ nào khác sẽ hỗ trợ trong phần mềm này. Những ngôn ngữ được lựa chọn sẽ được dùng cho các tạp chí đặt trên website này. Các ngôn ngữ bổ sung có thể được cài đặt bất kỳ lúc nào trên giao diện quản trị website.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Nhập đường dẫn đầy đủ dẫn tới một thư mục đã có sẵn dùng để lưu giữ các file được tải lên. Thư mục này không nên là thư mục truy cập được trực tiếp từ web. <strong>Vui lòng đảm bảo rằng thư mục này có sẵn và ghi được trước khi cài đặt.</strong> Trong hệ điều hành Windows, đường dẫn cần sử dụng dấu "/", v.d. "C:/myjournal/files".]]></message>
+
+	<message key="installer.databaseSettingsInstructions">Phần mềm ScholarWizdam cần truy cập cơ sở dữ liệu SQL để lưu dữ liệu. Xem yêu cầu về hệ thống trên đây để biết danh mục các cơ sở dữ liệu được hỗ trợ. Nhập vào các trường dưới đây dùng để kết nối với cơ sở dữ liệu.</message>
+	<message key="installer.allowFileUploads"><![CDATA[Máy chủ của bạn hiện cho phép tải tệp lên: <strong>{$allowFileUploads}</strong>]]></message>
+
+    <message key="installer.maxFileUploadSize"><![CDATA[Máy chủ của bạn hiện cho phép kích thước tải tệp lên tối đa là: <strong>{$maxFileUploadSize}</strong>]]></message>
+
+	<message key="installer.filesDir">Thư mục cho các file tải lên</message>
+	<message key="installer.fileSettings">Tham số cho file</message>
+	<message key="installer.form.clientCharsetRequired">Phải lựa chọn một bộ mã ký tự cho trình duyệt.</message>
+	<message key="installer.form.databaseDriverRequired">Phải lựa chọn driver cho CSDL.</message>
+	<message key="installer.form.databaseNameRequired">Phải có tên của CSDL.</message>
+	<message key="installer.form.emailRequired">Phải có địa chỉ email hợp lệ cho tài khoản quản trị.</message>
+	<message key="installer.form.encryptionRequired">Phải lựa chọn thuật toán mã hóa mật khẩu.</message>
+	<message key="installer.form.filesDirRequired">Phải có thư mục lưu giữ các file được tải lên.</message>
+	<message key="installer.form.localeRequired">Phải lựa chọn một ngôn ngữ.</message>
+	<message key="installer.form.passwordRequired">Phải có mật khẩu cho tài khoản quản trị.</message>
+	<message key="installer.form.passwordsDoNotMatch">Mật khẩu quản trị không khớp.</message>
+	<message key="installer.form.separateMultiple">Phân tách các giá trị bằng dấu phẩy</message>
+	<message key="installer.form.usernameAlphaNumeric">Bí danh quản trị có thể chứa các ký tự chữ số, dấu gạch dưới và gạch ngang, phải bắt đầu và kết thúc bằng chữ số.</message>
+	<message key="installer.form.usernameRequired">Phải có bí danh cho tài khoản quản trị.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>CẢNH BÁO: Phiên bản PHP hiện thời của quý vị không đáp ứng những yêu cầu tối thiểu để cài đặt. Xin khuyến nghị nâng cấp lên phiên bản PHP mới hơn.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">Có lỗi trong quá trình cài đặt</message>
+	<message key="installer.installerSQLStatements">SQL statements dùng để cài đặt</message>
+	<message key="installer.installFileError"><![CDATA[File cài đặt <tt>dbscripts/xml/install.xml</tt> không tồn tại hoặc không đọc được.]]></message>
+	<message key="installer.installFilesDirError">Thư mục dùng để lưu giữ các file được tải lên không ghi được.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Có lỗi khi phân tích cú pháp file cài đặt CSDL <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Ngôn ngữ</message>
+	<message key="installer.locale.maybeIncomplete">Các ngôn ngữ được đánh dấu có thể chưa hoàn chỉnh.</message>
+	<message key="installer.localeSettings">Tham số hỗ trợ ngôn ngữ</message>
+	<message key="installer.miscSettings">Các tham số khác</message>
+	<message key="installer.oaiSettings">Cài đặt OAI</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[Một định danh duy nhất được dùng để xác định các biểu ghi siêu dữ liệu (dữ liệu mô tả) được lập chỉ mục từ website này sử dụng Giao thức Gặt hái Siêu dữ liệu <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a>.]]></message>
+	<message key="installer.oaiRepositoryId">Định danh kho lưu trữ OAI</message>
+	<message key="installer.publicFilesDirError">Thư mục file công cộng không tồn tại hoặc không ghi được.</message>
+	<message key="installer.releaseNotes">Ghi chú về phát hành</message>
+	<message key="installer.securitySettings">Cài đặt về an ninh</message>
+	<message key="installer.beacon">Beacon</message>
+	<message key="installer.beacon.enable">Cung cấp ID trang web duy nhất và URL cơ sở OAI cho Sangia Publishing House chỉ cho mục đích thống kê và cảnh báo bảo mật.</message>
+	
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[Đã có phiên bản mới của ScholarWizdam! Bạn hiện đang sử dụng ScholarWizdam {$currentVersion}. Phiên bản mới nhất là ScholarWizdam {$latestVersion}. Vui lòng truy cập <a href="http://wizdam.sangia.org/download" target="_new">trang này</a> để tải xuống phiên bản mới nhất và xem hướng dẫn nâng cấp.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[Đã có phiên bản mới của ScholarWizdam! Bạn hiện đang sử dụng ScholarWizdam {$currentVersion}. Phiên bản mới nhất là ScholarWizdam {$latestVersion}. Vui lòng liên hệ với Quản trị viên trang web của bạn ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) để thông báo cho họ về bản phát hành mới này. Thông tin chi tiết có thể được tìm thấy <a href="http://wizdam.sangia.org/download" target="_new">tại đây</a>.]]></message>
+</locale>

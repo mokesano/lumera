@@ -1,0 +1,433 @@
+# ====================================================================
+# KONFIGURASI .HTACCESS UNTUK SANGIA PUBLISHING
+# Tujuan: Mengatur URL rewriting, keamanan, dan konfigurasi PHP
+# ====================================================================
+
+# ====================================================================
+# WIZDAM ERROR HANDLING
+# ====================================================================
+
+# 1. Client Errors (4xx)
+# 400 Bad Request: Permintaan browser rusak/malformed
+ErrorDocument 400 /400.shtml
+# 403 Authorization required: Akses ditolak atau izin file
+ErrorDocument 401 /401.shtml
+# 403 Forbidden: Akses ditolak oleh WAF atau izin file
+ErrorDocument 403 /403.shtml
+# 404 Not Found: File statis tidak ditemukan (Lihat catatan di bawah)
+ErrorDocument 404 /404.shtml
+# 423 Locked: Resource terkunci (Jarang di OJS, tapi bagus jika ada)
+ErrorDocument 423 /423.shtml
+
+# 2. Server Errors (5xx)
+# 500 Internal Server Error: Script PHP crash atau salah config
+ErrorDocument 500 /500.shtml
+# 503 Service Unavailable: Server overload atau sedang Maintenance
+ErrorDocument 503 /503.shtml
+
+# ===================================================================
+# WIZDAM WAF v2.0 - Server-Level Protection
+# ===================================================================
+
+# STEP C: Direct file blocking (Malware & Spy Scripts)
+<FilesMatch "^(zip|shell|c99|r57|wso|b374k|alfa|indoxploit|mini|adminer|info|phpinfo|test|temp)\.php$">
+    Require all denied
+</FilesMatch>
+
+# STEP D: Protect sensitive & System files
+# Memblokir akses ke file .wiz, .tpl, .inc, .log, dll.
+<FilesMatch "\.(inc|conf|config|log|sql|bak|old|backup|git|svn|env|ini|sh|tpl|wiz|md|yml)$">
+    Require all denied
+</FilesMatch>
+
+# STEP F: Protect Apache Config Files
+<FilesMatch "^\.ht">
+    Require all denied
+</FilesMatch>
+
+# --------------------------------------------------------------------
+# BAGIAN 1: KONFIGURASI PHP
+# Mengatur parameter PHP untuk upload file dan timezone
+# --------------------------------------------------------------------
+
+# Mengatur timezone server ke Jakarta (WIB)
+# Memastikan semua timestamp menggunakan waktu Indonesia
+php_value date.timezone 'Asia/Jakarta'
+
+# --------------------------------------------------------------------
+# BAGIAN 2: KEAMANAN DIREKTORI
+# Mencegah browsing direktori dan listing file
+# --------------------------------------------------------------------
+
+# Menonaktifkan directory browsing untuk keamanan
+# Mencegah pengunjung melihat daftar file dalam direktori
+Options -Indexes +FollowSymLinks
+
+# Menyembunyikan semua file dari directory listing
+# Backup keamanan jika Options -Indexes tidak bekerja
+IndexIgnore *
+
+# --------------------------------------------------------------------
+# BAGIAN 3: URL REWRITING - KONFIGURASI UTAMA
+# Mengatur bagaimana URL diproses dan dialihkan
+# --------------------------------------------------------------------
+
+# REDIRECT NON-WWW KE WWW
+# Tujuan: Standarisasi domain untuk SEO dan konsistensi
+# Contoh: journals.sangia.org → www.journals.sangia.org
+# RewriteCond %{HTTP_HOST} ^journals\.sangia\.org$ [NC]
+# RewriteRule ^(.*)$ https://www.journals.sangia.org/$1 [R=301,L]
+
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+ # ========================================================
+ # 1. BLOKIR URL HANTU & PERETAS (Taruh di paling atas!)
+ # ========================================================
+ # Membunuh URL spesifik
+ Redirect 410 /index/docs/zip.php
+    
+ # Membunuh menggunakan pola (RegEx) jika diperlukan
+ RedirectMatch 410 ^/index/sitemap_index\.xml$
+ RedirectMatch 410 ^/index/sitemap\.xml$
+    
+ # ----------------------------------------------------------------
+ # BAGIAN 5: API ENDPOINTS - CUSTOM APLIKASI
+ # Mengarahkan URL API ke file PHP handler yang sesuai
+ # ----------------------------------------------------------------
+ 
+ # API SINTA IMPACT FACTOR
+ # Endpoint: /api/sinta
+ # Fungsi: Mengambil data impact factor dari database Sinta
+ # [L,QSA] = Last rule + Query String Append
+ RewriteRule ^api/sinta$ plugins/themes/sangiapub/php/sinta_impact/SintaProxyHandler.php [L,QSA]
+ 
+ # API SINTA SCORE VERSION 2 (IMPROVED)
+ # Endpoint: /api/sinta_v2  
+ # Fungsi: Versi terbaru untuk mengambil skor Sinta journal
+ RewriteRule ^api/sinta_v2$ plugins/themes/sangiapub/php/sinta_impact/SintaScoreNEW.php [L,QSA]
+ 
+ # API CITATION COUNT BY DOI
+ # Endpoint: /api/citedby
+ # Fungsi: Mengambil jumlah sitasi artikel berdasarkan DOI
+ RewriteRule ^api/citedby$ plugins/themes/sangiapub/php/citations/doi_citation.php [L,QSA]
+ 
+ # API SCOPUS EDITOR VERIFICATION
+ # Endpoint: /api/scopus_editor
+ # Fungsi: Memverifikasi apakah editor terdaftar di Scopus
+ RewriteRule ^api/scopus_editor$ plugins/themes/sangiapub/php/editor_Scopus/scopus_editor.php [L,QSA]
+ 
+ # API USER SCOPUS VERSION 2
+ # Endpoint: /api/userscopus
+ # Fungsi: Mengambil data author/editor dari database Scopus
+ RewriteRule ^api/userscopus$ plugins/themes/sangiapub/php/editor_Scopus/editorInScopus_v31.php [L,QSA]
+ RewriteRule ^api/scopus_user$ plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php [L,QSA]
+
+ # API JOURNAL SCOPUS VERSION 1
+ # Endpoint: /api/journalscopus
+ # Fungsi: Mengambil data jurnal dari database Scopus
+ RewriteRule ^api/journalscopus$ plugins/themes/sangiapub/php/Metrics_journal_scopus/journal_metrics.php [L,QSA]
+ 
+ # API SDG MAPPING VERSION 2-5
+ # Endpoint: /api/sdg_v2, /api/sdg_v3, /api/sdg_v4, /api/sdg_v5
+ # Fungsi: Memetakan artikel ke Sustainable Development Goals (SDG)
+ # Multiple versions untuk testing dan backward compatibility
+ RewriteRule ^api/sdg_v2$ plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v2.php [L,QSA]
+ RewriteRule ^api/sdg_v3$ plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php [L,QSA]
+ RewriteRule ^api/sdg_v4$ plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v4.php [L,QSA]
+ RewriteRule ^api/sdg_v5$ plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v5.php [L,QSA]
+
+ # API Interface SDG MAPPING VERSION 1
+ # Endpoint: api/sdg
+ # Fungsi: Visual peneliti dan artikel ke Sustainable Development Goals (SDG)
+ # Version awal untuk testing dan backward compatibility
+ RewriteRule ^api/sdg$ plugins/themes/sangiapub/php/sdg_mapper/SDGs_interface.php [L,QSA]
+ 
+ # API ORCID RESEARCHER DATA
+ # Endpoint: /api/orcid
+ # Fungsi: Mengambil data peneliti dari ORCID database
+ RewriteRule ^api/orcid$ plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php [L,QSA]
+ 
+ 
+ # ----------------------------------------------------------------
+ # BAGIAN 6: KEAMANAN TEMA - PROTEKSI DIREKTORI
+ # Mencegah akses langsung ke file tema untuk keamanan
+ # ----------------------------------------------------------------
+ 
+ # BLOKIR AKSES ROOT DIREKTORI TEMA
+ # Mencegah: /plugins/themes/sangiapub/
+ # Redirect ke halaman 403 Forbidden
+ RewriteRule ^plugins/themes/sangiapub/?$ /403.shtml [L]
+ 
+ # BLOKIR AKSES SUBDIRECTORY TEMA  
+ # Mencegah: /plugins/themes/sangiapub/css/, /plugins/themes/sangiapub/js/, dll
+ # Pattern ([^/]+) menangkap nama subdirectory apapun
+ RewriteRule ^plugins/themes/sangiapub/([^/]+)/?$ /403.shtml [L]
+ 
+ # BLOKIR AKSES FILE GAMBAR TEMA
+ # Proteksi tambahan untuk file media dalam tema
+ # Kondisi: File tidak exist (!-f) DAN direktori tidak exist (!-d)
+ # Target: File dengan ekstensi gambar (png, jpg, jpeg, gif, bmp, svg, ico)
+ RewriteCond %{REQUEST_FILENAME} !-f
+ RewriteCond %{REQUEST_FILENAME} !-d
+ RewriteRule ^plugins/themes/sangiapub/(.+\.(png|jpg|jpeg|gif|bmp|svg|ico))$ /403.shtml [L]
+ 
+ 
+ # ----------------------------------------------------------------
+ # BAGIAN 7: OJS CORE - URL ROUTING
+ # Rule utama OJS untuk menangani semua request ke index.php
+ # ----------------------------------------------------------------
+ 
+ # Format: RewriteRule ^(path-jurnal)/halaman/OperasiLama$ /path-jurnal/halaman/operasi-baru [R=301,L]
+ # RewriteRule ^([a-zA-Z0-9_]+)/issue/view/61$ /$1/volumes/9/issue/1 [R=301,L]
+ RewriteRule ^([a-zA-Z0-9_]+)/about/journalSponsorship$ /$1/about/sponsorship [R=301,L]
+ RewriteRule ^([a-zA-Z0-9_]+)/about/editorialTeam$ /$1/about/editorial-team [R=301,L]
+ # RewriteRule ^([a-zA-Z0-9_]+)/about/editorialTeamBio$ /$1/about/editorial-team-bio [R=301,L]
+ RewriteRule ^([a-zA-Z0-9_]+)/about/siteMap$ /$1/about/sitemap [R=301,L]
+ RewriteRule ^([a-zA-Z0-9_]+)/about/editorialPolicies$ /$1/about/editorial-policies [R=301,L]
+ RewriteRule ^([a-zA-Z0-9_]+)/about/aboutThisPublishingSystem$ /$1/about/insights [R=301,L]
+ 
+ # RULE UTAMA OJS - FRONT CONTROLLER PATTERN
+ # Kondisi: Request bukan file nyata (!-f) DAN bukan direktori nyata (!-d)
+ # Aksi: Kirim semua request ke index.php dengan path sebagai parameter
+ # [QSA] = Query String Append (pertahankan parameter URL)
+ # [L] = Last rule (stop processing setelah rule ini)
+ #
+ # Contoh transformasi:
+ # /search/titles → index.php/search/titles
+ # /journal/view/123 → index.php/journal/view/123  
+ # /article/view/456 → index.php/article/view/456
+ RewriteCond %{REQUEST_FILENAME} !-d
+ RewriteCond %{REQUEST_FILENAME} !-f
+ RewriteRule ^(.*)$ index.php/$1 [QSA,L]
+ 
+</IfModule>
+
+# ----------------------------------------------------------------
+# BAGIAN 7-1: HANDLER IP DENNY KONFIGURASI
+# Pengaturan IP mencurigakan
+# ----------------------------------------------------------------
+Deny from 216.244.66.250
+Deny from 216.244.*.*
+Deny from 103.131.71.62
+Deny from 103.131.*.*
+Deny from 146.70.9.231
+Deny from 146.70.*.*
+Deny from 103.107.198.231
+Deny from 103.107.*.*
+deny from 127.0.0.1
+deny from 127.0.*.*
+deny from 185.213.83.15
+deny from 185.213.*.*
+deny from 23.248.170.199
+deny from 23.248.*.*
+deny from 23.108.96.79
+deny from 23.108.*.*
+
+# ----------------------------------------------------------------
+# BAGIAN 8: HANDLER PHP - KONFIGURASI CPANEL
+# Pengaturan versi PHP yang digunakan server
+# ----------------------------------------------------------------
+
+# BEGIN cPanel-generated php ini directives, do not edit
+# Manual editing of this file may result in unexpected behavior.
+# To make changes to this file, use the cPanel MultiPHP INI Editor (Home >> Software >> MultiPHP INI Editor)
+# For more information, read our documentation (https://go.cpanel.net/EA4ModifyINI)
+<IfModule php8_module>
+   php_flag display_errors Off
+   php_value max_execution_time 300
+   php_value max_input_time 300
+   php_value max_input_vars 3000
+   php_value memory_limit 512M
+   php_value post_max_size 50M
+   php_value session.gc_maxlifetime 7200
+   php_value session.save_path "/var/cpanel/php/sessions/ea-php84"
+   php_value upload_max_filesize 40M
+   php_flag zlib.output_compression Off
+</IfModule>
+<IfModule lsapi_module>
+   php_flag display_errors Off
+   php_value max_execution_time 300
+   php_value max_input_time 300
+   php_value max_input_vars 3000
+   php_value memory_limit 512M
+   php_value post_max_size 50M
+   php_value session.gc_maxlifetime 7200
+   php_value session.save_path "/var/cpanel/php/sessions/ea-php84"
+   php_value upload_max_filesize 40M
+   php_flag zlib.output_compression Off
+</IfModule>
+# END cPanel-generated php ini directives, do not edit
+
+# BEGIN cPanel-generated php ini directives, do not edit
+# Manual editing of this file may result in unexpected behavior.
+# To make changes to this file, use the cPanel MultiPHP INI Editor (Home >> Software >> MultiPHP INI Editor)
+# For more information, read our documentation (https://go.cpanel.net/EA4ModifyINI)
+<IfModule php8_module>
+   php_flag display_errors Off
+   php_value max_execution_time 300
+   php_value max_input_time 300
+   php_value max_input_vars 3000
+   php_value memory_limit 512M
+   php_value post_max_size 50M
+   php_value session.gc_maxlifetime 7200
+   php_value session.save_path "/var/cpanel/php/sessions/ea-php82"
+   php_value upload_max_filesize 40M
+   php_flag zlib.output_compression Off
+</IfModule>
+<IfModule lsapi_module>
+   php_flag display_errors Off
+   php_value max_execution_time 300
+   php_value max_input_time 300
+   php_value max_input_vars 3000
+   php_value memory_limit 512M
+   php_value post_max_size 50M
+   php_value session.gc_maxlifetime 7200
+   php_value session.save_path "/var/cpanel/php/sessions/ea-php82"
+   php_value upload_max_filesize 40M
+   php_flag zlib.output_compression Off
+</IfModule>
+# END cPanel-generated php ini directives, do not edit
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# This domain inherits the “PHP” package.
+# php -- END cPanel-generated handler, do not edit
+
+RewriteCond %{HTTP_REFERER} !^http://api.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://api.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://apps.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://apps.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://assets.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://assets.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://cpanel.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://cpanel.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://dev.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://dev.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://dev.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://dev.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://developer.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://developer.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://ejournal.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://ejournal.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://journals.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://journals.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://media.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://media.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://partnerships.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://partnerships.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://showcase.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://showcase.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://stipwunaraha.ac.id.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://stipwunaraha.ac.id.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://wizdam.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://wizdam.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://wizdamdev.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://wizdamdev.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.api.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.api.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.apps.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.apps.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.assets.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.assets.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.cpanel.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.cpanel.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.dev.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.dev.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.dev.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.dev.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.developer.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.developer.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.ejournal.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.ejournal.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.journals.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.journals.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.media.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.media.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.partnerships.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.partnerships.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.showcase.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.showcase.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.stipwunaraha.ac.id.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.stipwunaraha.ac.id.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.wizdam.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.wizdam.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.wizdamdev.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.wizdamdev.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://api.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://api.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://apps.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://apps.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://assets.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://assets.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://cpanel.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://cpanel.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://dev.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://dev.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://dev.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://dev.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://developer.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://developer.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://ejournal.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://ejournal.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://journals.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://journals.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://media.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://media.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://partnerships.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://partnerships.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://showcase.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://showcase.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://stipwunaraha.ac.id.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://stipwunaraha.ac.id.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://wizdam.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://wizdam.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://wizdamdev.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://wizdamdev.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.api.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.api.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.apps.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.apps.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.assets.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.assets.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.cpanel.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.cpanel.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.dev.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.dev.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.dev.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.dev.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.developer.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.developer.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.ejournal.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.ejournal.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.journals.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.journals.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.media.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.media.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.partnerships.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.partnerships.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.showcase.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.showcase.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.stipwunaraha.ac.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.stipwunaraha.ac.id.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.stipwunaraha.ac.id.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.wizdam.sangia.org/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.wizdam.sangia.org$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.wizdamdev.stipwunaraha.ac.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.wizdamdev.stipwunaraha.ac.id$      [NC]
+RewriteRule .*\.(jpg|jpeg|gif|png|bmp)$ - [F,NC]
+

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../lib/pkp/dtd/locale.dtd">
+
+<!--
+  * locale/id_ID/payment.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2003-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings.
+  -->
+
+<locale name="id_ID" full_name="Bahasa Indonesia">
+    
+    <message key="payment.gatewaySettings">Payment Gateway Settings</message>
+    <message key="checkout.globalBilling">Billing</message>
+    <message key="checkout.invoiceDetail">Billing Details</message>
+    
+    <!-- Authenticate Management -->
+    <message key="authenticate.invoiceTitle">Validasi Document Invoice</message>
+    <message key="authenticate.error.title">Verifikasi Gagal</message>
+    <message key="authenticate.error.malformedUrl">Tautan verifikasi tidak lengkap atau format tidak valid. Pastikan Anda memindai kode QR secara penuh.</message>
+    <message key="authenticate.error.hashValidationFailed">Dokumen tidak dapat diverifikasi. Tautan mungkin telah dimanipulasi atau kedaluwarsa.</message>
+    <message key="authenticate.loa.title">Verifikasi Letter of Acceptance</message>
+    <message key="authenticate.loa.verifiedTitle">Dokumen LoA Tervalidasi</message>
+    <message key="authenticate.invoice.verifiedTitle">Dokumen Tagihan Tervalidasi</message>
+    <message key="authenticate.cert.verifiedTitle">Sertifikat Tervalidasi</message>
+    <message key="authenticate.cert.incompleteReview">Dokumen tidak valid. Proses review (ulasan) untuk naskah ini belum diselesaikan.</message>
+    
+    <!-- Letter of Acceptance -->
+    <message key="document.loa.pageTitle">Letter of Acceptance</message>
+    <message key="document.loa.invalidRequest">Tautan dokumen tidak valid atau rusak.</message>
+    <message key="document.loa.unauthorized">Akses Ditolak. Anda tidak memiliki hak akses untuk mengunduh dokumen naskah ini.</message>
+    <message key="document.loa.pendingPaymentAlert">Dokumen (LoA) belum dapat diterbitkan. Silakan selesaikan tagihan yang masih tertunda di bawah ini.</message>
+    <message key="document.loa.notFound">Data naskah atau status penerimaan tidak ditemukan di dalam sistem.</message>
+    <message key="document.error.hashValidationFailed">Verifikasi keamanan gagal. Tautan dokumen mungkin telah dimanipulasi.</message>
+    
+    <!-- Certificate -->
+    <message key="document.cert.pageTitle">Sertifikat Penghargaan</message>
+    <message key="document.cert.invalidRequest">Tautan sertifikat tidak valid atau rusak.</message>
+    <message key="document.cert.unauthorized">Akses Ditolak. Ini bukan sertifikat milik Anda.</message>
+    <message key="document.cert.incompleteReview">Sertifikat belum dapat diterbitkan karena tugas ulasan (review) belum selesai.</message>
+    <message key="document.cert.notFound">Data sertifikat tidak ditemukan.</message>
+    
+	<!-- Billing -->
+	<message key="billing.globalBilling">Billing Invoices</message>
+	<message key="billing.activeInvoices">Active Invoices</message>
+	<message key="billing.historyInvoices">Billing History</message>
+	<message key="billing.invoiceDetail">Detail Tagihan</message>
+    <message key="billing.error.negativeAmount">Nominal tagihan tidak valid (tidak boleh negatif).</message>
+    <message key="billing.feeType.bundlePayment">Paket Pembayaran Bundel</message>
+    <message key="billing.error.pdfGenerationFailed">Sistem gagal memproduksi dokumen PDF saat ini. Silakan hubungi administrator.</message>
+    <message key="billing.error.malformedRequest">Tautan dokumen tidak valid atau rusak.</message>
+    <message key="billing.error.hashValidationFailed">Verifikasi keamanan gagal. Dokumen mungkin telah dimanipulasi.</message>
+    <message key="billing.error.invoiceNotFound">Tagihan tidak ditemukan atau Anda tidak memiliki hak akses.</message>
+    <message key="billing.error.alreadyPaid">Tindakan ditolak. Tagihan ini sudah dilunasi.</message>
+    <message key="billing.error.pdfGenerationFailed">Sistem gagal memproduksi dokumen PDF saat ini. Silakan hubungi administrator.</message>
+    <message key="billing.error.cannotCancel">Tagihan tidak dapat dibatalkan karena mungkin sudah lunas atau Anda tidak memiliki akses.</message>
+    <message key="billing.success.paymentSessionCreated">Sesi pembayaran berhasil dibuat.</message>
+    <message key="billing.success.invoiceCancelled">Tagihan berhasil dibatalkan.</message>
+    
+    <!-- Order Shopping Cart -->
+    <message key="order.shoppingCart">Keranjang Belanja</message>
+    <message key="order.error.invalidMethod">Metode permintaan tidak diizinkan.</message>
+    <message key="order.error.csrfInvalid">Sesi halaman telah kedaluwarsa. Silakan muat ulang dan coba lagi.</message>
+    <message key="order.error.emptyCart">Keranjang belanja Anda kosong. Tidak ada yang dapat di-checkout.</message>
+    <message key="order.error.checkoutFailed">Gagal memproses keranjang. Silakan coba beberapa saat lagi atau hubungi administrator.</message>
+    <message key="order.success.checkoutComplete">Checkout berhasil. Tagihan resmi Anda telah diterbitkan.</message>
+    
+    <!-- Reedem Wallet -->
+    <message key="redeem.walletDashboard">Dompet Virtual & Loyalty Points</message>
+    <message key="redeem.error.invalidMethod">Metode permintaan tidak diizinkan.</message>
+    <message key="redeem.error.csrfInvalid">Sesi telah kedaluwarsa. Silakan muat ulang halaman.</message>
+    <message key="redeem.error.invalidPointAmount">Jumlah poin yang akan ditukarkan tidak valid.</message>
+    <message key="redeem.error.insufficientPoints">Saldo poin Anda tidak mencukupi untuk transaksi ini.</message>
+    <message key="redeem.error.exchangeFailed">Gagal memproses penukaran poin. Silakan hubungi administrator.</message>
+    <message key="redeem.success.pointsExchanged">Poin berhasil ditukarkan menjadi kupon diskon.</message>
+    
+</locale>

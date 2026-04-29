@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/ar_IQ/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the ar_IQ (العربية) locale.
+  *
+  -->
+
+<locale name="ar_IQ" full_name="العربية">
+	<message key="installer.additionalLocales">لغات إضافية</message>
+	<message key="installer.administratorAccount">حساب المشرف الإداري</message>
+	<message key="installer.administratorAccountInstructions">حساب هذا المستخدم سيكون بمثابة المشرف الإداري الذي ستكون له حرية الوصول الكاملة للنظام. المزيد من حسابات المستخدمين يمكن إنشاؤها بعد إكمال التنصيب.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="form_error formError">لا</span>]]></message>
+	<message key="installer.checkYes">نعم</message>
+	<message key="installer.clientCharset">نظام الحروف للزبون</message>
+	<message key="installer.clientCharsetInstructions">الترميز المستعمل عند إرسال البيانات واستلامها من المستعرض.</message>
+	<message key="installer.configFileError"><![CDATA[ملف الإعدادات <code>config.inc.php</code> لا وجود له أو تتعذر قراءته.]]></message>
+	<message key="installer.connectionCharset">نظام حروف الاتصال</message>
+	<message key="installer.connectionCharsetInstructions">الترميز المستعمل عند إرسال البيانات واستلامها من قاعدة البيانات. ينبغي أن يكون هذا مطابقاً لنظام الحروف عند الزبون. لاحظ أن هذه الخاصية مدعومة فقط من قبل MySQL >= 5.x أو PostgreSQL >= 8.x. إختر عبارة "غير متاح" إن كان ملقم قاعدة البيانات عندك لا يلبي تلك المتطلبات.</message>
+	<message key="installer.contentsOfConfigFile">محتويات ملف الإعدادات</message>
+	<message key="installer.createDatabase">إنشاء قاعدة بيانات جديدة</message>
+	<message key="installer.createDatabaseInstructions">لاستعمال هذا الخيار، على نظام قاعدة البيانات عندك أن يدعم إنشاء قاعدة بيانات عن بعد وأن يمتلك حساب المستخدم لديك الصلاحيات الكافية لإنشاء قاعدة بيانات جديدة. إن فشلت عملية التنصيب عند تفعيل هذا الخيار، عليك بإنشاء قاعدة البيانات يدوياً على الملقم، ثم شغل برنامج التنصيب مجدداً مع تعطيل هذا الخيار.</message>
+	<message key="installer.databaseCharset">نظام الحروف لقاعدة للبيانات</message>
+	<message key="installer.databaseCharsetInstructions">الترميز المستعمل للبيانات المحفوظة في قاعدة البيانات. لاحظ أن هذه الخاصية مدعومة فقط من قبل MySQL >= 5.x أو PostgreSQL >= 8.x. إختر عبارة "غير متاح" إن كان ملقم قاعدة البيانات عندك لا يلبي تلك المتطلبات.</message>
+	<message key="installer.databaseDriver">مشغل قاعدة البيانات</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>يدعم النظام حاليًا MySQL و PostgreSQL فقط. في حال لم تتمكن من اختيار أحدهما، يرجى الاتصال بمسؤول النظام لديك للتأكد من أن الخادم الخاص بك يحتوي على امتدادات PHP المطلوبة.</strong>]]></message>
+	<message key="installer.databaseHost">المضيف</message>
+	<message key="installer.databaseHostInstructions">أترك اسم المضيف فارغاً للاتصال مستعملاً مقابس المجال بدلاً عن بروتوكول TCP/IP. هذا الأمر ليس ضرورياً مع MySQL، التي ستستعمل تلقائياً مقابس الاتصال إذا تم إدخال عبارة "localhost"، ولكنه مطلوب مع بعض ملقمات قواعد البيانات الأخرى، مثل: PostgreSQL.</message>
+	<message key="installer.databaseName">اسم قاعدة البيانات</message>
+	<message key="installer.databasePassword">كلمة المرور</message>
+	<message key="installer.databaseSettings">إعدادات قاعدة البيانات</message>
+	<message key="installer.databaseUsername">اسم المستخدم</message>
+	<message key="installer.encryptionInstructions">يتم تطبيق Bcrypt بشكل آمن كخوارزمية تشفير قياسية لكلمات المرور وفقًا لمعايير ScholarWizdam.</message>
+	<message key="installer.encryption">خوارزمية تشفير كلمة المرور</message>
+	<message key="installer.filesDir">حافظة الملفات المرفوعة إلى الموقع</message>
+	<message key="installer.fileSettings">إعدادات الملفات</message>
+	<message key="installer.form.clientCharsetRequired">ينبغي اختيار نظام الحروف للزبون.</message>
+	<message key="installer.form.databaseDriverRequired">ينبغي اختيار مشغل قاعدة البيانات.</message>
+	<message key="installer.form.databaseNameRequired">اسم قاعدة البيانات مطلوب حتماً.</message>
+	<message key="installer.form.emailRequired">عنوان بريد الكتروني صحيح مطلوب حتماً لحساب المشرف الإداري.</message>
+	<message key="installer.form.encryptionRequired">ينبغي اختيار خوارزمية تشفير كلمة مرور المستخدم.</message>
+	<message key="installer.form.filesDirRequired">ينبغي اختيار حافظة الملفات التي سيتم رفعها إلى الموقع.</message>
+	<message key="installer.form.localeRequired">ينبغي اختيار لغة الموقع.</message>
+	<message key="installer.form.passwordRequired">ينبغي تحديد كلمة المرور لحساب المشرف الإداري.</message>
+	<message key="installer.form.passwordsDoNotMatch">كلمتا المرور لا تتطابقان.</message>
+	<message key="installer.form.separateMultiple">إفصل بين الكلمات المتعددة بفوارز إنجليزية</message>
+	<message key="installer.form.usernameAlphaNumeric">اسم الدخول للمشرف الإداري يمكن أن يتضمن حروفاً وأرقاماً، خطوط تحتانية، وشُرط، وينبغي أن يبدأ وينتهي بحرف أو رقم حصراً.</message>
+	<message key="installer.form.usernameRequired">ينبغي إدخال اسم الدخول للمشرف الإداري حتماً.</message>
+	
+	<!-- Installer -->
+	<message key="installer.appInstallation">تنصيب نظام نشر ويزدام</message>
+	<message key="installer.appUpgrade">ترقية نظام نشر ويزدام</message>
+    
+    <!--
+      * locale/ar_IQ/installer.xml (partial — split keys only)
+      *
+      * [WIZDAM FIX] installer.installationInstructions dipecah menjadi
+      * key-key terpisah yang lebih modular. Heading ditulis langsung
+      * di dalam nilai masing-masing key. <tt> → <code>.
+      -->
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>إصدار نظام نشر ويزدام {$version}</h4>
+    <p>شكرًا لتحميلك <strong>نظام نشر ويزدام</strong> من دار نشر Sangia. قبل المتابعة، يُرجى قراءة ملف <a href="{$baseUrl}/docs/README" target="_blank">README</a> المرفق مع هذا البرنامج. لمزيد من المعلومات حول دار نشر Sangia (SPH) ومشاريعها البرمجية، يُرجى زيارة <a href="http://wizdam.sangia.org/" target="_blank">موقع Sangia Publishing House</a>. إذا كانت لديك تقارير عن أخطاء أو استفسارات فنية بخصوص نظام نشر ويزدام، يُرجى الاطلاع على <a href="http://forum.wizdam.sangia.org" target="_blank">منتدى الدعم</a> أو زيارة <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">نظام تتبع الأخطاء</a> التابع لـ SPH. على الرغم من أن منتدى الدعم هو وسيلة الاتصال المفضلة، يمكنك أيضًا مراسلة الفريق عبر البريد الإلكتروني على <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+     
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>الترقية</h4>
+    <p>إذا كنت تقوم بترقية تثبيت حالي لنظام نشر ويزدام أو من الإصدارات السابقة، <a href="{$upgradeUrl}">انقر هنا</a> للمتابعة. للترقية من الإصدارات الأحدث (قيد التطوير).</p>]]></message>
+    <message key="installer.upgradeInfo.OJS3"><![CDATA[<p>إذا كنت تقوم بترقية تثبيت حالي لنظام نشر ويزدام (قيد التطوير).</p>]]></message>
+     
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>متطلبات النظام الموصى بها</h4>
+    <ul>
+    	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}؛ أنت تستخدم حاليًا PHP {$phpVersion}{$wrongPhpText}</li>
+    	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x أو <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 8.x (بما في ذلك PostgreSQL 8.x)</li>
+    	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x أو >= 2.0.4x أو Microsoft IIS 6</li>
+    	<li>نظام التشغيل: أي نظام تشغيل يدعم البرامج المذكورة أعلاه، بما في ذلك <a href="http://www.linux.org/" target="_blank">Linux</a>، <a href="http://www.bsd.org/" target="_blank">BSD</a>، <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>، <a href="http://www.apple.com/" target="_blank">Mac OS X</a>، <a href="http://www.microsoft.com/">Windows</a></li>
+    </ul>
+    <p>نظرًا لأن SPH لا تمتلك الموارد اللازمة لاختبار كل مجموعة محتملة من إصدارات البرامج والمنصات، فلا يتم تقديم أي ضمان للتشغيل الصحيح أو الدعم.</p>]]></message>
+     
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[يمكن إجراء تغييرات على هذه الإعدادات بعد التثبيت عن طريق تحرير الملف <code>config.inc.php</code> في الدليل الأساسي لنظام نشر ويزدام، أو باستخدام واجهة إدارة الموقع عبر الويب.]]></message>
+     
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>أنظمة قواعد البيانات المدعومة</h4>
+    <p>تم اختبار نظام نشر ويزدام حاليًا فقط على MySQL و PostgreSQL، على الرغم من أن أنظمة إدارة قواعد البيانات الأخرى التي يدعمها <a href="http://adodb.org/" target="_blank">ADOdb</a> قد تعمل (بشكل كامل أو جزئي). يمكن إرسال تقارير التوافق و/أو تصحيحات الشيفرة البرمجية لأنظمة DBMS البديلة إلى فريق نظام نشر ويزدام.</p>]]></message>
+     
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>خطوات ما قبل التثبيت</h4>
+    <p>1. يجب جعل الملفات والدلائل التالية (ومحتوياتها) قابلة للكتابة:</p>
+    <ul>
+    	<li><code>config.inc.php</code> قابل للكتابة (اختياري): {$writable_config}</li>
+    	<li><code>public/</code> قابل للكتابة: {$writable_public}</li>
+    	<li><code>cache/</code> قابل للكتابة: {$writable_cache}</li>
+    	<li><code>cache/t_cache/</code> قابل للكتابة: {$writable_templates_cache}</li>
+    	<li><code>cache/t_compile/</code> قابل للكتابة: {$writable_templates_compile}</li>
+    	<li><code>cache/_db</code> قابل للكتابة: {$writable_db_cache}</li>
+    </ul>
+    <p>2. يجب إنشاء دليل لتخزين الملفات المرفوعة وجعله قابلاً للكتابة (انظر "إعدادات الملفات" أدناه).</p>]]></message>
+     
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[يستخدم تشفير كلمة المرور <strong>bcrypt</strong> — وهي خوارزمية هاش آمنة وفقًا لمعايير الصناعة. لا يلزم أي تكوين إضافي.]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>إصدار نظام نشر ويزدام {$version}</h4>
+	    <p>شكرًا لتحميلك <strong>نظام نشر ويزدام</strong> من دار نشر Sangia. قبل المتابعة، يُرجى قراءة ملفات <a href="{$baseUrl}/docs/README">README</a> و <a href="{$baseUrl}/docs/UPGRADE">UPGRADE</a> المرفقة مع هذا البرنامج. لمزيد من المعلومات حول دار نشر Sangia ومشاريعها البرمجية، يُرجى زيارة <a href="http://wizdam.sangia.org/" target="_blank">موقع SPH</a>. إذا كانت لديك تقارير عن أخطاء أو استفسارات فنية بخصوص نظام نشر ويزدام، يُرجى الاطلاع على <a href="http://forum.wizdam.sangia.org" target="_blank">منتدى الدعم</a> أو زيارة <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">نظام تتبع الأخطاء</a> التابع لـ SPH. على الرغم من أن منتدى الدعم هو وسيلة الاتصال المفضلة، يمكنك أيضًا مراسلة الفريق عبر البريد الإلكتروني على <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+	    <p>من <strong>الموصى به بشدة</strong> أن تقوم بعمل نسخة احتياطية من قاعدة البيانات الخاصة بك، ودليل الملفات، ودليل تثبيت نظام نشر ويزدام قبل المتابعة.</p>
+	    <p>إذا كنت تقوم بالتشغيل في <a href="http://www.php.net/features.safe-mode" target="_blank">PHP Safe Mode</a>، يُرجى التأكد من أن توجيه max_execution_time في ملف إعدادات php.ine الخاص بك مضبوط على حد مرتفع. إذا تم الوصول إلى هذا الحد أو أي حد زمني آخر (مثل توجيه "Timeout" في Apache) وتم مقاطعة عملية الترقية، فسيكون التدخل اليدوي مطلوبًا.</p>]]></message>
+
+	<message key="installer.localeSettingsInstructions"><![CDATA[للحصول على دعم كامل لترميز Unicode (UTF-8)، اختر UTF-8 لجميع إعدادات ترميز الحروف. لاحظ أن هذا الدعم يتطلب حالياً أن تكون قواعد البيانات بخوادم MySQL >= 5.x أو PostgreSQL >= 8.x. فضلاً عن كون الدعم الكامل لترميز Unicode يتطلب PHP >= 7.4.0 مجتمعاً مع دعم مكتبة <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> (ممكنة إفتراضياً في معظم تنصيبات PHP الحالية). قد تواجه صعوبات عند استعمال مجموعات الحروف الإضافية فيما لو كان الملقم الذي تستعمله لا يلبي تلك المتطلبات.
+	    <br /><br />
+	    ملقمك حالياً يدعم mbstring: <strong>{$supportsMBString}</strong>]]></message>
+
+	<message key="installer.allowFileUploads"><![CDATA[ملقمك حالياً يسمح برفع الملفات: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[ملقمك حالياً يتيح التحميل بالحجم الأقصى البالغ: <strong>{$maxFileUploadSize}</strong>]]></message>
+	
+	<message key="installer.localeInstructions">اللغة الأساسية المستعملة في هذا النظام. لطفاً، راجع أدبيات نظام نشر ويزدام إن كنت راغباً بدعم النظام بلغة أخرى ليست ضمن هذه القائمة.</message>
+	<message key="installer.additionalLocalesInstructions">إختر أي لغة أخرى ليدعمها هذا النظام. هذه اللغات ستكون متاحة للمجلات المتضافة في الموقع، كما أنه بالإمكان تنصيب لغات أخرى في أي وقت عبر واجهة إدارة الموقع.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[أدخل اسم المسار pathname الكامل لحافظة ملفات موجودة حيث تريد حفظ الملفات المحملة. ينبغي أن تكون حافظة الملفات هذه غير متاحة بشكل مباشر لمستعملي المتصفح. <strong>لطفاً، تحقق من وجود حافظة الملفات هذه وأنها قابلة للتعديل قبل التنصيب.</strong> مسارات نظام التشغيل Windows تتطلب استعمال forward slashes، مثلاً: "C:/myjournal/files".]]></message>
+	<message key="installer.databaseSettingsInstructions">نظام نشر ويزدام يتطلب الوصول إلى قاعدة بيانات لحفظ بياناته. أنظر متطلبات النظام أعلاه لمعرفة أنظمة قواعد البيانات المدعومة. في الخانات أدناه، أدرج الإعدادات التي سيستعملها النظام للاتصال بقاعدة البيانات.</message>
+	
+	<message key="installer.installApplication">تنصيب نظام نشر ويزدام</message>
+	<message key="installer.upgradeApplication">ترقية نظام نشر ويزدام</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>تحذير:</strong> إن فشلت عملية التنصيب أثناء تهيئة قاعدة البيانات، قد تضطر إلى طرح قاعدة البيانات بالكامل أو من جداولها على الأقل قبل محاولة إعادة تنصيبها.]]></message>
+	
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>مهم!</h4>
+	    <p>برنامج التنصيب لم يتمكن من تعديل ملف الإعدادات آلياً. قبل الشروع بتشغيل هذا النظام، لطفاً، إفتح <code>config.inc.php</code> بأي برنامج مناسب لتحرير النصوص واستبدل محتوياته بالنص المبين في الخانة أدناه.</p>]]></message>
+
+	<message key="installer.installationComplete"><![CDATA[<p>تنصيب نظام نشر ويزدام إكتمل بنجاح.</p>
+	    <p>للشروع باستعمال النظام، <a href="{$loginUrl}">أدخل</a> مستعملاً اسم الدخول وكلمة المرور المدخلين في الصفحة السابقة.</p>
+	    <p>إن رغبت في تلقي الأخبار والتحديثات، فإمكانك:</p>
+        <ol>
+        	<li><a href="http://wizdam.sangia.org/wizdam/register" target="_new">تسجيل</a> مجلتك، مؤتمرك، حاصودك وتلقي تحديثات لترقية النظام فضلاً عن حزم الصيانة والأمان، والمزيد أيضاً.</li>
+        	<li>إنضم إلى <a href="http://wizdam.sangia.org/informed" target="_new">قائمة المناقشة</a> التابعة لنظام نشر ويزدام، أو كل ما سبق.</li>
+        	<li>إشترك في <a href="http://wizdam.sangia.org/blog" target="_new">SPH blog</a> <a href="http://wizdam.sangia.org/blog/feed" target="_new">RSS feed</a>.</li>
+        </ol>
+        <p>إن كانت لديك استفسارات أو تعليقات، لطفاً، أنقر <a href="http://forum.wizdam.sangia.org" target="_new">منتدى الدعم</a>.</p>]]></message>
+
+	<message key="installer.upgradeComplete"><![CDATA[<p>ترقية نظام نشر ويزدام إلى النسخة {$version} قد إكتمل بنجاح.</p>
+	    <p>لا تنسَ إعادة ضبط الإعداد "installed" في ملفك التعريفي config.inc.php إلى <em>On</em>.</p>
+	    <p>إن لم يسبق لك التسجيل وترغب في الحصول على الأخبار والتحديثات <strong>لطفاً، سجل في <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> إن كانت لديك استفسارات أو تعليقات، لطفاً، أنقر <a href="http://forum.wizdam.sangia.org" target="_new">منتدى الدعم</a>.</p>]]></message>
+	
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>تحذير: نسختك من برنامج PHP لا تلبي متطلبات الحد الأدنى المطلوبة للتنصيب. ننصح بترقيتها إلى نسخة أحدث تتوافق مع متطلبات تشغيل النظام.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">حدثت أخطاء خلال عملية التنصيب</message>
+	<message key="installer.installerSQLStatements">عبارات SQL للتنصيب</message>
+	<message key="installer.installFileError"><![CDATA[ملف التنصيب <code>dbscripts/xml/install.xml</code> مفقود أو تتعذر قراءته.]]></message>
+	<message key="installer.installFilesDirError">حافظة الملفات المخصصة لحفظ الملفات المرفوعة إلى الموقع غير موجودة أو أنها لا تقبل الكتابة عليها.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[حدث خطأ عند تحليل ملف تنصيب قاعدة البيانات <code>{$file}</code>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[حدث خطأ عند تحليل ملف قوالب الرسائل الالكترونية <code>{$file}</code>.]]></message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[حدث خطأ عند تحليل ملف إعدادات التصفية <code>{$file}</code>.]]></message>
+	<message key="installer.locale">اللغة</message>
+	<message key="installer.locale.maybeIncomplete">اللغات المعلمة قد تكون غير مكتملة تماماً.</message>
+	<message key="installer.localeSettings">إعدادات اللغة</message>
+	<message key="installer.oaiSettings">إعدادات OAI</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[يتم استعمال معرَّف فريد لتعريف سجلات البيانات الوصفية المفهرسة في هذا الموقع باستعمال بروتوكول<a href="http://www.openarchives.org/" target="_blank">مبادرة المحفوظات المفتوحة</a> لحصاد البيانات الوصفية.]]></message>
+	<message key="installer.oaiRepositoryId">معرَّف المستودع</message>
+	<message key="installer.publicFilesDirError">حافظة الملفات العمومية غير موجودة أو أنها لا تقبل الكتابة عليها.</message>
+	<message key="installer.releaseNotes">ملاحظات الإطلاق</message>
+	<message key="installer.securitySettings">إعدادات الأمان</message>
+
+	<message key="installer.beacon">المرشد</message>
+	<message key="installer.beacon.enable">زود الموقع برمز تعريفي فريد ورابط أساسي لـ OAI فقط لأغراض إحصائية وما يتعلق بإشعارات الأمان لدار نشر Sangia.</message>
+	
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[تم إطلاق نسخة جديدة من نظام نشر ويزدام! أنت حالياً تستعمل النسخة {$currentVersion} منه. النسخة ذات الإصدار الأحدث هي نظام نشر ويزدام {$latestVersion}. لطفاً، قم بزيارة <a href="http://wizdam.sangia.org/download" target="_new">هذه الصفحة</a> لتنزيل النسخة الأحدث والعثور على تعليمات الترقية.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[تم إطلاق نسخة جديدة من نظام نشر ويزدام! أنت حالياً تستعمل النسخة {$currentVersion} منه. النسخة ذات الإصدار الأحدث هي نظام نشر ويزدام {$latestVersion}. لطفاً، إتصل بمدير الموقع ({$siteAdminName}، <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) لإبلاغه عن هذا الإصدار الأخير. للمزيد من المعلومات أنظر <a href="http://wizdam.sangia.org/download" target="_new">هنا</a>.]]></message>
+</locale>
