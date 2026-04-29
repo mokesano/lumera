@@ -158,6 +158,13 @@ class JournalSetupStep1Form extends JournalSetupForm {
             $templateMgr->assign('allCategories', $categories);
         }
 
+        // --- TAMBAHAN FIX PHP 8 ---
+        // Pastikan 'history' selalu berupa array agar Smarty tidak error saat memanggil index locale
+        if (!isset($this->_data['history']) || !is_array($this->_data['history'])) {
+            $this->_data['history'] = [];
+        }
+        // --------------------------
+
         parent::display($request, $template);
     }
 }
