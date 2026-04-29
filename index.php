@@ -23,7 +23,7 @@ $bootstrap = './lib/pkp/includes/bootstrap.inc.php';
 if (!file_exists($bootstrap)) {
     // Respon standar Enterprise untuk kegagalan sistem kritikal
     header('HTTP/1.1 503 Service Unavailable');
-    die('Wizdam Frontedge Engine Error: Core components are missing or corrupt. System halted.');
+    die('Lumera Engine Error: Core components are missing or corrupt. System halted.');
 }
 require($bootstrap);
 
