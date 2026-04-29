@@ -112,7 +112,7 @@ $response = [
         ],
         [
             'name'    => 'Susiana',
-            'role'    => 'Backend Engineer',
+            'role'    => 'Supervisor Engineer',
             'website' => 'https://wizdam.sangia.org',
             'contact' => 'susiana@sangia.org'
         ],
