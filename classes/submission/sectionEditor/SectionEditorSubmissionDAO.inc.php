@@ -1144,6 +1144,29 @@ class SectionEditorSubmissionDAO extends DAO {
     public function getReviewerStatistics($journalId) {
         $statistics = [];
 
+        // MODIFIKASI: Ambil semua ID Reviewer di jurnal ini dan set nilai default.
+        // Ini mencegah error "offset on null" bagi reviewer yang belum pernah ditugaskan.
+        // Catatan: 4096 adalah ID standar untuk ROLE_ID_REVIEWER di OJS.
+        $roleIdReviewer = defined('ROLE_ID_REVIEWER') ? ROLE_ID_REVIEWER : 4096;
+        $initResult = $this->retrieve(
+            'SELECT user_id FROM roles WHERE journal_id = ? AND role_id = ?',
+            [(int) $journalId, (int) $roleIdReviewer]
+        );
+        
+        while (!$initResult->EOF) {
+            $row = $initResult->GetRowAssoc(false);
+            $statistics[$row['user_id']] = [
+                'last_notified' => null,
+                'incomplete' => 0,
+                'total_span' => 0,
+                'completed_review_count' => 0,
+                'average_span' => 0
+            ];
+            $initResult->MoveNext();
+        }
+        $initResult->Close();
+        unset($initResult);
+        
         // Get latest review request date
         $result = $this->retrieve(
             'SELECT	r.reviewer_id, MAX(r.date_notified) AS last_notified
