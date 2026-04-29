@@ -1,227 +1,166 @@
-=============================================================================
-=== Lumera === The Sangia Publishing House
-=== Version: 2.4.8-5
-=== GIT tag: lumera-2_4_8-5
-=== Release date: May 23, 2019
-==============================================================================
+# 📚 Lumera — fork Open Journal System by Sangia Publishing House
 
-# About
------
-Lumera has been developed by the Sangia Publishing House (SPH).
-For general information about Lumera and other open research systems, visit the
-SPH web site at <http://wizdam.sangia.org/>.
+**A modern, open-source journal management and publishing platform built on OJS 2.x by Sangia Publishing House (SPH). Designed for multi-lingual, secure, and scalable scholarly publishing.**
 
+---
 
-# License
--------
-Lumera is licensed under the GNU General Public License v3. See the file
-docs/COPYING for the complete terms of this license.
+<p align="center">
+  <img src="https://img.shields.io/badge/version-2.4.8--5-brightgreen?style=for-the-badge" alt="Version">
+  <a href="https://github.com/codelumera/lumera-library/releases/tag/lumera-2_4_8-5"><img src="https://img.shields.io/badge/tag-lumera--2__4__8--5-blue?style=for-the-badge" alt="Git Tag"></a>
+  <img src="https://img.shields.io/badge/PHP-^7.4-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP Version">
+  <img src="https://img.shields.io/badge/license-GPL%20v3.0-blue?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/release%20date-May%2023%2C%202019-lightgrey?style=for-the-badge" alt="Release Date">
+</p>
 
-Third parties are welcome to modify and redistribute Lumera in entirety or parts
-according to the terms of this license. Sangia Publishing House (SPH) also welcomes 
-patches for improvements or bug fixes to the software.
+<br>
 
+<p align="center">
+  <em>📄 Submission → 👀 Peer Review → 🏭 Production → 📡 Publication</em>
+</p>
 
-# System Requirements
--------------------
-Recommended server requirements:
+---
 
-	* PHP 7.4 or newer (including PHP 8.x)
-	* MySQL >= 5.1 or PostgreSQL >= 8.0
-	  (including PostgreSQL 8.x)
-	* Apache >= 1.3.2x or >= 2.0.4x or Microsoft IIS 6
-	* Operating system: Any OS that supports the above software, including
-	  Linux, BSD, Solaris, Mac OS X, Windows
+## 📖 About Lumera
 
-As SPH does not have the resources to test every possible combination of
-software versions and platforms, no guarantee of correct operation or support
-is implied. We welcome feedback from users who have deployed Lumera on systems
-other than those listed above.
+Lumera is a full-featured journal management system developed and maintained by **Sangia Publishing House (SPH)**. It is based on the widely adopted OJS 2.x codebase and enhanced with security hardening, performance optimizations, and user-friendly features tailored for scholarly publishing in diverse environments.
 
+Visit the official site for more information and other open research systems: [wizdam.sangia.org](http://wizdam.sangia.org/)
 
-# Recommended Configuration
--------------------------
+---
 
-A secure deployment can be best achieved by using the following policies:
+## ✨ Key Features
 
-	* Dedicate a database to Lumera; use unique credentials to access it.
-	  Configure this database to perform automated backups on a regular
-	  basis. Perform a manual backup when upgrading or performing
-	  maintenance.
+| Feature | Description |
+| :--- | :--- |
+| 🔄 **Complete Workflow** | Submission, review, editing, production, and publishing lifecycle |
+| 👥 **Multi-role Support** | Journal managers, editors, reviewers, authors, and readers with granular permissions |
+| 🌍 **Localization** | Fully translatable; supports UTF-8 and multiple languages |
+| 📊 **Usage Statistics** | Geolocation-aware usage stats with legacy GeoLite City integration |
+| ⏰ **Scheduled Tasks** | Automated reminders and maintenance via cron/Windows Task Scheduler |
+| 🔒 **Security Hardening** | Bcrypt hashing, force SSL login, file permission hardening, and recommended patches |
+| 🧩 **Plugin Architecture** | Extendable with plugins for various functionalities |
+| 📦 **Easy Installation** | Web-based installer and CLI installation option |
+| 📚 **Documentation** | Comprehensive docs covering upgrade, FAQ, and patches |
 
-	* Configure Lumera (config.inc.php) to use Bycript hashing rather than SHA1.
+---
 
-	* Configure Lumera (config.inc.php) to use force_ssl_login so that
-	  authenticated users communicate with the server via HTTPS.
+## 🚀 Quick Start
 
-	* Install Lumera so that the files directory is NOT a subdirectory of
-	  the Lumera installation and cannot be accessed directly via the web
-	  server. Restrict file permissions as much as possible. Automated
-	  backups of this directory should be roughly synchronized with
-	  database backups.
+### System Requirements
 
+| Software | Recommended |
+| :--- | :--- |
+| **PHP** | 7.4 or newer (including PHP 8.x) |
+| **Database** | MySQL ≥ 5.1 or PostgreSQL ≥ 8.0 |
+| **Web Server** | Apache ≥ 1.3.2x / 2.0.4x or Microsoft IIS 6 |
+| **Operating System** | Linux, BSD, Solaris, Mac OS X, Windows (any that supports the above) |
 
-# Installation
-------------
-Please review this document and the RELEASE document prior to installing Lumera.
-If you encounter problems, please also see the FAQ document in this directory.
+> ⚠️ **Note:** SPH does not test every combination; contributions from users on other platforms are welcome.
 
-To install Lumera:
+### Installation Steps
 
-	1. Extract the Lumera archive to the desired location in your web
-	   documents directory.
-	
-	2. Make the following files and directories (and their contents)
-	   writeable (i.e., by changing the owner or permissions with chown or
-	   chmod):
-	   
-	     * config.inc.php (optional -- if not writable you will be prompted
-	       to manually overwrite this file during installation)
-	     * public
-	     * cache
-	     * cache/t_cache
-	     * cache/t_config
-	     * cache/t_compile
-	     * cache/_db
-	
-	3. Create a directory to store uploaded files (submission files, etc.)
-	   and make this directory writeable. It is recommended that this
-	   directory be placed in a non-web-accessible location (or otherwise
-	   protected from direct access, such as via .htaccess rules).
-	   
-	4. Review and apply the patches recommended for your version of Lumera.
+```bash
+# 1. Extract Lumera to your web directory
+tar -xzf lumera-2.4.8-5.tar.gz -C /var/www/html/
 
-	   Starting with Lumera version 1.0.0-1, the Sangia Publishing House 
-	   development team maintains a publicly-available list of recommended 
-	   patches for each release. These will add no new functionality and 
-	   will typically consist of small, easy-to-read patches for specific 
-	   issues. A Recommended Patches list for your version of Lumera  can 
-	   be found on the SPH development wiki:
+# 2. Make necessary directories writeable
+chmod -R 755 config.inc.php public cache cache/t_cache cache/t_config cache/t_compile cache/_db
 
-	       <http://wizdam.sangia.org/wiki/index.php/Lumera_Recommended_Patches>
+# 3. Create a non-web-accessible upload directory
+mkdir /var/www/lumera-files
+chmod 755 /var/www/lumera-files
 
-	   To apply a recommended patch, open the bug report and download the 
-	   attached patch file(s). (Note that bug reports can quite often include 
-	   a number of patches, some relevant to the application (ie. Lumera) and 
-	   version you are running, and some not. Ensure that you download all 
-	   and only the patches specific to your application and version.) For 
-	   each patch you download, first attempt a dry-run application of the 
-	   patch, to ensure that it applies cleanly: 
+# 4. Apply recommended patches (if any)
+cd /var/www/html/lumera
+# patch -p1 --dry-run < PATCH_FILE   # test first
+# patch -p1 < PATCH_FILE             # apply
 
-	       $ patch -p1 --dry-run < PATCH_FILE
+# 5. Run the web installer or CLI installer
+php tools/install.php
+# Then open http://yourdomain.com/lumera and follow on-screen instructions
+```
 
-	   If the patch applies cleanly, then run the following command, which 
-	   will actually apply the patch: 
+For detailed instructions, refer to the full documentation inside the `docs/` folder.
 
-	       $ patch -p1 < PATCH_FILE
+---
 
-	   "PATCH_FILE" should be replaced with the path to the patch file that 
-	   was downloaded, e.g. "8279-lumera.patch".
+## 🔧 Configuration Recommendations
 
-	5. Open a web browser to <http://yourdomain.com/path/to/lumera/> and
-	   follow the on-screen installation instructions.
-	   
-	   Alternatively, the command-line installer can be used instead by
-	   running the command "php tools/install.php" from your Lumera directory.
-	   (Note: with the CLI installer you may need to chown/chmod the public
-	   and uploaded files directories after installation, if the Apache
-	   user is different from the user running the tool.)
+For a secure production deployment:
 
-	6. Recommended additional steps post-installation:
-	
-	     * Review config.inc.php for additional configuration settings
-	     * Review the FAQ document for frequently asked technical and
-	       server configuration questions.
+- **Database**: Dedicate a database to Lumera; use unique credentials and automated backups.
+- **Hashing**: Set `encryption = bcrypt` in `config.inc.php`.
+- **SSL**: Enable `force_ssl_login = On`.
+- **Files Directory**: Store uploaded files outside web root; restrict permissions.
+- **Scheduled Tasks**: Enable `scheduled_tasks = On` and set up a cron job:
+  ```bash
+  0 * * * * php /path/to/lumera/tools/runScheduledTasks.php
+  ```
 
+---
 
-# Upgrading
----------
-See docs/UPGRADE for information on upgrading from previous OJS 1.x and OJS 2.x
-releases.
+## 🌍 Localization
 
+To add a new language:
 
-# Localization
-------------
-To add support for other languages, the following sets of XML files must be
-localized and placed in an appropriately named directory (using ISO locale 
-codes, e.g. "fr_FR", is recommended):
+1. Translate XML files in `locale/`, `help/`, `registry/locale/`, and plugin-specific locale directories.
+2. Add the locale entry to `registry/locales.xml`.
+3. Install via Site Administration.
 
-	* locale/en_US
-	* help/en_US
-	* registry/locale/en_US
-	* rt/en_US
-	* plugins/[plugin category]/[plugin name]/locale, where applicable
+Full UTF-8 support requires PHP `mbstring` and MySQL ≥ 5.0 or PostgreSQL ≥ 7.1.
 
-The only critical files that need translation for the system to function
-properly are found in locale/en_US and registry/locale/en_US.
+---
 
-New locales must also be added to the file registry/locales.xml, after which
-they can be installed in the system through the site administration web
-interface.
-	
-Translations can be contributed back to PKP for distribution with future
-releases of Lumera.
+## 📦 Upgrading
 
-Server requirements for full Unicode (UTF-8) support:
+See the `docs/UPGRADE` document for instructions on migrating from earlier OJS 1.x/2.x releases.
 
-	* MySQL >= 5.0.0 or PostgreSQL >= 7.1
-	* PHP >= 7.4.0 compiled with support for the mbstring library
+---
 
+## 🧪 Third-party Libraries
 
-# Scheduled Tasks
----------------
-Lumera supports a mechanism to execute a variety of tasks at scheduled times
-(such as automatic sending of reminder notification emails).
+A full list is maintained in `lib/pkp/lib/libraries.txt`.
 
-To enable support for using scheduled tasks, edit your config.inc.php and
-set the scheduled_tasks setting to On, and set up your operating system to
-periodically execute (as the same user your webserver is running under) the
-PHP script found at tools/runScheduledTasks.php in your Lumera directory:
+- **GeoLite City**: Optional geolocation for usage stats. Download from [geoip-legacy](https://github.com/mokesano/geoip-legacy/blob/main/data/GeoLiteCity.dat) and place it into `plugins/generic/usageStats/`. Separate license agreement required.
 
-On *nix operating systems, this can be done by adding a simple cron task:
-	# crontab -e www
-	0 * * * *	php /path/to/lumera/tools/runScheduledTasks.php
-In this example the script would be executed every hour.
+---
 
-On Windows XP systems, this can be done by using the Windows Task Scheduler:
-	1) From the Control Panel, double-click on Scheduled Tasks.
-	2) Right-click within the Scheduled Tasks window and choose:
-		New > Scheduled Task
-	3) Under the Task tab, in the Run field, enter:
-		php c:\path\to\lumera\tools\runScheduledTasks.php
-	4) You will also be asked to specify the folder to start this task in
-	   (which will usually be the folder that PHP was installed into) and
-	   the user under which the task will be executed as.
-	5) Under Schedule tab and the Settings tab, you can more specifically
-	   configure the task. For example, you can choose start and end dates
-	   for this scheduled task and also how often to execute this task.
-	   
-If using the scheduled tasks script, it is recommended that the script be
-set up to execute at least once per day.
+## 🤝 Contributing
 
-Note that using the script also requires you to have the PHP command-line
-interpreter installed on your server.
+We welcome contributions! Please refer to the SPH development wiki for guidelines and recommended patches list:
 
+- [Lumera Recommended Patches](http://wizdam.sangia.org/wiki/index.php/Lumera_Recommended_Patches)
 
-# Third-party Libraries
----------------------
-	* See lib/pkp/lib/libraries.txt for a list of third-party libraries
-	  used by Lumera.
+For contributing translations or code, feel free to open issues or pull requests.
 
-	* Lumera supports the legacy GeoLiteCite database to approximate geolocation
-	  information for usage statistics. If you would like to use this optional
-	  functionality, you can download the database from MaxMind at:
-	  https://github.com/mokesano/geoip-legacy/blob/main/data/GeoLiteCity.dat
-	  You will need to decompress the file and place "GeoLiteCity.dat" into
-	  the "plugins/generic/usageStats" directory. A separate license agreement
-	  is required for this use of this database. For details, see:
-	  https://dev.maxmind.com/geoip/legacy/geolite/
+---
 
-# Contact/Support
----------------
-The forum is the recommended method of contacting the team with technical
-issues.
+## 🐛 Bug Reports & Support
 
-Forum: <http://forum.wizdam.sangia.org/>
-Bugs: <https://github.com/codelumera/lumera-library#issues>
-Email: <support.lumera@gmail.com>
+- **Forum**: [forum.wizdam.sangia.org](http://forum.wizdam.sangia.org/)
+- **Issue Tracker**: [GitHub Issues](https://github.com/codelumera/lumera-library/issues)
+- **Email**: [support.lumera@gmail.com](mailto:support.lumera@gmail.com)
+
+---
+
+## 📄 License
+
+Lumera is released under the **GNU General Public License v3.0**. See the file `docs/COPYING` for full terms.
+
+Third parties are free to modify and redistribute Lumera under the same license. SPH encourages patches and improvements.
+
+---
+
+<p align="center">
+  <br>
+  <creator>Built with ❤️ by <strong>Sangia Publishing House</strong> for the global scholarly community</creator>
+  <br><br>
+  <a href="https://github.com/codelumera/lumera-library/stargazers">
+    <img src="https://img.shields.io/github/stars/codelumera/lumera-library?style=social" alt="GitHub Stars">
+  </a>
+  <a href="https://github.com/codelumera/lumera-library/network/members">
+    <img src="https://img.shields.io/github/forks/codelumera/lumera-library?style=social" alt="GitHub Forks">
+  </a>
+  <br><br>
+  <copyright>© 2019 Sangia Publishing House. Licensed under GPL v3.0.</copyright>
+</p>
