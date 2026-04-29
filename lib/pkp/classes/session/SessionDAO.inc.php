@@ -101,7 +101,7 @@ class SessionDAO extends DAO {
         } catch (\Exception $e) {
             // Menangkap error Duplicate Entry (race condition dari bot)
             // dan mengalihkannya menjadi operasi update agar terhindar dari Fatal Error.
-            return $this->updateSession($session);
+            return $this->updateObject($session);
         }
     }
 
