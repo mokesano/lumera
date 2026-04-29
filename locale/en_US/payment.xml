@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../lib/pkp/dtd/locale.dtd">
+
+<!--
+  * locale/en_US/payment.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2003-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings.
+  -->
+
+<locale name="en_US" full_name="U.S. English">
+    
+    <message key="payment.gatewaySettings">Payment Gateway Settings</message>
+    <message key="checkout.cart.title">Checkout Cart Details</message>
+    <message key="checkout.billing.title">Checkout Billing Details</message>
+    <message key="checkout.payment.title">Checkout Payment Details</message>
+    <message key="checkout.globalBilling">All Billing</message>
+    <message key="checkout.invoiceDetail">Invoice Billing Details</message>
+    
+    <!-- Authenticate Management -->
+    <message key="authenticate.invoiceTitle">Validation Invoice Document</message>
+    <message key="authenticate.error.title">Verification Failed</message>
+    <message key="authenticate.error.malformedUrl">The verification link is incomplete or malformed. Please ensure you scan the entire QR code.</message>
+    <message key="authenticate.error.hashValidationFailed">The document could not be verified. The link may have been tampered with or has expired.</message>
+    <message key="authenticate.loa.title">Letter of Acceptance Verification</message>
+    <message key="authenticate.loa.verifiedTitle">Validated LoA Document</message>
+    <message key="authenticate.invoice.verifiedTitle">Validated Invoice Document</message>
+    <message key="authenticate.cert.verifiedTitle">Validated Certificate</message>
+    <message key="authenticate.cert.incompleteReview">Invalid document. The review process for this manuscript has not been completed.</message>
+    
+    <!-- Letter of Acceptance -->
+    <message key="document.loa.pageTitle">Letter of Acceptance</message>
+    <message key="document.loa.invalidRequest">The document link is invalid or malformed.</message>
+    <message key="document.loa.unauthorized">Access Denied. You do not have permission to download this manuscript document.</message>
+    <message key="document.loa.pendingPaymentAlert">The document (LoA) cannot be issued yet. Please settle the pending invoice below.</message>
+    <message key="document.loa.notFound">Manuscript data or acceptance status not found in the system.</message>
+    <message key="document.error.hashValidationFailed">Security verification failed. The document link may have been tampered with.</message>
+    
+    <!-- Certificate -->
+    <message key="document.cert.pageTitle">Certificate of Achievement</message>
+    <message key="document.cert.invalidRequest">The certificate link is invalid or malformed.</message>
+    <message key="document.cert.unauthorized">Access Denied. This certificate does not belong to you.</message>
+    <message key="document.cert.incompleteReview">The certificate cannot be issued yet because the review task is incomplete.</message>
+    <message key="document.cert.notFound">Certificate data not found.</message>
+    
+	<!-- Billing -->
+	<message key="billing.globalBilling">All Billings</message>
+	<message key="billing.activeInvoices">Billing Active Invoices</message>
+	<message key="billing.historyInvoices">History Invoices</message>
+	<message key="billing.invoiceDetail">Invoice Details</message>
+    <message key="billing.error.negativeAmount">Invalid invoice amount (cannot be negative).</message>
+    <message key="billing.feeType.bundlePayment">Bundle Payment Package</message>
+    <message key="billing.error.pdfGenerationFailed">The system failed to generate the PDF document at this time. Please contact the administrator.</message>
+    <message key="billing.error.malformedRequest">The document link is invalid or malformed.</message>
+    <message key="billing.error.hashValidationFailed">Security verification failed. The document may have been tampered with.</message>
+    <message key="billing.error.invoiceNotFound">Invoice not found or you do not have access permissions.</message>
+    <message key="billing.error.alreadyPaid">Action rejected. This invoice has already been paid.</message>
+    <message key="billing.error.pdfGenerationFailed">The system failed to generate the PDF document at this time. Please contact the administrator.</message>
+    <message key="billing.error.cannotCancel">Invoice cannot be canceled as it may already be paid or you lack the necessary access.</message>
+    <message key="billing.success.paymentSessionCreated">Payment session successfully created.</message>
+    <message key="billing.success.invoiceCancelled">Invoice successfully canceled.</message>
+    
+    <!-- Order Shopping Cart -->
+    <message key="order.shoppingCart">Shopping Cart</message>
+    <message key="order.error.invalidMethod">Request method not allowed.</message>
+    <message key="order.error.csrfInvalid">Page session has expired. Please reload and try again.</message>
+    <message key="order.error.emptyCart">Your shopping cart is empty. There is nothing to checkout.</message>
+    <message key="order.error.checkoutFailed">Failed to process cart. Please try again later or contact the administrator.</message>
+    <message key="order.success.checkoutComplete">Checkout successful. Your official invoice has been issued.</message>
+    
+    <!-- Redeem Wallet -->
+    <message key="redeem.walletDashboard">Virtual Wallet & Loyalty Points</message>
+    <message key="redeem.error.invalidMethod">Request method not allowed.</message>
+    <message key="redeem.error.csrfInvalid">Session has expired. Please reload the page.</message>
+    <message key="redeem.error.invalidPointAmount">Invalid point redemption amount.</message>
+    <message key="redeem.error.insufficientPoints">Insufficient point balance for this transaction.</message>
+    <message key="redeem.error.exchangeFailed">Failed to process point exchange. Please contact the administrator.</message>
+    <message key="redeem.success.pointsExchanged">Points successfully exchanged for a discount coupon.</message>
+    
+</locale>

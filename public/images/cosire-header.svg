@@ -1,0 +1,107 @@
+<svg width="1300" height="89" xmlns="http://www.w3.org/2000/svg">
+ <filter id="d" filterUnits="objectBoundingBox" y="-39.6%" x="-35.2%" height="156.6%" width="155.5%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+
+ <filter id="c" filterUnits="objectBoundingBox" y="-17.5%" x="-16.1%" height="125%" width="125.4%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="b" filterUnits="objectBoundingBox" y="-17.5%" x="-16.1%" height="125%" width="125.4%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="o" filterUnits="objectBoundingBox" y="-22.4%" x="-20.6%" height="132%" width="132.6%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="n" filterUnits="objectBoundingBox" y="-17.5%" x="-16.1%" height="125%" width="125.4%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="m" filterUnits="objectBoundingBox" y="-49.8%" x="-44.3%" height="171.1%" width="170%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="l" filterUnits="objectBoundingBox" y="-35.2%" x="-31.4%" height="150.3%" width="149.5%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="k" filterUnits="objectBoundingBox" y="-52.5%" x="-50%" height="175%" width="178.9%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="j" filterUnits="objectBoundingBox" y="-37.5%" x="-33.9%" height="153.6%" width="153.6%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="a" filterUnits="objectBoundingBox" y="-24.4%" x="-22.3%" height="134.9%" width="135.2%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="i" filterUnits="objectBoundingBox" y="-52.5%" x="-47.5%" height="175%" width="175%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="h" filterUnits="objectBoundingBox" y="-37.5%" x="-33.9%" height="153.6%" width="153.6%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="g" filterUnits="objectBoundingBox" y="-51.6%" x="-45.1%" height="173.7%" width="171.3%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="f" filterUnits="objectBoundingBox" y="-36%" x="-32%" height="151.4%" width="150.5%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <filter id="e" filterUnits="objectBoundingBox" y="-56%" x="-49.7%" height="180%" width="178.5%">
+  <feGaussianBlur stdDeviation="2"/>
+ </filter>
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="402" width="582" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <g id="svg_1" opacity="0.756">
+   <path id="svg_2" transform="rotate(180 772.3 55.5)" filter="url(#a)" d="m768.099976,64l42.5,43l-42.599976,0"/>
+   <path id="svg_3" d="m776.5,47l-42.5,-43l42.599976,0" fill-opacity="0.107" fill="#FFF"/>
+  </g>
+  <path id="svg_4" d="m591.299988,32.099998l59.100037,59.900002l-59.099976,0" fill="#E15216"/>
+  <path id="svg_5" transform="rotate(180 637.825 92.033)" filter="url(#b)" d="m625.299988,92.099998l59.099976,59.900002l-59.099976,0"/>
+  <path id="svg_6" d="m650.349976,91.966003l-59.099976,-59.900002l59.099976,0" fill-opacity="0.107" fill="#FFF"/>
+  <path id="svg_7" d="m591.5,32.400002l59.400024,0.099998l-29.600037,29.799999" fill-opacity="0.707" fill="#FFF" opacity="0.266"/>
+  <path id="svg_8" transform="rotate(180 150.533 64.5)" filter="url(#c)" d="m138,64.5l59.100006,60l-59.100006,0"/>
+  <path id="svg_9" d="m163.065994,64.5l-59.099991,-60l59.099991,0" fill-opacity="0.09" fill="#FFF"/>
+  <path id="svg_10" d="m163.100006,4.5l59,60l-59,0" fill="#1B3051"/>
+  <path id="svg_11" d="m734,4.4l42.5,0.1l-21.200012,21.200001" fill-opacity="0.707" fill="#FFF" opacity="0.242"/>
+  <path id="svg_12" d="m734.099976,4.4l42.299988,42.899999l-42.299988,0" fill="#1B3051"/>
+  <path id="svg_13" d="m776.200012,47l20,20l-20,0" fill="#1B3051"/>
+  <path id="svg_14" transform="rotate(180 193.907 107.683)" filter="url(#d)" d="m197.399994,124.400002l27,26.499992l-27,0"/>
+  <path id="svg_15" d="m190.414001,90.966003l-27,-26.5l27,0" fill-opacity="0.253" fill="#FFF"/>
+  <g id="svg_16" opacity="0.313">
+   <path id="svg_17" transform="rotate(-45 193.913 94.39)" filter="url(#e)" d="m193.5,51.799999l19.199997,18.700001l-19.199997,0"/>
+   <path id="svg_18" d="m163.505005,64.566002l26.799988,-0.353004l-13.576996,13.576004" fill-opacity="0.53" fill="#FFF"/>
+  </g>
+  <path id="svg_19" d="m104.099998,4.7l59.400002,0.1l-29.600006,29.799998" fill="#FFF" opacity="0.16"/>
+  <path id="svg_20" transform="rotate(180 486.862 76.365)" filter="url(#f)" d="m489,91.800003l29.700012,29.199997l-29.700012,0"/>
+  <path id="svg_21" d="m484.723999,60.93l-29.700012,-29.200001l29.700012,0" fill-opacity="0.073" fill="#FFF"/>
+  <g id="svg_22" opacity="0.359">
+   <path id="svg_23" transform="rotate(-45 486.862 61.764)" filter="url(#g)" d="m485.5,18.4l21.100006,20.300001l-21.100006,0"/>
+   <path id="svg_24" d="m455.235992,32.063999l29.273987,-0.566l-14.919983,14.92" fill-opacity="0.53" fill="#FFF"/>
+  </g>
+  <path id="svg_25" d="m341,4l29,29l-29,0" fill="#1B3051"/>
+  <path id="svg_26" transform="rotate(180 193.5 38.5)" filter="url(#h)" d="m18,45l28,28l-28,0"/>
+  <path id="svg_27" d="m369,32l-28,-28l28,0" fill-opacity="0.276" fill="#FFF"/>
+  <g id="svg_28" opacity="0.488">
+   <path id="svg_29" transform="rotate(-45 216.435 -406.437)" filter="url(#i)" d="m14.2,-28.200001l20.000001,20.000001l-20.000001,0"/>
+   <path id="svg_30" d="m340.886993,4.02l28.283997,0l-14.140015,14.14" fill-opacity="0.43" fill="#FFF"/>
+  </g>
+  <path id="svg_31" transform="rotate(180 221.5 67.5)" filter="url(#j)" d="m46,74l28,28l-28,0"/>
+  <path id="svg_32" d="m397,61l-28,-28l28,0" fill-opacity="0.073" fill="#FFF"/>
+  <g id="svg_33" opacity="0.548">
+   <path id="svg_34" transform="rotate(-45 243.935 -377.437)" filter="url(#k)" d="m42.200001,0.8l19,19.999999l-19,0"/>
+   <path id="svg_35" d="m368.73999,32.665001l27.578003,0.707001l-13.434998,13.434998" fill-opacity="0.43" fill="#FFF"/>
+  </g>
+  <path id="svg_36" transform="rotate(180 517.48 108.09)" filter="url(#l)" d="m519.299988,123.199997l30.299988,29.800003l-30.299988,0"/>
+  <path id="svg_37" d="m515.659973,92.980003l-30.300018,-29.800003l30.300018,0" fill-opacity="0.073" fill="#FFF"/>
+  <g id="svg_38" opacity="0.453">
+   <path id="svg_39" transform="rotate(-45 517.492 93.077)" filter="url(#m)" d="m516,49.299999l21.400024,21.100002l-21.400024,0"/>
+   <path id="svg_40" d="m485.481995,63.176998l30.052002,-0.211998l-15.132019,15.132" fill-opacity="0.43" fill="#FFF"/>
+  </g>
+  <path id="svg_41" transform="rotate(180 210.467 64.5)" filter="url(#n)" d="m197.899994,64.5l59.100006,60l-59.100006,0"/>
+  <path id="svg_42" d="m223.033997,64.5l-59.099991,-60l59.099991,0" fill-opacity="0.107" fill="#FFF"/>
+  <path id="svg_43" d="m163.100006,4.9l59.5,0.1l-29.699997,29.799999" fill-opacity="0.707" fill="#FFF" opacity="0.266"/>
+  <path id="svg_44" transform="rotate(180 970.07 80.547)" filter="url(#o)" d="m964.099976,87.099998l46,46.900002l-46,0"/>
+  <path id="svg_45" d="m976.039978,73.994003l-46,-46.900003l46,0" fill-opacity="0.107" fill="#FFF"/>
+  <path id="svg_46" d="m929.200012,27.200001l47.099976,0.099998l-23.5,23.600002" fill-opacity="0.707" fill="#FFF" opacity="0.137"/>
+ </g>
+</svg>

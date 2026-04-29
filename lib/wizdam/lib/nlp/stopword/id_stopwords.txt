@@ -1,0 +1,58 @@
+# --- WIZDAM NLP STOPWORDS ---
+# [INTENT] Indikator Context Aware
+[INTENT] jelaskan
+[INTENT] fungsi
+[INTENT] halaman
+[INTENT] tentang
+[INTENT] apa
+[INTENT] maksud
+[INTENT] guna
+
+# [LANG] Indikator Bahasa ID
+[LANG] atau
+[LANG] yaitu
+[LANG] bahwa
+[LANG] guna
+[LANG] sebagai
+[LANG] sebuah
+[LANG] semua
+[LANG] maka
+[LANG] sebab
+[LANG] kenapa
+[LANG] kalau
+
+# Stopwords Umum
+aku
+anda
+kita
+kami
+saya
+dia
+mereka
+ini
+itu
+tersebut
+yang
+untuk
+pada
+ke
+dari
+oleh
+akan
+agar
+dan
+di
+seperti
+dengan
+adalah
+bisa
+harus
+perlu
+mungkin
+telah
+sudah
+tidak
+jangan
+kamu
+help
+tanya

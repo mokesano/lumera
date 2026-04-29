@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/en_US/metadata.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Metadata Localization strings for the en_US (English) locale.
+  -->
+
+<locale name="en_US" full_name="English">
+    
+	<!-- FIXME: move to meta-data plug-ins -->
+	<!-- messages used by meta-data filters -->
+	<message key="metadata.filters.crossref.settings.email.displayName">CrossRef Registration Email</message>
+	<message key="metadata.filters.crossref.settings.email.validationMessage">Please enter a valid CrossRef registration email. You can register your email for free on the CrossRef web site.</message>
+	<message key="metadata.filters.isbndb.settings.apiKey.displayName">ISBNdb API Key</message>
+	<message key="metadata.filters.isbndb.settings.apiKey.validationMessage">Please enter your ISBNdb API key. If you don't have a key yet you can request one for free from the ISBNdb project.</message>
+	<message key="metadata.filters.pubmed.settings.email.displayName">PubMed Registration Email</message>
+	<message key="metadata.filters.pubmed.settings.email.validationMessage">Please enter a valid PubMed registration email if you have one.</message>
+	<message key="metadata.filters.worldcat.settings.apiKey.displayName">WorldCat API Key</message>
+	<message key="metadata.filters.worldcat.settings.apiKey.validationMessage">Please enter a valid WorldCat API key if you have one.</message>
+	<message key="metadata.filters.paracite.settings.citationModule.displayName">Citation Module</message>
+	<message key="metadata.filters.paracite.settings.citationModule.validationMessage">Please select one of the given citation modules.</message>
+	<message key="metadata.filters.settings.isOptional.displayName">Don't use by default (will still be available to the editor)</message>
+	<message key="metadata.filters.settings.isOptional.validationMessage">Internal error. A non-valid value has been posted for the 'optional filter' setting. Please report this as a bug.</message>
+
+	<!-- messages shared between MD schemas -->
+	<message key="metadata.property.displayName.author">Authors</message>
+	<message key="metadata.property.validationMessage.author">For best results, authors should be entered in the following format: Coleman Jr, D. (Ralf) Dr.</message>
+	<message key="metadata.property.displayName.editor">Editors</message>
+	<message key="metadata.property.validationMessage.editor">For best results, editors should be entered in the following format: Coleman Jr, D. (Ralf) Dr.</message>
+
+	<!-- NLM-specific messages -->
+	<message key="metadata.property.displayName.article-title">Article/Paper Title</message>
+	<message key="metadata.property.validationMessage.article-title">Please enter a valid article/paper title.</message>
+	<message key="metadata.property.displayName.source">Publication Title</message>
+	<message key="metadata.property.validationMessage.source">Please enter a valid publication title.</message>
+	<message key="metadata.property.displayName.date">Publication Date</message>
+	<message key="metadata.property.validationMessage.date">Please enter a valid publication date (format: YYYY-MM-DD).</message>
+	<message key="metadata.property.displayName.access-date">Access Date</message>
+	<message key="metadata.property.validationMessage.access-date">Please enter a valid access date (format: YYYY-MM-DD).</message>
+	<message key="metadata.property.displayName.issue">Issue</message>
+	<message key="metadata.property.validationMessage.issue">Please enter a valid issue.</message>
+	<message key="metadata.property.displayName.volume">Volume</message>
+	<message key="metadata.property.validationMessage.volume">Please enter a valid volume.</message>
+	<message key="metadata.property.displayName.season">Season</message>
+	<message key="metadata.property.validationMessage.season">Please enter a valid season identifier.</message>
+	<message key="metadata.property.displayName.chapter-title">Chapter Title</message>
+	<message key="metadata.property.validationMessage.chapter-title">Please enter a valid chapter title.</message>
+	<message key="metadata.property.displayName.edition">Edition</message>
+	<message key="metadata.property.validationMessage.edition">Please enter a valid edition.</message>
+	<message key="metadata.property.displayName.series">Series</message>
+	<message key="metadata.property.validationMessage.series">Please enter a valid series.</message>
+	<message key="metadata.property.displayName.supplement">Supplement</message>
+	<message key="metadata.property.validationMessage.supplement">Please enter a valid supplement.</message>
+	<message key="metadata.property.displayName.conf-date">Conference Date</message>
+	<message key="metadata.property.validationMessage.conf-date">Please enter a valid conference date (format: YYYY-MM-DD).</message>
+	<message key="metadata.property.displayName.conf-loc">Conference Location</message>
+	<message key="metadata.property.validationMessage.conf-loc">Please enter a valid conference location.</message>
+	<message key="metadata.property.displayName.conf-name">Conference Name</message>
+	<message key="metadata.property.validationMessage.conf-name">Please enter a valid conference name.</message>
+	<message key="metadata.property.displayName.conf-sponsor">Conference Sponsor</message>
+	<message key="metadata.property.validationMessage.conf-sponsor">Please enter a valid conference sponsor.</message>
+	<message key="metadata.property.displayName.institution">Institution</message>
+	<message key="metadata.property.validationMessage.institution">Please enter a valid institution.</message>
+	<message key="metadata.property.displayName.fpage">First Page</message>
+	<message key="metadata.property.validationMessage.fpage">Please enter a valid first page (must be a numeric value).</message>
+	<message key="metadata.property.displayName.lpage">Last Page</message>
+	<message key="metadata.property.validationMessage.lpage">Please enter a valid last page (must be a numeric value).</message>
+	<message key="metadata.property.displayName.size">Number of Pages</message>
+	<message key="metadata.property.validationMessage.size">Please enter a valid total number of pages (must be a numeric value).</message>
+	<message key="metadata.property.displayName.publisher-loc">Publisher Location</message>
+	<message key="metadata.property.validationMessage.publisher-loc">Please enter a valid publisher location.</message>
+	<message key="metadata.property.displayName.publisher-name">Publisher Name</message>
+	<message key="metadata.property.validationMessage.publisher-name">Please enter a valid publisher name.</message>
+	<message key="metadata.property.displayName.isbn">ISBN</message>
+	<message key="metadata.property.validationMessage.isbn">Please enter a valid ISBN (9 or 13 numbers).</message>
+	<message key="metadata.property.displayName.issn">Print ISSN</message>
+	<message key="metadata.property.validationMessage.issn">Please enter a valid Print ISSN.</message>
+	<message key="metadata.property.displayName.eissn">eISSN</message>
+	<message key="metadata.property.validationMessage.eissn">Please enter a valid eISSN.</message>
+	<message key="metadata.property.displayName.doi">DOI</message>
+	<message key="metadata.property.validationMessage.doi">Please enter a valid DOI.</message>
+	<message key="metadata.property.displayName.publisher-id">Custom Publication ID</message>
+	<message key="metadata.property.validationMessage.publisher-id">Please enter a valid custom publication ID.</message>
+	<message key="metadata.property.displayName.coden">CODEN</message>
+	<message key="metadata.property.validationMessage.coden">Please enter a valid CODEN.</message>
+	<message key="metadata.property.displayName.sici">SICI</message>
+	<message key="metadata.property.validationMessage.sici">Please enter a valid SICI.</message>
+	<message key="metadata.property.displayName.pmid">PMID</message>
+	<message key="metadata.property.validationMessage.pmid">Please enter a valid PMID.</message>
+	<message key="metadata.property.displayName.uri">Link to the Publication</message>
+	<message key="metadata.property.validationMessage.uri">Please enter a valid alternative link to the publication.</message>
+	<message key="metadata.property.displayName.comment">Comment</message>
+	<message key="metadata.property.validationMessage.comment">Please enter a valid comment.</message>
+	<message key="metadata.property.displayName.annotation">Annotation</message>
+	<message key="metadata.property.validationMessage.annotation">Please enter a valid annotation.</message>
+	<message key="metadata.property.displayName.publication-type">Publication Type</message>
+	<message key="metadata.property.validationMessage.publication-type">Please make sure that you always set a publication type. Currently supported values are book (for books or book chapters) and journal (for journal articles). Otherwise the citation output formatting will not work correctly.</message>
+
+	<!-- MODS-specific messages -->
+	<message key="metadata.property.displayName.title-type">Title Type</message>
+	<message key="metadata.property.validationMessage.title-type">Please make sure that you set a valid title type. Supported values are 'abbreviated', 'translated', 'alternative' and 'uniform'.</message>
+	<message key="metadata.property.displayName.nonSort">Part of title ignored while sorting</message>
+	<message key="metadata.property.validationMessage.nonSort">Please only enter the initial characters of the title that should be ignored when sorting the title.</message>
+	<message key="metadata.property.displayName.title">Title</message>
+	<message key="metadata.property.validationMessage.title">Please enter a valid title.</message>
+	<message key="metadata.property.displayName.subTitle">Subtitle</message>
+	<message key="metadata.property.validationMessage.subTitle">Please enter a valid subtitle.</message>
+	<message key="metadata.property.displayName.partNumber">Part Number</message>
+	<message key="metadata.property.validationMessage.partNumber">Please enter a valid part number.</message>
+	<message key="metadata.property.displayName.partName">Part Name</message>
+	<message key="metadata.property.validationMessage.partName">Please enter a valid part name.</message>
+	<message key="metadata.property.displayName.name-type">Name Type</message>
+	<message key="metadata.property.validationMessage.name-type">Please make sure that you set a valid name type. Supported values are 'personal', 'corporate' and 'conference'.</message>
+	<!-- FIXME: end -->
+	
+</locale>

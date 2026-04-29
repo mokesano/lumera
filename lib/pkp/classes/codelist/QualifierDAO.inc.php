@@ -1,0 +1,74 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @file classes/codelist/QualifierDAO.inc.php
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2000-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * @class QualifierDAO
+ * @ingroup codelist
+ * @see Qualifier
+ *
+ * @brief Operations for retrieving and modifying Subject Qualifier objects.
+ *
+ */
+
+import('lib.pkp.classes.codelist.Qualifier');
+import('lib.pkp.classes.codelist.CodelistItemDAO');
+
+class QualifierDAO extends CodelistItemDAO {
+
+    /**
+     * Constructor.
+     */
+    public function __construct() {
+        parent::__construct();
+    }
+
+    /**
+     * [SHIM] Backward Compatibility
+     */
+    public function QualifierDAO() {
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'. Please refactor to parent::__construct().", 
+                E_USER_DEPRECATED
+            );
+        }
+        self::__construct();
+    }
+
+    /**
+     * Get the filename of the qualifier database
+     * @param string $locale
+     * @return string
+     */
+    public function getFilename(string $locale): string {
+        if (!AppLocale::isLocaleValid($locale)) {
+            $locale = AppLocale::MASTER_LOCALE;
+        }
+        return "lib/pkp/locale/$locale/bic21qualifiers.xml";
+    }
+
+    /**
+     * Get the base node name particular codelist database
+     * This is also the node name in the XML.
+     * @return string
+     */
+    public function getName(): string {
+        return 'qualifier';
+    }
+
+    /**
+     * Get the name of the CodelistItem subclass.
+     * @return Qualifier
+     */
+    public function newDataObject(): Qualifier {
+        return new Qualifier();
+    }
+}
+
+?>

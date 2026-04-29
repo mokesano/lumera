@@ -1,0 +1,118 @@
+/* Typography
+------------------------------------------------------------------------------*/
+/*==== NexusSans ====*/
+@font-face {
+ font-family:NexusSans;
+ font-weight:400;
+ src:url(/fonts/NexusSansWebPro.eot);
+ src:url(/fonts/NexusSansWebPro.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSansWebPro.woff) format("woff"),url(/fonts/NexusSansCompPro.ttf) format("truetype")
+}
+
+@font-face {
+ font-family:NexusSans;
+ font-weight:700;
+ src:url(/fonts/NexusSansWebPro-Bold.eot);
+ src:url(/fonts/NexusSansWebPro-Bold.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSansWebPro-Bold.woff) format("woff"),url(/fonts/NexusSansCompPro-Bold.ttf) format("truetype")
+}
+
+@font-face {
+ font-family:NexusSans;
+ font-weight:normal;
+ font-style: italic;
+ src:url(/fonts/NexusSansWebPro-Italic.eot);
+ src:url(/fonts/NexusSansWebPro-Italic.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSansWebPro-Italic.woff) format("woff"),url(/fonts/NexusSansCompPro-Italic.ttf) format("truetype")
+}
+
+/*==== NexusSerif ====*/
+@font-face {
+ font-family:NexusSerif;
+ font-weight:400;
+ src:url(/fonts/NexusSerifWebPro.eot);
+ src:url(/fonts/NexusSerifWebPro.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSerifWebPro.woff) format("woff"),url(/fonts/NexusSerifCompPro.ttf) format("truetype")
+}
+
+@font-face {
+ font-family:NexusSerif;
+ font-weight:700;
+ src:url(/fonts/NexusSerifWebPro-Bold.eot);
+ src:url(/fonts/NexusSerifWebPro-Bold.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSerifWebPro-Bold.woff) format("woff"),url(/fonts/NexusSerifCompPro-Bold.ttf) format("truetype")
+}
+
+@font-face {
+ font-family:NexusSerif;
+ font-weight:normal;
+ font-style: italic;
+ src:url(/fonts/NexusSerifWebPro-Italic.eot);
+ src:url(/fonts/NexusSerifWebPro-Italic.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSerifWebPro-Italic.woff) format("woff"),url(/fonts/NexusSerifCompPro-Italic.ttf) format("truetype")
+}
+
+/*==== ElsevierSans ====*/
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-Light.woff2) format("woff2");
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  font-family:Elsevier Sans Light
+}
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-LightItalic.woff2) format("woff2");
+  font-style:italic;
+  font-weight:400;
+  font-display:swap;
+  font-family:Elsevier Sans Light
+}
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-Regular.woff2) format("woff2");
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  font-family:Elsevier Sans
+}
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-Bold.woff2) format("woff2");
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+  font-family:Elsevier Sans
+}
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-RegularItalic.woff2) format("woff2");
+  font-style:italic;
+  font-weight:400;
+  font-display:swap;
+  font-family:Elsevier Sans
+}
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-BoldItalic.woff2) format("woff2");
+  font-style:italic;
+  font-weight:700;
+  font-display:swap;
+  font-family:Elsevier Sans
+}
+
+/*==== Europa ====*/
+@font-face {
+    font-family:'Europa';
+    src:url("/fonts/europa-bold-webfont.eot");
+    src:url("/fonts/europa-bold-webfont.eot?#iefix") format("embedded-opentype"),url("/fonts/europa-bold-webfont.woff2") format("woff2"),url("/fonts/europa-bold-webfont.woff") format("woff"), url("/fonts/europa-bold-webfont.ttf") format("truetype"),url("/fonts/europa-bold-webfont.svg#europabold") format("svg");
+    font-weight:700;
+    font-style:normal;
+}
+
+@font-face {
+    font-family:'Europa';
+    src:url("/fonts/europa-light-webfont.eot");
+    src:url("/fonts/europa-light-webfont.eot?#iefix") format("embedded-opentype"),
+        url("/fonts/europa-light-webfont.woff2") format("woff2"),url("/fonts/europa-light-webfont.woff") format("woff"),url("/fonts/europa-light-webfont.ttf") format("truetype"),url("/fonts/europa-light-webfont.svg#europalight") format("svg");
+    font-weight:200;
+    font-style:normal;
+}
+
+@font-face {
+    font-family:'Europa';
+    src:url("/fonts/europa-regular-webfont.eot");
+    src:url("/fonts/europa-regular-webfont.eot?#iefix") format("embedded-opentype"),
+        url("/fonts/europa-regular-webfont.woff2") format("woff2"),url("/fonts/europa-regular-webfont.woff") format("woff"),url("/fonts/europa-regular-webfont.ttf") format("truetype"),url("/fonts/europa-regular-webfont.svg#europaregular") format("svg");
+    font-weight:400;
+    font-style:normal;
+}

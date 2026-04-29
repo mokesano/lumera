@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE version SYSTEM "../../../lib/pkp/dtd/version.dtd">
+<version>
+    <application>publisherId</application>
+    <type>plugins.pubIds</type>
+    <release>1.0.0.0</release>
+    <date>2025-12-20</date>
+    <lazy-load>1</lazy-load>
+    <class>PublisherIdPlugin</class>
+</version>

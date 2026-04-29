@@ -1,0 +1,21 @@
+.u-hide {
+    display:none !important;
+}
+/**========= article PDF ==========**/
+.galley_view iframe {
+ width: 100%;
+ height: 100%;
+ border: none;
+}
+.galley_view {
+ position: absolute;
+ top: 0;
+ left: 0;
+ right: 0;
+ bottom: 0;
+ overflow-y: hidden;    
+ z-index:999;
+ -webkit-transition: left 200ms ease, right 200ms ease;
+ transition: left 200ms ease, right 200ms ease;
+}
+/**========= End article PDF ==========**/

@@ -1,0 +1,100 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @file classes/security/authorization/HandlerOperationPolicy.inc.php
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2000-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * @class HandlerOperationPolicy
+ * @ingroup security_authorization
+ *
+ * @brief Abstract base class that provides infrastructure
+ * to control access to handler operations.
+ */
+
+import('lib.pkp.classes.security.authorization.AuthorizationPolicy');
+
+class HandlerOperationPolicy extends AuthorizationPolicy {
+    /** @var PKPRequest */
+    public $_request;
+
+    /** @var array the target operations */
+    public $_operations = array();
+
+    /**
+     * Constructor
+     * @param $request PKPRequest
+     * @param $operations array|string either a single operation or a list of operations that
+     * this policy is targeting.
+     * @param $message string a message to be displayed if the authorization fails
+     */
+    public function __construct($request, $operations, $message = null) {
+        parent::__construct($message);
+        // Removed & from reference assignment
+        $this->_request = $request;
+
+        // Make sure a single operation doesn't have to
+        // be passed in as an array.
+        assert(is_string($operations) || is_array($operations));
+        if (!is_array($operations)) {
+            $operations = array($operations);
+        }
+        $this->_operations = $operations;
+    }
+
+    /**
+     * [SHIM] Backward Compatibility
+     * @param $request PKPRequest
+     * @param $operations array|string
+     * @param $message string
+     */
+    public function HandlerOperationPolicy($request, $operations, $message = null) {
+        trigger_error(
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::HandlerOperationPolicy(). Please refactor to use parent::__construct().",
+            E_USER_DEPRECATED
+        );
+        self::__construct($request, $operations, $message);
+    }
+
+    //
+    // Setters and Getters
+    //
+    /**
+     * Return the request.
+     * @return PKPRequest
+     */
+    public function getRequest() {
+        return $this->_request;
+    }
+
+    /**
+     * Return the operations whitelist.
+     * @return array
+     */
+    public function getOperations() {
+        return $this->_operations;
+    }
+
+
+    //
+    // Private helper methods
+    //
+    /**
+     * Check whether the requested operation is on
+     * the list of permitted operations.
+     * @return boolean
+     */
+    protected function _checkOperationWhitelist() {
+        // Only permit if the requested operation has been whitelisted.
+        // Removed & reference
+        $router = $this->_request->getRouter();
+        $requestedOperation = $router->getRequestedOp($this->_request);
+        assert(!empty($requestedOperation));
+        return in_array($requestedOperation, $this->_operations);
+    }
+}
+
+?>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2003-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Plik językowy dla pl_PL
+  *
+  -->
+
+<locale name="pl_PL" full_name="Język Polski">
+	<message key="installer.additionalLocales">Dodatkowe języki</message>
+	<message key="installer.administratorAccount">Konto administratora</message>
+	<message key="installer.administratorAccountInstructions">To konto użytkownika dostanie uprawnienia nadrzędnego administratora strony. Dodatkowe konta użytkowników mogą zostać utworzone po instalacji.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="formError">NIE</span>]]></message>
+	<message key="installer.checkYes">Tak</message>
+	<message key="installer.clientCharset">Kodowanie znaków (klient)</message>
+	<message key="installer.clientCharsetInstructions">Kodowanie znaków używane przez system do wysyłania oraz odbierania danych.</message>
+	<message key="installer.configFileError"><![CDATA[Plik konfiguracyjny <tt>config.inc.php</tt> nie istnieje lub nie jest przeznaczony do odczytu.]]></message>
+	<message key="installer.connectionCharset">Kodowanie znaków (połączenie)</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[Kodowanie znaków używane przez system do komunikacji z lokalną bazą danych. Powinno być identyczne jak w przypadku klienta. Należy pamiętać, że ta funkcjonalność jest obsługiwana tylko przez MySQL >= 5.x lub PostgreSQL >= 8.x. Wybierz "Nie dotyczy", jeśli Twój serwer bazy danych nie spełnia tych wymagań.]]></message>
+	<message key="installer.contentsOfConfigFile">Zawartość pliku konfiguracyjnego</message>
+	<message key="installer.createDatabase">Utwórz nową bazę danych</message>
+	<message key="installer.createDatabaseInstructions">Aby zdalnie utworzyć bazę danych, musisz posiadać stosowne uprawnienia oraz odpowiednią konfigurację serwera. Jeżeli instalacja nie powiedzie się z pomocą tej opcji, utwórz bazę manualnie i spróbuj instalacji ponownie.</message>
+	<message key="installer.databaseCharset">Kodowanie znaków (baza danych)</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[Kodowanie znaków stosowane przez bazę danych. Należy pamiętać, że ta funkcjonalność jest obsługiwana tylko przez MySQL >= 5.x lub PostgreSQL >= 8.x. Wybierz "Nie dotyczy", jeśli Twój serwer bazy danych nie spełnia tych wymagań.]]></message>
+	<message key="installer.databaseDriver">Sterownik bazy danych</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>System obecnie obsługuje tylko MySQL i PostgreSQL. W przypadku, gdy nie możesz wybrać jednego z nich, skontaktuj się z administratorem systemu, aby upewnić się, że Twój serwer posiada wymagane rozszerzenia PHP.</strong>]]></message>
+	<message key="installer.databaseHost">Host</message>
+	<message key="installer.databaseHostInstructions">Zostaw pole puste jeżeli chcesz połączyć się lokalnie z wykorzystaniem gniazd. Nie jest to konieczne w przypadku MySQL, który wykorzystuje gniazda automatycznie po wpisaniu 'localhost'.</message>
+	<message key="installer.databaseName">Nazwa bazy danych</message>
+	<message key="installer.databasePassword">Hasło</message>
+	<message key="installer.databaseSettings">Ustawienia bazy danych</message>
+	<message key="installer.databaseUsername">Użytkownik</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Szyfrowanie haseł wykorzystuje <strong>bcrypt</strong> — bezpieczny algorytm haszowania będący standardem branżowym. Nie wymaga dodatkowej konfiguracji.]]></message>
+	<message key="installer.encryption">Algorytm szyfrowania haseł</message>
+
+	<!-- Installer -->
+	<message key="installer.appInstallation">Instalacja Wizdam Redakcyjne Systemy</message>
+	<message key="installer.appUpgrade">Aktualizacja Wizdam Redakcyjne Systemy</message>
+	
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>Wersja Wizdam Redakcyjne Systemy {$version}</h4>
+
+<p>Dziękujemy za pobranie <strong>Wizdam Redakcyjne Systemy</strong> od Sangia Publishing House. Przed kontynuowaniem, prosimy przeczytać plik <a href="{$baseUrl}/docs/README" target="_blank">README</a> dołączony do tego oprogramowania. Aby uzyskać więcej informacji o Sangia Publishing House (SPH) i jego projektach programistycznych, odwiedź <a href="http://wizdam.sangia.org/" target="_blank">stronę internetową SPH</a>. Jeśli masz zgłoszenia błędów lub pytania dotyczące wsparcia technicznego dla Wizdam Redakcyjne Systemy, odwiedź <a href="http://forum.wizdam.sangia.org" target="_blank">forum wsparcia</a> lub odwiedź internetowy <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">system zgłaszania błędów</a> SPH. Chociaż forum wsparcia jest preferowaną metodą kontaktu, możesz również wysłać e-mail do zespołu na adres <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[Szyfrowanie haseł wykorzystuje <strong>bcrypt</strong> — bezpieczny algorytm haszowania będący standardem branżowym. Nie wymaga dodatkowej konfiguracji.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Aktualizacja</h4>
+
+<p>Jeśli aktualizujesz istniejącą instalację Wizdam Redakcyjne Systemy lub ze starszych wersji, <a href="{$upgradeUrl}">kliknij tutaj</a>, aby kontynuować.</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Zalecane wymagania systemowe</h4>
+
+<ul>
+	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; aktualnie używasz PHP {$phpVersion}{$wrongPhpText}</li>
+	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x lub <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 8.x (w tym PostgreSQL 8.x)</li>
+	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x lub >= 2.0.4x lub Microsoft IIS 6</li>
+	<li>System operacyjny: Dowolny system operacyjny obsługujący powyższe oprogramowanie, w tym <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+</ul>
+
+<p>Ponieważ SPH nie posiada zasobów, aby przetestować każdą możliwą kombinację wersji oprogramowania i platform, nie udziela żadnej gwarancji prawidłowego działania ani wsparcia.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>Zmiany tych ustawień można wprowadzić po instalacji, edytując plik <tt>config.inc.php</tt> w głównym katalogu Wizdam Redakcyjne Systemy lub korzystając z interfejsu internetowego administracji witryną.</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Obsługiwane systemy baz danych</h4>
+
+<p>Wizdam Redakcyjne Systemy został obecnie przetestowany tylko na MySQL i PostgreSQL, chociaż inne systemy zarządzania bazami danych obsługiwane przez <a href="http://adodb.org/" target="_blank">ADOdb</a> mogą działać (w całości lub częściowo). Raporty o zgodności i/lub łatki kodu dla alternatywnych DBMS mogą być wysyłane do zespołu Wizdam Redakcyjne Systemy.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Kroki przed instalacją</h4>
+
+<p>1. Następujące pliki i katalogi (oraz ich zawartość) muszą mieć możliwość zapisu:</p>
+<ul>
+	<li><tt>config.inc.php</tt> ma możliwość zapisu (opcjonalnie): {$writable_config}</li>
+	<li><tt>public/</tt> ma możliwość zapisu: {$writable_public}</li>
+	<li><tt>cache/</tt> ma możliwość zapisu: {$writable_cache}</li>
+	<li><tt>cache/t_cache/</tt> ma możliwość zapisu: {$writable_templates_cache}</li>
+	<li><tt>cache/t_compile/</tt> ma możliwość zapisu: {$writable_templates_compile}</li>
+	<li><tt>cache/_db</tt> ma możliwość zapisu: {$writable_db_cache}</li>
+</ul>
+
+<p>2. Należy utworzyć katalog do przechowywania przesłanych plików i nadać mu możliwość zapisu (patrz "Ustawienia plików" poniżej).</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>Wersja Wizdam Redakcyjne Systemy {$version}</h4>
+	
+<p>Dziękujemy za pobranie <strong>Wizdam Redakcyjne Systemy</strong> od Sangia Publishing House. Przed kontynuowaniem, prosimy przeczytać pliki <a href="{$baseUrl}/docs/README" target="_blank">README</a> i <a href="{$baseUrl}/docs/UPGRADE" target="_blank">UPGRADE</a> dołączone do tego oprogramowania. Aby uzyskać więcej informacji o Sangia Publishing House (SPH) i jego projektach programistycznych, odwiedź <a href="http://wizdam.sangia.org/" target="_blank">stronę internetową SPH</a>. Jeśli masz zgłoszenia błędów lub pytania dotyczące wsparcia technicznego dla Wizdam Redakcyjne Systemy, odwiedź <a href="http://forum.wizdam.sangia.org" target="_blank">forum wsparcia</a> lub odwiedź internetowy <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">system zgłaszania błędów</a> SPH. Chociaż forum wsparcia jest preferowaną metodą kontaktu, możesz również wysłać e-mail do zespołu na adres <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+<p><strong>Zdecydowanie zaleca się</strong> wykonanie kopii zapasowej bazy danych, katalogu plików i katalogu instalacyjnego Wizdam Redakcyjne Systemy przed kontynuowaniem.</p>
+<p>Jeśli pracujesz w <a href="http://www.php.net/features.safe-mode" target="_blank">PHP Safe Mode</a>, upewnij się, że dyrektywa max_execution_time w pliku konfiguracyjnym php.ini jest ustawiona na wysoką wartość. Jeśli ten lub inny limit czasu (np. dyrektywa "Timeout" Apache) zostanie osiągnięty, a proces aktualizacji zostanie przerwany, konieczna będzie ręczna interwencja.</p>]]></message>
+	<message key="installer.localeSettingsInstructions"><![CDATA[Dla pełnej obsługi Unicode (UTF-8), wybierz UTF-8 dla wszystkich ustawień zestawów znaków. Należy pamiętać, że to wsparcie wymaga obecnie serwera bazy danych MySQL >= 5.x lub PostgreSQL >= 8.x. Proszę również pamiętać, że pełna obsługa Unicode wymaga PHP >= 7.4.0 skompilowanego z obsługą biblioteki <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> (domyślnie włączone w większości najnowszych instalacji PHP). Możesz napotkać problemy podczas korzystania z rozszerzonych zestawów znaków, jeśli Twój serwer nie spełnia tych wymagań.
+<br /><br />
+Twój serwer obecnie obsługuje mbstring: <strong>{$supportsMBString}</strong>]]></message>
+	<message key="installer.localeInstructions">Główny język używany w tym systemie. Prosimy zapoznać się z dokumentacją Wizdam Redakcyjne Systemy, jeśli jesteś zainteresowany obsługą języków niewymienionych tutaj.</message>
+	<message key="installer.additionalLocalesInstructions">Wybierz dodatkowe języki do obsługi w tym systemie. Te języki będą dostępne dla czasopism hostowanych na stronie. Dodatkowe języki można również zainstalować w dowolnym czasie z interfejsu administracji witryną.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Wprowadź pełną ścieżkę do istniejącego katalogu, w którym będą przechowywane przesłane pliki. Ten katalog nie powinien być bezpośrednio dostępny przez sieć. <strong>Przed instalacją upewnij się, że ten katalog istnieje i ma możliwość zapisu.</strong> Nazwy ścieżek Windows powinny używać ukośników do przodu, np. "C:/myjournal/files".]]></message>
+	<message key="installer.databaseSettingsInstructions">Wizdam Redakcyjne Systemy wymaga dostępu do bazy danych SQL do przechowywania swoich danych. Zobacz powyższe wymagania systemowe dla listy obsługiwanych baz danych. W polach poniżej podaj ustawienia, które mają być używane do połączenia z bazą danych.</message>
+	<message key="installer.installApplication">Zainstaluj Wizdam Redakcyjne Systemy</message>
+	<message key="installer.upgradeApplication">Zaktualizuj Wizdam Redakcyjne Systemy</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Ostrzeżenie:</strong> Jeśli instalacja nie powiodła się w trakcie instalacji bazy danych, może być konieczne usunięcie bazy danych Wizdam Redakcyjne Systemy lub tabel bazy danych przed ponowną próbą instalacji bazy danych.]]></message>
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>WAŻNE!</h4>
+<p>Instalator nie mógł automatycznie nadpisać pliku konfiguracyjnego. Przed próbą użycia systemu, otwórz <tt>config.inc.php</tt> w odpowiednim edytorze tekstu i zastąp jego zawartość zawartością pola tekstowego poniżej.</p>]]></message>
+	<message key="installer.installationComplete"><![CDATA[<p>Instalacja Wizdam Redakcyjne Systemy zakończyła się pomyślnie.</p>
+<p>Aby rozpocząć korzystanie z systemu, <a href="{$loginUrl}">zaloguj się</a> z nazwą użytkownika i hasłem wprowadzonymi na poprzedniej stronie.</p>
+<p>Jeśli chcesz otrzymywać wiadomości i aktualizacje, możesz:</p>
+<ol>
+	<li><a href="http://wizdam.sangia.org/wizdam/register" target="_new">Zarejestruj</a> swoje czasopismo, konferencję lub harvester i otrzymuj aktualizacje dotyczące uaktualnień oprogramowania, poprawek bezpieczeństwa i innych.</li>
+	<li>Dołącz do naszej <a href="http://wizdam.sangia.org/informed" target="_new">listy dyskusyjnej</a> dla Wizdam Redakcyjne Systemy.</li>
+	<li>Subskrybuj <a href="http://wizdam.sangia.org/blog" target="_new">blog SPH</a> <a href="http://wizdam.sangia.org/blog/feed" target="_new">kanał RSS</a>.</li>
+</ol>
+<p>Jeśli masz pytania lub uwagi, odwiedź <a href="http://forum.wizdam.sangia.org" target="_new">forum wsparcia</a>.</p>]]></message>
+	<message key="installer.upgradeComplete"><![CDATA[<p>Aktualizacja Wizdam Redakcyjne Systemy do wersji {$version} zakończyła się pomyślnie.</p>
+<p>Nie zapomnij ustawić opcji "installed" w pliku konfiguracyjnym config.inc.php z powrotem na <em>On</em>.</p>
+<p>Jeśli nie jesteś jeszcze zarejestrowany i chcesz otrzymywać wiadomości i aktualizacje, <strong>zarejestruj się na <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> Jeśli masz pytania lub uwagi, odwiedź <a href="http://forum.wizdam.sangia.org" target="_new">forum wsparcia</a>.</p>]]></message>
+
+	<message key="installer.filesDir">Folder deponowania</message>
+	<message key="installer.fileSettings">Ustawienia plików</message>
+	<message key="installer.form.clientCharsetRequired">Kodowanie znaków jest wymagane.</message>
+	<message key="installer.form.databaseDriverRequired">Sterownik bazy danych jest wymagany.</message>
+	<message key="installer.form.databaseNameRequired">Nazwa bazy danych jest wymagana.</message>
+	<message key="installer.form.emailRequired">Poprawny adres e-mail administratora jest wymagany.</message>
+	<message key="installer.form.encryptionRequired">Algorytm szyfrowania haseł jest wymagany.</message>
+	<message key="installer.form.filesDirRequired">Folder deponowania jest wymagany.</message>
+	<message key="installer.form.localeRequired">Wybór języka jest wymagany.</message>
+	<message key="installer.form.passwordRequired">Hasło konta administratora jest wymagane.</message>
+	<message key="installer.form.passwordsDoNotMatch">Podane hasła nie zgadzają się.</message>
+	<message key="installer.form.separateMultiple">Oddziel wiele wartości za pomocą przecinków</message>
+	<message key="installer.form.usernameAlphaNumeric">Nazwa konta administratora może być złożona ze znaków alfanumerycznych, podkreśleń, oraz znaku minus (-). Ponadto, musi się zaczynać i kończyć znakiem alfanumerycznym.</message>
+	<message key="installer.form.usernameRequired">Nazwa użytkownika dla konta administratora jest wymagana.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>UWAGA: Wersja PHP zainstalowana na serwerze nie spełnia minimalnych wymagań niezbędnych do zainstalowania systemu. Zaktualizuj PHP do nowszej wersji.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">Podczas instalacji wystąpiły błędy</message>
+	<message key="installer.installerSQLStatements">Wyrażenia SQL dla instalacji</message>
+	<message key="installer.installFileError"><![CDATA[Plik instalacyjny <tt>dbscripts/xml/install.xml</tt> nie istnieje.]]></message>
+	<message key="installer.installFilesDirError">Folder deponowania nie istnieje lub nie jest przeznaczony do zapisu.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Błąd parsowania pliku bazy danych - <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[Błąd parsowania pliku szablonów e-mail - <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[Błąd parsowania pliku konfiguracyjnego filtra - <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Język</message>
+	<message key="installer.locale.maybeIncomplete">Oznaczone tłumaczenia mogą być niekompletne.</message>
+	<message key="installer.localeSettings">Ustawienia języka</message>
+	<message key="installer.miscSettings">Ustawienia pozostałe</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[Unikatowy identyfikator wykorzystywany przez <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a> do pobierania metadanych.]]></message>
+	<message key="installer.oaiRepositoryId">Identyfikator repozytoriów OAI</message>
+	<message key="installer.oaiSettings">Ustawienia OAI</message>
+	<message key="installer.publicFilesDirError">Główny folder instalacji nie istnieje lub nie jest przeznaczony do zapisu.</message>
+	<message key="installer.releaseNotes">Informacje o wydaniu</message>
+	<message key="installer.securitySettings">Ustawienia zabezpieczeń</message>
+	<message key="installer.skipFilesDir">Nie twórz niezbędnych podfolderów (Przydatne jedynie w przypadku manualnej instalacji)</message>
+	<message key="installer.allowFileUploads"><![CDATA[Twój serwer obecnie umożliwia przesyłanie plików: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[Twój serwer obecnie umożliwia maksymalny rozmiar przesyłanych plików: <strong>{$maxFileUploadSize}</strong>]]></message>
+	<message key="installer.beacon">Beacon</message>
+	<message key="installer.beacon.enable">Podaj unikalny identyfikator witryny i podstawowy adres URL OAI do Sangia Publishing House wyłącznie do celów statystycznych i alertów bezpieczeństwa.</message>
+	
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[Dostępna jest nowa wersja Wizdam Redakcyjne Systemy! Obecnie używasz Wizdam Redakcyjne Systemy {$currentVersion}. Najnowsza wersja to Wizdam Redakcyjne Systemy {$latestVersion}. Odwiedź <a href="http://wizdam.sangia.org/download" target="_new">tę stronę</a>, aby pobrać najnowszą wersję i znaleźć instrukcje aktualizacji.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[Dostępna jest nowa wersja Wizdam Redakcyjne Systemy! Obecnie używasz Wizdam Redakcyjne Systemy {$currentVersion}. Najnowsza wersja to Wizdam Redakcyjne Systemy {$latestVersion}. Skontaktuj się z administratorem witryny ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>), aby powiadomić go o tym nowym wydaniu. Więcej informacji można znaleźć <a href="http://wizdam.sangia.org/download" target="_new">tutaj</a>.]]></message>
+</locale>

@@ -1,0 +1,19 @@
+/**
+ * cjk.css
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2000-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * China Jepang Korea stylesheet.
+ */
+
+/**
+ * Common HTML elements
+ */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap');
+
+/* 2. Lalu gunakan di CSS Anda */
+body {
+    font-family: 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif !important;
+}

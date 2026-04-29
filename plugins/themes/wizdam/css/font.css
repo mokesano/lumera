@@ -1,0 +1,859 @@
+/*! FONT - Guardian */
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.svg#GuardianAgateSans1Web-Regular") format("svg");
+  font-weight: 400;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-RegularItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-RegularItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-RegularItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-RegularItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-RegularItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-RegularItalic.svg#GuardianAgateSans1Web-RegularItalic") format("svg");
+  font-weight: 400;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Bold.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Bold.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Bold.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Bold.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Bold.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Bold.svg#GuardianAgateSans1Web-Bold") format("svg");
+  font-weight: 700;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-BoldItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-BoldItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-BoldItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-BoldItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-BoldItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-BoldItalic.svg#GuardianAgateSans1Web-BoldItalic") format("svg");
+  font-weight: 700;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Light.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Light.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Light.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Light.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Light.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Light.svg#GuardianEgyptianWeb-Light") format("svg");
+  font-weight: 200;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Regular.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Regular.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Regular.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Regular.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Regular.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Regular.svg#GuardianEgyptianWeb-Regular") format("svg");
+  font-weight: 400;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-RegularItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-RegularItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-RegularItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-RegularItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-RegularItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-RegularItalic.svg#GuardianEgyptianWeb-RegularItalic") format("svg");
+  font-weight: 400;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Semibold.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Semibold.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Semibold.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Semibold.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Semibold.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Semibold.svg#GuardianEgyptianWeb-Semibold") format("svg");
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-SemiboldItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-SemiboldItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-SemiboldItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-SemiboldItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-SemiboldItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-SemiboldItalic.svg#GuardianEgyptianWeb-SemiboldItalic") format("svg");
+  font-weight: 600;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Medium.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Medium.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Medium.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Medium.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Medium.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Medium.svg#GuardianEgyptianWeb-Medium") format("svg");
+  font-weight: 500;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.svg#GuardianEgyptianWeb-Bold") format("svg");
+  font-weight: 700;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.svg#GuardianEgyptianWeb-BoldItalic") format("svg");
+  font-weight: 700;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-BoldItalic.svg#GuardianEgyptianWeb-BoldItalic") format("svg");
+  font-weight: 900;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianEgyptianWeb/GuardianEgyptianWeb-Bold.svg#GuardianEgyptianWeb-Bold") format("svg");
+  font-weight: 900;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Light.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Light.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Light.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Light.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Light.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Light.svg#GuardianSansWeb-Light") format("svg");
+  font-weight: 200;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Regular.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Regular.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Regular.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Regular.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Regular.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Regular.svg#GuardianSansWeb-Regular") format("svg");
+  font-weight: 400;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Semibold.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Semibold.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Semibold.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Semibold.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Semibold.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianSansWeb/GuardianSansWeb-Semibold.svg#GuardianSansWeb-Semibold") format("svg");
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Regular.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Regular.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Regular.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Regular.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Regular.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Regular.svg#GuardianTextEgyptianWeb-Regular") format("svg");
+  font-weight: 400;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-RegularItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-RegularItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-RegularItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-RegularItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-RegularItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-RegularItalic.svg#GuardianTextEgyptianWeb-RegularItalic") format("svg");
+  font-weight: 400;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Medium.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Medium.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Medium.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Medium.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Medium.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Medium.svg#GuardianTextEgyptianWeb-Medium") format("svg");
+  font-weight: 500;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-MediumItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-MediumItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-MediumItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-MediumItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-MediumItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-MediumItalic.svg#GuardianTextEgyptianWeb-MediumItalic") format("svg");
+  font-weight: 500;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Bold.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Bold.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Bold.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Bold.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Bold.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Bold.svg#GuardianTextEgyptianWeb-Bold") format("svg");
+  font-weight: 700;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BoldItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BoldItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BoldItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BoldItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BoldItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BoldItalic.svg#GuardianTextEgyptianWeb-BoldItalic") format("svg");
+  font-weight: 700;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Black.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Black.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Black.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Black.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Black.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-Black.svg#GuardianTextEgyptianWeb-Black") format("svg");
+  font-weight: 800;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BlackItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BlackItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BlackItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BlackItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BlackItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextEgyptianWeb/GuardianTextEgyptianWeb-BlackItalic.svg#GuardianTextEgyptianWeb-BlackItalic") format("svg");
+  font-weight: 800;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Regular.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Regular.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Regular.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Regular.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Regular.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Regular.svg#GuardianTextSansWeb-Regular") format("svg");
+  font-weight: 400;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-RegularItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-RegularItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-RegularItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-RegularItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-RegularItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-RegularItalic.svg#GuardianTextSansWeb-RegularItalic") format("svg");
+  font-weight: 400;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Medium.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Medium.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Medium.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Medium.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Medium.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Medium.svg#GuardianTextSansWeb-Medium") format("svg");
+  font-weight: 500;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-MediumItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-MediumItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-MediumItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-MediumItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-MediumItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-MediumItalic.svg#GuardianTextSansWeb-MediumItalic") format("svg");
+  font-weight: 500;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Bold.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Bold.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Bold.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Bold.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Bold.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Bold.svg#GuardianTextSansWeb-Bold") format("svg");
+  font-weight: 700;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BoldItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BoldItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BoldItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BoldItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BoldItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BoldItalic.svg#GuardianTextSansWeb-BoldItalic") format("svg");
+  font-weight: 700;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Black.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Black.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Black.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Black.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Black.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-Black.svg#GuardianTextSansWeb-Black") format("svg");
+  font-weight: 800;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BlackItalic.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BlackItalic.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BlackItalic.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BlackItalic.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BlackItalic.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianTextSansWeb/GuardianTextSansWeb-BlackItalic.svg#GuardianTextSansWeb-BlackItalic") format("svg");
+  font-weight: 800;
+  font-style: italic;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianCompactWeb-Black.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianCompactWeb-Black.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianCompactWeb-Black.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianCompactWeb-Black.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianCompactWeb-Black.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianCompactWeb-Black.svg#GuardianCompactWeb-Black") format("svg");
+  font-weight: 800;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianTitlepieceWeb-Regular.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianTitlepieceWeb-Regular.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianTitlepieceWeb-Regular.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianTitlepieceWeb-Regular.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianTitlepieceWeb-Regular.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianTitlepieceWeb-Regular.svg#GuardianTitlepieceWeb-Regular") format("svg");
+  font-weight: 400;
+  font-style: normal;
+  font-stretch: normal; }
+
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianWeekendCondWeb-Black.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianWeekendCondWeb-Black.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianWeekendCondWeb-Black.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianWeekendCondWeb-Black.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianWeekendCondWeb-Black.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianExtrasWeb/GuardianWeekendCondWeb-Black.svg#GuardianWeekendCondWeb-Black") format("svg");
+  font-weight: 800;
+  font-style: normal;
+font-stretch: normal; }
+
+/*! FONT - Guardian */
+@font-face {
+  font-family: "Guardian";
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.eot");
+  src: url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.eot?#iefix") format("embedded-opentype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.woff2") format("woff2"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.woff") format("woff"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.ttf") format("truetype"), url("https://interactive.guim.co.uk/fonts/guss-webfonts/GuardianAgateSans1Web/GuardianAgateSans1Web-Regular.svg#GuardianAgateSans1Web-Regular") format("svg");
+  font-weight: 400;
+  font-style: normal;
+  font-stretch: normal; }
+@font-face {
+ font-family:'Bliss Regular';
+ src:url("/fonts/BlsW-Rg/blsw-rg.eot");
+ src:url("/fonts/BlsW-Rg/blsw-rg.eot?#iefix") format("embedded-opentype"),
+ url("/fonts/BlsW-Rg/blsw-rg.woff2") format("woff2"),
+ url("/fonts/BlsW-Rg/blsw-rg.woff") format("woff"),
+ url("/fonts/BlsW-Rg/blsw-rg.ttf") format("truetype");
+ font-weight:400;
+ font-style:normal
+}
+@font-face {
+ font-family:'Bliss Bold';
+ src:url("/fonts/BlsW-Bd/blsw-bd.eot");
+ src:url("/fonts/BlsW-Bd/blsw-bd.eot?#iefix") format("embedded-opentype"),
+ url("/fonts/BlsW-Bd/blsw-bd.woff2") format("woff2"),
+ url("/fonts/BlsW-Bd/blsw-bd.woff") format("woff"),
+ url("/fonts/BlsW-Bd/blsw-bd.ttf") format("truetype");
+ font-weight:400;
+ font-style:normal
+}
+@font-face {
+ font-family:'Nexus Sans';
+ src:url('/fonts/sangia/NexusSansWebPro-Regular.woff2') format('woff2'),
+ url('/fonts/sangia/NexusSansWebPro-Regular.woff') format('woff');
+ font-display:swap
+}
+@font-face {
+ font-family:'Nexus Sans';
+ src:url('/fonts/sangia/NexusSansWebPro-Bold.woff2') format('woff2'),
+ url('/fonts/sangia/NexusSansWebPro-Bold.woff') format('woff');
+ font-weight:700;
+ font-display:swap
+}
+@font-face {
+ font-family:'Elsevier Gulliver';
+ src:url('/fonts/sangia/ElsevierGulliver-Regular.woff2') format('woff2'),
+ url('/fonts/sangia/ElsevierGulliver-Regular.woff') format('woff');
+ font-display:swap
+}
+@font-face {
+ font-family:'Elsevier Gulliver';
+ src:url('/fonts/sangia/ElsevierGulliver-Bold.woff2') format('woff2'),
+ url('/fonts/sangia/ElsevierGulliver-Bold.woff') format('woff');
+ font-weight:700;
+ font-display:swap
+}
+@font-face {
+ font-family:'Elsevier Gulliver';
+ src:url('/fonts/sangia/ElsevierGulliver-Italic.woff2') format('woff2'),
+ url('/fonts/sangia/ElsevierGulliver-Italic.woff') format('woff');
+ font-style:italic;
+ font-display:swap
+}
+@font-face {
+ font-family:'Elsevier Display';
+ src:url('/fonts/sangia/ElsevierDisplay-Light.woff2') format('woff2'),
+ url('/fonts/sangia/ElsevierDisplay-Light.woff') format('woff');
+ font-weight:300;
+ font-display:swap
+}
+@font-face {
+ font-family:'Elsevier Display';
+ src:url('/fonts/sangia/ElsevierDisplay-LightItalic.woff2') format('woff2'),
+ url('/fonts/sangia/ElsevierDisplay-LightItalic.woff') format('woff');
+ font-weight:300;
+ font-style:italic;
+ font-display:swap
+}
+/*==== NexusSans ====*/
+@font-face {
+ font-family:NexusSans;
+ font-weight:400;
+ src:url(/fonts/NexusSansWebPro.eot);
+ src:url(/fonts/NexusSansWebPro.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSansWebPro.woff) format("woff"),url(/fonts/NexusSansCompPro.ttf) format("truetype")
+}
+
+@font-face {
+ font-family:NexusSans;
+ font-weight:700;
+ src:url(/fonts/NexusSansWebPro-Bold.eot);
+ src:url(/fonts/NexusSansWebPro-Bold.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSansWebPro-Bold.woff) format("woff"),url(/fonts/NexusSansCompPro-Bold.ttf) format("truetype")
+}
+
+@font-face {
+ font-family:NexusSans;
+ font-weight:normal;
+ font-style: italic;
+ src:url(/fonts/NexusSansWebPro-Italic.eot);
+ src:url(/fonts/NexusSansWebPro-Italic.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSansWebPro-Italic.woff) format("woff"),url(/fonts/NexusSansCompPro-Italic.ttf) format("truetype")
+}
+@font-face {
+ font-family:NexusSans;
+ src:url("/fonts/NexusSansWebPro.woff") format("woff");
+ font-display:swap
+}
+@font-face {
+ font-family:NexusSans;
+ src:url("/fonts/NexusSansWebPro-Bold.woff") format("woff");
+ font-weight:700;
+ font-display:swap
+}
+@font-face {
+ font-family:NexusSans;
+ src:url("/fonts/NexusSansWebPro-Italic.woff") format("woff");
+ font-style:italic;
+ font-display:swap
+}
+@font-face {
+ font-family:NexusSans;
+ src:url("/fonts/NexusSansWebPro-BoldItalic.woff") format("woff");
+ font-weight:700;
+ font-style:italic;
+ font-display:swap
+}
+/*==== NexusSans ====*/
+@font-face {
+ font-family:NexusSans;
+ font-weight:400;
+ src:url("/fonts/NexusSansWebPro.eot");
+ src:url("/fonts/NexusSansWebPro.eot?#iefix") format("embedded-opentype"),url("/fonts/NexusSansWebPro.woff") format("woff"),url("/fonts/NexusSansCompPro.ttf") format("truetype")
+}
+@font-face {
+ font-family:NexusSans;
+ font-weight:700;
+ src:url("/fonts/NexusSansWebPro-Bold.eot");
+ src:url("/fonts/NexusSansWebPro-Bold.eot?#iefix") format("embedded-opentype"),url("/fonts/NexusSansWebPro-Bold.woff") format("woff"),url("/fonts/NexusSansCompPro-Bold.ttf") format("truetype")
+}
+@font-face {
+ font-family:NexusSans;
+ font-weight:normal;
+ font-style: italic;
+ src:url("/fonts/NexusSansWebPro-Italic.eot");
+ src:url("/fonts/NexusSansWebPro-Italic.eot?#iefix") format("embedded-opentype"),url("/fonts/NexusSansWebPro-Italic.woff") format("woff"),url("/fonts/NexusSansCompPro-Italic.ttf") format("truetype")
+}
+
+/*==== ElsevierSans ====*/
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-Light.woff2) format("woff2");
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  font-family:Elsevier Sans Light
+}
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-LightItalic.woff2) format("woff2");
+  font-style:italic;
+  font-weight:400;
+  font-display:swap;
+  font-family:Elsevier Sans Light
+}
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-Regular.woff2) format("woff2");
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  font-family:Elsevier Sans
+}
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-Bold.woff2) format("woff2");
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+  font-family:Elsevier Sans
+}
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-RegularItalic.woff2) format("woff2");
+  font-style:italic;
+  font-weight:400;
+  font-display:swap;
+  font-family:Elsevier Sans
+}
+@font-face {
+  src:url(/fonts/sangia/ElsevierSansWeb-BoldItalic.woff2) format("woff2");
+  font-style:italic;
+  font-weight:700;
+  font-display:swap;
+  font-family:Elsevier Sans
+}
+
+/*==== NexusSerif ====*/
+@font-face {
+ font-family:NexusSerif;
+ font-weight:400;
+ src:url(/fonts/NexusSerifWebPro.eot);
+ src:url(/fonts/NexusSerifWebPro.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSerifWebPro.woff) format("woff"),url(/fonts/NexusSerifCompPro.ttf) format("truetype")
+}
+
+@font-face {
+ font-family:NexusSerif;
+ font-weight:700;
+ src:url(/fonts/NexusSerifWebPro-Bold.eot);
+ src:url(/fonts/NexusSerifWebPro-Bold.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSerifWebPro-Bold.woff) format("woff"),url(/fonts/NexusSerifCompPro-Bold.ttf) format("truetype")
+}
+
+@font-face {
+ font-family:NexusSerif;
+ font-weight:normal;
+ font-style: italic;
+ src:url(/fonts/NexusSerifWebPro-Italic.eot);
+ src:url(/fonts/NexusSerifWebPro-Italic.eot?#iefix) format("embedded-opentype"),url(/fonts/NexusSerifWebPro-Italic.woff) format("woff"),url(/fonts/NexusSerifCompPro-Italic.ttf) format("truetype")
+}
+@font-face {
+ font-family:NexusSerif;
+ src:url("/fonts/NexusSerifWebPro.woff") format("woff");
+ font-display:swap
+}
+@font-face {
+ font-family:NexusSerif;
+ src:url("/fonts/NexusSerifWebPro-Bold.woff") format("woff");
+ font-weight:700;
+ font-display:swap
+}
+@font-face {
+ font-family:NexusSerif;
+ src:url("/fonts/NexusSerifWebPro-Italic.woff") format("woff");
+ font-style:italic;
+ font-display:swap
+}
+@font-face {
+ font-family:NexusSerif;
+ src:url("/fonts/NexusSerifWebPro-BoldItalic.woff") format("woff");
+ font-weight:700;
+ font-style:italic;
+ font-display:swap
+}
+/*==== NexusSerif ====*/
+@font-face {
+ font-family:NexusSerif;
+ font-weight:400;
+ src:url("/fonts/NexusSerifWebPro.eot");
+ src:url("/fonts/NexusSerifWebPro.eot?#iefix") format("embedded-opentype"),url("/fonts/NexusSerifWebPro.woff") format("woff"),url("/fonts/NexusSerifCompPro.ttf") format("truetype")
+}
+@font-face {
+ font-family:NexusSerif;
+ font-weight:700;
+ src:url("/fonts/NexusSerifWebPro-Bold.eot");
+ src:url("/fonts/NexusSerifWebPro-Bold.eot?#iefix") format("embedded-opentype"),url("/fonts/NexusSerifWebPro-Bold.woff") format("woff"),url("/fonts/NexusSerifCompPro-Bold.ttf") format("truetype")
+}
+@font-face {
+ font-family:NexusSerif;
+ font-weight:normal;
+ font-style: italic;
+ src:url("/fonts/NexusSerifWebPro-Italic.eot");
+ src:url("/fonts/NexusSerifWebPro-Italic.eot?#iefix") format("embedded-opentype"),url("/fonts/NexusSerifWebPro-Italic.woff") format("woff"),url("/fonts/NexusSerifCompPro-Italic.ttf") format("truetype")
+}
+
+/*==== icons ====*/
+@font-face {
+    font-family: 'sn_pm_icons';
+    src: url('/fonts/sn/sn_pm_icons.eot?1474367378');
+    src: url('/fonts/sn/sn_pm_icons.eot?&1474367378#iefix') format('embedded-opentype'), 
+        url('/fonts/sn/sn_pm_icons.woff?1474367378') format('woff'), 
+        url('/fonts/sn/sn_pm_icons.svg?1474367378') format('svg'), 
+        url('/fonts/sn/sn_pm_icons.ttf?1474367378') format('truetype');
+    font-weight: 400;
+}
+
+/*==== Blis ====*/
+This font software is the property of JT Types Ltd.
+You may not modify the font software, use it on another website, or install it on a computer.
+Copyright (C) JT Types Ltd.
+*/
+
+@font-face {
+  font-family: 'Bliss Regular';
+  src: url('/fonts/bp/BlissRegular.woff2') format('woff2'),
+    url('/fonts/bp/BlissRegular.woff') format('woff'),
+    url('/fonts/bp/BlissRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bliss Regular';
+  src: url('/fonts/bp/BlissPro.woff2') format('woff2'),
+    url('/fonts/bp/BlissPro.woff') format('woff'),
+    url('/fonts/bp/BlissPro.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bliss Bold';
+  src: url('/fonts/bp/BlissPro-Bold.woff2') format('woff2'),
+    url('/fonts/bp/BlissPro-Bold.woff') format('woff'),
+    url('/fonts/bp/BlissPro-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bliss Bold';
+  src: url('/fonts/bp/BlissBold.woff2') format('woff2'),
+    url('/fonts/bp/BlissBold.woff') format('woff'),
+    url('/fonts/bp/BlissBold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*==== Europa ====*/
+@font-face {
+    font-family:'Europa';
+    src:url("/fonts/europa-bold-webfont.eot");
+    src:url("/fonts/europa-bold-webfont.eot?#iefix") format("embedded-opentype"),url("/fonts/europa-bold-webfont.woff2") format("woff2"),url("/fonts/europa-bold-webfont.woff") format("woff"), url("/fonts/europa-bold-webfont.ttf") format("truetype"),url("/fonts/europa-bold-webfont.svg#europabold") format("svg");
+    font-weight:700;
+    font-style:normal;
+}
+@font-face {
+    font-family:'Europa';
+    src:url("/fonts/europa-light-webfont.eot");
+    src:url("/fonts/europa-light-webfont.eot?#iefix") format("embedded-opentype"),
+        url("/fonts/europa-light-webfont.woff2") format("woff2"),url("/fonts/europa-light-webfont.woff") format("woff"),url("/fonts/europa-light-webfont.ttf") format("truetype"),url("/fonts/europa-light-webfont.svg#europalight") format("svg");
+    font-weight:200;
+    font-style:normal;
+}
+@font-face {
+    font-family:'Europa';
+    src:url("/fonts/europa-regular-webfont.eot");
+    src:url("/fonts/europa-regular-webfont.eot?#iefix") format("embedded-opentype"),
+        url("/fonts/europa-regular-webfont.woff2") format("woff2"),url("/fonts/europa-regular-webfont.woff") format("woff"),url("/fonts/europa-regular-webfont.ttf") format("truetype"),url("/fonts/europa-regular-webfont.svg#europaregular") format("svg");
+    font-weight:400;
+    font-style:normal;
+}
+
+/*==== Europa ====*/
+@font-face {
+    font-family:'Europa';
+    src:url("/fonts/europa-bold-webfont.eot");
+    src:url("/fonts/europa-bold-webfont.eot?#iefix") format("embedded-opentype"),url("/fonts/europa-bold-webfont.woff2") format("woff2"),url("/fonts/europa-bold-webfont.woff") format("woff"), url("/fonts/europa-bold-webfont.ttf") format("truetype"),url("/fonts/europa-bold-webfont.svg#europabold") format("svg");
+    font-weight:700;
+    font-style:normal;
+}
+@font-face {
+    font-family:'Europa';
+    src:url("/fonts/europa-light-webfont.eot");
+    src:url("/fonts/europa-light-webfont.eot?#iefix") format("embedded-opentype"),
+        url("/fonts/europa-light-webfont.woff2") format("woff2"),url("/fonts/europa-light-webfont.woff") format("woff"),url("/fonts/europa-light-webfont.ttf") format("truetype"),url("/fonts/europa-light-webfont.svg#europalight") format("svg");
+    font-weight:200;
+    font-style:normal;
+}
+@font-face {
+    font-family:'Europa';
+    src:url("/fonts/europa-regular-webfont.eot");
+    src:url("/fonts/europa-regular-webfont.eot?#iefix") format("embedded-opentype"),
+        url("/fonts/europa-regular-webfont.woff2") format("woff2"),url("/fonts/europa-regular-webfont.woff") format("woff"),url("/fonts/europa-regular-webfont.ttf") format("truetype"),url("/fonts/europa-regular-webfont.svg#europaregular") format("svg");
+    font-weight:400;
+    font-style:normal;
+}
+
+/*------------------------- Typography --------------------------------------*/
+
+/* Harding */
+@font-face {
+ font-family:'Harding';
+ src:url(/fonts/hd/HardingText-Regular-Web.b167e675dc.woff2) format("woff2"),
+ url(/fonts/hd/HardingText-Regular-Web.62711b6c07.woff) format("woff");
+ font-display:fallback
+}
+@font-face {
+ font-family:'Harding';
+ src:url(/fonts/hd/HardingText-Bold-Web.72203f58c0.woff2) format("woff2"),
+ url(/fonts/hd/HardingText-Bold-Web.d102a21e4f.woff) format("woff");
+ font-display:swap;
+ font-weight:700
+}
+@font-face {
+ font-family:'Harding';
+ src:url(/fonts/hd/HardingText-RegularItalic-Web.a3136343af.woff2) format("woff2"),
+ url(/fonts/hd/HardingText-RegularItalic-Web.3cd6cb26e4.woff) format("woff");
+ font-display:swap;
+ font-style:italic
+}
+@font-face {
+ font-family:'Harding';
+ src:url(/fonts/hd/HardingText-BoldItalic-Web.fe6dc3019e.woff2) format("woff2"),
+ url(/fonts/hd/HardingText-BoldItalic-Web.6db8bc0375.woff) format("woff");
+ font-display:swap;
+ font-weight:700;
+ font-style:italic
+}
+/* --------------------------------------------------------------------------*/
+/*! FONTHarding - REDWOOD ICONS */
+@font-face {
+ font-family:'Harding';
+ src:url(/fonts/hd/HardingText-Regular-Web.b167e675dc.woff2) format("woff2"),
+ url(/fonts/hd/HardingText-Regular-Web.62711b6c07.woff) format("woff");
+ font-display:fallback
+}
+@font-face {
+ font-family:'Harding';
+ src:url(/fonts/hd/HardingText-Bold-Web.72203f58c0.woff2) format("woff2"),
+ url(/fonts/hd/HardingText-Bold-Web.d102a21e4f.woff) format("woff");
+ font-display:swap;
+ font-weight:700
+}
+@font-face {
+ font-family:'Harding';
+ src:url(/fonts/hd/HardingText-RegularItalic-Web.a3136343af.woff2) format("woff2"),
+ url(/fonts/hd/HardingText-RegularItalic-Web.3cd6cb26e4.woff) format("woff");
+ font-display:swap;
+ font-style:italic
+}
+@font-face {
+ font-family:'Harding';
+ src:url(/fonts/hd/HardingText-BoldItalic-Web.fe6dc3019e.woff2) format("woff2"),
+ url(/fonts/hd/HardingText-BoldItalic-Web.6db8bc0375.woff) format("woff");
+ font-display:swap;
+ font-weight:700;
+ font-style:italic
+}
+
+/*! FONT - REDWOOD ICONS */
+@font-face {
+ font-family:'redwoodicons';
+ src:url("https://www.oracle.com/asset/web/fonts/redwoodicons-v5.woff2?21.3.0") format("woff2"),
+ url("https://www.oracle.com/asset/web/fonts/redwoodicons-v5.woff?21.3.0") format("woff");
+ font-weight:normal !important;
+ font-style:normal !important
+}
+
+/* --------------------------------------------------------------------------*/
+/*! WARNING MESSAGE */
+.warningMessage {
+  font-family: 'NexusSerif','NexusSans',Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
+  line-height: 1.5;
+  font-size: initial;
+  line-height: 1.33;
+  border: 2px solid #009ece;
+  padding: 1rem 2rem 1rem 1rem;  
+}
+
+.warningMessage:before {
+  color: #fff;
+  display: block;
+  flex-basis: 2rem;
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  height: 2rem;
+  line-height: 2rem;
+  margin: 0 1rem 0 0;
+  text-align: center;
+  width: 2rem;
+  background: #009ece;  
+}
+.u-fill-white {
+    fill: #fff !important;
+}
+@media only screen and (min-width:36em) {
+ .alert-container {
+  max-width:1017px;
+  margin:auto;
+  padding-left: 10px;
+  padding-right: 10px;
+  display: flex;
+ }
+}
+.u-bg-info-blue {
+    background-color: #009ece !important;
+}
+.alert {
+ background-color:transparent;
+ clear:both;
+}
+.alert-text {
+ display:inline-block;
+ margin-left:40px;
+ padding-top:3px;
+ color:#323232
+}
+.alert-icon-box {
+ display: inline-block;
+ width: 32px;
+ height: 32px;
+ padding: 4px;
+ vertical-align: top;
+ margin-right: -32px;
+}
+.checkbox, .search-input-field.search-input-animation-off + .search-input-label, .search-input-field.search-input-has-value + .search-input-label, .search-input-field:focus + .search-input-label, .switch, .text-input-field.text-input-animation-off + .text-input-label, .text-input-field.text-input-has-value + .text-input-label, .text-input-field:focus + .text-input-label, .text-s {
+ font-size: 16px;
+ font-size: 1.6rem;
+ line-height: 1.5;
+}
+.text-s {
+ line-height: 1.5;
+ font-family: NexusSans,sans;
+ font-size: 1.6rem;
+ font-size: 16px;
+}
+.alert-text {
+ display: inline-block;
+ margin-left: 40px;
+ padding-top: 3px;
+ color: #323232;
+}
+.text-m, .alert-text, .list-m {
+ font-size: 20px;
+ font-size: 1rem;
+ line-height: 1.4;
+}
+.container, .panel, .panel-s, .panel-m, .panel-l {
+ position: relative;
+ overflow: auto;
+}
+.panel, .panel-s, .panel-m, .panel-l {
+ background: #cccccc;
+ overflow: auto;
+}
+.panel-s, .panel-m, .panel-l {
+ padding: 9px;
+}
+.info-banner {
+ text-align: center;
+}
+
+/*! Sticy Button */
+.StickySideButton {
+ font-size:13px;
+ border:1px solid #d7d6d6;
+ border-left:0;
+ background-color:#fff;
+ cursor:pointer;
+ display:none;
+ padding:8px 10px;
+ position:fixed;
+ transition-duration:.25s;
+ z-index:999
+}
+@media (min-width:1004px) {
+ .StickySideButton {
+  display:block
+ }
+}
+.StickySideButton:hover {
+ left:0
+}
+.lt-ie10 .StickySideButton {
+ padding-left:12px
+}
+.StickySideButton>img {
+ margin-left:5px
+}
+.StickySideButton--feedback {
+ left:-58px;
+ top:300px;
+ border-top-right-radius:5px;
+ border-bottom-right-radius:0;
+ padding-right:12px;
+ font-family: Arial,NexusSans,sans-serif;
+}
+.lt-ie10 .StickySideButton--feedback {
+ top:302px
+}
+.StickySideButton--chat {
+ left:-84px;
+ top:334px;
+ border-bottom-right-radius:5px;
+ border-top-right-radius:0
+}

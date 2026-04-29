@@ -1,0 +1,11 @@
+<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="18" width="18" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAEkSURBVHjajNM9L0RREAbg564bi0YoNRKl+A/EbxBR0dgOUYgCERKi2kKt8N2KRucvUBANSo2EROEjWSzNkEv2XiY5OWfemXfOzJw5yce+POnFMdrw3sBex0lSEADGsFVgf0wzShPKcU7QjG08YT/031IrIcUiznEV6xJD4dSDUl4KKZYwH3XeBr6HjQi8XFRjigoe0I/rwJ//Q/4K0B4pn2Xwqf+QRW312JMMXingrGIkeOU0x+kIfQ3wKhbiXEY1r7sL2GxAnsEoOrCDgbwM3jCOOwziECvxYhM4CL+LtKDWOmYzegsmUQvbdxO/GvnxR8Pf8NLoFR7RFROXFKxedMZov2bnYBfTOMVNzu0JutEa/+NHgLlwGI4s8uQe61jLgp8DAHpSPxfwDatQAAAAAElFTkSuQmCC" id="svg_1" height="16" width="16" y="0" x="0"/>
+ </g>
+</svg>

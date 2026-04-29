@@ -1,0 +1,30 @@
+/**
+ * styles/rtl.css
+ *
+ * Copyright (c) 2014-2019 Simon Fraser University
+ * Copyright (c) 2000-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * Stylesheet for customizing headers and page contents for Arabic locale
+ *
+ */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&family=Amiri:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap');
+
+body {
+    direction: rtl !important;
+    unicode-bidi: embed;
+    text-align: right !important;
+    font-family: 'Noto Naskh Arabic', 'Noto Sans Arabic', 'Amiri', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+section, div {
+    direction: rtl !important;
+    unicode-bidi: embed;
+    text-align: right !important;
+}
+
+ul {
+    margin: 0.25em 0 0.75em 0;
+    padding: 0 2.5em 0 0;
+}

@@ -1,0 +1,189 @@
+@import "compass/reset";
+@import "compass/css3";
+@import "compass/typography/vertical_rhythm";
+@import "compass/typography/lists/horizontal-list";
+@import "compass/typography/links";
+@import "compass/utilities/tables";
+@import "compass/css3/box-shadow";
+@import "susy";
+
+
+$susy: (
+  columns: 12,  // The number of columns in your grid
+  gutters: 1/4, // The size of a gutter in relation to a single column
+  container: 1080px,
+  global-box-sizing: border-box
+);
+
+@include border-box-sizing;
+
+
+/*  Colors
+================== */
+
+$primary: #006633; // mason green
+$accent-bold: #07355E; // blue
+$accent-light: #1EB568;  // light green
+$accent-bright: #266BA8; // light blue
+$accent-contrast: #FF6C3E; // orange
+
+$grey-bold: #87908F;
+$grey-light: #D1D3D5;
+
+$background: #E4E6D7;
+
+
+/* Fonts
+================== */
+
+$font-main: 'Europa','NexusSans',"Helvetica Neue", Helvetica, Arial, sans-serif;
+$font-heading: 'Europa','NexusSans',"Helvetica Neue", Helvetica, Arial, sans-serif;
+
+/* Typography
+------------------------------------------------------------------------------*/
+
+@font-face {
+    font-family: 'NexusSans';
+    src: url('_/fonts/nexussans-bold-webfont.eot');
+    src: url('_/fonts/nexussans-bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('_/fonts/nexussans-bold-webfont.woff') format('woff'),
+         url('_/fonts/nexussans-bold-webfont.ttf') format('truetype'),
+         url('_/fonts/nexussans-bold-webfont.svg#_/font/nexussans-boldregular') format('svg');
+    font-weight: 700;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'NexusSans';
+    src: url('_/fonts/nexussans-bolditalic-webfont.eot');
+    src: url('_/fonts/nexussans-bolditalic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('_/fonts/nexussans-bolditalic-webfont.woff') format('woff'),
+         url('_/fonts/nexussans-bolditalic-webfont.ttf') format('truetype'),
+         url('_/fonts/nexussans-bolditalic-webfont.svg#_/font/nexussans-bolditalicregular') format('svg');
+    font-weight: 700;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'NexusSans';
+    src: url('_/fonts/nexussans-italic-webfont.eot');
+    src: url('_/fonts/nexussans-italic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('_/fonts/nexussans-italic-webfont.woff') format('woff'),
+         url('_/fonts/nexussans-italic-webfont.ttf') format('truetype'),
+         url('_/fonts/nexussans-italic-webfont.svg#_/font/nexussans-italicregular') format('svg');
+    font-weight: normal;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'NexusSans';
+    src: url('_/fonts/nexussans-regular-webfont.eot');
+    src: url('_/fonts/nexussans-regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('_/fonts/nexussans-regular-webfont.woff') format('woff'),
+         url('_/fonts/nexussans-regular-webfont.ttf') format('truetype'),
+         url('_/fonts/nexussans-regular-webfont.svg#_/font/nexussans-regularregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'NexusSans';
+    src: url('_/fonts/nexussans-regularsc-webfont.eot');
+    src: url('_/fonts/nexussans-regularsc-webfont.eot?#iefix') format('embedded-opentype'),
+         url('_/fonts/nexussans-regularsc-webfont.woff') format('woff'),
+         url('_/fonts/nexussans-regularsc-webfont.ttf') format('truetype'),
+         url('_/fonts/nexussans-regularsc-webfont.svg#_/font/nexussans-regularscregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-variant: small-caps;
+    
+}
+
+@font-face {
+    font-family:'Europa';
+    src:url("../fonts/europa-bold-webfont.eot");
+    src:url("../fonts/europa-bold-webfont.eot?#iefix") format("embedded-opentype"),
+        url("../fonts/europa-bold-webfont.woff2") format("woff2"),
+        url("../fonts/europa-bold-webfont.woff") format("woff"),
+        url("../fonts/europa-bold-webfont.ttf") format("truetype"),
+        url("../fonts/europa-bold-webfont.svg#europabold") format("svg");
+    font-weight:normal;
+    font-style:normal;
+    
+}
+
+@font-face {
+    font-family:'Europa';
+    src:url("../fonts/europa-light-webfont.eot");
+    src:url("../fonts/europa-light-webfont.eot?#iefix") format("embedded-opentype"),
+        url("../fonts/europa-light-webfont.woff2") format("woff2"),
+        url("../fonts/europa-light-webfont.woff") format("woff"),
+        url("../fonts/europa-light-webfont.ttf") format("truetype"),
+        url("../fonts/europa-light-webfont.svg#europalight") format("svg");
+    font-weight:normal;
+    font-style:normal;
+    
+}
+
+@font-face {
+    font-family:'Europa';
+    src:url("../fonts/europa-regular-webfont.eot");
+    src:url("../fonts/europa-regular-webfont.eot?#iefix") format("embedded-opentype"),
+        url("../fonts/europa-regular-webfont.woff2") format("woff2"),
+        url("../fonts/europa-regular-webfont.woff") format("woff"),
+        url("../fonts/europa-regular-webfont.ttf") format("truetype"),
+        url("../fonts/europa-regular-webfont.svg#europaregular") format("svg");
+    font-weight:normal;
+    font-style:normal;
+}
+
+/* Rhythm
+=================== */
+
+$base-font-size: 16px;
+$base-line-height: 24px;
+
+
+/* Mixins
+==================== */
+
+.roundedborder {
+	@include border-radius (4px);
+	border: 1px solid $accent-bold;
+}
+
+.button {
+	padding: 2px 3px;
+	@include border-radius (4px);
+	border: 1px solid $accent-bold;
+	background-color: $accent-bright;
+	font-weight: 300;
+	&:hover, &:focus {
+		background-color: lighten($accent-bright, 10%);
+	}
+	margin-right: 1px;
+}
+
+.adminMenu {
+	ul {
+		padding: 0;
+		margin: .5em 0;
+		li {
+			list-style-type: none;
+			padding: 10px 0 5px 5px;
+			border-bottom: 1px solid $grey_light;
+			display: block;
+
+			a {
+				&:before {
+					content: '\00BB';
+					padding-right: 5px;
+				}
+			}
+		}
+	}
+}

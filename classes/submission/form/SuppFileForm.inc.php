@@ -1,0 +1,336 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @file classes/submission/form/SuppFileForm.inc.php
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2003-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * @class SuppFileForm
+ * @ingroup submission_form
+ *
+ * @brief Supplementary file form.
+ *
+ * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ */
+
+import('lib.pkp.classes.form.Form');
+
+class SuppFileForm extends Form {
+    /** @var int|null the ID of the supplementary file */
+    public $suppFileId = null;
+
+    /** @var object|null Article current article */
+    public $article = null;
+
+    /** @var object|null SuppFile current file */
+    public $suppFile = null;
+
+    /**
+     * Constructor.
+     * @param object $article Article
+     * @param object $journal Journal
+     * @param int|null $suppFileId (optional)
+     */
+    public function __construct($article, $journal, $suppFileId = null) {
+        $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
+        if (empty($supportedSubmissionLocales)) $supportedSubmissionLocales = [$journal->getPrimaryLocale()];
+
+        parent::__construct(
+            'submission/suppFile/suppFile.tpl',
+            true,
+            $article->getLocale(),
+            array_flip(array_intersect(
+                array_flip(AppLocale::getAllLocales()),
+                $supportedSubmissionLocales
+            ))
+        );
+
+        $this->article = $article;
+
+        if (isset($suppFileId) && !empty($suppFileId)) {
+            $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
+            $this->suppFile = $suppFileDao->getSuppFile($suppFileId, $article->getId());
+            if (isset($this->suppFile)) {
+                $this->suppFileId = (int) $suppFileId;
+            }
+        }
+
+        // Validation checks for this form
+        $this->addCheck(new FormValidatorLocale($this, 'title', 'required', 'author.submit.suppFile.form.titleRequired'));
+        $this->addCheck(new FormValidatorURL($this, 'remoteURL', 'optional', 'submission.layout.galleyRemoteURLValid'));
+        $this->addCheck(new FormValidatorPost($this));
+    }
+
+    /**
+     * [SHIM] Backward Compatibility
+     */
+    public function SuppFileForm($article, $journal, $suppFileId = null) {
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
+    }
+
+    /**
+     * Get the default form locale.
+     * @return string
+     */
+    public function getDefaultFormLocale() {
+        if ($this->article) return $this->article->getLocale();
+        return parent::getDefaultFormLocale();
+    }
+
+    /**
+     * Get the names of fields for which data should be localized
+     * @return array
+     */
+    public function getLocaleFieldNames() {
+        $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
+        return $suppFileDao->getLocaleFieldNames();
+    }
+
+    /**
+     * Display the form.
+     * @param object|null $request
+     * @param object|null $template
+     */
+    public function display($request = null, $template = null) {
+        // [WIZDAM] Singleton Request
+        $request = $request ?? Application::get()->getRequest();
+        $journal = $request->getJournal();
+
+        $templateMgr = TemplateManager::getManager();
+        $templateMgr->assign('enablePublicSuppFileId', $journal->getSetting('enablePublicSuppFileId'));
+        $templateMgr->assign('rolePath', $request->getRequestedPage());
+        $templateMgr->assign('articleId', $this->article->getId());
+        $templateMgr->assign('suppFileId', $this->suppFileId);
+
+        $typeOptionsOutput = [
+            'author.submit.suppFile.researchInstrument',
+            'author.submit.suppFile.researchMaterials',
+            'author.submit.suppFile.researchResults',
+            'author.submit.suppFile.transcripts',
+            'author.submit.suppFile.dataAnalysis',
+            'author.submit.suppFile.dataSet',
+            'author.submit.suppFile.sourceText'
+        ];
+        $typeOptionsValues = $typeOptionsOutput;
+        array_push($typeOptionsOutput, 'common.other');
+        array_push($typeOptionsValues, '');
+
+        $templateMgr->assign('typeOptionsOutput', $typeOptionsOutput);
+        $templateMgr->assign('typeOptionsValues', $typeOptionsValues);
+
+        // Sometimes it's necessary to track the page we came from in
+        // order to redirect back to the right place
+        $templateMgr->assign('from', $request->getUserVar('from'));
+
+        if (isset($this->article)) {
+            $templateMgr->assign('submissionProgress', $this->article->getSubmissionProgress());
+        }
+
+        if (isset($this->suppFile)) {
+            $templateMgr->assign('suppFile', $this->suppFile);
+        }
+        $templateMgr->assign('helpTopicId','submission.supplementaryFiles');
+        // consider public identifiers
+        $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
+        $templateMgr->assign('pubIdPlugins', $pubIdPlugins);
+
+        AppLocale::requireComponents(LOCALE_COMPONENT_OJS_AUTHOR);
+
+        parent::display();
+    }
+
+    /**
+     * Validate the form
+     */
+    public function validate() {
+        // [WIZDAM] Singleton Request
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+        $journalDao = DAORegistry::getDAO('JournalDAO');
+
+        $publicSuppFileId = $this->getData('publicSuppFileId');
+        if ($publicSuppFileId && $journalDao->anyPubIdExists($journal->getId(), 'publisher-id', $publicSuppFileId, ASSOC_TYPE_SUPP_FILE, $this->suppFileId)) {
+            $this->addError('publicSuppFileId', __('editor.publicIdentificationExists', ['publicIdentifier' => $publicSuppFileId]));
+            $this->addErrorField('publicSuppFileId');
+        }
+
+        // Verify additional fields from public identifer plug-ins.
+        import('classes.plugins.PubIdPluginHelper');
+        $pubIdPluginHelper = new PubIdPluginHelper();
+        $pubIdPluginHelper->validate($journal->getId(), $this, $this->suppFile);
+
+        return parent::validate();
+    }
+
+    /**
+     * Initialize form data from current supplementary file (if applicable).
+     */
+    public function initData() {
+        if (isset($this->suppFile)) {
+            $suppFile = $this->suppFile;
+            $this->_data = [
+                'title' => $suppFile->getTitle(null), // Localized
+                'creator' => $suppFile->getCreator(null), // Localized
+                'subject' => $suppFile->getSubject(null), // Localized
+                'type' => $suppFile->getType(),
+                'typeOther' => $suppFile->getTypeOther(null), // Localized
+                'description' => $suppFile->getDescription(null), // Localized
+                'publisher' => $suppFile->getPublisher(null), // Localized
+                'sponsor' => $suppFile->getSponsor(null), // Localized
+                'dateCreated' => $suppFile->getDateCreated(),
+                'source' => $suppFile->getSource(null), // Localized
+                'language' => $suppFile->getLanguage(),
+                'showReviewers' => $suppFile->getShowReviewers() == 1 ? 1 : 0,
+                'publicSuppFileId' => $suppFile->getPubId('publisher-id')
+            ];
+
+        } else {
+            $this->_data = [
+                'type' => '',
+                'showReviewers' => 1
+            ];
+        }
+        // consider the additional field names from the public identifer plugins
+        import('classes.plugins.PubIdPluginHelper');
+        $pubIdPluginHelper = new PubIdPluginHelper();
+        $pubIdPluginHelper->init($this, $suppFile);
+
+        return parent::initData();
+    }
+
+    /**
+     * Assign form data to user-submitted data.
+     */
+    public function readInputData() {
+        $this->readUserVars(
+            [
+                'title',
+                'creator',
+                'subject',
+                'type',
+                'typeOther',
+                'description',
+                'publisher',
+                'sponsor',
+                'dateCreated',
+                'source',
+                'language',
+                'showReviewers',
+                'publicSuppFileId',
+                'remoteURL'
+            ]
+        );
+        // consider the additional field names from the public identifer plugins
+        import('classes.plugins.PubIdPluginHelper');
+        $pubIdPluginHelper = new PubIdPluginHelper();
+        $pubIdPluginHelper->readInputData($this);
+    }
+
+    /**
+     * Save changes to the supplementary file.
+     * @param string|null $fileName
+     * @param boolean $createRemote
+     * @return int the supplementary file ID
+     */
+    public function execute($fileName = null, $createRemote = false) {
+        import('classes.file.ArticleFileManager');
+        $articleFileManager = new ArticleFileManager($this->article->getId());
+        $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
+
+        $fileName = isset($fileName) ? $fileName : 'uploadSuppFile';
+
+        import('classes.search.ArticleSearchIndex');
+        $articleSearchIndex = new ArticleSearchIndex();
+        
+        if (isset($this->suppFile)) {
+            parent::execute();
+
+            // Upload file, if file selected.
+            if ($articleFileManager->uploadedFileExists($fileName)) {
+                $fileId = $this->suppFile->getFileId();
+                if ($fileId != 0) {
+                    $articleFileManager->uploadSuppFile($fileName, $fileId);
+                } else {
+                    $fileId = $articleFileManager->uploadSuppFile($fileName);
+                    $this->suppFile->setFileId($fileId);
+                }
+                $articleSearchIndex->articleFileChanged($this->article->getId(), ARTICLE_SEARCH_SUPPLEMENTARY_FILE, $fileId);
+            }
+
+            // Update existing supplementary file
+            $this->setSuppFileData($this->suppFile);
+            if ($this->getData('remoteURL')) {
+                $this->suppFile->setRemoteURL($this->getData('remoteURL'));
+            }
+            $suppFileDao->updateSuppFile($this->suppFile);
+
+        } else {
+            // Upload file, if file selected.
+            if ($articleFileManager->uploadedFileExists($fileName)) {
+                $fileId = $articleFileManager->uploadSuppFile($fileName);
+                $articleSearchIndex->articleFileChanged($this->article->getId(), ARTICLE_SEARCH_SUPPLEMENTARY_FILE, $fileId);
+            } else {
+                $fileId = 0;
+            }
+
+            // Insert new supplementary file
+            $this->suppFile = new SuppFile();
+            $this->suppFile->setArticleId($this->article->getId());
+            $this->suppFile->setFileId($fileId);
+
+            if ($createRemote) {
+                $this->suppFile->setRemoteURL(__('common.remoteURL'));
+            }
+            parent::execute();
+
+            $this->setSuppFileData($this->suppFile);
+            $suppFileDao->insertSuppFile($this->suppFile);
+            $this->suppFileId = $this->suppFile->getId();
+        }
+
+        // Index updated metadata.
+        $articleSearchIndex->suppFileMetadataChanged($this->suppFile);
+        $articleSearchIndex->articleChangesFinished();
+
+        // Stamp the article modification (for OAI)
+        $articleDao = DAORegistry::getDAO('ArticleDAO');
+        $articleDao->updateArticle($this->article);
+
+        return $this->suppFileId;
+    }
+
+    /**
+     * Assign form data to a SuppFile.
+     * @param object $suppFile SuppFile
+     */
+    public function setSuppFileData($suppFile) {
+        $suppFile->setTitle($this->getData('title'), null); // Localized
+        $suppFile->setCreator($this->getData('creator'), null); // Localized
+        $suppFile->setSubject($this->getData('subject'), null); // Localized
+        $suppFile->setType($this->getData('type'));
+        $suppFile->setTypeOther($this->getData('typeOther'), null); // Localized
+        $suppFile->setDescription($this->getData('description'), null); // Localized
+        $suppFile->setPublisher($this->getData('publisher'), null); // Localized
+        $suppFile->setSponsor($this->getData('sponsor'), null); // Localized
+        $suppFile->setDateCreated($this->getData('dateCreated') == '' ? Core::getCurrentDate() : $this->getData('dateCreated'));
+        $suppFile->setSource($this->getData('source'), null); // Localized
+        $suppFile->setLanguage($this->getData('language'));
+        $suppFile->setShowReviewers($this->getData('showReviewers') == 1 ? 1 : 0);
+        $suppFile->setStoredPubId('publisher-id', $this->getData('publicSuppFileId'));
+        // consider the additional field names from the public identifer plugins
+        import('classes.plugins.PubIdPluginHelper');
+        $pubIdPluginHelper = new PubIdPluginHelper();
+        $pubIdPluginHelper->execute($this, $suppFile);
+    }
+}
+?>

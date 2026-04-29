@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/fa_IR/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the fa_IR (فارسی) locale.
+  *
+  -->
+
+<locale name="fa_IR" full_name="فارسی">
+	<message key="installer.additionalLocales">زبانهای اضافی</message>
+	<message key="installer.administratorAccount">حساب مدیر</message>
+	<message key="installer.administratorAccountInstructions">این حساب کاربری مدیر سایت خواهد شد و دسترسی کامل به سیستم خواهد داشت. حسابهای اضافی کاربران را می‌توان پس از نصب برنامه ایجاد کرد.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="form_error formError">خیر</span>]]></message>
+	<message key="installer.checkYes">بلی</message>
+	<message key="installer.clientCharset">مجموعه کاراکترهای مشتری</message>
+	<message key="installer.clientCharsetInstructions">سیستم کد گذاری مورد استفاده برای برای ارسال به و دریافت داده ها از مرورگر</message>
+	<message key="installer.configFileError"><![CDATA[فایل تنظیمات <tt>config.inc.php</tt> موجود نیست ویا قابل خواندن نیست.]]></message>
+	<message key="installer.connectionCharset">مجموعه کاراکتر اتصال</message>
+	<message key="installer.connectionCharsetInstructions">سیستم کد گذاری مورد استفاده برای ارسال و دریافت داده ها از بانک اطلاعاتی. این سیستم کد گذاری باید مانند سیستم کد گذاری مشتری باشد. توجه کنید که این قابلیت فقط با MySQL >= 4.1.1 یا PostgreSQL >= 7.1 برآورده میشود. اگر سرور بانک اطلاعاتی شما آنرا حمایت نمی کند گزینه &quot;موجود نیست&quot; را انتخاب کنید.</message>
+	<message key="installer.contentsOfConfigFile">محتوای فایل تنظیمات</message>
+	<message key="installer.createDatabase">ایجاد بانک اطلاعاتی جدید</message>
+	<message key="installer.createDatabaseInstructions">برای استفاده از این گزینه سیستم بانک اطلاعاتی شما میبایست از ایجاد بانک اطلاعاتی از راه دور پشتیبانی کند و حساب کاربری شما میبایست مجوزهای لازم برای ایجاد یک بانک اطلاعاتی جدید را داشته باشد. چنانچه با انتخاب این گزینه ، نصب نرم افزار شکست خورد لازم است بصورت دستی بانک اطلاعاتی را بر روی سیستم خود ایجاد کنید و برنامه نصب نرم افزار را از نو اجرا کنید ولی این بار این گزینه را غیر فعال کنید.</message>
+	<message key="installer.databaseCharset">مجموعه کاراکتری بانک اطلاعاتی</message>
+	<message key="installer.databaseCharsetInstructions">سیستم کد گذاری مورد استفاده برای ذخیره داده ها در بانک اطلاعاتی. این قابلیت فقط با MySQL >= 4.1.1 یا PostgreSQL >= 7.1 میسر است. اگر سرور بانک اطلاعاتی شما آنرا حمایت نمیکند &quot;موجودنیست&quot; را انتخاب کنید.</message>
+	<message key="installer.databaseDriver">درایور بانک اطلاعاتی</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>سیستم در حال حاضر فقط از MySQL و PostgreSQL پشتیبانی می‌کند. در صورتی که نمی‌توانید یکی از آنها را انتخاب کنید، با مدیر سیستم خود تماس بگیرید تا از وجود افزونه‌های PHP مورد نیاز بر روی سرور خود اطمینان حاصل کنید.</strong>]]></message>
+	<message key="installer.databaseHost">میزبان</message>
+	<message key="installer.databaseHostInstructions">برای اتصال از طریق سوکت دامنه بجای اتصال از طریق TCP/IP نام میزبان را خالی بگذارید. در صورت استفاده از MySQL این کار لازم نیست ، زیرا MySQL چنانچه مقدار &quot;localhost&quot; برای آن وارد شود بطور اتوماتیک از سوکت استفاده میکند ولی درمورد بعضی بانکهای اطلاعاتی دیگر مانند PostgreSQL لازم است.</message>
+	<message key="installer.databaseName">نام بانک اطلاعاتی</message>
+	<message key="installer.databasePassword">رمز عبور</message>
+	<message key="installer.databaseSettings">تنظیمات بانک اطلاعاتی</message>
+	<message key="installer.databaseUsername">نام کاربری</message>
+	<message key="installer.encryptionInstructions"><![CDATA[الگوریتم رمزنگاری استاندارد گذرواژه Bcrypt طبق استانداردهای اسکالر ویزدام به صورت امن اعمال می‌شود.]]></message>
+	<message key="installer.encryption">الگوریتم رمزنگاری رمز عبور</message>
+	
+    <!-- نصب کننده -->
+    <message key="installer.appInstallation">نصب اسکالر ویزدام</message>
+    <message key="installer.appUpgrade">بروز رسانی اسکالر ویزدام</message>
+    
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>اسکالر ویزدام نسخه {$version}</h4>
+    
+    <p>از دانلود <strong>اسکالر ویزدام</strong> از سنگیا پابلیشینگ هاوس تشکر میکنیم. قبل از ادامه لطفا متن فایل <a href="{$baseUrl}/docs/README">README</a> همراه با این نرم افزار را مطالعه بفرمائید. برای اطلاعات بیشتر در مورد سنگیا پابلیشینگ هاوس (SPH) و پروژه های نرم افزاری آن لطفا از <a href="http://wizdam.sangia.org/" target="_blank">وب سایت SPH</a> بازدید بفرمائید. اگر میخواهید گزارش اشکال بدهید و یا بدنبال حمایت تکنیکی برای اسکالر ویزدام هستید به <a href="http://forum.wizdam.sangia.org" target="_blank">فوروم حمایت</a> مراجعه و یا از <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">سیستم گزارش اشکال</a> آنلاین SPH بازدید کنید. اگرچه فوروم حمایت متد ترجیحی تماس میباشد، شما میتوانید به تیم توسعه دهنده به آدرس <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a> ایمیل بزنید.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[رمزگذاری رمز عبور از <strong>bcrypt</strong> استفاده میکند — یک الگوریتم هش ایمن و مطابق با استانداردهای صنعت. نیاز به تنظیمات اضافی ندارد.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>بروزرسانی</h4>
+    
+    <p>چنانچه میخواهید نسخه اسکالر ویزدام موجود را ارتقا دهید، <a href="{$upgradeUrl}">اینجا را کلیک</a> کنید. برای ارتقا از نسخه‌های جدیدتر (در حال توسعه).</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>ملزومات توصیه شده سیستم</h4>
+    
+    <ul>
+    	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}؛ شما در حال حاضر از PHP {$phpVersion}{$wrongPhpText} استفاده می‌کنید</li>
+    	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x یا <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (شامل PostgreSQL 8.x)</li>
+    	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x یا >= 2.0.4x یا Microsoft IIS 6</li>
+    	<li>سیستم عامل: هر سیستم عاملی که نرم افزارهای فوق را حمایت کند قابل استفاده است. شامل <a href="http://www.linux.org/" target="_blank">Linux</a>، <a href="http://www.bsd.org/" target="_blank">BSD</a>، <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>، <a href="http://www.apple.com/" target="_blank">Mac OS X</a>، <a href="http://www.microsoft.com/">Windows</a> میباشد.</li>
+    </ul>
+    
+    <p>از آنجا که SPH دارای تمام امکانات برای تست کردن بر روی هر گونه ترکیب احتمالی از نسخه های مختلف نرم افزارهای فوق و سیستم های عامل نیست، هیچگونه تضمینی در مورد عملکرد صحیح و یا حمایت از آن را نمیتوانیم عهده دار شویم.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>پس از خاتمه نصب برنامه میتوانید این تنظیمات را از طریق ویرایش فایل <tt>config.inc.php</tt> در شاخه اصلی اسکالر ویزدام، و یا از طریق صفحه مدیریت سایت تغییر دهید.</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>سیستم های بانک اطلاعاتی مورد پشتیبانی</h4>
+    
+    <p>اسکالر ویزدام در حال حاضر بر روی MySQL و PostgreSQL تست شده است. با سایر سیستم های بانک اطلاعاتی که توسط <a href="http://adodb.org/" target="_blank">ADOdb</a> حمایت میشوند نیز ممکن است بصورت نسبی یا تمام عیار کار کند. گزارشات سازگاری و یا کدهای وصله ای برای سایر سیستم های بانک اطلاعاتی را میتوانید به تیم اسکالر ویزدام بفرستید.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>مراحل قبل از نصب</h4>
+    
+    <p>1. فایلها و پوشه های زیر و محتویات آنها میبایست قابل نوشتن باشد:</p>
+    <ul>
+    	<li><tt>config.inc.php</tt> قابل نوشتن است (اختیاری): {$writable_config}</li>
+    	<li><tt>public/</tt> قابل نوشتن است: {$writable_public}</li>
+    	<li><tt>cache/</tt> قابل نوشتن است: {$writable_cache}</li>
+    	<li><tt>cache/t_cache/</tt> قابل نوشتن است: {$writable_templates_cache}</li>
+    	<li><tt>cache/t_compile/</tt> قابل نوشتن است: {$writable_templates_compile}</li>
+    	<li><tt>cache/_db</tt> قابل نوشتن است: {$writable_db_cache}</li>
+    </ul>
+    
+    <p>2. یک پوشه برای ذخیره فایلهای آپلود شده میبایست ایجاد شده و قابل نوشتن شود (به "تنظیمات فایل" در قسمت پایین این صفحه مراجعه کنید).</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>اسکالر ویزدام نسخه {$version}</h4>
+	
+<p>با تشکر بخاطر دانلود <strong>اسکالر ویزدام</strong> از سنگیا پابلیشینگ هاوس. قبل از ادامه، فایل <a href="{$baseUrl}/docs/README">README</a> و فایل <a href="{$baseUrl}/docs/UPGRADE">UPGRADE</a> همراه با این نرم افزار را مطالعه بفرمائید. برای اطلاعات بیشتر در مورد سنگیا پابلیشینگ هاوس و پروژههای نرم افزاری آن از <a href="http://wizdam.sangia.org/" target="_blank">وب سایت SPH</a> دیدن فرمائید. چنانچه میخواهید گزارش اشکال بدهید ویا بدنبال حمایت تکنیکی در مورد اسکالر ویزدام هستید به <a href="http://forum.wizdam.sangia.org" target="_blank">فوروم حمایت</a> بروید و یا از <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">سیستم گزارش اشکال</a> آنلاین SPH بازدید کنید. اگرچه فوروم حمایت روش ترجیحی تماس است همچنین میتواید به آدرس ایمیل <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a> پیغام بفرستید.</p>
+<p><strong>شدیدا توصیه میشود</strong> که از بانک اطلاعاتی و پوشه فایلها و پوشه نصب اسکالر ویزدام نسخه پشتیبان تهیه کنید.</p>
+<p>چنانچه در <a href="http://www.php.net/features.safe-mode" target="_blank">مد امن PHP</a> اجرا میکنید ، لطفا توجه کنید که گزینه max_execution_time را در فایل تنظیمات php.ini برابر با مقدار بالائی گذاشته شود. چنانچه زمان از این مقدار و یا سایر محدوده ها مانند مقدار Apache's "Timeout" بیشتر شود و روند بروزرسانی قطع شود دخالت دستی لازم میشود.</p>]]></message>
+	<message key="installer.localeSettingsInstructions"><![CDATA[برای حمایت کامل یونی کد UTF-8 ، برای تمام تنظیمات مجموعه کاراکتری UTF-8 را انتخاب کنید. توجه کنید که این نوع حمایت نیاز به MySQL >= 4.1.1 یا PostgreSQL >= 7.1 دارد. همچنین توجه کنید که حمایت کامل یونی کد نیاز به PHP >= 7.4.0 که همرا با حمایت کتابخانه <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> کمپایل شده باشد دارد. حمایت کتابخانه mbstring بصورت پیش فرض در نسخه های جدید نصب PHP فعال است. چنانچه سرور شما از این ملزومات پشتیبانی نکند شما ممکن است هنگام استفاده از مجموعه های کاراکتری توسعه یافته مشکلاتی را تجربه کنید.<br /><br />
+سرور شما در حال حاضر mbstring را حمایت میکند: <strong>{$supportsMBString}</strong>]]></message>
+	<message key="installer.allowFileUploads"><![CDATA[سرور شما در حال حاضر آپلود فایل را مجاز می‌داند: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[سرور شما در حال حاضر حداکثر اندازه مجاز برای آپلود فایل را: <strong>{$maxFileUploadSize}</strong> تعیین کرده است]]></message>
+	<message key="installer.localeInstructions">زبان اولیه برای استفاده با این سیستم. در صورتی که به داشتن حمایت برای زبان دیگری علاقه مند هستید به مستندات اسکالر ویزدام مراجعه کنید.</message>
+	<message key="installer.additionalLocalesInstructions">زبانهای اضافی را که مایلید این سیستم پشتیبانی کند انتخاب کنید. این زبانها در دسترس مجلات این سایت برای استفاده قرار خواهند گرفت. البته زبانهای اضافی را در زمانهای دیگر نیز میتوانید از طریق صفحه مدیریت سایت نصب کنید.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[آدرس کامل پوشه ای که قرار است فایل های آپلود شده را نگه دارد. بهتر اشت این پوشه مستقیما قابل دستیابی از طریق وب نباشد. <strong>لطفا قبل از نصب برنامه اطمینان حاصل کنید که این پوشه وجود دارد و قابل نوشتن است.</strong> مسیر های آدرس برای سیستم عامل ویندوز باید اسلاش رو به جلو بکار ببرد.مانند "C:/myjournal/files".]]></message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<b>اخطار:</b> چنانچه نصب بصورت نیمه کاره رها شود ممکن است لازم شود بانک اطلاعاتی و یا جداول ایجاد شده را حذف کنید و سپس اقدام به نصب مجدد کنید.]]></message>
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>مهم!</h4>
+<p>برنامه نصب کننده نمی تواند بطور اتوماتیک در فایل تنظیمات بنویسد. قبل از شروع کار با سیستم لطفا فایل <tt>config.inc.php</tt> را در یک ویرایشگر مناسب متنی باز کرده و محتوای آنرا با محتوای جعبه متن زیر عوض کنید..</p>]]></message>
+	<message key="installer.installationComplete"><![CDATA[<p>نصب اسکالر ویزدام با موفقیت پایان یافت.</p>
+<p>برای شروع کار باسیستم ، با استفاده از نام کاربری و رمز عبوری که در مرحله قبل وارد کردید به سیستم <a href="{$loginUrl}">وارد</a> شوید.</p>
+<p>چنانچه مایلید اخبار و تازه ها را دریافت کنید <strong>لطفا در <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a> ثبت نام کنید.</strong> چنانچه سوال یا نظری دارید لطفا از <a href="http://forum.wizdam.sangia.org" target="_new">فوروم حمایت</a> بازدید کنید.</p>]]></message>
+	<message key="installer.upgradeComplete"><![CDATA[<p>بروزرسانی اسکالر ویزدام به نسخه {$version} با موفقیت پایان یافت.</p>
+<p>فراموش نکنید که مقدار "installed" را در فایل تنظیمات config.inc.php را دوباره به <i>On</i> برگردانید.</p>
+<p>چنانچه تا کنون ثبت نام نکرده اید و مایل هستید تا اخبار و تازه ها را دریافت کنید ، <strong>لطفا در سایت <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a> ثبت نام کنید.</strong> چنانچه سوال ویا نظری دارید لطفا از <a href="http://forum.wizdam.sangia.org" target="_new">فوروم حمایت </a> دیدن کنید.</p>]]></message>
+	<message key="installer.databaseSettingsInstructions">اسکالر ویزدام برای ذخیره داده های خود نیاز به دسترسی به یک بانک اطلاعاتی SQL دارد. لطفا شرایط مورد لزوم ذکر شده در بالای این صفحه را برای دیدن لیست بانک های اطلاعاتی سازگار ببینید. سپس در قسمت زیر تنظیمات لازم برای ایجاد ارتباط با بانک اطلاعاتی را وارد کنید</message>
+	<message key="installer.installApplication">نصب اسکالر ویزدام</message>
+	<message key="installer.upgradeApplication">بروزرسانی اسکالر ویزدام</message>
+	
+	<message key="installer.filesDir">پوشه آپلود</message>
+	<message key="installer.fileSettings">تنضیمات فایل</message>
+	<message key="installer.form.clientCharsetRequired">مجموعه کاراکتر مشتری باید انتخاب شود.</message>
+	<message key="installer.form.databaseDriverRequired">درایور بانک اطلاعاتی باید انتخاب شود.</message>
+	<message key="installer.form.databaseNameRequired">نام بانک اطلاعاتی لازم است</message>
+	<message key="installer.form.emailRequired">یک آدرس ایمیل صحیح برای حساب مدیر لازم است</message>
+	<message key="installer.form.encryptionRequired">الگوریتم مورد استفاده برای رمزنگاری رمز عبور باید انتخاب شود.</message>
+	<message key="installer.form.filesDirRequired">پوشه ذخیره فایلهای آپلود شده باید وارد شود.</message>
+	<message key="installer.form.localeRequired">یک زبان باید انتخاب شود</message>
+	<message key="installer.form.passwordRequired">رمز عبور برای حساب مدیر لازم است</message>
+	<message key="installer.form.passwordsDoNotMatch">عدم تطابق در تکرار رمز عبور مدیر </message>
+	<message key="installer.form.separateMultiple">مقادیر متعدد را با کوما از هم جدا کنید</message>
+	<message key="installer.form.usernameAlphaNumeric">نام کاربری مدیر فقط میتواند دارای حروف و اعداد ، خط فاصله پائین و خط فاصله باشد.همچنین باید با یک حرف یا عدد شروع و به یم حرف یا عدد ختم شود.</message>
+	<message key="installer.form.usernameRequired">نام کاربری برای حساب مدیر لازم است</message>
+	<message key="installer.installErrorsOccurred">بروز خطا هنگام نصب</message>
+	<message key="installer.installerSQLStatements">جملات SQL برای نصب</message>
+	<message key="installer.installFileError"><![CDATA[فایل نصب <tt>dbscripts/xml/install.xml</tt> وجود ندارد ویا قابل خواندن نیست.]]></message>
+	<message key="installer.installFilesDirError">پوشه تعیین شده برای فایلهای آپلودی وجود ندارد ویا قابل نوشتن نیست</message>
+	<message key="installer.installParseDBFileError"><![CDATA[بروز خطا هنگام تجزیه فایل نصبی بانک اطلاعاتی <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">زبان</message>
+	<message key="installer.localeSettings">تنظیمات زبانی</message>
+	<message key="installer.miscSettings">تنظیمات متفرقه</message>
+	<message key="installer.oaiSettings"><![CDATA[تنظیمات OAI]]></message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[یک شناسه منحصر به فرد برای تشخیص رکورد های متاداه اندکس شده از این سایت توسط پروتوکل <a href="http://www.openarchives.org/" target="_blank">پیشگام بایگانی آزاد</a> برای استخراج متا داده.]]></message>
+	<message key="installer.oaiRepositoryId">شناسه مخزن OAI</message>
+	<message key="installer.publicFilesDirError">پوشه public وجود ندارد ویا قابل نوشتن نیست</message>
+	<message key="installer.releaseNotes">یاداشت های منتشره</message>
+	<message key="installer.securitySettings">تنظیمات امنیتی</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>هشدار: نسخه PHP شما فاقد خداقل های مورد نیاز برای نصب برنامه است. توصیه میشود به نسخه های جدید ارتفا دهید.</strong>]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[بروز خطا هنگام پردازش فایل تمپلیت ایمیل <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale.maybeIncomplete">زبانهای مشخص شده ممکن است ناکامل باشند.</message>
+	<message key="installer.beacon"><![CDATA[بیکن]]></message>
+	<message key="installer.beacon.enable"><![CDATA[یک شناسه منحصر به فرد سایت و URL پایه OAI را صرفاً برای اهداف آماری و هشدارهای امنیتی در اختیار سنگیا پابلیشینگ هاوس قرار دهید.]]></message>
+
+    <!-- Installation upgrade warnings -->
+    <message key="site.upgradeAvailable.admin"><![CDATA[نسخه جدیدی از اسکالر ویزدام در دسترس است! شما در حال حاضر از اسکالر ویزدام {$currentVersion} استفاده می‌کنید. آخرین نسخه اسکالر ویزدام {$latestVersion} می‌باشد. لطفاً برای دانلود آخرین نسخه و مشاهده راهنمای به‌روزرسانی به <a href="http://wizdam.sangia.org/download" target="_new">این صفحه</a> مراجعه کنید.]]></message>
+    <message key="site.upgradeAvailable.manager"><![CDATA[نسخه جدیدی از اسکالر ویزدام در دسترس است! شما در حال حاضر از اسکالر ویزدام {$currentVersion} استفاده می‌کنید. آخرین نسخه اسکالر ویزدام {$latestVersion} می‌باشد. لطفاً با مدیر سایت خود ({$siteAdminName}، <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) تماس بگیرید و ایشان را از این نسخه جدید مطلع سازید. اطلاعات بیشتر را می‌توانید <a href="http://wizdam.sangia.org/download" target="_new">اینجا</a> بیابید.]]></message>
+</locale>

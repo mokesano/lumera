@@ -1,0 +1,296 @@
+/* 
+ * styles/submission-progress.css
+ * Simple Progress Bar for OJS 2.4.8.2 - Clean line design
+ */
+
+/* Ensure #body has proper positioning context */
+#body {
+    position: relative;
+}
+
+/* Simple Progress Container - Dengan smooth transition */
+.simple-progress-container {
+    position: fixed;
+    top: 50vh;
+    right: 20px;
+    transform: translateY(-50%);
+    width: 80px;
+    z-index: 10;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: top 0.4s ease-out, transform 0.4s ease-out;
+}
+
+/* Auto-save Indicator */
+.auto-save-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(16, 185, 129, 0.9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 17px;
+    font-size: 14px;
+    font-weight: 700;
+    z-index: 17;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.auto-save-indicator.show {
+    opacity: 1;
+}
+
+/* Progress Line - Main vertical line */
+.progress-line {
+    position: relative;
+    width: 7px; /* Line width */
+    height: 270px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    margin: 0 auto;
+    overflow: visible; /* Changed from hidden to visible so circles can overflow */
+}
+
+/* Progress Fill - Fixed password meter style gradient */
+.progress-fill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(to top, 
+        #ef4444 0%,     /* Red - Step 1 (bottom) */
+        #ef4444 20%,    /* Red continues to 20% */
+        #f97316 20%,    /* Orange starts - Step 2 */
+        #f97316 40%,    /* Orange continues to 40% */
+        #eab308 40%,    /* Yellow starts - Step 3 */
+        #eab308 60%,    /* Yellow continues to 60% */
+        #22c55e 60%,    /* Green starts - Step 4 */
+        #22c55e 80%,    /* Green continues to 80% */
+        #3b82f6 80%,    /* Blue starts - Step 5 */
+        #3b82f6 95%,    /* Blue continues */
+        #1e40af 100%    /* Dark Blue - Complete */
+    );
+    border-radius: 3px;
+    transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 0%;
+    overflow: hidden;
+}
+
+/* Step Indicators Container */
+.step-indicators {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    height: 100%;
+    width: 80px; /* Full width of container to prevent clipping */
+    pointer-events: none; /* Allow clicks to pass through container */
+}
+
+/* Individual Step Indicator */
+.step-indicator {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px; /* Larger for better visibility */
+    height: 22px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px; /* Larger font */
+    font-weight: 700;
+    color: #6b7280;
+    transition: all 0.3s ease;
+    z-index: 10; /* Higher z-index to appear above progress bar */
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* More prominent shadow */
+    pointer-events: auto; /* Re-enable clicks on indicators */
+}
+
+/* Step positions - Steps at color transition points */
+.step-indicator:nth-child(1) { 
+    bottom: 0%; 
+    transform: translateX(-50%) translateY(50%); 
+}
+.step-indicator:nth-child(2) { 
+    bottom: 20%; 
+    transform: translateX(-50%) translateY(50%); 
+}
+.step-indicator:nth-child(3) { 
+    bottom: 40%; 
+    transform: translateX(-50%) translateY(50%); 
+}
+.step-indicator:nth-child(4) { 
+    bottom: 60%; 
+    transform: translateX(-50%) translateY(50%); 
+}
+.step-indicator:nth-child(5) { 
+    bottom: 80%; 
+    transform: translateX(-50%) translateY(50%); 
+}
+
+/* Complete Indicator at the top */
+.complete-indicator {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%) translateY(-10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.complete-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #1e40af;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    border: 3px solid #1e40af;
+    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
+    transition: all 0.3s ease;
+}
+
+.complete-text {
+    color: #1e40af;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Complete states */
+.complete-indicator.completed .complete-icon {
+    background: #1e40af;
+    border-color: #1e40af;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2), 0 2px 8px rgba(30, 64, 175, 0.3);
+    animation: complete-pulse 2s infinite;
+}
+
+.complete-indicator.completed .complete-text {
+    color: #1e40af;
+}
+
+.complete-indicator.pending .complete-icon {
+    background: white;
+    border-color: #d1d5db;
+    color: #9ca3af;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.complete-indicator.pending .complete-text {
+    color: #9ca3af;
+}
+
+@keyframes complete-pulse {
+    0% { box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2), 0 2px 8px rgba(30, 64, 175, 0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(30, 64, 175, 0.1), 0 2px 8px rgba(30, 64, 175, 0.3); }
+    100% { box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2), 0 2px 8px rgba(30, 64, 175, 0.3); }
+}
+
+/* Step States */
+.step-indicator.completed {
+    background: #22c55e;
+    border-color: #22c55e;
+    color: white;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2), 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.step-indicator.current {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    width: 27px;
+    height: 27px;
+    color: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3), 0 2px 9px rgba(0, 0, 0, 0.15);
+    animation: pulse-current 2s infinite;
+}
+
+.step-indicator.pending {
+    background: white;
+    border-color: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Current step animation */
+@keyframes pulse-current {
+    0% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15); }
+    50% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.1), 0 2px 8px rgba(0, 0, 0, 0.15); }
+    100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15); }
+}
+
+/* Progress Info */
+.progress-info {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 10px;
+    color: #6b7280;
+}
+
+.progress-percentage {
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* Hover effects for better UX */
+.step-indicator:hover:not(.pending) {
+    transform: translateX(-50%) translateY(50%) scale(1.1);
+}
+
+.step-indicator.completed:hover {
+    box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.step-indicator.current:hover {
+    animation: none;
+    box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile - Hide on small screens */
+@media (max-width: 768px) {
+    .simple-progress-container {
+        display: none;
+    }
+}
+
+/* Legacy CSS for backward compatibility */
+.submission-progress-sidebar {
+    display: none;
+}
+
+/* Keep existing pseudoMenu styles */
+.pseudoMenu .steplist li.disable {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.pseudoMenu .steplist li.current {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.pseudoMenu .steplist li.success {
+    background-color: #16a34a;
+    color: white;
+}
+
+.pseudoMenu .steplist li.success a {
+    color: white;
+}

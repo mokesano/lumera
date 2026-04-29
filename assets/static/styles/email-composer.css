@@ -1,0 +1,869 @@
+/* File Upload Section - Enhanced dengan Drag & Drop */
+.file-upload-section {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 8px;
+}
+
+.file-upload-box {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px;
+	border: 2px dashed #dadce0;
+	border-radius: 8px;
+	background: #fafbfc;
+	transition: all 0.2s ease;
+	cursor: pointer;
+	position: relative;
+}
+
+/* Recipient Chips dengan Remove Button */
+.recipient-chip {
+	display: inline-flex;
+	align-items: center;
+	background: #f1f3f4;
+	border-radius: 16px;
+	padding: 2px 10px;
+	margin: 2px 4px;
+	gap: 4px;
+}
+
+.recipient-chip .recipient-input {
+	background: transparent;
+	border: none;
+	padding: 4px 0;
+	min-width: 150px;
+	font-size: 14px;
+}
+
+.remove-recipient {
+	color: #5f6368;
+	cursor: pointer;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: bold;
+	transition: all 0.2s ease;
+	background: #dadce0;
+}
+
+.remove-recipient:hover {
+	background: #ea4335;
+	color: white;
+}
+
+/* File Hidden Input */
+.file-hidden {
+	display: none;
+}
+
+/* Gmail-style Email Composer */
+.email-compose {
+    margin-top: 32px;
+	font-family: NexusSans,Nexus Sans,Gulliver,-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	line-height: 1.5;
+	color: #202124;
+}
+
+/* Error Messages */
+.error-messages {
+	background: #fce8e6;
+	border-left: 4px solid #ea4335;
+	padding: 12px 16px;
+	margin-bottom: 16px;
+	color: #d93025;
+	font-size: 14px;
+}
+
+.error-messages ul {
+	margin: 8px 0 0 0;
+	padding-left: 20px;
+}
+
+/* Recipient Rows dengan Warna Berbeda */
+.recipient-row {
+	display: flex;
+	align-items: flex-start;
+	min-height: 48px;
+	padding: 4px 0;
+	border-bottom: 1px solid #e8eaed;
+}
+
+/* To Row - Blue tint */
+.to-row {
+	background: linear-gradient(to right, #f8f9ff 0%, #ffffff 100%);
+	border-left: 5px solid #1a73e8;
+}
+
+/* CC Row - Green tint */
+.cc-row {
+	background: linear-gradient(to right, #f0f9f0 0%, #ffffff 100%);
+	border-left: 4px solid #34a853;
+}
+
+/* BCC Row - Orange tint */
+.bcc-row {
+	background: linear-gradient(to right, #fff8f0 0%, #ffffff 100%);
+	border-left: 3px solid #ff9800;
+}
+
+.field-label {
+	width: 60px;
+	color: #5f6368;
+	font-size: 17px;
+	text-align: right;
+	padding-right: 16px;
+	padding-top: 8px;
+	flex-shrink: 0;
+}
+
+.field-content {
+	flex: 1;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.recipient-input {
+	border: none;
+	outline: none;
+	padding: 8px 4px;
+	font-size: 17px;
+	background: transparent;
+	min-width: 250px;
+	flex: 1;
+}
+
+.recipient-input:focus {
+	background: #f8f9fa;
+	border-radius: 4px;
+}
+
+.recipient-input::placeholder {
+	color: #9aa0a6;
+}
+
+/* To Field Actions */
+.recipient-row .field-actions {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	/*! margin-left: 12px; */
+	/*! padding-top: 8px; */
+}
+
+.field-toggles {
+	display: flex;
+	gap: 12px;
+	min-height: 1em;
+}
+
+.toggle-link {
+	color: #1a73e8;
+	font-size: 14px;
+	cursor: pointer;
+	padding: 6px 8px;
+	border-radius: 4px;
+	transition: background-color 0.2s ease;
+}
+
+.toggle-link:hover {
+	background: #e8f0fe;
+}
+
+/* Cc/Bcc Field Actions - WRAPPER UNTUK TOMBOL */
+.cc-row .field-actions,
+.bcc-row .field-actions {
+	display: flex;
+	align-items: center;
+	margin-left: auto;
+	padding-left: 12px;
+	/*! padding-top: 8px; */
+	flex-shrink: 0;
+}
+
+.action-buttons {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.add-link {
+	/*! color: #1a73e8; */
+	cursor: pointer;
+	font-size: 13px;
+	/*! text-decoration: underline; */
+	padding: 4px 8px;
+	border-radius: 4px;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+	flex-shrink: 0;
+	/*! height: 32px; */
+	display: flex;
+	align-items: center;
+	background-color: #cbd5e0;
+	border-color: #ccc;
+	min-width: 5em !important;
+}
+
+.add-link:hover {
+	background: #e8f0fe;
+	text-decoration: none;
+}
+
+/* Close Button - SEJAJAR DENGAN ADD BUTTON */
+.close-btn {
+	color: #5f6368;
+	cursor: pointer;
+	width: 22px;
+	height: 22px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	font-weight: bold;
+	transition: all 0.2s ease;
+	text-decoration: none;
+	line-height: 1;
+	flex-shrink: 0;
+	border-radius: 50%;
+}
+
+.close-btn:hover {
+	background: #d83b5b;
+	color: #202124;
+	color: #ffffff;
+}
+
+/* Options Row - Di atas Subject */
+.options-row {
+	padding: 8px 0;
+	border-bottom: 1px solid #e8eaed;
+}
+
+/* Subject Row */
+.subject-row {
+	padding: 12px 16px;
+	border-bottom: 1px solid #e8eaed;
+	background: linear-gradient(to right, #f8f5ff 0%, #ffffff 100%);
+	border-left: 5px solid #9c27b0;
+}
+
+.subject-input {
+	width: 100%;
+	border: none;
+	outline: none;
+	padding: 8px 4px;
+	font-size: 17px;
+	background: transparent;
+	font-weight: 500;
+	font-family: "Google Sans",Roboto,RobotoDraft,Helvetica,Arial,sans-serif;
+	font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;
+}
+
+.subject-input::placeholder {
+	color: #9aa0a6;
+}
+
+/* Message Row */
+.message-row {
+	padding: 16px 0;
+}
+
+.message-input {
+	width: 100%;
+	border: 1px solid #dadce0;
+	border-radius: 8px;
+	outline: none;
+	padding: 20px;
+	font-size: 16px;
+	font-family: inherit;
+	line-height: 1.6;
+	min-height: 300px;
+	resize: vertical;
+	background: white;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
+
+.message-input:focus {
+	border-color: #1a73e8;
+	box-shadow: 0 0 0 1px #1a73e8;
+}
+
+.message-input::placeholder {
+	color: #9aa0a6;
+}
+
+/* Attachments Row */
+.attachments-row {
+	padding: 12px 0;
+	border-bottom: 1px solid #e8eaed;
+}
+
+.attachment-chip {
+	display: inline-flex;
+	align-items: center;
+	background: #f1f3f4;
+	border-radius: 16px;
+	padding: 4px 8px 4px 12px;
+	margin: 2px 4px 2px 0;
+	font-size: 13px;
+	gap: 6px;
+}
+
+.attachment-name {
+	max-width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.attachment-size {
+	color: #5f6368;
+	font-size: 12px;
+}
+
+.remove-btn {
+	color: #5f6368;
+	text-decoration: none;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	font-weight: bold;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.remove-btn:hover {
+	background: #fce8e6;
+	color: #ea4335;
+}
+
+/* File Upload Section - Enhanced dengan Drag & Drop */
+.file-upload-section {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 8px;
+}
+
+.file-upload-box {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px;
+	border: 2px dashed #dadce0;
+	border-radius: 8px;
+	background: #fafbfc;
+	transition: all 0.2s ease;
+	cursor: pointer;
+	position: relative;
+}
+
+.recipient-chip .recipient-input {
+	background: transparent;
+	border: none;
+	padding: 4px;
+	min-width: 150px;
+	font-size: 17px;
+}
+
+.remove-recipient {
+	color: #5f6368;
+	cursor: pointer;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: bold;
+	transition: all 0.2s ease;
+	background: #dadce0;
+}
+
+.remove-recipient:hover {
+	background: #ea4335;
+	color: white;
+}
+
+.file-upload-box:hover {
+	border-color: #1a73e8;
+	background: #f8f9fa;
+}
+
+.file-upload-box.drag-over {
+	border-color: #34a853;
+	background: #e8f5e8;
+	transform: scale(1.02);
+}
+
+.file-upload-box.file-selected {
+	border-color: #34a853;
+	background: #e8f5e8;
+	border-style: solid;
+}
+
+.upload-icon {
+	font-size: 32px;
+	color: #5f6368;
+	flex-shrink: 0;
+}
+
+.upload-content {
+	flex: 1;
+}
+
+.upload-title {
+	font-size: 16px;
+	font-weight: 500;
+	color: #202124;
+	margin-bottom: 4px;
+}
+
+.upload-subtitle {
+	font-size: 14px;
+	color: #5f6368;
+	margin-bottom: 2px;
+}
+
+.drag-text {
+	font-size: 12px;
+	color: #9aa0a6;
+	font-style: italic;
+}
+
+.browse-btn {
+	background: #1a73e8;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	padding: 10px 20px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+	flex-shrink: 0;
+}
+
+.browse-btn:hover {
+	background: #1557b0;
+}
+
+/* File Preview List - Horizontal Layout */
+.file-preview-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-top: 8px;
+}
+
+.file-preview-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background: #f8f9fa;
+	border: 1px solid #e8eaed;
+	border-radius: 8px;
+	padding: 12px;
+	width: 120px;
+	position: relative;
+	transition: all 0.2s ease;
+}
+
+.file-preview-item:hover {
+	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	transform: translateY(-2px);
+}
+
+.file-preview-icon {
+	width: 48px;
+	height: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 8px;
+}
+
+.preview-image {
+	width: 48px;
+	height: 48px;
+	object-fit: cover;
+	border-radius: 4px;
+}
+
+.preview-canvas {
+	width: 48px;
+	height: 48px;
+	border-radius: 4px;
+	border: 1px solid #e8eaed;
+}
+
+.text-preview {
+	width: 48px;
+	height: 48px;
+	background: #f8f9fa;
+	border: 1px solid #e8eaed;
+	border-radius: 4px;
+	padding: 4px;
+	font-size: 8px;
+	line-height: 1.2;
+	overflow: hidden;
+	color: #5f6368;
+	font-family: monospace;
+	word-break: break-all;
+}
+
+.file-preview-info {
+	text-align: center;
+	width: 100%;
+}
+
+.preview-name {
+	font-size: 12px;
+	font-weight: 500;
+	color: #202124;
+	margin-bottom: 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.preview-size {
+	font-size: 11px;
+	color: #5f6368;
+}
+
+.preview-remove {
+	position: absolute;
+	top: -6px;
+	right: -6px;
+	background: #ea4335;
+	color: white;
+	border-radius: 50%;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	cursor: pointer;
+	font-weight: bold;
+	transition: all 0.2s ease;
+}
+
+.preview-remove:hover {
+	background: #d32f2f;
+	transform: scale(1.1);
+}
+
+/* Attachments List - untuk file yang sudah diupload */
+.attachments-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+
+.attachment-preview {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background: #e8f0fe;
+	border: 1px solid #1a73e8;
+	border-radius: 8px;
+	padding: 12px;
+	width: 120px;
+	position: relative;
+}
+
+.attachment-content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+}
+
+.attachment-thumbnail {
+	width: 48px;
+	height: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 8px;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.attachment-image {
+	width: 48px;
+	height: 48px;
+	object-fit: cover;
+	border-radius: 4px;
+}
+
+.attachment-preview .file-icon {
+	width: 48px;
+	height: 48px;
+	background: #1a73e8;
+	color: white;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.attachment-info {
+	text-align: center;
+	width: 100%;
+}
+
+.attachment-preview .attachment-name {
+	font-size: 12px;
+	font-weight: 500;
+	color: #1a73e8;
+	margin-bottom: 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 100%;
+}
+
+.attachment-preview .attachment-size {
+	font-size: 11px;
+	color: #5f6368;
+}
+
+.attachment-preview .remove-btn {
+	position: absolute;
+	top: -6px;
+	right: -6px;
+	background: #ea4335;
+	color: white;
+	border-radius: 50%;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	cursor: pointer;
+	font-weight: bold;
+	text-decoration: none;
+	transition: all 0.2s ease;
+}
+
+.attachment-preview .remove-btn:hover {
+	background: #d32f2f;
+	transform: scale(1.1);
+}
+
+/* Upload Button Styling */
+.upload-btn {
+	background: #1a73e8;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	padding: 8px 16px;
+	font-size: 13px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+	white-space: nowrap;
+}
+
+.upload-btn:hover {
+	background: #1557b0;
+}
+
+/* Clear Upload Button - untuk reset file selection */
+.clear-file-btn {
+	background: none;
+	border: 1px solid #dadce0;
+	color: #5f6368;
+	border-radius: 4px;
+	padding: 6px 12px;
+	font-size: 12px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	margin-left: 8px;
+}
+
+.clear-file-btn:hover {
+	background: #f8f9fa;
+	border-color: #5f6368;
+}
+
+/* Options Row - Di atas Subject */
+.options-row {
+	padding: 8px 0;
+	border-bottom: 1px solid #e8eaed;
+}
+
+.checkbox-option {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #5f6368;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+.checkbox-option input[type="checkbox"] {
+	display: none;
+}
+
+.checkbox-custom {
+	width: 18px;
+	height: 18px;
+	border: 2px solid #dadce0;
+	border-radius: 3px;
+	position: relative;
+	transition: all 0.2s ease;
+}
+
+.checkbox-option input[type="checkbox"]:checked + .checkbox-custom {
+	background: #1a73e8;
+	border-color: #1a73e8;
+}
+
+.checkbox-option input[type="checkbox"]:checked + .checkbox-custom::after {
+	content: "✓";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	color: white;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+/* Actions Row */
+.actions-row {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	padding: 16px 0;
+	flex-wrap: wrap;
+}
+
+.send-btn {
+	background: #1a73e8;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	padding: 10px 24px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.send-btn:hover {
+	background: #1557b0;
+}
+
+.cancel-btn, .skip-btn {
+	background: none;
+	background: #a0aec0;
+	border: none;
+	color: #5f6368;
+	color: #f2f2f2;
+	cursor: pointer;
+	padding: 10px 24px;
+	font-size: 14px;
+	border-radius: 4px;
+	transition: background-color 0.2s ease;
+}
+
+.cancel-btn:hover, .skip-btn:hover {
+	background: #f8f9fa;
+	background: #999;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.recipient-row {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 8px;
+	}
+	
+	.field-label {
+		width: auto;
+		text-align: left;
+		padding: 0;
+		font-weight: 500;
+	}
+	
+	.recipient-row .field-actions,
+	.cc-row .field-actions,
+	.bcc-row .field-actions {
+		margin-left: 0;
+		justify-content: flex-start;
+		padding-top: 4px;
+	}
+	
+	.field-toggles {
+		margin-left: 0;
+		justify-content: flex-start;
+	}
+	
+	.actions-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	
+	.file-upload-section {
+		gap: 8px;
+	}
+	
+	.file-upload-box {
+		flex-direction: column;
+		text-align: center;
+		gap: 12px;
+	}
+	
+	.upload-content {
+		order: 1;
+	}
+	
+	.upload-icon {
+		order: 2;
+	}
+	
+	.browse-btn {
+		order: 3;
+		width: 100%;
+	}
+	
+	.file-preview-list {
+		justify-content: center;
+	}
+	
+	.file-preview-item {
+		width: 100px;
+	}
+	
+	.attachments-list {
+		justify-content: center;
+	}
+	
+	.attachment-preview {
+		width: 100px;
+	}
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE data SYSTEM "../../../lib/pkp/dtd/xmlData.dtd">
+
+<!--
+  * plugins/generic/xmlGalley/schema.xml
+  *
+  * Copyright (c) 2017-2026 Sangia Publishing House
+  * Copyright (c) 2017-2026 Rochmady
+  * Copyright (c) 2017-2026 Wizdam Team
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * XML Galley plugin schema in XML.
+  *
+  -->
+  
+<data>
+    <sql>
+        <query>CREATE INDEX article_xml_galleys_galley_id ON article_xml_galleys (galley_id)</query>
+        <query>CREATE INDEX article_xml_galleys_article_id ON article_xml_galleys (article_id)</query>
+    </sql>
+</data>
