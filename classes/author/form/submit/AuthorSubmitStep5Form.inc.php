@@ -237,10 +237,6 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
                 unset($sectionEditor);
             }
 
-            // Mengambil nilai dari pengaturan jurnal (misal Anda membuat plugin/setting khusus).
-            // Jika kosong/belum diatur di database, otomatis akan menggunakan '1-2 weeks'.
-            $initialAssessmentTime = $journal->getSetting('initialAssessmentTime') ? $journal->getSetting('initialAssessmentTime') : '1-2 weeks';
-
             $mail->assignParams([
                 'authorName'                => $user->getFullName(),
                 'authorUsername'            => $user->getUsername(),
@@ -254,7 +250,7 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
                 'submitDate'                => date('d F Y', strtotime(Core::getCurrentDate())),
                 
                 // Variabel waktu dinamis
-                'initialAssessmentTime'     => $initialAssessmentTime 
+                'reviewTime'                => $journal->getSetting('numWeeksPerReview') . ' ' . __('common.weeks')
             ]);
             $mail->send($this->request);
         }
