@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/ja_JP/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the ja_JP (日本語) locale.
+  *
+  -->
+
+<locale name="ja_JP" full_name="日本語">
+	<message key="installer.additionalLocales">追加言語</message>
+	<message key="installer.administratorAccount">管理者アカウント</message>
+	<message key="installer.administratorAccountInstructions">このユーザアカウントはサイト管理者になり、システムのすべてにアクセスできるようになります。ユーザアカウントの追加はインストール後に行うことができます。</message>
+	<message key="installer.checkYes">はい</message>
+	<message key="installer.clientCharset">クライアント文字セット</message>
+	<message key="installer.clientCharsetInstructions">ブラウザとデータを送受信する際に使用するエンコーディング。</message>
+	<message key="installer.connectionCharset">通信文字セット</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[データベースとのデータの送受信に使用するエンコーディングです。これはクライアントの文字セットと同じにするべきです。この機能は、MySQL >=5.xまたはPostgreSQL >= 8.xでしかサポートされていないことに注意してください。ご使用のデータベースサーバがこの要件を満たしていない場合は、[非適用]を選択してください。]]></message>
+	<message key="installer.contentsOfConfigFile">設定ファイルの内容</message>
+	<message key="installer.createDatabase">新規データベースの作成</message>
+	<message key="installer.createDatabaseInstructions">このオプションを使用するためには、使用するデータベースシステムがリモートデータベース作成機能をサポートしており、かつ、指定したユーザアカウントが新規データベースを作成する権限を持っている必要があります。このオプションを指定してインストールが失敗した場合は、マニュアルでサーバにデータベースを作成し、このオプションを無効にした上で、再度インストールを行ってください。</message>
+	<message key="installer.databaseCharset">データベース文字セット</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[データベースにデータを格納する際に使用するエンコーディングです。これはクライアントの文字セットと同じにするべきです。この機能は、MySQL >=5.xまたはPostgreSQL >= 8.xでしかサポートされていないことに注意してください。ご使用のデータベースサーバがこの要件を満たしていない場合は、[非適用]を選択してください。]]></message>
+	<message key="installer.databaseDriver">データベースドライバ</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>システムは現在、MySQLとPostgreSQLのみをサポートしています。どちらかを選択できない場合は、システム管理者に連絡して、サーバーに必要なPHP拡張機能があることを確認してください。</strong>]]></message>
+	<message key="installer.databaseHost">ホスト</message>
+	<message key="installer.databaseHostInstructions">TCP/IP経由ではなくドメインソケットを使用する場合は、ホスト名を空欄のままにしてください。これはMySQLでは必要ありません。MySQLでは、"localhost" が指定されると、自動的にソケットが使用されるからです。しかし、PostgreSQLなどのほかのデータベースではこのように設定する必要があります。</message>
+	<message key="installer.databaseName">データベース名</message>
+	<message key="installer.databasePassword">パスワード</message>
+	<message key="installer.databaseSettings">データベース設定</message>
+	<message key="installer.databaseUsername">ユーザ名</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Bcryptは、学者ウィズダムの標準に従って、パスワードの標準暗号化アルゴリズムとして安全に適用されます。]]></message>
+	<message key="installer.encryption">パスワード暗号化アルゴリズム</message>
+	<message key="installer.checkNo"><![CDATA[<span class="pkp_form_error formError">いいえ</span>]]></message>
+	<message key="installer.configFileError"><![CDATA[設定ファイル <tt>config.inc.php</tt> が存在しないか、あるいは読み込めません。]]></message>
+	<message key="installer.installParseDBFileError"><![CDATA[データベースインストールファイル <tt>{$file}</tt> のパースエラー。]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[メールテンプレートファイル <tt>{$file}</tt> のパースエラー。]]></message>
+	<message key="installer.installFileError"><![CDATA[インストールファイル<tt>dbscripts/xml/install.xml</tt> が存在しない，または読み込めません。]]></message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[識別子は <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a> Protocol for Metadata Harvesting (OAI-PMH) を使用してサイトからメタデータをインデクスする際に識別するために使用されます。]]></message>
+
+	<!-- Installer -->
+	<message key="installer.appInstallation">学者ウィズダムのインストール</message>
+	<message key="installer.appUpgrade">学者ウィズダムのバージョンアップ</message>
+	
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>学者ウィズダム バージョン {$version}</h4>
+    
+    <p>聖雅出版の<strong>学者ウィズダム</strong>をダウンロードしていただきありがとうございました。処理を進める前に、このソフトウェアに添付されている<a href="{$baseUrl}/docs/README" target="_blank">README</a>ファイルをお読みください。聖雅出版 (SPH)と本ソフトウェアプロジェクトに関してより詳しく知りたい方は、<a href="http://wizdam.sangia.org/" target="_blank">SPHのWebサイト</a>にアクセスしてください。学者ウィズダムに関するバグ報告や技術的サポートに関する質問がある場合は、<a href="http://forum.wizdam.sangia.org" target="_blank">サポートフォーラム</a>、または、SPHのオンライン<a href="https://github.com/sph/wizdam-lib#issues" target="_blank">バグ報告システム</a>をご覧ください。連絡はサポートフォーラムでしていただくことを希望いたしますが、直接、<a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>にメールしてくださっても構いません。</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[パスワード暗号化には <strong>bcrypt</strong> を使用しています — 安全で業界標準のハッシュアルゴリズムです。追加の設定は必要ありません。]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>バージョンアップ</h4>
+    
+    <p>既存の学者ウィズダムまたは以前のバージョンからバージョンアップする場合は、<a href="{$upgradeUrl}">ここをクリック</a>して作業を進めてください。</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>推奨するシステム要件</h4>
+    
+    <ul>
+    	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; 現在、PHP {$phpVersion}{$wrongPhpText} を使用しています</li>
+    	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x、または、<a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (PostgreSQL 8.xを含む)</li>
+    	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> 1.3.2x以降、または、2.0.4x以降、または、Microsoft IIS 6</li>
+    	<li>OS: <a href="http://www.linux.org/" target="_blank">Linux</a>、<a href="http://www.bsd.org/" target="_blank">BSD</a>、<a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>、<a href="http://www.apple.com/" target="_blank">Mac OS X</a>、<a href="http://www.microsoft.com/">Windows</a>など、上記のソフトウェアをサポートするすべてのOS。</li>
+    </ul>
+    
+    <p>SPHは、上記のソフトウェアバージョンとプラットフォームの可能なすべての組み合わせについてテストする資源を持っていませんので、正常な動作やサポートを保証するものではありません。</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>ここで行う設定は、インストール後に学者ウィズダムベースディレクトリにある<tt>config.inc.php</tt>ファイルの編集、または、サイト管理Webインターフェースを使用することにより変更することができます。</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>サポートするデータベースシステム</h4>
+    
+    <p>学者ウィズダムは、現在のところ、 MySQLとPostgreSQLでのみテストを行っていますが、<a href="http://adodb.org/" target="_blank">ADOdb</a>がサポートしている他のデータベース管理システムでも（完全に、または一部）動作すると思われます。他のDBMSによる互換性報告やパッチコードを学者ウィズダムチームにお送りください。</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>インストール前に行う処理</h4>
+    
+    <p>1. 以下のファイルとディレクトリ（配下のすべてのコンテンツを含む）を書き込みができるようにする必要があります。</p>
+    <ul>
+    	<li><tt>config.inc.php</tt>は書き込み可（オプション）: {$writable_config}</li>
+    	<li><tt>public/</tt>は書き込み可: {$writable_public}</li>
+    	<li><tt>cache/</tt>は書き込み可: {$writable_cache}</li>
+    	<li><tt>cache/t_cache/</tt>は書き込み可: {$writable_templates_cache}</li>
+    	<li><tt>cache/t_compile/</tt>は書き込み可: {$writable_templates_compile}</li>
+    	<li><tt>cache/_db</tt>は書き込み可: {$writable_db_cache}</li>
+    </ul>
+    
+    <p>2. アップロードファイルを格納するためのディレクトリを作成して、書き込みができるようにする必要があります（以下の「ファイル設定」を参照してください）。</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>学者ウィズダム バージョン {$version}</h4>
+    	
+    <p>聖雅出版の<strong>学者ウィズダム</strong>をダウンロードしていただきありがとうございました。処理を進める前に、このソフトウェアに添付されている<a href="{$baseUrl}/docs/README" target="_blank">README</a>ファイルと<a href="{$baseUrl}/docs/UPGRADE" target="_blank">UPGRADE</a>ファイルをお読みください。聖雅出版 (SPH)と本ソフトウェアプロジェクトに関してより詳しく知りたい方は、<a href="http://wizdam.sangia.org/" target="_blank">SPHのWebサイト</a>にアクセスしてください。学者ウィズダムに関するバグ報告や技術的サポートに関する質問がある場合は、<a href="http://forum.wizdam.sangia.org" target="_blank">サポートフォーラム</a>、または、SPHのオンライン<a href="https://github.com/sph/wizdam-lib#issues" target="_blank">バグ報告システム</a>をご覧ください。連絡はサポートフォーラムでしていただくことを希望いたしますが、直接、<a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>にメールしてくださっても構いません。</p>
+    <p>処理を行う前に、データベース、ファイルディレクトリ、学者ウィズダムインストールディレクトリのバックアップを行うことを<strong>強く推奨します</strong>。</p>
+    <p>システムを<a href="http://www.php.net/features.safe-mode" target="_blank">PHPセーフモード</a>で運用している場合は、"php.ini"設定ファイルの"max_execution_time"ディレクティブに最大値が設定されていることを確認してください。この制限値、またはその他の時間制限（例えば、Apacheの"Timeout"ディレクティブ）に達すると、バージョンアップ処理は中断され、手作業による処理が必要になります。</p>]]></message>
+
+	<message key="installer.localeSettingsInstructions"><![CDATA[Unicode（UTF-8）を完全にサポートするために、すべての文字セット設定でUTF-8を選択してください。これをサポートするには、現在のところ、MySQL 5.x以降、または、PostgreSQL 8.x以降のデータベースサーバを必要とすることに注意してください。また、Unicodeを完全にサポートするには、<a href="http://www.php.net/mbstring" target="_blank">mbstring</a>ライブラリのサポートを選択してコンパイルしたPHP 7.4.0以降を必要とすることにも注意してください（最近のほとんどのPHPのインストールではデフォルトで有効になっています）。サーバがこれらの要件を満たしていないと、拡張文字セットの使用時に問題が生じるかもしれません。
+    <br /><br />
+    サーバは現在、mbstringをサポートしている: <strong>{$supportsMBString}</strong>]]></message>
+
+	<message key="installer.localeInstructions">このシステムで使用する第一言語。ここに表示されていない言語のサポートに興味がある場合は、学者ウィズダム文書をご覧ください。</message>
+	<message key="installer.additionalLocalesInstructions">このシステムでサポートする追加言語を選択してください。選択した言語はこのサイトで提供する全ての雑誌で利用可能となります。言語は、サイト管理インターフェースを使っていつでも追加インストールすることができます。</message>
+	<message key="installer.filesDirInstructions"><![CDATA[アップロードされたファイルを保存する既存のディレクトリをフルパスで入力してください。このディレクトリはWebから直接アクセスできないディレクトリにするべきです。<strong>インストールする前に、このディレクトリが存在し、書き込み可であることを確認してください。</strong>Windowsのパス名の区切りにはスラッシュを使用する必要があります（例: "C:/myjournal/files"）。]]></message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>警告:</strong> データベースのインストール途中でインストールが失敗した場合、データベースの再インストールを行う前に、学者ウィズダムデータベース、または、テーブルを削除する必要があるかもしれません。]]></message>
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>重要!</h4>
+    <p>設定ファイルを上書きする保存することができませんでした。システムを使用する前に、適当なエディターで <tt>config.inc.php</tt> ファイルを開いて、その内容を以下のテキストフィールドの内容に置き換えてください。</p>]]></message>
+
+	<message key="installer.installationComplete"><![CDATA[<p>学者ウィズダムのインストールが終了しました。</p>
+    <p>このシステムの利用を開始するには、前画面でユーザ名とパスワードを入力して<a href="{$loginUrl}">ログイン</a>してください。</p>
+    <p>お知らせや更新案内を受け取りたい場合は、<a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>で<strong>登録してください</strong>。ご質問やご意見がございましたら、<a href="http://forum.wizdam.sangia.org" target="_new">サポートフォーラム</a>にご参加ください。</p>]]></message>
+
+	<message key="installer.upgradeComplete"><![CDATA[<p>学者ウィズダム バージョン {$version} へのバージョンアップが終了しました。</p>
+    <p> config.inc.php 設定ファイルの"installed"項目を<em>On</em>に戻すことを忘れないでください。</p>
+    <p>もしまだ登録されていなくて、お知らせや更新案内を受け取りたい場合は、<a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>で<strong>登録してください</strong>。ご質問やご意見がございましたら、<a href="http://forum.wizdam.sangia.org" target="_new">サポートフォーラム</a>にご参加ください。</p>]]></message>
+
+	<message key="installer.databaseSettingsInstructions">学者ウィズダムはデータを保管するためにSQLデータベースへのアクセスを必要とします。サポートしているデータベースの一覧は上のシステム要件を参照してください。</message>
+	<message key="installer.installApplication">学者ウィズダムをインストールする</message>
+	<message key="installer.upgradeApplication">学者ウィズダムをアップグレードする</message>
+	
+	<message key="installer.filesDir">アップロードファイル用ディレクトリ</message>
+	<message key="installer.fileSettings">ファイル設定</message>
+	<message key="installer.form.clientCharsetRequired">クライアント文字セットを選択する必要があります。</message>
+	<message key="installer.form.databaseDriverRequired">データベースドライバを選択する必要があります。</message>
+	<message key="installer.form.databaseNameRequired">データベース名は必須です。</message>
+	<message key="installer.form.emailRequired">管理者アカウントの有効なメールアドレスは必須です。</message>
+	<message key="installer.form.encryptionRequired">ユーザパスワードを暗号化するために使用するアルゴリズムを選択する必要があります。</message>
+	<message key="installer.form.filesDirRequired">アップロードファイルを格納するディレクトリは必須です。</message>
+	<message key="installer.form.localeRequired">言語を選択する必要があります。</message>
+	<message key="installer.form.passwordRequired">管理者アカウントのパスワードは必須です</message>
+	<message key="installer.form.passwordsDoNotMatch">管理者のパスワードが一致しません。</message>
+	<message key="installer.form.separateMultiple">複数の値はコンマで区切ってください</message>
+	<message key="installer.form.usernameAlphaNumeric">管理者のユーザ名に使用できるのは、英数字、下線、ハイフンのみであり、最初と最後の文字は英数字でなければなりません。</message>
+	<message key="installer.form.usernameRequired">管理者アカウントのユーザ名は必須です。</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>警告: PHPのバージョンがインストールのための最小要件を満たしていません。もっと新しい版のPHPへアップグレードすることを推奨します。</strong>]]></message>
+	<message key="installer.installErrorsOccurred">インストール中にエラーが発生しました</message>
+	<message key="installer.installerSQLStatements">インストール用のSQL文</message>
+	<message key="installer.installFilesDirError">アップロードファイル用に指定されたディレクトリが存在しない、または、書き込みができません。</message>
+	<message key="installer.locale">言語</message>
+	<message key="installer.localeSettings">言語の設定</message>
+	<message key="installer.miscSettings">その他の設定</message>
+	<message key="installer.oaiRepositoryId">OAIリポジトリ識別子</message>
+	<message key="installer.publicFilesDirError">公開ファイルディレクトリが存在しない、または、書き込みができません。</message>
+	<message key="installer.releaseNotes">リリースノート</message>
+	<message key="installer.securitySettings">セキュリティ設定</message>
+	<message key="installer.locale.maybeIncomplete">マークがついているロケールは完全ではありません。</message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[フィルタ設定ファイル <tt>{$file}</tt> のパースエラー。]]></message>
+	<message key="installer.oaiSettings">OAI設定</message>
+	<message key="installer.beacon">ビーコン</message>
+	<message key="installer.beacon.enable">統計およびセキュリティアラート目的のみで、一意のサイトIDとOAIベースURLを聖雅出版に提供してください。</message>
+	<message key="installer.allowFileUploads"><![CDATA[サーバは現在、ファイルのアップロードを許可しています: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[サーバは現在、最大ファイルアップロードサイズを許可しています: <strong>{$maxFileUploadSize}</strong>]]></message>
+	
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[学者ウィズダムの新しいバージョンが利用可能です！現在、学者ウィズダム {$currentVersion} を使用しています。最新バージョンは 学者ウィズダム {$latestVersion} です。最新バージョンをダウンロードし、アップグレード手順を確認するには、<a href="http://wizdam.sangia.org/download" target="_new">このページ</a>にアクセスしてください。]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[学者ウィズダムの新しいバージョンが利用可能です！現在、学者ウィズダム {$currentVersion} を使用しています。最新バージョンは 学者ウィズダム {$latestVersion} です。サイト管理者 ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) に連絡して、この新しいリリースについてお知らせください。詳細は<a href="http://wizdam.sangia.org/download" target="_new">こちら</a>でご覧いただけます。]]></message>
+</locale>

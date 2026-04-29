@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../../../../lib/pkp/dtd/locale.dtd">
+
+<!--
+  * plugins/paymethod/paypal/locale/id_ID/locale.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2003-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings.
+  *
+  -->
+
+<locale name="id_ID" full_name="Bahasa Indonesia">
+    <message key="plugins.paymethod.paypal.displayName">Biaya Pembayaran PayPal </message> 
+	
+	<!-- PayPal Settings Form -->
+	<message key="plugins.paymethod.paypal.settings.paypalenable">Memungkinkan </message>
+	<message key="plugins.paymethod.paypal.settings.paypalurl">URL IPN</message> 
+	<message key="plugins.paymethod.paypal.settings.paypalurl.description"><![CDATA[URL ini untuk servis Instant Payment Notification (IPN) PayPal. Untuk mengecek, gunakan <u>https://www.sandbox.paypal.com/cgi-bin/webscr</u>; untuk sistem produksi, gunakan <u>https://www.paypal.com/cgi-bin/webscr</u>.]]></message>
+	<message key="plugins.paymethod.paypal.settings.selleraccount">Akun Penjual </message>	
+	<message key="plugins.paymethod.paypal.settings.selleraccount.description">Nama pengguna akun paypal ini untuk akun yang digunakan para penjual, biasanya alamat email. Pastikan Anda mengaktifkan Instant Payment Notification (IPN) pada profil akun penjual anda.</message>
+	<message key="plugins.paymethod.paypal.settings.curlNotInstalled">Peringatan: CURL dukungan PHP tidak diinstal. Dukungan pembayaran paypal memerlukan perpustakaan CURL dan tidak akan berfungsi hingga hingga setelah diinstal.</message>
+	<message key="plugins.paymethod.paypal.settings">Pengaturan PayPal</message>
+	<message key="plugins.paymethod.paypal.error.missingClientId">Konfigurasi PayPal (Client ID) belum diisi oleh Administrator.</message>
+	
+	<!-- PayPal -->
+	<message key="plugins.paymethod.paypal">Pembayaran biaya PayPal</message>
+	<message key="plugins.paymethod.paypal.description"><![CDATA[PayPal memungkinkan para pengguna, baik anggota paypal atau bukan, untuk menggunakan semua kartu kredit utama. Manajer perlu men-setup <a href="http://www.paypal.com" target="_new">Akun Bisnis PayPal </a>.]]></message>
+	<message key="plugins.paymethod.paypal.invoice.invoiceNumber">Nomor Faktur</message>
+    <message key="plugins.paymethod.paypal.invoice.invoiceCode">Kode Faktur</message>
+    <message key="plugins.paymethod.paypal.invoice.billedTo">Ditagihkan kepada:</message>
+    <message key="plugins.paymethod.paypal.invoice.dateBilled">Tanggal tagihan</message>
+    <message key="plugins.paymethod.paypal.invoice.dateDue">Jatuh tempo</message>
+    <message key="plugins.paymethod.paypal.invoice.feeSubmission">Biaya Penyerahan Naskah (Submission)</message>
+    <message key="plugins.paymethod.paypal.invoice.feePublication">Biaya Publikasi (Publication)</message>
+    <message key="plugins.paymethod.paypal.invoice.feeFastTrack">Biaya Review Cepat (Fast-Track)</message>
+    <message key="plugins.paymethod.paypal.invoice.subtotal">Subtotal</message>
+    <message key="plugins.paymethod.paypal.invoice.discount">Rabat (Potongan)</message>
+    <message key="plugins.paymethod.paypal.invoice.tax">Pajak</message>
+    <message key="plugins.paymethod.paypal.invoice.taxInclusive">(Termasuk Pajak)</message>
+    <message key="plugins.paymethod.paypal.invoice.total">TOTAL TAGIHAN</message>
+	<message key="plugins.paymethod.paypal.warning">Klik tombol PayPal di bawah untuk menyelesaikan pembayaran Anda secara aman. Anda dapat menggunakan saldo akun PayPal atau langsung menggunakan kartu kredit/debit. Transaksi akan diproses secara langsung tanpa perlu meninggalkan halaman ini.</message>
+	<message key="plugins.paymethod.paypal.invoice.details">Rincian Artikel</message>
+	<message key="plugins.paymethod.paypal.purchase.title">Judul</message>
+	<message key="plugins.paymethod.paypal.purchase.amount">Tagihan</message>
+	<message key="plugins.paymethod.paypal.purchase.description">Deskripsi</message>
+	<message key="plugins.paymethod.paypal.purchase.cancelled">Pembelian anda telah dibatalkan.</message>
+	<message key="plugins.paymethod.paypal.purchase.cancelled.title">Pembelian dibatalkan</message>
+</locale>

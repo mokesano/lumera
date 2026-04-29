@@ -1,0 +1,148 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @file classes/security/authorization/DataObjectRequiredPolicy.inc.php
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2000-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * @class DataObjectRequiredPolicy
+ * @ingroup security_authorization
+ *
+ * @brief Abstract base class for policies that check for a data object from a parameter.
+ */
+
+import('lib.pkp.classes.security.authorization.AuthorizationPolicy');
+
+class DataObjectRequiredPolicy extends AuthorizationPolicy {
+    /** @var PKPRequest */
+    public $_request;
+
+    /** @var array */
+    public $_args;
+
+    /** @var string */
+    public $_parameterName;
+
+    /** @var array */
+    public $_operations;
+
+    //
+    // Getters and Setters
+    //
+    /**
+     * Return the request.
+     * @return PKPRequest
+     */
+    public function getRequest() {
+        return $this->_request;
+    }
+
+    /**
+     * Return the request arguments
+     * @return array
+     */
+    public function getArgs() {
+        return $this->_args;
+    }
+
+    /**
+     * Constructor
+     * @param $request PKPRequest
+     * @param $args array request parameters
+     * @param $parameterName string the request parameter we expect
+     * @param $message string
+     * @param $operations array Optional list of operations for which this check takes effect. If specified, operations outside this set will not be checked against this policy.
+     */
+    public function __construct($request, $args, $parameterName, $message = null, $operations = null) {
+        parent::__construct($message);
+        // Removed & from reference
+        $this->_request = $request;
+        assert(is_array($args));
+        // Removed & from reference
+        $this->_args = $args;
+        $this->_parameterName = $parameterName;
+        $this->_operations = $operations;
+    }
+
+    /**
+     * [SHIM] Backward Compatibility
+     * @param $request PKPRequest
+     * @param $args array
+     * @param $parameterName string
+     * @param $message string
+     * @param $operations array
+     */
+    public function DataObjectRequiredPolicy($request, $args, $parameterName, $message = null, $operations = null) {
+        trigger_error(
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::DataObjectRequiredPolicy(). Please refactor to use parent::__construct().",
+            E_USER_DEPRECATED
+        );
+        self::__construct($request, $args, $parameterName, $message, $operations);
+    }
+
+    //
+    // Implement template methods from AuthorizationPolicy
+    //
+    /**
+     * @see AuthorizationPolicy::effect()
+     */
+    public function effect() {
+        // Check if the object is required for the requested Op. (No operations means check for all.)
+        if (is_array($this->_operations) && !in_array($this->_request->getRequestedOp(), $this->_operations)) {
+            return AUTHORIZATION_PERMIT;
+        } else {
+            return $this->dataObjectEffect();
+        }
+    }
+
+    //
+    // Protected helper method
+    //
+    /**
+     * Test the data object's effect
+     * @return int AUTHORIZATION_DENY|AUTHORIZATION_PERMIT (Note: AUTHORIZATION_ACCEPT is likely typo in original doc, using standard constants)
+     */
+    public function dataObjectEffect() {
+        // Deny by default. Must be implemented by subclass.
+        return AUTHORIZATION_DENY;
+    }
+
+    /**
+     * Identifies a submission id in the request.
+     * @return integer|false returns false if no valid submission id could be found.
+     */
+    public function getDataObjectId() {
+        // Identify the data object id.
+        // Removed & from getRouter()
+        $router = $this->_request->getRouter();
+        switch(true) {
+            case $router instanceof PKPPageRouter:
+                if ( is_numeric($this->_request->getUserVar($this->_parameterName)) ) {
+                    // We may expect a object id in the user vars
+                    return (int) $this->_request->getUserVar($this->_parameterName);
+                } else if (isset($this->_args[0]) && is_numeric($this->_args[0])) {
+                    // Or the object id can be expected as the first path in the argument list
+                    return (int) $this->_args[0];
+                }
+                break;
+
+            case $router instanceof PKPComponentRouter:
+                // We expect a named object id argument.
+                if (isset($this->_args[$this->_parameterName])
+                        && is_numeric($this->_args[$this->_parameterName])) {
+                    return (int) $this->_args[$this->_parameterName];
+                }
+                break;
+
+            default:
+                assert(false);
+        }
+
+        return false;
+    }
+}
+
+?>

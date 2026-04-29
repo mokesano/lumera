@@ -1,0 +1,146 @@
+body #onetrust-pc-sdk .category-vendors-list-handler, body #onetrust-pc-sdk .category-host-list-handler, body #onetrust-pc-sdk .category-vendors-list-handler+a, body #onetrust-banner-sdk #onetrust-policy-text {
+    font-size: 1em !important;
+}
+body #onetrust-banner-sdk #onetrust-accept-btn-handler, body #onetrust-banner-sdk #onetrust-reject-all-handler, body #onetrust-banner-sdk #onetrust-pc-btn-handler {
+    font-size: 1.1em !important;
+}
+body #onetrust-pc-sdk .category-menu-switch-handler h3, body #onetrust-pc-sdk .ot-desc-cntr h4, body #onetrust-pc-sdk .ot-label-status, body #onetrust-pc-sdk .ot-always-active, body #onetrust-pc-sdk .ot-grp-desc {
+    font-size: 1em !important;
+}
+body #onetrust-pc-sdk .ot-pc-footer button {
+    font-size: 1.1em !important;
+}
+#ot-sdk-btn-floating.ot-floating-button {
+  position:fixed;
+  bottom:10px;
+  opacity:0;
+  width:50px;
+  height:50px;
+  line-height:15px;
+  cursor:pointer;
+  background-color:transparent;
+  transform-style:preserve-3d;
+  transition:all 300ms ease;
+  perspective:1000px;
+  z-index:2147483646;
+  animation:otFloatingBtnIntro 800ms ease 0ms 1 forwards
+}
+#ot-sdk-btn-floating.ot-floating-button.ot-hide {
+  display:none
+}
+#ot-sdk-btn-floating.ot-floating-button::before,
+#ot-sdk-btn-floating.ot-floating-button::after {
+  text-transform:none;
+  line-height:1;
+  user-select:none;
+  pointer-events:none;
+  position:absolute;
+  transform:scale(0);
+  opacity:0;
+  transition:all 300ms ease;
+  display:block;
+  height:auto
+}
+#ot-sdk-btn-floating.ot-floating-button::before {
+  content:"";
+  border:5px solid transparent;
+  z-index:1001;
+  top:50%;
+  border-left-width:0;
+  border-right-color:#333;
+  right:calc(0em - 5px);
+  transform:translate(10px, -50%)
+}
+#ot-sdk-btn-floating.ot-floating-button::after {
+  content:attr(title);
+  position:absolute;
+  text-align:center;
+  top:50%;
+  left:calc(100% + 5px);
+  transform:translate(10px, -50%);
+  /*font-size:.75rem;*/
+  min-width:3em;
+  max-width:21em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  padding:5px;
+  border-radius:.3ch;
+  box-shadow:0 1em 2em -0.5em rgba(0,0,0,.35);
+  background:#333;
+  color:#fff;
+  z-index:2147483645
+}
+#ot-sdk-btn-floating.ot-floating-button:hover::before,
+#ot-sdk-btn-floating.ot-floating-button:hover::after {
+  opacity:1
+}
+#ot-sdk-btn-floating.ot-floating-button:hover::before {
+  transform:translate(0.5em, -50%) scale(1)
+}
+#ot-sdk-btn-floating.ot-floating-button:hover::after {
+  transform:translate(0.5em, -50%) scale(1)
+}
+#ot-sdk-btn-floating.ot-floating-button.ot-pc-open .ot-floating-button__front {
+  transform:rotateY(-180deg)
+}
+#ot-sdk-btn-floating.ot-floating-button.ot-pc-open .ot-floating-button__back {
+  transform:rotateY(0)
+}
+#ot-sdk-btn-floating .ot-floating-button__front,
+#ot-sdk-btn-floating .ot-floating-button__back {
+  position:absolute;
+  width:100%;
+  height:100%;
+  -webkit-backface-visibility:hidden;
+  backface-visibility:hidden;
+  background-color:#6aaae4;
+  border-radius:10px;
+  box-shadow:0 4px 8px 0 rgba(0,0,0,.2);
+  transition:transform .6s;
+  transform-style:preserve-3d
+}
+#ot-sdk-btn-floating .ot-floating-button__front {
+  background-color:#6aaae4;
+  transform:rotateY(0)
+}
+#ot-sdk-btn-floating .ot-floating-button__front svg {
+  width:30px;
+  height:35px
+}
+#ot-sdk-btn-floating .ot-floating-button__back {
+  background-color:#69c;
+  transform:rotateY(-180deg)
+}
+#ot-sdk-btn-floating .ot-floating-button__back svg {
+  width:24px;
+  height:24px
+}
+#ot-sdk-btn-floating.ot-floating-button button {
+  background-color:transparent;
+  border:0;
+  width:100%;
+  height:100%;
+  min-width:auto;
+  cursor:pointer
+}
+@keyframes otFloatingBtnIntro {
+  0% {
+    opacity:0;
+    left:-75px
+  }
+  100% {
+    opacity:1;
+    left:1%
+  }
+}
+@keyframes otFloatingBtnImageIntro {
+  0% {
+    opacity:0;
+    transform:scale(0) rotate(-270deg)
+  }
+  100% {
+    opacity:100%;
+    transform:scale(0.95) rotate(0deg)
+  }
+}

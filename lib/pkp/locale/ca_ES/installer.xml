@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/ca_ES/installer.xml
+  *
+  * Copyright (c) 2014-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Credits: https://pkp.sfu.ca/wiki/index.php?title=OJS:_Catalan_(ca_ES)
+  *
+  * Localization strings for the ca_ES (Català) locale.
+  *
+  -->
+
+<locale name="ca_ES" full_name="Català">
+	<message key="installer.additionalLocales">Configuracions regionals addicionals</message>
+	<message key="installer.administratorAccount">Compte de l’administrador/a</message>
+	<message key="installer.administratorAccountInstructions">Aquest compte d’usuari/ària esdevé l’administrador/a del lloc web i té accés complet al sistema. Una vegada finalitzada la instal·lació és possible crear comptes d’usuari/ària addicionals.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="form_error formError">NO</span>]]></message>
+	<message key="installer.checkYes">Sí</message>
+	<message key="installer.clientCharset">Joc de caràcters del client</message>
+	<message key="installer.clientCharsetInstructions">Codificació que s’utilitza per a les dades que s’envien i que es reben dels navegadors.</message>
+	<message key="installer.configFileError"><![CDATA[El fitxer de configuració <tt>config.inc.php</tt> no existeix o no té permís de lectura.]]></message>
+	<message key="installer.connectionCharset">Joc de caràcters de la connexió</message>
+	<message key="installer.connectionCharsetInstructions">Codificació que s’utilitza per a les dades que s’envien i que es reben de la base de dades. Ha de ser la mateixa que la del joc de caràcters del client. Només MySQL &amp;gt;= 4.x. i PostgreSQL &amp;gt;= 7.x admeten aquesta característica. Seleccioneu «No aplicable» si el vostre servidor de bases de dades no compleix aquests requisits.</message>
+	<message key="installer.contentsOfConfigFile">Continguts del fitxer de configuració</message>
+	<message key="installer.createDatabase">Crea una base de dades nova</message>
+	<message key="installer.createDatabaseInstructions">Per utilitzar aquesta opció, el vostre sistema de bases de dades ha d’admetre la creació remota de bases de dades i el vostre compte d’usuari/ària ha de tenir els permisos adequats per crear noves bases de dades. Si heu seleccionat aquesta opció i la instal·lació falla, creeu la base de dades manualment al servidor i torneu a executar l’instal·lador amb l’opció desactivada.</message>
+	<message key="installer.databaseCharset">Joc de caràcters de la base de dades</message>
+	<message key="installer.databaseCharsetInstructions">Codificació per a les dades emmagatzemades a la base de dades. Només MySQL &amp;gt;= 4.x. i PostgreSQL &amp;gt;= 7.x admeten aquesta característica. Seleccioneu «No aplicable» si el vostre servidor de bases de dades no compleix aquests requisits.</message>
+	<message key="installer.databaseDriver">Controlador de la base de dades</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>Els controladors de bases de dades llistats entre parèntesis no sembla que tinguin carregada l’extensió PHP requerida, per la qual cosa si els seleccioneu és probable que la instal·lació falli.</strong><br />Els controladors de bases de dades no admesos només es llisten per a finalitats acadèmiques i és poc probable que funcionin.]]></message>
+	<message key="installer.databaseHost">Amfitrió</message>
+	<message key="installer.databaseHostInstructions">Deixeu en blanc el nom de l’amfitrió si voleu connectar-vos utilitzant sòcols de domini, en lloc de fer-ho a través de TCP/IP. Aquesta acció no és necessària si treballeu amb MySQL, ja que aquest sistema utilitza sòcols automàticament si s’introdueix «localhost». En canvi sí que és necessària amb altres servidors de bases de dades, com ara PostgreSQL.</message>
+	<message key="installer.databaseName">Nom de la base de dades</message>
+	<message key="installer.databasePassword">Contrasenya</message>
+	<message key="installer.databaseSettings">Paràmetres de la base de dades</message>
+	<message key="installer.databaseUsername">Nom d’usuari/ària</message>
+	<message key="installer.encryptionInstructions">Es recomana utilitzar SHA1 si el sistema l’admet (requereix PHP &amp;gt;= 4.3.0).</message>
+	<message key="installer.encryption">Algorisme de xifratge de contrasenyes</message>
+
+	<!-- Installer -->
+	<message key="installer.appInstallation">Instal·lació de l’ScholarWizdam</message>
+	<message key="installer.appUpgrade">Actualització de l’ScholarWizdam</message>
+	
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>ScholarWizdam Versió {$version}</h4>
+    <p>Gràcies per descarregar-vos l'<strong>ScholarWizdam</strong> del Sangia Publishing House. Abans de continuar, llegiu el fitxer <a href="{$baseUrl}/docs/README" target="_blank">README</a> que s'inclou amb aquesta aplicació. Per a més informació sobre el Sangia Publishing House (SPH) i els seus projectes de programari, visiteu el <a href="http://wizdam.sangia.org/" target="_blank">lloc web del SPH</a>. Si voleu enviar informes d'error o peticions de suport tècnic sobre l'ScholarWizdam, visiteu el <a href="http://forum.wizdam.sangia.org" target="_blank">fòrum de suport</a> o el <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">sistema d'informe d'errors</a> en línia de SPH. Tot i que el fòrum de suport és el mètode de contacte preferit, també podeu enviar un correu electrònic a l'equip a l'adreça <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[El xifratge de contrasenyes utilitza <strong>bcrypt</strong> — un algorisme de hash segur i estàndard de la indústria. No requereix cap configuració addicional.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Actualització</h4>
+    <p>Si esteu actualitzant una versió existent de ScholarWizdam o de OJS 2.x, <a href="{$upgradeUrl}">feu clic aquí</a> per continuar. Per actualitzar des de OJS 3.x (en desenvolupament).</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Requisits del sistema recomanats</h4>
+    <ul>
+    	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; actualment feu servir PHP {$phpVersion}{$wrongPhpText}</li>
+    	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x o <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (incloent-hi PostgreSQL 8.x)</li>
+    	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x o >= 2.0.4x o Microsoft IIS 6</li>
+    	<li>Sistema operatiu: Qualsevol SO compatible amb el programari anterior, inclosos <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a> i <a href="http://www.microsoft.com/">Windows</a>.</li>
+    </ul>
+    <p>El SPH no disposa de recursos per comprovar totes les possibles combinacions de versions de programari i plataformes, per la qual cosa no ofereix garanties de funcionament correcte ni assistència.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>Una vegada finalitzada la instal·lació podreu modificar aquests paràmetres editant el fitxer <tt>config.inc.php</tt> del directori base de ScholarWizdam, o bé accedint a la interfície web d'administració del lloc.</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Sistemes de bases de dades compatibles</h4>
+    <p>Només s'ha comprovat la compatibilitat amb MySQL i PostgreSQL, però és possible que ScholarWizdam també funcioni (parcialment o completament) amb altres sistemes de gestió de bases de dades compatibles amb <a href="http://adodb.org/" target="_blank">ADOdb</a>. Podeu enviar informes de compatibilitat i pedaços de codi per a sistemes de gestió de bases de dades alternatius a l'equip de ScholarWizdam.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Passos previs a la instal·lació</h4>
+    <p>1. Comproveu que els fitxers i directoris següents (i també els seus continguts) tinguin permís d'escriptura:</p>
+    <ul>
+    	<li><tt>config.inc.php</tt> té permís d'escriptura (opcional): {$writable_config}</li>
+    	<li><tt>public/</tt> té permís d'escriptura: {$writable_public}</li>
+    	<li><tt>cache/</tt> té permís d'escriptura: {$writable_cache}</li>
+    	<li><tt>cache/t_cache/</tt> té permís d'escriptura: {$writable_templates_cache}</li>
+    	<li><tt>cache/t_compile/</tt> té permís d'escriptura: {$writable_templates_compile}</li>
+    	<li><tt>cache/_db</tt> té permís d'escriptura: {$writable_db_cache}</li>
+    </ul>
+    <p>2. Haureu de crear un directori i habilitar-hi els permisos d'escriptura per poder desar-hi els arxius carregats (vegeu «Configuració de fitxers» més avall).</p>]]></message>
+	
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>ScholarWizdam Versió {$version}</h4> <p>Gràcies per descarregar-vos l’<strong>ScholarWizdam</strong> del Sangia Publishing House. Abans de continuar, llegiu els fitxers <a href="{$baseUrl}/docs/README">README</a> i <a href="{$baseUrl}/docs/UPGRADE">UPGRADE</a> que s’inclouen amb aquesta aplicació. Per a més informació sobre el Sangia Publishing House i els seus projectes de programari, visiteu el <a href="http://wizdam.sangia.org/" target="_blank">lloc web del SPH</a>. Si voleu enviar informes d'error o peticions de suport tècnic sobre l'ScholarWizdam, visiteu el <a href="http://forum.wizdam.sangia.org" target="_blank">fòrum de suport</a> o el <a href="https://github.com/wizdam/wizdam-lib#issues" target="_blank">sistema d’informe d'errors</a> en línia de SPH. Tot i que el fòrum de suport és el mètode de contacte preferit, també podeu enviar un correu electrònic a l'equip a l'adreça <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p> <p>És molt <strong>important</strong> que feu una còpia de la vostra base de dades, del directori d'arxius i del directori d'instal·lació de l'ScholarWizdam abans de continuar.</p> <p>Si funcioneu amb <a href="http://www.php.net/features.safe-mode" target="_blank">mode de seguretat PHP</a>, assegureu-vos que la directiva max_execution_time del vostre arxiu de configuració php.ini està al màxim nivell. Si s'assoleix aquest o qualsevol altre límit de temps (p.  ex., la directiva "Timeout" d'Apache) i no s'ha completat el procés d'actualització, farà falta intervenir manualment.</p>]]></message>
+	<message key="installer.localeSettingsInstructions"><![CDATA[Seleccioneu UTF-8 per a tots els paràmetres de conjunt de caràcters per a una compatibilitat completa amb Unicode UTF-8. Aquesta compatibilitat actualment necessita un servidor de base de dades MySQL &gt;= 4.x. o PostgreSQL &gt;= 7.x. Per a una funcionalitat correcta d'Unicode, heu de tenir PHP &gt;= 7.4.0 compilat amb compatibilitat per a la llibreria <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> (habilitada per defecte en la majoria d’instal·lacions PHP recents). Si el vostre servidor no compleix aquests requeriments, pot ser que tingueu problemes amb els conjunts de caràcters extensos.<br /><br /> El vostre servidor admet mbstring: <strong>{$supportsMBString}</strong>]]></message>
+	<message key="installer.allowFileUploads"><![CDATA[El vostre servidor admet càrregues de fitxers: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[El vostre servidor admet càrregues de fitxers amb una mida màxima de: <strong>{$maxFileUploadSize}</strong>]]></message>
+	<message key="installer.localeInstructions">Llengua principal per a aquest sistema. Consulteu la documentació de l’ScholarWizdam si necessiteu utilitzar alguna llengua no llistada.</message>
+	<message key="installer.additionalLocalesInstructions">Seleccioneu les llengües addicionals que vulgueu utilitzar en aquest sistema. Aquestes llengües estaran disponibles a les revistes allotjades al lloc web. També podeu instal·lar llengües addicionals des de la interfície d’administració del lloc web en qualsevol moment.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Introduïu la ruta completa del directori on s’emmagatzemaran els fitxers carregats. Aquest directori no hauria de ser directament accessible a través de la web. <strong>Assegureu-vos que aquest directori existeix i que té permís d'escriptura abans de la instal·lació.</strong> Les rutes de Windows han de fer servir barres inclinades, per exemple: «C:/lamevarevista/arxius».]]></message>
+	<message key="installer.databaseSettingsInstructions">L’ScholarWizdam ha de tenir accés a la base de dades SQL per emmagatzemar-hi les dades. Consulteu la llista de bases de dades admeses a la secció de requeriments del sistema. Indiqueu els paràmetres que s’utilitzaran per connectar a la base de dades en els camps que es mostren a continuació.</message>
+	<message key="installer.installApplication">Instal·la l’ScholarWizdam</message>
+	<message key="installer.upgradeApplication">Actualitza l’ScholarWizdam</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Avís</strong>: si la instal·lació ha fallat durant el procés d’instal·lació de la base de dades, és possible que hàgiu de suprimir la base de dades de l’ScholarWizdam o les taules de la base de dades abans de tornar a intentar instal·lar-la.]]></message>
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>Important:</h4> <p>L’instal·lador no ha pogut sobreescriure automàticament el fitxer de configuració. Abans d’intentar utilitzar el sistema, obriu el fitxer <tt>config.inc.php</tt> en un editor de textos adequat i reemplaceu-ne els continguts amb les dades que apareixen en el quadre de text següent.</p>]]></message>
+	<message key="installer.installationComplete"><![CDATA[<p>La instal·lació de l’ScholarWizdam s’ha completat correctament.</p> <p>Per començar a utilitzar el sistema, <a href="{$loginUrl}">inicieu la sessió</a> amb el nom d’usuari i la contrasenya que heu introduït a la pàgina anterior.</p> <p>Si voleu rebre notícies i actualitzacions, aneu a</p> <ol> <li><a href="http://wizdam.sangia.org/wizdam/register" target="_new">Registrar</a> la vostra revista, conferència o indexador i rebreu actualitzacions de programari, pedaços de seguretat i més.</li> <li>Unir-vos a la <a href="http://wizdam.sangia.org/informed" target="_new">llista de discussió </a>de l'ScholarWizdam, l'indexador, Lemon8-XML, OPM o tots els mencionats anteriorment.</li> <li>Subscriviu-vos al <a href="http://wizdam.sangia.org/blog" target="_new">blog SPH</a> i al <a href="http://wizdam.sangia.org/blog/feed" target="_new">canal de notificacions</a>.</li> </ol> <p>Si ens voleu fer arribar dubtes o comentaris, entreu al <a href="http://forum.wizdam.sangia.org" target="_new">fòrum de suport</a>.</p>]]></message>
+	<message key="installer.upgradeComplete"><![CDATA[<p>L’actualització de l’ScholarWizdam a la versió {$version} s’ha completat correctament.</p> <p>Recordeu establir el paràmetre «installed» del fitxer de configuració config.inc.php a <em>Actiu</em>.</p> <p>Si encara no us heu registrat i voleu rebre notícies i actualitzacions, <strong>registreu-vos a <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> Si ens voleu fer arribar dubtes o comentaris, entreu al <a href="http://forum.wizdam.sangia.org" target="_new">fòrum de suport</a>.</p>]]></message>
+
+	<message key="installer.filesDir">Directori per la càrrega de fitxers</message>
+	<message key="installer.fileSettings">Paràmetres dels fitxers</message>
+	<message key="installer.form.clientCharsetRequired">Cal que seleccioneu un joc de caràcters pel client.</message>
+	<message key="installer.form.databaseDriverRequired">Cal que seleccioneu un controlador de la base de dades.</message>
+	<message key="installer.form.databaseNameRequired">Cal que introduïu el nom de la base de dades.</message>
+	<message key="installer.form.emailRequired">Cal que introduïu un correu electrònic vàlid per al compte d’administrador/a.</message>
+	<message key="installer.form.encryptionRequired">Cal que seleccioneu l’algorisme que s'ha d'utilitzar per xifrar les contrasenyes d’usuari/ària.</message>
+	<message key="installer.form.filesDirRequired">Cal que introduïu el directori que s'ha d'utilitzar per emmagatzemar els fitxers carregats.</message>
+	<message key="installer.form.localeRequired">Cal que seleccioneu una configuració regional.</message>
+	<message key="installer.form.passwordRequired">Cal que introduïu una contrasenya per al compte d’administrador/a.</message>
+	<message key="installer.form.passwordsDoNotMatch">Les contrasenyes d’administrador/a no coincideixen.</message>
+	<message key="installer.form.separateMultiple">Separeu els valors múltiples amb comes</message>
+	<message key="installer.form.usernameAlphaNumeric">El nom d’usuari/ària de l’administrador/a només pot contenir caràcters alfanumèrics, ratlles baixes i guionets i ha de començar i acabar amb un caràcter alfanumèric.</message>
+	<message key="installer.form.usernameRequired">Cal que introduïu un nom d’usuari/ària per al compte d’administrador/a.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>AVÍS: La versió actual de PHP no compleix els requisits mínims per a la instal·lació. Us recomanem que instal·leu una versió de PHP més recent.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">S’han produït errors durant la instal·lació</message>
+	<message key="installer.installerSQLStatements">Expressions SQL per a la instal·lació</message>
+	<message key="installer.installFileError"><![CDATA[El fitxer d’instal·lació <tt>dbscripts/xml/install.xml</tt> no existeix o no té permís de lectura.]]></message>
+	<message key="installer.installFilesDirError">El directori especificat per als fitxers carregats no existeix o no té permís d’escriptura.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[S’ha produït un error en analitzar el fitxer d’instal·lació de la base de dades <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[S’ha produït un error en analitzar el fitxer de plantilla de correu electrònic <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[S’ha produït un error en analitzar el fitxer configuració de filtre <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Configuració regional</message>
+	<message key="installer.locale.maybeIncomplete">Les configuracions regionals marcades poden estar incompletes.</message>
+	<message key="installer.localeSettings">Paràmetres de configuració regional</message>
+	<message key="installer.oaiSettings">Configuració OAI</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[Identificador únic utilitzat per identificar els registres de metadades indexats des d’aquest lloc web mitjançant el Protocol for Metadata Harvesting (protocol per a la recopilació de metadades) de l’<a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a> .]]></message>
+	<message key="installer.oaiRepositoryId">Identificador de repositori</message>
+	<message key="installer.publicFilesDirError">El directori per als fitxers públics no existeix o no té permís d’escriptura.</message>
+	<message key="installer.releaseNotes">Notes de la versió</message>
+	<message key="installer.securitySettings">Paràmetres de seguretat</message>
+	<message key="installer.beacon">Beacon</message>
+	<message key="installer.beacon.enable">Proporciona a ScholarWizdam un identificador únic del lloc i una URL base OAI per finalitats estadístiques i de seguretat.</message>
+
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[Hi ha una nova versió de l'ScholarWizdam disponible. Actualment feu servir l'ScholarWizdam {$currentVersion}. La versió més recent és ScholarWizdam {$latestVersion}. Visiteu <a href="http://wizdam.sangia.org/download" target="_new">aquesta pàgina</a> per descarregar la versió més recent i obtenir instruccions d'actualització.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[Hi ha una nova versió de l'ScholarWizdam disponible. Actualment feu servir l'ScholarWizdam {$currentVersion}. La versió més recent és ScholarWizdam {$latestVersion}. Contacteu amb l'administrador/a del lloc web ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) per notificar-li la nova versió. Hi ha més informació disponible <a href="http://wizdam.sangia.org/download" target="_new">aquí</a>.]]></message>
+</locale>

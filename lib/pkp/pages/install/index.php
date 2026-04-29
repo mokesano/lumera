@@ -1,0 +1,30 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @defgroup pages_install
+ */
+
+/**
+ * @file pages/install/index.php
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2000-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * @ingroup pages_install
+ * @brief Handle installation requests.
+ *
+ */
+
+switch ($op) {
+	case 'index':
+	case 'install':
+	case 'upgrade':
+	case 'installUpgrade':
+		define('HANDLER_CLASS', 'PKPInstallHandler');
+		import('lib.pkp.pages.install.PKPInstallHandler');
+		break;
+}
+
+?>

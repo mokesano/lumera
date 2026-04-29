@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/gl_ES/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the gl_ES (Galego) locale.
+  *
+  -->
+
+<locale name="gl_ES" full_name="Galego">
+	<message key="installer.additionalLocales">Locales adicionais</message>
+	<message key="installer.administratorAccount">Conta de administrador/a</message>
+	<message key="installer.administratorAccountInstructions">Esta conta de usuaria/o convertirase no/na administrador/a e terá acceso total ao sistema. Pódense crear contas complementares de usuaria/o logo da instalación.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="formError">Non</span>]]></message>
+	<message key="installer.checkYes">Si</message>
+	<message key="installer.clientCharset">Conxunto de caracteres do cliente</message>
+	<message key="installer.clientCharsetInstructions">A codificación a usar ao enviar e recibir información dos navegadores.</message>
+	<message key="installer.configFileError"><![CDATA[O ficheiro de configuración <tt>config.inc.php</tt> non existe ou non é lexible.]]></message>
+	<message key="installer.connectionCharset">Conxunto de caracteres da conexión</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[Codificación a usar nos datos enviados a e dende a base de datos. Debe ser a mesma que o xogo de caracteres do cliente. Esta característica só está soportada en MySQL >= 5.x ou PostgreSQL >= 8.x. Escolle "Non aplicar" se o teu servidor de base de datos non cumpre estas condicións.]]></message>
+	<message key="installer.contentsOfConfigFile">Contidos do ficheiro de configuración</message>
+	<message key="installer.createDatabase">Crear nova base de datos</message>
+	<message key="installer.createDatabaseInstructions">Para usar esta opción, o teu sistema de bases de datos debe soportar creación de bases de datos remota e a túa conta de usuario debe ter os permisos axeitados para crear bases de datos novas. Se a instalación falla con esta opción seleccionada, crea manualmente a base de datos no teu servidor e volve executar o instalador con esta opción desactivada.</message>
+	<message key="installer.databaseCharset">Conxunto de caracteres da base de datos</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[A codificación a usar nos datos almacenados na base de datos. Esta característica só está soportada en MySQL >= 5.x ou PostgreSQL >= 8.x. Escolle "Non aplicar" se o teu servidor de base de datos non cumpre estas condicións.]]></message>
+	<message key="installer.databaseDriver">Driver da base de datos</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>O sistema actualmente só é compatible con MySQL e PostgreSQL. No caso de que non poidas seleccionar un, comunícate co administrador do teu sistema para asegurarte de que o teu servidor ten as extensións de PHP necesarias.</strong>]]></message>
+	<message key="installer.databaseHost">Servidor</message>
+	<message key="installer.databaseHostInstructions">Deixa o nome do servidor en branco para conectar usando sockets de dominio no canto de TCP/IP. Isto non é necesario con MySQL, que usará automaticamente sockets se se introduce "localhost", porén é necesario con outros servidores de bases de datos como PostgreSQL.</message>
+	<message key="installer.databaseName">Nome da base de datos</message>
+	<message key="installer.databasePassword">Contrasinal</message>
+	<message key="installer.databaseSettings">Configuración da base de datos</message>
+	<message key="installer.databaseUsername">Usuario/a</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Bcrypt aplícase de forma segura como algoritmo estándar de cifrado de contrasinais segundo os estándares de ScholarWizdam.]]></message>
+	<message key="installer.encryption">Algoritmo de encriptación de contrasinais</message>
+
+	<!-- Installer -->
+	<message key="installer.appInstallation">Instalación de ScholarWizdam</message>
+	<message key="installer.appUpgrade">Actualización de ScholarWizdam</message>
+	
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>Versión de ScholarWizdam {$version}</h4>
+
+<p>Grazas por descargar <strong>ScholarWizdam</strong> de Sangia Publishing House. Antes de continuar, le o ficheiro <a href="{$baseUrl}/docs/README" target="_blank">README</a> incluído con este software. Para obter máis información sobre Sangia Publishing House (SPH) e os seus proxectos de software, visita o <a href="http://wizdam.sangia.org/" target="_blank">sitio web de SPH</a>. Se tes informes de fallos ou preguntas de soporte técnico sobre ScholarWizdam, visita o <a href="http://forum.wizdam.sangia.org" target="_blank">foro de soporte</a> ou o <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">sistema de notificación de erros en liña</a> de SPH. Aínda que o método de contacto preferido é o foro de axuda, tamén podes poñerte en contacto co equipo por correo electrónico en <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[O cifrado de contrasinais usa <strong>bcrypt</strong> — un algoritmo de hash seguro e estándar da industria. Non require configuración adicional.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Actualización</h4>
+
+<p>Se está actualizando unha instalación existente de ScholarWizdam ou de versións anteriores, <a href="{$upgradeUrl}">preme aquí</a> para continuar.</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Requerimentos de sistema recomendados</h4>
+
+<ul>
+	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; actualmente está usando PHP {$phpVersion}{$wrongPhpText}</li>
+	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x ou <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 8.x</li>
+	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x ou >= 2.0.4x ou Microsoft IIS 6</li>
+	<li>Sistema operativo: Calquera SO que soporte o software mencionado, incluíndo <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+</ul>
+
+<p>Como SPH non conta cos recursos para probar calquera combinación posible de software e plataformas, non se ofrece garantía de correcto funcionamento nin soporte técnico.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>Pódense facer cambios a esta configuración despois da instalación editando o ficheiro <tt>config.inc.php</tt> no directorio base de ScholarWizdam, ou ben a través da interface web de administración.</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Xestores de bases de datos soportados</h4>
+
+<p>Polo de agora, ScholarWizdam só se probou con MySQL e PostgreSQL, porén hai outros xestores de bases de datos soportados por <a href="http://adodb.org/" target="_blank">ADOdb</a> que poderían funcionar (total ou parcialmente). Pódense enviar informes de compatibilidade e/ou parches para xestores de bases de datos alternativos ao equipo de ScholarWizdam.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Pasos pre-instalación</h4>
+
+<p>1. Os seguintes ficheiros e directorios (e o seu contido) deben ter permisos de escritura:</p>
+<ul>
+	<li><tt>config.inc.php</tt> ten permisos de escritura (opcional): {$writable_config}</li>
+	<li><tt>public/</tt> ten permisos de escritura: {$writable_public}</li>
+	<li><tt>cache/</tt> ten permisos de escritura: {$writable_cache}</li>
+	<li><tt>cache/t_cache/</tt> ten permisos de escritura: {$writable_templates_cache}</li>
+	<li><tt>cache/t_compile/</tt> ten permisos de escritura: {$writable_templates_compile}</li>
+	<li><tt>cache/_db</tt> ten permisos de escritura: {$writable_db_cache}</li>
+</ul>
+
+<p>2. É preciso crear un directorio para almacenar os ficheiros subidos e que teña permisos de escritura (véxase "Configuración dos ficheiros" máis abaixo).</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>Versión de ScholarWizdam {$version}</h4>
+	
+<p>Grazas por descargar <strong>ScholarWizdam</strong> de Sangia Publishing House. Antes de continuar, le os ficheiros <a href="{$baseUrl}/docs/README" target="_blank">README</a> e <a href="{$baseUrl}/docs/UPGRADE" target="_blank">UPGRADE</a> incluídos con este software. Para obter máis información sobre Sangia Publishing House (SPH) e os seus proxectos de software, visita o <a href="http://wizdam.sangia.org/" target="_blank">sitio web de SPH</a>. Se tes informes de fallos ou preguntas de soporte técnico sobre ScholarWizdam, visita o <a href="http://forum.wizdam.sangia.org" target="_blank">foro de soporte</a> ou o <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">sistema de notificación de erros en liña</a> de SPH. Aínda que o método de contacto preferido é o foro de axuda, tamén podes contactar co equipo por correo electrónico en <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+<p>Se <strong>recomenda encarecidamente</strong> que fagas unha copia de seguridade da túa base de datos, directorio de ficheiros, e directorio de instalación de ScholarWizdam antes de continuar.</p>
+<p>Se está executando en <a href="http://www.php.net/features.safe-mode" target="_blank">Modo Seguro de PHP</a>, asegúrate de que a directiva max_execution_time no teu ficheiro de configuración php.ini ten un límite alto. Se este, ou calquera outro límite de tempo (p.e. a directiva "Timeout" de Apache) se acada e o proceso de actualización se interrompe, precisarase intervención manual.</p>]]></message>
+	<message key="installer.localeSettingsInstructions"><![CDATA[Para soporte unicode completo (UTF-8), selecciona UTF-8 para todas as configuracións de xogos de caracteres. Ten en conta que para soportalo necesítase MySQL >= 5.x ou PostgreSQL >= 8.x. Repara tamén que o soporte completo de unicode necesita PHP >= 7.4.0 compilado con soporte para a libraría <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> (activado por defecto nas instalacións máis recentes de PHP). Podes ter problemas usando conxuntos de caracteres extendidos se o teu servidor non cumpre estes requisitos.
+<br /><br />
+O teu servidor soporta mbstring neste momento: <strong>{$supportsMBString}</strong>]]></message>
+	<message key="installer.localeInstructions">O idioma primario deste sistema. Por favor, consulta a documentación de ScholarWizdam se estás interesado no soporte de idiomas que non aparecen aquí.</message>
+	<message key="installer.additionalLocalesInstructions">Selecciona outros idiomas adicionais para soportar neste sistema. Estes idiomas estarán dispoñibles para as revistas aloxadas neste sitio web. Pódense instalar idiomas adicionais en calquera momento dende a interface administrativa.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Introduce a ruta completa a un directorio existente onde se subirán os ficheiros. Este directorio non debería ser accesible por web. <strong>Asegúrate que este directorio existe e que tes permisos de escritura antes de proceder coa instalación</strong>. As rutas en Windows deben indicarse con barra invertida, p.e. "C:/miñarevista/ficheiros".]]></message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Coidado:</strong> Se a instalación fallou xusto cando estabas a instalar a base de datos é posible que se precise eliminar a base de datos de ScholarWizdam ou as táboas antes de intentar reinstalar a base de datos.]]></message>
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>¡IMPORTANTE!</h4>
+<p>O instalador non puido sobrescribir automaticamente o ficheiro de configuración. Antes de usar o sistema abre <tt>config.inc.php</tt> nun editor de textos e substitúe o seu contido polo contido do ficheiro que mostramos abaixo.</p>]]></message>
+	<message key="installer.installationComplete"><![CDATA[<p>A instalación de ScholarWizdam completouse con éxito.</p>
+<p>Para comezar a usar o sistema, <a href="{$loginUrl}">inicia sesión</a> co nome de usuaria/o e contrasinal inseridos na páxina anterior.</p>
+<p>Se queres recibir noticias e actualizacións, por favor, rexístrate en <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>. Se tes preguntas ou comentarios, por favor, visita o <a href="http://forum.wizdam.sangia.org" target="_new">foro de soporte</a>.</p>]]></message>
+	<message key="installer.upgradeComplete"><![CDATA[<p>A actualización da versión de ScholarWizdam {$version} completouse con éxito.</p>
+<p>Non esquezas cambiar a opción "installed" no teu ficheiro de configuración config.inc.php e poñela en <em>On</em>.</p>
+<p>Se aínda non te rexistraches e queres recibir noticias e actualizacións, por favor, rexístrate en <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>. Se tes preguntas ou comentarios, visita o <a href="http://forum.wizdam.sangia.org" target="_new">foro de soporte</a>.</p>]]></message>
+	<message key="installer.databaseSettingsInstructions">ScholarWizdam precisa acceso a unha base de datos SQL para almacenar os teus datos. Mira os requirimentos do sistema de arriba para unha lista de bases de datos soportadas. Nos campos de abaixo, fornece as configuracións para ser usadas para conectar coa base de datos.</message>
+	<message key="installer.installApplication">Instalar ScholarWizdam</message>
+	<message key="installer.upgradeApplication">Actualizar ScholarWizdam</message>
+	
+	<message key="installer.filesDir">Directorio para subir</message>
+	<message key="installer.fileSettings">Configuración de ficheiros</message>
+	<message key="installer.form.clientCharsetRequired">Compre seleccionar un conxunto de caracteres do cliente.</message>
+	<message key="installer.form.databaseDriverRequired">Compre seleccionar un controlador de base de datos.</message>
+	<message key="installer.form.databaseNameRequired">Compre inserir o nome da base de datos.</message>
+	<message key="installer.form.emailRequired">Compre dispoñer dunha conta de correo-e válida para a conta de administrador/a.</message>
+	<message key="installer.form.encryptionRequired">Compre seleccionar o algoritmo usado para encriptar os contrasinais.</message>
+	<message key="installer.form.filesDirRequired">Compre introducir o directorio usado para almacenar os ficheiros subidos.</message>
+	<message key="installer.form.localeRequired">Compre seleccionar un locale.</message>
+	<message key="installer.form.passwordRequired">Compre ter un contrasinal para a conta de administrador/a.</message>
+	<message key="installer.form.passwordsDoNotMatch">Os contrasinais de administrador/a non coinciden.</message>
+	<message key="installer.form.separateMultiple">Separar valores múltiples con vírgulas</message>
+	<message key="installer.form.usernameAlphaNumeric">O nome de usuario/a do/da administrador/a só pode conter caracteres alfanuméricos, guións baixos, e guións, e debe comezar e rematar cun caracter alfanumérico.</message>
+	<message key="installer.form.usernameRequired">Compre achegar un nome de usuario/a para a conta de administrador/a.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>ATENCIÓN: A túa versión actual de PHP non cumpre os requisitos mínimos necesarios de instalación. Recoméndase actualizar a unha versión máis recente de PHP.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">Véñense de producir erros durante a instalación</message>
+	<message key="installer.installerSQLStatements">Sentencias SQL para a instalación</message>
+	<message key="installer.installFileError"><![CDATA[Non existe ou non se pode ler o ficheiro de instalación <tt>dbscripts/xml/install.xml</tt>.]]></message>
+	<message key="installer.installFilesDirError">O directorio especificado para os ficheiros subidos non existe ou non ten permisos de escritura.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Erro analizando o ficheiro de instalación da base de datos <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Locale</message>
+	<message key="installer.localeSettings">Configuración de locales</message>
+	<message key="installer.manualInstall">Instalación manual</message>
+	<message key="installer.manualUpgrade">Actualización manual</message>
+	<message key="installer.miscSettings">Configuración adicional</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[Un identificador único para identificar rexistros de metadatos indexados dende este sitio usando o protocolo da <a href="http://www.openarchives.org/" target="_blank">Iniciativa de Arquivos Abertos</a> para recollida de metadatos.]]></message>
+	<message key="installer.oaiRepositoryId">Identificador de repositorio OAI</message>
+	<message key="installer.publicFilesDirError">O directorio de ficheiros públicos non existe ou non ten permisos de escritura.</message>
+	<message key="installer.releaseNotes">Notas de lanzamento</message>
+	<message key="installer.securitySettings">Configuración de seguridade</message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[Houbo un erro analizando o ficheiro de modelo de correo <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale.maybeIncomplete">As traducións marcadas poden estar incompletas.</message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[Erro ao analizar o ficheiro de configuración do filtro <tt>{$file}</tt>.]]></message>
+	<message key="installer.oaiSettings">Configuración OAI</message>
+	<message key="installer.allowFileUploads"><![CDATA[O teu servidor permite actualmente a subida de ficheiros: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[O teu servidor permite actualmente un tamaño máximo de subida de ficheiros de: <strong>{$maxFileUploadSize}</strong>]]></message>
+	<message key="installer.beacon">Beacon</message>
+	<message key="installer.beacon.enable">Proporcione un ID de sitio único e unha URL base OAI a Sangia Publishing House unicamente para fins estatísticos e de alertas de seguridade.</message>
+	
+	<!-- Upgrade Available -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[Hai unha nova versión de ScholarWizdam dispoñible! Actualmente está a usar ScholarWizdam {$currentVersion}. A versión máis recente é ScholarWizdam {$latestVersion}. Visita <a href="http://wizdam.sangia.org/download" target="_new">esta páxina</a> para descargar a versión máis recente e atopar as instrucións de actualización.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[Hai unha nova versión de ScholarWizdam dispoñible! Actualmente está a usar ScholarWizdam {$currentVersion}. A versión máis recente é ScholarWizdam {$latestVersion}. Por favor, contacta co administrador do teu sitio ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) para notificarlles esta nova versión. Pódese atopar máis información <a href="http://wizdam.sangia.org/download" target="_new">aquí</a>.]]></message>
+</locale>

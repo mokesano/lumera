@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2003-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the ro_RO (Limba Română) locale.
+  * Provided by Constantinescu Nicolaie.
+  *
+  -->
+
+<locale name="ro_RO" full_name="Limba Română">
+	<message key="installer.additionalLocales">Localizări suplimentare</message>
+	<message key="installer.administratorAccount">Contul administratorului</message>
+	<message key="installer.administratorAccountInstructions">Acest cont va fi administratorul siteului și are acces complet asupra sistemului. După instalare pot fi create și alte conturi.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="pkp_form_error formError">NU</span>]]></message>
+	<message key="installer.checkYes">Da</message>
+	<message key="installer.clientCharset">Setul de caractere al clientului</message>
+	<message key="installer.clientCharsetInstructions">Codarea utilizată pentru trimiterea datelor și pentru primirea lor de la browsere.</message>
+	<message key="installer.configFileError"><![CDATA[Fișierul de configurare <tt>config.inc.php</tt> nu există sau nu poate fi citit.]]></message>
+	<message key="installer.connectionCharset">Setul de caractere al conectării</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[Codarea utilizată pentru trimiterea și primirea datelor de la baza de date. Acesta trebuie să fie același ca și setul de caractere al clientului. Trebuie remarcat faptul că această facilitate este suportată de MySQL >= 5.x sau PostgreSQL >= 8.x. Selectează "Nu se aplică" dacă serverul bazei de date nu întrunește aceste cerințe.]]></message>
+	<message key="installer.contentsOfConfigFile">Conținutul fișierului de configurare</message>
+	<message key="installer.createDatabase">Creează o bază de date nouă</message>
+	<message key="installer.createDatabaseInstructions">Pentru a utiliza această funcționalitate, sistemul de baze de date trebuie să poată crea baze de date la distanță iar contul de utilizator trebuie să aibă permisiunile necesare pentru a le crea. Dacă instalarea eșuează având această opțiune selectată, creează baza de date pe serverul local și rulează instalarea din nou având această opțiune dezactivată.</message>
+	<message key="installer.databaseCharset">Setul de caractere al bazei de date</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[Codarea utilizată pentru stocarea datelor. Trebuie punctat că această funcționalitate este suportată doar de MySQL >= 5.x sau PostgreSQL >= 8.x. Selectează "Nu se aplică" dacă serverul bazei de date nu întrunește aceste cerințe.]]></message>
+	<message key="installer.databaseDriver">Driverul bazei de date</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>Sistemul suportă în prezent doar MySQL și PostgreSQL. În cazul în care nu puteți selecta niciunul, contactați administratorul sistemului pentru a vă asigura că serverul dumneavoastră are extensiile PHP necesare.</strong>]]></message>
+	<message key="installer.databaseHost">Gazdă</message>
+	<message key="installer.databaseHostInstructions">Lasă câmpul gazdei gol pentru a face conectarea prin socketurile domeniului în loc de TCP/IP. Acesta nu este necesar să fie făcut cu MySQL-ul, care va utiliza automat socketurile dacă "localhost" este introdus, dar poate fi necesar pentru a fi folosit cu servere precum PostgreSQL.</message>
+	<message key="installer.databaseName">Nume bază de date</message>
+	<message key="installer.databasePassword">Parolă</message>
+	<message key="installer.databaseSettings">Setările bazei de date</message>
+	<message key="installer.databaseUsername">Nume utilizator</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Encriptarea parolei utilizează <strong>bcrypt</strong> — un algoritm de hash sigur, standard în industrie. Nu este necesară nicio configurație suplimentară.]]></message>
+	<message key="installer.encryption">Algoritmul de criptare a parolei</message>
+
+	<!-- Installer -->
+	<message key="installer.appInstallation">Instalarea ScholarWizdam</message>
+	<message key="installer.appUpgrade">Actualizare ScholarWizdam</message>
+	
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>ScholarWizdam Versiunea {$version}</h4>
+    
+    <p>Mulțumim pentru că ați descărcat <strong>ScholarWizdam</strong> de la Sangia Publishing House. Înainte de a continua, parcurgeți documentul <a href="{$baseUrl}/docs/README" target="_blank">README</a> inclus cu acest software. Pentru mai multe informații despre Sangia Publishing House (SPH) și proiectele sale software, vă rugăm să vizitați <a href="http://wizdam.sangia.org/" target="_blank">siteul web al SPH</a>. Dacă aveți rapoarte privind bugurile sau nelămuriri de natură tehnică privind ScholarWizdam, treceți și pe la <a href="http://forum.wizdam.sangia.org" target="_blank">forumul de asistență</a> sau vizitați SPH online la <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">sistemul de raportare a bugurilor</a>. Chiar dacă metoda preferată de contact este forumul de asistență, puteți să trimiteți și un email echipei la <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[Encriptarea parolei utilizează <strong>bcrypt</strong> — un algoritm de hash sigur, standard în industrie. Nu este necesară nicio configurație suplimentară.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Actualizare</h4>
+    
+    <p>Dacă actualizați o instalare deja existentă a ScholarWizdam sau din versiuni anterioare, <a href="{$upgradeUrl}">apăsați aici</a> pentru a continua.</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Cerințele minime recomandate</h4>
+    
+    <ul>
+    	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; în acest moment folosești PHP {$phpVersion}{$wrongPhpText}</li>
+    	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x sau <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (incluzând PostgreSQL 8.x)</li>
+    	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x sau >= 2.0.4x sau Microsoft IIS 6</li>
+    	<li>Sistem de operare: orice OS care suportă softwareul de mai sus, incluzând <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+    </ul>
+    
+    <p>Pentru că SPH nu are resursele să testeze orice combinație posibilă de versiuni software și de platforme, nu este implicată operarea corectă sau asistență.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>Modificarea acestor setări poate fi făcută după instalare prin editarea fișierului <tt>config.inc.php</tt> din directorul de bază al ScholarWizdam sau folosind interfața web a siteului.</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Sistemele de baze de date suportate</h4>
+    
+    <p>ScholarWizdam a fost testat pe MySQL și PostgreSQL chiar dacă alte sisteme de baze de date suportate prin <a href="http://adodb.org/" target="_blank">ADOdb</a> ar putea funcționa (deplin sau parțial). Rapoartele de compatibilitate și/sau peticele de cod pentru DBMS-urile alternative pot fi trimise echipei ScholarWizdam.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Pașii de preinstalare</h4>
+    
+    <p>1. Următoarele fișiere și directoare (precum și conținutul lor) trebuie să fie neprotejate la scriere:</p>
+    
+    <ul>
+    	<li><tt>config.inc.php</tt> este inscripționabil (opțional): {$writable_config}</li>
+    	<li><tt>public/</tt> este inscripționabil: {$writable_public}</li>
+    	<li><tt>cache/</tt> este inscripționabil: {$writable_cache}</li>
+    	<li><tt>cache/t_cache/</tt> este inscripționabil: {$writable_templates_cache}</li>
+    	<li><tt>cache/t_compile/</tt> este inscripționabil: {$writable_templates_compile}</li>
+    	<li><tt>cache/_db</tt> este inscripționabil: {$writable_db_cache}</li>
+    </ul>
+    
+    <p>2. Trebuie creat un director pentru a stoca fișierele încărcate și acesta trebuie să fie neprotejat la scriere (vezi "Setările fișierului" mai jos).</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>ScholarWizdam Versiunea {$version}</h4>
+    
+    <p>Vă mulțumim pentru descărcarea lui <strong>ScholarWizdam</strong> de la Sangia Publishing House. Înainte de a continua, vă rog să citiți documentul <a href="{$baseUrl}/docs/README" target="_blank">README</a> și documentul <a href="{$baseUrl}/docs/UPGRADE" target="_blank">UPGRADE</a> care sunt incluse în acest pachet software. Pentru mai multe informații despre Sangia Publishing House (SPH) și proiectele sale software, vizitați <a href="http://wizdam.sangia.org/" target="_blank">siteul web SPH</a>. Dacă aveți rapoarte privind bugurile sau nelămuriri de natură tehnică privind ScholarWizdam, consultați <a href="http://forum.wizdam.sangia.org" target="_blank">forumul pentru asistență</a> sau vizitați online <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">sistemul de raportare al bugurilor</a> de la SPH. Chiar dacă metoda preferată de contact este forumul de asistență, puteți să trimiteți și un email echipei la <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+    <p>Se recomandă <strong>cu insistență</strong> să faceți o copie de siguranță la baza de date, la sistemul de directoare și a directorului de instalare mai înainte de a începe.</p>
+    <p>Dacă rulați în <a href="http://www.php.net/features.safe-mode" target="_blank">PHP Safe Mode</a>, asigurați-vă că directiva max_execution_time există în fișierul de configurare php.ini și că este setată la valoare maximă. Dacă această limită de timp este depășită sau oricare altă limită de timp (ex. directiva "Timeout" de la Apache) iar procesul de actualizare este întrerupt, va fi necesară intervenția manuală.</p>]]></message>
+
+	<message key="installer.localeSettingsInstructions"><![CDATA[Pentru suport complet Unicode (UTF-8), selectați UTF-8 pentru toate setările seturilor de caractere. Trebuie spus că este necesar suport pentru bazele de date MySQL >= 5.x sau PostgreSQL >= 8.x. Trebuie notat, de asemenea că suportul complet pentru Unicode necesită PHP >= 7.4.0 compilat cu suport pentru pachetul <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> (activat implicit la cele mai recente instalări PHP). E posibil să experimentați probleme în folosirea seturilor de caractere extinse dacă serverul nu întrunește toate cerințele.
+    <br /><br />
+    Serverul în acest moment suportă mbstring: <strong>{$supportsMBString}</strong>]]></message>
+
+	<message key="installer.localeInstructions">Limba primară a sistemului. Consultați documentația ScholarWizdam dacă sunteți interesat de localizări în alte limbi decât cele menționate aici.</message>
+	<message key="installer.additionalLocalesInstructions">Selectează oricare limbi suplimentare care trebuie să fie suportate de sistem. Aceste limbi vor fi disponibile pentru uzul revistelor găzduite pe acest site. Limbile suplimentare pot fi instalate suplimentar în oricare moment din interfața de administrare a siteului.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Introdu calea completă la un director existent unde vor fi ținute fișierele. Acest director nu ar trebui să poată fi direct accesibil prin web. <strong>Asigurați-vă că acest director există și este neprotejat la scriere înainte de a face instalarea.</strong> În cazul instalărilor Windows atenție la scrierea căilor, unde se folosesc slashurile, ex. "C:/myjournal/files".]]></message>
+	<message key="installer.databaseSettingsInstructions">ScholarWizdam necesită acces la o bază de date SQL pentru a-și stoca datele. Vezi cerințele de sistem de mai sus pentru o listă de baze de date suportate. În câmpurile de mai jos, puteți pune setările care să fie utilizate în conexiunea cu baza de date.</message>
+	<message key="installer.installApplication">Instalează ScholarWizdam</message>
+	<message key="installer.upgradeApplication">Actualizează ScholarWizdam</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Avertisment:</strong> Dacă instalarea a eșuat parțial la momentul instalării bazei de date, va trebui să faci DROP la tabelele bazei de date înainte de a încerca reinstalarea acesteia.]]></message>
+	
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>IMPORTANT!</h4>
+    <p>Instalarea nu a putut suprascrie automat fișierul de configurare. Înainte de a încerca să folosești sistemul, deschide <tt>config.inc.php</tt> într-un editor de text și înlocuiește conținutul cu cel dat în căsuța de mai jos.</p>]]></message>
+
+	<message key="installer.installationComplete"><![CDATA[<p>Instalarea ScholarWizdam s-a încheiat cu succes.</p>
+    <p>Pentru a începe utilizarea acestui sistem <a href="{$loginUrl}">autentificați-vă</a> cu numele și parola introduse în pagina anterioară.</p>
+    <p>Dacă dorești să primești noutăți și actualizări, poți să:</p>
+    
+    <ol>
+    	<li><a href="http://wizdam.sangia.org/wizdam/register" target="_new">Înscrii</a> revista, conferința sau colectorul și astfel să primești actualizări, petice de securitate și altele.</li>
+    	<li>Să te înscrii pe <a href="http://wizdam.sangia.org/informed" target="_new">lista de discuții</a> pentru ScholarWizdam.</li>
+    	<li>Să te abonezi la <a href="http://wizdam.sangia.org/blog" target="_new">blogul SPH</a> sau la <a href="http://wizdam.sangia.org/blog/feed" target="_new">fluxul RSS</a>.</li>
+    </ol>
+    <p>Dacă aveți întrebări sau comentarii, vizitați <a href="http://forum.wizdam.sangia.org" target="_new">forumul de asistență</a>.</p>]]></message>
+
+	<message key="installer.upgradeComplete"><![CDATA[<p>Actualizarea ScholarWizdam la versiunea {$version} s-a încheiat cu succes.</p>
+    <p>Nu uita să setezi "installed" din fișierul de configurare config.inc.php înapoi la valoarea <em>On</em>.</p>
+    <p>Dacă nu te-ai înregistrat deja și dorești să primești știri și actualizări <strong>înscrie-te la <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> Dacă aveți întrebări sau comentarii, vizitați <a href="http://forum.wizdam.sangia.org" target="_new">forumul de asistență</a>.</p>]]></message>
+
+	<message key="installer.filesDir">Directorul pentru încărcări de fișiere</message>
+	<message key="installer.fileSettings">Setări fișiere</message>
+	<message key="installer.form.clientCharsetRequired">Trebuie selectat un set de caractere pentru client.</message>
+	<message key="installer.form.databaseDriverRequired">Trebuie selectat un driver de baze de date.</message>
+	<message key="installer.form.databaseNameRequired">Este necesar numele bazei de date.</message>
+	<message key="installer.form.emailRequired">Este necesară o adresă de email pentru contul de administrator.</message>
+	<message key="installer.form.encryptionRequired">Trebuie selectat algoritmul utilizat pentru criptarea parolelor.</message>
+	<message key="installer.form.filesDirRequired">Este necesară introducerea directorului utilizat pentru stocarea fișierelor încărcate.</message>
+	<message key="installer.form.localeRequired">Trebuie selectată o localizare.</message>
+	<message key="installer.form.passwordRequired">Este necesară o parolă pentru contul administratorului.</message>
+	<message key="installer.form.passwordsDoNotMatch">Parolele pentru administrator nu se potrivesc.</message>
+	<message key="installer.form.separateMultiple">Separă valorile multiple prin virgule</message>
+	<message key="installer.form.usernameAlphaNumeric">Numele de utilizator pentru administrator poate conține doar alfanumerice, linii jos, linii de despărțire și trebuie să înceapă și să se termine cu un caracter alfanumeric.</message>
+	<message key="installer.form.usernameRequired">Este necesar un nume de utilizator pentru contul de administrator.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>AVERTISMENT: Versiunea curentă de PHP nu întrunește cerințele minime pentru instalare. Se recomandă actualizarea la o versiune mai recentă de PHP.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">Erori apărute în timpul instalării</message>
+	<message key="installer.installerSQLStatements">Declarațiile SQL necesare instalării</message>
+	<message key="installer.installFileError"><![CDATA[Fișierul de instalare <tt>dbscripts/xml/install.xml</tt> nu există sau nu poate fi citit.]]></message>
+	<message key="installer.installFilesDirError">Directorul specificat pentru încărcarea fișierelor nu există sau nu este inscripționabil.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Eroare la parcurgerea fișierului de instalare al bazei de date <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[Eroare de parcurgere a fișierului șablon pentru email <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[Eroare la parcurgerea fișierului de configurare a filtrelor <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Localizare</message>
+	<message key="installer.locale.maybeIncomplete">Localizările marcate pot fi incomplete.</message>
+	<message key="installer.localeSettings">Setări pentru localizare</message>
+	<message key="installer.miscSettings">Setări diverse</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[Un identificator unic pentru identificarea înregistrărilor de metadate indexate de pe acest site folosind <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a> Protocol for Metadata Harvesting.]]></message>
+	<message key="installer.oaiRepositoryId">Identificator pentru depozit OAI</message>
+	<message key="installer.oaiSettings">Setări OAI</message>
+	<message key="installer.publicFilesDirError">Directorul public pentru încărcarea fișierelor nu există sau nu poate fi inscripționat.</message>
+	<message key="installer.releaseNotes">Note de versiune</message>
+	<message key="installer.securitySettings">Setări de securitate</message>
+	<message key="installer.allowFileUploads"><![CDATA[Serverul dumneavoastră permite în prezent încărcarea de fișiere: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[Serverul dumneavoastră permite în prezent o dimensiune maximă de încărcare a fișierelor de: <strong>{$maxFileUploadSize}</strong>]]></message>
+	<message key="installer.beacon">Baliză</message>
+	<message key="installer.beacon.enable">Furnizați un ID unic al siteului și o adresă URL de bază OAI către Sangia Publishing House doar în scopuri statistice și de alertă de securitate.</message>
+	
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[O nouă versiune a ScholarWizdam este disponibilă! În prezent folosiți ScholarWizdam {$currentVersion}. Cea mai recentă versiune este ScholarWizdam {$latestVersion}. Vă rugăm să vizitați <a href="http://wizdam.sangia.org/download" target="_new">această pagină</a> pentru a descărca cea mai recentă versiune și pentru a găsi instrucțiunile de actualizare.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[O nouă versiune a ScholarWizdam este disponibilă! În prezent folosiți ScholarWizdam {$currentVersion}. Cea mai recentă versiune este ScholarWizdam {$latestVersion}. Vă rugăm să contactați administratorul siteului ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) pentru a-l anunța despre această nouă versiune. Mai multe informații pot fi găsite <a href="http://wizdam.sangia.org/download" target="_new">aici</a>.]]></message>
+</locale>

@@ -1,0 +1,52 @@
+{
+    "managers": [
+        {
+            "userId": "31",
+            "salutation": "",
+            "firstName": "Darsilan",
+            "middleName": "",
+            "lastName": "Darsilan",
+            "suffix": "",
+            "fullName": "Darsilan",
+            "affiliation": "Sekolah Tinggi Manajemen Informatika dan Komputer (STIMIK) Bina Bangsa Kendari",
+            "country": "Indonesia",
+            "email": "darsilan@sangia.org",
+            "imageUrl": "https:\/\/journals.sangia.org\/public\/site\/profileImage-31.jpg",
+            "hasProfileImage": true
+        }
+    ],
+    "editors": [
+        {
+            "userId": "241",
+            "salutation": "",
+            "firstName": "Laode",
+            "middleName": "",
+            "lastName": "Bakrim",
+            "suffix": null,
+            "fullName": "Laode Bakrim",
+            "affiliation": "STMIK Bina Bangsa",
+            "country": "",
+            "email": "clanis92@gmail.com",
+            "imageUrl": "https:\/\/www.gravatar.com\/avatar\/42c05c2283cefd4333af35382539ca4f?s=150&d=404",
+            "hasProfileImage": true
+        },
+        {
+            "userId": "254",
+            "salutation": "",
+            "firstName": "Rahmat",
+            "middleName": "",
+            "lastName": "Inggi, S.Si.,M.Kom",
+            "suffix": null,
+            "fullName": "Rahmat Inggi, S.Si.,M.Kom",
+            "affiliation": "STMIK Bina Bangsa Kendari",
+            "country": "",
+            "email": "rahmat@gmail.com",
+            "imageUrl": null,
+            "hasProfileImage": false
+        }
+    ],
+    "generated_at": 1777434997,
+    "journal_id": "6",
+    "max_display_count": 3,
+    "data_hash": "bf78c3de860475ccf6ed0bd94c2829b2"
+}
