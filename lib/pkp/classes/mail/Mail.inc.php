@@ -567,7 +567,7 @@ class Mail extends DataObject {
             $this->addHeader('Return-Path', Config::getVar('email', 'default_envelope_sender'));
         }
 
-        $this->addHeader('X-Mailer', 'Wizdam Editorial SPH v1');
+        $this->addHeader('X-Mailer', 'Lumera SPH - Workflow Editorial Suite v1');
 
         $remoteAddr = Request::getRemoteAddr();
         if ($remoteAddr != '') $this->addHeader('X-Originating-IP', $remoteAddr);
