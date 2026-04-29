@@ -207,17 +207,35 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
      */
     public function getAverageQualityRatings($journalId) {
         $averageQualityRatings = [];
+
+        // MODIFIKASI: Inisialisasi nilai default (0) untuk SEMUA reviewer
+        $roleIdReviewer = defined('ROLE_ID_REVIEWER') ? ROLE_ID_REVIEWER : 4096;
+        $initResult = $this->retrieve(
+            'SELECT user_id FROM roles WHERE journal_id = ? AND role_id = ?',
+            [(int) $journalId, (int) $roleIdReviewer]
+        );
+        while (!$initResult->EOF) {
+            $row = $initResult->GetRowAssoc(false);
+            // Set rata-rata dan jumlah rating menjadi 0 sebagai default
+            $averageQualityRatings[$row['user_id']] = ['average' => 0, 'count' => 0];
+            $initResult->MoveNext();
+        }
+        $initResult->Close();
+        unset($initResult);
+
+        // KODE ASLI UNTUK MENGAMBIL DATA AKTUAL
         $result = $this->retrieve(
             'SELECT r.reviewer_id, AVG(r.quality) AS average, COUNT(r.quality) AS count
             FROM    review_assignments r, articles a
             WHERE   r.submission_id = a.article_id AND
                 a.journal_id = ?
             GROUP BY r.reviewer_id',
-            (int) $journalId
+            [(int) $journalId]
         );
 
         while (!$result->EOF) {
             $row = $result->GetRowAssoc(false);
+            // Data aktual ini akan menimpa nilai default 0 di atas (jika reviewer punya data)
             $averageQualityRatings[$row['reviewer_id']] = ['average' => $row['average'], 'count' => $row['count']];
             $result->MoveNext();
         }
@@ -229,12 +247,29 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
     }
 
     /**
-     * Get the average quality ratings and number of ratings for all users of a journal.
+     * Get the completed review counts for all users of a journal.
      * @param int $journalId
      * @return array
      */
     public function getCompletedReviewCounts($journalId) {
         $returner = [];
+
+        // MODIFIKASI: Inisialisasi nilai default (0) untuk SEMUA reviewer
+        $roleIdReviewer = defined('ROLE_ID_REVIEWER') ? ROLE_ID_REVIEWER : 4096;
+        $initResult = $this->retrieve(
+            'SELECT user_id FROM roles WHERE journal_id = ? AND role_id = ?',
+            [(int) $journalId, (int) $roleIdReviewer]
+        );
+        while (!$initResult->EOF) {
+            $row = $initResult->GetRowAssoc(false);
+            // Set jumlah review selesai menjadi 0
+            $returner[$row['user_id']] = 0;
+            $initResult->MoveNext();
+        }
+        $initResult->Close();
+        unset($initResult);
+
+        // KODE ASLI UNTUK MENGAMBIL DATA AKTUAL
         $result = $this->retrieve(
             'SELECT r.reviewer_id, COUNT(r.review_id) AS count
             FROM    review_assignments r,
@@ -244,11 +279,12 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
                 r.date_completed IS NOT NULL AND
                 r.cancelled = 0
             GROUP BY r.reviewer_id',
-            (int) $journalId
+            [(int) $journalId]
         );
 
         while (!$result->EOF) {
             $row = $result->GetRowAssoc(false);
+            // Menimpa nilai 0 dengan jumlah aslinya
             $returner[$row['reviewer_id']] = $row['count'];
             $result->MoveNext();
         }
