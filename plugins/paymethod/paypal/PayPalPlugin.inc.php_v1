@@ -1,0 +1,373 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @file plugins/paymethod/paypal/PayPalPlugin.inc.php
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2006-2009 Gunther Eysenbach, Juan Pablo Alperin, MJ Suhonos
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * @class PayPalPlugin
+ * @ingroup plugins_paymethod_paypal
+ *
+ * @brief PayPal Paymethod plugin class
+ * * [WIZDAM EDITION FINAL] - Production Ready. No Legacy Key. Strict Type.
+ */
+
+import('classes.plugins.PaymethodPlugin');
+
+class PayPalPlugin extends PaymethodPlugin {
+
+    /**
+     * Constructor
+     */
+    public function __construct() {
+        parent::__construct();
+    }
+
+    /**
+     * Get the name of this plugin. The name must be unique within
+     * its category.
+     *
+     * @return String name of plugin
+     */
+    public function getName() {
+        return 'Paypal';
+    }
+
+    /**
+     * Get the display name of this plugin.
+     *
+     * @return String
+     */
+    public function getDisplayName() {
+        return __('plugins.paymethod.paypal.displayName');
+    }
+
+    /**
+     * Get the description of this plugin.
+     *
+     * @return String
+     */
+    public function getDescription() {
+        return __('plugins.paymethod.paypal.description');
+    }
+
+    /**
+     * Register the plugin
+     *
+     * @param string $category
+     * @param string $path
+     * @param int|null $mainContextId
+     *
+     * @return bool
+     */
+    public function register($category, $path, $mainContextId = null) {
+        if (parent::register($category, $path, $mainContextId)) {
+            if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
+            $this->addLocaleData();
+            $this->import('PayPalDAO');
+            $payPalDao = new PayPalDAO();
+            DAORegistry::registerDAO('PayPalDAO', $payPalDao);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get the names of the settings form fields
+     *
+     * @return array
+     */
+    public function getSettingsFormFieldNames() {
+        return ['paypalurl', 'selleraccount'];
+    }
+
+    /**
+     * Check if cURL is installed
+     *
+     * @return bool
+     */
+    public function isCurlInstalled() {
+        return (function_exists('curl_init'));
+    }
+
+    /**
+     * Check if plugin is configured and ready for use
+     * [PRODUCTION MODE RESTORED]
+     * @return bool
+     */
+    public function isConfigured() {
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+
+        if (!$journal) return false;
+        if (!$this->isCurlInstalled()) return false;
+
+        foreach ($this->getSettingsFormFieldNames() as $settingName) {
+            $setting = $this->getSetting($journal->getId(), $settingName);
+            if (empty($setting)) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Display the payment settings form
+     * [WIZDAM STANDARD] 2 Arguments (No $key)
+     * @return string
+     */
+    public function displayPaymentSettingsForm($params, $smarty) {
+        $smarty->assign('isCurlInstalled', $this->isCurlInstalled());
+        return parent::displayPaymentSettingsForm($params, $smarty);
+    }
+
+    /**
+     * Display the payment form
+     * [WIZDAM STANDARD] 3 Arguments (No $key)
+     * @return string
+     * @param int $queuedPaymentId
+     * @param QueuedPayment $queuedPayment
+     * @param Request $request
+     */
+    public function displayPaymentForm($queuedPaymentId, $queuedPayment, $request) {
+        // Double check configuration logic
+        if (!$this->isConfigured()) {
+            $templateMgr->assign('paypalError', true);
+            $templateMgr->assign('message', 'Administrator belum mengisi konfigurasi Client ID PayPal. Silakan hubungi pengelola jurnal.');
+            // Tetap panggil template!
+            return $templateMgr->display($this->getTemplatePath() . 'paymentForm.tpl');
+        }
+        
+        // Strict Type Check
+        if (!is_a($queuedPayment, 'QueuedPayment')) {
+            error_log('PayPalPlugin Critical: Object passed is not QueuedPayment.');
+            return false;
+        }
+
+        AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
+        
+        $journal = $request->getJournal();
+        $user = $request->getUser();
+
+        // Get Real Settings from DB
+        $sellerAccount = $this->getSetting($journal->getId(), 'selleraccount');
+        $paypalUrl = $this->getSetting($journal->getId(), 'paypalurl');
+        if (empty($paypalUrl)) $paypalUrl = 'https://www.paypal.com/cgi-bin/webscr';
+
+        $params = [
+            'charset' => Config::getVar('i18n', 'client_charset'),
+            'business' => $sellerAccount,
+            'item_name' => $queuedPayment->getName(),
+            'item_description' => $queuedPayment->getDescription(), 
+            'amount' => sprintf('%.2F', $queuedPayment->getAmount()),
+            'quantity' => 1,
+            'no_note' => 1,
+            'no_shipping' => 1,
+            'currency_code' => $queuedPayment->getCurrencyCode(),
+            'lc' => PKPString::substr(AppLocale::getLocale(), 3), 
+            'custom' => $queuedPaymentId,
+            'notify_url' => $request->url(null, 'payment', 'plugin', [$this->getName(), 'ipn']),  
+            'return' => $queuedPayment->getRequestUrl(),
+            'cancel_return' => $request->url(null, 'payment', 'plugin', [$this->getName(), 'cancel']),
+            'first_name' => ($user) ? $user->getFirstName() : '',  
+            'last_name' => ($user) ? $user->getLastname() : '',
+            'item_number' => $queuedPayment->getAssocId(),
+            'cmd' => '_xclick'
+        ];
+
+        $templateMgr = TemplateManager::getManager();
+        $templateMgr->assign('params', $params);
+        $templateMgr->assign('paypalFormUrl', $paypalUrl);
+        
+        return $templateMgr->display($this->getTemplatePath() . 'paymentForm.tpl');
+    }
+
+    /**
+     * Handle incoming requests/notifications
+     * @param array $args
+     * @return void
+     * @param int $queuedPaymentId
+     * @param QueuedPayment $queuedPayment
+     * @param Request $request
+     */
+    public function handle($args, $request) {
+        $templateMgr = TemplateManager::getManager();
+        $journal = $request->getJournal();
+        
+        if (!$journal) return parent::handle($args, $request);
+
+        import('classes.mail.MailTemplate');
+        
+        $contactName = $journal->getSetting('supportName') ?: $journal->getSetting('contactName');
+        $contactEmail = $journal->getSetting('supportEmail') ?: $journal->getSetting('contactEmail');
+
+        $mail = new MailTemplate('PAYPAL_INVESTIGATE_PAYMENT');
+        $mail->setFrom($contactEmail, $contactName);
+        $mail->addRecipient($contactEmail, $contactName);
+
+        $paymentStatus = $request->getUserVar('payment_status');
+
+        switch (array_shift($args)) {
+            case 'ipn':
+                $req = 'cmd=_notify-validate';
+                foreach ($_POST as $key => $value) {
+                    $req .= '&' . urlencode((string)$key) . '=' . urlencode((string)$value);    
+                }
+                
+                $ch = curl_init();
+                if ($httpProxyHost = Config::getVar('proxy', 'http_host')) {
+                    curl_setopt($ch, CURLOPT_PROXY, $httpProxyHost);
+                    curl_setopt($ch, CURLOPT_PROXYPORT, Config::getVar('proxy', 'http_port', '80'));
+                    if ($username = Config::getVar('proxy', 'username')) {
+                        curl_setopt($ch, CURLOPT_PROXYUSERPWD, $username . ':' . Config::getVar('proxy', 'password'));
+                    }
+                }
+                
+                $paypalUrl = $this->getSetting($journal->getId(), 'paypalurl');
+                if (!$paypalUrl) $paypalUrl = 'https://www.paypal.com/cgi-bin/webscr';
+
+                curl_setopt($ch, CURLOPT_URL, $paypalUrl);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, ['User-Agent: PKP PayPal Service', 'Content-Type: application/x-www-form-urlencoded', 'Content-Length: ' . strlen($req)]);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
+                $ret = curl_exec ($ch);
+                $curlError = curl_error($ch);
+                curl_close ($ch);
+
+                if (is_string($ret) && strcmp($ret, 'VERIFIED') == 0) {
+                    switch ($paymentStatus) {
+                        case 'Completed':
+                            $payPalDao = DAORegistry::getDAO('PayPalDAO');
+                            $transactionId = $request->getUserVar('txn_id');
+                            
+                            if ($payPalDao->transactionExists($transactionId)) {
+                                $this->sendInvestigateMail($mail, $journal, $_POST, "Duplicate transaction ID: $transactionId");
+                                exit();
+                            } 
+                            
+                            $payPalDao->insertTransaction(
+                                $transactionId,
+                                $request->getUserVar('txn_type'),
+                                PKPString::strtolower($request->getUserVar('payer_email')),
+                                PKPString::strtolower($request->getUserVar('receiver_email')),
+                                $request->getUserVar('item_number'),
+                                $request->getUserVar('payment_date'),
+                                $request->getUserVar('payer_id'),
+                                $request->getUserVar('receiver_id')
+                            );
+
+                            $queuedPaymentId = $request->getUserVar('custom');
+                            import('classes.payment.ojs.OJSPaymentManager');
+                            $ojsPaymentManager = new OJSPaymentManager($request);
+                            $queuedPayment = $ojsPaymentManager->getQueuedPayment($queuedPaymentId);
+
+                            if (!$queuedPayment) {
+                                $this->sendInvestigateMail($mail, $journal, $_POST, "Missing queued payment ID: $queuedPaymentId");
+                                exit();
+                            }
+
+                            $grantedAmount = $request->getUserVar('mc_gross');
+                            $queuedAmount = $queuedPayment->getAmount();
+                            $grantedCurrency = $request->getUserVar('mc_currency');
+                            $queuedCurrency = $queuedPayment->getCurrencyCode();
+                            $grantedEmail = PKPString::strtolower($request->getUserVar('receiver_email'));
+                            $queuedEmail = PKPString::strtolower($this->getSetting($journal->getId(), 'selleraccount'));
+
+                            if ((($queuedAmount != $grantedAmount) && $queuedAmount > 0) || 
+                                ($queuedCurrency != $grantedCurrency) || 
+                                ($grantedEmail != $queuedEmail)) {
+                                $details = "Granted: $grantedAmount $grantedCurrency ($grantedEmail) vs Queued: $queuedAmount $queuedCurrency ($queuedEmail)";
+                                $this->sendInvestigateMail($mail, $journal, $_POST, "Integrity Check Failed. " . $details);
+                                exit();
+                            }
+
+                            if ($queuedAmount == 0 && $grantedAmount > 0) {
+                                $queuedPaymentDao = DAORegistry::getDAO('QueuedPaymentDAO');
+                                $queuedPayment->setAmount($grantedAmount);
+                                $queuedPayment->setCurrencyCode($grantedCurrency);
+                                $queuedPaymentDao->updateQueuedPayment($queuedPaymentId, $queuedPayment);
+                            }
+
+                            if ($ojsPaymentManager->fulfillQueuedPayment($queuedPayment, $this->getName())) {
+                                exit();
+                            }
+                            
+                            $this->sendInvestigateMail($mail, $journal, $_POST, "Queued payment ID $queuedPaymentId could not be fulfilled (DB Error?)");
+                            exit();
+
+                        case 'Pending':
+                            exit();
+                        default:
+                            $this->sendInvestigateMail($mail, $journal, $_POST, "Unhandled Payment Status: $paymentStatus");
+                            exit();
+                    }
+                } else {
+                    $this->sendInvestigateMail($mail, $journal, $_POST, "Confirmation Return: $ret | CURL Error: $curlError");
+                    exit();
+                }
+                break;
+
+            case 'cancel':
+                AppLocale::requireComponents(LOCALE_COMPONENT_PKP_COMMON, LOCALE_COMPONENT_PKP_USER, LOCALE_COMPONENT_APPLICATION_COMMON);
+                $templateMgr->assign([
+                    'currentUrl' => $request->url(null, 'index'),
+                    'pageTitle' => 'plugins.paymethod.paypal.purchase.cancelled.title',
+                    'message' => 'plugins.paymethod.paypal.purchase.cancelled',
+                    'backLink' => $request->getUserVar('ojsReturnUrl'),
+                    'backLinkLabel' => 'common.continue'
+                ]);
+                $templateMgr->display('common/message.tpl');
+                exit();
+                break;
+        }
+        parent::handle($args, $request);
+    }
+
+    /**
+     * Send an investigation email
+     * @param MailTemplate $mail
+     * @param Journal $journal
+     * @param array $postData
+     * @param string $info
+     * @return void
+     */
+    private function sendInvestigateMail($mail, $journal, $postData, $info) {
+        $mail->assignParams([
+            'journalName' => $journal->getLocalizedTitle(),
+            'postInfo' => print_r($postData, true),
+            'additionalInfo' => $info,
+            'serverVars' => print_r($_SERVER, true)
+        ]);
+        $mail->send();
+    }
+
+    /**
+     * Get the installation schema file path
+     *
+     * @return string
+     */
+    public function getInstallSchemaFile() {
+        return ($this->getPluginPath() . DIRECTORY_SEPARATOR . 'schema.xml');
+    }
+
+    /**
+     * Get the installation email templates file path
+     *
+     * @return string
+     */
+    public function getInstallEmailTemplatesFile() {
+        return ($this->getPluginPath() . DIRECTORY_SEPARATOR . 'emailTemplates.xml');
+    }
+
+    /**
+     * Get the installation email templates file path with locale
+     *
+     * @return string
+     */
+    public function getInstallEmailTemplateDataFile() {
+        return ($this->getPluginPath() . '/locale/{$installedLocale}/emailTemplates.xml');
+    }
+}
+?>

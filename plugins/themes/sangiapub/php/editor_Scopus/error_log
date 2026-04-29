@@ -1,0 +1,165 @@
+[13-Jun-2025 15:56:57 Asia/Jakarta] DEBUG: Author API response: {"error":"API call failed after 3 retries"}
+[13-Jun-2025 15:56:57 Asia/Jakarta] DEBUG: Author API failed or no data
+[13-Jun-2025 15:56:57 Asia/Jakarta] DEBUG: Processing authors for doc: Integrated waste management based on sustainable approaches, methods and systems in Sinjai regency
+[13-Jun-2025 15:56:57 Asia/Jakarta] DEBUG: Fallback to dc:creator: Falah F.
+[13-Jun-2025 15:56:57 Asia/Jakarta] DEBUG: givenName='', surname='', indexedName='Falah F.'
+[13-Jun-2025 15:56:57 Asia/Jakarta] DEBUG: Final authors count: 1
+[13-Jun-2025 15:56:58 Asia/Jakarta] DEBUG: Processing authors for doc: Distribution ofiChlorophyll-auConcentration in Biak Numfor WatersaandmIts Impact onnBullet TunanCatch (Auxis rochei Risso, 1810)
+[13-Jun-2025 15:56:58 Asia/Jakarta] DEBUG: Fallback to dc:creator: Katiandagho B.
+[13-Jun-2025 15:56:58 Asia/Jakarta] DEBUG: givenName='', surname='', indexedName='Katiandagho B.'
+[13-Jun-2025 15:56:58 Asia/Jakarta] DEBUG: Final authors count: 1
+[13-Jun-2025 15:56:58 Asia/Jakarta] DEBUG: Processing authors for doc: THE ROLE OF WOMEN IN CONFLICT RESOLUTION ON THE UTILISATION OF CAPTURE FISHERIES RESOURCES IN THE COASTAL AREA OF SOUTH SULAWESI
+[13-Jun-2025 15:56:58 Asia/Jakarta] DEBUG: Fallback to dc:creator: Lukman D.
+[13-Jun-2025 15:56:58 Asia/Jakarta] DEBUG: givenName='', surname='', indexedName='Lukman D.'
+[13-Jun-2025 15:56:58 Asia/Jakarta] DEBUG: Final authors count: 1
+[13-Jun-2025 15:56:59 Asia/Jakarta] DEBUG: Processing authors for doc: Mapping of Sapuka Islands water areas, South Sulawesi, Indonesia using Marxan technology for coral reef conservation
+[13-Jun-2025 15:56:59 Asia/Jakarta] DEBUG: Fallback to dc:creator: Jaya J.
+[13-Jun-2025 15:56:59 Asia/Jakarta] DEBUG: givenName='', surname='', indexedName='Jaya J.'
+[13-Jun-2025 15:56:59 Asia/Jakarta] DEBUG: Final authors count: 1
+[13-Jun-2025 15:56:59 Asia/Jakarta] DEBUG: Processing authors for doc: Types and Forms of Fishermen Conflicts in the Utilization of Coastal Resources in Maros Regency, South Sulawesi Province
+[13-Jun-2025 15:56:59 Asia/Jakarta] DEBUG: Fallback to dc:creator: Daris L.
+[13-Jun-2025 15:56:59 Asia/Jakarta] DEBUG: givenName='', surname='', indexedName='Daris L.'
+[13-Jun-2025 15:56:59 Asia/Jakarta] DEBUG: Final authors count: 1
+[13-Jun-2025 15:57:00 Asia/Jakarta] DEBUG: Processing authors for doc: Ethnoconservation of fishery resources in the Sapuka Islands, South Sulawesi Province, Indonesia
+[13-Jun-2025 15:57:00 Asia/Jakarta] DEBUG: Fallback to dc:creator: Massiseng A.N.A.
+[13-Jun-2025 15:57:00 Asia/Jakarta] DEBUG: givenName='', surname='', indexedName='Massiseng A.N.A.'
+[13-Jun-2025 15:57:00 Asia/Jakarta] DEBUG: Final authors count: 1
+[13-Jun-2025 15:57:01 Asia/Jakarta] DEBUG: Processing authors for doc: Characteristics of plastic waste and perceptions of coastal communities in the Baluno mangrove ecotourism area, West Sulawesi, Indonesia
+[13-Jun-2025 15:57:01 Asia/Jakarta] DEBUG: Fallback to dc:creator: Massiseng A.N.A.
+[13-Jun-2025 15:57:01 Asia/Jakarta] DEBUG: givenName='', surname='', indexedName='Massiseng A.N.A.'
+[13-Jun-2025 15:57:01 Asia/Jakarta] DEBUG: Final authors count: 1
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: Processing authors for doc: The impact of fishermen’s conflict on the sustainability of crab (Portunus pelagicus) resources in the coastal areas of Maros District, South Sulawesi, Indonesia
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: Fallback to dc:creator: Daris L.
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: givenName='', surname='', indexedName='Daris L.'
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: Final authors count: 1
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: Processing authors for doc: Stakeholder roles in the baluno mangrove learning center ecotourism
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: Fallback to dc:creator: Fachry M.E.
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: givenName='', surname='', indexedName='Fachry M.E.'
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: Final authors count: 1
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: Processing authors for doc: Coastal area management strategy priority of mangrove ecotourism in makassar city and its impact on aquatic organisms
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: Fallback to dc:creator: Daris L.
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: givenName='', surname='', indexedName='Daris L.'
+[13-Jun-2025 15:57:02 Asia/Jakarta] DEBUG: Final authors count: 1
+[13-Jun-2025 15:57:06 Asia/Jakarta] DEBUG: Processing authors for doc: A dynamic simulation of mangrove ecotourism management at the Lantebung of Makassar City
+[13-Jun-2025 15:57:06 Asia/Jakarta] DEBUG: Fallback to dc:creator: Massiseng A.N.A.
+[13-Jun-2025 15:57:06 Asia/Jakarta] DEBUG: givenName='', surname='', indexedName='Massiseng A.N.A.'
+[13-Jun-2025 15:57:06 Asia/Jakarta] DEBUG: Final authors count: 1
+[13-Jun-2025 16:15:25 Asia/Jakarta] PHP Parse error:  syntax error, unexpected '?' in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/editorInScopus_v31.php on line 498
+[13-Jun-2025 17:27:40 Asia/Jakarta] PHP Parse error:  syntax error, unexpected ',' in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/editorInScopus_v31.php on line 774
+[13-Jun-2025 18:40:49 Asia/Jakarta] PHP Parse error:  syntax error, unexpected '>' in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/editorInScopus_v31.php on line 426
+[13-Jun-2025 18:48:36 Asia/Jakarta] PHP Parse error:  syntax error, unexpected '>' in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/editorInScopus_v31.php on line 426
+[27-Jun-2025 14:26:24 Asia/Jakarta] PHP Parse error:  syntax error, unexpected '}' in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 649
+[27-Jun-2025 14:26:28 Asia/Jakarta] PHP Parse error:  syntax error, unexpected '}' in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 649
+[27-Jun-2025 14:26:30 Asia/Jakarta] PHP Parse error:  syntax error, unexpected '}' in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 649
+[27-Jun-2025 14:33:28 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:33:32 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:33:41 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:33:47 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:33:52 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:33:56 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:34:03 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:34:14 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:34:21 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:34:26 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:34:29 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:34:33 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:34:43 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:34:46 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:34:50 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:34:53 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:37:08 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:37:09 Asia/Jakarta] PHP Fatal error:  Call to undefined function getOpenAlexWorkWithOA() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 794
+[27-Jun-2025 14:37:16 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:37:17 Asia/Jakarta] PHP Fatal error:  Call to undefined function getOpenAlexWorkWithOA() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 794
+[27-Jun-2025 14:37:35 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:37:40 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:37:48 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:37:54 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:37:57 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:38:00 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:38:09 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:38:19 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:38:26 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:38:29 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:38:34 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:38:38 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:38:49 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:38:52 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:38:56 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 14:39:01 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:14:28 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:14:32 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:14:41 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:14:47 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:14:50 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:14:53 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:15:01 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:15:12 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:15:19 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:15:22 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:15:26 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:15:29 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:15:40 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:15:43 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:15:49 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:15:52 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:36:20 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:36:26 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:36:42 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:36:51 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:36:56 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:36:59 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:37:04 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:37:10 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:37:13 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:37:20 Asia/Jakarta] PHP Warning:  Invalid argument supplied for foreach() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 123
+[27-Jun-2025 15:46:47 Asia/Jakarta] PHP Fatal error:  Cannot redeclare detectOpenAccessStatus() (previously declared in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:403) in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 497
+[27-Jun-2025 15:49:52 Asia/Jakarta] PHP Fatal error:  Cannot redeclare detectOpenAccessStatus() (previously declared in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:403) in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 497
+[09-Nov-2025 09:15:26 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30
+[09-Nov-2025 09:15:53 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30
+[09-Nov-2025 09:16:18 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30
+[09-Nov-2025 09:21:25 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30
+[09-Nov-2025 09:26:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30
+[09-Nov-2025 09:31:38 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30
+[09-Nov-2025 09:36:45 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30
+[09-Nov-2025 09:41:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30
+[09-Nov-2025 09:46:59 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30
+[09-Nov-2025 09:52:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30
+[09-Nov-2025 09:57:11 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30
+[09-Nov-2025 10:02:17 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php:30
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/editor_Scopus/UserScopus_v32.php on line 30

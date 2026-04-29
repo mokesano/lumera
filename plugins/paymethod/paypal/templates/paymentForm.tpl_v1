@@ -1,0 +1,61 @@
+{**
+ * plugins/paymethod/paypal/templates/paymentForm.tpl
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2006-2009 Gunther Eysenbach, Juan Pablo Alperin
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * Form for submitting a PayPal payment
+ *}
+{strip}
+{assign var="pageTitle" value="plugins.paymethod.paypal"}
+{include file="common/header.tpl"}
+{/strip}
+
+<img src="{$baseUrl}/plugins/paymethod/paypal/images/paypal_cards.png" alt="paypal" />
+
+<p>{translate key="plugins.paymethod.paypal.warning"}</p>
+
+{* --- BLOK 1: JIKA ERROR (KONFIGURASI KOSONG) --- *}
+{if $paypalError}
+    <div style="background-color: #F8D7DA; color: #721C24; padding: 20px; border: 1px solid #F5C6CB; border-radius: 5px; margin-bottom: 20px;">
+        <h3>{translate key="common.error"}</h3>
+        <p>{$message}</p>
+        <p><em>(Debug Info: Database entry for 'clientId' is missing)</em></p>
+    </div>
+
+{* --- BLOK 2: JIKA NORMAL (TAMPILKAN FORM) --- *}
+{else}
+<form action="{$paypalFormUrl}" id="paypalPaymentForm" method="post" style="margin-bottom: 0px;">
+	{include file="common/formErrors.tpl"}
+	{if $params.item_name}
+	<table class="data" width="100%">
+		<tr>
+			<td class="label" width="20%">{translate key="plugins.paymethod.paypal.purchase.title"}</td>
+			<td class="value" width="80%"><strong>{$params.item_name|escape}</strong></td>
+		</tr>
+	</table>
+	{/if}
+	{if $params.amount}
+	<table class="data" width="100%">
+		<tr>
+			<td class="label" width="20%">{translate key="plugins.paymethod.paypal.purchase.fee"}</td>
+			<td class="value" width="80%"><strong>{$params.amount|string_format:"%.2f"}{if $params.currency_code} ({$params.currency_code|escape}){/if}</strong></td>
+		</tr>
+	</table>
+	{/if}
+	{foreach from=$params key="name" item="value"}
+		<input type="hidden" name="{$name|escape}" value="{$value|escape}" />
+	{/foreach}
+
+	{if $params.item_description}
+	<div class="data bold">
+		<p class="non-label">{$params.item_description|nl2br}</p>
+	</div>
+	{/if}
+	
+	<p><input type="submit" name="submitBtn" value="{translate key="common.continue"}" class="button defaultButton" /></p>
+</form>
+{/if} {* End if paypalError *}
+
+{include file="common/footer.tpl"}

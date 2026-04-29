@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/sk_SK/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the sk_SK (Slovenčina) locale.
+  *
+  -->
+
+<locale name="sk_SK" full_name="Slovenčina">
+	<message key="installer.additionalLocales">Dodatočné lokalizácie</message>
+	<message key="installer.administratorAccount">Účet administrátora</message>
+	<message key="installer.administratorAccountInstructions">Tento používateľský účet sa stane administrátorom stránky a bude mať plný prístup k systému. Po inštalácii je možné vytvoriť ďalšie používateľské účty.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="pkp_form_error formError">NIE</span>]]></message>
+	<message key="installer.checkYes">Áno</message>
+	<message key="installer.clientCharset">Znaková sada klienta</message>
+	<message key="installer.clientCharsetInstructions">Kódovanie používané pre dáta odosielané a prijímané z prehliadačov.</message>
+	<message key="installer.configFileError"><![CDATA[Konfiguračný súbor <tt>config.inc.php</tt> neexistuje alebo nie je čitateľný.]]></message>
+	<message key="installer.connectionCharset">Znaková sada pripojenia</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[Kódovanie používané pre dáta odosielané do databázy a prijímané z databázy. Malo by byť rovnaké ako znaková sada klienta. Upozorňujeme, že táto funkcia je podporovaná iba s MySQL >= 5.x alebo PostgreSQL >= 8.x. Vyberte "Neaplikovateľné", ak váš databázový server nespĺňa tieto požiadavky.]]></message>
+	<message key="installer.contentsOfConfigFile">Obsah konfiguračného súboru</message>
+	<message key="installer.createDatabase">Vytvoriť novú databázu</message>
+	<message key="installer.createDatabaseInstructions">Na použitie tejto možnosti musí váš databázový systém podporovať vzdialené vytváranie databáz a váš používateľský účet musí mať príslušné oprávnenia na vytváranie nových databáz. Ak inštalácia zlyhá s touto vybranou možnosťou, vytvorte databázu manuálne na vašom serveri a spustite inštalátor znova s touto možnosťou vypnutou.</message>
+	<message key="installer.databaseCharset">Znaková sada databázy</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[Kódovanie používané pre dáta uložené v databáze. Upozorňujeme, že táto funkcia je podporovaná iba s MySQL >= 5.x alebo PostgreSQL >= 8.x. Vyberte "Neaplikovateľné", ak váš databázový server nespĺňa tieto požiadavky.]]></message>
+	<message key="installer.databaseDriver">Ovládač databázy</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>Systém v súčasnosti podporuje iba MySQL a PostgreSQL. V prípade, že nemôžete vybrať žiadnu z nich, kontaktujte svojho systémového administrátora, aby ste sa uistili, že váš server má potrebné PHP rozšírenia.</strong>]]></message>
+	<message key="installer.databaseHost">Hostiteľ</message>
+	<message key="installer.databaseHostInstructions">Nechajte názov hostiteľa prázdny pre pripojenie pomocou doménových soketov namiesto TCP/IP. Toto nie je potrebné s MySQL, ktorý automaticky použije sokety, ak je zadané "localhost", ale je potrebné s niektorými inými databázovými servermi, ako je PostgreSQL.</message>
+	<message key="installer.databaseName">Názov databázy</message>
+	<message key="installer.databasePassword">Heslo</message>
+	<message key="installer.databaseSettings">Nastavenia databázy</message>
+	<message key="installer.databaseUsername">Používateľské meno</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Šifrovanie hesiel používa <strong>bcrypt</strong> — bezpečný hashovací algoritmus, ktorý je priemyselným štandardom. Nie je potrebná žiadna dodatočná konfigurácia.]]></message>
+	<message key="installer.encryption">Algoritmus šifrovania hesla</message>
+
+	<!-- Installer -->
+	<message key="installer.appInstallation">Inštalácia ScholarWizdam</message>
+	<message key="installer.appUpgrade">Aktualizácia ScholarWizdam</message>
+	
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>ScholarWizdam verzia {$version}</h4>
+
+<p>Ďakujeme za stiahnutie <strong>ScholarWizdam</strong> od Sangia Publishing House. Pred pokračovaním si prosím prečítajte súbor <a href="{$baseUrl}/docs/README" target="_blank">README</a>, ktorý je súčasťou tohto softvéru. Viac informácií o Sangia Publishing House (SPH) a jeho softvérových projektoch nájdete na <a href="http://wizdam.sangia.org/" target="_blank">webovej stránke SPH</a>. Ak máte hlásenia o chybách alebo otázky týkajúce sa technickej podpory pre ScholarWizdam, navštívte <a href="http://forum.wizdam.sangia.org" target="_blank">fórum podpory</a> alebo online <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">systém hlásenia chýb</a> SPH. Hoci je fórum podpory preferovanou metódou kontaktu, môžete tiež poslať e-mail tímu na adresu <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[Šifrovanie hesiel používa <strong>bcrypt</strong> — bezpečný hashovací algoritmus, ktorý je priemyselným štandardom. Nie je potrebná žiadna dodatočná konfigurácia.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Aktualizácia</h4>
+
+<p>Ak aktualizujete existujúcu inštaláciu ScholarWizdam alebo z predchádzajúcich verzií, <a href="{$upgradeUrl}">kliknite sem</a> pre pokračovanie.</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Odporúčané systémové požiadavky</h4>
+
+<ul>
+	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; aktuálne používate PHP {$phpVersion}{$wrongPhpText}</li>
+	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x alebo <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (vrátane PostgreSQL 8.x)</li>
+	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x alebo >= 2.0.4x alebo Microsoft IIS 6</li>
+	<li>Operačný systém: Akýkoľvek operačný systém, ktorý podporuje vyššie uvedený softvér, vrátane <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+</ul>
+
+<p>Keďže SPH nemá zdroje na testovanie všetkých možných kombinácií verzií softvéru a platforiem, neposkytuje sa žiadna záruka správnej funkčnosti ani podpory.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>Zmeny týchto nastavení je možné vykonať po inštalácii úpravou súboru <tt>config.inc.php</tt> v základnom adresári ScholarWizdam alebo pomocou webového rozhrania správy stránky.</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Podporované databázové systémy</h4>
+
+<p>ScholarWizdam bol doteraz testovaný iba na MySQL a PostgreSQL, hoci iné systémy správy databáz podporované <a href="http://adodb.org/" target="_blank">ADOdb</a> môžu fungovať (úplne alebo čiastočne). Správy o kompatibilite a/alebo opravy kódu pre alternatívne DBMS môžu byť zaslané tímu ScholarWizdam.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Kroky pred inštaláciou</h4>
+
+<p>1. Nasledujúce súbory a adresáre (a ich obsah) musia byť zapisovateľné:</p>
+<ul>
+	<li><tt>config.inc.php</tt> je zapisovateľný (voliteľné): {$writable_config}</li>
+	<li><tt>public/</tt> je zapisovateľný: {$writable_public}</li>
+	<li><tt>cache/</tt> je zapisovateľný: {$writable_cache}</li>
+	<li><tt>cache/t_cache/</tt> je zapisovateľný: {$writable_templates_cache}</li>
+	<li><tt>cache/t_compile/</tt> je zapisovateľný: {$writable_templates_compile}</li>
+	<li><tt>cache/_db</tt> je zapisovateľný: {$writable_db_cache}</li>
+</ul>
+
+<p>2. Adresár na ukladanie nahraných súborov musí byť vytvorený a musí byť zapisovateľný (pozri "Nastavenia súborov" nižšie).</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>ScholarWizdam verzia {$version}</h4>
+	
+<p>Ďakujeme za stiahnutie <strong>ScholarWizdam</strong> od Sangia Publishing House. Pred pokračovaním si prosím prečítajte súbory <a href="{$baseUrl}/docs/README" target="_blank">README</a> a <a href="{$baseUrl}/docs/UPGRADE" target="_blank">UPGRADE</a>, ktoré sú súčasťou tohto softvéru. Viac informácií o Sangia Publishing House (SPH) a jeho softvérových projektoch nájdete na <a href="http://wizdam.sangia.org/" target="_blank">webovej stránke SPH</a>. Ak máte hlásenia o chybách alebo otázky týkajúce sa technickej podpory pre ScholarWizdam, navštívte <a href="http://forum.wizdam.sangia.org" target="_blank">fórum podpory</a> alebo online <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">systém hlásenia chýb</a> SPH. Hoci je fórum podpory preferovanou metódou kontaktu, môžete tiež poslať e-mail tímu na adresu <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+<p><strong>Dôrazne sa odporúča</strong> vytvoriť zálohu vašej databázy, adresára so súbormi a inštalačného adresára ScholarWizdam pred pokračovaním.</p>
+<p>Ak pracujete v <a href="http://www.php.net/features.safe-mode" target="_blank">PHP Safe Mode</a>, uistite sa, že direktíva max_execution_time vo vašom konfiguračnom súbore php.ini je nastavená na vysoký limit. Ak sa dosiahne tento alebo akýkoľvek iný časový limit (napr. direktíva "Timeout" Apache) a proces aktualizácie sa preruší, bude potrebný manuálny zásah.</p>]]></message>
+	<message key="installer.localeSettingsInstructions"><![CDATA[Pre úplnú podporu Unicode (UTF-8) vyberte UTF-8 pre všetky nastavenia znakových sád. Upozorňujeme, že táto podpora v súčasnosti vyžaduje databázový server MySQL >= 5.x alebo PostgreSQL >= 8.x. Upozorňujeme tiež, že úplná podpora Unicode vyžaduje PHP >= 7.4.0 skompilovaný s podporou pre knižnicu <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> (štandardne povolené vo väčšine najnovších inštalácií PHP). Ak váš server nespĺňa tieto požiadavky, môžete mať problémy pri používaní rozšírených znakových sád.
+<br /><br />
+Váš server v súčasnosti podporuje mbstring: <strong>{$supportsMBString}</strong>]]></message>
+	<message key="installer.allowFileUploads"><![CDATA[Váš server v súčasnosti povoľuje nahrávanie súborov: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[Váš server v súčasnosti povoľuje maximálnu veľkosť nahrávaného súboru: <strong>{$maxFileUploadSize}</strong>]]></message>
+	<message key="installer.localeInstructions">Primárny jazyk používaný pre tento systém. Ak máte záujem o podporu jazykov, ktoré nie sú uvedené tu, pozrite si dokumentáciu ScholarWizdam.</message>
+	<message key="installer.additionalLocalesInstructions">Vyberte ďalšie jazyky, ktoré chcete podporovať v tomto systéme. Tieto jazyky budú k dispozícii na použitie časopismi hostenými na stránke. Ďalšie jazyky je možné kedykoľvek nainštalovať z rozhrania správy stránky.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Zadajte úplnú cestu k existujúcemu adresáru, kde sa majú uchovávať nahrané súbory. Tento adresár by nemal byť priamo prístupný cez web. <strong>Pred inštaláciou sa uistite, že tento adresár existuje a je zapisovateľný.</strong> Názvy ciest v systéme Windows by mali používať lomky dopredu, napr. "C:/myjournal/files".]]></message>
+	<message key="installer.databaseSettingsInstructions">ScholarWizdam vyžaduje prístup k SQL databáze na ukladanie svojich údajov. Pozrite si vyššie uvedené systémové požiadavky pre zoznam podporovaných databáz. V poliach nižšie zadajte nastavenia, ktoré sa majú použiť na pripojenie k databáze.</message>
+	<message key="installer.installApplication">Nainštalovať ScholarWizdam</message>
+	<message key="installer.upgradeApplication">Aktualizovať ScholarWizdam</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Upozornenie:</strong> Ak inštalácia zlyhala počas inštalácie databázy, možno budete musieť odstrániť vašu databázu ScholarWizdam alebo databázové tabuľky pred pokusom o preinštalovanie databázy.]]></message>
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>DÔLEŽITÉ!</h4>
+<p>Inštalátor nemohol automaticky prepísať konfiguračný súbor. Pred použitím systému otvorte <tt>config.inc.php</tt> vo vhodnom textovom editore a nahraďte jeho obsah obsahom textového poľa nižšie.</p>]]></message>
+	<message key="installer.installationComplete"><![CDATA[<p>Inštalácia ScholarWizdam bola úspešne dokončená.</p>
+<p>Ak chcete začať používať systém, <a href="{$loginUrl}">prihláste sa</a> s používateľským menom a heslom zadaným na predchádzajúcej stránke.</p>
+<p>Ak chcete dostávať novinky a aktualizácie, môžete:</p>
+<ol>
+	<li><a href="http://wizdam.sangia.org/wizdam/register" target="_new">Zaregistrovať</a> váš časopis, konferenciu alebo zberač a dostávať aktualizácie o vylepšeniach softvéru, bezpečnostných záplatách a ďalšie.</li>
+	<li>Pripojiť sa k našej <a href="http://wizdam.sangia.org/informed" target="_new">diskutnej listine</a> pre ScholarWizdam.</li>
+	<li>Prihlásiť sa na odber <a href="http://wizdam.sangia.org/blog" target="_new">blogu SPH</a> <a href="http://wizdam.sangia.org/blog/feed" target="_new">RSS kanál</a>.</li>
+</ol>
+<p>Ak máte otázky alebo pripomienky, navštívte <a href="http://forum.wizdam.sangia.org" target="_new">fórum podpory</a>.</p>]]></message>
+	<message key="installer.upgradeComplete"><![CDATA[<p>Aktualizácia ScholarWizdam na verziu {$version} bola úspešne dokončená.</p>
+<p>Nezabudnite nastaviť parameter "installed" vo vašom konfiguračnom súbore config.inc.php späť na hodnotu <em>On</em>.</p>
+<p>Ak ste ešte neregistrovaní a chcete dostávať novinky a aktualizácie, <strong>zaregistrujte sa na <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> Ak máte otázky alebo pripomienky, navštívte <a href="http://forum.wizdam.sangia.org" target="_new">fórum podpory</a>.</p>]]></message>
+
+	<message key="installer.filesDir">Adresár pre nahrávanie súborov</message>
+	<message key="installer.fileSettings">Nastavenia súborov</message>
+	<message key="installer.form.clientCharsetRequired">Musí byť vybraná znaková sada klienta.</message>
+	<message key="installer.form.databaseDriverRequired">Musí byť vybraný ovládač databázy.</message>
+	<message key="installer.form.databaseNameRequired">Názov databázy je povinný.</message>
+	<message key="installer.form.emailRequired">Platná e-mailová adresa pre účet administrátora je povinná.</message>
+	<message key="installer.form.encryptionRequired">Musí byť vybraný algoritmus na šifrovanie používateľských hesiel.</message>
+	<message key="installer.form.filesDirRequired">Adresár na ukladanie nahraných súborov je povinný.</message>
+	<message key="installer.form.localeRequired">Musí byť vybraná lokalizácia.</message>
+	<message key="installer.form.passwordRequired">Heslo pre účet administrátora je povinné.</message>
+	<message key="installer.form.passwordsDoNotMatch">Heslá administrátora sa nezhodujú.</message>
+	<message key="installer.form.separateMultiple">Oddeľte viacnásobné hodnoty čiarkami</message>
+	<message key="installer.form.usernameAlphaNumeric">Používateľské meno administrátora môže obsahovať iba alfanumerické znaky, podčiarkovníky a spojovníky a musí začínať a končiť alfanumerickým znakom.</message>
+	<message key="installer.form.usernameRequired">Používateľské meno pre účet administrátora je povinné.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>UPOZORNENIE:</strong> Vaša aktuálna verzia PHP nespĺňa minimálne požiadavky na inštaláciu. Odporúča sa aktualizovať na novšiu verziu PHP.]]></message>
+	<message key="installer.installErrorsOccurred">Počas inštalácie sa vyskytli chyby</message>
+	<message key="installer.installerSQLStatements">SQL príkazy pre inštaláciu</message>
+	<message key="installer.installFileError"><![CDATA[Inštalačný súbor <tt>dbscripts/xml/install.xml</tt> neexistuje alebo nie je čitateľný.]]></message>
+	<message key="installer.installFilesDirError">Adresár určený pre nahrané súbory neexistuje alebo nie je zapisovateľný.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Chyba pri spracovaní inštalačného súboru databázy <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[Chyba pri spracovaní súboru šablón e-mailov <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[Chyba pri spracovaní konfiguračného súboru filtra <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Lokalizácia</message>
+	<message key="installer.locale.maybeIncomplete">Označené lokalizácie môžu byť neúplné.</message>
+	<message key="installer.localeSettings">Nastavenia lokalizácie</message>
+	<message key="installer.miscSettings">Rôzne nastavenia</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[Jedinečný identifikátor používaný na identifikáciu záznamov metadát indexovaných z tejto stránky pomocou protokolu <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a> pre zber metadát.]]></message>
+	<message key="installer.oaiRepositoryId">Identifikátor OAI repozitára</message>
+	<message key="installer.oaiSettings">Nastavenia OAI</message>
+	<message key="installer.publicFilesDirError">Adresár verejných súborov neexistuje alebo nie je zapisovateľný.</message>
+	<message key="installer.releaseNotes">Poznámky k vydaniu</message>
+	<message key="installer.securitySettings">Bezpečnostné nastavenia</message>
+	<message key="installer.beacon">Maják</message>
+	<message key="installer.beacon.enable">Poskytnite jedinečné ID stránky a základnú URL adresu OAI spoločnosti Sangia Publishing House výlučne na štatistické účely a bezpečnostné upozornenia.</message>
+	
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[Je k dispozícii nová verzia ScholarWizdam! Momentálne používate ScholarWizdam {$currentVersion}. Najnovšia verzia je ScholarWizdam {$latestVersion}. Navštívte <a href="http://wizdam.sangia.org/download" target="_new">túto stránku</a> a stiahnite si najnovšiu verziu a nájdite pokyny na aktualizáciu.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[Je k dispozícii nová verzia ScholarWizdam! Momentálne používate ScholarWizdam {$currentVersion}. Najnovšia verzia je ScholarWizdam {$latestVersion}. Kontaktujte svojho správcu stránky ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) a upovedomte ho o tomto novom vydaní. Viac informácií nájdete <a href="http://wizdam.sangia.org/download" target="_new">tu</a>.]]></message>
+</locale>

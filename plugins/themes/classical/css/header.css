@@ -1,0 +1,51 @@
+#header {
+ margin-top:0em;
+ padding-top:0em;
+ padding-bottom:0em;
+ margin-bottom:-2.4em;
+ min-height:10px;
+ text-align:left;
+ max-width:1440px;
+ border-bottom:30px solid #dcdcdc;
+ border-top:4px solid #e9711c;
+ font-family:Roboto,sans-serif
+}
+#header h1,#header img {
+ vertical-align:top;
+ display:inline-block;
+ margin-left:auto;
+ margin:1.2%;
+ margin-left:4.5%;
+ font-weight:600;
+ font-family:"Europa",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+ line-height:.987em
+}
+#headerTitle {
+ padding:0em;
+ max-width:1440px;
+ color:#1b3051;
+ font-weight:700;
+ line-height:1.32789em;
+ font-family:"Europa",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+ font-family: Roboto,sans-serif;
+ font-size: 1.6rem;
+}
+#headerTitle figure {
+ max-width:1440px;
+ margin:0%;
+ font-family:"Europa",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif
+}
+#headerTitle figure img {
+ width:100%;
+ height:auto
+}
+#headerTitle a {
+ color:#1b3051;
+ font-weight: 700;
+ font-family: "Europa",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+ font-family: Roboto,sans-serif;
+ font-size: 1.7rem;
+}
+#headerTitle a:hover,a:focus {
+ text-decoration:underline
+}

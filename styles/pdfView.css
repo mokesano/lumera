@@ -1,0 +1,233 @@
+/**
+ * styles/pdfView.css
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2003-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * PDF inline viewer stylesheet.
+ */
+
+#inlinePdfResizer {
+	width: 98%;
+	height: 400px;
+	padding: 1px 0px 1px 1px;
+}
+
+#pluginMissing{
+	font-size: 1.4em;
+	padding: 10px;
+}
+#pluginMissing a {
+	text-decoration: underline;
+}
+
+#inlinePdf {
+	width:99%;
+	height:99%;
+	padding: 1px 0px 1px 1px;
+}
+
+#inlinePdf.fullscreen {
+	position: fixed;
+	width: 97%;
+	height: 95%;
+	left: 20px;
+	top: 7px;
+	z-index: 1002;
+}
+
+#pdfDownloadLinkContainer {
+	text-align: right;
+	/*! padding: 5px; */
+	z-index: 2;
+	position: relative;
+}
+
+a.pdf {
+	/*! background: url(../lib/pkp/templates/images/structure/page_white_acrobat.png) no-repeat scroll 0 6px !important; */
+	padding: 3px 0 3px 23px;
+	font-size: 1.2em;
+	text-transform: none;
+}
+
+.action {
+    font-family: Nexus Sans,NexusSans,Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
+}
+
+.black_overlay{
+	display: none;
+	position: absolute;
+	top: 0%;
+	left: 0%;
+	width: 100%;
+	height: 2000px; /* 100% only fills window, not page, causing potential display issues */
+	background-color: black;
+	z-index:1001;
+	-moz-opacity: 0.7;
+	opacity:.70;
+	filter: alpha(opacity=70);
+}
+
+.header_view {
+    z-index: 2;
+    position: relative;
+    background: #2f2f2f;
+    font-family: NexusSerif,Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
+}
+
+.header_view a {
+    line-height: 27px;
+    text-decoration: none;
+}
+
+.header_view .return {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30px;
+    height: 26px;
+    line-height: 26px;
+    background: #fff;
+    /*color: #474747;*/
+    text-align: center;
+}
+
+.header_view .return:hover,
+.header_view .return:focus {
+    background:#2e2e2e;
+    color:#fff
+}
+
+.header_view .return::before {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translate(0, 0);
+    line-height: unset;
+    content: "\f060";
+}
+
+.pkp_screen_reader {
+    clip: rect(1px, 1px, 1px, 1px);
+    position: absolute !important;
+    left: -2000px;
+}
+
+.header_view .title {
+    display: block;
+    padding-left: 40px;
+    max-width: 100%;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    color: #fff;
+    text-align: start;
+}
+
+.header_view .title:hover,
+.header_view .title:focus {
+    color: #d5d5d5;
+    color: #d83b5b;
+    color: #ee6911;
+    background-color: transparent;
+}
+
+.header_view .download {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    background: #fff;
+    text-align: center;
+}
+
+.header_view .download:hover,
+.header_view .download:focus {
+    background:#2e2e2e;
+    color:#fff
+}
+
+.header_view .download::before {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translate(0, 0);
+    content: "\f019";
+}
+
+@media (min-width:768px) {
+  .header_view .title {
+    font-size:16px;
+  }
+  .header_view .download {
+    width:auto;
+    padding:0 20px
+  }
+  .header_view .download .label {
+    display:inline-block;
+    color: inherit;
+    margin-left: 7px;
+    font-size: 16px;
+  }
+  .header_view .download .pkp_screen_reader,
+  .header_view .download .pkp_page_index .cmp_announcements h2 {
+    display:none
+  }
+}
+
+@media only screen and (max-width:48em) {
+    a.pdf {
+        padding: 3px;
+    }
+    .header_view .download{
+        width: 30px;
+        height: 27px;
+        line-height: 26px;
+    }
+    .header_view .download .label {
+        display:none
+    }
+    .header_view .download:before {
+        padding: 3px;
+    }
+}
+
+#fullscreenShow {
+	display: none;
+	float: right;
+}
+
+#fullscreenHide {
+	padding: 2px;
+	background-color: white;
+	display: none;
+	position: fixed;
+	bottom: 3px;
+	right: 3px;
+	z-index: 1003;
+}
+
+.galley_view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: hidden;
+    z-index: 1;
+}
+
+.galley_view iframe {
+    width: 100%;
+    height: 100%;
+    padding-top: 27px;
+    border: none;
+}

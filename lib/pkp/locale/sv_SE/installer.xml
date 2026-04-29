@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/sv_SE/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the sv_SE (Svenska) locale.
+  *
+  -->
+
+<locale name="sv_SE" full_name="Svenska">
+	<message key="installer.additionalLocales">Fler lokalinställningar</message>
+	<message key="installer.administratorAccount">Administratörskonto</message>
+	<message key="installer.administratorAccountInstructions">Det här användarkontot kommer att bli Sidaministratörens och kommer att ha fullständig tillgång till systemet. Ytterligare konton kan skapas efter installationen.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="pkp_form_error formError">NEJ</span>]]></message>
+	<message key="installer.checkYes">Ja</message>
+	<message key="installer.clientCharset">Teckeninställningar för klienten</message>
+	<message key="installer.clientCharsetInstructions">Encoding för data som skickas till och mottas av webbläsaren.</message>
+	<message key="installer.configFileError"><![CDATA[Konfigurationsfilen <tt>config.inc.php</tt> existerar inte eller går inte att läsa.]]></message>
+	<message key="installer.connectionCharset">Connection teckeninställning</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[Encoding för data som skickas till, och mottas av databasen. Denna bör vara samma som klientens teckeninställning. Observera att denna möjlighet endast stöds av MySQL >= 5.x eller PostgreSQL >= 8.x. Välj "Ej tillgänglig" om din databas inte uppfyller kraven.]]></message>
+	<message key="installer.contentsOfConfigFile">Innehåll i konfigurationsfilen</message>
+	<message key="installer.createDatabase">Skapa ny databas</message>
+	<message key="installer.createDatabaseInstructions">För att göra det här valet så måste din databas stödja remote database creation och ditt användarkonto måste ha befogenhet att skapa nya databaser. Om installationen skulle misslyckas, skapa databasen manuellt på din server och kör installationen igen, med det här valet inaktiverat.</message>
+	<message key="installer.databaseCharset">Database teckeninställning</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[Encoding för data lagrad i databasen. Observera att denna möjlighet endast stöds av MySQL >= 5.x eller PostgreSQL >= 8.x. Välj "Ej tillgänglig" om din databas inte uppfyller kraven.]]></message>
+	<message key="installer.databaseDriver">Databasdrivrutin</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>Systemet stöder för närvarande endast MySQL och PostgreSQL. Om du inte kan välja någon av dem, kontakta din systemadministratör för att säkerställa att din server har de nödvändiga PHP-tilläggen.</strong>]]></message>
+	<message key="installer.databaseHost">Värd</message>
+	<message key="installer.databaseHostInstructions">Lämna värdnamnet blankt för att upprätta förbindelse genom domänsockets istället för över TCP/IP. Detta är inte nödvändigt med MySQL, som med automatik kommer använda sockets om "localhost" är angett, men är obligatoriskt hos andra databaserservrar, t.ex. PostgreSQL.</message>
+	<message key="installer.databaseName">Namn på databasen</message>
+	<message key="installer.databasePassword">Lösenord</message>
+	<message key="installer.databaseSettings">Databasinställningar</message>
+	<message key="installer.databaseUsername">Användarnamn</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Lösenordskryptering använder <strong>bcrypt</strong> — en säker hash-algoritm som är branschstandard. Ingen ytterligare konfiguration krävs.]]></message>
+	<message key="installer.encryption">Krypteringsalgoritm för lösenord</message>
+
+	<!-- Installer -->
+	<message key="installer.appInstallation">Installation av ScholarWizdam</message>
+	<message key="installer.appUpgrade">Uppgradering av ScholarWizdam</message>
+	
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>ScholarWizdam Version {$version}</h4>
+    
+    <p>Tack för att du laddar ned <strong>ScholarWizdam</strong> från Sangia Publishing House. Innan du fortsätter, läs <a href="{$baseUrl}/docs/README" target="_blank">README</a> filen som medföljer mjukvaran. För ytterligare information om Sangia Publishing House (SPH), vänligen se <a href="http://wizdam.sangia.org/" target="_blank">SPH:s hemsida</a>. Om du vill rapportera buggar eller behöver teknisk support för ScholarWizdam, se <a href="http://forum.wizdam.sangia.org" target="_blank">supportforum</a> eller besök SPH:s online <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">system för buggrapportering</a>. Vi rekommenderar i första hand supportforumet om ni har frågor men det går också bra att maila supporten på: <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[Lösenordskryptering använder <strong>bcrypt</strong> — en säker hash-algoritm som är branschstandard. Ingen ytterligare konfiguration krävs.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Uppgradera</h4>
+    
+    <p>Om du uppgraderar en existerande installation av ScholarWizdam eller från tidigare versioner, <a href="{$upgradeUrl}">klicka här</a> för att gå vidare.</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Nödvändiga systemkrav</h4>
+    
+    <ul>
+    	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; du använder för närvarande PHP {$phpVersion}{$wrongPhpText}</li>
+    	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x eller <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (inklusive PostgreSQL 8.x)</li>
+    	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x eller >= 2.0.4x eller Microsoft IIS 6</li>
+    	<li>Operativsystem: Alla OS som stöder ovan nämnda programvara, även <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+    </ul>
+    
+    <p>Eftersom SPH inte har resurser att testa alla möjliga kombinationer och versioner av programvaror och plattformar, kan vi inte garantera 100% funktionalitet och support.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>Ändringar till de här inställningarna kan göras först efter installationen genom att redigera <tt>config.inc.php</tt> i ScholarWizdam basmapp, eller i gränssnittet för nätadministratören.</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Stöttade databassystem</h4>
+    
+    <p>ScholarWizdam har för tillfället endast testats på MySQL och PostgreSQL, även om andra databasadministrationssystem stöttade av <a href="http://adodb.org/" target="_blank">ADOdb</a> kan fungera (helt eller delvis). Kompatibilitetsrapporter och/eller kodkorrigeringar för alternativa DBMS kan skickas till ScholarWizdam-teamet.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Innan installationen</h4>
+    
+    <p>1. Följande filer och mappar (liksom innehållet) måste göras skrivbara:</p>
+    <ul>
+    	<li><tt>config.inc.php</tt> är skrivbar (valfri): {$writable_config}</li>
+    	<li><tt>public/</tt> är skrivbar: {$writable_public}</li>
+    	<li><tt>cache/</tt> är skrivbar: {$writable_cache}</li>
+    	<li><tt>cache/t_cache/</tt> är skrivbar: {$writable_templates_cache}</li>
+    	<li><tt>cache/t_compile/</tt> är skrivbar: {$writable_templates_compile}</li>
+    	<li><tt>cache/_db</tt> är skrivbar: {$writable_db_cache}</li>
+    </ul>
+    
+    <p>2. En mapp för lagring av uppladdade filer måste skapas och göras skrivbar (Se "Filinställningar" nedan).</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>ScholarWizdam Version {$version}</h4>
+    	
+    <p>Tack för att du laddar ned <strong>ScholarWizdam</strong> från Sangia Publishing House. Innan du fortsätter, vänligen läs <a href="{$baseUrl}/docs/README" target="_blank">README</a> och <a href="{$baseUrl}/docs/UPGRADE" target="_blank">UPGRADE</a> filerna som medföljer programvaran. För ytterligare information om Sangia Publishing House (SPH), se <a href="http://wizdam.sangia.org/" target="_blank">SPH:s hemsida</a>. Om du vill rapportera buggar eller behöver teknisk support för ScholarWizdam, se <a href="http://forum.wizdam.sangia.org" target="_blank">supportforum</a> eller besök SPH:s online <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">system för buggrapportering</a>. Vi rekommenderar i första hand supportforumet om ni har frågor men det går också bra att maila supporten på: <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+    <p>Det rekommenderas <strong>kraftigt</strong> att du gör backup på din databas, filmappen, och ScholarWizdam installationsmapp innan du fortsätter.</p>
+    <p>Om du kör installationen i <a href="http://www.php.net/features.safe-mode" target="_blank">PHP Safe Mode</a>, vänligen försäkra dig om att max_execution_time-direktivet i din php.ini konfigurationsfil är satt till ett högt gränsvärde. Om denna eller annan tidsbegränsning (ex. Apache's "Timeout" direktiv) överskrids och uppgraderingsprocessen avbryts, så måste arbetet hanteras manuellt.</p>]]></message>
+
+	<message key="installer.localeSettingsInstructions"><![CDATA[För fullständig Unicode (UTF-8) support, välj UTF-8 för samtliga teckeninställningar. Observera att denna support för tillfället kräver en MySQL >= 5.x eller PostgreSQL >= 8.x databasserver. Observera även att en fullständig Unicode support kräver PHP >= 7.4.0 med support för <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> bibliotek (aktiverad som standard i de senaste PHP-installationerna). Det kan uppstå problem med utökade teckeninställningar om inte servern uppfyller dessa krav.
+    <br /><br />
+    Din server stöds för tillfället av mbstring: <strong>{$supportsMBString}</strong>]]></message>
+    
+	<message key="installer.localeInstructions">Primärspråket som ska användas i det här systemet. Se ScholarWizdam-dokumentationen om du är intresserad av att använda språk som inte listas här.</message>
+	<message key="installer.additionalLocalesInstructions">Välj andra språk som ska stödjas av systemet. De här språken kommer finnas tillgängliga för användning i tidskrifter som sidan är värd för. Ytterligare språk kan installeras när som helst av Sidadministratören.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Lägg till fullständigt söknamn på en existerande mapp där uppladdade filer kan sparas. Mappen bör inte vara direkt tillgänglig från webben. <strong>Vänligen försäkra dig om att mappen existerar och är skrivbar, före installation.</strong> Windows sökvägar ska innehålla omvända snedstreck, ex. "C:/myjournal/files".]]></message>
+	<message key="installer.databaseSettingsInstructions">ScholarWizdam behöver tillgång till en SQL-databas för att lagra data. Se systemkrav ovan för en lista över databaser som stöds. I fälten nedan, ange inställningar som ska användas för uppkoppling till databasen.</message>
+	<message key="installer.installApplication">Installera ScholarWizdam</message>
+	<message key="installer.upgradeApplication">Uppgradera ScholarWizdam</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Varning:</strong> Om installationen misslyckades under själva installationen kan du tvingas 'släppa' din ScholarWizdam-databas eller dina databastabeller innan du kan försöka att återinstallera databasen.]]></message>
+	
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>VIKTIGT!</h4>
+    <p>Installationen kunde inte skriva över konfigurationsfilen automatiskt. Innan du försöker använda systemet, vänligen öppna <tt>config.inc.php</tt> i en lämplig textredigerare och ersätt innehållet med texten nedan.</p>]]></message>
+
+	<message key="installer.installationComplete"><![CDATA[<p>Installationen av ScholarWizdam är klar utan rapporterade problem.</p>
+    <p>För att använda systemet, <a href="{$loginUrl}">logga in</a> med det användarnamn och lösenord som du angivit på föregående sida.</p>
+    <p>Om du vill ta emot nyheter och uppdateringar, kan du:</p>
+    <ol>
+    	<li><a href="http://wizdam.sangia.org/wizdam/register" target="_new">Registrera</a> din tidskrift, konferens eller skördare och få uppdateringar om programuppgraderingar, säkerhetsuppdateringar och mer.</li>
+    	<li>Gå med i vår <a href="http://wizdam.sangia.org/informed" target="_new">diskussionslista</a> för ScholarWizdam.</li>
+    	<li>Prenumerera på <a href="http://wizdam.sangia.org/blog" target="_new">SPH:s blogg</a> <a href="http://wizdam.sangia.org/blog/feed" target="_new">RSS-flöde</a>.</li>
+    </ol>
+    <p>Om du har frågor eller kommentarer, gå till <a href="http://forum.wizdam.sangia.org" target="_new">supportforum</a>.</p>]]></message>
+
+	<message key="installer.upgradeComplete"><![CDATA[<p>Uppgradering av ScholarWizdam till version {$version} är klar utan rapporterade problem.</p>
+    <p>Glöm inte att ändra "installed"-inställningen i din config.inc.php konfigurationsfil till <em>On</em>.</p>
+    <p>Om du ännu inte har registrerat dig och önskar ta emot nyheter och uppdateringar, <strong>vänligen registrera dig på <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> Om du har frågor eller kommentarer, gå till <a href="http://forum.wizdam.sangia.org" target="_new">supportforum</a>.</p>]]></message>
+
+	<message key="installer.filesDir">Mapp för uppladdade filer</message>
+	<message key="installer.fileSettings">Filinställningar</message>
+	<message key="installer.form.clientCharsetRequired">Teckensnittsinställningar för klienten måste anges.</message>
+	<message key="installer.form.databaseDriverRequired">En databasdrivrutin måste anges.</message>
+	<message key="installer.form.databaseNameRequired">Ett namn på databasen måste anges.</message>
+	<message key="installer.form.emailRequired">En giltig e-postadress för administratörskontot är obligatoriskt.</message>
+	<message key="installer.form.encryptionRequired">Algoritm för kryptering av användarlösenord måste anges.</message>
+	<message key="installer.form.filesDirRequired">En mapp för lagring av uppladdade filer är obligatoriskt.</message>
+	<message key="installer.form.localeRequired">En lokalinställning måste anges.</message>
+	<message key="installer.form.passwordRequired">Ett lösenord för administratörskontot måste anges.</message>
+	<message key="installer.form.passwordsDoNotMatch">Administratörens lösenord är felaktigt.</message>
+	<message key="installer.form.separateMultiple">Separera flera värden med kommatecken (,)</message>
+	<message key="installer.form.usernameAlphaNumeric">Administratörens användarnamn får endast innehålla alfanumeriska tecken, understreck eller bindestreck, och måste inledas och avslutas med ett alfanumeriskt tecken.</message>
+	<message key="installer.form.usernameRequired">Ett användarnamn för administratörskontot måste anges.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>VARNING: Din nuvarande version av PHP uppfyller inte minimikraven för installation. Vi rekommenderar att du uppgraderar till en nyare version av PHP.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">Det uppstod fel under installationen</message>
+	<message key="installer.installerSQLStatements">SQL-frågor för installation</message>
+	<message key="installer.installFileError"><![CDATA[Installationsfilen <tt>dbscripts/xml/install.xml</tt> existerar inte, eller går inte att läsa.]]></message>
+	<message key="installer.installFilesDirError">Vald mapp för uppladdade filer existerar inte, eller är inte skrivbar.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Fel vid tolkning av databasinstallationsfilen <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[Fel vid tolkning av e-postmallfilen <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[Fel vid tolkning av filterkonfigurationsfilen <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Lokalinställning</message>
+	<message key="installer.locale.maybeIncomplete">Markerade lokalinställningar kan vara ofullständiga.</message>
+	<message key="installer.localeSettings">Lokala inställningar</message>
+	<message key="installer.miscSettings">Diverse inställningar</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[En unik identifikator används för att identifiera metadata-poster som indexerats från den här sidan med hjälp av <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a> Protocol for Metadata Harvesting.]]></message>
+	<message key="installer.oaiRepositoryId">OAI repository identifikator</message>
+	<message key="installer.oaiSettings">OAI-inställningar</message>
+	<message key="installer.publicFilesDirError">Mappen för publika filer existerar inte eller är inte skrivbar.</message>
+	<message key="installer.releaseNotes">Releasenyheter</message>
+	<message key="installer.securitySettings">Säkerhetsinställningar</message>
+	<message key="installer.allowFileUploads"><![CDATA[Din server tillåter för närvarande filuppladdningar: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[Din server tillåter för närvarande en maximal filuppladdningsstorlek på: <strong>{$maxFileUploadSize}</strong>]]></message>
+	<message key="installer.beacon">Beacon</message>
+	<message key="installer.beacon.enable">Ange en unik webbplats-ID och OAI-bas-URL till Sangia Publishing House endast för statistik och säkerhetsvarningar.</message>
+	
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[En ny version av ScholarWizdam finns tillgänglig! Du använder för närvarande ScholarWizdam {$currentVersion}. Den senaste versionen är ScholarWizdam {$latestVersion}. Besök <a href="http://wizdam.sangia.org/download" target="_new">den här sidan</a> för att ladda ner den senaste versionen och hitta uppgraderingsinstruktioner.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[En ny version av ScholarWizdam finns tillgänglig! Du använder för närvarande ScholarWizdam {$currentVersion}. Den senaste versionen är ScholarWizdam {$latestVersion}. Vänligen kontakta din webbplatsadministratör ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) för att informera dem om denna nya version. Mer information finns <a href="http://wizdam.sangia.org/download" target="_new">här</a>.]]></message>
+</locale>

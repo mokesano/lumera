@@ -1,0 +1,289 @@
+[15-Feb-2026 00:14:19 Asia/Jakarta] ORCID API Person Response for 0000-0002-2221-3010: HTTP Code 200
+[20-Apr-2026 01:07:05 Asia/Jakarta] ORCID API Person Response for 0000-0002-5152-9727: HTTP Code 200
+[20-Apr-2026 01:07:07 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.31524388: Data Crossref tidak valid
+[20-Apr-2026 01:07:08 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.31477375: Data Crossref tidak valid
+[20-Apr-2026 01:07:09 Asia/Jakarta] PHP Warning:  Undefined array key "Tidak Relevan" in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v4.php on line 1238
+[20-Apr-2026 01:07:10 Asia/Jakarta] PHP Warning:  Undefined array key "Tidak Relevan" in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v4.php on line 1238
+[20-Apr-2026 01:07:26 Asia/Jakarta] PHP Warning:  Undefined array key "Tidak Relevan" in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v4.php on line 1238
+[20-Apr-2026 01:07:29 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.6394373.v2: Data Crossref tidak valid
+[20-Apr-2026 01:07:32 Asia/Jakarta] Error fetching abstract for DOI 10.6084/M9.FIGSHARE.6394235: Data Crossref tidak valid
+[20-Apr-2026 01:07:35 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.6394235.v2: Data Crossref tidak valid
+[20-Apr-2026 01:07:36 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.6394235.v1: Data Crossref tidak valid
+[20-Apr-2026 01:07:36 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.6394235.v3: Data Crossref tidak valid
+[20-Apr-2026 01:07:37 Asia/Jakarta] Error fetching abstract for DOI 10.6084/M9.FIGSHARE.6394373: Data Crossref tidak valid
+[20-Apr-2026 01:07:38 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.6394373.v1: Data Crossref tidak valid
+[20-Apr-2026 01:07:48 Asia/Jakarta] PHP Warning:  Undefined array key "Tidak Relevan" in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v4.php on line 1238
+[20-Apr-2026 01:07:49 Asia/Jakarta] PHP Warning:  Undefined array key "Tidak Relevan" in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v4.php on line 1238
+[20-Apr-2026 01:08:05 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.5117698: Data Crossref tidak valid
+[20-Apr-2026 01:08:06 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.5117698.v1: Data Crossref tidak valid
+[20-Apr-2026 01:08:17 Asia/Jakarta] Error fetching abstract for DOI 10.5281/zenodo.580325: Data Crossref tidak valid
+[26-Apr-2026 19:21:00 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.31524388: Data Crossref tidak valid
+[26-Apr-2026 19:21:00 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:00 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:00 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:00 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:00 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:00 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:01 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.31477375: Data Crossref tidak valid
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:01 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:02 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:03 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:04 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:07 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:10 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:15 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:20 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:20 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:20 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:20 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:20 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:20 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:21 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:21 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:21 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:21 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:21 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:21 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:22 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.6394373.v2: Data Crossref tidak valid
+[26-Apr-2026 19:21:22 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:22 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:22 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:22 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:22 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:22 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:24 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:25 Asia/Jakarta] Error fetching abstract for DOI 10.6084/M9.FIGSHARE.6394235: Data Crossref tidak valid
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:25 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:27 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:27 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:27 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:27 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:27 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:27 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:28 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.6394235.v2: Data Crossref tidak valid
+[26-Apr-2026 19:21:28 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.6394235.v1: Data Crossref tidak valid
+[26-Apr-2026 19:21:29 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.6394235.v3: Data Crossref tidak valid
+[26-Apr-2026 19:21:30 Asia/Jakarta] Error fetching abstract for DOI 10.6084/M9.FIGSHARE.6394373: Data Crossref tidak valid
+[26-Apr-2026 19:21:31 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.6394373.v1: Data Crossref tidak valid
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:37 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:38 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:38 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:38 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:38 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:38 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:38 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:41 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:41 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:41 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:41 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:41 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:41 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:42 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:55 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:55 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:55 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:55 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:55 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:55 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:56 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.5117698: Data Crossref tidak valid
+[26-Apr-2026 19:21:56 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:56 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:56 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:56 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:56 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:56 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:56 Asia/Jakarta] Error fetching abstract for DOI 10.6084/m9.figshare.5117698.v1: Data Crossref tidak valid
+[26-Apr-2026 19:21:59 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:59 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:21:59 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:59 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:21:59 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:21:59 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:22:08 Asia/Jakarta] Error fetching abstract for DOI 10.5281/zenodo.580325: Data Crossref tidak valid
+[26-Apr-2026 19:22:08 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:22:08 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:22:08 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:22:08 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:22:08 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:22:08 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 966
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Undefined variable $causalResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 967
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Undefined variable $substantiveResult in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052
+[26-Apr-2026 19:22:12 Asia/Jakarta] PHP Warning:  Trying to access array offset on value of type null in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/sdg_mapper/sdg_mapping_v3.php on line 1052

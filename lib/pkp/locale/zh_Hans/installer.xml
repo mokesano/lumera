@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/zh_Hans/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the zh_Hans (简体中文) locale.
+  *
+  -->
+
+<locale name="zh_Hans" full_name="简体中文">
+	<message key="installer.additionalLocales">额外的语言环境</message>
+	<message key="installer.administratorAccount">管理员帐户</message>
+	<message key="installer.administratorAccountInstructions">这个帐户将成为站点的管理员，并且可以存取整站的所有内容，额外的用户信息可以在安装后添加.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="form_error formError">未通过</span>]]></message>
+	<message key="installer.checkYes">通过</message>
+	<message key="installer.clientCharset">客户端字符设置</message>
+	<message key="installer.clientCharsetInstructions">从浏览器发送和接受数据的使用的编码.</message>
+	<message key="installer.configFileError"><![CDATA[配置文件 <tt>config.inc.php</tt> 不存在或者不可读.]]></message>
+	<message key="installer.connectionCharset">连接字符集</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[从数据库发送和接受数据使用的编码.这个将与客户端字符集相同. 注意，这个功能需要 MySQL版本 >= 5.x 或者 PostgreSQL >= 8.x. 如果您的数据库服务没有这些要求，可以选择 "不适用".]]></message>
+	<message key="installer.contentsOfConfigFile">配置文件内容</message>
+	<message key="installer.createDatabase">创建新数据库</message>
+	<message key="installer.createDatabaseInstructions">若要使用此选项，您的数据库系统必须支持远程数据库的建立和您的用户帐户必须具有适当的权限来创建新的数据库.如果选择此选项的时候安装失败，请在服务器上手动创建数据库，并禁用此项后重新执行安装.</message>
+	<message key="installer.databaseCharset">数据库字符设置</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[资料保存在数据库中的编码方式。注意，这个功能只有MySQL >= 5.x或PostgreSQL >= 8.x支持。如果您的数据库服务器不符合这个条件的话，请选择「不可用」。.]]></message>
+	<message key="installer.databaseDriver">数据库驱动</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>系统目前仅支持 MySQL 和 PostgreSQL。如果您无法选择其中之一，请联系您的系统管理员，以确保您的服务器具有所需的 PHP 扩展。</strong>]]></message>
+	<message key="installer.databaseHost">主机</message>
+	<message key="installer.databaseHostInstructions">不填入主机名称会使用网域接口代替TCP/IP链接。这对MySQL来说并不必要，如果输入"localhost"它会自动使用接口，不过对某些其他的数据库服务器，好比PostgreSQL来说就是必要的.</message>
+	<message key="installer.databaseName">数据库名</message>
+	<message key="installer.databasePassword">密码</message>
+	<message key="installer.databaseSettings">数据库设置</message>
+	<message key="installer.databaseUsername">用户名</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Bcrypt 根据 ScholarWizdam 标准被安全地强制作为密码标准加密算法。]]></message>
+	<message key="installer.encryption">密码加密算法</message>
+
+	<!-- Installer -->
+	<message key="installer.appInstallation">ScholarWizdam安装</message>
+	<message key="installer.appUpgrade">ScholarWizdam升级</message>
+
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>ScholarWizdam 版本 {$version}</h4>
+    <p>感谢您下载 Sangia Publishing House 的 <strong>ScholarWizdam</strong>。在继续之前，请阅读随此软件附带的 <a href="{$baseUrl}/docs/README" target="_blank">README</a> 文件。有关 Sangia Publishing House (SPH) 及其软件项目的更多信息，请访问 <a href="http://wizdam.sangia.org/" target="_blank">Sangia Publishing House 网站</a>。如果您有关于 ScholarWizdam 的错误报告或技术支持问题，请访问 <a href="http://forum.wizdam.sangia.org" target="_blank">支持论坛</a> 或访问 SPH 的在线 <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">错误报告系统</a>。虽然支持论坛是首选的联系方式，您也可以通过电子邮件联系团队：<a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>。</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[密码加密使用 <strong>bcrypt</strong> — 一种安全且符合行业标准的哈希算法。无需任何配置。]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>升级</h4>
+    <p>如果您要升级现有的 ScholarWizdam 或之前的版本安装，<a href="{$upgradeUrl}">点击此处</a> 继续。</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>推荐系统要求</h4>
+    <ul>
+    	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}；您当前使用的是 PHP {$phpVersion}{$wrongPhpText}</li>
+    	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x 或 <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x（包括 PostgreSQL 8.x）</li>
+    	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x 或 >= 2.0.4x 或 Microsoft IIS 6</li>
+    	<li>操作系统：任何支持上述软件的操作系统，包括 <a href="http://www.linux.org/" target="_blank">Linux</a>、<a href="http://www.bsd.org/" target="_blank">BSD</a>、<a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>、<a href="http://www.apple.com/" target="_blank">Mac OS X</a>、<a href="http://www.microsoft.com/">Windows</a></li>
+    </ul>
+    <p>由于 SPH 没有资源测试所有可能的软件版本和平台组合，因此不保证正确操作或提供隐含支持。</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[这些设置可以在安装后通过编辑 ScholarWizdam 根目录中的 <tt>config.inc.php</tt> 文件，或使用站点管理 Web 界面进行更改。]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>支持的数据库系统</h4>
+    <p>ScholarWizdam 目前仅在 MySQL 和 PostgreSQL 上进行了测试，尽管其他由 <a href="http://adodb.org/" target="_blank">ADOdb</a> 支持的数据库管理系统也可能（完全或部分）正常工作。兼容性报告和/或替代 DBMS 的代码补丁可以发送给 ScholarWizdam 团队。</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>预安装步骤</h4>
+    <p>1. 以下文件和目录（及其内容）必须可写：</p>
+    <ul>
+    	<li><tt>config.inc.php</tt> 可写（可选）：{$writable_config}</li>
+    	<li><tt>public/</tt> 可写：{$writable_public}</li>
+    	<li><tt>cache/</tt> 可写：{$writable_cache}</li>
+    	<li><tt>cache/t_cache/</tt> 可写：{$writable_templates_cache}</li>
+    	<li><tt>cache/t_compile/</tt> 可写：{$writable_templates_compile}</li>
+    	<li><tt>cache/_db</tt> 可写：{$writable_db_cache}</li>
+    </ul>
+    <p>2. 必须创建用于存储上传文件的目录并将其设置为可写（参见下面的“文件设置”）。</p>]]></message>
+    
+	<message key="installer.upgradeInstructions"><![CDATA[
+		<h4>ScholarWizdam版本{$version}</h4>
+		<p>谢谢您下载 Sangia Publishing House 的 <strong>ScholarWizdam</strong>。在进行下一步之前，请先阅读这份软件中的<a href="{$baseUrl}/docs/README" target="_blank">README</a>文件。想了解更多关于 Sangia Publishing House (SPH) 以及其软件计划，请见：<a href="http://wizdam.sangia.org/" target="_blank">Sangia Publishing House网站</a>。如果您要回报关于 ScholarWizdam 的错误信息或者有相关的技术支持问题，请见：<a href="http://forum.wizdam.sangia.org">支持讨论区</a>，或者请见SPH的线上<a href="https://github.com/sph/wizdam-lib#issues" target="_blank">错误回报系统</a>。虽然我们比较希望以讨论区做为联系的管道，不过您也可以寄信给技术团队：<a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>。</p>
+		<p>我们<strong>强烈地建议您</strong>在继续下一步之前，请备份您的数据库、文件目录以及ScholarWizdam的安装目录</p>
+		<p>如果您正在执行<a href="http://www.php.net/features.safe-mode" target="_blank">PHP安全模式</a>， 请确保在您的 php.ini 配置文件中配置max_execution_time指令一个高额的上限。如果这个或者其他的时间上限（例如Apache的 "Timeout"指令）已到，而升级程序遭到中断，您必须以手动的方式介入。</p>]]></message>
+	<message key="installer.localeSettingsInstructions"><![CDATA[为了完整支持Unicode (UTF-8)编码，请选择以UTF-8作为编码位。注意，这项支持目前需要一个MySQL >= 5.x或者PostgreSQL >= 8.x 的数据库服务器。也请注意，完整的Unicode编码需要PHP >= 7.4.0搭配支持<a href="http://www.php.net/mbstring" target="_blank">mbstring</a>库 (最新版本的PHP安装过程已经预设启动)。如果您的服务器没有满足这些条件的话，您可能在使用额外的字符集时会碰到问题<br /><br />
+        您的服务器目前对mbstring的支持性：<strong>{$supportsMBString}</strong>]]></message>
+	<message key="installer.localeInstructions">使用本系统的主要语言。如果您有意支持不列在这里的语系，请参见ScholarWizdam的说明文件.</message>
+	<message key="installer.additionalLocalesInstructions">选择额外的语系以支持本系统。这些语言可以被本站的期刊所使用。也可以在任何时间点透过网站管理介面来安装额外的语系.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[输入一个保存上传文件的既存目录的完整路径名称。这个目录不应该直接透过网页存取。<strong>请确定这个目录存在而且可写入</strong> Windows路径名称应该使用右斜线，例如："C:/myjournal/files".]]></message>
+	<message key="installer.databaseSettingsInstructions">ScholarWizdam需要访问一个SQL数据库来存储它的数据。查看支持的数据库列表上面的系统要求。在下面的字段，提供设置用于连接到数据库。</message>
+	<message key="installer.installApplication">安装 ScholarWizdam</message>
+	<message key="installer.upgradeApplication">更新 ScholarWizdam</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>警告：</strong>如果安装失败部分是因为安装数据库的关系，在尝试重新安装数据库之前，您可能需要删除您的ScholarWizdam数据库或者资料表。]]></message>
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>重要！</h4>
+        <p>安装档无法自动覆盖配置文件。在尝试使用本系统之前，请以合适的编辑器开启<tt>config.inc.php</tt>并且变更其内容为下列文字栏位中的内容。</p>]]></message>
+	<message key="installer.installationComplete"><![CDATA[<p>ScholarWizdam已经成功安装！</p>
+        <p>要开始使用本系统，请以您在上一个网页中输入的用户名称和密码进行<a href="{$loginUrl}">登入</a></p>
+        <p>如果您希望收到新闻和更新信息，请<strong>在<a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>注册。</strong> 如果您有问题或建议，请访问<a href="http://forum.wizdam.sangia.org" target="_new">支持讨论区</a>.</p>]]></message>
+	<message key="installer.upgradeComplete"><![CDATA[<p>以成功升级ScholarWizdam到 {$version}版本。</p>
+        <p>别忘了在您的config.inc.php配置文件中将"installed"配置改成<em>On</em>。</p>
+        <p>如果您尚未注册但希望收到新闻和更新信息，<strong>请在<a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>注册。</strong> 如果您有问题或建议，请访问<a href="http://forum.wizdam.sangia.org" target="_new">支持讨论区</a>.</p>]]></message>
+    
+    <message key="installer.allowFileUploads"><![CDATA[您的服务器目前允许上传文件：<strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[您的服务器目前支持的最大上传文件大小: <strong>{$maxFileUploadSize}</strong>]]></message>
+
+	<message key="installer.filesDir">上传路径</message>
+	<message key="installer.fileSettings">文件设置</message>
+	<message key="installer.form.clientCharsetRequired">客户端字符设置必选.</message>
+	<message key="installer.form.databaseDriverRequired">数据库驱动必须选择一个.</message>
+	<message key="installer.form.databaseNameRequired">数据库名字是必须的.</message>
+	<message key="installer.form.emailRequired">一个有效的管理员帐户的电子邮箱是必须的.</message>
+	<message key="installer.form.encryptionRequired">用户密码加密算法必须选择.</message>
+	<message key="installer.form.filesDirRequired">用于存储上传文件的路径是必须的.</message>
+	<message key="installer.form.localeRequired">至少一个语言环境选择.</message>
+	<message key="installer.form.passwordRequired">管理员的帐号密码是必须的.</message>
+	<message key="installer.form.passwordsDoNotMatch">管理员的密码不相符.</message>
+	<message key="installer.form.separateMultiple">用逗号分隔多个值</message>
+	<message key="installer.form.usernameAlphaNumeric">管理员的用户名能包含数字和字符，下划线和链接符，而且必须以字母和数字开始和结束.</message>
+	<message key="installer.form.usernameRequired">管理员的用户名是必须的.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>警告：您当前PHP的版本不符合系统安装的最低要求. 推荐您升级系统的PHP版本到最新.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">安装过程报错</message>
+	<message key="installer.installerSQLStatements">安装SQL语句</message>
+	<message key="installer.installFileError"><![CDATA[安装文件 <tt>dbscripts/xml/install.xml</tt> 不存在后者不可读.]]></message>
+	<message key="installer.installFilesDirError">为上传文件指定的目录不存在或者不可读.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[错误解析数据库安装文件模板 <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[错误解析电子邮件模板文件<tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">语言设置</message>
+	<message key="installer.locale.maybeIncomplete">标记的语言环境尚未完成.</message>
+	<message key="installer.localeSettings">语言环境设置</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[一个独一无二的识别码，用来识别本站使用<a href="http://www.openarchives.org/" target="_blank">开放存档计划(Open Archives Initiative)</a>元数据搜集协定所索引的元数据记录]]></message>
+	<message key="installer.oaiRepositoryId">OAI库标识符</message>
+	<message key="installer.publicFilesDirError">Public的文件的目录不存在或不可写.</message>
+	<message key="installer.releaseNotes">发行说明</message>
+	<message key="installer.securitySettings">安全设置</message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[错误解析过滤配置文件<tt>{$file}</tt>.]]></message>
+	<message key="installer.oaiSettings">OAI 设置</message>
+	
+	<message key="installer.beacon"><![CDATA[信标]]></message>
+	<message key="installer.beacon.enable"><![CDATA[向 Sangia Publishing House 提供唯一的站点 ID 和 OAI 基础 URL，仅用于统计和安全警报目的。]]></message>
+	
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[有新版本的ScholarWizdam可用。您目前使用ScholarWizdam版本{$currentVersion}. 最新的版本为ScholarWizdam {$latestVersion}. 请访问<a href="http://wizdam.sangia.org/download" target="_new">此页面</a> 下载最新的版本并找到升级说明。]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[有新版本的ScholarWizdam可用。您目前使用ScholarWizdam版本{$currentVersion}.最新的版本为ScholarWizdam {$latestVersion}. 请联系您的网站管理员 ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>)通知他们最新版本已发布。更多详情可以在 <a href="http://wizdam.sangia.org/download" target="_new">这里</a>上看到。]]></message>
+</locale>

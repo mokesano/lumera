@@ -1,0 +1,38 @@
+{
+    "managers": [
+        {
+            "userId": "5",
+            "salutation": "Assoc. Prof.",
+            "firstName": "Umar",
+            "middleName": "",
+            "lastName": "Tangke",
+            "suffix": "S.Pi., M.Si",
+            "fullName": "Assoc. Prof. Umar Tangke, S.Pi., M.Si",
+            "affiliation": "Universitas Muhammadiyah Maluku Utara, Ternate",
+            "country": "Indonesia",
+            "email": "khakafart@yahoo.com",
+            "imageUrl": "https:\/\/journals.sangia.org\/public\/site\/profileImage-5.jpg",
+            "hasProfileImage": true
+        }
+    ],
+    "editors": [
+        {
+            "userId": "26",
+            "salutation": "Assoc. Prof. Dr.",
+            "firstName": "Andi",
+            "middleName": "Nur Apung",
+            "lastName": "Massiseng",
+            "suffix": "S.Pi., M.Si",
+            "fullName": "Assoc. Prof. Dr. Andi Nur Apung Massiseng, S.Pi., M.Si",
+            "affiliation": "Program Studi Agrobisnis Perikanan, Fakultas Perikanan, Universitas Cokroaminoto Makassar, Makassar, Indonesia",
+            "country": "",
+            "email": "andiapung@ucm-si.ac.id",
+            "imageUrl": "https:\/\/journals.sangia.org\/public\/site\/profileImage-26.jpg",
+            "hasProfileImage": true
+        }
+    ],
+    "generated_at": 1777400087,
+    "journal_id": "2",
+    "max_display_count": 3,
+    "data_hash": "514ab7c4651bbd5351601448166d9511"
+}

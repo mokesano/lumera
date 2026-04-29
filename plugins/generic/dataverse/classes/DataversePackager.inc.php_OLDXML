@@ -1,0 +1,129 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @file plugins/generic/dataverse/classes/DataversePackager.inc.php
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2003-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * @class DataversePackager
+ * @ingroup plugins_generic_dataverse
+ *
+ * @brief Packages article metadata and suppfiles for deposit in Dataverse
+ */
+
+require_once('lib/pkp/lib/swordappv2/packager_atom_twostep.php');
+
+class DataversePackager extends PackagerAtomTwoStep {
+    
+    /** @var string output path for packager files */
+    public $_outPath;
+    
+    /** @var string file directory for packager files */
+    public $_fileDir = 'files';
+    
+    /** @var array of files to be deposited: file paths indexed by filename */
+    public $_files = array();
+    
+    /** @var string Atom entry filename */
+    public $_atomEntryFileName = 'atom';
+    
+    /** @var string deposit package filename */
+    public $_packageFileName = 'deposit.zip';
+    
+    /** @var string packaging */
+    public $_packaging = 'http://purl.org/net/sword/package/SimpleZip';
+    
+    /** @var string package content type */
+    public $_contentType = 'application/zip';
+
+    /**
+     * Constructor.
+     */
+    public function __construct() {
+        // Create temporary directory for Atom entry & deposit files
+        $this->_outPath = tempnam('/tmp', 'dataverse');
+        // tempnam creates a file, we need a directory, so delete file and make dir
+        if (file_exists($this->_outPath)) unlink($this->_outPath);
+        mkdir($this->_outPath);
+        mkdir($this->_outPath .'/'. $this->_fileDir);                  
+        parent::__construct($this->_outPath, $this->_fileDir, $this->_outPath, '');
+    }
+
+    /**
+     * [SHIM] Backward Compatibility
+     */
+    public function DataversePackager() {
+        trigger_error(
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::DataversePackager(). Please refactor to use parent::__construct().",
+            E_USER_DEPRECATED
+        );
+        self::__construct();
+    }
+
+    /**
+     * Add file to deposit package. 
+     * @param $filePath String file path
+     */
+    public function addFile($filePath) { 
+        $fileName = basename($filePath);
+        $this->_files[$fileName] = $filePath;
+    }
+    
+    /**
+     * Create Atom entry. Wrapper renames parent::create() to distinguish between
+     * Atom entry creation and deposit package creation.
+     */
+    public function createAtomEntry() {
+        $this->create();
+    }
+    
+    /**
+     * Create deposit package of files.
+     */
+    public function createPackage() {
+        $package = new ZipArchive();
+        $package->open($this->getPackageFilePath(), ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
+        foreach ($this->_files as $fileName => $filePath) {
+            $package->addFile($filePath, $fileName);
+        }
+        $package->close();
+    }
+
+    /**
+     * Get path to Atom entry file.
+     * @return string
+     */
+    public function getAtomEntryFilePath() {
+        return $this->_outPath .'/'. $this->_fileDir .'/'. $this->_atomEntryFileName;
+    }      
+
+    /**
+     * Get path to deposit package.
+     * @return string
+     */
+    public function getPackageFilePath() {
+        return $this->_outPath .'/'. $this->_fileDir .'/'. $this->_packageFileName;          
+    }      
+    
+    /**
+     * Get packaging format of deposit.
+     * @return string
+     */
+    public function getPackaging() {
+        return $this->_packaging;
+    }
+    
+    /**
+     * Get content type of deposit.
+     * @return string
+     */
+    public function getContentType() {
+        return $this->_contentType;
+    }
+        
+}
+
+?>

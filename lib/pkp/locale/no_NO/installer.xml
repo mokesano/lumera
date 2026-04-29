@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/no_NO/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the no_NO (Norsk) locale.
+  *
+  -->
+
+<locale name="no_NO" full_name="Norsk">
+	<message key="installer.additionalLocales">Flere lokalinnstillinger</message>
+	<message key="installer.administratorAccount">Administratorkonto</message>
+	<message key="installer.administratorAccountInstructions">Denne brukerkontoen kommer til å bli nettstedsadministrator, vil ha full tilgang til systemet. Flere brukerkontoer kan opprettes etter installasjon.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="pkp_form_error formError">NEI</span>]]></message>
+	<message key="installer.checkYes">Ja</message>
+	<message key="installer.clientCharset">Tegnsett for klienten</message>
+	<message key="installer.clientCharsetInstructions">Tegnkodingen som skal brukes for data som blir sendt til og mottatt fra nettlesere.</message>
+	<message key="installer.configFileError"><![CDATA[Konfigurasjonsfilen <tt>config.inc.php</tt> finnes ikke eller er ikke lesbar.]]></message>
+	<message key="installer.connectionCharset">Tegnsett for databasekoblingen</message>
+	<message key="installer.connectionCharsetInstructions"><![CDATA[Tegnkoding som skal brukes for data som blir sendt til og mottatt fra databasen. Denne bør være den samme som client character sett. Merk at denne muligheten bare er støttet med MySQL >= 5.x eller PostgreSQL >= 8.x. Velg 'Ikke tilgjengelig' hvis databaseserveren din ikke oppfyller disse kravene.]]></message>
+	<message key="installer.contentsOfConfigFile">Innholdet i konfigurasjonsfilen</message>
+	<message key="installer.createDatabase">Opprett ny database</message>
+	<message key="installer.createDatabaseInstructions">For å bruke denne valgmuligheten må ditt databasesystem støtte oppretting av databaser og din brukerkonto må ha de nødvendige rettigheter til å skape nye databaser. Hvis installasjon feiler med denne valgmuligheten valgt, skap databasen manuelt på din server og kjør installasjonsprogrammet igjen med denne valgmuligheten slått av.</message>
+	<message key="installer.databaseCharset">Databasetegnsett</message>
+	<message key="installer.databaseCharsetInstructions"><![CDATA[Tegnkoding som skal brukes for data som lagres i databasen. Merk at denne evnen bare er støttet med MySQL >= 5.x eller PostgreSQL >= 8.x. Velg 'Ikke tilgjengelig' hvis databaseserveren din ikke oppfyller disse kravene.]]></message>
+	<message key="installer.databaseDriver">Databasedriver</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>Systemet støtter for øyeblikket bare MySQL og PostgreSQL. Hvis du ikke kan velge en, kontakt systemadministratoren din for å forsikre deg om at serveren din har de nødvendige PHP-utvidelsene.</strong>]]></message>
+	<message key="installer.databaseHost">Vert</message>
+	<message key="installer.databaseHostInstructions">La vertsnavnet stå tomt for å opprette forbindelsen gjennom "domene sockets" i stedet for over TCP/IP. Dette er ikke nødvendig med MySQL, som kommer til å bruke "sockets" automatisk hvis "localhost" er skrevet inn, men er påkrevet med enkelte andre databaseservere som for eksempel PostgreSQL.</message>
+	<message key="installer.databaseName">Databasenavn</message>
+	<message key="installer.databasePassword">Passord</message>
+	<message key="installer.databaseSettings">Databaseinnstillinger</message>
+	<message key="installer.databaseUsername">Brukernavn</message>
+	<message key="installer.encryptionInstructions"><![CDATA[Passordkryptering bruker <strong>bcrypt</strong> — en sikker hash-algoritme som er bransjestandard. Ingen konfigurasjon er nødvendig.]]></message>
+	<message key="installer.encryption">Krypteringsalgoritme for passord</message>
+	
+	<!-- Installer -->
+	<message key="installer.appInstallation">Wizdam Redaksjonelle Systemer installasjon</message>
+	<message key="installer.appUpgrade">Wizdam Redaksjonelle Systemer oppgradering</message>
+	
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>Wizdam Redaksjonelle Systemer versjon {$version}</h4>
+
+<p>Takk for at du laster ned <strong>Wizdam Redaksjonelle Systemer</strong> fra Sangia Publishing House. Før du går videre, vennligst les <a href="{$baseUrl}/docs/README" target="_blank">README</a>-filen som følger med denne programvaren. For mer informasjon om Sangia Publishing House (SPH) og deres programvareprosjekter, vennligst oppsøk <a href="http://wizdam.sangia.org/" target="_blank">SPH-nettstedet</a>. Hvis du har feilmeldinger eller trenger svar om teknisk støtte for Wizdam Redaksjonelle Systemer, oppsøk <a href="http://forum.wizdam.sangia.org" target="_blank">støtteforumet</a> eller SPHs online <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">feilmeldingssystem</a>. Selv om støtteforumet er den kontaktkanalen vi foretrekker, kan du også e-poste teamet: <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+    
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[Passordkryptering bruker <strong>bcrypt</strong> — en sikker hash-algoritme som er bransjestandard. Ingen konfigurasjon er nødvendig.]]></message>
+    
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Oppgradering</h4>
+
+<p>Hvis du oppgraderer en eksisterende installasjon av Wizdam Redaksjonelle Systemer eller fra tidligere versjoner, <a href="{$upgradeUrl}">klikk her</a> for å gå videre.</p>]]></message>
+    
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Anbefalte systemkrav</h4>
+
+<ul>
+	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}, du benytter nå PHP {$phpVersion}{$wrongPhpText}</li>
+	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 5.x eller <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (herunder PostgreSQL 8.x)</li>
+	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x eller >= 2.0.4x eller Microsoft IIS 6</li>
+	<li>Operativsystem: Alle OS som støtter ovennevnte programvare, herunder <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+</ul>
+
+<p>Ettersom SPH ikke har ressurser til å teste alle mulige kombinasjoner av programvareversjoner og -plattformer, kan vi heller ikke garantere korrekt funksjon eller love teknisk støtte.</p>]]></message>
+    
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[<p>Endringer av disse innstillingene kan gjøres etter installasjon ved å redigere filen <tt>config.inc.php</tt> i Wizdam Redaksjonelle Systemers basismappe, eller gjennom grensesnittet for nettstedsadministrasjon.</p>]]></message>
+    
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Støttede databasesystemer</h4>
+
+<p>Wizdam Redaksjonelle Systemer er for øyeblikket bare testet for MySQL og PostgreSQL, selv om andre databaseadministrasjonssystemer støttet av <a href="http://adodb.org/" target="_blank">ADOdb</a> også kan fungere (helt eller delvis). Kompatibilitetsrapporter og/eller kodeoppdateringer for alternative DBMSer kan sendes til Wizdam Redaksjonelle Systemer-teamet.</p>]]></message>
+    
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Før installasjon</h4>
+
+<p>1. Følgende filer og mapper (og deres innhold) må gjøres skrivbare:</p>
+<ul>
+	<li><tt>config.inc.php</tt> er skrivbar (valgfritt): {$writable_config}</li>
+	<li><tt>public/</tt> er skrivbar: {$writable_public}</li>
+	<li><tt>cache/</tt> er skrivbar: {$writable_cache}</li>
+	<li><tt>cache/t_cache/</tt> er skrivbar: {$writable_templates_cache}</li>
+	<li><tt>cache/t_compile/</tt> er skrivbar: {$writable_templates_compile}</li>
+	<li><tt>cache/_db</tt> er skrivbar: {$writable_db_cache}</li>
+</ul>
+
+<p>2. En mappe for lagring av opplastede filer må opprettes og gjøres skrivbar (Se "Filinnstillinger" nedenfor).</p>]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>Wizdam Redaksjonelle Systemer versjon {$version}</h4>
+	
+<p>Takk for at du laster ned <strong>Wizdam Redaksjonelle Systemer</strong> fra Sangia Publishing House. Før du går videre, vennligst les <a href="{$baseUrl}/docs/README" target="_blank">README</a>- og <a href="{$baseUrl}/docs/UPGRADE" target="_blank">UPGRADE</a>-filene som følger med denne programvaren. For mer informasjon om Sangia Publishing House (SPH) og deres programvareprosjekter, vennligst oppsøk <a href="http://wizdam.sangia.org/" target="_blank">SPHs nettsted</a>. Hvis du har feilmeldinger eller spørsmål om teknisk støtte for Wizdam Redaksjonelle Systemer, se Wizdam Redaksjonelle Systemers <a href="http://forum.wizdam.sangia.org" target="_blank">støtteforum</a> eller besøk SPHs online <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">feilmeldingssystem</a>. Selv om støtteforumet er den foretrukne kontaktkanalen, kan du også e-poste teamet: <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+<p>Det er <strong>på det sterkeste anbefalt</strong> at du tar backup av databasen din, filmappen, og Wizdam Redaksjonelle Systemer-installasjonsmappen før du går videre.</p>
+<p>Hvis du kjører installasjonen i <a href="http://www.php.net/features.safe-mode" target="_blank">PHP Safe Mode</a>, vennligst forsikre deg om at max_execution_time-direktivet i din php.ini-konfigurasjonsfil er satt til en høy grense. Hvis denne eller en annen tidsbegrensning (for eks. Apache's "Timeout" direktiv) blir overskredet og oppgraderingsprosessen dermed blir avbrutt, vil det bli nødvendig å gripe inn manuelt.</p>]]></message>
+	<message key="installer.localeSettingsInstructions"><![CDATA[For fullstendig Unicode (UTF-8) støtte, velg UTF-8 for alle tegnsettinnstillinger. Merk at denne støtten for tiden krever MySQL >= 5.x eller PostgreSQL >= 8.x databaseserver. Vennligst merk også at Unicode-støtte krever PHP >= 7.4.0 kompilert med støtte for <a href="http://www.php.net/mbstring" target="_blank">mbstring</a>-biblioteket (slått på som standard i de fleste nyere PHP-installasjoner). Det kan oppstå problemer med utvidede tegnsett hvis serveren din ikke oppfyller disse kravene.
+<br /><br />
+Din server støtter for øyeblikket mbstring: <strong>{$supportsMBString}</strong>]]></message>
+	<message key="installer.localeInstructions">Primærspråket som skal brukes i dette systemet. Vennligst slå opp i Wizdam Redaksjonelle Systemer-dokumentasjonen hvis du er interessert i støtte for språk som ikke er oppført her.</message>
+	<message key="installer.additionalLocalesInstructions">Velg øvrige språk som skal støttes i dette systemet. Disse språkene vil bli tilgjengelig til bruk for de tidsskriftene nettstedet er vert for. Flere språk kan også installeres når som helst, gjennom grensesnittet for nettstedsadministrasjon.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Skriv inn fullstendig sti til en eksisterende mappe hvor opplastede filer skal oppbevares. Denne mappen bør ikke kunne aksesseres direkte fra internett. <strong>Vennligst sikre at denne mappen finnes og er skrivbar før du installerer.</strong> Windows-filstinavn bør bruke vanlig skråstrek (/), for eks. "C:/myjournal/files".]]></message>
+	<message key="installer.databaseSettingsInstructions">Wizdam Redaksjonelle Systemer krever tilgang til en SQL-database for lagring av data. Se listen over databaser som støttes i systemkravene ovenfor. Skriv inn innstillingene som skal brukes for å opprette forbindelsen med databasen i feltene nedenfor.</message>
+	<message key="installer.installApplication">Installer Wizdam Redaksjonelle Systemer</message>
+	<message key="installer.upgradeApplication">Oppgrader Wizdam Redaksjonelle Systemer</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Advarsel:</strong> Hvis installasjonen feilet under databaseinstallasjonen kan du trenge å droppe din Wizdam Redaksjonelle Systemer-database eller databasetabellene før du forsøker å reinstallere databasen.]]></message>
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>VIKTIG!</h4>
+<p>Installasjonen kunne ikke automatisk overskrive konfigurasjonsfilen. Før du forsøker å bruke systemet, vennligst åpne <tt>config.inc.php</tt> i et egnet tekstbehandlingsprogram og erstatt innholdet i den med innholdet i tekstfeltet nedenfor.</p>]]></message>
+	<message key="installer.installationComplete"><![CDATA[<p>Installasjonen av Wizdam Redaksjonelle Systemer er vellykket gjennomført.</p>
+<p>For å begynne å bruke systemet, <a href="{$loginUrl}">logg inn</a> med brukernavnet og passord skrevet inn på foregående side.</p>
+<p>Hvis du ønsker å motta nyheter og oppdateringer, kan du:</p>
+<ol>
+	<li><a href="http://wizdam.sangia.org/wizdam/register" target="_new">Registrer</a> tidsskriftet ditt, konferansen eller høsteren og motta oppdateringer om programvareoppgraderinger, sikkerhetsoppdateringer og mer.</li>
+	<li>Bli med på vår <a href="http://wizdam.sangia.org/informed" target="_new">diskusjonsliste</a> for Wizdam Redaksjonelle Systemer.</li>
+	<li>Abonner på <a href="http://wizdam.sangia.org/blog" target="_new">SPH-bloggen</a> <a href="http://wizdam.sangia.org/blog/feed" target="_new">RSS-strøm</a>.</li>
+</ol>
+<p>Hvis du har spørsmål eller kommentarer, besøk <a href="http://forum.wizdam.sangia.org" target="_new">støtteforumet</a>.</p>]]></message>
+	<message key="installer.upgradeComplete"><![CDATA[<p>Oppgradering av Wizdam Redaksjonelle Systemer til versjon {$version} ble vellykket gjennomført.</p>
+<p>Ikke glem å sette "installed"-innstillingen i din config.inc.php konfigurasjonsfil tilbake til <em>På</em>.</p>
+<p>Om du ikke allerede har registrert deg og ønsker å motta nyheter og oppdateringer, <strong>vennligst registrer deg på <a href="http://wizdam.sangia.org/wizdam/register" target="_new">http://wizdam.sangia.org/wizdam/register</a>.</strong> Hvis du har spørsmål eller kommentarer, vennligst besøk <a href="http://forum.wizdam.sangia.org" target="_new">støtteforumet</a>.</p>]]></message>
+
+	<message key="installer.filesDir">Mappe for opplastede filer</message>
+	<message key="installer.fileSettings">Filinnstillinger</message>
+	<message key="installer.form.clientCharsetRequired">Et tegnsett må være valgt for klienten.</message>
+	<message key="installer.form.databaseDriverRequired">En databasedriver må være valgt.</message>
+	<message key="installer.form.databaseNameRequired">Databasenavn er påkrevd.</message>
+	<message key="installer.form.emailRequired">En gyldig e-postadresse for administratorkontoen er påkrevd.</message>
+	<message key="installer.form.encryptionRequired">En algoritme til bruk ved kryptering av brukerpassord må være valgt.</message>
+	<message key="installer.form.filesDirRequired">En mappe for lagring av opplastede filer er påkrevd.</message>
+	<message key="installer.form.localeRequired">En lokalinnstilling må være valgt.</message>
+	<message key="installer.form.passwordRequired">Et passord for administratorkontoen er påkrevd.</message>
+	<message key="installer.form.passwordsDoNotMatch">Administratorpassordene er ikke like.</message>
+	<message key="installer.form.separateMultiple">Skill flere verdier med komma</message>
+	<message key="installer.form.usernameAlphaNumeric">Administrator-brukernavnet kan bare inneholde alfanumeriske tegn, understrek og bindestrek, og må begynne og slutte med et alfanumerisk tegn.</message>
+	<message key="installer.form.usernameRequired">Et brukernavn for administratorkontoen er påkrevd.</message>
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>ADVARSEL: din nåværende PHP-versjon tilfredsstiller ikke minstekravene for installasjonen. Du bør oppgradere til en nyere utgave av PHP.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">Det oppsto feil under installasjon</message>
+	<message key="installer.installerSQLStatements">SQL-setninger for installasjon</message>
+	<message key="installer.installFileError"><![CDATA[Installasjonsfilen <tt>dbscripts/xml/install.xml</tt> finnes ikke eller er ikke lesbar.]]></message>
+	<message key="installer.installFilesDirError">Mappen du spesifiserte for opplastede filer finnes ikke eller er ikke skrivbar.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Feil ved lesing av databaseinstallasjonsfilen <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[Feil ved parsing av e-postmalen <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[Feil ved lesing av filterkonfigureringsfila <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Lokalinnstilling</message>
+	<message key="installer.locale.maybeIncomplete">Merkede lokaliseringsfiler kan være ukomplette.</message>
+	<message key="installer.localeSettings">Lokalinnstillinger</message>
+	<message key="installer.miscSettings">Diverse innstillinger</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[En unik identifikator brukt for å identifisere metadatafiler indeksert fra dette nettstedet ved bruk av <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a> Protocol for Metadata Harvesting.]]></message>
+	<message key="installer.oaiRepositoryId">OAI-arkividentifikator</message>
+	<message key="installer.oaiSettings">OAI-innstillinger</message>
+	<message key="installer.publicFilesDirError">Mappen for offentlige filer finnes ikke eller er ikke skrivbar.</message>
+	<message key="installer.releaseNotes">Releasenotater</message>
+	<message key="installer.securitySettings">Sikkerhetsinnstillinger</message>
+	<message key="installer.allowFileUploads"><![CDATA[Serveren din tillater for øyeblikket opplasting av filer: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[Serveren din tillater for øyeblikket en maksimal filopplastingsstørrelse på: <strong>{$maxFileUploadSize}</strong>]]></message>
+	<message key="installer.beacon">Beacon</message>
+	<message key="installer.beacon.enable">Gi en unik nettsteds-ID og OAI-base-URL til Sangia Publishing House kun for statistikk- og sikkerhetsvarslingsformål.</message>
+	
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[Det er en ny versjon av Wizdam Redaksjonelle Systemer tilgjengelig! Du bruker for øyeblikket Wizdam Redaksjonelle Systemer {$currentVersion}. Den nyeste versjonen er Wizdam Redaksjonelle Systemer {$latestVersion}. Vennligst besøk <a href="http://wizdam.sangia.org/download" target="_new">denne siden</a> for å laste ned den nyeste versjonen og finne oppgraderingsinstruksjoner.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[Det er en ny versjon av Wizdam Redaksjonelle Systemer tilgjengelig! Du bruker for øyeblikket Wizdam Redaksjonelle Systemer {$currentVersion}. Den nyeste versjonen er Wizdam Redaksjonelle Systemer {$latestVersion}. Vennligst kontakt nettstedsadministratoren din ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) for å varsle dem om denne nye utgivelsen. Mer informasjon kan finnes <a href="http://wizdam.sangia.org/download" target="_new">her</a>.]]></message>
+</locale>

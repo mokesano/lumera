@@ -1,0 +1,9 @@
+# File: /home/sangiaor/public_html/journals/plugins/themes/sangiapub/.htaccess
+# Backup sederhana (opsional)
+
+# Nonaktifkan directory browsing
+Options -Indexes
+
+# Custom error pages sebagai fallback
+ErrorDocument 403 /plugins/themes/sangiapub/403.shtml
+ErrorDocument 404 /plugins/themes/sangiapub/403.shtml

@@ -1,0 +1,38 @@
+{
+    "managers": [
+        {
+            "userId": "1",
+            "salutation": "Assoc. Prof.",
+            "firstName": "Rochmady",
+            "middleName": "",
+            "lastName": "Rochmady",
+            "suffix": "S.Pi., M.Si",
+            "fullName": "Assoc. Prof. Rochmady, S.Pi., M.Si",
+            "affiliation": "Coastal and Isle Research Group, Centre for Coastal and Small Island Studies (CSISC), Tanjungpinang, Indonesia",
+            "country": "",
+            "email": "rochmady@sangia.org",
+            "imageUrl": "https:\/\/journals.sangia.org\/public\/site\/profileImage-1.jpg",
+            "hasProfileImage": true
+        }
+    ],
+    "editors": [
+        {
+            "userId": "3",
+            "salutation": "Assoc. Prof.",
+            "firstName": "Susiana",
+            "middleName": "",
+            "lastName": "Susiana",
+            "suffix": "S.Pi., M.Si",
+            "fullName": "Assoc. Prof. Susiana, S.Pi., M.Si",
+            "affiliation": "Universitas Maritim Raja Ali Haji, Tanjungpinang",
+            "country": "Indonesia",
+            "email": "susiana@umrah.ac.id",
+            "imageUrl": "https:\/\/journals.sangia.org\/public\/site\/profileImage-3.jpg",
+            "hasProfileImage": true
+        }
+    ],
+    "generated_at": 1777346284,
+    "journal_id": "9",
+    "max_display_count": 3,
+    "data_hash": "cef26b3e26a5fb7df93044755c9e2982"
+}

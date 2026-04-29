@@ -1,0 +1,106 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="designer" content="Rochmady, email: rochmady@sangia.org">
+    <title>Why you are here! | Sangia Publishing</title>
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            min-height: 100%;
+            padding: 10% 0;
+        }
+
+        html {
+            background-color: #fff;
+            color: #222;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .live-area {
+            padding: 0 2%;
+            margin: 0 auto;
+            max-width: 800px;
+        }
+
+        #brand {
+            width: 80%;
+            max-width: 220px;
+            margin-bottom: 0.25em;
+        }
+
+        .message {
+            background-color: #fff;
+            border-radius: 4px;
+            border: 1px solid #e2e2e2;
+            box-shadow: 0 20px 20px -10px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            padding: 3% 10% 4% 5%;
+        }
+
+        h1 {
+            font-weight: normal;
+            line-height: 1.25;
+            font-size: 1.6em;
+            margin-bottom: 1em;
+            padding-right: 10%;
+        }
+
+        .small {
+            line-height: 1.2;
+            font-size: .8em;
+            color: #bbb;
+            margin-top: 1.75em;
+        }
+
+        code {
+            border-radius: 3px;
+            padding: .4em .75em .35em;
+            margin-left: .75em;
+            color: #555;
+        }
+
+        @media screen and (min-width: 768px) {
+            .message {
+                padding: 3% 10% 4% 5%;
+            }
+            h1 {
+                padding-right: 40%;
+            }
+        }
+
+        @media screen and (min-width: 1024px) {
+            html {
+                font-size: 110%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="live-area">
+        <img id="brand" alt="Sangia Publishing" src="https://assets.sangia.org/img/403index.png">
+        <div class="message">
+            <h1>Why You Are Here!</h1>
+            <p>This Wizdam Indonesia application is currently unavailable. This could be due to abnormal network traffic or problems with our systems. Wizdam Indonesia and/or Sangia Publishing part of Sangia Inc. unless otherwise stated.</p>
+            <p>Please go back!</p>
+        </div>
+    </div>
+</body>
+</html>

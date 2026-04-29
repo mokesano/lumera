@@ -1,0 +1,29 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @defgroup plugins_reports_counter
+ */
+
+/**
+ * @file plugins/reports/counter/index.php
+ *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2003-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * @ingroup plugins_reports_counter
+ * @brief Wrapper for counter report plugin.
+ *
+ */
+
+// Because of the use of Namespaces, this plugin now requires PHP 7.4 or better
+if (version_compare(PHP_VERSION, '7.4.0') >= 0) {
+
+require_once(dirname(__FILE__) . '/CounterReportPlugin.inc.php');
+
+return new CounterReportPlugin();
+
+}
+
+?>

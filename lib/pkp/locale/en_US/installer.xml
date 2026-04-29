@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../dtd/locale.dtd">
+
+<!--
+  * locale/en_US/installer.xml
+  *
+  * Copyright (c) 2013-2019 Simon Fraser University
+  * Copyright (c) 2000-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings for the en_US (English) locale.
+  *
+  -->
+
+<locale name="en_US" full_name="English">
+	<message key="installer.additionalLocales">Additional locales</message>
+	<message key="installer.administratorAccount">Administrator Account</message>
+	<message key="installer.administratorAccountInstructions">This user account will become the site administrator and have complete access to the system. Additional user accounts can be created after installation.</message>
+	<message key="installer.checkNo"><![CDATA[<span class="form_error formError">NO</span>]]></message>
+	<message key="installer.checkYes">Yes</message>
+	<message key="installer.clientCharset">Client character set</message>
+	<message key="installer.clientCharsetInstructions">The encoding to use for data sent to and received from browsers.</message>
+	<message key="installer.configFileError"><![CDATA[The configuration file <tt>config.inc.php</tt> does not exist or is not readable.]]></message>
+	<message key="installer.connectionCharset">Connection character set</message>
+	<message key="installer.connectionCharsetInstructions">The encoding to use for data sent to and received from the database. This should be the same as the client character set. Note that this capability is only supported with MySQL >= 4.x. or PostgreSQL >= 7.x. Select "Not applicable" if your database server does not meet these requirements.</message>
+	<message key="installer.contentsOfConfigFile">Contents of configuration file</message>
+	<message key="installer.createDatabase">Create new database</message>
+	<message key="installer.createDatabaseInstructions">To use this option your database system must support remote database creation and your user account must have the appropriate permissions to create new databases. If installation fails with this option selected, manually create the database on your server and run the installer again with this option disabled.</message>
+	<message key="installer.databaseCharset">Database character set</message>
+	<message key="installer.databaseCharsetInstructions">The encoding to use for data stored in the database. Note that this capability is only supported with MySQL >= 4.x. or PostgreSQL >= 7.x. Select "Not applicable" if your database server does not meet these requirements.</message>
+	<message key="installer.databaseDriver">Database driver</message>
+	<message key="installer.databaseDriverInstructions"><![CDATA[<strong>The system currently only supports MySQL and PostgreSQL, in case you're unable to select one, contact your system administrator to ensure your server has the required PHP extensions.</strong>]]></message>
+	<message key="installer.databaseHost">Host</message>
+	<message key="installer.databaseHostInstructions">Leave the hostname blank to connect using domain sockets instead of over TCP/IP. This is not necessary with MySQL, which will automatically use sockets if "localhost" is entered, but is required with some other database servers such as PostgreSQL.</message>
+	<message key="installer.databaseName">Database name</message>
+	<message key="installer.databasePassword">Password</message>
+	<message key="installer.databaseSettings">Database Settings</message>
+	<message key="installer.databaseUsername">Username</message>
+	<message key="installer.encryptionInstructions">Bcrypt is securely enforced for password standard encryption algorithm ScholarWizdam standards.</message>
+	<message key="installer.encryption">Password encryption algorithm</message>
+	<message key="installer.filesDir">Directory for uploads</message>
+	<message key="installer.fileSettings">File Settings</message>
+	<message key="installer.form.clientCharsetRequired">A client character set must be selected.</message>
+	<message key="installer.form.databaseDriverRequired">A database driver must be selected.</message>
+	<message key="installer.form.databaseNameRequired">The database name is required.</message>
+	<message key="installer.form.emailRequired">A valid email address for the administrator account is required.</message>
+	<message key="installer.form.encryptionRequired">The algorithm to use for encrypting user passwords must be selected.</message>
+	<message key="installer.form.filesDirRequired">The directory to be used for storing uploaded files is required.</message>
+	<message key="installer.form.localeRequired">A locale must be selected.</message>
+	<message key="installer.form.passwordRequired">A password for the administrator account is required.</message>
+	<message key="installer.form.passwordsDoNotMatch">The administrator passwords do not match.</message>
+	<message key="installer.form.separateMultiple">Separate multiple values with commas</message>
+	<message key="installer.form.usernameAlphaNumeric">The administrator username can contain only alphanumeric characters, underscores, and hyphens, and must begin and end with an alphanumeric character.</message>
+	<message key="installer.form.usernameRequired">A username for the administrator account is required.</message>
+	
+	<!-- Installer -->
+	<message key="installer.appInstallation">ScholarWizdam Installation</message>
+	<message key="installer.appUpgrade">ScholarWizdam Upgrade</message>
+    
+    <!--
+      * locale/en_US/installer.xml (partial — split keys only)
+      *
+      * [WIZDAM FIX] installer.installationInstructions dipecah menjadi
+      * key-key terpisah yang lebih modular. Heading ditulis langsung
+      * di dalam nilai masing-masing key. <tt> → <code>.
+      -->
+    <!-- INTRO -->
+    <message key="installer.installationIntro"><![CDATA[<h4>ScholarWizdam Version {$version}</h4>
+    <p>Thank you for downloading the Sangia Publishing House's <strong>ScholarWizdam</strong>. Before proceeding, please read the <a href="{$baseUrl}/docs/README" target="_blank">README</a> file included with this software. For more information about the Sangia Publishing House (SPH) and its software projects, please visit the <a href="http://wizdam.sangia.org/" target="_blank">Sangia Publishing House website</a>. If you have bug reports or technical support inquiries about ScholarWizdam, see the <a href="http://forum.wizdam.sangia.org" target="_blank">support forum</a> or visit SPH's online <a href="https://github.com/sph/wizdam-lib#issues" target="_blank">bug reporting system</a>. Although the support forum is the preferred method of contact, you can also email the team at <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>]]></message>
+     
+    <!-- UPGRADE INFO -->
+    <message key="installer.upgradeInfo"><![CDATA[<h4>Upgrade</h4>
+    <p>If you are upgrading an existing installation of ScholarWizdam or from OJS 2.x, <a href="{$upgradeUrl}">click here</a> to proceed. NOTE: For upgrade from OJS 3.x click here to proceed (under development).</p>]]></message>
+    <message key="installer.upgradeInfo.OJS3"><![CDATA[<p>If you are upgrading an existing installation of OJS 3.x, <a href="#">click here</a> to proceed (under development).</p>]]></message>
+     
+    <!-- SYSTEM REQUIREMENTS -->
+    <message key="installer.systemRequirements"><![CDATA[<h4>Recommended system requirements</h4>
+    <ul>
+    	<li><a href="http://www.php.net/" target="_blank">PHP</a> >= {$phpRequiredVersion}; you are currently using PHP {$phpVersion}{$wrongPhpText}</li>
+    	<li><a href="http://www.mysql.com/" target="_blank">MySQL</a> >= 4.x or <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a> >= 7.x (including PostgreSQL 8.x)</li>
+    	<li><a href="http://httpd.apache.org/" target="_blank">Apache</a> >= 1.3.2x or >= 2.0.4x or Microsoft IIS 6</li>
+    	<li>Operating system: Any OS that supports the above software, including <a href="http://www.linux.org/" target="_blank">Linux</a>, <a href="http://www.bsd.org/" target="_blank">BSD</a>, <a href="http://www.oracle.com/sun/" target="_blank">Solaris</a>, <a href="http://www.apple.com/" target="_blank">Mac OS X</a>, <a href="http://www.microsoft.com/">Windows</a></li>
+    </ul>
+    <p>As Sangia Publishing House does not have the resources to test every possible combination of software versions and platforms, no guarantee of correct operation or support is implied.</p>]]></message>
+     
+    <!-- POST-INSTALL NOTE -->
+    <message key="installer.postInstallNote"><![CDATA[Changes to these settings can be made after installation by editing the file <code>config.inc.php</code> in the base ScholarWizdam directory, or using the site administration web interface.]]></message>
+     
+    <!-- SUPPORTED DATABASES -->
+    <message key="installer.supportedDatabases"><![CDATA[<h4>Supported database systems</h4>
+    <p>ScholarWizdam has currently only been tested on MySQL and PostgreSQL, although other database management systems supported by <a href="http://adodb.org/" target="_blank">ADOdb</a> may work (in full or partially). Compatibility reports and/or code patches for alternative DBMSs can be sent to the ScholarWizdam team.</p>]]></message>
+     
+    <!-- PRE-INSTALL STEPS -->
+    <message key="installer.preInstallSteps"><![CDATA[<h4>Pre-Installation Steps</h4>
+    <p>1. The following files and directories (and their contents) must be made writable:</p>
+    <ul>
+    	<li><code>config.inc.php</code> is writable (optional): {$writable_config}</li>
+    	<li><code>public/</code> is writable: {$writable_public}</li>
+    	<li><code>cache/</code> is writable: {$writable_cache}</li>
+    	<li><code>cache/t_cache/</code> is writable: {$writable_templates_cache}</li>
+    	<li><code>cache/t_compile/</code> is writable: {$writable_templates_compile}</li>
+    	<li><code>cache/_db</code> is writable: {$writable_db_cache}</li>
+    </ul>
+    <p>2. A directory to store uploaded files must be created and made writable (see "File Settings" below).</p>]]></message>
+     
+    <!-- SECURITY — BCRYPT INFO -->
+    <message key="installer.securityBcryptInfo"><![CDATA[Password encryption uses <strong>bcrypt</strong> — a secure, industry-standard hashing algorithm. No configuration required.]]></message>
+
+	<message key="installer.upgradeInstructions"><![CDATA[<h4>ScholarWizdam Version {$version}</h4>
+	    <p>Thank you for downloading the Sangia Publishing House's <strong>ScholarWizdam</strong>. Before proceeding, please read the <a href="{$baseUrl}/docs/README" target="_blank">README</a> and <a href="{$baseUrl}/docs/UPGRADE" target="_blank">UPGRADE</a> files included with this software. For more information about the Sangia Publishing House and its software projects, please visit the <a href="http://wizdam.sangia.org/" target="_blank">Sangia Publishing House website</a>. If you have bug reports or technical support inquiries about ScholarWizdam, see the <a href="http://forum.wizdam.sangia.org" target="_blank">support forum</a> or visit Sangia Publishing House's online <a href="https://github.com/wizdam/wizdam-lib#issues" target="_blank">bug reporting system</a>. Although the support forum is the preferred method of contact, you can also email the team at <a href="mailto:wizdam.contact@gmail.com">wizdam.contact@gmail.com</a>.</p>
+	    <p>It is <strong>strongly recommended</strong> that you back up your database, files directory, and ScholarWizdam installation directory before proceeding.</p>
+	    <p>If you are running in <a href="http://www.php.net/features.safe-mode" target="_blank">PHP Safe Mode</a>, please ensure that the max_execution_time directive in your php.ini configuration file is set to a high limit. If this or any other time limit (e.g. Apache's "Timeout" directive) is reached and the upgrade process is interrupted, manual intervention will be required.</p>]]></message>
+
+	<message key="installer.localeSettingsInstructions"><![CDATA[For complete Unicode (UTF-8) support, select UTF-8 for all character set settings. Note that this support currently requires a MySQL >= 4.x. or PostgreSQL >= 7.x database server. Please also note that full Unicode support requires PHP >= 7.4.0 compiled with support for the <a href="http://www.php.net/mbstring" target="_blank">mbstring</a> library (enabled by default in most recent PHP installations). You may experience problems using extended character sets if your server does not meet these requirements.
+	    <br /><br />
+	    Your server currently supports mbstring: <strong>{$supportsMBString}</strong>]]></message>
+
+	<message key="installer.allowFileUploads"><![CDATA[Your server currently allows file uploads: <strong>{$allowFileUploads}</strong>]]></message>
+	<message key="installer.maxFileUploadSize"><![CDATA[Your server currently allows a maximum file upload size of: <strong>{$maxFileUploadSize}</strong>]]></message>
+	
+	<message key="installer.localeInstructions">The primary language to use for this system. Please consult the ScholarWizdam documentation if you are interested in support for languages not listed here.</message>
+	<message key="installer.additionalLocalesInstructions">Select any additional languages to support in this system. These languages will be available for use by journals hosted on the site. Additional languages can also be installed at any time from the site administration interface.</message>
+	<message key="installer.filesDirInstructions"><![CDATA[Enter full pathname to an existing directory where uploaded files are to be kept. This directory should not be directly web-accessible. <strong>Please ensure that this directory exists and is writable prior to installation.</strong> Windows path names should use forward slashes, e.g. "C:/myjournal/files".]]></message>
+	<message key="installer.databaseSettingsInstructions">ScholarWizdam requires access to a SQL database to store its data. See the system requirements above for a list of supported databases. In the fields below, provide the settings to be used to connect to the database.</message>
+	
+	<message key="installer.installApplication">Install ScholarWizdam</message>
+	<message key="installer.upgradeApplication">Upgrade ScholarWizdam</message>
+	<message key="installer.reinstallAfterDatabaseError"><![CDATA[<strong>Warning:</strong> If installation failed part way through database installation you may need to drop your ScholarWizdam database or database tables before attempting to reinstall the database.]]></message>
+	
+	<message key="installer.overwriteConfigFileInstructions"><![CDATA[<h4>IMPORTANT!</h4>
+	    <p>The installer could not automatically overwrite the configuration file. Before attempting to use the system, please open <tt>config.inc.php</tt> in a suitable text editor and replace its contents with the contents of the text field below.</p>]]></message>
+
+	<message key="installer.installationComplete"><![CDATA[<p>Installation of ScholarWizdam has completed successfully.</p>
+	    <p>To begin using the system, <a href="{$loginUrl}">login</a> with the username and password entered on the previous page.</p>
+	    <p>If you wish to receive news and updates, you can:</p>
+        <ol>
+        	<li><a href="http://wizdam.sangia.org/scholarwizdam/register" target="_new">Register</a> your journal, conference, or harvester and receive updates on software upgrades, security patches, and more.</li>
+        	<li>Join our <a href="http://wizdam.sangia.org/informed" target="_new">discussion list</a> for ScholarWizdam the Harvester, Lemon8-XML, or all of the above.</li>
+        	<li>Subscribe to the <a href="http://wizdam.sangia.org/blog" target="_new">Wizdam blog</a> <a href="http://wizdam.sangia.org/blog/feed" target="_new">RSS feed</a>.</li>
+        </ol>
+        <p>If you have questions or comments, please visit the <a href="http://forum.wizdam.sangia.org" target="_new">support forum</a>.</p>]]></message>
+
+	<message key="installer.upgradeComplete"><![CDATA[<p>Upgrade of ScholarWizdam to version {$version} has completed successfully.</p>
+	    <p>Don't forget to set the "installed" setting in your config.inc.php configuration file back to <em>On</em>.</p>
+	    <p>If you haven't already registered and wish to receive news and updates, <strong>please register at <a href="http://wizdam.sangia.org/scholarwizdam/register" target="_new">http://wizdam.sangia.org/scholarwizdam/register</a>.</strong> If you have questions or comments, please visit the <a href="http://forum.wizdam.sangia.org" target="_new">support forum</a>.</p>]]></message>
+	
+	<message key="installer.installationWrongPhp"><![CDATA[<br /><strong>WARNING: Your current version of PHP does not meet the minimum requirements for installation. It is recommended to upgrade to a more recent release of PHP.</strong>]]></message>
+	<message key="installer.installErrorsOccurred">Errors occurred during installation</message>
+	<message key="installer.installerSQLStatements">SQL statements for installation</message>
+	<message key="installer.installFileError"><![CDATA[The installation file <tt>dbscripts/xml/install.xml</tt> does not exist or is not readable.]]></message>
+	<message key="installer.installFilesDirError">The directory specified for uploaded files does not exist or is not writable.</message>
+	<message key="installer.installParseDBFileError"><![CDATA[Error parsing the database installation file <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseEmailTemplatesFileError"><![CDATA[Error parsing the email template file <tt>{$file}</tt>.]]></message>
+	<message key="installer.installParseFilterConfigFileError"><![CDATA[Error parsing the filter configuration file <tt>{$file}</tt>.]]></message>
+	<message key="installer.locale">Locale</message>
+	<message key="installer.locale.maybeIncomplete">Marked locales may be incomplete.</message>
+	<message key="installer.localeSettings">Locale Settings</message>
+	<message key="installer.oaiSettings">OAI Settings</message>
+	<message key="installer.oaiRepositoryIdInstructions"><![CDATA[A unique identifier used to identify metadata records indexed from this site using the <a href="http://www.openarchives.org/" target="_blank">Open Archives Initiative</a> Protocol for Metadata Harvesting.]]></message>
+	<message key="installer.oaiRepositoryId">Repository Identifier</message>
+	<message key="installer.publicFilesDirError">The public files directory does not exist or is not writable.</message>
+	<message key="installer.releaseNotes">Release Notes</message>
+	<message key="installer.securitySettings">Security Settings</message>
+
+	<message key="installer.beacon">Beacon</message>
+	<message key="installer.beacon.enable">Provide a unique site ID and OAI base URL to Sangia Publishing House for statistics and security alert purposes only.</message>
+	
+	<!-- Installation upgrade warnings -->
+	<message key="site.upgradeAvailable.admin"><![CDATA[There is a new version of ScholarWizdam available! You are currently using ScholarWizdam {$currentVersion}. The most recent version is ScholarWizdam {$latestVersion}. Please visit <a href="http://wizdam.sangia.org/download" target="_new">this page</a> to download the most recent version and find upgrade instructions.]]></message>
+	<message key="site.upgradeAvailable.manager"><![CDATA[There is a new version of ScholarWizdam available! You are currently using ScholarWizdam {$currentVersion}. The most recent version is ScholarWizdam {$latestVersion}. Please contact your Site Administrator ({$siteAdminName}, <a href="mailto:{$siteAdminEmail}">{$siteAdminEmail}</a>) to notify them of this new release. More information can be found <a href="http://wizdam.sangia.org/download" target="_new">here</a>.]]></message>
+</locale>

@@ -1,0 +1,57 @@
+[29-May-2025 20:46:59 Asia/Jakarta] PHP Parse error:  syntax error, unexpected '?' in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 164
+[29-May-2025 21:24:02 Asia/Jakarta] PHP Parse error:  syntax error, unexpected '?' in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 164
+[29-May-2025 21:42:41 Asia/Jakarta] ORCID API Error: Invalid ORCID ID format. Expected format: 0000-0000-0000-0000
+[21-Oct-2025 21:15:56 Asia/Jakarta] ORCID API Error: Invalid ORCID ID format. Expected format: 0000-0000-0000-0000
+[21-Oct-2025 21:16:23 Asia/Jakarta] ORCID API Error: Invalid ORCID ID format. Expected format: 0000-0000-0000-0000
+[21-Oct-2025 21:16:49 Asia/Jakarta] ORCID API Error: Invalid ORCID ID format. Expected format: 0000-0000-0000-0000
+[21-Oct-2025 21:21:53 Asia/Jakarta] ORCID API Error: Invalid ORCID ID format. Expected format: 0000-0000-0000-0000
+[21-Oct-2025 21:27:01 Asia/Jakarta] ORCID API Error: Invalid ORCID ID format. Expected format: 0000-0000-0000-0000
+[21-Oct-2025 21:32:05 Asia/Jakarta] ORCID API Error: Invalid ORCID ID format. Expected format: 0000-0000-0000-0000
+[21-Oct-2025 21:37:09 Asia/Jakarta] ORCID API Error: Invalid ORCID ID format. Expected format: 0000-0000-0000-0000
+[21-Oct-2025 21:42:13 Asia/Jakarta] ORCID API Error: Invalid ORCID ID format. Expected format: 0000-0000-0000-0000
+[21-Oct-2025 21:47:19 Asia/Jakarta] ORCID API Error: Invalid ORCID ID format. Expected format: 0000-0000-0000-0000
+[21-Oct-2025 21:52:24 Asia/Jakarta] ORCID API Error: Invalid ORCID ID format. Expected format: 0000-0000-0000-0000
+[09-Nov-2025 09:17:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php:26
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 26
+[09-Nov-2025 09:17:33 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php:26
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 26
+[09-Nov-2025 09:18:08 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php:26
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 26
+[09-Nov-2025 09:23:15 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php:26
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 26
+[09-Nov-2025 09:28:23 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php:26
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 26
+[09-Nov-2025 09:33:31 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php:26
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 26
+[09-Nov-2025 09:38:37 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php:26
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 26
+[09-Nov-2025 09:43:55 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php:26
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 26
+[09-Nov-2025 09:49:01 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php:26
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 26
+[09-Nov-2025 09:54:07 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php:26
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 26
+[09-Nov-2025 09:59:15 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function json_encode() in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php:26
+Stack trace:
+#0 {main}
+  thrown in /home/sangiaor/public_html/journals/plugins/themes/sangiapub/php/orcid_researcher/orcid_data.php on line 26
