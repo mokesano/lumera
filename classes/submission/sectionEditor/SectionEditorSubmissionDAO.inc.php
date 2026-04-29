@@ -1144,54 +1144,53 @@ class SectionEditorSubmissionDAO extends DAO {
     public function getReviewerStatistics($journalId) {
         $statistics = [];
 
-        // MODIFIKASI WIZDAM: Ambil Reviewer resmi + Siapa pun yang pernah ditugaskan
+        // 1. BUAT KERANGKA DEFAULT (Anti-Error PHP 8)
+        // Gunakan 'null' untuk tanggal agar template Smarty tidak mencetak "-"
+        $defaultStats = [
+            'last_notified' => null, 
+            'incomplete' => 0,
+            'total_span' => 0,
+            'completed_review_count' => 0,
+            'average_span' => 0
+        ];
+
+        // 2. INISIALISASI SEMUA REVIEWER RESMI
         $roleIdReviewer = defined('ROLE_ID_REVIEWER') ? ROLE_ID_REVIEWER : 4096;
-        
         $initResult = $this->retrieve(
-            'SELECT user_id FROM roles WHERE journal_id = ? AND role_id = ?
-             UNION
-             SELECT DISTINCT r.reviewer_id AS user_id 
-             FROM review_assignments r 
-             JOIN articles a ON r.submission_id = a.article_id 
-             WHERE a.journal_id = ?',
-            [(int) $journalId, (int) $roleIdReviewer, (int) $journalId]
+            'SELECT user_id FROM roles WHERE journal_id = ? AND role_id = ?',
+            [(int) $journalId, (int) $roleIdReviewer]
         );
-        
         while (!$initResult->EOF) {
             $row = $initResult->GetRowAssoc(false);
-            $statistics[$row['user_id']] = [
-                'last_notified' => null,
-                'incomplete' => 0,
-                'total_span' => 0,
-                'completed_review_count' => 0,
-                'average_span' => 0
-            ];
+            $statistics[$row['user_id']] = $defaultStats;
             $initResult->MoveNext();
         }
         $initResult->Close();
         unset($initResult);
-        
-        // Get latest review request date
+
+        // 3. AMBIL TANGGAL NOTIFIKASI TERAKHIR
         $result = $this->retrieve(
-            'SELECT	r.reviewer_id, MAX(r.date_notified) AS last_notified
-            FROM	review_assignments r,
+            'SELECT r.reviewer_id, MAX(r.date_notified) AS last_notified
+            FROM    review_assignments r,
                 articles a
-            WHERE	r.submission_id = a.article_id AND
+            WHERE   r.submission_id = a.article_id AND
                 a.journal_id = ?
             GROUP BY r.reviewer_id',
             [(int) $journalId]
         );
         while (!$result->EOF) {
             $row = $result->GetRowAssoc(false);
-            if (!isset($statistics[$row['reviewer_id']])) $statistics[$row['reviewer_id']] = [];
+            // Jika ada user yang bukan reviewer tapi pernah ditugaskan, beri kerangka default
+            if (!isset($statistics[$row['reviewer_id']])) {
+                $statistics[$row['reviewer_id']] = $defaultStats;
+            }
             $statistics[$row['reviewer_id']]['last_notified'] = $this->datetimeFromDB($row['last_notified']);
             $result->MoveNext();
         }
-
         $result->Close();
         unset($result);
 
-        // Get incomplete submission count
+        // 4. AMBIL JUMLAH REVIEW BELUM SELESAI
         $result = $this->retrieve(
             'SELECT r.reviewer_id, COUNT(*) AS incomplete
             FROM    review_assignments r,
@@ -1208,20 +1207,21 @@ class SectionEditorSubmissionDAO extends DAO {
         );
         while (!$result->EOF) {
             $row = $result->GetRowAssoc(false);
-            if (!isset($statistics[$row['reviewer_id']])) $statistics[$row['reviewer_id']] = [];
+            if (!isset($statistics[$row['reviewer_id']])) {
+                $statistics[$row['reviewer_id']] = $defaultStats;
+            }
             $statistics[$row['reviewer_id']]['incomplete'] = $row['incomplete'];
             $result->MoveNext();
         }
-
         $result->Close();
         unset($result);
 
-        // Calculate time taken for completed reviews
+        // 5. HITUNG RATA-RATA WAKTU REVIEW
         $result = $this->retrieve(
-            'SELECT	r.reviewer_id, r.date_notified, r.date_completed
-            FROM	review_assignments r,
+            'SELECT r.reviewer_id, r.date_notified, r.date_completed
+            FROM    review_assignments r,
                 articles a
-            WHERE	r.submission_id = a.article_id AND
+            WHERE   r.submission_id = a.article_id AND
                 r.date_notified IS NOT NULL AND
                 r.date_completed IS NOT NULL AND
                 r.declined = 0 AND
@@ -1230,23 +1230,20 @@ class SectionEditorSubmissionDAO extends DAO {
         );
         while (!$result->EOF) {
             $row = $result->GetRowAssoc(false);
-            if (!isset($statistics[$row['reviewer_id']])) $statistics[$row['reviewer_id']] = [];
+            if (!isset($statistics[$row['reviewer_id']])) {
+                $statistics[$row['reviewer_id']] = $defaultStats;
+            }
 
             $completed = strtotime($this->datetimeFromDB($row['date_completed']));
             $notified = strtotime($this->datetimeFromDB($row['date_notified']));
-            if (isset($statistics[$row['reviewer_id']]['total_span'])) {
-                $statistics[$row['reviewer_id']]['total_span'] += $completed - $notified;
-                $statistics[$row['reviewer_id']]['completed_review_count'] += 1;
-            } else {
-                $statistics[$row['reviewer_id']]['total_span'] = $completed - $notified;
-                $statistics[$row['reviewer_id']]['completed_review_count'] = 1;
-            }
+            
+            $statistics[$row['reviewer_id']]['total_span'] += $completed - $notified;
+            $statistics[$row['reviewer_id']]['completed_review_count'] += 1;
 
             // Calculate the average length of review in weeks.
             $statistics[$row['reviewer_id']]['average_span'] = (($statistics[$row['reviewer_id']]['total_span'] / $statistics[$row['reviewer_id']]['completed_review_count']) / 60 / 60 / 24 / 7);
             $result->MoveNext();
         }
-
         $result->Close();
         unset($result);
 
