@@ -102,12 +102,14 @@ class JournalSetupStep5Form extends JournalSetupForm {
         $templateMgr = TemplateManager::getManager();
 
         $templateMgr->assign([
-            'homeHeaderTitleImage' => $journal->getSetting('homeHeaderTitleImage'),
-            'homeHeaderLogoImage'=> $journal->getSetting('homeHeaderLogoImage'),
-            'journalThumbnail'=> $journal->getSetting('journalThumbnail'),
-            'pageHeaderTitleImage' => $journal->getSetting('pageHeaderTitleImage'),
-            'pageHeaderLogoImage' => $journal->getSetting('pageHeaderLogoImage'),
-            'homepageImage' => $journal->getSetting('homepageImage'),
+            // Tambahkan ?? [] pada setting yang multi-bahasa (terutama gambar)
+            'homeHeaderTitleImage' => $journal->getSetting('homeHeaderTitleImage') ?? [],
+            'homeHeaderLogoImage'=> $journal->getSetting('homeHeaderLogoImage') ?? [],
+            'journalThumbnail'=> $journal->getSetting('journalThumbnail') ?? [],
+            'pageHeaderTitleImage' => $journal->getSetting('pageHeaderTitleImage') ?? [],
+            'pageHeaderLogoImage' => $journal->getSetting('pageHeaderLogoImage') ?? [],
+            'homepageImage' => $journal->getSetting('homepageImage') ?? [],
+            
             'journalStyleSheet' => $journal->getSetting('journalStyleSheet'),
             'readerInformation' => $journal->getSetting('readerInformation'),
             'authorInformation' => $journal->getSetting('authorInformation'),
