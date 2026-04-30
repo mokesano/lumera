@@ -1,0 +1,46 @@
+# PHPStan is a PHP Static Analysis Tool.
+# It focuses on finding errors in your code without actually running it.
+# It catches whole classes of bugs even before you write tests for the code.
+# More details at https://phpstan.org/
+
+name: PHPStan
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  # Menghilangkan peringatan depresiasi Node.js 20
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  PHPStan:
+    name: Run PHPStan Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Diperlukan agar format 'github' bisa memberikan anotasi/komentar langsung di baris kode
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: phpstan
+          ini-values: memory_limit=-1
+
+      - name: Run PHPStan (Level 0)
+        # LEVEL 0 SANGAT PENTING untuk kode legacy. Ini hanya mendeteksi basic fatal errors.
+        # Format github akan membuat anotasi langsung pada tab 'Commit' atau 'Pull Request'.
+        run: phpstan analyse classes pages plugins lib/pkp/classes --level 0 --error-format=github
+        continue-on-error: true
