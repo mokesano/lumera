@@ -207,9 +207,7 @@ class VersionDAO extends DAO {
 
     /**
      * Retrieve all currently enabled products.
-	 *
-	 * @param $context array the application context, only
-	 *  products enabled in that context will be returned.
+	 * @param $context array the application context
 	 * @return array
 	 */
     public function getCurrentProducts($context) {
@@ -229,7 +227,6 @@ class VersionDAO extends DAO {
         // [MODERNISASI] Fix parameter retrieve, $context harus array untuk binding, tapi query logic Anda menggunakan string concat manual untuk binding placeholder.
         // ADODB execute expects params array.
         // Jika $context adalah array data (bukan array kosong), maka aman.
-        
         $result = $this->retrieve(
                 'SELECT v.*
                  FROM versions v LEFT JOIN plugin_settings ps ON
@@ -264,5 +261,4 @@ class VersionDAO extends DAO {
         );
     }
 }
-
 ?>
