@@ -22,6 +22,10 @@ on:
   schedule:
     - cron: '29 18 * * 3'
 
+env:
+  # Menghilangkan peringatan depresiasi Node.js 20
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: read
 
@@ -38,8 +42,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Free up RAM (Remove third-party libraries before scan)
-        run: rm -rf lib/ node_modules/ cache/
+      # DIPERBARUI: Menghapus direktori cache, vendor, dan library bawaan OJS 2 (adodb, smarty) 
+      # agar Codacy tidak kehabisan memori saat memindai kode usang pihak ketiga
+      - name: Free up RAM & Remove 3rd-party libs
+        run: rm -rf vendor/ node_modules/ cache/ lib/adodb/ lib/smarty/
 
       # Execute Codacy Analysis CLI and generate a SARIF output with the security issues identified during the analysis
       - name: Run Codacy Analysis CLI
@@ -51,8 +57,7 @@ jobs:
         with:
           # Check https://github.com/codacy/codacy-analysis-cli#project-token to get your project token from your Codacy repository
           # You can also omit the token and run the tools that support default configurations
-          # Only set project-token if the secret is available
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN || '' }}
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           verbose: true
           output: results.sarif
           format: sarif
