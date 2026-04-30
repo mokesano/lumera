@@ -211,5 +211,4 @@ class VersionCheck {
         else return false;
     }
 }
-
 ?>
