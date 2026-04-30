@@ -107,7 +107,28 @@ class EmailTemplateForm extends Form {
                 'enabled' => $emailTemplate->getEnabled()
             ];
         } else {
-            $this->_data = ['isNewTemplate' => true];
+            // Inisialisasi arrayuntuk mencegah access array type null"
+            $subject = [];
+            $body = [];
+            $supportedLocales = $journal->getSupportedLocaleNames();
+            
+            // Siapkan slot kosong untuk setiap bahasa yang didukung jurnal
+            if (!empty($supportedLocales)) {
+                foreach (array_keys($supportedLocales) as $locale) {
+                    $subject[$locale] = '';
+                    $body[$locale] = '';
+                }
+            } else {
+                $locale = AppLocale::getLocale();
+                $subject[$locale] = '';
+                $body[$locale] = '';
+            }
+
+            $this->_data = [
+                'isNewTemplate' => true,
+                'subject' => $subject,
+                'body' => $body
+            ];
         }
     }
 
