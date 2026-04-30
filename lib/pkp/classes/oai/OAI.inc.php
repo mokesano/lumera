@@ -326,7 +326,7 @@ class OAI {
             "\t\t\t\t<title>" . $info->toolkitTitle . "</title>\n" .
             "\t\t\t\t<author>\n" .
             "\t\t\t\t\t<name>Sangia Publishing House</name>\n" .
-            "\t\t\t\t\t<email>swem@gmail.com</email>\n" .
+            "\t\t\t\t\t<email>lumera@gmail.com</email>\n" .
             "\t\t\t\t</author>\n" .
             "\t\t\t\t<version>" . $info->toolkitVersion . "</version>\n" .
             "\t\t\t\t<URL>" . $info->toolkitURL . "</URL>\n" .
