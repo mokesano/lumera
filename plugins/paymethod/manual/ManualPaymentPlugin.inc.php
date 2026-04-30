@@ -352,28 +352,20 @@ class ManualPaymentPlugin extends PaymethodPlugin {
                 import('classes.mail.MailTemplate');
                 AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
                 
-                // Set pengirim dari pihak jurnal
+                // Journal Contact Details
                 $journalName = $context->getLocalizedName();
                 $contactName = $context->getSetting('contactName');
                 $contactEmail = $context->getSetting('contactEmail');
                 $supportEmail = $context->getSetting('supportEmail') ?: $contactEmail;
-                
-                // Inisialisasi template baru untuk pengguna
-                $mail = new MailTemplate('USER_INVOICE_GENERATED'); 
-                $mail->setFrom($contactEmail, $contactName);
-                $mail->setReplyTo($supportEmail, $contactName);
-                
-                // MENGUBAH PENERIMA MENJADI PENGGUNA (AUTHOR)
-                $mail->addRecipient($user->getEmail(), $user->getFullName());
 
-                // --- 1. FORMAT KEUANGAN ---
+                // --- 1. FINANCIAL FORMATTING ---
                 $locale = AppLocale::getLocale();
                 $formatter = new \NumberFormatter($locale, \NumberFormatter::DECIMAL);
                 $formatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 2);
                 $formatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 2);
                 $formattedAmount = $formatter->format($queuedPayment->getAmount());
 
-                // --- 2. INTEGRASI WIZDAM SMART ROUTER ---
+                // --- 2. WIZDAM SERVICE LAYER & SMART ROUTER ---
                 import('lib.wizdam.classes.services.InvoiceService');
                 import('lib.wizdam.classes.security.SecurityHashService');
 
@@ -387,37 +379,61 @@ class ManualPaymentPlugin extends PaymethodPlugin {
                     $invoiceId = (int) $invoice->getInvoiceId();
                     $displayPaymentId = $invoice->getInvoiceNumber(); 
                     
-                    // Generate hash keamanan dan bentuk Smart Router B2B
+                    // Generate security hash and Smart Router URL
                     $authHash = $hashService->generateHash('invoice', $invoiceId);
                     $paymentStatusUrl = $request->url(null, 'billing', 'invoice', ["{$authHash}-{$invoiceId}"]);
                 } else {
-                    // Fallback jika tidak ada objek invoice
                     $displayPaymentId = (string) $queuedPaymentId;
-                    $paymentStatusUrl = $request->url(null, 'billing'); // Arahkan ke dashboard billing utama
+                    $paymentStatusUrl = $request->url(null, 'billing');
                 }
 
-                // --- 3. ASSIGN VARIABEL KE EMAIL PENGGUNA ---
-                $mail->assignParams([
-                    'userFullName' => $user->getFullName(),
-                    'journalName' => $journalName,
-                    'paymentId' => $displayPaymentId, 
-                    'paymentReason' => $queuedPayment->getDescription() ?: __('common.none'),
-                    'totalAmount' => $formattedAmount,
+                // --- 3. NOTIFICATION TO AUTHOR (USER) ---
+                $mailUser = new MailTemplate('USER_INVOICE_GENERATED'); 
+                $mailUser->setFrom($contactEmail, $contactName);
+                $mailUser->setReplyTo($supportEmail, $contactName);
+                $mailUser->addRecipient($user->getEmail(), $user->getFullName());
+                
+                $mailUser->assignParams([
+                    'userFullName'     => $user->getFullName(),
+                    'journalName'      => $journalName,
+                    'paymentId'        => $displayPaymentId, 
+                    'paymentReason'    => $queuedPayment->getDescription() ?: __('common.none'),
+                    'totalAmount'      => $formattedAmount,
                     'itemCurrencyCode' => $queuedPayment->getCurrencyCode(),
                     'paymentStatusUrl' => $paymentStatusUrl,
-                    'supportEmail' => $supportEmail
+                    'supportEmail'     => $supportEmail
                 ]);
-                
-                // Kirim email ke Pengguna
-                $mail->send();
+                $mailUser->send();
 
-                // --- 4. TAMPILAN LAYAR SETELAH PENGGUNA MENEKAN TOMBOL ---
+                // --- 4. NOTIFICATION TO ADMIN (AS RECORD/AUDIT) ---
+                $mailAdmin = new MailTemplate('MANUAL_PAYMENT_NOTIFICATION'); 
+                $mailAdmin->setFrom($contactEmail, $contactName);
+                $mailAdmin->addRecipient($contactEmail, $contactName);
+
+                $mailAdmin->assignParams([
+                    'paymentId'             => $displayPaymentId,
+                    'priorityLevel'         => 'High',
+                    'paymentRequestDate'    => date('Y-m-d H:i:s'),
+                    'itemName'              => $queuedPayment->getName() ?: __('common.none'),
+                    'totalAmount'           => $formattedAmount,
+                    'itemCurrencyCode'      => $queuedPayment->getCurrencyCode(),
+                    'journalName'           => $journalName,
+                    'submissionId'          => (string) $submissionId,
+                    'userFullName'          => $user->getFullName(),
+                    'userEmail'             => $user->getEmail(),
+                    'paymentStatusUrl'      => $paymentStatusUrl, // Admin link for direct review
+                    'notificationTimestamp' => date('Y-m-d H:i:s'),
+                    'instanceUrl'        => $request->getBaseUrl()
+                ]);
+                $mailAdmin->send();
+
+                // --- 5. UI RESOLUTION ---
                 $templateMgr->assign([
-                    'currentUrl' => $request->url(null, null, 'payment', 'plugin', ['notify', $queuedPaymentId]),
-                    'pageTitle' => 'plugins.paymethod.manual.paymentNotification',
-                    'message' => 'plugins.paymethod.manual.notificationSent', // Di OJS ini biasanya berarti "Instruksi telah dikirim ke email Anda"
-                    'backLink' => $paymentStatusUrl, // Arahkan tombol "Continue" langsung ke Smart Router!
-                    'backLinkLabel' => 'billing.continueToInvoice' // Pastikan key locale ini ada, atau pakai string biasa
+                    'currentUrl'    => $request->url(null, null, 'payment', 'plugin', ['notify', $queuedPaymentId]),
+                    'pageTitle'     => 'plugins.paymethod.manual.paymentNotification',
+                    'message'       => 'plugins.paymethod.manual.notificationSent',
+                    'backLink'      => $paymentStatusUrl, 
+                    'backLinkLabel' => 'common.continue'
                 ]);
                 $templateMgr->display('common/message.tpl');
                 exit();
