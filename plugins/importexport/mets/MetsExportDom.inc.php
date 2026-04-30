@@ -897,7 +897,7 @@ class MetsExportDom {
     public static function getCreatorString(): string {
         $versionDao = DAORegistry::getDAO('VersionDAO');
         $cVersion = $versionDao->getCurrentVersion();
-        return sprintf('Open Journal Systems v%d.%d.%d build %d', $cVersion->getMajor(), $cVersion->getMinor(), $cVersion->getRevision(), $cVersion->getBuild());
+        return sprintf('Lumera v%d.%d.%d build %d', $cVersion->getMajor(), $cVersion->getMinor(), $cVersion->getRevision(), $cVersion->getBuild());
     }
 
     /**

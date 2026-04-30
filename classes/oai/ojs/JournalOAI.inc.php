@@ -128,8 +128,8 @@ class JournalOAI extends OAI {
         $info->sampleIdentifier = $this->articleIdToIdentifier(1);
         $info->earliestDatestamp = $this->dao->getEarliestDatestamp([$this->journalId]);
 
-        // [CUSTOM FORK FEATURE] Wizdam Toolkit Branding
-        $info->toolkitTitle = 'Wizdam Publishing System';
+        // [FORK FEATURE] Wizdam Toolkit Branding
+        $info->toolkitTitle = 'Lumera - Modern Publishing';
         $versionDao = DAORegistry::getDAO('VersionDAO');
         $currentVersion = $versionDao->getCurrentVersion();
         $info->toolkitVersion = $currentVersion->getVersionString();
