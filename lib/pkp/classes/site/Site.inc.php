@@ -86,6 +86,10 @@ class Site extends DataObject {
         return $this->getLocalizedSetting('title');
     }
 
+    /**
+     * [SHIM] DEPRECATED Legacy Get Site Title Shim.
+     * @return string
+     */
     public function getSiteTitle() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedTitle();
@@ -112,6 +116,10 @@ class Site extends DataObject {
         return null;
     }
 
+    /**
+     * [SHIM] DEPRECATED Legacy Get Site Page Header Title Shim.
+     * @return string
+     */
     public function getSitePageHeaderTitle() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedPageHeaderTitle();
@@ -125,6 +133,10 @@ class Site extends DataObject {
         return $this->getLocalizedData('pageHeaderTitleType');
     }
 
+    /**
+     * [SHIM] DEPRECATED Legacy Get Site Page Header Title Type Shim.
+     * @return boolean
+     */
     public function getSitePageHeaderTitleType() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedPageHeaderTitleType();
@@ -154,6 +166,10 @@ class Site extends DataObject {
         return $this->getLocalizedSetting('intro');
     }
 
+    /**
+     * [SHIM] DEPRECATED Legacy Get Site Intro Shim.
+     * @return string
+     */
     public function getSiteIntro() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedIntro();
@@ -183,6 +199,10 @@ class Site extends DataObject {
         return $this->getLocalizedSetting('about');
     }
 
+    /**
+     * [SHIM] DEPRECATED Legacy Get Site About Shim.
+     * @return string
+     */
     public function getSiteAbout() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedAbout();
@@ -196,6 +216,10 @@ class Site extends DataObject {
         return $this->getLocalizedSetting('contactName');
     }
 
+    /**
+     * [SHIM] DEPRECATED Legacy Get Site Contact Name Shim.
+     * @return string
+     */
     public function getSiteContactName() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedContactName();
@@ -209,6 +233,10 @@ class Site extends DataObject {
         return $this->getLocalizedSetting('contactEmail');
     }
 
+    /**
+     * [SHIM] DEPRECATED Legacy Get Site Contact Email Shim.
+     * @return string
+     */
     public function getSiteContactEmail() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedContactEmail();
@@ -325,5 +353,4 @@ class Site extends DataObject {
         return $siteSettingsDao->updateSetting($name, $value, $type, $isLocalized);
     }
 }
-
 ?>

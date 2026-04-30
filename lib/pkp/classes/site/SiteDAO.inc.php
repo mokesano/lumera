@@ -160,10 +160,13 @@ class SiteDAO extends DAO {
         );
     }
 
+    /**
+     * [SHIM] Legacy Update Shim.
+     * @param $site Site
+     */
     public function updateSite($site) {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->updateObject($site);
     }
 }
-
 ?>
