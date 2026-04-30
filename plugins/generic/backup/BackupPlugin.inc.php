@@ -117,7 +117,7 @@ class BackupPlugin extends GenericPlugin {
         $sourceFile = $args[2];
         $request = Application::getRequest();
 
-        AppLocale::requireComponents(LOCALE_COMPONENT_PKP_ADMIN, LOCALE_COMPONENT_APPLICATION_COMMON);
+        AppLocale::requireComponents(LOCALE_COMPONENT_CORE_ADMIN, LOCALE_COMPONENT_APPLICATION_COMMON);
         $returnValue = 0;
         $dateStamp = date('Y-m-d');
 
