@@ -273,5 +273,4 @@ class SiteSettingsDAO extends DAO {
         return __($matches[1]);
     }
 }
-
 ?>

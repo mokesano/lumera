@@ -289,5 +289,4 @@ class Version extends DataObject {
         return sprintf('%d.%d.%d.%d', $this->getMajor(), $this->getMinor(), $this->getRevision(), $this->getBuild());
     }
 }
-
 ?>
