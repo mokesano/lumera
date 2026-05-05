@@ -258,7 +258,7 @@ class BooksForReviewPlugin extends GenericPlugin {
                 if (in_array($op, $editorPages)) {
                     define('HANDLER_CLASS', 'BooksForReviewEditorHandler');
                     define('BOOKS_FOR_REVIEW_PLUGIN_NAME', $this->getName());
-                    AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON, LOCALE_COMPONENT_PKP_USER, LOCALE_COMPONENT_OJS_EDITOR);
+                    AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON, LOCALE_COMPONENT_CORE_USER, LOCALE_COMPONENT_APP_EDITOR);
                     
                     // [WIZDAM NOTE] Hook LoadHandler arguments: $page, $op, &$sourceFile
                     // Harus menggunakan & di sini karena sourceFile perlu diubah agar router memuat handler dari plugin ini.
@@ -290,7 +290,7 @@ class BooksForReviewPlugin extends GenericPlugin {
                 if (in_array($op, $authorPages)) {
                     define('HANDLER_CLASS', 'BooksForReviewAuthorHandler');
                     define('BOOKS_FOR_REVIEW_PLUGIN_NAME', $this->getName());
-                    AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON, LOCALE_COMPONENT_PKP_USER, LOCALE_COMPONENT_OJS_AUTHOR);
+                    AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON, LOCALE_COMPONENT_CORE_USER, LOCALE_COMPONENT_APP_AUTHOR);
                     
                     // [WIZDAM NOTE] Reference assignment required for HookRegistry modification
                     $handlerFile =& $params[2];
