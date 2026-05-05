@@ -113,7 +113,7 @@ class METSExportPlugin extends ImportExportPlugin {
             case 'issues':
                 // Display a list of issues for export
                 $this->setBreadcrumbs([], true);
-                AppLocale::requireComponents(LOCALE_COMPONENT_OJS_EDITOR);
+                AppLocale::requireComponents(LOCALE_COMPONENT_APP_EDITOR);
                 $issues = $issueDao->getIssues($journal->getId(), Handler::getRangeInfo('issues'));
 
                 $siteDao = DAORegistry::getDAO('SiteDAO');
@@ -184,5 +184,4 @@ class METSExportPlugin extends ImportExportPlugin {
         return true;
     }
 }
-
 ?>
