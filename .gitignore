@@ -1,4 +1,3 @@
-```
 # Dependencies
 vendor/
 
@@ -122,5 +121,3 @@ capybara-*.html
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-
-```
