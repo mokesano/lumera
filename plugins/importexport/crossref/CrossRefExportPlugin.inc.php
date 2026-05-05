@@ -183,7 +183,7 @@ class CrossRefExportPlugin extends DOIExportPlugin {
         $this->setBreadcrumbs(array(), true);
 
         // Retrieve all published issues.
-        AppLocale::requireComponents(array(LOCALE_COMPONENT_OJS_EDITOR));
+        AppLocale::requireComponents(array(LOCALE_COMPONENT_APP_EDITOR));
         $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
         $this->registerDaoHook('IssueDAO');
         $issueIterator = $issueDao->getPublishedIssues($journal->getId(), Handler::getRangeInfo('issues'));
@@ -322,7 +322,7 @@ class CrossRefExportPlugin extends DOIExportPlugin {
      */
     public function generateExportFiles($request, $exportType, $objects, $targetPath, $journal, &$errors) {
         // Additional locale file.
-        AppLocale::requireComponents(array(LOCALE_COMPONENT_OJS_EDITOR));
+        AppLocale::requireComponents(array(LOCALE_COMPONENT_APP_EDITOR));
 
         $this->import('classes.CrossRefExportDom');
         $dom = new CrossRefExportDom($request, $this, $journal, $this->getCache());
@@ -571,5 +571,4 @@ class CrossRefExportPlugin extends DOIExportPlugin {
     }
 
 }
-
 ?>

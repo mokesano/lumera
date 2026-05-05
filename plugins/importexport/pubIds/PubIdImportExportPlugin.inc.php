@@ -130,7 +130,7 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
             case 'selectIssue':
                 // Display a list of issues for export
                 $this->setBreadcrumbs([], true);
-                AppLocale::requireComponents([LOCALE_COMPONENT_OJS_EDITOR]);
+                AppLocale::requireComponents([LOCALE_COMPONENT_APP_EDITOR]);
                 $issues = $issueDao->getIssues($journal->getId(), Handler::getRangeInfo('issues'));
                 $templateMgr->assign('issues', $issues);
                 $templateMgr->display($this->getTemplatePath() . 'selectIssue.tpl');
@@ -545,5 +545,4 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
         ]) . "\n";
     }
 }
-
 ?>
