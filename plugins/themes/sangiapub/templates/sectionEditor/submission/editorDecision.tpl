@@ -16,6 +16,7 @@
 	<td class="label" width="20%">{translate key="editor.article.selectDecision"}</td>
 	<td width="80%" class="value">
 		<form method="post" action="{url op="recordDecision"}">
+			<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 			<input type="hidden" name="articleId" value="{$submission->getId()}" />
 			<select name="decision" size="1" class="selectMenu"{if not $allowRecommendation} disabled="disabled"{/if}>
 				{html_options_translate options=$editorDecisionOptions selected=$lastDecision}
