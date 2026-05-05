@@ -60,10 +60,8 @@ class PKPComponentRouter extends PKPRouter {
 
     /**
      * Retrieve the requested component from the request.
-     *
      * NB: This can be a component that not actually exists
      * in the code base.
-     *
      * @param $request PKPRequest
      * @return string the requested component or an empty string
      * if none can be found.
@@ -100,10 +98,8 @@ class PKPComponentRouter extends PKPRouter {
 
     /**
      * Retrieve the requested operation from the request
-     *
      * NB: This can be an operation that not actually
      * exists in the requested component.
-     *
      * @param $request PKPRequest
      * @return string the requested operation or an empty string
      * if none can be found.
@@ -201,7 +197,10 @@ class PKPComponentRouter extends PKPRouter {
     //
     
     /**
+     * Route the given request to a component handler operation.
      * @see PKPRouter::route()
+     * @param $request PKPRequest the request to be routed
+     * @return mixed
      */
     public function route($request) {
         // Determine the requested service endpoint.
@@ -219,7 +218,10 @@ class PKPComponentRouter extends PKPRouter {
     }
 
     /**
+     * Generate a URL to a component handler operation.
      * @see PKPRouter::url()
+     * @param $request 
+     * @return string the generated URL
      */
     public function url($request, $newContext = null, $component = null, $op = null, $path = null,
             $params = null, $anchor = null, $escape = false) {
@@ -308,14 +310,18 @@ class PKPComponentRouter extends PKPRouter {
     }
 
     /**
+     * Handle an authorization failure for a component request. This will return
+     * a JSON error message with the translated authorization error message.
      * @see PKPRouter::handleAuthorizationFailure()
+     * @param $request PKPRequest the request that failed authorization
+     * @param $authorizationMessage string the authorization error message to be translated and returned
      */
     public function handleAuthorizationFailure($request, $authorizationMessage) {
         // Translate the authorization error message.
         if (defined('LOCALE_COMPONENT_APPLICATION_COMMON')) {
             AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
         }
-        AppLocale::requireComponents(LOCALE_COMPONENT_PKP_USER);
+        AppLocale::requireComponents(LOCALE_COMPONENT_CORE_USER);
         $translatedAuthorizationMessage = __($authorizationMessage);
 
         // Add the router name and operation if show_stacktrace is enabled.

@@ -285,7 +285,7 @@ class SwordPlugin extends GenericPlugin {
 
         switch ($verb) {
             case 'settings':
-                AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON,  LOCALE_COMPONENT_PKP_MANAGER);
+                AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON,  LOCALE_COMPONENT_CORE_MANAGER);
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
                 $journal = $request->getJournal();
@@ -405,5 +405,4 @@ class SwordPlugin extends GenericPlugin {
         return ($this->getPluginPath() . '/locale/{$installedLocale}/emailTemplates.xml');
     }
 }
-
 ?>
