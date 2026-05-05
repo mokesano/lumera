@@ -557,7 +557,7 @@ class DOIExportPlugin extends ImportExportPlugin {
 		// Prepare and display the issue template.
 		// Get the issue iterator from the DB for the template again.
 		$issueIterator = $issueDao->getPublishedIssues($journal->getId(), Handler::getRangeInfo('issues'));
-		$templateMgr->assign_by_ref('issues', $issueIterator);
+		$templateMgr->assign('issues', $issueIterator);
 		$templateMgr->assign('allExcluded', $allExcluded);
 		$templateMgr->assign('excludes', $excludes);
 		$templateMgr->display($this->getTemplatePath() . 'issues.tpl');
@@ -570,12 +570,12 @@ class DOIExportPlugin extends ImportExportPlugin {
 	 */
 	public function displayAllUnregisteredObjects($templateMgr, $journal) {
 		$this->setBreadcrumbs(array(), true);
-		AppLocale::requireComponents(array(LOCALE_COMPONENT_PKP_SUBMISSION));
+		AppLocale::requireComponents(array(LOCALE_COMPONENT_CORE_SUBMISSION));
 
 		// Prepare and display the template.
-		$templateMgr->assign_by_ref('issues', $this->_getUnregisteredIssues($journal));
-		$templateMgr->assign_by_ref('articles', $this->_getUnregisteredArticles($journal));
-		$templateMgr->assign_by_ref('galleys', $this->_getUnregisteredGalleys($journal));
+		$templateMgr->assign('issues', $this->_getUnregisteredIssues($journal));
+		$templateMgr->assign('articles', $this->_getUnregisteredArticles($journal));
+		$templateMgr->assign('galleys', $this->_getUnregisteredGalleys($journal));
 		$templateMgr->display($this->getTemplatePath() . 'all.tpl');
 	}
 

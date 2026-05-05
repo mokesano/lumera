@@ -377,8 +377,8 @@ class ExternalFeedPlugin extends GenericPlugin {
     
         AppLocale::requireComponents(
             LOCALE_COMPONENT_APPLICATION_COMMON,
-            LOCALE_COMPONENT_PKP_MANAGER,
-            LOCALE_COMPONENT_PKP_USER
+            LOCALE_COMPONENT_CORE_MANAGER,
+            LOCALE_COMPONENT_CORE_USER
         );
         $templateMgr = TemplateManager::getManager();
         $templateMgr->register_function('plugin_url', array($this, 'smartyPluginUrl'));

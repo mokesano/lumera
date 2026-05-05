@@ -459,7 +459,7 @@ class PayPalPlugin extends PaymethodPlugin {
                 break;
 
             case 'cancel':
-                AppLocale::requireComponents(LOCALE_COMPONENT_PKP_COMMON, LOCALE_COMPONENT_PKP_USER, LOCALE_COMPONENT_APPLICATION_COMMON);
+                AppLocale::requireComponents(LOCALE_COMPONENT_CORE_COMMON, LOCALE_COMPONENT_CORE_USER, LOCALE_COMPONENT_APPLICATION_COMMON);
                 $templateMgr->assign(array(
                     'currentUrl' => $request->url(null, 'index'),
                     'pageTitle' => 'plugins.paymethod.paypal.purchase.cancelled.title',
