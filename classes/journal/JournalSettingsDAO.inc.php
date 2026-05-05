@@ -317,7 +317,7 @@ class JournalSettingsDAO extends DAO {
         preg_match('{{translate key="([^"]+)"}}', (string) $rawInput, $matches);
         
         if (isset($matches[1])) {
-            AppLocale::requireComponents(LOCALE_COMPONENT_OJS_DEFAULT, LOCALE_COMPONENT_OJS_MANAGER, $locale);
+            AppLocale::requireComponents(LOCALE_COMPONENT_APP_DEFAULT, LOCALE_COMPONENT_APP_MANAGER, $locale);
             return __($matches[1], $paramArray, $locale);
         }
 
