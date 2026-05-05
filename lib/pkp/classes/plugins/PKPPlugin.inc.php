@@ -71,7 +71,6 @@ class PKPPlugin {
      * the plug-in is enabled and an entry in the result set of
      * registerOn() matches the current request operation. An empty array
      * matches all request operations.
-     *
      * @param $category String Name of category plugin was registered to
      * @param $path String The path the plugin was found in
      * @return boolean True iff plugin registered successfully; if false,
@@ -115,7 +114,6 @@ class PKPPlugin {
      * Get the name of this plugin. The name must be unique within
      * its category, and should be suitable for part of a filename
      * (ie short, no spaces, and no dependencies on cases being unique).
-     *
      * @return string name of plugin
      */
     public function getName(): string {
@@ -125,7 +123,6 @@ class PKPPlugin {
 
     /**
      * Get the display name for this plugin.
-     *
      * @return string
      */
     public function getDisplayName(): string {
@@ -135,7 +132,6 @@ class PKPPlugin {
 
     /**
      * Get a description of this plugin.
-     *
      * @return string
      */
     public function getDescription(): string {
@@ -151,7 +147,6 @@ class PKPPlugin {
      * Return a number indicating the sequence in which this plugin
      * should be registered compared to others of its category.
      * Higher = later.
-     *
      * @return integer
      */
     public function getSeq(): int {
@@ -160,7 +155,6 @@ class PKPPlugin {
 
     /**
      * Site-wide plugins should override this function to return true.
-     *
      * @return boolean
      */
     public function isSitePlugin(): bool {
@@ -171,7 +165,6 @@ class PKPPlugin {
      * Get a list of management actions in the form of a page => value pair.
      * The management actions from this list are passed to the manage() function
      * when called.
-     *
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
@@ -180,12 +173,9 @@ class PKPPlugin {
 
     /**
      * Perform a management function.
-     *
      * @param $verb string
      * @param $args array
-     * @param $message string If a message is returned from this argument then
-     * it will be displayed as a notification if (and only if) the method returns
-     * false.
+     * @param $message string
      * @param $messageParams array additional notification settings
      * @param $request Request
      * @return boolean will redirect to the plugin category page if false, otherwise
@@ -199,7 +189,6 @@ class PKPPlugin {
      * Determine whether or not this plugin should be hidden from the
      * management interface. Useful in the case of derivative plugins,
      * i.e. when a generic plugin registers a feed plugin.
-     *
      * @return boolean
      */
     public function getHideManagement(): bool {
@@ -213,7 +202,6 @@ class PKPPlugin {
     /**
      * Get the filename of the ADODB schema for this plugin.
      * Subclasses using SQL tables should override this.
-     *
      * @return string
      */
     public function getInstallSchemaFile(): ?string {
@@ -223,7 +211,6 @@ class PKPPlugin {
     /**
      * Get the filename of the install data for this plugin.
      * Subclasses using SQL tables should override this.
-     *
      * @return string|array|null one or more data files to be installed.
      */
     public function getInstallDataFile() {
@@ -234,7 +221,6 @@ class PKPPlugin {
      * Get the filename of the settings data for this plugin to install
      * when the system is installed (i.e. site-level plugin settings).
      * Subclasses using default settings should override this.
-     *
      * @return string
      */
     public function getInstallSitePluginSettingsFile(): ?string {
@@ -247,7 +233,6 @@ class PKPPlugin {
      * is installed.
      *
      * Subclasses using default settings should override this.
-     *
      * @return string
      */
     public function getContextSpecificPluginSettingsFile(): ?string {
@@ -257,7 +242,6 @@ class PKPPlugin {
     /**
      * Get the filename of the email templates for this plugin.
      * Subclasses using email templates should override this.
-     *
      * @return string
      */
     public function getInstallEmailTemplatesFile(): ?string {
@@ -267,7 +251,6 @@ class PKPPlugin {
     /**
      * Get the filename of the email template data for this plugin.
      * Subclasses using email templates should override this.
-     *
      * @return string
      */
     public function getInstallEmailTemplateDataFile(): ?string {
@@ -314,8 +297,7 @@ class PKPPlugin {
     }
 
     /**
-     * Return the canonical template path of this plug-in
-     *
+     * Return the canonical template path of this plug-in.
      * @return string
      */
     public function getTemplatePath(): string {
@@ -325,7 +307,6 @@ class PKPPlugin {
 
     /**
      * Load locale data for this plugin.
-     *
      * @param $locale string
      * @return boolean
      */
@@ -344,7 +325,6 @@ class PKPPlugin {
 
     /**
      * Add help data for this plugin.
-     *
      * @param $locale string
      * @return boolean
      */
@@ -359,8 +339,7 @@ class PKPPlugin {
     }
 
     /**
-     * Retrieve a plugin setting within the given context
-     *
+     * Retrieve a plugin setting within the given context.
      * @param $context array an array of context ids
      * @param $name the setting name
      */
@@ -381,7 +360,6 @@ class PKPPlugin {
 
     /**
      * Update a plugin setting within the given context.
-     *
      * @param $context array an array of context ids
      * @param $name the setting name
      * @param $value mixed
@@ -404,7 +382,6 @@ class PKPPlugin {
 
     /**
      * Load a PHP file from this plugin's installation directory.
-     *
      * @param $class string
      */
     public function import($class): void {
@@ -478,7 +455,6 @@ class PKPPlugin {
 
     /**
      * Get the filename for the locale data for this plugin.
-     *
      * @param $locale string
      * @return string|array the locale file names (the scalar return value is supported for
      * backwards compatibility only).
@@ -500,7 +476,6 @@ class PKPPlugin {
     /**
      * Get the path and filename of the help mapping file, if this
      * plugin includes help files.
-     *
      * @return string
      */
     public function getHelpMappingFilename(): string {
@@ -509,7 +484,6 @@ class PKPPlugin {
 
     /**
      * Callback used to install data files.
-     *
      * @param $hookName string
      * @param $args array
      * @return boolean
@@ -528,7 +502,7 @@ class PKPPlugin {
             if ($sql) {
                 $result = $installer->executeSQL($sql);
             } else {
-                AppLocale::requireComponents(LOCALE_COMPONENT_PKP_INSTALLER);
+                AppLocale::requireComponents(LOCALE_COMPONENT_CORE_INSTALLER);
                 $installer->setError(INSTALLER_ERROR_DB, str_replace('{$file}', $this->getInstallDataFile(), __('installer.installParseDBFileError')));
                 $result = false;
             }
@@ -539,7 +513,6 @@ class PKPPlugin {
 
     /**
      * Callback used to install settings on system install.
-     *
      * @param $hookName string
      * @param $args array
      * @return boolean
@@ -567,7 +540,6 @@ class PKPPlugin {
     /**
      * Callback used to install settings on new context
      * (e.g. journal, conference or press) creation.
-     *
      * @param $hookName string
      * @param $args array
      * @return boolean
@@ -605,7 +577,6 @@ class PKPPlugin {
 
     /**
      * Callback used to install email templates.
-     *
      * @param $hookName string
      * @param $args array
      * @return boolean
@@ -634,7 +605,6 @@ class PKPPlugin {
 
     /**
      * Callback used to install email template data.
-     *
      * @param $hookName string
      * @param $args array
      * @return boolean
@@ -660,7 +630,6 @@ class PKPPlugin {
 
     /**
      * Callback used to install email template data on locale install.
-     *
      * @param $hookName string
      * @param $args array
      * @return boolean
@@ -707,7 +676,6 @@ class PKPPlugin {
     /**
      * Called during the install process to install the plugin schema,
      * if applicable.
-     *
      * @param $hookName string
      * @param $args array
      * @return boolean
@@ -731,7 +699,6 @@ class PKPPlugin {
 
     /**
      * Extend the {url ...} smarty to support plugins.
-     *
      * @param $params array
      * @param $smarty Smarty
      * @return string
@@ -752,7 +719,6 @@ class PKPPlugin {
 
     /**
      * Get the current version of this plugin
-     *
      * @return Version
      */
     public function getCurrentVersion() {
@@ -774,7 +740,6 @@ class PKPPlugin {
      */
     /**
      * The application specific context installation hook.
-     *
      * @return string
      */
     public function _getContextSpecificInstallationHook(): ?string {
@@ -787,5 +752,4 @@ class PKPPlugin {
         return ucfirst(array_shift($contextList)).'SiteSettingsForm::execute';
     }
 }
-
 ?>

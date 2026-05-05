@@ -218,7 +218,7 @@ class WebFeedPlugin extends GenericPlugin {
 
                 AppLocale::requireComponents(
                     LOCALE_COMPONENT_APPLICATION_COMMON,
-                    LOCALE_COMPONENT_PKP_MANAGER
+                    LOCALE_COMPONENT_CORE_MANAGER
                 );
 
                 $templateMgr = TemplateManager::getManager();
@@ -256,5 +256,4 @@ class WebFeedPlugin extends GenericPlugin {
         return htmlspecialchars(strip_tags($string));
     }
 }
-
 ?>
