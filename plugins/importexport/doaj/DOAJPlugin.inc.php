@@ -230,7 +230,7 @@ class DOAJPlugin extends ImportExportPlugin {
         $this->setBreadcrumbs([], true);
 
         // Retrieve all published issues.
-        AppLocale::requireComponents([LOCALE_COMPONENT_OJS_EDITOR]);
+        AppLocale::requireComponents([LOCALE_COMPONENT_APP_EDITOR]);
         $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
         $issueIterator = $issueDao->getPublishedIssues($journal->getId());
 
@@ -505,5 +505,4 @@ class DOAJPlugin extends ImportExportPlugin {
         );
     }
 }
-
 ?>

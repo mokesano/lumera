@@ -161,10 +161,10 @@ class ReportGeneratorHandler extends Handler {
     public function setupTemplate($request = null) {
         parent::setupTemplate($request);
         AppLocale::requireComponents(
-            LOCALE_COMPONENT_PKP_MANAGER, 
-            LOCALE_COMPONENT_OJS_MANAGER,
-            LOCALE_COMPONENT_OJS_EDITOR, 
-            LOCALE_COMPONENT_PKP_SUBMISSION
+            LOCALE_COMPONENT_CORE_MANAGER, 
+            LOCALE_COMPONENT_APP_MANAGER,
+            LOCALE_COMPONENT_APP_EDITOR, 
+            LOCALE_COMPONENT_CORE_SUBMISSION
         );
     }
 

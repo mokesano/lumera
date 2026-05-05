@@ -184,7 +184,7 @@ class DataciteExportPlugin extends DOIExportPlugin {
      */
     public function generateExportFiles($request, $exportType, $objects, $targetPath, $journal, &$errors) {
         // Additional locale file.
-        AppLocale::requireComponents([LOCALE_COMPONENT_OJS_EDITOR]);
+        AppLocale::requireComponents([LOCALE_COMPONENT_APP_EDITOR]);
 
         // Export objects one by one (DataCite does not allow
         // multiple objects per file).
