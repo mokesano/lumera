@@ -42,7 +42,7 @@ class CopyAccessLogFileTool extends CommandLineTool {
     public function __construct(array $argv = []) {
         parent::__construct($argv);
 
-        AppLocale::requireComponents(LOCALE_COMPONENT_OJS_ADMIN, LOCALE_COMPONENT_PKP_ADMIN);
+        AppLocale::requireComponents(LOCALE_COMPONENT_APP_ADMIN, LOCALE_COMPONENT_CORE_ADMIN);
 
         if (count($this->argv) < 1 || count($this->argv) > 2)  {
             $this->usage();

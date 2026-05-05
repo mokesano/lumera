@@ -557,7 +557,7 @@ class DOIExportPlugin extends ImportExportPlugin {
      */
     public function displayAllUnregisteredObjects($templateMgr, $journal) {
         $this->setBreadcrumbs([], true);
-        AppLocale::requireComponents([LOCALE_COMPONENT_PKP_SUBMISSION]);
+        AppLocale::requireComponents([LOCALE_COMPONENT_CORE_SUBMISSION]);
 
         // Prepare and display the template.
         $templateMgr->assign('issues', $this->_getUnregisteredIssues($journal));
@@ -1582,5 +1582,4 @@ class DOIExportPlugin extends ImportExportPlugin {
         return false;
     }
 }
-
 ?>

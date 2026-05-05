@@ -110,7 +110,7 @@ class PKPCitationGridHandler extends GridHandler {
         parent::initialize($request, $args);
 
         // Load submission-specific translations
-        AppLocale::requireComponents(LOCALE_COMPONENT_PKP_SUBMISSION);
+        AppLocale::requireComponents(LOCALE_COMPONENT_CORE_SUBMISSION);
 
         // Basic grid configuration
         $this->setTitle('submission.citations.editor.citationlist.title');
@@ -643,5 +643,4 @@ class PKPCitationGridHandler extends GridHandler {
         }
     }
 }
-
 ?>
