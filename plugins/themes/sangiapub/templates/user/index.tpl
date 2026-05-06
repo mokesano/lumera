@@ -561,7 +561,7 @@
 {assign var="journalId" value=$journal->getId()}
 {assign var="journalPath" value=$journal->getPath()}
 {if $isValid.Editor.$journalId || $isValid.SectionEditor.$journalId || $isValid.LayoutEditor.$journalId || $isValid.Copyeditor.$journalId || $isValid.Proofreader.$journalId}
-<section class="account-container__section account-container__section--centered-card-title">
+<section class="account-container__section account-container__section--centered-card-title u-js-hide">
     <h2 class="u-h2">Your work</h2>
     <ul class="account-container__grid">
         
@@ -945,6 +945,31 @@
     		{/if}{* $journalPaymentsEnabled && $membershipEnabled *}
     	{/if}{* $userJournal *}
     	
+        <li><article class="eds-c-card-composable eds-c-card-composable--faux-link">
+            <div class="eds-c-card-composable__container eds-c-card-composable__container--with-sidebar">
+                <div class="eds-c-card-composable__body">
+                    <div class="eds-c-card-composable__content">
+                        <h2 class="eds-c-card-composable__title"><a data-track="click_myprofile_homepage" data-track-context="my-billing" data-track-label="Account" data-track-value="Billing and invoice" href="{url journal="index" page="billing"}" target="_blank">{translate key="payment.mybilling"}</a>
+                        </h2>
+                        <p class="eds-c-card-composable__summary">View active invoice and history your billings.</p>
+                    </div>
+                </div>
+                <div class="eds-c-card-composable__icon-container">
+                    <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" fill="currentColor">
+                        <g><g><path d="M189.218,200.348c-27.618,0-50.087,22.469-50.087,50.087c0,27.618,22.469,50.087,50.087,50.087    c27.618,0,50.087-22.469,50.087-50.087C239.305,222.817,216.836,200.348,189.218,200.348z M189.218,267.13    c-9.206,0-16.696-7.49-16.696-16.696c0-9.206,7.49-16.696,16.696-16.696s16.696,7.49,16.696,16.696    C205.913,259.641,198.424,267.13,189.218,267.13z"></path>
+                        	</g></g>
+                        <g><g><path d="M322.783,333.913c-27.618,0-50.087,22.469-50.087,50.087s22.469,50.087,50.087,50.087S372.87,411.618,372.87,384    S350.401,333.913,322.783,333.913z M322.783,400.696c-9.206,0-16.696-7.49-16.696-16.696s7.49-16.696,16.696-16.696    c9.206,0,16.696,7.49,16.696,16.696S331.989,400.696,322.783,400.696z"></path></g></g>
+                        <g><g><path d="M338.635,234.588c-6.519-6.52-17.091-6.52-23.611,0L173.357,376.255c-6.52,6.52-6.52,17.091,0,23.611    c3.26,3.26,7.533,4.891,11.805,4.891c4.272,0,8.546-1.629,11.805-4.891l141.667-141.667    C345.155,251.679,345.155,241.109,338.635,234.588z"></path></g></g>
+                        <g><g><path d="M456.348,0H55.652c-9.22,0-16.696,7.475-16.696,16.696v478.609c0,5.787,2.996,11.161,7.918,14.202    c4.923,3.043,11.069,3.317,16.244,0.731l59.316-29.658l59.316,29.658c4.7,2.35,10.232,2.35,14.933,0L256,480.58l59.316,29.658    c2.35,1.175,4.909,1.762,7.466,1.762c2.558,0,5.117-0.588,7.466-1.762l59.316-29.658l59.316,29.658    c5.173,2.587,11.32,2.312,16.244-0.731c4.922-3.042,7.918-8.416,7.918-14.202V16.696C473.044,7.475,465.569,0,456.348,0z     M439.652,468.29l-42.621-21.31c-4.7-2.35-10.232-2.35-14.933,0l-59.316,29.658l-59.316-29.658    c-2.35-1.175-4.909-1.762-7.466-1.762s-5.117,0.588-7.466,1.762l-59.316,29.658l-59.316-29.658c-4.7-2.35-10.232-2.35-14.933,0    l-42.621,21.31V33.391h367.304V468.29z"></path></g></g>
+                        <g><g><path d="M389.565,66.783H189.218c-9.22,0-16.696,7.475-16.696,16.696s7.475,16.696,16.696,16.696h200.348    c9.22,0,16.696-7.475,16.696-16.696S398.786,66.783,389.565,66.783z"></path></g></g>
+                        <g><g><path d="M389.565,133.565H189.218c-9.22,0-16.696,7.475-16.696,16.696s7.475,16.696,16.696,16.696h200.348    c9.22,0,16.696-7.475,16.696-16.696S398.786,133.565,389.565,133.565z"></path></g></g>
+                        <g><g><circle cx="122.435" cy="83.478" r="16.696"></circle></g></g>
+                        <g><g><circle cx="122.435" cy="150.261" r="16.696"></circle></g></g>
+                    </svg>
+                </div>
+            </div>
+        </article></li>
+        
         {call_hook name="Templates::User::Index::MyAccount"}
     </ul>
 </div>

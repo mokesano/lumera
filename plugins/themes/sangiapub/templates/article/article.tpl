@@ -19,7 +19,7 @@
 <!-- Begin to fulltext file -->      
 <div id="publication" class="Publication">
     <div id="SRM-Pub" class="publication-brand u-show-from-sm text-img">
-        <a rel="noreferrer noopener" title="Go to Sangia Publishing" href="{$urlBase}" target="_blank"><img class="lazyload publication-brand-image u-font-sans" src="//assets.sangia.org/img/sangia-mono-branded-72x89-v2.png" height="100%" width="100%" loading="lazy" alt="Sangia Media"/></a>
+        <a rel="noreferrer noopener" title="Go to Sangia Publishing" href="{$baseUrl}" target="_blank"><img class="lazyload publication-brand-image u-font-sans" src="//assets.sangia.org/img/sangia-mono-branded-72x89-v2.png" height="100%" width="100%" loading="lazy" alt="Sangia Media"/></a>
     </div>
     <div class="publication-volume u-text-center">
         <h2 id="publication-title" class="publication-title u-h3"><a rel="noreferrer noopener" class="anchor publication-title-link anchor-navigation" title="Go to {$currentJournal->getLocalizedTitle()|strip_tags|escape}" href="{$currentJournal->getUrl()|escape}"><span class="anchor-text">{$currentJournal->getLocalizedTitle()|strip_tags|escape}</span></a>
