@@ -121,7 +121,7 @@ class PKPGiftDAO extends DAO {
         $gift->setGiftNote($row['gift_note']);
         $gift->setNotes($row['notes']);
 
-        HookRegistry::call('PKPNoteDAO::_returnGiftFromRow', array(&$gift, $row)); // $row tidak lagi reference
+        HookRegistry::dispatch('PKPNoteDAO::_returnGiftFromRow', array(&$gift, $row)); // $row tidak lagi reference
 
         return $gift;
     }

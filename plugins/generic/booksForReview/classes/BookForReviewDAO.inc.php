@@ -152,7 +152,7 @@ class BookForReviewDAO extends DAO {
 
         $this->getDataObjectSettings('books_for_review_settings', 'book_id', $row['book_id'], $book);
 
-        HookRegistry::call('BookForReviewDAO::_returnBookForReviewFromRow', array(&$book, &$row));
+        HookRegistry::dispatch('BookForReviewDAO::_returnBookForReviewFromRow', array(&$book, &$row));
 
         return $book;
     }
