@@ -9,9 +9,12 @@ error_log
 # cache files
 cache/*.html
 cache/*.wiz
+cache/*.json
+cache/*.php
+cache/*.gz
 cache/_db/*
 cache/HTML/*
-cache/t_cache/*
+cache/t_cache/*.json.gz
 cache/t_compile/*.tpl.php
 cache/t_config/*
 cache/t_wizdam/*
