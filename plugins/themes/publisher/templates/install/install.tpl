@@ -9,6 +9,6 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="installer.ojsInstallation"}
+{assign var="pageTitle" value="installer.appInstallation"}
 {include file="core:install/install.tpl"}
 {/strip}

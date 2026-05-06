@@ -289,7 +289,7 @@ class XMLGalleyPlugin extends GenericPlugin {
                     $result = $xmlGalley->transformXSLT($xmlFile, $xslFile, $xsltCommand);
 
                     // check the result
-                    if (trim(preg_replace("/\s+/", " ", $result)) != "Open Journal Systems Success" ) {
+                    if (trim(preg_replace("/\s+/", " ", $result)) != "Lumera Journal Success" ) {
                         $form->addError('content', __('plugins.generic.xmlGalley.settings.externalXSLTFailure'));
                     } else $templateMgr->assign('testSuccess', true);
 

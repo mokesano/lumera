@@ -50,7 +50,7 @@ class OJSInstallTool extends InstallTool {
     protected function readParams(): bool {
         // [WIZDAM] Application Component
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_INSTALLER, LOCALE_COMPONENT_APPLICATION_COMMON, LOCALE_COMPONENT_CORE_USER);
-        printf("%s\n", __('installer.ojsInstallation'));
+        printf("%s\n", __('installer.appInstallation'));
 
         // Call Parent implementation to read all common parameters
         parent::readParams();
