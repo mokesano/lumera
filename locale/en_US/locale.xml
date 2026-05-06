@@ -1009,6 +1009,7 @@ current password.<br /><br />Enter your email address below to reset your passwo
 	<message key="payment.loginRequired.forIssue">Subscription or issue purchase required to access item. To verify subscription, access previous purchase, or purchase issue, log in to journal.</message>
 	<message key="payment.loginRequired.forDonation">You must be logged in to make a donation.</message>
 
+	<message key="payment.mybilling">My Billing</message>
 	<message key="payment.paid">Paid</message>
 	<message key="payment.payNow">Pay Now</message>
 	<message key="payment.waive">Waive</message>
