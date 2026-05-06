@@ -9,6 +9,6 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="installer.ojsUpgrade"}
+{assign var="pageTitle" value="installer.appUpgrade"}
 {include file="core:install/upgrade.tpl"}
 {/strip}
