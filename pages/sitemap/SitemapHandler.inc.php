@@ -150,7 +150,7 @@ class SitemapHandler extends Handler {
         $publishedIssues = $issueDao->getPublishedIssues($journalId);
         while ($issue = $publishedIssues->next()) {
             $volumeId = $issue->getVolume();
-            $slug = PKPString::slugify($issue->getNumber());
+            $slug = PKPString::slugify((string) $issue->getNumber());
             $loc = $baseUrl . '/' . $journalPath . '/volumes/' . $volumeId . '/issue/' . $slug;
             
             // [FIX 2] Date Formatting for GSC
