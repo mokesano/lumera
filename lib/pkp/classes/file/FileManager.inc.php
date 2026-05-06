@@ -106,8 +106,12 @@ class FileManager {
             $name = $_FILES[$fileName]['name'];
             $type = null;
 
+            // [WIZDAM FIX] Validasi eksistensi file fisik untuk menghindari PHP 8 Warning
+            // Pastikan file temporary benar-benar ada sebelum dibaca oleh server
+            $isFileValid = !empty($tmpName) && file_exists($tmpName);
+
             // 1. Try PHP's fileinfo extension (Most reliable)
-            if (function_exists('finfo_open')) {
+            if ($isFileValid && function_exists('finfo_open')) {
                 $finfo = finfo_open(FILEINFO_MIME_TYPE);
                 if ($finfo) {
                     $type = finfo_file($finfo, $tmpName);
@@ -116,7 +120,7 @@ class FileManager {
             }
 
             // 2. Try external 'file' command (Linux/Unix fallback)
-            if (empty($type)) {
+            if (empty($type) && $isFileValid) {
                 $fileCommand = Config::getVar('files', 'file_command');
                 if (!empty($fileCommand) && is_executable(preg_replace('/ .*$/', '', $fileCommand))) {
                     $command = str_replace('%f', escapeshellarg($tmpName), $fileCommand);

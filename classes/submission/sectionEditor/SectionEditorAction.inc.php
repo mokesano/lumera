@@ -2107,7 +2107,7 @@ class SectionEditorAction extends Action {
                             $reviewFormElements = $reviewFormElementDao->getReviewFormElements($reviewFormId);
                             if(!$articleComments) {
                                 $body .= "------------------------------------------------------\n";
-                                $body .= __('submission.comments.importPeerReviews.reviewerLetter', ['reviewerLetter' => PKPString::enumerateAlphabetically($reviewIndexes[$reviewAssignment->getReviewId()])]) . "\n\n";
+                                $body .= __('submission.comments.importPeerReviews.reviewerLetter', ['reviewerLetter' => PKPString::enumerateAlphabetically($reviewIndexes[$reviewAssignment->getId()])]) . "\n\n";
                             }
                             foreach ($reviewFormElements as $reviewFormElement) if ($reviewFormElement->getIncluded()) {
                                 $body .= PKPString::html2text($reviewFormElement->getLocalizedQuestion()) . ": \n";
