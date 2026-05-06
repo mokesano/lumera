@@ -17,13 +17,16 @@ cache/*.json
 cache/*.php
 cache/*.gz
 cache/*.json.gz
-cache/_db/*
-cache/HTML/*
 cache/t_cache/*
+!cache/t_cache/.gitkeep
 cache/t_compile/*
+!cache/t_compile/.gitkeep
 cache/t_config/*
-cache/t_wizdam/*
-cache/URI/*
+!cache/t_config/.gitkeep
+cache/_db/*
+!cache/_db/.gitkeep
+cache/HTML/*
+!cache/HTML/.gitkeep
 
 # Environment
 .env
