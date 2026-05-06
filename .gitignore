@@ -6,6 +6,7 @@ vendor/
 *.tmp
 error_log
 
+# Keep cache folder but ignore its contents
 cache/*
 !cache/.gitkeep
 
@@ -15,6 +16,7 @@ cache/*.wiz
 cache/*.json
 cache/*.php
 cache/*.gz
+cache/*.json.gz
 cache/_db/*
 cache/HTML/*
 cache/t_cache/*
