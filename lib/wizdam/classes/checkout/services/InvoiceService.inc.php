@@ -161,7 +161,7 @@ class InvoiceService {
         $this->invoiceDao->updateObject($invoice);
         
         // [WIZDAM HOOK] Pemicu agar sistem tahu ada pembayaran sukses
-        HookRegistry::call('Wizdam::InvoicePaid', [$invoice]);
+        HookRegistry::dispatch('Wizdam::InvoicePaid', [$invoice]);
 
         return true;
     }
