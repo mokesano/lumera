@@ -132,8 +132,8 @@ class BookForReviewAuthorDAO extends DAO {
         $author->setLastName($row['last_name']);
         $author->setSequence($row['seq']);
 
-        // HookRegistry::call tetap membutuhkan array reference untuk objek yang dimodifikasi
-        HookRegistry::call('BookForReviewAuthorDAO::_returnAuthorFromRow', array(&$author, &$row));
+        // HookRegistry tetap membutuhkan array reference untuk objek yang dimodifikasi
+        HookRegistry::dispatch('BookForReviewAuthorDAO::_returnAuthorFromRow', array(&$author, &$row));
 
         return $author;
     }

@@ -231,7 +231,7 @@ class InvoiceService {
         $invoice->setData('paymentMethod', $paymentMethod);
         $invoice->setData('datePaid',      Core::getCurrentDate());
         $this->invoiceDao->updateObject($invoice);
-        HookRegistry::call('Wizdam::InvoicePaid', [$invoice]);
+        HookRegistry::dispatch('Wizdam::InvoicePaid', [$invoice]);
         return true;
     }
     
@@ -461,7 +461,7 @@ class InvoiceService {
         $this->invoiceDao->updateObject($invoice);
         
         // Opsional: Panggil hook jika ada aksi lanjutan saat dibatalkan
-        HookRegistry::call('Wizdam::InvoiceCancelled', [$invoice]);
+        HookRegistry::dispatch('Wizdam::InvoiceCancelled', [$invoice]);
 
         return true;
     }

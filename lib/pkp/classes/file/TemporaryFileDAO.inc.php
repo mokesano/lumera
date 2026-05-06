@@ -83,7 +83,7 @@ class TemporaryFileDAO extends DAO {
         $temporaryFile->setOriginalFileName($row['original_file_name']);
         $temporaryFile->setDateUploaded($this->datetimeFromDB($row['date_uploaded']));
 
-        HookRegistry::call('TemporaryFileDAO::_returnTemporaryFileFromRow', array(&$temporaryFile, &$row));
+        HookRegistry::dispatch('TemporaryFileDAO::_returnTemporaryFileFromRow', array(&$temporaryFile, &$row));
 
         return $temporaryFile;
     }

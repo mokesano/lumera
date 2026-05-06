@@ -92,8 +92,10 @@ class ArticleMailTemplate extends MailTemplate {
         // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
+        // [WIZDAM FIX] Cegah parent::send() agar file attachment bisa dicopy oleh method log().
+        $this->persistAttachments = true;
+
         // PERBAIKAN: Ganti 'false' menjadi '$request'
-        // Jika parent::send menerima false, dia akan crash saat mencoba akses user/context.
         if (parent::send($request)) { 
             
             // Logika Log
