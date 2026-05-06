@@ -6,6 +6,9 @@ vendor/
 *.tmp
 error_log
 
+cache/*
+!cache/.gitkeep
+
 # cache files
 cache/*.html
 cache/*.wiz
@@ -14,8 +17,8 @@ cache/*.php
 cache/*.gz
 cache/_db/*
 cache/HTML/*
-cache/t_cache/*.json.gz
-cache/t_compile/*.tpl.php
+cache/t_cache/*
+cache/t_compile/*
 cache/t_config/*
 cache/t_wizdam/*
 cache/URI/*
