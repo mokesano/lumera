@@ -1708,6 +1708,10 @@ class PKPTemplateManager extends Smarty {
      * Mengembalikan tag &lt;?xml menjadi <?xml
      */
     public function fixXmlOutput($output, $smarty) {
+        if (!is_string($output)) {
+            return $output;
+        }
+        
         return preg_replace('/&lt;\?xml(.*?)\?&gt;/is', '<?xml$1?>', $output);
     }
     
