@@ -180,12 +180,17 @@ class ArticleMailTemplate extends MailTemplate {
         // Add attachments
         import('classes.file.ArticleFileManager');
         $articleFileManager = new ArticleFileManager($article->getId());
-        foreach ($this->getAttachmentFiles() as $attachment) {
-            $articleFileManager->temporaryFileToArticleFile(
-                $attachment,
-                ARTICLE_FILE_ATTACHMENT,
-                $logEntryId
-            );
+        
+        // [PERBAIKAN] Ambil datanya dan pastikan formatnya valid sebelum di-loop
+        $attachments = $this->getAttachmentFiles();
+        if (is_array($attachments) || is_object($attachments)) {
+            foreach ($attachments as $attachment) {
+                $articleFileManager->temporaryFileToArticleFile(
+                    $attachment,
+                    ARTICLE_FILE_ATTACHMENT,
+                    $logEntryId
+                );
+            }
         }
     }
 
