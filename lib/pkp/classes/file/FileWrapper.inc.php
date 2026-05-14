@@ -78,7 +78,14 @@ class FileWrapper {
      */
     public function open($mode = 'r') {
         $this->fp = null;
-        $this->fp = fopen($this->url, $mode);
+        
+        // Tambah pengecekan: Jika URL kosong/null, langsung kembalikan false.
+        // fopen() tidak akan dieksekusi dan terhindar dari Fatal Error.
+        if (empty($this->url)) {
+            return false;
+        }
+
+        $this->fp = @fopen($this->url, $mode); // Tambahkan simbol @ opsional untuk meredam warning bawaan PHP
         return ($this->fp !== false);
     }
 
@@ -86,7 +93,11 @@ class FileWrapper {
      * Close the file.
      */
     public function close() {
-        fclose($this->fp);
+        // Cek dulu apakah $this->fp adalah resource (file yang sukses dibuka)
+        if (is_resource($this->fp)) {
+            fclose($this->fp);
+        }
+        
         unset($this->fp);
     }
 
@@ -170,5 +181,4 @@ class FileWrapper {
         return $wrapper;
     }
 }
-
 ?>
