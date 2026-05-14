@@ -234,7 +234,8 @@ class PKPMailTemplate extends Mail {
      * @return bool
      */
     public function send($clearAttachments = true) {
-        if ($this->attachmentsEnabled && !empty($this->persistAttachments)) {
+        // [PERBAIKAN] Ganti !empty() dengan pengecekan tipe data (is_iterable / is_array / is_object)
+        if ($this->attachmentsEnabled && (is_array($this->persistAttachments) || is_object($this->persistAttachments))) {
             foreach ($this->persistAttachments as $persistentAttachment) {
                 $this->addAttachment(
                     $persistentAttachment->getFilePath(),
