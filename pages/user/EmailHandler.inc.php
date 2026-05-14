@@ -153,7 +153,10 @@ class EmailHandler extends UserHandler {
             $email = new MailTemplate($template);
         }
 
-        if ((int) $request->getUserVar('send') && !$email->hasErrors()) {
+        // [WIZDAM FIX CRITICAL] Hapus (int) agar tombol submit "Send" tidak menjadi 0
+        $isSend = $request->isPost() && $request->getUserVar('send') !== null;
+
+        if ($isSend && !$email->hasErrors()) {
             $recipients = $email->getRecipients();
             $ccs = $email->getCcs();
             $bccs = $email->getBccs();
