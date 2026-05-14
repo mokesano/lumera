@@ -1,4 +1,4 @@
-# 📚 Lumera — fork Open Journal System by Sangia Publishing House
+# 📚 Lumera — Editorial Workflow by Sangia Publishing House
 
 **A modern, open-source journal management and publishing platform built on OJS 2.x by Sangia Publishing House (SPH). Designed for multi-lingual, secure, and scalable scholarly publishing.**
 
