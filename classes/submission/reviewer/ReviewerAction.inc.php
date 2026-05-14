@@ -248,7 +248,7 @@ class ReviewerAction extends Action {
      * @param object $reviewerSubmission ReviewerSubmission
      * @param object $request PKPRequest
      */
-    public function uploadReviewerVersion($reviewId, $reviewerSubmission, $request) {
+    public static function uploadReviewerVersion($reviewId, $reviewerSubmission, $request) {
         // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
