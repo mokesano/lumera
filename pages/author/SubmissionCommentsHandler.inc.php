@@ -151,10 +151,18 @@ class SubmissionCommentsHandler extends AuthorHandler {
      * @param PKPRequest $request
      */
     public function emailEditorDecisionComment($args, $request) {
-        $articleId = (int) $request->getUserVar('articleId');
+        // [WIZDAM] Strict Type Guard
+        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+
+        // Amankan articleId seperti standar Wizdam
+        $articleId = (int) trim((string) $request->getUserVar('articleId'));
+        
         $this->setupTemplate($request, true);
         $this->validate(null, $request, $articleId);
-        if (AuthorAction::emailEditorDecisionComment($this->submission, (int) $request->getUserVar('send'), $request)) {
+
+        $sendFlag = $request->isPost() && $request->getUserVar('send') !== null;
+
+        if (AuthorAction::emailEditorDecisionComment($this->submission, $sendFlag, $request)) {
             $request->redirect(null, null, 'submissionReview', [$articleId]);
         }
     }
