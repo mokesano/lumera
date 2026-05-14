@@ -152,7 +152,7 @@ class SuppFileForm extends Form {
     /**
      * Validate the form
      */
-    public function validate() {
+    public function validate($callHooks = true) {
         // [WIZDAM] Singleton Request
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
