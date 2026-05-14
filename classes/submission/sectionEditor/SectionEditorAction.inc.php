@@ -2471,5 +2471,4 @@ class SectionEditorAction extends Action {
         return $breadcrumb;
     }
 }
-
 ?>

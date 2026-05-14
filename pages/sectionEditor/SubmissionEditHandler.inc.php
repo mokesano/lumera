@@ -1166,8 +1166,9 @@ class SubmissionEditHandler extends SectionEditorHandler {
         $submission = $this->submission;
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
         $redirectTarget = 'submissionReview';
-        $submit = (int) $request->getUserVar('submit');
-        if ($submit != null) {
+        
+        $submit = $request->getUserVar('submit');
+        if ($submit !== null) {
             SectionEditorAction::uploadEditorVersion($submission, $request);
         }
         
@@ -2856,5 +2857,4 @@ class SubmissionEditHandler extends SectionEditorHandler {
         $journalFileManager->downloadFile($filename, $template['fileType']);
     }
 }
-
 ?>
