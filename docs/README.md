@@ -155,11 +155,11 @@ Third parties are free to modify and redistribute Lumera under the same license.
   <br>
   <creator>Built with ❤️ by <strong>Sangia Publishing House</strong> for the global scholarly community</creator>
   <br><br>
-  <a href="https://github.com/codelumera/lumera-library/stargazers">
-    <img src="https://img.shields.io/github/stars/codelumera/lumera-library?style=social" alt="GitHub Stars">
+  <a href="https://github.com/mokesano/lumera/stargazers">
+    <img src="https://img.shields.io/github/stars/mokesano/lumera?style=social" alt="GitHub Stars">
   </a>
-  <a href="https://github.com/codelumera/lumera-library/network/members">
-    <img src="https://img.shields.io/github/forks/codelumera/lumera-library?style=social" alt="GitHub Forks">
+  <a href="https://github.com/mokesano/lumera/network/members">
+    <img src="https://img.shields.io/github/forks/mokesano/lumera?style=social" alt="GitHub Forks">
   </a>
   <br><br>
   <copyright>© 2019 Sangia Publishing House. Licensed under GPL v3.0.</copyright>
