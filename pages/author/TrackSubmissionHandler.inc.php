@@ -392,7 +392,9 @@ class TrackSubmissionHandler extends AuthorHandler {
         $submission = $this->submission;
         $this->setupTemplate($request, true);
 
-        AuthorAction::uploadRevisedVersion($submission, $request);
+        if ($request->isPost() && isset($_FILES['upload']) && $_FILES['upload']['name'] !== '') {
+            AuthorAction::uploadRevisedVersion($submission, $request);
+        }
 
         $request->redirect(null, null, 'submissionReview', $articleId);
     }
