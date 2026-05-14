@@ -195,7 +195,10 @@ class SubmissionReviewHandler extends ReviewerHandler {
         $this->validate($request, $reviewId);
         $this->setupTemplate(true);
 
-        ReviewerAction::uploadReviewerVersion($reviewId, $this->submission, $request);
+        if ($request->isPost() && isset($_FILES['upload']) && $_FILES['upload']['name'] !== '') {
+            ReviewerAction::uploadReviewerVersion($reviewId, $this->submission, $request);
+        }
+
         $request->redirect(null, null, 'submission', $reviewId);
     }
 
