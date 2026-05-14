@@ -1,4 +1,4 @@
-# 📚 Lumera — Editorial Workflow by Sangia Publishing House
+# 📚 Lumera — Editorial Workflow
 
 **A modern, open-source journal management and publishing platform built on OJS 2.x by Sangia Publishing House (SPH). Designed for multi-lingual, secure, and scalable scholarly publishing.**
 
