@@ -1166,9 +1166,9 @@ class SubmissionEditHandler extends SectionEditorHandler {
         $submission = $this->submission;
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
         $redirectTarget = 'submissionReview';
-        
+
         $submit = $request->getUserVar('submit');
-        if ($submit !== null) {
+        if ($request->isPost() && is_string($submit) && trim($submit) !== '') {
             SectionEditorAction::uploadEditorVersion($submission, $request);
         }
         
