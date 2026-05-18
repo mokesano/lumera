@@ -3881,7 +3881,7 @@ a.external:after {
   -webkit-box-shadow:0 3px 2px 0 rgba(0,0,0,.1);
   -moz-box-shadow:0 3px 2px 0 rgba(0,0,0,.1);
   box-shadow:0 3px 2px 0 rgba(0,0,0,.1);
-  background:url(/spcom/sites/palgrave/images/bg-mobile-header.png) repeat-x #e3e3e3;
+  background:url(/lumera/sites/images/bg-mobile-header.png) repeat-x #e3e3e3;
   border-top:1px solid #f9f9f9;
   border-bottom:1px solid #d0d0d0;
   min-height:53px;
@@ -3908,7 +3908,7 @@ a.external:after {
   -moz-transition:.25s ease-in-out;
   -o-transition:.25s ease-in-out;
   transition:.25s ease-in-out;
-  background:url(/spcom/sites/palgrave/images/logo_sprite.png) 0 -25px no-repeat;
+  background:url(/lumera/sites/images/logo_sprite.png) 0 -25px no-repeat;
   display:inline-block;
   height:30px;
   width:115px;
@@ -3985,11 +3985,11 @@ input::-moz-focus-inner {
 }
 @font-face {
  font-family:sn_pm_icons;
- src:url(/spcom/css/fonts/sn_pm_icons.eot?1527153553);
- src:url(/spcom/css/fonts/sn_pm_icons.eot?&1527153553#iefix) format("embedded-opentype"),
- url(/spcom/css/fonts/sn_pm_icons.woff?1527153553) format("woff"),
- url(/spcom/css/fonts/sn_pm_icons.svg?1527153553) format("svg"),
- url(/spcom/css/fonts/sn_pm_icons.ttf?1527153553) format("truetype");
+ src:url(/fonts/sn/sn_pm_icons.eot);
+ src:url(/fonts/sn/sn_pm_icons.eot) format("embedded-opentype"),
+ url(/fonts/sn/sn_pm_icons.woff) format("woff"),
+ url(/fonts/sn/sn_pm_icons.svg) format("svg"),
+ url(/fonts/sn/sn_pm_icons.ttf) format("truetype");
  font-weight:400
 }
 body.show-menu #header .panel-menu,
@@ -4025,7 +4025,7 @@ body.show-search #header .panel-search {
 }
 @media screen and (min-device-width:320px) {
  #header .pillow-btn {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4783px no-repeat;
+  background:url(/lumera/sites/images/sprites/sprite-sc788d4c21f.png) 0 -4783px no-repeat;
   -webkit-box-shadow:0 1px 0 rgba(255,255,255,.75);
   -moz-box-shadow:0 1px 0 rgba(255,255,255,.75);
   box-shadow:0 1px 0 rgba(255,255,255,.75);
@@ -4048,44 +4048,44 @@ body.show-search #header .panel-search {
   overflow:hidden
  }
  #header .pillow-btn.open-search-options {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4783px no-repeat
+  background:url(/lumera/sites/images/sprites/sprite-sc788d4c21f.png) 0 -4783px no-repeat
  }
  #header .pillow-btn.open-search-options:hover,
  .is-open #header .pillow-btn.open-search-options {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4710px no-repeat
+  background:url(/lumera/sites/images/sprites/sprite-sc788d4c21f.png) 0 -4710px no-repeat
  }
  #header .pillow-btn.open-search-options:active,
  #header .pillow-btn.open-search-options:focus {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4674px no-repeat
+  background:url(/lumera/sites/images/sprites/sprite-sc788d4c21f.png) 0 -4674px no-repeat
  }
  .lt-ie9 #header .pillow-btn.open-search-options:active,
  .lt-ie9 #header .pillow-btn.open-search-options:focus,
  .lt-ie9 .is-open #header .pillow-btn.open-search-options {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4746px no-repeat
+  background:url(/lumera/sites/images/sprites/sprite-sc788d4c21f.png) 0 -4746px no-repeat
  }
  #header .pillow-btn.open-search {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4327px no-repeat;
+  background:url(/lumera/sites/images/sprites/sprite-sc788d4c21f.png) 0 -4327px no-repeat;
   position:absolute;
   top:7px;
   right:70px
  }
  #header .pillow-btn.open-search:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4254px no-repeat
+  background:url(/lumera/sites/images/sprites/sprite-sc788d4c21f.png) 0 -4254px no-repeat
  }
  body.show-search #header .pillow-btn.open-search {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4218px no-repeat
+  background:url(/lumera/sites/images/sprites/sprite-sc788d4c21f.png) 0 -4218px no-repeat
  }
  #header .pillow-btn.open-menu {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2780px no-repeat;
+  background:url(/lumera/sites/images/sprites/sprite-sc788d4c21f.png) 0 -2780px no-repeat;
   position:absolute;
   top:7px;
   right:8px
  }
  #header .pillow-btn.open-menu:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2562px no-repeat
+  background:url(/lumera/sites/images/sprites/sprite-sc788d4c21f.png) 0 -2562px no-repeat
  }
  body.show-menu #header .pillow-btn.open-menu {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2526px no-repeat
+  background:url(/lumera/sites/images/sprites/sprite-sc788d4c21f.png) 0 -2526px no-repeat
  }
  .panel-search {
   background-color:#ddd;
@@ -4380,7 +4380,7 @@ body.show-search #header .panel-search {
   max-width:371px
  }
  #branding-logo {
-  background:url(/spcom/sites/palgrave/images/logo_sprite.png) no-repeat;
+  background:url(/assets/static/images/logo_sprite.png) no-repeat;
   display:inline-block;
   text-indent:-9999em;
   height:23px;
@@ -4473,7 +4473,7 @@ body.show-search #header .panel-search {
  }
  .confirmation-box.styled-checkmark {
   zoom:1;
-  background:url(/spcom/sites/palgrave/images/checkmark-green.png) 12px 12px no-repeat #f1f6e6;
+  background:url(/assets/static/images/checkmark-green.png) 12px 12px no-repeat #f1f6e6;
   line-height:1.5em
  }
  .confirmation-box.styled-checkmark h2,
@@ -4684,7 +4684,7 @@ body.show-search #header .panel-search {
   padding:1px 12px 0
  }
  .btn-add:before {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3876px no-repeat;
+  background:url(/assets/static/images/sprite-sc788d4c21f.png) 0 -3876px no-repeat;
   content:'';
   display:inline-block;
   height:11px;
@@ -4708,17 +4708,17 @@ body.show-search #header .panel-search {
  .remove-btn {
   color:transparent;
   text-indent:-9999em;
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -1315px no-repeat;
+  background:url(/assets/static/images/sprite-sc788d4c21f.png) 0 -1315px no-repeat;
   cursor:pointer;
   height:24px;
   width:24px
  }
  .remove-btn:focus,
  .remove-btn:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -1289px no-repeat
+  background:url(/assets/static/images/sprite-sc788d4c21f.png) 0 -1289px no-repeat
  }
  .remove-btn:active {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -1263px no-repeat
+  background:url(/assets/static/images/sprite-sc788d4c21f.png) 0 -1263px no-repeat
  }
  .btn,
  .btn-back,
@@ -5050,17 +5050,17 @@ body.show-search #header .panel-search {
   margin-right:-1px
  }
  .search-filter .search-submit {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4648px no-repeat;
+  background:url(/assets/static/images/sprite-sc788d4c21f.png) 0 -4648px no-repeat;
   border:0;
   display:inline;
   margin-left:-5px;
   width:24px
  }
  .search-filter .search-submit:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4192px no-repeat
+  background:url(/assets/static/images/sprite-sc788d4c21f.png) 0 -4192px no-repeat
  }
  .search-filter .search-submit:active {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4166px no-repeat
+  background:url(/assets/static/images/sprite-sc788d4c21f.png) 0 -4166px no-repeat
  }
  .search-filter .ui-autocomplete {
   left:20px;
@@ -5132,12 +5132,12 @@ body.show-search #header .panel-search {
  .search-filter .search-submit.loading,
  .search-filter .search-submit.loading:focus,
  .search-filter .search-submit.loading:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4363px no-repeat
+  background:url(/assets/static/images/sprite-sc788d4c21f.png) 0 -4363px no-repeat
  }
  .bar-actions .search-submit.loading,
  .bar-actions .search-submit.loading:focus,
  .bar-actions .search-submit.loading:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4600px no-repeat
+  background:url(/assets/static/images/sprite-sc788d4c21f.png) 0 -4600px no-repeat
  }
  .filtered-message {
   background:url(../images/grdnt_grey_f8f8f8_e5e5e5_l.gif) repeat-x #e3e3e3;
@@ -5271,7 +5271,7 @@ body.show-search #header .panel-search {
   position:relative
  }
  .categories li a {
-  background:url(/spcom/sites/palgrave/images/action_arrow_right.png) 8px 20px no-repeat;
+  background:url(/assets/static/images/action_arrow_right.png) 8px 20px no-repeat;
   display:block;
   font-size:1.6rem;
   margin:0;
@@ -5334,7 +5334,7 @@ body.show-search #header .panel-search {
   padding:4px 5px
  }
  .js .multi-level h3:before {
-  background:url(../sites/rd/images/expander_arrows.png) 4px -44px no-repeat;
+  background:url(/assets/static/images/expander_arrows.png) 4px -44px no-repeat;
   content:'';
   width:16px;
   height:18px;
@@ -5404,7 +5404,7 @@ body.show-search #header .panel-search {
 @media only screen and (min-device-width:320px) and (-webkit-min-device-pixel-ratio:1.5),only screen and (min-device-width:320px) and (-moz-min-device-pixel-ratio:1.5),only screen and (min-device-width:320px) and (-o-min-device-pixel-ratio:3 2),only screen and (min-device-width:320px) and (min-device-pixel-ratio:1.5) {
  #branding-logo,
  #logo {
-  background-image:url(/spcom/sites/palgrave/images/logo_sprite_high_res.png);
+  background-image:url(/assets/static/images/logo_sprite_high_res.png);
   background-size:auto 92px
  }
 }
@@ -6132,26 +6132,26 @@ body.show-search #header .panel-search {
   margin-top:14px
  }
  .submit-edit {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -797px no-repeat;
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -797px no-repeat;
   right:40px
  }
  .submit-edit:focus,
  .submit-edit:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -771px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -771px no-repeat
  }
  .submit-edit:active {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -745px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -745px no-repeat
  }
  .cancel-edit {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -1315px no-repeat;
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -1315px no-repeat;
   right:11px
  }
  .cancel-edit:focus,
  .cancel-edit:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -1289px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -1289px no-repeat
  }
  .cancel-edit:active {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -1263px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -1263px no-repeat
  }
  .lt-ie8 .big-search .search-submit,
  .lt-ie8 .form-row .cancel-edit,
@@ -6487,7 +6487,7 @@ body.show-search #header .panel-search {
   content:'';
   width:11px;
   height:16px;
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2327px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -2327px no-repeat
  }
  #content #scroller .look-inside-interrupt {
   display:block;
@@ -6581,7 +6581,7 @@ body.show-search #header .panel-search {
   outline:0
  }
  .big-search .search-submit {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4497px no-repeat #00768a;
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -4497px no-repeat #00768a;
   border:1px solid #00768a;
   border-radius:2px;
   color:#fff;
@@ -6601,16 +6601,16 @@ body.show-search #header .panel-search {
  .big-search .search-submit:focus,
  .big-search .search-submit:hover {
   border-color:#008ca4;
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4425px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -4425px no-repeat
  }
  .big-search .search-submit:active {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4389px no-repeat;
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -4389px no-repeat;
   border-color:#008ca4
  }
  .big-search .search-submit.loading,
  .big-search .search-submit.loading:focus,
  .big-search .search-submit.loading:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4461px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -4461px no-repeat
  }
  .big-search #global-search-new {
   color:#bcbcbc;
@@ -6670,15 +6670,15 @@ body.show-search #header .panel-search {
  }
  #tool-twitter .icon,
  #twitter {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -5010px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -5010px no-repeat
  }
  #facebook,
  #tool-facebook .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -1820px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -1820px no-repeat
  }
  #linkedin,
  #tool-linkedin .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2060px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -2060px no-repeat
  }
  .default-table {
   margin:34px 0 22px;
@@ -6795,52 +6795,52 @@ body.show-search #header .panel-search {
   margin:-16px 0 0
  }
  #tool-email .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2482px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -2482px no-repeat
  }
  #tool-email:hover .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2456px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -2456px no-repeat
  }
  #tool-email:active .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2430px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -2430px no-repeat
  }
  #tool-print .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3941px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3941px no-repeat
  }
  #tool-print:hover .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3915px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3915px no-repeat
  }
  #tool-print:active .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3889px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3889px no-repeat
  }
  #tool-rss .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4140px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -4140px no-repeat
  }
  #tool-rss:hover .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4114px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -4114px no-repeat
  }
  #tool-rss:active .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4088px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -4088px no-repeat
  }
  #tool-download .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -1567px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -1567px no-repeat
  }
  #tool-download:hover .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -1519px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -1519px no-repeat
  }
  #tool-download:active .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -1409px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -1409px no-repeat
  }
  #tool-gplus .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2013px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -2013px no-repeat
  }
  #tool-mendeley .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2508px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -2508px no-repeat
  }
  #tool-weibo .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -5124px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -5124px no-repeat
  }
  #tool-shares .icon {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4819px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -4819px no-repeat
  }
  #tools-social a {
   margin-top:4px
@@ -6907,58 +6907,58 @@ body.show-search #header .panel-search {
  }
 }
 .payment-visa-big {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3714px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3714px no-repeat
 }
 .payment-mastercard-big {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3414px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3414px no-repeat
 }
 .payment-amex-big {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2908px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -2908px no-repeat
 }
 .payment-paypal-big {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3504px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3504px no-repeat
 }
 .payment-invoice-big {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3264px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3264px no-repeat
 }
 .payment-invoice-big-de {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3144px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3144px no-repeat
 }
 .payment-invoice-big-nl {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3204px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3204px no-repeat
 }
 .payment-proforma-big {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3654px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3654px no-repeat
 }
 .payment-proforma-big-de {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3594px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3594px no-repeat
 }
 .payment-ideal-big {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3080px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3080px no-repeat
 }
 .payment-visa {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3774px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3774px no-repeat
 }
 .payment-mastercard {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3474px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3474px no-repeat
 }
 .payment-amex {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2968px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -2968px no-repeat
 }
 .payment-paypal {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3564px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3564px no-repeat
 }
 .payment-invoice {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3384px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3384px no-repeat
 }
 .payment-invoice-de {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3324px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3324px no-repeat
 }
 .payment-invoice-nl {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3354px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3354px no-repeat
 }
 .payment-ideal {
- background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -3116px no-repeat
+ background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -3116px no-repeat
 }
 @media screen and (min-device-width:320px) and (min-width:600px) {
  .content-types a {
@@ -7042,7 +7042,7 @@ body.show-search #header .panel-search {
  }
  html.js .form-row-editable:hover .edit-link,
  html.no-js .edit-link:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -1613px no-repeat
+  background:url(/assets/images/sprites/sprite-sc788d4c21f.png) 0 -1613px no-repeat
  }
  .login-box {
   width:453px
@@ -7164,28 +7164,28 @@ body.show-search #header .panel-search {
   width:15%
  }
  .step-bar li.beg-prev {
-  background-image:url(/spcom/sites/palgrave/images/progress-parts-beg-prev.png)
+  background-image:url(/assets/images/progress-parts-beg-prev.png)
  }
  .step-bar li.beg-cur {
-  background-image:url(/spcom/sites/palgrave/images/progress-parts-beg-cur.png)
+  background-image:url(/assets/images/progress-parts-beg-cur.png)
  }
  .step-bar li.beg-next {
-  background-image:url(/spcom/sites/palgrave/images/progress-parts-beg-next.png)
+  background-image:url(/assets/images/progress-parts-beg-next.png)
  }
  .step-bar li.mid-prev {
-  background-image:url(/spcom/sites/palgrave/images/progress-parts-mid-prev.png)
+  background-image:url(/assets/images/progress-parts-mid-prev.png)
  }
  .step-bar li.mid-cur {
-  background-image:url(/spcom/sites/palgrave/images/progress-parts-mid-cur.png)
+  background-image:url(/assets/images/progress-parts-mid-cur.png)
  }
  .step-bar li.mid-next {
-  background-image:url(/spcom/sites/palgrave/images/progress-parts-mid-next.png)
+  background-image:url(/assets/images/progress-parts-mid-next.png)
  }
  .step-bar li.end-cur {
-  background-image:url(/spcom/sites/palgrave/images/progress-parts-end-cur.png)
+  background-image:url(/assets/images/progress-parts-end-cur.png)
  }
  .step-bar li.end-next {
-  background-image:url(/spcom/sites/palgrave/images/progress-parts-end-next.png)
+  background-image:url(/assets/images/progress-parts-end-next.png)
  }
  .step-bar-nobutton .step-bar {
   margin-left:0;
@@ -7223,7 +7223,7 @@ body.show-search #header .panel-search {
   text-shadow:1px 1px 0 #fff
  }
  .btn-cart:before {
-  background:url(/spcom/sites/palgrave/images/btn-cart-blue.png) 1px 7px no-repeat;
+  background:url(/assets/images/btn-cart-blue.png) 1px 7px no-repeat;
   content:'\bb';
   text-align:right;
   display:inline-block;
@@ -7236,10 +7236,10 @@ body.show-search #header .panel-search {
   padding-top:0
  }
  .btn-cart-inactive {
-  background:url(/spcom/sites/palgrave/images/btn-cart-grey.png) 14px 6px no-repeat
+  background:url(/assets/images/btn-cart-grey.png) 14px 6px no-repeat
  }
  .btn-user-inactive {
-  background:url(/spcom/sites/palgrave/images/btn-user-grey.png) 14px 6px no-repeat
+  background:url(/assets/images/btn-user-grey.png) 14px 6px no-repeat
  }
  .debug .cms-studio-maintainable {
   box-shadow:0 0 5px 5px #999
@@ -7515,7 +7515,7 @@ body.show-search #header .panel-search {
   font-family:var(--font-family-sans),var(--font-family-sans-fallback)
  }
  nav>ul>li:after {
-  background:url(/spcom/sites/palgrave/images/expander_arrows.png) 0 -92px no-repeat;
+  background:url(/assets/images/expander_arrows.png) 0 -92px no-repeat;
   width:20px;
   height:20px;
   padding-left:5px;
@@ -7627,7 +7627,7 @@ body.show-search #header .panel-search {
   padding:15px 0 0;
   left:0;
   top:8px;
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -395px no-repeat;
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -395px no-repeat;
   height:18px;
   width:20px
  }
@@ -8242,7 +8242,7 @@ body.show-search #header .panel-search {
  }
  .cms-common ul li:before,
  .cms-richtext ul li:before {
-  background:url(/spcom/sites/palgrave/images/list-bullet-small.png) no-repeat;
+  background:url(/assets/images/list-bullet-small.png) no-repeat;
   width:7px;
   height:7px;
   display:inline-block;
@@ -8842,18 +8842,18 @@ body.show-search #header .panel-search {
   overflow:hidden
  }
  .pillow-btn-header.open-search-options {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4783px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -4783px no-repeat
  }
  .is-open .pillow-btn-header.open-search-options,
  .pillow-btn-header.open-search-options:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4710px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -4710px no-repeat
  }
  .pillow-btn-header.open-search-options:active,
  .pillow-btn-header.open-search-options:focus {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4674px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -4674px no-repeat
  }
  .pillow-btn-header.open-search {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4327px no-repeat;
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -4327px no-repeat;
   position:absolute;
   top:7px;
   right:70px
@@ -8952,7 +8952,7 @@ body.show-search #header .panel-search {
   color:#666
  }
  .panel-menu #cross-nav .headerbasket {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -415px no-repeat;
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -415px no-repeat;
   padding:0;
   margin:0 2em 0 0;
   text-indent:-999em
@@ -9102,8 +9102,8 @@ body #header #headerlogo {
  -o-transition:none;
  transition:none;
  display:inline-block;
- background:url(/spcom/sites/palgrave/images/palgrave_logo_dark.png);
- background:url(/spcom/sites/palgrave/images/palgrave_logo_dark.svg),linear-gradient(transparent,transparent);
+ background:url(/assets/images/lumera_logo_dark.png);
+ background:url(/assets/images/lumera_logo_dark.svg),linear-gradient(transparent,transparent);
  background-repeat:no-repeat;
  background-position:0 0;
  background-size:contain;
@@ -9548,22 +9548,22 @@ tbody>tr+tr {
 }
 @media screen and (min-device-width:320px) {
  .pillow-btn-header.open-search:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4254px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -4254px no-repeat
  }
  body.show-search .pillow-btn-header.open-search {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4218px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -4218px no-repeat
  }
  .pillow-btn-header.open-menu {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2780px no-repeat;
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -2780px no-repeat;
   position:absolute;
   top:7px;
   right:8px
  }
  .pillow-btn-header.open-menu:hover {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2562px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -2562px no-repeat
  }
  body.show-menu .pillow-btn-header.open-menu {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -2526px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -2526px no-repeat
  }
  .panel-search {
   background-color:#ddd;
@@ -9649,7 +9649,7 @@ tbody>tr+tr {
   -moz-transition:.25s ease-in-out;
   -o-transition:.25s ease-in-out;
   transition:.25s ease-in-out;
-  background:url(/spcom/sites/palgrave/images/logo.png) no-repeat;
+  background:url(/assets/images/logo.png) no-repeat;
   display:inline-block;
   position:absolute;
   height:50px;
@@ -9962,7 +9962,7 @@ tbody>tr+tr {
   color:#333
  }
  .cms-trustpilot-reviews .carousel-counter .trustpilot-logo {
-  background:url(/spcom/gen_images/sprites/palgrave-sprite-sc788d4c21f.png) 0 -4997px no-repeat;
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -4997px no-repeat;
   display:inline-block;
   width:93px;
   height:11px;
@@ -16043,36 +16043,36 @@ col-aserm {
   width:24px
  }
  .pagination .prev {
-  background:url(/app-search-front-end/assets-v/images_gen/sprites/palgrave-sprite-sc788d4c21f.png) 0 -130px no-repeat;
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -130px no-repeat;
   margin-right:10px
  }
  .pagination .next {
-  background:url(/app-search-front-end/assets-v/images_gen/sprites/palgrave-sprite-sc788d4c21f.png) 0 -286px no-repeat;
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -286px no-repeat;
   margin-left:10px
  }
  .pagination a.prev:hover,
  .pagination a:focus.prev {
-  background:url(/app-search-front-end/assets-v/images_gen/sprites/palgrave-sprite-sc788d4c21f.png) 0 -52px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -52px no-repeat
  }
  .pagination a.prev:active {
-  background:url(/app-search-front-end/assets-v/images_gen/sprites/palgrave-sprite-sc788d4c21f.png) no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) no-repeat
  }
  .pagination span.prev {
-  background:url(/app-search-front-end/assets-v/images_gen/sprites/palgrave-sprite-sc788d4c21f.png) 0 -78px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -78px no-repeat
  }
  .pagination a.next:hover,
  .pagination a:focus.next {
-  background:url(/app-search-front-end/assets-v/images_gen/sprites/palgrave-sprite-sc788d4c21f.png) 0 -208px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -208px no-repeat
  }
  .pagination a:focus.next,
  .pagination a:focus.prev {
   outline:#999 dotted 1px
  }
  .pagination a.next:active {
-  background:url(/app-search-front-end/assets-v/images_gen/sprites/palgrave-sprite-sc788d4c21f.png) 0 -156px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -156px no-repeat
  }
  .pagination span.next {
-  background:url(/app-search-front-end/assets-v/images_gen/sprites/palgrave-sprite-sc788d4c21f.png) 0 -234px no-repeat
+  background:url(/assets/images/sprite-sc788d4c21f.png) 0 -234px no-repeat
  }
  .pagination .page-nr {
   float:left
