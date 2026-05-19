@@ -6335,12 +6335,12 @@ if (typeof Object.assign !== 'function') {
 }
 require('whatwg-fetch');
 require('regenerator-runtime/runtime');
-var app = require('app/init/palgrave')();
+var app = require('app/init/lumera')();
 if (history.pushState) {
     app.mount('#journal-page', app.start());
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"app/init/palgrave":117,"promise-polyfill":34,"regenerator-runtime/runtime":112,"whatwg-fetch":114}],116:[function(require,module,exports){
+},{"app/init/lumera":117,"promise-polyfill":34,"regenerator-runtime/runtime":112,"whatwg-fetch":114}],116:[function(require,module,exports){
 'use strict';
 function _defineProperty(obj, key, value) {
     if (key in obj) {
@@ -6669,11 +6669,11 @@ var ImpactFactor = function ImpactFactor(impactFactor) {
     return Maybe(impactFactor).map(function (impactFactor) {
         return $_div.bind(ClassName('impact-factor'))($_span.bind(ClassName('impact-factor__value'))(' ' + impactFactor.latestImpactFactor), $_span.bind(ClassName('impact-factor__info'))('Impact Factor ' + impactFactor.latestImpactFactorYear, Maybe(impactFactor.copyright).map(function (copyright) {
             return $_span.bind(ClassName('impact-factor__copyright'))(copyright);
-        }).getOrElse(null)), addStyle(require('app/styles/palgrave/impact-factor.css')())());
+        }).getOrElse(null)), addStyle(require('app/styles/lumera/impact-factor.css')())());
     }).getOrElse(null);
 };
 var MainNavigation = function MainNavigation(linkList) {
-    return $_nav.bind(ClassName('journal-navigation'))($_div.row($_ul.bind(ClassName('column'))([$_li.bind(ClassName('journal-navigation-header'))($_a($_b('Navigation'), $_Icons.arrowDown.bind(ClassName('journal-navigation-arrow-icon-size16'))()))].concat(_toConsumableArray(linkList)))), addStyle(require('app/styles/palgrave/main-navigation.css')())());
+    return $_nav.bind(ClassName('journal-navigation'))($_div.row($_ul.bind(ClassName('column'))([$_li.bind(ClassName('journal-navigation-header'))($_a($_b('Navigation'), $_Icons.arrowDown.bind(ClassName('journal-navigation-arrow-icon-size16'))()))].concat(_toConsumableArray(linkList)))), addStyle(require('app/styles/lumera/main-navigation.css')())());
 };
 var JournalBasePage = function JournalBasePage(state, emit, children) {
     var journal = state.journal, currentRoute = state.currentRoute, pendingRoute = state.pendingRoute;
@@ -6685,7 +6685,7 @@ var JournalBasePage = function JournalBasePage(state, emit, children) {
         pendingRoute: pendingRoute,
         currentParentRoute: currentParentRoute
     });
-    var pageTree = postTransformTree({ currentLinkClassTrait: currentLinkClassTrait })($_JournalPage($_JournalHeader.bind({ append: [addStyle(require('app/styles/palgrave/header.css')(journal.banner))()] })($_JournalStage($_div.bind(ClassName('live-area row'))($_div.column($_h1(journal.title), ImpactFactor(journal.impactFactor))), addStyle(require('app/styles/palgrave/stage.css')())()), MainNavigation(LinkList({
+    var pageTree = postTransformTree({ currentLinkClassTrait: currentLinkClassTrait })($_JournalPage($_JournalHeader.bind({ append: [addStyle(require('app/styles/lumera/header.css')(journal.banner))()] })($_JournalStage($_div.bind(ClassName('live-area row'))($_div.column($_h1(journal.title), ImpactFactor(journal.impactFactor))), addStyle(require('app/styles/lumera/stage.css')())()), MainNavigation(LinkList({
         currentLinkClassTrait: currentLinkClassTrait,
         parent: true
     })(journal.sitemap.main))), $_JournalContent(children)));
@@ -6727,7 +6727,7 @@ module.exports = function () {
         ]
     ], journalStore);
 };
-},{"./pre-render-transform":118,"./store":119,"app/init/common":116,"app/routes/actions/generic":120,"app/styles/palgrave/header.css":130,"app/styles/palgrave/impact-factor.css":131,"app/styles/palgrave/main-navigation.css":133,"app/styles/palgrave/stage.css":135,"lib/create-app":138,"lib/element-core":139,"lib/helpers":140}],118:[function(require,module,exports){
+},{"./pre-render-transform":118,"./store":119,"app/init/common":116,"app/routes/actions/generic":120,"app/styles/lumera/header.css":130,"app/styles/lumera/impact-factor.css":131,"app/styles/lumera/main-navigation.css":133,"app/styles/lumera/stage.css":135,"lib/create-app":138,"lib/element-core":139,"lib/helpers":140}],118:[function(require,module,exports){
 'use strict';
 var _styleMap;
 function _toConsumableArray(arr) {
@@ -6759,19 +6759,19 @@ var _require2 = require('app/routes/actions/generic'), LinkList = _require2.Link
 var _require3 = require('app/init/common'), ClassName = _require3.ClassName, addStyle = _require3.addStyle;
 var _require$jsonDOM = require('app/init/common').jsonDOM, $_div = _require$jsonDOM.$_div, $_ul = _require$jsonDOM.$_ul, $_li = _require$jsonDOM.$_li, $_section = _require$jsonDOM.$_section, $_h1 = _require$jsonDOM.$_h1, $_nav = _require$jsonDOM.$_nav, $_Icons = _require$jsonDOM.$_Icons;
 var c = require('app/styles/constants');
-var buttonStyles = require('app/styles/palgrave/button.css');
-var typographyStyles = require('app/styles/palgrave/typography.css');
-var boxStyles = require('app/styles/palgrave/box2.css');
-var priceTable = require('app/styles/palgrave/price-table.css');
-var detailsStyles = require('app/styles/palgrave/details.css');
+var buttonStyles = require('app/styles/lumera/button.css');
+var typographyStyles = require('app/styles/lumera/typography.css');
+var boxStyles = require('app/styles/lumera/box2.css');
+var priceTable = require('app/styles/lumera/price-table.css');
+var detailsStyles = require('app/styles/lumera/details.css');
 var styleMap = (_styleMap = {}, _defineProperty(_styleMap, c.article, function () {
-    return require('app/styles/palgrave/article.css')();
+    return require('app/styles/lumera/article.css')();
 }), _defineProperty(_styleMap, c.issueArticle, function () {
-    return require('app/styles/palgrave/issue-article.css')();
+    return require('app/styles/lumera/issue-article.css')();
 }), _defineProperty(_styleMap, c.box, function () {
-    return require('app/styles/palgrave/boxes.css')();
+    return require('app/styles/lumera/boxes.css')();
 }), _defineProperty(_styleMap, c.collection, function () {
-    return require('app/styles/palgrave/collection.css')();
+    return require('app/styles/lumera/collection.css')();
 }), _defineProperty(_styleMap, c.buttonBase, buttonStyles.buttonBase), _defineProperty(_styleMap, c.buttonLabel, buttonStyles.buttonLabel), _defineProperty(_styleMap, c.buttonIcon, buttonStyles.buttonIcon), _defineProperty(_styleMap, c.headline, typographyStyles.headline), _defineProperty(_styleMap, c.asideHeadline, typographyStyles.asideHeadline), _defineProperty(_styleMap, c.box2, boxStyles.box2), _defineProperty(_styleMap, c.priceTable, priceTable.priceTable), _defineProperty(_styleMap, c.priceTableSmallPrint, priceTable.priceTableSmallPrint), _defineProperty(_styleMap, c.priceCell, priceTable.priceCell), _defineProperty(_styleMap, c.productTitle, priceTable.productTitle), _defineProperty(_styleMap, c.details, detailsStyles.details), _defineProperty(_styleMap, c.detailsSummary, detailsStyles.summary), _defineProperty(_styleMap, c.detailsSummaryLabel, detailsStyles.summaryLabel), _defineProperty(_styleMap, c.detailsMarker, detailsStyles.marker), _styleMap);
 var resolveComponent = function resolveComponent(_ref) {
     var currentLinkClassTrait = _ref.currentLinkClassTrait;
@@ -6795,7 +6795,7 @@ var resolveComponent = function resolveComponent(_ref) {
             navigation: function navigation(linkList) {
                 return $_nav.bind(ClassName('journal-subnav'))([
                     $_div.bind(ClassName('live'))($_ul.bind(ClassName('ul'))([$_li.bind(ClassName('journal-navigation-header'))('Header')].concat(_toConsumableArray(LinkList({ currentLinkClassTrait: currentLinkClassTrait })(linkList.data))))),
-                    addStyle(require('app/styles/palgrave/sub-navigation.css')())()
+                    addStyle(require('app/styles/lumera/sub-navigation.css')())()
                 ]);
             }
         };
@@ -6917,7 +6917,7 @@ var postTransformTree = function postTransformTree(_ref4) {
     };
 };
 module.exports = { postTransformTree: postTransformTree };
-},{"app/init/common":116,"app/routes/actions/generic":120,"app/styles/constants":121,"app/styles/palgrave/article.css":123,"app/styles/palgrave/box2.css":124,"app/styles/palgrave/boxes.css":125,"app/styles/palgrave/button.css":126,"app/styles/palgrave/collection.css":127,"app/styles/palgrave/details.css":129,"app/styles/palgrave/issue-article.css":132,"app/styles/palgrave/price-table.css":134,"app/styles/palgrave/sub-navigation.css":136,"app/styles/palgrave/typography.css":137,"lib/helpers":140,"string-hash":113}],119:[function(require,module,exports){
+},{"app/init/common":116,"app/routes/actions/generic":120,"app/styles/constants":121,"app/styles/lumera/article.css":123,"app/styles/lumera/box2.css":124,"app/styles/lumera/boxes.css":125,"app/styles/lumera/button.css":126,"app/styles/lumera/collection.css":127,"app/styles/lumera/details.css":129,"app/styles/lumera/issue-article.css":132,"app/styles/lumera/price-table.css":134,"app/styles/lumera/sub-navigation.css":136,"app/styles/lumera/typography.css":137,"lib/helpers":140,"string-hash":113}],119:[function(require,module,exports){
 (function (global){
 'use strict';
 var _extends = Object.assign || function (target) {
@@ -7091,7 +7091,7 @@ module.exports = function (state, emitter) {
                             'addProduct',
                             'id'
                         ], response);
-                        setCookie('SPRCOMBASKET', basketId, { domain: '.palgrave.com' });
+                        setCookie('SPRCOMBASKET', basketId, { domain: '.sangia.org' });
                         product.prices.map(function (price) {
                             safeDataLayerPush(window, {
                                 'event': 'addToCart',
@@ -7666,13 +7666,13 @@ module.exports = {
 };
 },{"callsite":2,"color":22}],123:[function(require,module,exports){
 'use strict';
-var issueArticle = require('app/styles/palgrave/issue-article.css');
+var issueArticle = require('app/styles/lumera/issue-article.css');
 module.exports = function () {
     return '\n    ' + issueArticle() + '\n    \n    .article h3 {\n        margin-top: 30px;\n    }\n\n    .article-body {\n        margin-top: 10px;\n    }\n\n    .article-body > * + * {\n        margin-top: 10px;\n    }\n\n    .article-body .twoColumnSeparatorLeft--paragraph {\n        border-top: 1px solid #ddd;\n        height: 0;\n        margin-top: 20px;\n        padding-top: 10px;\n    }\n\n    .article-body .float--right {\n        float: right;\n        margin-left: 15px;\n    }\n\n    .article-body .float--left {\n        float: left;\n        margin-right: 15px;\n    }\n\n    .article-body table {\n        border-collapse: collapse;\n        margin-bottom: 30px;\n        width: 100%;\n    }\n\n    .article-body table a {\n        display: block;\n    }\n\n    .article-body table a img {\n        width: 100%;\n    }\n\n    .article-body tbody tr td {\n        border-bottom: 1px solid #eee;\n        padding: 15px 0;\n        vertical-align: top;\n    }\n\n    .article-body tbody tr:first-child td {\n        border-bottom: 3px solid #777;\n        padding: 10px 0;\n    }\n\n    .article-body tbody tr td:first-child {\n        width: 29%;\n        padding-right: 20px;\n    }\n\n    .article-body.cover-gallery table {\n        table-layout: fixed;\n        margin-bottom: 10px;\n    }\n\n    .article-body.cover-gallery tbody tr td {\n        width: auto;\n        padding: 15px 10px;\n    }\n\n    .article-body.cover-gallery tbody tr td:first-child {\n        padding-left: 0;\n        padding-right: 20px;\n    }\n\n    .article-body.cover-gallery tbody tr td:last-child {\n        padding-left: 20px;\n        padding-right: 0;\n    }\n\n    .article-body .flapHead {\n        border-top: 1px solid #ddd;\n        color: #00768A;\n        cursor: pointer;\n        padding-bottom: 15px;\n        padding-left: 10px;\n        padding-right: 10px;\n        padding-top: 15px;\n        user-select: none;\n    }\n\n    .article-body .collapsible-wrapper {\n        padding-left: 10px;\n        padding-right: 10px;\n        transition: height 0.5s;\n    }\n\n    .collapsible {\n        padding-bottom: 10px;\n    }\n\n    .collapsible-wrapper,\n    .collapsible-wrapper + .flapHead {\n        margin-top: 0;\n    }\n    \n    .collapsible-wrapper {\n        display: none;\n    }\n\n    .collapsible-wrapper.show,\n    html.no-js .collapsible-wrapper {\n        display: block;\n    }\n';
 };
-},{"app/styles/palgrave/issue-article.css":132}],124:[function(require,module,exports){
+},{"app/styles/lumera/issue-article.css":132}],124:[function(require,module,exports){
 'use strict';
-var styleConfig = require('app/styles/palgrave/config');
+var styleConfig = require('app/styles/lumera/config');
 var _require = require('app/init/common'), Style = _require.Style, Styles = _require.Styles, StyleChildren = _require.StyleChildren, Padding = _require.Padding;
 var box2 = function box2(_ref) {
     var parent = _ref.parent, self = _ref.self;
@@ -7682,17 +7682,17 @@ var box2 = function box2(_ref) {
     }));
 };
 module.exports = { box2: box2 };
-},{"app/init/common":116,"app/styles/palgrave/config":128}],125:[function(require,module,exports){
+},{"app/init/common":116,"app/styles/lumera/config":128}],125:[function(require,module,exports){
 'use strict';
-var styleConfig = require('app/styles/palgrave/config');
+var styleConfig = require('app/styles/lumera/config');
 module.exports = function () {
     return '\n    .box {\n        background-color: ' + styleConfig.colors.lightGray_f4f4f4 + ';\n        padding: 30px 20px;\n    }\n    \n    .box > * + *,\n    .box > div > * + *,\n    .box > section > * + * {\n        margin-top: 15px;\n    }\n\n';
 };
-},{"app/styles/palgrave/config":128}],126:[function(require,module,exports){
+},{"app/styles/lumera/config":128}],126:[function(require,module,exports){
 'use strict';
 var _require = require('lib/helpers'), pathOr = _require.pathOr;
 var _require2 = require('app/styles/lib/helpers'), contrastColor = _require2.contrastColor, applyLineHeight = _require2.applyLineHeight, normalizeBoundaries = _require2.normalizeBoundaries;
-var styleConfig = require('app/styles/palgrave/config');
+var styleConfig = require('app/styles/lumera/config');
 var _require3 = require('app/init/common'), Style = _require3.Style, Styles = _require3.Styles, StyleChildren = _require3.StyleChildren;
 var parentDefault = {
     attributes: { class: 'parent' },
@@ -7776,7 +7776,7 @@ module.exports = {
     buttonLabel: buttonLabel,
     buttonIcon: buttonIcon
 };
-},{"app/init/common":116,"app/styles/lib/helpers":122,"app/styles/palgrave/config":128,"lib/helpers":140}],127:[function(require,module,exports){
+},{"app/init/common":116,"app/styles/lib/helpers":122,"app/styles/lumera/config":128,"lib/helpers":140}],127:[function(require,module,exports){
 'use strict';
 module.exports = function () {
     return '\n    .collection > * + * {\n        margin-top: 20px;\n    }\n\n    .collection > section + section {\n        margin-top: 20px;\n        padding-top: 20px;\n    }\n';
@@ -7869,7 +7869,7 @@ module.exports = {
 },{"app/styles/lib/helpers":122}],129:[function(require,module,exports){
 'use strict';
 var _require = require('app/styles/lib/helpers'), contrastColor = _require.contrastColor, applyLineHeight = _require.applyLineHeight, normalizeBoundaries = _require.normalizeBoundaries;
-var styleConfig = require('app/styles/palgrave/config');
+var styleConfig = require('app/styles/lumera/config');
 var _require2 = require('app/init/common'), Style = _require2.Style, Styles = _require2.Styles, StyleChildren = _require2.StyleChildren;
 var details = function details(_ref) {
     var self = _ref.self, parent = _ref.parent;
@@ -7937,7 +7937,7 @@ module.exports = {
     summaryLabel: summaryLabel,
     marker: marker
 };
-},{"app/init/common":116,"app/styles/lib/helpers":122,"app/styles/palgrave/config":128}],130:[function(require,module,exports){
+},{"app/init/common":116,"app/styles/lib/helpers":122,"app/styles/lumera/config":128}],130:[function(require,module,exports){
 'use strict';
 module.exports = function (banner) {
     return '' + (banner && banner[0] ? '.journal-header {\n    background-color: transparent;\n    background-image: url(\'' + banner[0].imageController + '/width/1600\');\n    background-position: 100% 0;\n    background-repeat: no-repeat;\n    background-size: cover;\n}' : '.journal-header {\n    background-image: linear-gradient(rgba(0,0,0,0),rgba(0,0,0,0.3));\n    box-shadow: 9px 12px 14px 0px rgba(0, 0, 0, 0.15) inset;\n}\n\n.journal-header h1 {\n    color: #444;\n}\n');
@@ -7959,7 +7959,7 @@ module.exports = function () {
 };
 },{}],134:[function(require,module,exports){
 'use strict';
-var styleConfig = require('app/styles/palgrave/config');
+var styleConfig = require('app/styles/lumera/config');
 var _require = require('app/init/common'), Style = _require.Style, Styles = _require.Styles, Padding = _require.Padding;
 var _require2 = require('app/styles/lib/helpers'), contrastColor = _require2.contrastColor, applyLineHeight = _require2.applyLineHeight, normalizeBoundaries = _require2.normalizeBoundaries;
 var priceTable = function priceTable(_ref) {
@@ -8035,21 +8035,21 @@ module.exports = {
     productTitle: productTitle,
     priceTableSmallPrint: priceTableSmallPrint
 };
-},{"app/init/common":116,"app/styles/lib/helpers":122,"app/styles/palgrave/config":128}],135:[function(require,module,exports){
+},{"app/init/common":116,"app/styles/lib/helpers":122,"app/styles/lumera/config":128}],135:[function(require,module,exports){
 'use strict';
-var styleConfig = require('app/styles/palgrave/config');
+var styleConfig = require('app/styles/lumera/config');
 module.exports = function () {
     return '\n    .journal-stage {\n        padding: 2.6175% 0;\n    }\n    \n    @media screen and (min-width: 1280px) {\n        .journal-stage {\n            padding: 33.5px 0;\n        }    \n    }\n    \n    .journal-stage .row > .column {\n        align-items: center;\n        display: flex;\n        justify-content: space-between;\n        min-height: 93px;\n    }\n    \n    .journal-stage .live-area > * {\n        \n    }\n    \n    .journal-stage h1 {\n        color: ' + styleConfig.colors.white_fff + ';\n        font-family: ' + styleConfig.typography.type.secondary_BlissBold + ';\n        font-weight: normal;\n        max-width: 24em;\n    }\n    \n    .journal-stage h1 {\n        font-size: 7vw;\n        line-height: 1.2;\n    }\n    \n    @media screen and (min-width: 459px) {\n        .journal-stage h1 {\n            font-size: 32px;\n            line-height: 36px;\n        }\n    }\n    \n    .journal-stage h1 small {\n        display: block;\n        font-family: ' + styleConfig.typography.type.primary_BlissRegular + ';\n        font-size: 12px;\n        line-height: 20px;\n    }\n';
 };
-},{"app/styles/palgrave/config":128}],136:[function(require,module,exports){
+},{"app/styles/lumera/config":128}],136:[function(require,module,exports){
 'use strict';
-var styleConfig = require('app/styles/palgrave/config');
+var styleConfig = require('app/styles/lumera/config');
 module.exports = function () {
     return '\n    .journal-subnav ul {\n        list-style: none;\n    }\n\n    .journal-subnav li {\n        font-family: ' + styleConfig.typography.type.primary_BlissRegular + ';\n        font-size: 16px;\n        line-height: 22px;\n        margin-left: 0;\n    }\n\n    .journal-subnav a {\n        color: ' + styleConfig.colors.gray_444 + ';\n        text-decoration: none;\n        padding: 8px 0;\n        display: block;\n    }\n\n    .journal-subnav a:hover {\n        color: ' + styleConfig.colors.turquoise_brandSecondary_00768a + ';\n    }\n    \n    .journal-subnav .menu-item--current a {\n        color: ' + styleConfig.colors.turquoise_brandSecondary_00768a + ';\n        font-family: ' + styleConfig.typography.type.secondary_BlissBold + ';\n    }\n    \n    .teaser-navigation .journal-subnav {\n        columns: 2;\n    }\n    \n    .teaser-navigation .journal-subnav li {\n        font-family: Verdana;\n        font-size: 14px;\n        line-height: 18px;\n        break-inside: avoid;\n    }\n    \n    .teaser-navigation .journal-subnav a {\n        color: ' + styleConfig.colors.turquoise_brandSecondary_00768a + ';\n        padding: 6px 0;\n    }\n    \n    .teaser-navigation .journal-subnav a:hover {\n        text-decoration: underline;\n    }\n    \n    .teaser-navigation > * + * {\n        margin-top: 15px;\n    }\n';
 };
-},{"app/styles/palgrave/config":128}],137:[function(require,module,exports){
+},{"app/styles/lumera/config":128}],137:[function(require,module,exports){
 'use strict';
-var styleConfig = require('app/styles/palgrave/config');
+var styleConfig = require('app/styles/lumera/config');
 var _require = require('app/styles/lib/helpers'), applyLineHeight = _require.applyLineHeight, normalizeBoundaries = _require.normalizeBoundaries;
 var _require2 = require('app/init/common'), Style = _require2.Style, Styles = _require2.Styles;
 var parsePx = function parsePx(px) {
@@ -8084,7 +8084,7 @@ module.exports = {
     headline: headline,
     asideHeadline: asideHeadline
 };
-},{"app/init/common":116,"app/styles/lib/helpers":122,"app/styles/palgrave/config":128}],138:[function(require,module,exports){
+},{"app/init/common":116,"app/styles/lib/helpers":122,"app/styles/lumera/config":128}],138:[function(require,module,exports){
 'use strict';
 function _toConsumableArray(arr) {
     if (Array.isArray(arr)) {
