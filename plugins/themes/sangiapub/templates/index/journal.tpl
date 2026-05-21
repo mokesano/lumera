@@ -355,7 +355,7 @@
 		                <div class="column {if $issue}medium-8{else}medium-12{/if} insight">
 	                <ul class="journalinsights u-mb-16 u-fonts">
 		                {if $printIssn} {else if $onlineIssn}
-						<li class="meta"><span><span class="bold">ISSN:</span> {if $currentJournal->getSetting('onlineIssn')}<span class="c-meta__item"><a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('onlineIssn')}" target="_blank">{$currentJournal->getSetting('onlineIssn')}</a> (Medium online)</span>{else}<span class="c-meta__item">on proccess (Medium online)</span>{/if}{if $currentJournal->getSetting('printIssn')} <span class="c-meta__item"><a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('printIssn')}" target="_blank">{$currentJournal->getSetting('printIssn')}</a> (Medium Print)</span>{/if}</span></li>
+						<li class="meta"><span><span class="bold">ISSN: </span>{if $currentJournal->getSetting('onlineIssn')}<span class="c-meta__item"><a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('onlineIssn')}" target="_blank">{$currentJournal->getSetting('onlineIssn')}</a> (Medium online)</span>{else}<span class="c-meta__item">on proccess (Medium online)</span>{/if}{if $currentJournal->getSetting('printIssn')}<span class="c-meta__item"><a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('printIssn')}" target="_blank">{$currentJournal->getSetting('printIssn')}</a> (Medium Print)</span>{/if}</span></li>
 						{/if}
 
 						<li class="meta"><span class="c-meta__item"><span class="bold">Journal title:</span> {$currentJournal->getLocalizedTitle()|strip_tags|escape}</span></li>												
