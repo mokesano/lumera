@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{$currentLocale|substr:0:2}" xml:lang="{$currentLocale|substr:0:2}">
+<html lang="{$currentLocale|substr:0:2}">
 {**
  * header.tpl
  *
