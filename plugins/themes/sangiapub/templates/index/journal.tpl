@@ -134,7 +134,7 @@
 </section>
 **}
 
-{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE}
+{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && ($issue->getIssueProgressStatus() == 'in-progress' || $issue->getIssueProgressStatus() == 'completed')}
 <section class="area-wrapper u-mt-32">
   <div class="live-area">
   	<section class="row raw">
@@ -150,7 +150,7 @@
 
 {call_hook name="Templates::Index::journal"}
 
-{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && $articleCount >= 1}
+{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && ($issue->getIssueProgressStatus() == 'in-progress' || $issue->getIssueProgressStatus() == 'completed')}
 {* Display the table of contents or cover page of the current issue. *}
 <section class="area-wrapper u-mb-24 u-mt-32">
   <div class="live-area">
@@ -328,6 +328,7 @@
 
 {include file="common/journal-identity.tpl"}
 
+{if $issue && ($issue->getIssueProgressStatus() == 'in-progress' || $issue->getIssueProgressStatus() == 'completed')}
 <section class="area-wrapper u-mt-32">
   <div class="row raw">
 		    
@@ -503,12 +504,13 @@
 	</section>    
   </div>
 </section>
+{/if}
 
 {** include file="common/featured/trending_Altmetric.tpl" **}
 
 {if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}
 <div class="u-container position-relative">
-  	<div data-test="transformative-journal-announcement" class="c-status-message c-status-message--info {if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE}u-mt-32 u-mb-0{else} u-mb-32{/if} c-status-message--boxed"><svg class="c-status-message__icon c-status-message__icon--top" width="24" height="24" aria-hidden="true" focusable="false" role="img"><use xlink:href="#icon-info"><symbol id="icon-info" viewBox="0 0 18 18"><path d="m9 0c4.9705627 0 9 4.02943725 9 9 0 4.9705627-4.0294373 9-9 9-4.97056275 0-9-4.0294373-9-9 0-4.97056275 4.02943725-9 9-9zm0 7h-1.5l-.11662113.00672773c-.49733868.05776511-.88337887.48043643-.88337887.99327227 0 .47338693.32893365.86994729.77070917.97358929l.1126697.01968298.11662113.00672773h.5v3h-.5l-.11662113.0067277c-.42082504.0488782-.76196299.3590206-.85696816.7639815l-.01968298.1126697-.00672773.1166211.00672773.1166211c.04887817.4208251.35902055.761963.76398144.8569682l.1126697.019683.11662113.0067277h3l.1166211-.0067277c.4973387-.0577651.8833789-.4804365.8833789-.9932723 0-.4733869-.3289337-.8699473-.7707092-.9735893l-.1126697-.019683-.1166211-.0067277h-.5v-4l-.00672773-.11662113c-.04887817-.42082504-.35902055-.76196299-.76398144-.85696816l-.1126697-.01968298zm0-3.25c-.69035594 0-1.25.55964406-1.25 1.25s.55964406 1.25 1.25 1.25 1.25-.55964406 1.25-1.25-.55964406-1.25-1.25-1.25z" fill-rule="evenodd"></path></symbol></use></svg>
+  	<div data-test="transformative-journal-announcement" class="c-status-message c-status-message--info {if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE}u-mt-32 u-mb-0{else} u-mt-32{/if} c-status-message--boxed"><svg class="c-status-message__icon c-status-message__icon--top" width="24" height="24" aria-hidden="true" focusable="false" role="img"><use xlink:href="#icon-info"><symbol id="icon-info" viewBox="0 0 18 18"><path d="m9 0c4.9705627 0 9 4.02943725 9 9 0 4.9705627-4.0294373 9-9 9-4.97056275 0-9-4.0294373-9-9 0-4.97056275 4.02943725-9 9-9zm0 7h-1.5l-.11662113.00672773c-.49733868.05776511-.88337887.48043643-.88337887.99327227 0 .47338693.32893365.86994729.77070917.97358929l.1126697.01968298.11662113.00672773h.5v3h-.5l-.11662113.0067277c-.42082504.0488782-.76196299.3590206-.85696816.7639815l-.01968298.1126697-.00672773.1166211.00672773.1166211c.04887817.4208251.35902055.761963.76398144.8569682l.1126697.019683.11662113.0067277h3l.1166211-.0067277c.4973387-.0577651.8833789-.4804365.8833789-.9932723 0-.4733869-.3289337-.8699473-.7707092-.9735893l-.1126697-.019683-.1166211-.0067277h-.5v-4l-.00672773-.11662113c-.04887817-.42082504-.35902055-.76196299-.76398144-.85696816l-.1126697-.01968298zm0-3.25c-.69035594 0-1.25.55964406-1.25 1.25s.55964406 1.25 1.25 1.25 1.25-.55964406 1.25-1.25-.55964406-1.25-1.25-1.25z" fill-rule="evenodd"></path></symbol></use></svg>
   	    <div class="u-flex-shrink" data-track-component="tj-announcement">
   			<p class="u-mb-0 u-fonts-sans"><span class="italic">{$currentJournal->getLocalizedTitle()|strip_tags|escape}</span> is a <a data-track="click" data-track-action="click transformative journals link" href="{url page="information" op="librarians"}">Transformative Journal</a>; authors can publish using gold Open Access.</p>
   			<p class="u-fonts-sans">Our Open Access option complies with <a data-track="click" data-track-action="click funding link" href="{url page="about" op="editorialPolicies" anchor="openAccessPolicy"}">Open Access Policy</a>.</p>
