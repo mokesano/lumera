@@ -21,15 +21,6 @@
 <div id="JOUR" class="journal-page">
 
 <div class="journal-content">
-{* Hitung artikel di bagian atas template *}
-{assign var="articleCount" value=0}
-{if $publishedArticles}
-    {foreach from=$publishedArticles item=section}
-        {if $section.articles}
-            {math equation="x + y" x=$articleCount y=$section.articles|@count assign="articleCount"}
-        {/if}
-    {/foreach}
-{/if}
 
 {include file="common/featured/article_Hero.tpl"}
 
