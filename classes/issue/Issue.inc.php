@@ -244,6 +244,45 @@ class Issue extends DataObject {
         return $identification;
     }
 
+    // --- WIZDAM DOMAIN LOGIC ---
+
+    /**
+     * Get the issue progress status based on its publication date.
+     * [WIZDAM EDITION] Refactored for pure MVC separation.
+     * 
+     * @return string Status identifier: 'in-progress', 'completed', 'halted', or 'unpublished'
+     */
+    public function getIssueProgressStatus(): string {
+        // Asumsi: getDatePublished() tersedia dari trait IssuePublication
+        $datePublished = $this->getDatePublished();
+        
+        if (empty($datePublished)) {
+            return 'unpublished'; 
+        }
+
+        try {
+            $currentDate = new \DateTime('now');
+            $issueDate = new \DateTime($datePublished);
+        } catch (\Exception $e) {
+            return 'error';
+        }
+
+        $currentYear = (int) $currentDate->format('Y');
+        $currentMonth = (int) $currentDate->format('m');
+        
+        $issueYear = (int) $issueDate->format('Y');
+        $issueMonth = (int) $issueDate->format('m');
+
+        if ($currentYear === $issueYear) {
+            if ($currentMonth <= $issueMonth) {
+                return 'in-progress';
+            }
+            return 'completed';
+        }
+
+        return 'halted';
+    }
+
     // 
     // FULLY DECOUPLED LOGIC (NO MORE DAO OR PLUGIN REGISTRY CALLS)
     // 
