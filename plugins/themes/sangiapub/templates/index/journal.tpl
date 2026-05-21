@@ -161,14 +161,7 @@
                 {if $issue->getLocalizedTitle($currentJournal)}
 				<h3 class="u-hide issue-title headline-2545795530">{$issue->getLocalizedTitle($currentJournal)|escape}</h3>
 				{/if}
-				{* Ekstrak tahun dan bulan dari waktu sekarang *}
-				{assign var="currentYear" value=$smarty.now|date_format:"%Y"}
-				{assign var="currentMonth" value=$smarty.now|date_format:"%m"}
-									
-				{* Ekstrak tahun dan bulan dari tanggal terbit issue *}
-				{assign var="issueYear" value=$issue->getDatePublished()|date_format:"%Y"}
-				{assign var="issueMonth" value=$issue->getDatePublished()|date_format:"%m"}
-				<div class="insight-label u-font-sans">This issue is {if $currentYear == $issueYear}{if $currentMonth <= $issueMonth}in progress but{else}completed,{/if}{else}halted but{/if} contains articles that are final and fully citable.</div>
+				<div class="insight-label u-font-sans">This issue is {if $issue->getIssueProgressStatus() == 'in-progress'}in progress but{elseif $issue->getIssueProgressStatus() == 'completed'}completed,{else}halted but{/if} contains articles that are final and fully citable.</div>
             </div>
   		</div>
 	  	<div id="contents" class="position-relative z-index-1" role="main">
@@ -266,14 +259,7 @@
                 {if $issue->getLocalizedTitle($currentJournal)}
 				<h3 class="u-hide issue-title headline-2545795530">{$issue->getLocalizedTitle($currentJournal)|escape}</h3>
 				{/if}
-				{* Ekstrak tahun dan bulan dari waktu sekarang *}
-				{assign var="currentYear" value=$smarty.now|date_format:"%Y"}
-				{assign var="currentMonth" value=$smarty.now|date_format:"%m"}
-									
-				{* Ekstrak tahun dan bulan dari tanggal terbit issue *}
-				{assign var="issueYear" value=$issue->getDatePublished()|date_format:"%Y"}
-				{assign var="issueMonth" value=$issue->getDatePublished()|date_format:"%m"}
-				<div class="insight-label u-font-sans">This issue is {if $currentYear == $issueYear}{if $currentMonth <= $issueMonth}in progress but{else}completed,{/if}{else}halted but{/if} contains articles that are final and fully citable.</div>
+				<div class="insight-label u-font-sans">This issue is {if $issue->getIssueProgressStatus() == 'in-progress'}in progress but{elseif $issue->getIssueProgressStatus() == 'completed'}completed,{else}halted but{/if} contains articles that are final and fully citable.</div>
             </div>
   		</div>
 	  	<div id="contents" class="position-relative z-index-1" role="main">
@@ -409,19 +395,10 @@
 									<div class="contents">
 									    <div class="insight-data"><a href="{url page="issue" op="current"}">{translate key="issue.volume"} {$lastVolume|escape}{if $issue->getNumber()}, {translate key="issue.issue"} {$lastNumber|escape}{/if}</a></div>
 									{/if}
-									{* Ekstrak tahun dan bulan dari waktu sekarang *}
-									{assign var="currentYear" value=$smarty.now|date_format:"%Y"}
-									{assign var="currentMonth" value=$smarty.now|date_format:"%m"}
-									
-									{* Ekstrak tahun dan bulan dari tanggal terbit issue *}
-									{assign var="issueYear" value=$issue->getDatePublished()|date_format:"%Y"}
-									{assign var="issueMonth" value=$issue->getDatePublished()|date_format:"%m"}
-									{if $currentYear == $issueYear}
-									    {if $currentMonth <= $issueMonth}
+									{if $issue->getIssueProgressStatus() == 'in-progress'}
 									    <div class="insight-tip in-progress"><i>in progress</i></div>
-									    {else}
+									{elseif $issue->getIssueProgressStatus() == 'completed'}
 									    <div class="insight-tip"><i>Completed</i></div>
-									    {/if}
 									{else}
 									<div class="insight-tip Halted"><i>Halted </i></div>
 									{/if}
