@@ -91,10 +91,27 @@ class IndexHandler extends Handler {
         $displayCurrentIssue = $journal->getSetting('displayCurrentIssue');
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $issue = $issueDao->getCurrentIssue($journal->getId(), true);
+        
         if ($displayCurrentIssue && isset($issue)) {
             import('pages.issue.IssueHandler');
             // The current issue TOC/cover page should be displayed below the custom home page.
             IssueHandler::_setupIssueTemplate($request, $issue);
+
+            // --- WIZDAM FIX: Kalkulasi total artikel untuk validasi Homepage ---
+            // Ambil array publishedArticles yang baru saja di-assign oleh IssueHandler
+            $publishedArticles = $templateMgr->getTemplateVars('publishedArticles');
+            $homepageArticleCount = 0;
+            
+            if (!empty($publishedArticles) && is_array($publishedArticles)) {
+                foreach ($publishedArticles as $section) {
+                    if (isset($section['articles']) && is_array($section['articles'])) {
+                        $homepageArticleCount += count($section['articles']);
+                    }
+                }
+            }
+            // Assign hasil kalkulasi ke Smarty
+            $templateMgr->assign('homepageArticleCount', $homepageArticleCount);
+            // --- AKHIR WIZDAM FIX ---
         }
 
         $enableAnnouncements = $journal->getSetting('enableAnnouncements');
