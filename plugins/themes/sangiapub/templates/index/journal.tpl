@@ -30,8 +30,7 @@
     <div data-track-component="hero" class="u-container">
         <div class="c-hero c-hero--flush-md-max u-mb-0 u-position-relative">
 		    <div class="c-hero__image">
-		        {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
- 					{if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && !$issue->getHideCoverPageArchives($locale)}
+				{if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && !$issue->getHideCoverPageArchives($locale)}
 		        <picture><source type="image/webp" srcset="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}?as=webp?as=webp 450w, {$coverPagePath|escape}{$issue->getFileName($locale)|escape}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img src="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}" loading="lazy" class="lazyload" alt="">
 		        </picture>
 		        {elseif $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}
@@ -62,7 +61,6 @@
 			<li class="app-featured-row__item app-featured-row__item--current-issue">
 				<div class="c-card c-card--flush u-full-height">
 	  				<a class="c-card__image" href="{url page="issue" op="current"}" data-track="click" data-track-action="view current issue" data-track-label="image">
-	  					{assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
 	  					{if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && !$issue->getHideCoverPageArchives($locale)}
 	  					<picture><source srcset="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}?as=webp" type="image/webp"><img class="lazyload" loading="lazy" src="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}" {if $issue->getCoverPageAltText($locale) != ''} title="Cover issue {$issue->getCoverPageAltText($locale)|escape}" {else} title="Cover issue"{/if} {if $issue->getCoverPageAltText($locale) != ''} alt="{$issue->getCoverPageAltText($locale)|escape}"{else} alt="{translate key="issue.coverPage.altText"}"{/if} itemprop="image">
 	  					</picture>
