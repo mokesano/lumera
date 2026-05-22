@@ -16,7 +16,7 @@
 #   Pastikan Anda menggunakan format commit Conventional Commits.
 #   Token GITHUB_TOKEN sudah tersedia otomatis di Actions.
 
-name: Release Otomatis (Semantic Release)
+name: Semantic Release (Automatic Release)
 
 # Jalankan workflow ketika ada push ke branch utama (rilis) dan develop (hanya untuk memicu CI tanpa rilis)
 on:
