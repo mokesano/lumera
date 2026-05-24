@@ -1083,7 +1083,7 @@ class IssueManagementHandler extends EditorHandler {
      * @param PKPRequest $request
      */
     public function notifyUsers($args, $request) {
-        // [SECURITY FIX] Secure casting
+        // [SECURITY FIX] Secure casting untuk ID (ini SUDAH BENAR karena Issue ID berupa angka)
         $this->validate((int) trim((string) $request->getUserVar('issue')));
 
         $issue = $this->issue;
@@ -1103,10 +1103,13 @@ class IssueManagementHandler extends EditorHandler {
         import('lib.pkp.classes.mail.MassMail');
         $email = new MassMail('PUBLISH_NOTIFY');
 
-        // [SECURITY FIX] Secure casting
-        if ((int) $request->getUserVar('send') && !$email->hasErrors()) {
+        // [WIZDAM FIX CRITICAL] Hapus (int) agar tombol submit "Send" tidak terbaca sebagai 0
+        $isSend = $request->isPost() && $request->getUserVar('send') !== null;
 
-            if ((int) $request->getUserVar('ccSelf')) {
+        if ($isSend && !$email->hasErrors()) {
+
+            // [WIZDAM FIX] Hapus (int). Checkbox sering mengirim nilai "on" (jika di-int jadi 0)
+            if ($request->getUserVar('ccSelf')) {
                 $email->addRecipient($user->getEmail(), $user->getFullName());
             }
 
@@ -1151,7 +1154,8 @@ class IssueManagementHandler extends EditorHandler {
                 unset($recipient);
             }
 
-            if ((int) $request->getUserVar('sendToMailList')) {
+            // [WIZDAM FIX] Hapus (int)
+            if ($request->getUserVar('sendToMailList')) {
                 $mailList = $notificationMailListDao->getMailList($journal->getId());
                 foreach ($mailList as $mailListRecipient) {
                     $emailAddress = $mailListRecipient['email'];
@@ -1162,7 +1166,8 @@ class IssueManagementHandler extends EditorHandler {
                 }
             }
 
-            if ((int) $request->getUserVar('includeToc') == 1 && isset($issue)) {
+            // [WIZDAM FIX] Hapus (int) pada pengecekan includeToc
+            if ($request->getUserVar('includeToc') && isset($issue)) {
                 $issue = $issueDao->getIssueById((int) trim((string) $request->getUserVar('issue')));
 
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
@@ -1196,16 +1201,15 @@ class IssueManagementHandler extends EditorHandler {
             $templateMgr->display('common/progress.tpl');
             echo '<script type="text/javascript">window.location = "' . $request->url(null, 'editor') . '";</script>';
         } else {
-            if (!(int) $request->getUserVar('continued')) {
+            // [WIZDAM FIX] Hapus (int) di continued
+            if (!$request->getUserVar('continued')) {
                 $email->assignParams([
                     'editorialContactSignature' => $user->getContactSignature()
                 ]);
             }
 
             $issuesIterator = $issueDao->getIssues($journal->getId());
-
             $allUsersCount = $roleDao->getJournalUsersCount($journal->getId());
-
             $authors = $authorDao->getAuthorsAlphabetizedByJournal($journal->getId(), null, null, true, true);
             $authorCount = $authors->getCount();
 
