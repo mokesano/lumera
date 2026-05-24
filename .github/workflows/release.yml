@@ -14,11 +14,11 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Versi rilis (contoh: 1.0.0)'
+        description: 'Version release (e.g., 1.0.0)'
         required: true
         type: string
       body:
-        description: 'Catatan rilis'
+        description: 'Release notes'
         required: false
         type: string
         default: ''
