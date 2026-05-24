@@ -21,15 +21,6 @@
 <div id="JOUR" class="journal-page">
 
 <div class="journal-content">
-{* Hitung artikel di bagian atas template *}
-{assign var="articleCount" value=0}
-{if $publishedArticles}
-    {foreach from=$publishedArticles item=section}
-        {if $section.articles}
-            {math equation="x + y" x=$articleCount y=$section.articles|@count assign="articleCount"}
-        {/if}
-    {/foreach}
-{/if}
 
 {include file="common/featured/article_Hero.tpl"}
 
@@ -39,8 +30,7 @@
     <div data-track-component="hero" class="u-container">
         <div class="c-hero c-hero--flush-md-max u-mb-0 u-position-relative">
 		    <div class="c-hero__image">
-		        {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
- 					{if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && !$issue->getHideCoverPageArchives($locale)}
+				{if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && !$issue->getHideCoverPageArchives($locale)}
 		        <picture><source type="image/webp" srcset="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}?as=webp?as=webp 450w, {$coverPagePath|escape}{$issue->getFileName($locale)|escape}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img src="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}" loading="lazy" class="lazyload" alt="">
 		        </picture>
 		        {elseif $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}
@@ -71,7 +61,6 @@
 			<li class="app-featured-row__item app-featured-row__item--current-issue">
 				<div class="c-card c-card--flush u-full-height">
 	  				<a class="c-card__image" href="{url page="issue" op="current"}" data-track="click" data-track-action="view current issue" data-track-label="image">
-	  					{assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
 	  					{if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && !$issue->getHideCoverPageArchives($locale)}
 	  					<picture><source srcset="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}?as=webp" type="image/webp"><img class="lazyload" loading="lazy" src="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}" {if $issue->getCoverPageAltText($locale) != ''} title="Cover issue {$issue->getCoverPageAltText($locale)|escape}" {else} title="Cover issue"{/if} {if $issue->getCoverPageAltText($locale) != ''} alt="{$issue->getCoverPageAltText($locale)|escape}"{else} alt="{translate key="issue.coverPage.altText"}"{/if} itemprop="image">
 	  					</picture>
@@ -143,7 +132,7 @@
 </section>
 **}
 
-{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE}
+{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && ($issue->getIssueProgressStatus() == 'in-progress' || $issue->getIssueProgressStatus() == 'completed')}
 <section class="area-wrapper u-mt-32">
   <div class="live-area">
   	<section class="row raw">
@@ -159,7 +148,7 @@
 
 {call_hook name="Templates::Index::journal"}
 
-{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && $articleCount >= 1}
+{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && ($issue->getIssueProgressStatus() == 'in-progress' || $issue->getIssueProgressStatus() == 'completed')}
 {* Display the table of contents or cover page of the current issue. *}
 <section class="area-wrapper u-mb-24 u-mt-32">
   <div class="live-area">
@@ -170,14 +159,7 @@
                 {if $issue->getLocalizedTitle($currentJournal)}
 				<h3 class="u-hide issue-title headline-2545795530">{$issue->getLocalizedTitle($currentJournal)|escape}</h3>
 				{/if}
-				{* Ekstrak tahun dan bulan dari waktu sekarang *}
-				{assign var="currentYear" value=$smarty.now|date_format:"%Y"}
-				{assign var="currentMonth" value=$smarty.now|date_format:"%m"}
-									
-				{* Ekstrak tahun dan bulan dari tanggal terbit issue *}
-				{assign var="issueYear" value=$issue->getDatePublished()|date_format:"%Y"}
-				{assign var="issueMonth" value=$issue->getDatePublished()|date_format:"%m"}
-				<div class="insight-label u-font-sans">This issue is {if $currentYear == $issueYear}{if $currentMonth <= $issueMonth}in progress but{else}completed,{/if}{else}halted but{/if} contains articles that are final and fully citable.</div>
+				<div class="insight-label u-font-sans">This issue is {if $issue->getIssueProgressStatus() == 'in-progress'}in progress but{elseif $issue->getIssueProgressStatus() == 'completed'}completed,{else}halted but{/if} contains articles that are final and fully citable.</div>
             </div>
   		</div>
 	  	<div id="contents" class="position-relative z-index-1" role="main">
@@ -275,14 +257,7 @@
                 {if $issue->getLocalizedTitle($currentJournal)}
 				<h3 class="u-hide issue-title headline-2545795530">{$issue->getLocalizedTitle($currentJournal)|escape}</h3>
 				{/if}
-				{* Ekstrak tahun dan bulan dari waktu sekarang *}
-				{assign var="currentYear" value=$smarty.now|date_format:"%Y"}
-				{assign var="currentMonth" value=$smarty.now|date_format:"%m"}
-									
-				{* Ekstrak tahun dan bulan dari tanggal terbit issue *}
-				{assign var="issueYear" value=$issue->getDatePublished()|date_format:"%Y"}
-				{assign var="issueMonth" value=$issue->getDatePublished()|date_format:"%m"}
-				<div class="insight-label u-font-sans">This issue is {if $currentYear == $issueYear}{if $currentMonth <= $issueMonth}in progress but{else}completed,{/if}{else}halted but{/if} contains articles that are final and fully citable.</div>
+				<div class="insight-label u-font-sans">This issue is {if $issue->getIssueProgressStatus() == 'in-progress'}in progress but{elseif $issue->getIssueProgressStatus() == 'completed'}completed,{else}halted but{/if} contains articles that are final and fully citable.</div>
             </div>
   		</div>
 	  	<div id="contents" class="position-relative z-index-1" role="main">
@@ -337,6 +312,7 @@
 
 {include file="common/journal-identity.tpl"}
 
+{if $issue && ($issue->getIssueProgressStatus() == 'in-progress' || $issue->getIssueProgressStatus() == 'completed')}
 <section class="area-wrapper u-mt-32">
   <div class="row raw">
 		    
@@ -355,7 +331,7 @@
 		                <div class="column {if $issue}medium-8{else}medium-12{/if} insight">
 	                <ul class="journalinsights u-mb-16 u-fonts">
 		                {if $printIssn} {else if $onlineIssn}
-						<li class="meta"><span><span class="bold">ISSN:</span> {if $currentJournal->getSetting('onlineIssn')}<span class="c-meta__item"><a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('onlineIssn')}" target="_blank">{$currentJournal->getSetting('onlineIssn')}</a> (Medium online)</span>{else}<span class="c-meta__item">on proccess (Medium online)</span>{/if}{if $currentJournal->getSetting('printIssn')} <span class="c-meta__item"><a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('printIssn')}" target="_blank">{$currentJournal->getSetting('printIssn')}</a> (Medium Print)</span>{/if}</span></li>
+						<li class="meta"><span><span class="bold">ISSN: </span>{if $currentJournal->getSetting('onlineIssn')}<span class="c-meta__item"><a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('onlineIssn')}" target="_blank">{$currentJournal->getSetting('onlineIssn')}</a> (Medium online)</span>{else}<span class="c-meta__item">on proccess (Medium online)</span>{/if}{if $currentJournal->getSetting('printIssn')}<span class="c-meta__item"><a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('printIssn')}" target="_blank">{$currentJournal->getSetting('printIssn')}</a> (Medium Print)</span>{/if}</span></li>
 						{/if}
 
 						<li class="meta"><span class="c-meta__item"><span class="bold">Journal title:</span> {$currentJournal->getLocalizedTitle()|strip_tags|escape}</span></li>												
@@ -417,19 +393,10 @@
 									<div class="contents">
 									    <div class="insight-data"><a href="{url page="issue" op="current"}">{translate key="issue.volume"} {$lastVolume|escape}{if $issue->getNumber()}, {translate key="issue.issue"} {$lastNumber|escape}{/if}</a></div>
 									{/if}
-									{* Ekstrak tahun dan bulan dari waktu sekarang *}
-									{assign var="currentYear" value=$smarty.now|date_format:"%Y"}
-									{assign var="currentMonth" value=$smarty.now|date_format:"%m"}
-									
-									{* Ekstrak tahun dan bulan dari tanggal terbit issue *}
-									{assign var="issueYear" value=$issue->getDatePublished()|date_format:"%Y"}
-									{assign var="issueMonth" value=$issue->getDatePublished()|date_format:"%m"}
-									{if $currentYear == $issueYear}
-									    {if $currentMonth <= $issueMonth}
+									{if $issue->getIssueProgressStatus() == 'in-progress'}
 									    <div class="insight-tip in-progress"><i>in progress</i></div>
-									    {else}
+									{elseif $issue->getIssueProgressStatus() == 'completed'}
 									    <div class="insight-tip"><i>Completed</i></div>
-									    {/if}
 									{else}
 									<div class="insight-tip Halted"><i>Halted </i></div>
 									{/if}
@@ -512,12 +479,13 @@
 	</section>    
   </div>
 </section>
+{/if}
 
 {** include file="common/featured/trending_Altmetric.tpl" **}
 
 {if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}
 <div class="u-container position-relative">
-  	<div data-test="transformative-journal-announcement" class="c-status-message c-status-message--info {if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE}u-mt-32 u-mb-0{else} u-mb-32{/if} c-status-message--boxed"><svg class="c-status-message__icon c-status-message__icon--top" width="24" height="24" aria-hidden="true" focusable="false" role="img"><use xlink:href="#icon-info"><symbol id="icon-info" viewBox="0 0 18 18"><path d="m9 0c4.9705627 0 9 4.02943725 9 9 0 4.9705627-4.0294373 9-9 9-4.97056275 0-9-4.0294373-9-9 0-4.97056275 4.02943725-9 9-9zm0 7h-1.5l-.11662113.00672773c-.49733868.05776511-.88337887.48043643-.88337887.99327227 0 .47338693.32893365.86994729.77070917.97358929l.1126697.01968298.11662113.00672773h.5v3h-.5l-.11662113.0067277c-.42082504.0488782-.76196299.3590206-.85696816.7639815l-.01968298.1126697-.00672773.1166211.00672773.1166211c.04887817.4208251.35902055.761963.76398144.8569682l.1126697.019683.11662113.0067277h3l.1166211-.0067277c.4973387-.0577651.8833789-.4804365.8833789-.9932723 0-.4733869-.3289337-.8699473-.7707092-.9735893l-.1126697-.019683-.1166211-.0067277h-.5v-4l-.00672773-.11662113c-.04887817-.42082504-.35902055-.76196299-.76398144-.85696816l-.1126697-.01968298zm0-3.25c-.69035594 0-1.25.55964406-1.25 1.25s.55964406 1.25 1.25 1.25 1.25-.55964406 1.25-1.25-.55964406-1.25-1.25-1.25z" fill-rule="evenodd"></path></symbol></use></svg>
+  	<div data-test="transformative-journal-announcement" class="c-status-message c-status-message--info {if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE}u-mt-32 u-mb-0{else} u-mt-32{/if} c-status-message--boxed"><svg class="c-status-message__icon c-status-message__icon--top" width="24" height="24" aria-hidden="true" focusable="false" role="img"><use xlink:href="#icon-info"><symbol id="icon-info" viewBox="0 0 18 18"><path d="m9 0c4.9705627 0 9 4.02943725 9 9 0 4.9705627-4.0294373 9-9 9-4.97056275 0-9-4.0294373-9-9 0-4.97056275 4.02943725-9 9-9zm0 7h-1.5l-.11662113.00672773c-.49733868.05776511-.88337887.48043643-.88337887.99327227 0 .47338693.32893365.86994729.77070917.97358929l.1126697.01968298.11662113.00672773h.5v3h-.5l-.11662113.0067277c-.42082504.0488782-.76196299.3590206-.85696816.7639815l-.01968298.1126697-.00672773.1166211.00672773.1166211c.04887817.4208251.35902055.761963.76398144.8569682l.1126697.019683.11662113.0067277h3l.1166211-.0067277c.4973387-.0577651.8833789-.4804365.8833789-.9932723 0-.4733869-.3289337-.8699473-.7707092-.9735893l-.1126697-.019683-.1166211-.0067277h-.5v-4l-.00672773-.11662113c-.04887817-.42082504-.35902055-.76196299-.76398144-.85696816l-.1126697-.01968298zm0-3.25c-.69035594 0-1.25.55964406-1.25 1.25s.55964406 1.25 1.25 1.25 1.25-.55964406 1.25-1.25-.55964406-1.25-1.25-1.25z" fill-rule="evenodd"></path></symbol></use></svg>
   	    <div class="u-flex-shrink" data-track-component="tj-announcement">
   			<p class="u-mb-0 u-fonts-sans"><span class="italic">{$currentJournal->getLocalizedTitle()|strip_tags|escape}</span> is a <a data-track="click" data-track-action="click transformative journals link" href="{url page="information" op="librarians"}">Transformative Journal</a>; authors can publish using gold Open Access.</p>
   			<p class="u-fonts-sans">Our Open Access option complies with <a data-track="click" data-track-action="click funding link" href="{url page="about" op="editorialPolicies" anchor="openAccessPolicy"}">Open Access Policy</a>.</p>

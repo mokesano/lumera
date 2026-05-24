@@ -129,7 +129,7 @@
                 <div class="row">
                     <div class="columns  small-12 medium-4 large-4 cms-tile-row-medium">
                         <div id="id5f" class="">
-                            <div class="cms-hp-tile cms-hp-tile-image cms-hp-tile-image" style="background-image: url(//resource-cms.springernature.com/springer-cms/rest/v1/content/15974486/data/v2);">
+                            <div class="cms-hp-tile cms-hp-tile-image cms-hp-tile-image" style="background-image: url(//assets.sangia.org/static/img/Journals+Impact+Report.jpg);">
                                 <a class="tile-toggle" href="//sinta.kemdikbud.go.id/journals" target="_blank">
                                     <div class="tile-detail"></div>
                                     <div class="tile-bottom"><h3 class="">Journal Impact Report Indonesia</h3></div>
@@ -140,7 +140,7 @@
                     <div class="columns  small-12 medium-4 large-4 cms-tile-row-medium">
                         <div id="id60" class="">
                             <div class="cms-hp-tile cms-hp-tile-image cms-hp-tile-image" style="background-image: url(//journals.sangia.org/public/journals/1/cover_issue_48_en_US.jpg?as=webp);">
-                                <a class="tile-toggle" href="//www.ejournal.stipwunaraha.ac.id/ISLE/" target="_blank">
+                                <a class="tile-toggle" href="//journals.sangia.org/ISLE/" target="_blank">
                                     <div class="tile-detail">
                                         <div class="cms-richtext"><p>Our open access online journal</p></div>
                                     </div>
@@ -151,9 +151,9 @@
                     </div>
                     <div class="columns  small-12 medium-4 large-4 cms-tile-row-medium">
                         <div id="id61" class="">
-                            <div class="cms-hp-tile cms-hp-tile-image cms-hp-tile-image" style="background-image: url(//resource-cms.springernature.com/springer-cms/rest/v1/content/10305802/data/v3);">
+                            <div class="cms-hp-tile cms-hp-tile-image cms-hp-tile-image" style="background-image: url(//assets.sangia.org/static/img/Journals_+Why+Publish+With+Us_.jpg);">
                                 <a class="tile-toggle" href="#_sangia">
-                                    <div class="tile-detail"><div class="cms-richtext"><p>Here's why you should submit your work to Palgrave Journals.</p></div></div>
+                                    <div class="tile-detail"><div class="cms-richtext"><p>Here's why you should submit your work to Lumera Journals.</p></div></div>
                                     <div class="tile-bottom"><h3 class="">Want to publish an article?</h3></div>
                                 </a>
                             </div>
@@ -210,7 +210,7 @@
                         </li>
                         <li class="u-hide">
                             <div id="id10" class="">
-                                <a class="cms-teaser-text" href="/services/join-our-mailing-list" data-track="click" data-track-label="https://www.palgrave.com/gp/campaigns/journal-impact-report" data-track-category="content links" data-track-action="click - https://www.palgrave.com/gp/services/join-our-mailing-list - >Sign up for our e-newsletter">
+                                <a class="cms-teaser-text" href="/services/join-our-mailing-list" data-track="click" data-track-label="https://www.sangia.org/campaigns/journal-impact-report" data-track-category="content links" data-track-action="click - https://www.sangia.org/services/join-our-mailing-list - >Sign up for our e-newsletter">
                                     <div class="cms-teaser-box cms-teaser-box-with-icon cms-teaser-box-titled-icon" data-mh="mh-id2" style="height: 127px;">
                                         <div class="article-meta"></div>
                                         <div class="cms-font-icon">&gt;</div>

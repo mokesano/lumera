@@ -1253,7 +1253,7 @@
     margin-bottom: 0;
 }
 
-/* ./src/styles/journal-page_palgrave.css.js:9 (anonymous) */
+/* ./src/styles/journal-page_lumera.css.js:9 (anonymous) */
 /*
 This font software is the property of JT Types Ltd.
 You may not modify the font software, use it on another website, or install it on a computer.
@@ -1261,16 +1261,16 @@ Copyright (C) JT Types Ltd.
 */
 @font-face {
     font-family: 'Bliss Regular';
-    src: url("//static.palgrave.com/fonts/BlsW-Rg/blsw-rg.eot");
-    src: url("//static.palgrave.com/fonts/BlsW-Rg/blsw-rg.eot?#iefix") format("embedded-opentype"), url("//static.palgrave.com/fonts/BlsW-Rg/blsw-rg.woff2") format("woff2"), url("//static.palgrave.com/fonts/BlsW-Rg/blsw-rg.woff") format("woff"), url("//static.palgrave.com/fonts/BlsW-Rg/blsw-rg.ttf") format("truetype");
+    src: url("//static.sangia.org/fonts/BlsW-Rg/blsw-rg.eot");
+    src: url("//static.sangia.org/fonts/BlsW-Rg/blsw-rg.eot?#iefix") format("embedded-opentype"), url("//static.sangia.org/fonts/BlsW-Rg/blsw-rg.woff2") format("woff2"), url("//static.sangia.org/fonts/BlsW-Rg/blsw-rg.woff") format("woff"), url("//static.sangia.org/fonts/BlsW-Rg/blsw-rg.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Bliss Bold';
-    src: url("//static.palgrave.com/fonts/BlsW-Bd/blsw-bd.eot");
-    src: url("//static.palgrave.com/fonts/BlsW-Bd/blsw-bd.eot?#iefix") format("embedded-opentype"), url("//static.palgrave.com/fonts/BlsW-Bd/blsw-bd.woff2") format("woff2"), url("//static.palgrave.com/fonts/BlsW-Bd/blsw-bd.woff") format("woff"), url("//static.palgrave.com/fonts/BlsW-Bd/blsw-bd.ttf") format("truetype");
+    src: url("//static.sangia.org/fonts/BlsW-Bd/blsw-bd.eot");
+    src: url("//static.sangia.org/fonts/BlsW-Bd/blsw-bd.eot?#iefix") format("embedded-opentype"), url("//static.sangia.org/fonts/BlsW-Bd/blsw-bd.woff2") format("woff2"), url("//static.sangia.org/fonts/BlsW-Bd/blsw-bd.woff") format("woff"), url("//static.sangia.org/fonts/BlsW-Bd/blsw-bd.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
 }

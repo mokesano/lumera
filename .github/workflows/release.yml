@@ -1,0 +1,58 @@
+# Workflow: Release Manual untuk Wizdam/Lumera Publisher Platform
+#
+# Deskripsi:
+#   Workflow ini berjalan secara manual untuk membuat release baru.
+#   Karena ini adalah aplikasi PHP monolitik (bukan library),
+#   release dilakukan secara manual dengan menentukan versi.
+#
+# Catatan:
+#   Jalankan workflow ini dari GitHub Actions tab dengan memasukkan versi rilis.
+
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version release (e.g., 1.0.0)'
+        required: true
+        type: string
+      body:
+        description: 'Release notes'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Buat Git tag untuk versi yang ditentukan
+      - name: Create Git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ github.event.inputs.version }}" -m "Release v${{ github.event.inputs.version }}"
+          git push origin "v${{ github.event.inputs.version }}"
+
+      # 3. Buat GitHub Release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: Release v${{ github.event.inputs.version }}
+          body: ${{ github.event.inputs.body }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
