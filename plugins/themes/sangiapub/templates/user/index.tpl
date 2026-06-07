@@ -69,11 +69,11 @@
         {/if}{/if}
         {/foreach}
         
-        <li><article class="eds-c-card-composable eds-c-card-composable--faux-link">
+        <li class="u-js-hide"><article class="eds-c-card-composable eds-c-card-composable--faux-link">
             <div class="eds-c-card-composable__container eds-c-card-composable__container--with-sidebar">
                 <div class="eds-c-card-composable__body">
                     <div class="eds-c-card-composable__content">
-                        <h2 class="eds-c-card-composable__title"><a data-track="click_myprofile_homepage" data-track-context="my-profile_homepage" data-track-label="Account" data-track-value="Manage Editorial Systems" href="#" target="_blank">Manage your account</a>
+                        <h2 class="eds-c-card-composable__title"><a data-track="click_myprofile_homepage" data-track-context="my-profile_homepage" data-track-label="Account" data-track-value="Manage Your Account" href="#" target="_blank">Manage your account</a>
                         </h2>
                         <p class="eds-c-card-composable__summary">Change your password, update your communications settings or get help with your Scholar Wizdam account.</p>
                     </div>
