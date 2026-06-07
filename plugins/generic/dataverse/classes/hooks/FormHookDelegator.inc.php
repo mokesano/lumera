@@ -42,9 +42,9 @@ class FormHookDelegator {
      */
     public function metadataFormConstructor(string $hookName, array $args): bool {
         $form = $args[0];
-        $form->addCheck(new FormValidatorCustom($this->plugin, 'metadata', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.metadataForm.studyLocked', [$this, 'formValidateStudyState'], [&$form]));
+        $form->addCheck(new FormValidatorCustom($form, 'metadata', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.metadataForm.studyLocked', [$this, 'formValidateStudyState'], [&$form]));
         return false;
-    }   
+    }
     
     /**
      * Metadata form execute hook to update study metadata 
