@@ -60,7 +60,7 @@ class ONIXParserDOMHandler extends XMLParserDOMHandler {
                 E_USER_DEPRECATED
             );
         }
-        self::__construct(string $listName);
+        self::__construct($listName);
     }
 
     /**

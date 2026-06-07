@@ -394,6 +394,16 @@ class RegistrationForm extends Form {
                 ));
             }
         }
+
+        // [FIX ERROR] Affiliation array null
+        if (!is_array($this->getData('affiliation'))) {
+            $this->setData('affiliation', array($currentLocale => ''));
+        }
+        
+        // [FIX ERROR] Biography array null
+        if (!is_array($this->getData('biography'))) {
+            $this->setData('biography', array($currentLocale => ''));
+        }
     }
 
     /**
@@ -598,7 +608,7 @@ class RegistrationForm extends Form {
                     
                     // --- VARIABEL JURNAL (TAMBAHAN BARU) ---
                     'journalContactEmail'     => $journal->getSetting('contactEmail'),
-                    'journalContactSignature' => $journal->getSetting('contactName') . '<br />' . $journal->getLocalizedName()
+                    'journalContactSignature' => $journal->getSetting('contactName') . '<br />' . $journal->getLocalizedTitle()
                 ));
                 
                 $mail->addRecipient($user->getEmail(), $user->getFullName());
