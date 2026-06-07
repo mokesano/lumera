@@ -598,7 +598,7 @@ class RegistrationForm extends Form {
                     
                     // --- VARIABEL JURNAL (TAMBAHAN BARU) ---
                     'journalContactEmail'     => $journal->getSetting('contactEmail'),
-                    'journalContactSignature' => $journal->getSetting('contactName') . '<br />' . $journal->getLocalizedName()
+                    'journalContactSignature' => $journal->getSetting('contactName') . '<br />' . $journal->getLocalizedTitle()
                 ));
                 
                 $mail->addRecipient($user->getEmail(), $user->getFullName());
