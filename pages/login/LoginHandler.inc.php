@@ -137,8 +137,12 @@ class LoginHandler extends PKPLoginHandler {
         return (string) $returnUrl;
     }
 
+    //
+    // Database Lookup Helpers
+    //
+
     /**
-     * [WIZDAM HELPER] Find user by ORCID URL stored in user_settings.
+     * Find user by ORCID URL stored in user_settings.
      * @param string $orcidUrl Full ORCID URL: https://orcid.org/XXXX-XXXX-XXXX-XXXX
      * @return object|null User object or null if not found
      */
@@ -148,14 +152,14 @@ class LoginHandler extends PKPLoginHandler {
     }
 
     /**
-     * [WIZDAM HELPER] Find an existing or empty slot for a Google email.
+     * Find an existing or empty key for a Google email.
      * Supports multi-email: google_email_0 through google_email_4.
      * @param int    $userId
      * @param string $email
      * @param object $userSettingsDao
      * @return string The setting_name to use
      */
-    private function _findOrCreateEmailSlot(int $userId, string $email, UserSettingsDAO $userSettingsDao): string {
+    private function _findOrCreateEmailKey(int $userId, string $email, UserSettingsDAO $userSettingsDao): string {
         for ($i = 0; $i <= 4; $i++) {
             $key      = 'google_email_' . $i;
             $existing = $userSettingsDao->getSetting($userId, $key);
@@ -532,8 +536,8 @@ class LoginHandler extends PKPLoginHandler {
                 // [FIX-MULTI-EMAIL] Store Google email in its own slot, never overwrites
                 // the primary OJS email. User may link a different Google account email.
                 if (!empty($googleEmail)) {
-                    $slot = $this->_findOrCreateEmailSlot($currentUser->getId(), $googleEmail, $userSettingsDao);
-                    $userSettingsDao->updateSetting($currentUser->getId(), $slot, $googleEmail, 'string');
+                    $emailKey = $this->_findOrCreateEmailKey((int) $currentUser->getId(), $googleEmail, $userSettingsDao);
+                    $userSettingsDao->updateSetting($currentUser->getId(), $emailKey, $googleEmail, 'string');
                 }
 
                 $request->redirect($contextPath, 'user', 'linked-accounts', null, ['success' => 'google_linked']);
@@ -560,8 +564,8 @@ class LoginHandler extends PKPLoginHandler {
                 $userId = (int) $user->getId();
                 
                 $userSettingsDao->updateSetting($userId, 'google_id', $googleId, 'string');
-                $slot = $this->_findOrCreateEmailSlot($userId, $googleEmail, $userSettingsDao);
-                $userSettingsDao->updateSetting($userId, $slot, $googleEmail, 'string');
+                $emailKey = $this->_findOrCreateEmailKey($userId, $googleEmail, $userSettingsDao);
+                $userSettingsDao->updateSetting($userId, $emailKey, $googleEmail, 'string');
             }
         }
 
