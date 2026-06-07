@@ -4,13 +4,26 @@ declare(strict_types=1);
 /**
  * @file lib/wizdam/trends/WizdamTrendsManager.inc.php
  *
- * [WIZDAM] - Service class untuk mempopulasi data Trends.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Teams
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * @class WizdamTrendsManager
+ * @ingroup wizdam_trends
+ *
+ * @brief Service class untuk mempopulasi data Trends.
  * Memastikan assignment Smarty 100% presisi dengan legacy WIZDAM:
  * Termasuk Cover Image, Open Access, Keywords, dan Article Type.
  */
 
 class WizdamTrendsManager {
 
+    /**
+     * Assign data Most Popular Articles ke Smarty.
+     * @param TemplateManager $templateMgr
+     * @param Journal|null $journal
+     * @param PKPRequest $request
+     */
     public static function assignMostPopularPayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request): void {
         import('lib.wizdam.trends.MostPopularDAO');
         $popularDao = new MostPopularDAO();
@@ -46,7 +59,10 @@ class WizdamTrendsManager {
     }
 
     /**
-     * [WIZDAM] - Eksekusi Micro-Payload (Mengekstrak seluruh data ke tipe skalar murni)
+     * Eksekusi Micro-Payload (Mengekstrak seluruh data ke tipe skalar murni).
+     * @param array $rawViewsData
+     * @param PKPRequest $request
+     * @return array
      */
     private static function _formatMicroPayload(array $rawViewsData, PKPRequest $request): array {
         $journalDao = DAORegistry::getDAO('JournalDAO');
@@ -123,8 +139,15 @@ class WizdamTrendsManager {
         return $payload;
     }
 
+    //
+    // Helper Functions
+    //
+
     /**
-     * [WIZDAM] - Helper: Mencari Cover Image dengan dukungan Multi-Locale
+     * Mencari Cover Image dengan dukungan Multi-Locale.
+     * @param int $journalId
+     * @param int $articleId
+     * @return array
      */
     private static function _findArticleCoverImage(int $journalId, int $articleId): array {
         $locales = ['en_US', 'id_ID', 'en', 'id'];
@@ -167,7 +190,10 @@ class WizdamTrendsManager {
     }
 
     /**
-     * [WIZDAM] - Helper: Deteksi Open Access tanpa Raw SQL (MVC Compliant)
+     * Deteksi Open Access tanpa Raw SQL (MVC Compliant).
+     * @param Article $article
+     * @param int $journalId
+     * @return bool
      */
     private static function _checkWizdamOpenAccessStatus(Article $article, int $journalId): bool {
         // Method 1: Cek dari setting artikel langsung
