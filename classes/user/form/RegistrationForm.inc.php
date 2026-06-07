@@ -394,6 +394,16 @@ class RegistrationForm extends Form {
                 ));
             }
         }
+
+        // [FIX ERROR] Affiliation array null
+        if (!is_array($this->getData('affiliation'))) {
+            $this->setData('affiliation', array($currentLocale => ''));
+        }
+        
+        // [FIX ERROR] Biography array null
+        if (!is_array($this->getData('biography'))) {
+            $this->setData('biography', array($currentLocale => ''));
+        }
     }
 
     /**
