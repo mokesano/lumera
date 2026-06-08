@@ -54,5 +54,5 @@
 </table>
 </div>
 
-{include file="common/footer.tpl"}
+{include file="common/footer-parts/footer-user.tpl"}
 
