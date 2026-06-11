@@ -16,7 +16,6 @@ declare(strict_types=1);
  * @ingroup controllers_api_user
  *
  * @brief Class defining the headless API for backend citation manipulation.
- * [WIZDAM EDITION] Modernized Citation API Handler.
  */
 
 // import the base Handler
@@ -112,7 +111,7 @@ class CitationApiHandler extends PKPHandler {
             }
         } while ($continue);
 
-        // Free the process slot.
+        // Free the process fields.
         $processDao->deleteObjectById($processId);
 
         // This request returns just a (private) status message.

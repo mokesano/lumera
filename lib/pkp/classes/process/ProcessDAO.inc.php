@@ -15,7 +15,7 @@ declare(strict_types=1);
  * @brief Operations for retrieving and modifying process data.
  *
  * Parallel processes are pooled. This defines a given number
- * of process slots per pool. Once these slots are occupied, no
+ * of process fields per pool. Once these fields are occupied, no
  * new processes can be spawned for a given process type.
  *
  * The process ID is not an integer but a globally unique string
@@ -94,7 +94,7 @@ class ProcessDAO extends DAO {
      * false if there are too many parallel processes.
      */
     public function insertObject($processType, $maxParallelism) {
-        // Free processing slots occupied by zombie processes.
+        // Free processing fields occupied by zombie processes.
         $this->deleteZombies();
 
         // Cap the parallelism to the max. parallelism.
@@ -201,7 +201,7 @@ class ProcessDAO extends DAO {
      *
      * Zombie processes are remnants of process executions
      * that for some reason died. We have to regularly remove
-     * them so that the process slots they occupy are freed
+     * them so that the process fields they occupy are freed
      * for new processes.
      * @param $force whether to force zombie removal, even
      * if they have been removed before.
@@ -475,5 +475,4 @@ class ProcessDAO extends DAO {
         return $process;
     }
 }
-
 ?>
