@@ -42,9 +42,9 @@ class FormHookDelegator {
      */
     public function metadataFormConstructor(string $hookName, array $args): bool {
         $form = $args[0];
-        $form->addCheck(new FormValidatorCustom($this->plugin, 'metadata', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.metadataForm.studyLocked', [$this, 'formValidateStudyState'], [&$form]));
+        $form->addCheck(new FormValidatorCustom($form, 'metadata', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.metadataForm.studyLocked', [$this, 'formValidateStudyState'], [&$form]));
         return false;
-    }   
+    }
     
     /**
      * Metadata form execute hook to update study metadata 
@@ -53,7 +53,7 @@ class FormHookDelegator {
     public function metadataFormExecute(string $hookName, array $args): bool {
         $form = $args[0];
         $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dataverseStudyDao->getStudyBySubmissionId($form->article->getId());
+        $study = $dataverseStudyDao->getStudyBySubmissionId((int) $form->article->getId());
         if (isset($study)) {
             $journal = Registry::get('request')->getJournal();
             $metadataReplaced = $this->studyService->replaceStudyMetadata($form->article, $study, $journal);
@@ -61,7 +61,7 @@ class FormHookDelegator {
             $user = Registry::get('request')->getUser();
             import('classes.notification.NotificationManager');
             $notificationManager = new NotificationManager();
-            $notificationManager->createTrivialNotification($user->getId(), $metadataReplaced ? NOTIFICATION_TYPE_DATAVERSE_STUDY_UPDATED : NOTIFICATION_TYPE_DATAVERSE_ERROR);
+            $notificationManager->createTrivialNotification((int) $user->getId(), $metadataReplaced ? NOTIFICATION_TYPE_DATAVERSE_STUDY_UPDATED : NOTIFICATION_TYPE_DATAVERSE_ERROR);
         }
         return false;
     }   
@@ -97,7 +97,7 @@ class FormHookDelegator {
         $articleId = $templateMgr->get_template_vars('articleId');
         
         $dvStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dvStudyDao->getStudyBySubmissionId($articleId);
+        $study = $dvStudyDao->getStudyBySubmissionId((int) $articleId);
 
         if (isset($study)) {
             $journal = Registry::get('request')->getJournal();

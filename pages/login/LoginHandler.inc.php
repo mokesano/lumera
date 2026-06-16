@@ -533,8 +533,8 @@ class LoginHandler extends PKPLoginHandler {
             } else {
                 $userSettingsDao->updateSetting($currentUser->getId(), 'google_id', $googleId, 'string');
 
-                // [FIX-MULTI-EMAIL] Store Google email in its own slot, never overwrites
-                // the primary OJS email. User may link a different Google account email.
+                // [FIX-MULTI-EMAIL] Store Google email in its own field, never overwrites
+                // the primary App email. User may link a different Google account email.
                 if (!empty($googleEmail)) {
                     $emailKey = $this->_findOrCreateEmailKey((int) $currentUser->getId(), $googleEmail, $userSettingsDao);
                     $userSettingsDao->updateSetting($currentUser->getId(), $emailKey, $googleEmail, 'string');
@@ -611,7 +611,7 @@ class LoginHandler extends PKPLoginHandler {
 
         $userSettingsDao->deleteSetting($user->getId(), 'google_id');
 
-        // Remove all Google email slots
+        // Remove all Google email fields
         for ($i = 0; $i <= 4; $i++) {
             $userSettingsDao->deleteSetting($user->getId(), 'google_email_' . $i);
         }

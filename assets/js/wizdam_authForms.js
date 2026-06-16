@@ -1,11 +1,11 @@
 /**
- * Modern Auth Forms JavaScript untuk OJS v2.4.8.2
+ * Modern Auth Forms JavaScript for Lumera Environment
  * Production-ready authentication forms with modern UI components
  * 
  * @fileoverview Modern auth forms with floating labels, password validation,
- * and prof checkbox designs for OJS registration system.
+ * and prof checkbox designs for Lumera Environment registration system.
  * @version 1.3.6
- * @author Rochmady and Wizdam OJS Theme Developer
+ * @author Rochmady and Wizdam Teams
  * @requires Kopi plus Rokok
  */
 

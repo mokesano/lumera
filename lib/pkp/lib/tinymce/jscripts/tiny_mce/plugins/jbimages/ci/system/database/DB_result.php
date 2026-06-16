@@ -193,7 +193,7 @@ class CI_DB_result {
 	// --------------------------------------------------------------------
 
 	/**
-	 * Assigns an item into a particular column slot
+	 * Assigns an item into a particular column
 	 *
 	 * @access	public
 	 * @return	object

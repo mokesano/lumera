@@ -16,11 +16,7 @@ declare(strict_types=1);
  * @ingroup user_form
  *
  * @brief Form for user registration.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility
- * - Strict Visibility
- * - TRUE MODULAR SECURITY: Decoupled Default Captcha, reCAPTCHA, and Turnstile
+ * WIZDAM MODERNIZATION: TRUE MODULAR SECURITY: Decoupled Default Captcha, reCAPTCHA, and Turnstile
  */
 
 import('lib.pkp.classes.form.Form');
@@ -394,7 +390,7 @@ class RegistrationForm extends Form {
                 ));
             }
         }
-
+        
         // [FIX ERROR] Affiliation array null
         if (!is_array($this->getData('affiliation'))) {
             $this->setData('affiliation', array($currentLocale => ''));
@@ -436,7 +432,7 @@ class RegistrationForm extends Form {
             }
         }
 
-        // 1. OJS secara native membaca variabel dari $_POST
+        // 1. App secara native membaca variabel dari $_POST
         $this->readUserVars($userVars);
         
         // 2. NORMALISASI NATIVE: Pastikan struktur data multi-bahasa  konsisten

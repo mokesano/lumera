@@ -21,8 +21,8 @@
 		<td class="headseparator" colspan="2">&nbsp;</td>
 	</tr>
 	<tr class="heading" valign="bottom">
-		<td width="85%">{translate key="manager.reviewForms.title"}</td>
-		<td width="15%" align="right">{translate key="common.action"}</td>
+		<td width="70%">{translate key="manager.reviewForms.title"}</td>
+		<td width="30%" align="center">{translate key="common.action"}</td>
 	</tr>
 	<tr>
 		<td class="headseparator" colspan="2">&nbsp;</td>
@@ -30,7 +30,7 @@
 {iterate from=reviewForms item=reviewForm name=reviewForms}
 	<tr valign="top">
 		<td>{$reviewForm->getLocalizedTitle()|escape}</td>
-		<td class="nowrap">
+		<td class="nowrap" align="center">
 			{if $assignedReviewFormId == $reviewForm->getId()}{translate key="common.alreadyAssigned"}{else}<a href="{url op="selectReviewForm" path=$articleId|to_array:$reviewId:$reviewForm->getId()}" class="action">{translate key="common.assign"}</a>{/if}&nbsp;|&nbsp;<a href="{url op="previewReviewForm" path=$reviewId|to_array:$reviewForm->getId()}" class="action">{translate key="common.preview"}</a>
 	</tr>
 	<tr>
@@ -54,5 +54,5 @@
 </table>
 </div>
 
-{include file="common/footer.tpl"}
+{include file="common/footer-parts/footer-user.tpl"}
 

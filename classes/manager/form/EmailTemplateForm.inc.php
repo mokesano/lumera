@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see EmailTemplateDAO
  *
  * @brief Form for creating and modifying email templates.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
@@ -29,8 +27,6 @@ class EmailTemplateForm extends Form {
 
     /**
      * Constructor.
-     * @param string $emailKey
-     * @param Journal $journal
      */
     public function __construct($emailKey, $journal) {
         // [WIZDAM FIX] Explicit parent constructor
@@ -112,7 +108,7 @@ class EmailTemplateForm extends Form {
             $body = [];
             $supportedLocales = $journal->getSupportedLocaleNames();
             
-            // Siapkan slot kosong untuk setiap bahasa yang didukung jurnal
+            // Siapkan entry kosong untuk setiap bahasa yang didukung jurnal
             if (!empty($supportedLocales)) {
                 foreach (array_keys($supportedLocales) as $locale) {
                     $subject[$locale] = '';

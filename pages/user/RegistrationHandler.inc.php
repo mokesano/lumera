@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class RegistrationHandler
  * @ingroup pages_user
  *
- * @brief Handle requests for user registration. 
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * @brief Handle requests for user registration.
  */
 
 import('pages.user.UserHandler');
@@ -287,5 +285,4 @@ class RegistrationHandler extends UserHandler {
         return true;
     }
 }
-
 ?>
