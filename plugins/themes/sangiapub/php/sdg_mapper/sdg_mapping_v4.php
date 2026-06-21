@@ -19,7 +19,7 @@ declare(strict_types=1);
  * - Refresh Cache: &refresh=true
  * 
  * @author Rochmady
- * @version 4.1.7
+ * @version 0.0.4
  * @license MIT
  */
 
@@ -29,7 +29,11 @@ declare(strict_types=1);
 if (empty($_GET)) {
     http_response_code(200);
     header('Content-Type: application/json');
-    echo json_encode(['status' => 'up', 'message' => 'Endpoint is operational', 'version' => 'v1.0.0']);
+    echo json_encode([
+        'status' => 'up',
+        'message' => 'Endpoint is operational',
+        'version' => 'v0.0.4'
+    ]);
     exit;
 }
 
