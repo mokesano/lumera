@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /* 
- * SDGs Mapping v1.1.7
+ * SDGs Mapping v0.0.0
  *
  */
 
@@ -12,7 +12,11 @@ declare(strict_types=1);
 if (empty($_GET)) {
     http_response_code(200);
     header('Content-Type: application/json');
-    echo json_encode(['status' => 'up', 'message' => 'Endpoint is operational', 'version' => 'v1.0.0']);
+    echo json_encode([
+        'status' => 'up',
+        'message' => 'Endpoint is operational',
+        'version' => 'v0.0.0'
+    ]);
     exit;
 }
 
