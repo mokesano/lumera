@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * scopus_citations_enhanced_php54.php
+ * scopus_citation.php
  * Mencari kutipan untuk artikel baik yang terindeks maupun tidak terindeks Scopus
  * Kode ini kompatibel dengan PHP 5.4
  */
