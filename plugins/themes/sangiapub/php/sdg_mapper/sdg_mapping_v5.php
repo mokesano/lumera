@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 /**
+ * @file sdg_mapping_v5.php
+ * 
  * SDG Classification API
  * Sistem klasifikasi SDG dengan orientasi dampak yang lebih kuat
  * Fokus pada kontribusi transformatif dan hubungan kausal dengan SDG
