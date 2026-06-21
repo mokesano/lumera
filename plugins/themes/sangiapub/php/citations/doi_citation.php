@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * doi_citation.php
  * Script untuk mengambil data kutipan artikel berbasis DOI
@@ -14,6 +16,17 @@
  * 
  * Kompatibel dengan PHP 5.4+
  */
+
+// -----------------------------------------------------------------
+// BAGIAN #1: MONITORING (UP/DOWN)
+// -----------------------------------------------------------------
+if (empty($_GET)) {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'up', 'message' => 'Endpoint is operational', 'version' => 'v1.0.0']);
+    exit;
+}
+
 header('Content-Type: application/json');
 
 // Definisikan konfigurasi
