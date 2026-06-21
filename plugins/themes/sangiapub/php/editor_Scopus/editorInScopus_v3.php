@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * scopus_editor.php - Smart Detection Update
+ * editorInScopus_v3.php - Smart Detection Update
  * Mencari artikel penulis yang terindeks Scopus dengan Smart Detection Update
  * 
  * Features:

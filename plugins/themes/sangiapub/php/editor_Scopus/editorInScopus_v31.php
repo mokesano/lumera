@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * scopus_editor_final.php - Clean & Optimized Version
+ * editorInScopus_v31.php - Clean & Optimized Version
  * Mencari artikel penulis dengan Scopus API dan OpenAlex fallback
  * 
  * Features:
