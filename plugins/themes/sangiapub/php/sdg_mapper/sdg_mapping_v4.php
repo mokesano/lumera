@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 /**
+ * @file sdg_mapping_v4.php
+ * 
  * SDG Classification API - Versi 4.0
  * 
  * Sistem klasifikasi SDG dengan orientasi dampak yang lebih kuat
