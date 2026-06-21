@@ -1,8 +1,21 @@
 <?php
+declare(strict_types=1);
+
 /**
  * scopus_editor.php
  * Mencari artikel penulis yang terindeks Scopus dengan sistem caching
  */
+
+// -----------------------------------------------------------------
+// BAGIAN #1: MONITORING (UP/DOWN)
+// -----------------------------------------------------------------
+if (empty($_GET)) {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'up', 'message' => 'Endpoint is operational', 'version' => 'v1.0.0']);
+    exit;
+}
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
