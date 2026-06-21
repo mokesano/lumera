@@ -1,9 +1,24 @@
 <?php
 declare(strict_types=1);
 
-/* 
+/** 
+ * @file sdg_mapping_v0.php
+ * 
  * SDGs Mapping v0.0.0
- *
+ * - Endpoint untuk mapping karya ilmiah ke SDGs berdasarkan metadata (judul, abstrak, kata kunci)
+ * - Mendukung input ORCID dan DOI
+ * - Output: SDGs terkait dengan confidence score
+ * - Caching sederhana untuk hasil mapping (opsional)
+ * - Monitoring endpoint untuk cek status (up/down)
+ * - Dokumentasi API: GET /?orcid=0000-0002-5152-9727
+ * 
+ * @version 0.0.0
+ * @author Rochmady
+ * @license MIT
+ * 
+ * @brief Versi awal dengan fitur dasar untuk monitoring dan input ORCID. 
+ * Mapping SDGs masih menggunakan pendekatan sederhana berbasis kata kunci. 
+ * Caching dan dukungan DOI akan ditambahkan di versi selanjutnya.
  */
 
 // -----------------------------------------------------------------
