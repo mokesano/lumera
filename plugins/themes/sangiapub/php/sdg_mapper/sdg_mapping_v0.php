@@ -1,8 +1,20 @@
 <?php
+declare(strict_types=1);
+
 /* 
  * SDGs Mapping v1.1.7
  *
  */
+
+// -----------------------------------------------------------------
+// MONITORING (UP/DOWN)
+// -----------------------------------------------------------------
+if (empty($_GET)) {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'up', 'message' => 'Endpoint is operational', 'version' => 'v1.0.0']);
+    exit;
+}
 
 // ==============================================
 // KONFIGURASI
