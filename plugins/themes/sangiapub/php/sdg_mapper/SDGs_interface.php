@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * SDG Classification Presentation Interface
  * Interface modern untuk menampilkan hasil analisis SDG
