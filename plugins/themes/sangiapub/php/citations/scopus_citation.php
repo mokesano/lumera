@@ -1,9 +1,21 @@
 <?php
+declare(strict_types=1);
+
 /**
  * scopus_citations_enhanced_php54.php
  * Mencari kutipan untuk artikel baik yang terindeks maupun tidak terindeks Scopus
  * Kode ini kompatibel dengan PHP 5.4
  */
+
+// -----------------------------------------------------------------
+// BAGIAN #1: MONITORING (UP/DOWN)
+// -----------------------------------------------------------------
+if (empty($_GET)) {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'up', 'message' => 'Endpoint is operational', 'version' => 'v1.0.0']);
+    exit;
+}
 
 header('Content-Type: application/json');
 
