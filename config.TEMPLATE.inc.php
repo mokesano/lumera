@@ -14,7 +14,6 @@
 ; ScholarWizdam Configuration settings.
 ; Rename config.TEMPLATE.inc.php to config.inc.php to use.
 ;
-;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -28,21 +27,31 @@
 ; (This is generally done automatically by the installer)
 installed = Off
 
-; The canonical URL to the ScolarWizdam installation (excluding the trailing slash)
+; The canonical URL to the ScolarWizdam installation 
+; (excluding the trailing slash)
 base_url = "http://wizdam.sangia.org/wizdam"
+
+; The canonical user dashboard URL to the ScolarWizdam 
+; (excluding the trailing slash)
+; user_dashboard_url = "https://mywizdam.sangia.org"
+
+; Jika mengaktifkan dashboard URL, wajib mengaktifkan session_cookie_domain
+; Agar sesi login terbaca di user_dashboard_url DAN base_url
+; session_cookie_domain = ".sangia.org"
+
+; Session cookie name
+; Anda bisa mengganti nilai session_cookie_name secara bebas
+session_cookie_name = SRMSID
+
+; Number of days to save login cookie for if user selects to remember
+; (set to 0 to force expiration at end of current session)
+session_lifetime = 90
 
 ; Path to the registry directory (containing various settings files)
 ; Although the files in this directory generally do not contain any
 ; sensitive information, the directory can be moved to a location that
 ; is not web-accessible if desired
 registry_dir = registry
-
-; Session cookie name
-session_cookie_name = SRMSID
-
-; Number of days to save login cookie for if user selects to remember
-; (set to 0 to force expiration at end of current session)
-session_lifetime = 30
 
 ; Enable support for running scheduled tasks
 ; Set this to On if you have set up the scheduled tasks script to
@@ -82,7 +91,9 @@ allow_url_fopen = Off
 ; journal_path of "index".
 ; Examples:
 ; base_url[index] = http://www.myUrl.com
-; base_url[myJournal] = http://www.myUrl.com/myJournal
+; base_url[myJournal1] = http://www.myUrl.com/myJournal
+; base_url[myJournal2] = http://www.myUrl.com/myJournal
+; base_url[myJournal3] = http://www.myUrl.com/myJournal
 ; base_url[myOtherJournal] = http://myOtherJournal.myUrl.com
 
 ; Generate RESTful URLs using mod_rewrite.  This requires the
@@ -98,19 +109,21 @@ trust_x_forwarded_for = Off
 ; Allow javascript files to be served through a content delivery network (set to off to use local files)
 enable_cdn = On
 
-; Set the maximum number of citation checking processes that may run in parallel.
-; Too high a value can increase server load and lead to too many parallel outgoing
-; requests to citation checking web services. Too low a value can lead to significantly
-; slower citation checking performance. A reasonable value is probably between 3
-; and 10. The more your connection bandwidth allows the better.
+; Set the maximum number of citation checking processes that may run in parallel
+; Too high a value can increase server load and lead to too many parallel 
+; outgoing requests to citation checking web services. Too low a value can lead 
+; to significantly slower citation checking performance. A reasonable value is 
+; probably between 3 and 10. 
+; The more your connection bandwidth allows the better.
 citation_checking_max_processes = 3
 
-; Display a message on the site admin and journal manager user home pages if there is an upgrade available
+; Display a message on the site admin and journal manager user home pages 
+; if there is an upgrade available
 show_upgrade_warning = On
 
 ; Provide a unique site ID and OAI base URL to PKP for statistics and security
 ; alert purposes only.
-enable_beacon = On
+enable_beacon = Off
 
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -130,6 +143,25 @@ persistent = Off
 
 ; Enable database debug output (very verbose!)
 debug = Off
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; WIZDAM Payment Settings ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[wizdam_payment]
+
+; Pilih: midtrans atau xendit
+active_gateway = "xendit"
+is_production = Off
+
+; --- MIDTRANS ---
+midtrans_server_key = "SB-Mid-server-KODE_ASLI_ANDA_DI_SINI"
+midtrans_client_key = "SB-Mid-client-KODE_ASLI_ANDA_DI_SINI"
+
+; --- XENDIT ---
+xendit_api_key = ""
+xendit_webhook_token = ""
 
 
 ;;;;;;;;;;;;;;;;;;
@@ -253,7 +285,7 @@ force_login_ssl = Off
 ; This check will invalidate a session if the user's IP address changes.
 ; Enabling this option provides some amount of additional security, but may
 ; cause problems for users behind a proxy farm (e.g., AOL).
-session_check_ip = On
+session_check_ip = Off
 
 ; The encryption (hashing) algorithm to use for encrypting user passwords
 ; Valid values are: sha1 
@@ -261,16 +293,17 @@ session_check_ip = On
 ; Note that bycript requires PHP >= 7.4.3
 encryption = bycript
 
-; The unique salt to use for generating password reset hashes
+; The unique salt to use for generating encryption hashing sha256
 salt = "YouMustSetASecretKeyHere!!"
 
-; The number of seconds before a password reset hash expires (defaults to 7200 / 2 hours)
+; The number of seconds before a password reset hash expires 
+; (defaults to 7200 / 2 hours)
 reset_seconds = 7200
 
 ; Allowed HTML tags for fields that permit restricted HTML.
-; For PHP 5.0.5 and greater, allowed attributes must be specified individually
+; For PHP 7.4.0 and greater, allowed attributes must be specified individually
 ; e.g. <img src|alt> to allow "src" and "alt" attributes. Unspecified
-; attributes will be stripped. For PHP below 5.0.5 attributes may not be
+; attributes will be stripped. For PHP below 7.4.0 attributes may not be
 ; specified in this way.
 allowed_html = "<a href|target> <em> <strong> <cite> <code> <ul> <ol> <li> <dl> <dt> <dd> <b> <i> <u> <img src|alt> <sup> <sub> <br> <p>"
 
@@ -286,24 +319,40 @@ use_html_purifier = On
 ; If On or Optional, request headers are consulted for account metadata so
 ; ensure that users cannot spoof headers. If Optional, users may use either
 ; implicit authentication or local accounts to access the system.
-;implicit_auth = On
+; implicit_auth = On
 
 ; Implicit Auth Header Variables
-;implicit_auth_header_first_name = HTTP_GIVENNAME
-;implicit_auth_header_last_name = HTTP_SN
-;implicit_auth_header_email = HTTP_MAIL
-;implicit_auth_header_phone = HTTP_TELEPHONENUMBER
-;implicit_auth_header_initials = HTTP_METADATA_INITIALS
-;implicit_auth_header_mailing_address = HTTP_METADATA_HOMEPOSTALADDRESS
-;implicit_auth_header_uin = HTTP_UID
+; implicit_auth_header_first_name = HTTP_GIVENNAME
+; implicit_auth_header_last_name = HTTP_SN
+; implicit_auth_header_email = HTTP_MAIL
+; implicit_auth_header_phone = HTTP_TELEPHONENUMBER
+; implicit_auth_header_initials = HTTP_METADATA_INITIALS
+; implicit_auth_header_mailing_address = HTTP_METADATA_HOMEPOSTALADDRESS
+; implicit_auth_header_uin = HTTP_UID
 
 ; A space delimited list of uins to make admin
-;implicit_auth_admin_list = "jdoe@email.ca jshmo@email.ca"
+; implicit_auth_admin_list = "jdoe@email.ca jshmo@email.ca"
 
 ; URL of the implicit auth 'Way Finder' (Discovery Service [DS]) page.
 ; See pages/login/LoginHandler.inc.php for usage.
-;implicit_auth_wayf_url = "/Shibboleth.sso/wayf"
+; implicit_auth_wayf_url = "/Shibboleth.sso/wayf"
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; WIZDAM DIGITAL SIGNATURE    ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[digital_signature]
+
+; countryName = "ID"
+; stateOrProvinceName = "DKI Jakarta"
+; localityName = "Jakarta Pusat"
+; organizationName = "Kementerian Riset dan Teknologi"
+; organizationalUnitName = "BRIN Publishing Center"
+; commonName = "brin.go.id"
+; emailAddress = "admin@brin.go.id"
+; signatureName = "BRIN e-Signature System"
+; signatureLocation = "Jakarta, Indonesia"
 
 
 ;;;;;;;;;;;;;;;;;;
@@ -316,8 +365,10 @@ use_html_purifier = On
 ; smtp = On
 
 ; SMTP server settings
-; smtp_server = mail.example.com
-; smtp_port = 25
+; Gunakan 465 smtp_server = "ssl://smtp.gmail.com" atau 
+; Gunakan 587 smtp_server = "tls://smtp.gmail.com" atau "smtp.gmail.com"
+smtp_server = "smtp.gmail.com"
+smtp_port = 587
 
 ; Force the default envelope sender (if present)
 ; This is useful if setting up a site-wide noreply address
@@ -409,6 +460,7 @@ repository_id = archive.sangia.org
 ; Maximum number of records per request to serve via OAI
 oai_max_records = 100
 
+
 ;;;;;;;;;;;;;;;;;;;;;;
 ; Interface Settings ;
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -434,6 +486,9 @@ captcha = on
 ; Whether or not to use Captcha on user registration
 captcha_on_register = on
 
+; Whether or not to use Captcha on user login
+captcha_on_login = On
+
 ; Whether or not to use Captcha on user comments
 captcha_on_comments = on
 
@@ -443,7 +498,12 @@ captcha_on_mailinglist = on
 ; Font location for font to use in Captcha images
 font_location = /assets/fonts/NexusSerifCompPro.ttf
 
-[reCAPTCHA]
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Google reCAPTCHA Settings version 2 ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[recaptcha]
 
 ; Whether or not to enable reCaptcha instead of default Captcha
 recaptcha = Off
@@ -458,8 +518,15 @@ recaptcha = Off
 ; Private key for reCaptcha (see http://www.google.com/recaptcha)
 ; recaptcha_private_key = your_private_key
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Google reCAPTCHA Settings version 3 Invisible ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Untuk mengaktifkan re-CAPTCHA v3, anda harus mengaktifkan recaptcha = On 
+; pada pengaturan recaptcha
+
 ; [reCAPTCHA version 3]
-; Version of reCAPTCHA: 3 = reCAPTCHA v3 + Turnstile (ScholarWizdam Standard)
+; Version of reCAPTCHA: 3 = reCAPTCHA v3 (ScholarWizdam Standard)
 ; recaptcha_version = 3
 
 ; Kredensial reCAPTCHA v3
@@ -469,17 +536,26 @@ recaptcha = Off
 ; Private key for reCaptcha  (see http://www.google.com/recaptcha)
 ; recaptcha_private_key = "KODE_SECRET_KEY_RECAPTCHA_V3_ANDA"
 
-[Turnstile]
+; Validate the hostname in the ReCaptcha v2 response
+recaptcha_enforce_hostname = Off
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Cloudflare Turnstile Settings ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Credensial Turnstile (see http://www.cloudflare/)
 
+[turnstile]
+
+; Whether or not to enable Turnstile (ScholarWizdam Standard)
+turnstile = On
+
+; Credensial Turnstile (see http://www.cloudflare/)
 ; Public key for reCaptcha
 ; turnstile_public_key = "KODE_SITE_KEY_TURNSTILE_ANDA"
 
 ; Private key for reCaptcha
 ; turnstile_private_key = "KODE_SECRET_KEY_TURNSTILE_ANDA"
-
-; Validate the hostname in the ReCaptcha v2 response
-recaptcha_enforce_hostname = Off
 
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -513,6 +589,7 @@ gzip = /bin/gzip
 ; /usr/bin/java -jar ~/java/xalan.jar -HTML -IN %xml -XSL %xsl
 xslt_command = ""
 
+
 ;;;;;;;;;;;;;;;;;;
 ; Proxy Settings ;
 ;;;;;;;;;;;;;;;;;;
@@ -527,6 +604,48 @@ xslt_command = ""
 ; http_port = 80
 ; proxy_username = username
 ; proxy_password = password
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; SSO (Single Sign-On) Settings ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[sso]
+
+; Master switch untuk mengaktifkan fitur SSO secara umum
+sso_enabled = On
+
+; -----------------------------------------------------------------------
+; ORCID SSO Kredensial
+; Redirect URIs use: https://yourdomain.com/index.php/login/orcid-callback
+; Set On untuk testing sandbox dan produksi
+; Set Off untuk menonaktfikan SSO ORCID
+; -----------------------------------------------------------------------
+orcid = On
+
+; Set On untuk masa pengembangan (sandbox.orcid.org), 
+; Set Off untuk produksi (orcid.org)
+orcid_sandbox = Off
+
+; Client ID for ORCID
+orcid_client_id = "APP-587DENY6QR5OBHVO"
+
+; Client secret for ORCID
+orcid_client_secret = "1e66414b-f6a9-44fa-9e65-a0be503ebd56"
+
+; ------------------------------------------------------------------------
+; GOOGLE SSO Kredensial
+; Create credential: https://console.cloud.google.com/
+; Redirect URIs use: https://yourdomain.com/index.php/login/google-callback
+; Set On to produksi, Set Off untuk menonaktfikan SSO Google OAuth
+; -------------------------------------------------------------------------
+google = On
+
+; Client ID for Google OAuth
+google_client_id = "753330679280-8s5jdkacqop5mg65hlgef660a44ea9ct.apps.googleusercontent.com"
+
+; Client secret for Google OAuth
+google_client_secret = "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"
 
 
 ;;;;;;;;;;;;;;;;;;
@@ -552,6 +671,7 @@ deprecation_warnings = Off
 ; Log web service request information for debugging
 log_web_service_info = Off
 
+
 ;;;;;;;;;;;;;;;;
 ; PLN Settings ;
 ;;;;;;;;;;;;;;;;
@@ -572,3 +692,13 @@ log_web_service_info = Off
 ; 
 ; pln_url = http://pkp-pln.lib.sfu.ca
 ; pln_status_docs = http://pkp-pln.lib.sfu.ca/docs/status
+
+
+;;;;;;;;;;;;;;;;;;;
+; Future Settings ;
+;;;;;;;;;;;;;;;;;;;
+
+[future]
+
+
+
