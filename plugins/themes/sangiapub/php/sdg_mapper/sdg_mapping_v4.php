@@ -1,5 +1,9 @@
 <?php
+declare(strict_types=1);
+
 /**
+ * @file sdg_mapping_v4.php
+ * 
  * SDG Classification API - Versi 4.0
  * 
  * Sistem klasifikasi SDG dengan orientasi dampak yang lebih kuat
@@ -17,9 +21,23 @@
  * - Refresh Cache: &refresh=true
  * 
  * @author Rochmady
- * @version 4.1.7
+ * @version 0.0.4
  * @license MIT
  */
+
+// -----------------------------------------------------------------
+// MONITORING (UP/DOWN)
+// -----------------------------------------------------------------
+if (empty($_GET)) {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => 'up',
+        'message' => 'Endpoint is operational',
+        'version' => 'v0.0.4'
+    ]);
+    exit;
+}
 
 header('Content-Type: application/json; charset=utf-8');
 

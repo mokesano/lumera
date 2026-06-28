@@ -1,5 +1,9 @@
 <?php
+declare(strict_types=1);
+
 /**
+ * @file sdg_mapping_v1.php
+ * 
  * SDG Classification API
  * 
  * API untuk menganalisis karya ilmiah dan peneliti berdasarkan Sustainable Development Goals (SDGs).
@@ -28,9 +32,24 @@
  * - Refresh Cache: &refresh=true
  * 
  * @author Rochmady
- * @version 4.1.7
+ * @version 0.0.1
  * @license MIT
  */
+
+// -----------------------------------------------------------------
+// MONITORING (UP/DOWN)
+// -----------------------------------------------------------------
+if (empty($_GET)) {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => 'up',
+        'message' => 'Endpoint is operational',
+        'version' => 'v0.0.1'
+    ]);
+    exit;
+}
+
 header('Content-Type: application/json; charset=utf-8');
 
 // ==============================================

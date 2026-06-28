@@ -1,5 +1,9 @@
 <?php
+declare(strict_types=1);
+
 /**
+ * @file sdg_mapping_v5.php
+ * 
  * SDG Classification API
  * Sistem klasifikasi SDG dengan orientasi dampak yang lebih kuat
  * Fokus pada kontribusi transformatif dan hubungan kausal dengan SDG
@@ -16,7 +20,7 @@
  * - Refresh Cache: &refresh=true
  * 
  * @author Rochmady and Wizdam Team
- * @version 5.1.8
+ * @version 0.0.5
  * @license MIT
  * Last update: 2025-05-18
  */
@@ -25,19 +29,15 @@
 // BAGIAN #1: PEMERIKSAAN MONITORING (UP/DOWN)
 // -----------------------------------------------------------------
 // Cek apakah TIDAK ADA parameter GET yang dikirim.
-// Ini mendeteksi panggilan ke: https://api.sangia.org/journalscopus
 if (empty($_GET)) {
-    
-    // Set header HTTP 200 OK (ini sudah default, tapi baik untuk eksplisit)
     http_response_code(200); 
-    
-    // Set tipe konten
     header('Content-Type: application/json');
     
     // Kirim balasan status "UP"
     echo json_encode([
         'status' => 'up',
-        'message' => 'Endpoint is operational'
+        'message' => 'Endpoint is operational',
+        'version' => 'v0.0.5'
     ]);
     
     // Selesai. Hentikan eksekusi skrip agar tidak lanjut ke logika API.

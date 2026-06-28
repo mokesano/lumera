@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * UserScopus_v32.php - Fixed Version
  * Memperbaiki masalah parsing data penulis dari API Scopus
@@ -13,6 +15,16 @@
  * @version 6.1 - Fixed Author Parsing
  * @date 2025-06-27
  */
+
+// -----------------------------------------------------------------
+// BAGIAN #1: MONITORING (UP/DOWN)
+// -----------------------------------------------------------------
+if (empty($_GET)) {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'up', 'message' => 'Endpoint is operational', 'version' => 'v1.0.0']);
+    exit;
+}
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');

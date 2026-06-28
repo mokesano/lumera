@@ -1,5 +1,9 @@
 <?php
+declare(strict_types=1);
+
 /**
+ * file SDGs_interface.php
+ * 
  * SDG Classification Presentation Interface
  * Interface modern untuk menampilkan hasil analisis SDG
  * 

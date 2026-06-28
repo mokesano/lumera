@@ -1,7 +1,9 @@
 <?php
+declare(strict_types=1);
+
 /**
  * cURL Sinta Score dan Sinta Grade di Sinta Kemdikti Saintek Indonesia
- * @file SintaProxyHandler.php
+ * @file SintaScoreNEW.php
 
  * @brief Script Sinta Impact dengan Smart Detection (Efficient Version)
  * Menggunakan prinsip 1 file cache, hash-based detection, weekly expiry
@@ -10,7 +12,17 @@
  * @author Rochmady and Wizdam Team
  * Last update 2025-06-12
  */
- 
+
+// -----------------------------------------------------------------
+// BAGIAN #1: MONITORING (UP/DOWN)
+// -----------------------------------------------------------------
+if (empty($_GET)) {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'up', 'message' => 'Endpoint is operational', 'version' => 'v1.0.0']);
+    exit;
+}
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 

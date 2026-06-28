@@ -1,9 +1,21 @@
 <?php
+declare(strict_types=1);
+
 /**
  * @file SintaProxyHandler.php
  * @brief Script untuk mengakses Sinta Impact dengan caching (Versi Final)
  */
- 
+
+// -----------------------------------------------------------------
+// BAGIAN #1: MONITORING (UP/DOWN)
+// -----------------------------------------------------------------
+if (empty($_GET)) {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'up', 'message' => 'Endpoint is operational', 'version' => 'v1.0.0']);
+    exit;
+}
+
 // Batas kode tanpa batasan akses, Lanjutan kode handler yang sudah ada
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
