@@ -560,6 +560,11 @@ class IssueHandler extends Handler {
         $issue   = $this->getIssue();
         $galley  = $this->getGalley();
 
+        if (!($issue instanceof Issue) || !($galley instanceof IssueGalley)) {
+            $request->getDispatcher()->handle404();
+            exit; // Hentikan eksekusi script sepenuhnya
+        }
+
         $galleyDao = DAORegistry::getDAO('IssueGalleyDAO');
 
         if (!HookRegistry::dispatch('IssueHandler::viewFile', [&$issue, &$galley])) {
