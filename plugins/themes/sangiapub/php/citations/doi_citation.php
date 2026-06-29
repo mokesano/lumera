@@ -2854,10 +2854,13 @@ function getRelatedPapersByTitle($title, $limit = 15) {
  * @return array Deduplicated citations
  */
 function combineCitations($citations) {
-    // Tambahkan logging untuk debug
-    if ($config['enable_error_log']) {
+    // Trik 1: Beritahu PHP untuk mengambil variabel $config dari luar fungsi
+    global $config;
+    
+    // Trik 2: Gunakan !empty() untuk memastikan variabel/array benar-benar ada dan bernilai true
+    if (!empty($config['enable_error_log'])) {
         error_log("Combined citations before processing: " . count($citations));
-    }    
+    }
     
     // First, organize by source priority
     $sourceOrder = array(
@@ -3013,9 +3016,9 @@ function combineCitations($citations) {
     }
     
     // Error log untuk memastikan tidak ada pengurangan yang drastis
-    if ($config['enable_error_log']) {
+    if (!empty($config['enable_error_log'])) {
         error_log("Unique citations after deduplication: " . count($uniqueCitations));
-    }    
+    }
     
     // Final sort by year (newest first) dengan safe handling
     if (!empty($uniqueCitations)) {
