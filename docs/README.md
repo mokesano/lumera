@@ -117,40 +117,6 @@ See the `docs/UPGRADE` document for instructions on migrating from earlier OJS 1
 
 ---
 
-## 🧪 Third-party Libraries
-
-A full list is maintained in `lib/pkp/lib/libraries.txt`.
-
-- **GeoLite City**: Optional geolocation for usage stats. Download from [geoip-legacy](https://github.com/mokesano/geoip-legacy/blob/main/data/GeoLiteCity.dat) and place it into `plugins/generic/usageStats/`. Separate license agreement required.
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please refer to the SPH development wiki for guidelines and recommended patches list:
-
-- [Lumera Recommended Patches](http://wizdam.sangia.org/wiki/index.php/Lumera_Recommended_Patches)
-
-For contributing translations or code, feel free to open issues or pull requests.
-
----
-
-## 🐛 Bug Reports & Support
-
-- **Forum**: [forum.wizdam.sangia.org](http://forum.wizdam.sangia.org/)
-- **Issue Tracker**: [GitHub Issues](https://github.com/codelumera/lumera-library/issues)
-- **Email**: [support.lumera@gmail.com](mailto:support.lumera@gmail.com)
-
----
-
-## 📄 License
-
-Lumera is released under the **GNU General Public License v3.0**. See the file `docs/COPYING` for full terms.
-
-Third parties are free to modify and redistribute Lumera under the same license. SPH encourages patches and improvements.
-
----
-
 <p align="center">
   <br>
   <creator>Built with ❤️ by <strong>Sangia Publishing House</strong> for the global scholarly community</creator>

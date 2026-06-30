@@ -1437,7 +1437,7 @@ class PKPTemplateManager extends Smarty {
      * @return array the resulting array
      */
     public function smartyExplode($string, $separator) {
-        return explode($separator, $string);
+        return explode($separator, (string) $string);
     }
 
     /**
