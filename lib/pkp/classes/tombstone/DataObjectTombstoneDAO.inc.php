@@ -63,7 +63,7 @@ class DataObjectTombstoneDAO extends DAO {
             'SELECT DISTINCT * ' . $this->_getSelectTombstoneSql($assocType, $assocId), $params);
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if (!$result->EOF) {
             $returner = $this->_fromRow($result->GetRowAssoc(false));
         }
 
