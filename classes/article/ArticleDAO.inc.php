@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see Article
  *
  * @brief Operations for retrieving and modifying Article objects.
- * [WIZDAM EDITION] PHP 8+ Compatible & Optimized
  */
 
 import('classes.article.Article');
@@ -156,14 +155,13 @@ class ArticleDAO extends DAO {
         $result = $this->retrieve($sql, $params);
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if (!$result->EOF) {
             $returner = $this->_returnArticleFromRow($result->GetRowAssoc(false));
         }
 
         $result->Close();
         return $returner;
     }
-
 
     /**
      * Find articles by querying article settings.
