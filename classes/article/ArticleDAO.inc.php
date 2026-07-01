@@ -591,7 +591,7 @@ class ArticleDAO extends DAO {
         $result = $this->retrieve(
             'SELECT journal_id FROM articles WHERE article_id = ?', $articleId
         );
-        $returner = isset($result->fields[0]) ? $result->fields[0] : false;
+        $returner = !$result->EOF ? $result->fields[0] : false;
 
         $result->Close();
         return $returner;
@@ -609,7 +609,7 @@ class ArticleDAO extends DAO {
             'SELECT submission_progress FROM articles WHERE article_id = ? AND user_id = ? AND journal_id = ? AND date_submitted IS NULL',
             array($articleId, $userId, $journalId)
         );
-        $returner = isset($result->fields[0]) ? $result->fields[0] : false;
+        $returner = !$result->EOF ? $result->fields[0] : false;
 
         $result->Close();
         return $returner;
@@ -908,8 +908,13 @@ class ArticleDAO extends DAO {
             [$articleId]
         );
         
-        if ($result->RecordCount() == 0) return false;
-        return $result->GetRowAssoc(false);
+        if ($result->EOF) {
+            $result->Close(); // wajib ditutup meski kosong
+            return false;
+        }
+        $row = $result->GetRowAssoc(false);
+        $result->Close();
+        return $row;
     }
 
     /**
@@ -923,7 +928,9 @@ class ArticleDAO extends DAO {
             "SELECT setting_value FROM article_settings WHERE article_id = ? AND setting_name = ?", 
             [$articleId, $settingName]
         );
-        return $result->RecordCount() > 0 ? (string) $result->fields[0] : '';
+        $returner = !$result->EOF ? (string) $result->fields[0] : '';
+        $result->Close();
+        return $returner;
     }
 
     /**
