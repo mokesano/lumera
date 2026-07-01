@@ -12,13 +12,12 @@ declare(strict_types=1);
  * @ingroup pages_editor
  *
  * @brief Handle requests for issue management in publishing.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.editor.EditorHandler');
 
 class IssueManagementHandler extends EditorHandler {
+
     /** @var Issue|null issue associated with the request */
     public $issue;
 
@@ -167,6 +166,10 @@ class IssueManagementHandler extends EditorHandler {
         $templateMgr->assign('issueOptions', IssueAction::getIssueOptions());
         $templateMgr->assign('helpTopicId', 'publishing.createIssue');
 
+        // [WIZDAM FIX - PHP8 Null Safety]
+        $templateMgr->assign('issue', []);
+        $templateMgr->assign('numberingOptions', []);
+
         $issueForm = new IssueForm('editor/issues/createIssue.tpl');
 
         if ($issueForm->isLocaleResubmit()) {
@@ -199,6 +202,10 @@ class IssueManagementHandler extends EditorHandler {
             import('classes.issue.IssueAction');
             $templateMgr->assign('issueOptions', IssueAction::getIssueOptions());
             $templateMgr->assign('helpTopicId', 'publishing.createIssue');
+            // [WIZDAM FIX - PHP8 Null Safety] — konsisten dengan createIssue()
+            $templateMgr->assign('issue', []);
+            $templateMgr->assign('numberingOptions', []);
+
             $issueForm->display();
         }
     }
@@ -1272,7 +1279,6 @@ class IssueManagementHandler extends EditorHandler {
     /**
      * Setup common template variables.
      * @param int $level set to one of EDITOR_SECTION_? defined in EditorHandler
-     * 
      * @param $subclass boolean
      * @param $articleId int
      * @param $parentPage string
@@ -1289,5 +1295,4 @@ class IssueManagementHandler extends EditorHandler {
         $templateMgr->assign('editorSection', EDITOR_SECTION_ISSUES);
     }
 }
-
 ?>
