@@ -16,14 +16,14 @@ declare(strict_types=1);
  * @ingroup issue_form
  * @see Issue
  *
- * @brief Form to create or edit an issue
- * [WIZDAM EDITION] Refactored for PHP 8.x (Removed create_function)
+ * @brief Form to create or edit an issue.
  */
 
 import('lib.pkp.classes.form.Form');
 import('classes.issue.Issue'); // Bring in constants
 
 class IssueForm extends Form {
+
     /** @var Issue|null current issue */
     protected ?Issue $issue = null;
 
@@ -271,6 +271,15 @@ class IssueForm extends Form {
                     break;
             }
 
+            // [WIZDAM FIX] Issue baru belum punya field ber-locale di DB, tapi createIssue.tpl
+            // tetap melakukan iterasi per-locale (title, description, coverPage*, dst).
+            $supportedLocales = is_array($this->supportedLocales) && !empty($this->supportedLocales)
+                ? array_keys($this->supportedLocales)
+                : array_keys(AppLocale::getSupportedFormLocales());
+
+            $emptyLocalizedText = array_fill_keys($supportedLocales, '');
+            $emptyLocalizedFlag = array_fill_keys($supportedLocales, 0);
+
             $this->_data = [
                 'showVolume' => $showVolume,
                 'showNumber' => $showNumber,
@@ -279,7 +288,22 @@ class IssueForm extends Form {
                 'volume' => $volume,
                 'number' => $number,
                 'year' => $year,
-                'accessStatus' => $accessStatus
+                'accessStatus' => $accessStatus,
+
+                // [WIZDAM FIX] Default per-locale, konsisten dengan cabang isset($issue)
+                'title' => $emptyLocalizedText,
+                'description' => $emptyLocalizedText,
+                'publicIssueId' => '',
+                'openAccessDate' => null,
+                'coverPageDescription' => $emptyLocalizedText,
+                'coverPageAltText' => $emptyLocalizedText,
+                'showCoverPage' => $emptyLocalizedFlag,
+                'hideCoverPageArchives' => $emptyLocalizedFlag,
+                'hideCoverPageCover' => $emptyLocalizedFlag,
+                'fileName' => $emptyLocalizedText,
+                'originalFileName' => $emptyLocalizedText,
+                'styleFileName' => '',
+                'originalStyleFileName' => ''
             ];
         }
     }
