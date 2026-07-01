@@ -13,11 +13,6 @@ declare(strict_types=1);
  * @see ArticleComment
  *
  * @brief Operations for retrieving and modifying ArticleComment objects.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Ref removal, Visibility)
- * - HookRegistry::dispatch
- * - Strict Integer Casting
  */
 
 import('classes.article.ArticleComment');
@@ -119,7 +114,7 @@ class ArticleCommentDAO extends DAO {
         }
 
         $returner = null;
-        if (isset($result) && $result->RecordCount() != 0) {
+        if (isset($result) && !$result->EOF) {
             $returner = $this->_returnArticleCommentFromRow($result->GetRowAssoc(false));
         }
 
@@ -141,7 +136,7 @@ class ArticleCommentDAO extends DAO {
         );
 
         $articleComment = null;
-        if ($result->RecordCount() != 0) {
+        if (!$result->EOF) {
             $articleComment = $this->_returnArticleCommentFromRow($result->GetRowAssoc(false));
         }
 
