@@ -13,17 +13,13 @@ declare(strict_types=1);
  * @see ArticleGalley
  *
  * @brief Operations for retrieving and modifying ArticleGalley/ArticleHTMLGalley objects.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor, Ref removal)
- * - Strict Integer Casting
- * - Hook Dispatch
  */
 
 import('classes.article.ArticleGalley');
 import('classes.article.ArticleHTMLGalley');
 
 class ArticleGalleyDAO extends DAO {
+
     /** Helper file DAOs. */
     public $articleFileDao;
     
@@ -534,10 +530,10 @@ class ArticleGalleyDAO extends DAO {
      */
     public function getNextGalleySequence($articleId) {
         $result = $this->retrieve(
-            'SELECT MAX(seq) + 1 FROM article_galleys WHERE article_id = ?',
+            'SELECT COALESCE(MAX(seq), 0) + 1 FROM article_galleys WHERE article_id = ?',
             (int) $articleId
         );
-        $returner = floor($result->fields[0]);
+        $returner = floor((float)($result->fields[0] ?? 1));
 
         $result->Close();
         unset($result);
@@ -587,6 +583,7 @@ class ArticleGalleyDAO extends DAO {
      * Attach an image to an HTML galley.
      * @param int $galleyId
      * @param int $fileId
+     * @return boolean
      */
     public function insertGalleyImage($galleyId, $fileId) {
         return $this->update(
@@ -691,5 +688,4 @@ class ArticleGalleyDAO extends DAO {
         unset($cache);
     }
 }
-
 ?>
