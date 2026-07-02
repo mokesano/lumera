@@ -1,16 +1,23 @@
 /**
-* Citation Display JS Fully Optimized Version
-* - Hide panel when no citations
-* - Modern animated tooltip
-* - Lightweight & high performance
-* - Refresh button positioned on the right
-* - Support for various publication types
-* - PDF button only shows for allowed journals
-* - Refresh cooldown system based on last update time
-* 
-* @author Rochmady and Wizdam Team
-* @version 3.1.6
-*/
+ * @file WizdamCitedby.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Code Lumera 
+ * Copyright (c) 2024-2026 Rochmady and Development Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * 
+ * @brief JavaScript untuk menampilkan kutipan artikel berbasis DOI dengan fitur modern dan performa tinggi.
+ * Citation Display JS Fully Optimized Version
+ * - Hide panel when no citations
+ * - Modern animated tooltip
+ * - Lightweight & high performance
+ * - Refresh button positioned on the right
+ * - Support for various publication types
+ * - PDF button only shows for allowed journals
+ * - Refresh cooldown system based on last update time
+ * 
+ * @author Rochmady and Wizdam Team
+ * @version 3.1.6
+ */
 (function() {
    // Flag untuk melacak pemrosesan
    let doiProcessed = false;
