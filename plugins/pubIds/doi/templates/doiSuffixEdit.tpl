@@ -46,9 +46,11 @@
 					<p class="u-mb-16 bold">
 					    <span class="action">{$storedPubId|escape}</span>
 					</p>
-					<input type="checkbox" name="clear_doi" id="clear_doi" value="1" />
-					{capture assign=translatedObjectType}{translate key="plugins.pubIds.doi.editor.doiObjectType"|cat:$pubObjectType}{/capture}
-					<p class="u-mb-16 u-mt-16">{translate key="plugins.pubIds.doi.editor.doiReassign.description" pubObjectType=$translatedObjectType}</p>
+					<p class="u-mb-16 u-mt-16">
+						<input type="checkbox" name="clear_doi" id="clear_doi" value="1" />
+						{capture assign=translatedObjectType}{translate key="plugins.pubIds.doi.editor.doiObjectType"|cat:$pubObjectType}{/capture}
+						{translate key="plugins.pubIds.doi.editor.doiReassign.description" pubObjectType=$translatedObjectType}
+					</p>
 				{/if}
 			{else}
 				<p class="u-mb-16 bold">
