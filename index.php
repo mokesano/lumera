@@ -6,7 +6,7 @@ declare(strict_types=1);
  *
  * Copyright (c) Wizdam Project / Rochmady
  * Based on legacy open source components (c) Simon Fraser University
- * Distributed under the GNU GPL v2.
+ * Distributed under the GNU GPL v3.
  *
  * @ingroup index
  * @brief System Entry Point.
@@ -24,7 +24,7 @@ $bootstrap = './lib/pkp/includes/bootstrap.inc.php';
 if (!file_exists($bootstrap)) {
     // Respon standar Enterprise untuk kegagalan sistem kritikal
     header('HTTP/1.1 503 Service Unavailable');
-    die('Lumera Engine Error: Core components are missing or corrupt. System halted.');
+    die('Sangia Lumera Frontedge Engine Error: Core components are missing or corrupt. System halted.');
 }
 require($bootstrap);
 
