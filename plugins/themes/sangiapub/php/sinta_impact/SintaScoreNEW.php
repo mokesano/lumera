@@ -8,7 +8,7 @@ declare(strict_types=1);
  * Copyright (c) 2024-2026 Rochmady and Development Team
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  * 
- * @brief Script Sinta Impact dengan Smart Detection (Efficient Version) dengan caching.
+ * @brief Script Sinta Impact dengan Smart Detection dengan caching.
  * Menggunakan prinsip 1 file cache, hash-based detection, weekly expiry
  * cURL Sinta Score dan Sinta Grade di Sinta Kemdikti Saintek Indonesia
  * 
