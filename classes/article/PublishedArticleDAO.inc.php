@@ -13,12 +13,12 @@ declare(strict_types=1);
  * @see PublishedArticle
  *
  * @brief Operations for retrieving and modifying PublishedArticle objects.
- * [WIZDAM EDITION] PHP 7.4+ Compatible & Optimized
  */
 
 import('classes.article.PublishedArticle');
 
 class PublishedArticleDAO extends DAO {
+
     public $articleDao;
     public $authorDao;
     public $galleyDao;
@@ -362,17 +362,21 @@ class PublishedArticleDAO extends DAO {
         $result = $this->retrieve(
             'SELECT * FROM published_articles WHERE published_article_id = ?', (int) $publishedArticleId
         );
-        $row = $result->GetRowAssoc(false);
 
-        $publishedArticle = new PublishedArticle();
-        $publishedArticle->setPublishedArticleId($row['published_article_id']);
-        $publishedArticle->setId($row['article_id']);
-        $publishedArticle->setIssueId($row['issue_id']);
-        $publishedArticle->setDatePublished($this->datetimeFromDB($row['date_published']));
-        $publishedArticle->setSeq($row['seq']);
-        $publishedArticle->setAccessStatus($row['access_status']);
+        $publishedArticle = null;
+        if (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
 
-        if (!$simple) $publishedArticle->setSuppFiles($this->suppFileDao->getSuppFilesByArticle($row['article_id']));
+            $publishedArticle = new PublishedArticle();
+            $publishedArticle->setPublishedArticleId($row['published_article_id']);
+            $publishedArticle->setId($row['article_id']);
+            $publishedArticle->setIssueId($row['issue_id']);
+            $publishedArticle->setDatePublished($this->datetimeFromDB($row['date_published']));
+            $publishedArticle->setSeq($row['seq']);
+            $publishedArticle->setAccessStatus($row['access_status']);
+
+            if (!$simple) $publishedArticle->setSuppFiles($this->suppFileDao->getSuppFilesByArticle($row['article_id']));
+        }
 
         $result->Close();
         return $publishedArticle;
@@ -970,16 +974,18 @@ class PublishedArticleDAO extends DAO {
         );
 
         $returner = array();
-        if ($result->RecordCount() != 0) {
-            $returner = array($result->fields[0], $result->fields[1]);
+        if ($result) {
+            if (!$result->EOF) {
+                $returner = array($result->fields[0], $result->fields[1]);
+            }
+            $result->Close();
         }
 
-        $result->Close();
         return $returner;
     }
 
     /**
-     * [MOD FORK v4] Mendapatkan artikel navigasi (sebelumnya/berikutnya)
+     * [LUMERA FORK] Mendapatkan artikel navigasi (sebelumnya/berikutnya)
      * SECARA GLOBAL, berdasarkan logika multi-langkah.
      * @param $currentArticleId int
      * @param $journalId int
@@ -1036,7 +1042,12 @@ class PublishedArticleDAO extends DAO {
         return array('prev' => $prevArticle, 'next' => $nextArticle);
     }
 
-    /** --- Helper v4: Mendapat ID Edisi dari ID Artikel --- */
+    //
+    // Helper
+    //
+
+    /** --- Helper: Mendapat ID Edisi dari ID Artikel --- */
+
     /**
      * Mendapatkan ID Edisi dari ID Artikel
      * @param $articleId int
@@ -1055,7 +1066,8 @@ class PublishedArticleDAO extends DAO {
         return $issueId;
     }
 
-    /** --- Helper v4: Mendapat semua artikel di 1 edisi --- */
+    //** --- Helper: Mendapat semua artikel di 1 edisi --- */
+
     /**
      * Mendapatkan semua artikel di 1 edisi
      * @param $issueId int
@@ -1081,7 +1093,8 @@ class PublishedArticleDAO extends DAO {
         return $articles;
     }
 
-    /** --- Helper v4: Mendapat artikel terakhir dari edisi SEBELUMNYA --- */
+    //** --- Helper: Mendapat artikel terakhir dari edisi SEBELUMNYA --- */
+
     /**
      * Mendapatkan artikel terakhir dari edisi SEBELUMNYA
      * @param $currentIssueId int
@@ -1106,7 +1119,8 @@ class PublishedArticleDAO extends DAO {
         return $articleId;
     }
 
-    /** --- Helper v4: Mendapat artikel pertama dari edisi BERIKUTNYA --- */
+    //** --- Helper: Mendapat artikel pertama dari edisi BERIKUTNYA --- */
+
     /**
      * Mendapatkan artikel pertama dari edisi BERIKUTNYA
      * @param $currentIssueId int
@@ -1131,5 +1145,4 @@ class PublishedArticleDAO extends DAO {
         return $articleId;
     }
 }
-
 ?>
