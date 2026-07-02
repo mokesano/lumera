@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_help
  *
  * @brief [WIZDAM CORE] Handle requests for viewing help pages + Chatbox Logic.
- * Refactored for Wizdam Fork v3.2 Protocol (PHP 8.1+ Strict).
  */
 
 // Define Defaults
