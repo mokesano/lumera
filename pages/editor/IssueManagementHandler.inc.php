@@ -929,10 +929,14 @@ class IssueManagementHandler extends EditorHandler {
             if (!$prevId) {
                 $nextId = (int) trim((string) $request->getUserVar('nextId'));
                 $nextArticle = $publishedArticleDao->getPublishedArticleById($nextId);
-                $publishedArticle->setSeq($nextArticle->getSeq() - .5);
+                if ($nextArticle) {
+                    $publishedArticle->setSeq($nextArticle->getSeq() - .5);
+                }
             } else {
                 $prevArticle = $publishedArticleDao->getPublishedArticleById($prevId);
-                $publishedArticle->setSeq($prevArticle->getSeq() + .5);
+                if ($prevArticle) {
+                    $publishedArticle->setSeq($prevArticle->getSeq() + .5);
+                }
             }
         }
         $publishedArticleDao->updatePublishedArticle($publishedArticle);
