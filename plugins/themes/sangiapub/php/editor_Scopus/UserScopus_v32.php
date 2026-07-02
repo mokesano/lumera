@@ -2,14 +2,13 @@
 declare(strict_types=1);
 
 /**
- * UserScopus_v32.php - Fixed Version
- * Memperbaiki masalah parsing data penulis dari API Scopus
+ * @file UserScopus_v32.php - Fixed Version
  * 
- * Features:
- * - Fixed author parsing from Scopus API response
- * - Better fallback mechanisms for author data
- * - Improved affiliation extraction
- * - Enhanced error handling for author data
+ * Copyright (c) 2017-2026 Sangia Code Lumera 
+ * Copyright (c) 2024-2026 Rochmady and Development Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ *
+ * @brief Memperbaiki masalah parsing data penulis dari API Scopus.
  * 
  * @author Rochmady and Wizdam Team
  * @version 6.1 - Fixed Author Parsing
@@ -17,7 +16,7 @@ declare(strict_types=1);
  */
 
 // -----------------------------------------------------------------
-// BAGIAN #1: MONITORING (UP/DOWN)
+// MONITORING (UP/DOWN)
 // -----------------------------------------------------------------
 if (empty($_GET)) {
     http_response_code(200);
@@ -26,6 +25,9 @@ if (empty($_GET)) {
     exit;
 }
 
+// -----------------------------------------------------------------
+// Kode Utama User Scopus
+// -----------------------------------------------------------------
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
