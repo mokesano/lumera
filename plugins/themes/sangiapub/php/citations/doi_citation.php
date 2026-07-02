@@ -12,15 +12,8 @@ declare(strict_types=1);
  * @ingroup plugins_themes_sangiapub
  *
  * @brief Script untuk mengambil data kutipan artikel berbasis DOI.
- * Versi yang diperbarui dengan pendekatan kredensial dan sumber data tambahan:
- * OpenCitations → Crossref Cited-by → OpenAlex → Semantic Scholar → Dimensions
- * 
- * Fitur tambahan:
- * - Kompresi data cache
- * - Penyimpanan data dalam satu file json
- * - Penambahan informasi halaman dan ID artikel
- * - Optimalisasi permintaan API
- * - Penanganan kredensial Crossref (username/password yang digunakan untuk deposit)
+ * Pendekatan kredensial dan sumber data tambahan:
+ * OpenCitations → Crossref Cited-by → OpenAlex → Semantic Scholar → Dimensions.
  */
 
 // -----------------------------------------------------------------
