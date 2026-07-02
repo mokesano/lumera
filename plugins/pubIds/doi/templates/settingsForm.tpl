@@ -20,6 +20,7 @@
 	<br />
 
 	<form method="post" action="{plugin_url path="settings"}">
+		<input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
 		{include file="common/formErrors.tpl"}
 		<table width="100%" class="data">
 			<tr valign="top">
