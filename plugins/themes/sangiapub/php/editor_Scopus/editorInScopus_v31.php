@@ -2,15 +2,13 @@
 declare(strict_types=1);
 
 /**
- * editorInScopus_v31.php - Clean & Optimized Version
- * Mencari artikel penulis dengan Scopus API dan OpenAlex fallback
+ * @file editorInScopus_v31.php - Clean & Optimized Version
  * 
- * Features:
- * - Citing documents count from author profile
- * - OpenAlex fallback untuk authors dan abstracts
- * - Smart author identification
- * - Optimized performance
- * - Clean single authors format
+ * Copyright (c) 2017-2026 Sangia Code Lumera 
+ * Copyright (c) 2024-2026 Rochmady and Development Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ *
+ * @brief Mencari artikel penulis dengan Scopus API dan OpenAlex fallback.
  * 
  * @author Rochmady and Wizdam Team
  * @version 6.0 - Final Clean Version
@@ -18,7 +16,7 @@ declare(strict_types=1);
  */
 
 // -----------------------------------------------------------------
-// BAGIAN #1: MONITORING (UP/DOWN)
+// MONITORING (UP/DOWN)
 // -----------------------------------------------------------------
 if (empty($_GET)) {
     http_response_code(200);
@@ -27,6 +25,9 @@ if (empty($_GET)) {
     exit;
 }
 
+// -----------------------------------------------------------------
+// Kode Utama User Scopus
+// -----------------------------------------------------------------
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
