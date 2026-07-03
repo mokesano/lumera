@@ -11,13 +11,13 @@ declare(strict_types=1);
  * @class PKPCitationGridRow
  * @ingroup classes_controllers_grid_citation
  *
- * @brief The citation grid row definition
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards.
+ * @brief The citation grid row definition.
  */
 
 import('lib.pkp.classes.controllers.grid.GridRow');
 
 class PKPCitationGridRow extends GridRow {
+
     /** @var int */
     protected int $assocId = 0;
 
@@ -87,12 +87,13 @@ class PKPCitationGridRow extends GridRow {
     //
     
     /**
+     * Initialize the grid row
      * @see GridRow::initialize()
      * @param Request $request
      */
-    public function initialize($request) {
+    public function initialize($request, $template = 'controllers/grid/gridRow.tpl') {
         // Do the default initialization
-        parent::initialize($request);
+        parent::initialize($request, $template);
 
         // Retrieve the assoc id from the request
         $assocId = $request->getUserVar('assocId');
@@ -120,6 +121,7 @@ class PKPCitationGridRow extends GridRow {
     }
 
     /**
+     * Get the row's cell actions
      * @see GridRow::getCellActions()
      * @param Request $request
      * @param GridColumn $column
@@ -158,5 +160,4 @@ class PKPCitationGridRow extends GridRow {
         return $cellActions;
     }
 }
-
 ?>

@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup controllers_listbuilder
  *
  * @brief Handle list builder row requests.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('lib.pkp.classes.controllers.grid.GridRow');
@@ -24,7 +23,6 @@ class ListbuilderGridRow extends GridRow {
 
     /**
      * Constructor
-     * @param bool $hasDeleteItemLink
      */
     public function __construct(bool $hasDeleteItemLink = true) {
         parent::__construct();
@@ -59,6 +57,7 @@ class ListbuilderGridRow extends GridRow {
     //
     
     /**
+     * Initialize the grid row.
      * @see GridRow::initialize()
      * @param PKPRequest $request
      * @param string|null $template
@@ -87,6 +86,7 @@ class ListbuilderGridRow extends GridRow {
     }
 
     /**
+     * Add an action to the grid row.
      * @see GridRow::addAction()
      * @param LinkAction $action
      * @param string|null $position Ignored in Listbuilder, forced to LEFT
@@ -95,5 +95,4 @@ class ListbuilderGridRow extends GridRow {
         return parent::addAction($action, GRID_ACTION_POSITION_ROW_LEFT);
     }
 }
-
 ?>
