@@ -16,15 +16,14 @@ declare(strict_types=1);
  */
 
 class AccessKeyManager {
+
     /** @var AccessKeyDAO */
     public $accessKeyDao;
 
     /**
      * Constructor.
-     * Create a manager for access keys.
      */
     public function __construct() {
-        // Removed & reference
         $this->accessKeyDao = DAORegistry::getDAO('AccessKeyDAO');
         $this->_performPeriodicCleanup();
     }
@@ -60,7 +59,6 @@ class AccessKeyManager {
      * @return AccessKey|null
      */
     public function validateKey($context, $userId, $keyHash, $assocId = null) {
-        // Removed & reference from return
         $accessKey = $this->accessKeyDao->getAccessKeyByKeyHash($context, $userId, $keyHash, $assocId);
         return $accessKey;
     }
@@ -93,11 +91,9 @@ class AccessKeyManager {
      */
     public function _performPeriodicCleanup() {
         if (time() % 100 == 0) {
-            // Removed & reference
             $accessKeyDao = DAORegistry::getDAO('AccessKeyDAO');
             $accessKeyDao->deleteExpiredKeys();
         }
     }
 }
-
 ?>
