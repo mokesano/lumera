@@ -362,10 +362,15 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
         $articleId = (int) ($args[0] ?? 0);
         $galleyId = (int) ($args[1] ?? 0);
         $this->validate($request, $articleId);
+        $submission = $this->submission;
+        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+        $galley = $galleyDao->getGalley($galleyId, $articleId);
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('articleId', $articleId);
         $templateMgr->assign('galleyId', $galleyId);
+        $templateMgr->assign('article', $submission);
+        $templateMgr->assign('galley', $galley);
         $templateMgr->assign('backHandler', 'submissionEditing');
         $templateMgr->display('submission/layout/proofGalleyTop.tpl');
     }
@@ -667,5 +672,4 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
         $journalFileManager->downloadFile($filename, $template['fileType']);
     }
 }
-
 ?>

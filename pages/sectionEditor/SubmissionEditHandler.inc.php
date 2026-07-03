@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_sectionEditor
  *
  * @brief Handle requests for submission tracking.
- *
- * [WIZDAM EDITION] FULL REFACTOR: PHP 8.1+ Strict Types, Security Hardening, Smarty Modernization
  */
 
 define('SECTION_EDITOR_ACCESS_EDIT', 0x00001);
@@ -1982,7 +1980,6 @@ class SubmissionEditHandler extends SectionEditorHandler {
         
         // [WIZDAM] WAJIB: Ambil objek naskah agar template tidak "null"
         $submission = $this->submission;
-        
         // Ambil data galley untuk informasi format (PDF/HTML)
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galley = $galleyDao->getGalley($galleyId, $articleId);
@@ -1990,13 +1987,9 @@ class SubmissionEditHandler extends SectionEditorHandler {
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('articleId', $articleId);
         $templateMgr->assign('galleyId', $galleyId);
-        
-        // [WIZDAM FIX] Kirim objek ke template agar getLocalizedTitle() bisa dipanggil
         $templateMgr->assign('article', $submission); 
         $templateMgr->assign('galley', $galley);
-        
         $templateMgr->assign('backHandler', 'submissionEditing');
-        
         $this->setupTemplate();
         $templateMgr->display('submission/layout/proofGalleyTop.tpl');
     }

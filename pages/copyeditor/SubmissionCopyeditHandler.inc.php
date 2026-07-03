@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_copyeditor
  *
  * @brief Handle requests for submission tracking.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.copyeditor.CopyeditorHandler');
@@ -205,10 +203,15 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
         $articleId = (int) array_shift($args);
         $galleyId = (int) array_shift($args);
         $this->validate($request, $articleId);
+        $submission = $this->submission;
+        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+        $galley = $galleyDao->getGalley($galleyId, $articleId);
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('articleId', $articleId);
         $templateMgr->assign('galleyId', $galleyId);
+        $templateMgr->assign('article', $submission);
+        $templateMgr->assign('galley', $galley);
         $templateMgr->assign('backHandler', 'submission');
         $templateMgr->display('submission/layout/proofGalleyTop.tpl');
     }
