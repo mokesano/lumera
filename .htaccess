@@ -86,6 +86,7 @@ RewriteEngine On
  # ========================================================
  # Membunuh URL spesifik
  Redirect 410 /index/docs/zip.php
+ Redirect 410 /docs/zip.php
     
  # Membunuh menggunakan pola (RegEx) jika diperlukan
  RedirectMatch 410 ^/index/sitemap_index\.xml$
