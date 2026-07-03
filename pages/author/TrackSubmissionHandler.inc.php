@@ -12,13 +12,12 @@ declare(strict_types=1);
  * @ingroup pages_author
  *
  * @brief Handle requests for submission tracking.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.author.AuthorHandler');
 
 class TrackSubmissionHandler extends AuthorHandler {
+    
     /** @var AuthorSubmission|null submission associated with the request */
     public $submission;
 
@@ -585,11 +584,16 @@ class TrackSubmissionHandler extends AuthorHandler {
         $articleId = (int) array_shift($args);
         $galleyId = (int) array_shift($args);
         $this->validate(null, $request, $articleId);
+        $submission = $this->submission;
+        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+        $galley = $galleyDao->getGalley($galleyId, $articleId);
         $this->setupTemplate($request);
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('articleId', $articleId);
         $templateMgr->assign('galleyId', $galleyId);
+        $templateMgr->assign('article', $submission);
+        $templateMgr->assign('galley', $galley);
         $templateMgr->assign('backHandler', 'submissionEditing');
         $templateMgr->display('submission/layout/proofGalleyTop.tpl');
     }
