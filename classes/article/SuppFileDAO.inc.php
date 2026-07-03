@@ -13,11 +13,6 @@ declare(strict_types=1);
  * @see SuppFile
  *
  * @brief Operations for retrieving and modifying SuppFile objects.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Ref removal, Visibility, Cache Callback)
- * - Strict Integer Casting
- * - Hook Dispatch
  */
 
 import('classes.article.SuppFile');
@@ -34,7 +29,6 @@ class SuppFileDAO extends DAO {
     public function _getSuppFileCache() {
         if (!isset($this->suppFileCache)) {
             $cacheManager = CacheManager::getManager();
-            // PHP 8: Removed & from callback array
             $this->suppFileCache = $cacheManager->getObjectCache('suppfile', 0, array($this, '_suppFileCacheMiss'));
         }
         return $this->suppFileCache;
@@ -442,7 +436,8 @@ class SuppFileDAO extends DAO {
             'SELECT MAX(seq) + 1 FROM article_supplementary_files WHERE article_id = ?',
             (int) $articleId
         );
-        $returner = floor($result->fields[0]);
+        $value = $result->fields[0] ?? null;
+        $returner = (int) floor($value !== null ? (float) $value : 1);
 
         $result->Close();
         unset($result);
@@ -558,5 +553,4 @@ class SuppFileDAO extends DAO {
         $this->flushCache();
     }
 }
-
 ?>
