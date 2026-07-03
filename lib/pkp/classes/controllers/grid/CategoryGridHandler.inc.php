@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup controllers_grid
  *
  * @brief Class defining basic operations for handling HTML grids with categories.
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards & Security.
  */
 
 // import grid classes
@@ -32,7 +31,6 @@ class CategoryGridHandler extends GridHandler {
 
     /**
      * Constructor.
-     * @param GridDataProvider|null $dataProvider
      */
     public function __construct($dataProvider = null) {
         parent::__construct($dataProvider);
@@ -87,7 +85,6 @@ class CategoryGridHandler extends GridHandler {
     //
     /**
      * Render a category with all the rows inside of it.
-     * [WIZDAM] Removed references from args and request
      * @param array $args
      * @param Request $request
      * @return string the serialized row JSON message or a flag
@@ -114,9 +111,8 @@ class CategoryGridHandler extends GridHandler {
     //
     // Extended methods from GridHandler
     //
-    
     /**
-     * [WIZDAM] Removed reference (&)
+     * Initialize the grid handler.
      * @see GridHandler::initialize($request)
      * @param Request $request
      * @return void
@@ -132,6 +128,7 @@ class CategoryGridHandler extends GridHandler {
     }
 
     /**
+     * Get the grid request parameters.
      * @see GridHandler::getRequestArgs()
      * @return array
      */
@@ -150,8 +147,8 @@ class CategoryGridHandler extends GridHandler {
         return $args;
     }
 
-
     /**
+     * Get the JavaScript handler for the grid.
      * @see GridHandler::getJSHandler()
      * @return string
      */
@@ -160,6 +157,7 @@ class CategoryGridHandler extends GridHandler {
     }
 
     /**
+     * Set the URLs for the grid.
      * @see GridHandler::setUrls()
      * @param Request $request
      * @return void
@@ -171,6 +169,7 @@ class CategoryGridHandler extends GridHandler {
     }
 
     /**
+     * Render the grid actions for a specific category.
      * @see GridHandler::doSpecificFetchGridActions($args, $request)
      * @param array $args
      * @param Request $request
@@ -184,6 +183,7 @@ class CategoryGridHandler extends GridHandler {
     }
 
     /**
+     * Get the data element for a specific row.
      * @see GridHandler::getRowDataElement()
      * @param Request $request
      * @param string $rowId
@@ -218,6 +218,7 @@ class CategoryGridHandler extends GridHandler {
     }
 
     /**
+     * Set the first data column.
      * @see GridHandler::setFirstDataColumn()
      * @return void
      */
@@ -238,7 +239,6 @@ class CategoryGridHandler extends GridHandler {
     //
     /**
      * Get a new instance of a category grid row.
-     * [WIZDAM] Removed return reference (&)
      * @return CategoryGridRow
      */
     protected function getCategoryRowInstance() {
@@ -257,7 +257,6 @@ class CategoryGridHandler extends GridHandler {
 
     /**
      * Fetch the contents of a category.
-     * [WIZDAM] Removed return reference and param reference
      * @param mixed $categoryDataElement
      * @param array|null $filter
      * @return array
@@ -274,7 +273,6 @@ class CategoryGridHandler extends GridHandler {
 
     /**
      * Tries to identify the data element in the grids data source.
-     * [WIZDAM] Removed return reference (&)
      * @param Request $request
      * @param array $args
      * @return GridRow|null
@@ -319,6 +317,7 @@ class CategoryGridHandler extends GridHandler {
     }
 
     /**
+     * Operation to save the row data element new sequence.
      * @see GridHandler::saveRowDataElementSequence()
      * @param mixed $gridDataElement
      * @param string $categoryId
@@ -330,6 +329,7 @@ class CategoryGridHandler extends GridHandler {
     }
 
     /**
+     * Render a row internally.
      * @see GridHandler::renderRowInternally()
      * @param Request $request
      * @param GridRow $row
@@ -351,7 +351,6 @@ class CategoryGridHandler extends GridHandler {
     //
     /**
      * Instantiate a new row.
-     * [WIZDAM] Removed return reference (&)
      * @param Request $request
      * @param string|null $elementId
      * @param mixed $element
@@ -377,7 +376,6 @@ class CategoryGridHandler extends GridHandler {
 
     /**
      * Render all the categories internally
-     * [WIZDAM] Removed reference from request
      * @param Request $request
      * @return array
      */
@@ -401,7 +399,6 @@ class CategoryGridHandler extends GridHandler {
 
     /**
      * Render a category row and its data.
-     * [WIZDAM] Removed references everywhere
      * @param Request $request
      * @param GridCategoryRow $categoryRow
      * @return string HTML
@@ -436,5 +433,4 @@ class CategoryGridHandler extends GridHandler {
         return $templateMgr->fetch('controllers/grid/gridBodyPartWithCategory.tpl');
     }
 }
-
 ?>

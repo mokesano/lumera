@@ -27,7 +27,7 @@ class IssueGalleyDAO extends DAO {
     }
 
     /**
-     * Legacy Constructor Shim.
+     * [SHIM] Backward Compatibility.
      */
     public function IssueGalleyDAO() {
         trigger_error(
