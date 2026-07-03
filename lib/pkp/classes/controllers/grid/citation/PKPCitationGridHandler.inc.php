@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup controllers_grid_citation
  *
  * @brief Handle generic parts of citation grid requests.
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards.
  */
 
 // import grid base classes
@@ -23,6 +22,7 @@ import('lib.pkp.classes.controllers.grid.citation.PKPCitationGridCellProvider');
 import('lib.pkp.classes.controllers.grid.citation.PKPCitationGridRow');
 
 class PKPCitationGridHandler extends GridHandler {
+
     /** @var DataObject|null */
     protected ?DataObject $assocObject = null;
 
@@ -57,7 +57,6 @@ class PKPCitationGridHandler extends GridHandler {
     /**
      * Set the object that citations are associated to
      * This object must implement the getId() and getCitations() methods.
-     *
      * @param DataObject $assocObject
      */
     public function setAssocObject($assocObject) {
@@ -166,14 +165,16 @@ class PKPCitationGridHandler extends GridHandler {
     //
     
     /**
+     * Get a new row instance for the grid.
      * @see GridHandler::getRowInstance()
      */
-    protected function getRowInstance(): GridRow {
+    public function getRowInstance(): GridRow {
         // Return a citation row
         return new PKPCitationGridRow();
     }
 
     /**
+     * Determine whether or not this grid is a subcomponent of another grid.
      * @see GridHandler::getIsSubcomponent()
      */
     public function getIsSubcomponent(): bool {
