@@ -16,7 +16,6 @@ declare(strict_types=1);
  * NB: If you want row-level refresh then you must override the getData() method
  * so that it fetches data (e.g. from the database) when called. The data to be
  * fetched can be determined from the id (=row id) which is always set.
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards.
  */
 
 define('GRID_ACTION_POSITION_ROW_CLICK', 'row-click');
@@ -197,9 +196,7 @@ class GridRow extends GridBodyElement {
     
     /**
      * Initialize a row instance.
-     *
      * Subclasses can override this method.
-     *
      * @param Request $request
      * @param string $template
      */
@@ -208,5 +205,4 @@ class GridRow extends GridBodyElement {
         $this->setTemplate($template);
     }
 }
-
 ?>
