@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup controllers_grid_citation
  *
  * @brief Handle OJS specific parts of citation grid requests.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('lib.pkp.classes.controllers.grid.citation.PKPCitationGridHandler');
@@ -56,6 +55,7 @@ class CitationGridHandler extends PKPCitationGridHandler {
     //
 
     /**
+     * Authorize the request.
      * @see PKPHandler::authorize()
      * @param PKPRequest $request
      * @param array $args
@@ -69,6 +69,7 @@ class CitationGridHandler extends PKPCitationGridHandler {
     }
 
     /**
+     * Initialize the grid handler.
      * @see PKPHandler::initialize()
      * @param PKPRequest $request
      * @param array|null $args
@@ -93,11 +94,13 @@ class CitationGridHandler extends PKPCitationGridHandler {
     //
 
     /**
+     * Export citations to a file.
      * @see PKPCitationGridHandler::exportCitations()
      * @param array $args
      * @param PKPRequest $request
+     * @param string $noCitationsFoundMessage
      */
-    public function exportCitations($args, $request) {
+    public function exportCitations($args, $request, $noCitationsFoundMessage) {
         $dispatcher = $this->getDispatcher();
         $articleMetadataUrl = $dispatcher->url($request, ROUTE_PAGE, null, 'editor', 'viewMetadata', $this->getAssocId());
         
@@ -106,5 +109,4 @@ class CitationGridHandler extends PKPCitationGridHandler {
         return parent::exportCitations($args, $request, $noCitationsFoundMessage);
     }
 }
-
 ?>
