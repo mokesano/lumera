@@ -61,7 +61,7 @@ class CitationGridHandler extends PKPCitationGridHandler {
      * @param array $args
      * @param array $roleAssignments
      */
-    public function authorize($request, &$args, $roleAssignments) {
+    public function authorize($request, $args, $roleAssignments) {
         // Make sure the user can edit the submission in the request.
         import('classes.security.authorization.OjsSubmissionAccessPolicy');
         $this->addPolicy(new OjsSubmissionAccessPolicy($request, $args, $roleAssignments, 'assocId'));
