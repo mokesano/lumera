@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup classes_controllers_grid
  *
  * @brief Class defining basic operations for handling HTML grids.
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards.
  */
 
 // Import the base Handler.
@@ -434,9 +433,13 @@ class GridHandler extends PKPHandler {
     //
     
     /**
+     * Validate the grid handler.
      * @see PKPHandler::validate()
      * [WIZDAM] Adapter: Mencegat parameter shifting dari PKPComponentRouter
      * Router lama mengirimkan ($request, $args), sedangkan PKPHandler meminta ($requiredContexts, $request).
+     * @param array|null $requiredContexts
+     * @param PKPRequest|null $request
+     * @return bool
      */
     public function validate($requiredContexts = null, $request = null) {
         
@@ -451,8 +454,12 @@ class GridHandler extends PKPHandler {
     }
     
     /**
-     * [WIZDAM] Removed reference (&) from parameters to comply with protocol.
+     * Authorize the grid handler.
      * @see PKPHandler::authorize()
+     * @param PKPRequest $request
+     * @param array $args
+     * @param array $roleAssignments
+     * @return bool
      */
     public function authorize($request, $args, $roleAssignments) {
         $dataProvider = $this->getDataProvider();
@@ -462,17 +469,17 @@ class GridHandler extends PKPHandler {
         }
 
         $success = parent::authorize($request, $args, $roleAssignments);
-
         if ($hasDataProvider && $success === true) {
             $dataProvider->setAuthorizedContext($this->getAuthorizedContext());
         }
-
         return $success;
     }
 
     /**
-     * [WIZDAM] Removed reference (&) from parameters.
+     * Initialize the grid handler.
      * @see PKPHandler::initialize()
+     * @param PKPRequest $request
+     * @param array $args
      */
     public function initialize($request, $args = null) {
         parent::initialize($request, $args);
@@ -502,7 +509,6 @@ class GridHandler extends PKPHandler {
         $this->setUrls($request);
 
         $templateMgr = TemplateManager::getManager();
-        // [WIZDAM] Replaced assign_by_ref with assign
         $templateMgr->assign('grid', $this);
 
         $renderedFilter = $this->renderFilter($request);
@@ -510,15 +516,12 @@ class GridHandler extends PKPHandler {
 
         $this->setFirstDataColumn();
         $columns = $this->getColumns();
-        // [WIZDAM] Replaced assign_by_ref with assign
         $templateMgr->assign('columns', $columns);
 
         $this->doSpecificFetchGridActions($args, $request, $templateMgr);
-
         $templateMgr->assign('gridRequestArgs', $this->getRequestArgs());
 
         $this->callFeaturesHook('fetchGrid', ['grid' => $this, 'request' => $request]);
-
         $templateMgr->assign('features', $this->getFeatures());
 
         $json = new JSONMessage(true, $templateMgr->fetch($this->getTemplate()));
@@ -549,6 +552,9 @@ class GridHandler extends PKPHandler {
 
     /**
      * Render a cell.
+     * @param array $args
+     * @param PKPRequest $request
+     * @return string
      */
     public function fetchCell($args, $request) {
         if (!isset($args['columnId'])) fatalError('Missing column id!');
@@ -597,7 +603,11 @@ class GridHandler extends PKPHandler {
     }
 
     /**
+     * Get the range info for the grid.
      * @see PKPHandler::getRangeInfo()
+     * @param string $rangeName
+     * @param mixed $contextData
+     * @return DBResultRange
      */
     public static function getRangeInfo($rangeName, $contextData = null) {
         import('lib.pkp.classes.db.DBResultRange');
@@ -734,6 +744,8 @@ class GridHandler extends PKPHandler {
 
     /**
      * Get the row data element sequence value.
+     * @param mixed $gridDataElement
+     * @return int
      */
     public function getRowDataElementSequence($gridDataElement) {
         assert(false);
@@ -741,6 +753,10 @@ class GridHandler extends PKPHandler {
 
     /**
      * Operation to save the row data element new sequence.
+     * @param PKPRequest $request
+     * @param mixed $rowId
+     * @param mixed $gridDataElement
+     * @param int $newSequence
      */
     public function saveRowDataElementSequence($request, $rowId, $gridDataElement, $newSequence) {
         assert(false);
@@ -756,7 +772,6 @@ class GridHandler extends PKPHandler {
         $this->_fixColumnWidths();
 
         $gridBodyParts = $this->_renderGridBodyPartsInternally($request);
-        // [WIZDAM] Replaced assign_by_ref
         $templateMgr->assign('gridBodyParts', $gridBodyParts);
     }
 
@@ -789,7 +804,7 @@ class GridHandler extends PKPHandler {
     public function callFeaturesHook($hookName, $args) {
         $features = $this->getFeatures();
         if (is_array($features)) {
-            foreach ($features as $feature) { // Reference & removed from iteration variable
+            foreach ($features as $feature) {
                 if (is_callable([$feature, $hookName])) {
                     $feature->$hookName($args);
                 } else {
@@ -938,7 +953,7 @@ class GridHandler extends PKPHandler {
      */
     public function _addFeatures($features) {
         assert(is_array($features));
-        foreach ($features as $feature) { // Reference & removed
+        foreach ($features as $feature) {
             assert(is_a($feature, 'GridFeature'));
             $this->features[$feature->getId()] = $feature;
         }
