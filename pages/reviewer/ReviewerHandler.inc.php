@@ -12,14 +12,13 @@ declare(strict_types=1);
  * @ingroup pages_reviewer
  *
  * @brief Handle requests for reviewer functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.submission.reviewer.ReviewerAction');
 import('classes.handler.Handler');
 
 class ReviewerHandler extends Handler {
+    
     /** @var object|null user associated with the request */
     public $user = null;
 
@@ -209,8 +208,8 @@ class ReviewerHandler extends Handler {
     /**
      * Validate that the user is an assigned reviewer for the article.
      * Redirects to reviewer index page if validation fails.
-     * * [WIZDAM] Transition Mode: Loose signature to handle legacy parameter swapping
-     * * @param mixed $requiredContexts (Could be Request object, or null)
+     * [WIZDAM] Transition Mode: Loose signature to handle legacy parameter swapping
+     * @param mixed $requiredContexts (Could be Request object, or null)
      * @param mixed $request (Could be Request object, or reviewId (int), or null)
      */
     public function validate($requiredContexts = null, $request = null) {

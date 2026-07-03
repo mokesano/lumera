@@ -249,5 +249,4 @@ class AccessKeyDAO extends DAO {
         return $this->getInsertId('access_keys', 'access_key_id');
     }
 }
-
 ?>
