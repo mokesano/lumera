@@ -17,8 +17,7 @@
 
 <form method="post" action="{url op="saveAboutSite"}">
     {include file="common/formErrors.tpl"}
-    {* WIZDAM SECURITY: Token CSRF Wajib Ada *}
-    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
+    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
         
     <div id="settings">
     {foreach from=$formLocales key=localeKey item=localeName}
