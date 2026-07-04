@@ -1,7 +1,7 @@
 .DS_Store
 vendor/
 .bundle/
-Gemfile.lock
+# Gemfile.lock
 
 css/.sass*
 
