@@ -15,8 +15,8 @@
 {/strip}
 
 <ul class="menu">
-        <li class="current"><a href="{url op="futureIssues"}">{translate key="editor.navigation.futureIssues"}</a></li>
-        <li><a href="{url op="backIssues"}">{translate key="editor.navigation.issueArchive"}</a></li>
+    <li class="current"><a href="{url op="futureIssues"}">{translate key="editor.navigation.futureIssues"}</a></li>
+    <li><a href="{url op="backIssues"}">{translate key="editor.navigation.issueArchive"}</a></li>
 </ul>
 
 <br />
@@ -57,5 +57,6 @@
 {/if}
 </table>
 </div>
+
 {include file="common/footer.tpl"}
 
