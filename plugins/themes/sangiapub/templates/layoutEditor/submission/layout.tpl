@@ -134,31 +134,32 @@
 </table>
 
 <form method="post" action="{url op="uploadLayoutFile"}"  enctype="multipart/form-data">
+	<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
 	<input type="hidden" name="articleId" value="{$submission->getId()}" />
 	{translate key="submission.uploadFileTo"} <input type="radio" {if $disableEdit}disabled="disabled" {/if}name="layoutFileType" id="layoutFileTypeSubmission" value="submission" checked="checked" /><label for="layoutFileTypeSubmission">{translate key="submission.layout.layoutVersion"}</label>, <input type="radio" {if $disableEdit}disabled="disabled" {/if}name="layoutFileType" id="layoutFileTypeGalley" value="galley" /><label for="layoutFileTypeGalley">{translate key="submission.galley"}</label>, <input type="radio" {if $disableEdit}disabled="disabled" {/if}name="layoutFileType" id="layoutFileTypeSupp" value="supp" /><label for="layoutFileTypeSupp">{translate key="article.suppFilesAbbrev"}</label>
 	<input type="file" name="layoutFile" size="10" class="uploadField" />
 	<input type="submit" {if $disableEdit}disabled="disabled" {/if}value="{translate key="common.upload"}" class="button" />
 </form>
 <div id="layoutComments">
-{translate key="submission.layout.layoutComments"}
-{if $submission->getMostRecentLayoutComment()}
-	{assign var="comment" value=$submission->getMostRecentLayoutComment()}
-	<a href="javascript:openComments('{url op="viewLayoutComments" path=$submission->getId() anchor=$comment->getId()}');" class="icon">{icon name="comment"}</a>{$comment->getDatePosted()|date_format:$dateFormatShort}
-{else}
-	<a href="javascript:openComments('{url op="viewLayoutComments" path=$submission->getId()}');" class="icon">{icon name="comment"}</a>{translate key="common.noComments"}
-{/if}
+	{translate key="submission.layout.layoutComments"}
+	{if $submission->getMostRecentLayoutComment()}
+		{assign var="comment" value=$submission->getMostRecentLayoutComment()}
+		<a href="javascript:openComments('{url op="viewLayoutComments" path=$submission->getId() anchor=$comment->getId()}');" class="icon">{icon name="comment"}</a>{$comment->getDatePosted()|date_format:$dateFormatShort}
+	{else}
+		<a href="javascript:openComments('{url op="viewLayoutComments" path=$submission->getId()}');" class="icon">{icon name="comment"}</a>{translate key="common.noComments"}
+	{/if}
 
-{if $currentJournal->getLocalizedSetting('layoutInstructions')}
-&nbsp;&nbsp;
-<a href="javascript:openHelp('{url op="instructions" path="layout"}')" class="action">{translate key="submission.layout.instructions"}</a>
-{/if}
-{if $currentJournal->getSetting('provideRefLinkInstructions')}
-&nbsp;&nbsp;
-<a href="javascript:openHelp('{url op="instructions" path="referenceLinking"}')" class="action">{translate key="submission.layout.referenceLinking"}</a>
-{/if}
-{foreach name=templates from=$templates key=templateId item=template}
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="{url op="downloadLayoutTemplate" path=$templateId}" class="action">{$template.title|escape}</a>
-{/foreach}
+	{if $currentJournal->getLocalizedSetting('layoutInstructions')}
+	&nbsp;&nbsp;
+	<a href="javascript:openHelp('{url op="instructions" path="layout"}')" class="action">{translate key="submission.layout.instructions"}</a>
+	{/if}
+	{if $currentJournal->getSetting('provideRefLinkInstructions')}
+	&nbsp;&nbsp;
+	<a href="javascript:openHelp('{url op="instructions" path="referenceLinking"}')" class="action">{translate key="submission.layout.referenceLinking"}</a>
+	{/if}
+	{foreach name=templates from=$templates key=templateId item=template}
+	&nbsp;&nbsp;&nbsp;&nbsp;<a href="{url op="downloadLayoutTemplate" path=$templateId}" class="action">{$template.title|escape}</a>
+	{/foreach}
 </div>
 </div>
 
