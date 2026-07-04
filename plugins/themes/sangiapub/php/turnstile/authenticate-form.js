@@ -1,11 +1,18 @@
 /**
- * Modern Auth Forms JavaScript untuk OJS v2.4.8.2
+ * @file authenticate-form.js
+ * 
+ * Copyright (c) 2024-2026, Code Lumera Team
+ * Copyright (c) 2024-2026, Rochmady
+ * Distributed under the MIT License. See LICENSE file for details.
+ * 
+ * Modern Auth Forms JavaScript
  * Production-ready authentication forms with modern UI components
  * 
  * @fileoverview Modern auth forms with floating labels, password validation,
- * email verification, and prof checkbox designs for OJS registration system.
+ * email verification, and prof checkbox designs for Lumera registration system.
  * @version 1.2.4
- * @author Rochmady and Wizdam OJS Theme Developer
+ * @author Rochmady and Code Lumera Team
+ * @license MIT License
  * @requires Kopi plus Rokok
  */
 
