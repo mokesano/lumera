@@ -17,16 +17,16 @@
 {if $group}
 	<ul class="menu">
 		<li class="current"><a href="{url op="editGroup" path=$group->getId()}">{translate key="manager.groups.editTitle"}</a></li>
-		<li><a href="{url op="groupMembership" path=$group->getId()}">{translate key="manager.groups.membership}</a></li>
+		<li><a href="{url op="groupMembership" path=$group->getId()}">{translate key="manager.groups.membership"}</a></li>
 	</ul>
 {/if}
 
 <br/>
 
 <form id="groupForm" method="post" action="{url op="updateGroup"}">
-    <input type="hidden" name="csrfToken" value="{$csrfToken|escape}"/>
+    <input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
     {if $group}
-    	<input type="hidden" name="groupId" value="{$group->getId()}"/>
+    	<input type="hidden" name="groupId" value="{$group->getId()}" />
     {/if}
 
     {include file="common/formErrors.tpl"}
