@@ -590,7 +590,6 @@ class PKPCitationGridHandler extends GridHandler {
         return $citationForm;
     }
 
-
     /**
      * Internal method that re-checks the given citation and
      * returns a rendered citation editing form with the changes.
