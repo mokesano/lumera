@@ -9,8 +9,8 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="manager.setup.journalSetup"}
-{include file="common/header-ROLE.tpl"}
+	{assign var="pageTitle" value="manager.setup.journalSetup"}
+	{include file="common/header-ROLE.tpl"}
 {/strip}
 
 <h3>{translate key="manager.setup.stepsToJournalSite"}</h3>
@@ -42,7 +42,8 @@
 		&nbsp;
 	</li>
 </ol>
-</div>
+
+</div> {** Close tag journal-setup **}
 
 {include file="common/footer-parts/footer-user.tpl"}
 
