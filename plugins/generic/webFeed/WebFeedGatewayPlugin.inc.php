@@ -3,12 +3,15 @@ declare(strict_types=1);
 
 /**
  * @file plugins/generic/webFeed/WebFeedGatewayPlugin.inc.php
+ * 
+ * Copyright (c) 2017-2026 Sangia Lumera Publishing.
+ * Copyright (c) 2024-2026 Rochmady and Code Lumera Team.
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING
  *
  * @class WebFeedGatewayPlugin
  * @ingroup plugins_generic_webFeed
  *
- * @brief Gateway component of web feed plugin
- * * MODERNIZED FOR WIZDAM FORK
+ * @brief Gateway component of web feed plugin.
  */
 
 import('classes.plugins.GatewayPlugin');
@@ -41,7 +44,7 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
 
     /**
      * Hide this plugin from the management interface (it's subsidiary)
-     * @return string
+     * @return boolean
      */
     public function getHideManagement(): bool {
         return true;
@@ -82,6 +85,7 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
 
     /**
      * Override the builtin to get the correct plugin path.
+     * @return string
      */
     public function getPluginPath(): string {
         $plugin = $this->getWebFeedPlugin();
@@ -99,7 +103,7 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
 
     /**
      * Get whether or not this plugin is enabled.
-     * @return boolean
+     * @return bool
      */
     public function getEnabled(): bool {
         $plugin = $this->getWebFeedPlugin();
@@ -116,6 +120,9 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
 
     /**
      * Handle fetch requests for this plugin.
+     * @param array $args
+     * @param PKPRequest $request
+     * @return boolean
      */
     public function fetch($args, $request = null) {
         if (!$request) $request = Application::getRequest();
@@ -183,5 +190,4 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
         return true;
     }
 }
-
 ?>
