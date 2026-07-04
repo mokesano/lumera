@@ -363,9 +363,9 @@
 				
 				<h4>{translate key="manager.setup.citationOutput"}</h4>
 				<p>{translate key="manager.setup.citationOutputStyleDescription"}</p>
-				{fbvElement type="select" id="metaCitationOutputFilterSelect" name="metaCitationOutputFilterId"
-						from=$metaCitationOutputFilters translate=false selected=$metaCitationOutputFilterId|escape
-						defaultValue="-1" defaultLabel="manager.setup.filter.pleaseSelect"|translate}
+				{fbvElement type="select" id="metaCitationOutputFilterSelect" name="metaCitationOutputFilterId" 
+					from=$metaCitationOutputFilters translate=false selected=$metaCitationOutputFilterId|escape
+					defaultValue="-1" defaultLabel="manager.setup.filter.pleaseSelect"|translate}
 			</div>
 
 			{literal}<script type='text/javascript'>
