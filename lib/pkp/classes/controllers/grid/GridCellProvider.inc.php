@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup controllers_grid
  *
  * @brief Base class for a grid column's cell provider
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards.
  */
 
 class GridCellProvider {
@@ -41,10 +40,7 @@ class GridCellProvider {
     //
 
     /**
-     * To be used by a GridRow to generate a rendered representation of
-     * the element for the given column.
-     * [WIZDAM] Removed reference (&) from parameters. Added return type.
-     *
+     * To be used by a GridRow to generate a rendered representation of the element for the given column.
      * @param Request $request
      * @param GridRow $row
      * @param GridColumn $column
@@ -89,8 +85,6 @@ class GridCellProvider {
      * Subclasses have to implement this method to extract variables
      * for a given column from a data element so that they may be assigned
      * to template before rendering.
-     * [WIZDAM] Removed reference (&) from $row
-     *
      * @param GridRow $row
      * @param GridColumn $column
      * @return array
@@ -105,7 +99,6 @@ class GridCellProvider {
      *
      * NB: The default implementation delegates to the grid column for
      * cell-specific actions.
-     * [WIZDAM] Removed reference (&) from return and params
      *
      * @param Request $request
      * @param GridRow $row
@@ -118,5 +111,4 @@ class GridCellProvider {
         return $column->getCellActions($request, $row, $position);
     }
 }
-
 ?>
