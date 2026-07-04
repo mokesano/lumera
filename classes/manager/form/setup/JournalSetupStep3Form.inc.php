@@ -62,7 +62,6 @@ class JournalSetupStep3Form extends JournalSetupForm {
         $this->addCheck(new FormValidatorEmail($this, 'copySubmissionAckAddress', 'optional', 'user.profile.form.emailRequired'));
         
         // Only check the subject classification URL if the subject classification is enabled
-        // [WIZDAM] Replaced create_function with Anonymous Function
         $this->addCheck(new FormValidatorCustom(
             $this, 
             'metaSubjectClassUrl', 
@@ -167,7 +166,6 @@ class JournalSetupStep3Form extends JournalSetupForm {
 
         $templateMgr->assign('ccLicenseOptions', Application::getCCLicenseOptions());
 
-        // --- VAKSINASI ANTI-ERROR PHP 8 ---
         // Memastikan field multi-bahasa tidak bernilai null sebelum dilempar ke template
         $localizedFields = [
             'metaSubjectClassTitle',
@@ -186,7 +184,6 @@ class JournalSetupStep3Form extends JournalSetupForm {
         }
         // ----------------------------------
 
-        // [WIZDAM FINAL] Template null agar tidak konflik dengan parent
         $template = null;
         parent::display($request, $template);
     }
