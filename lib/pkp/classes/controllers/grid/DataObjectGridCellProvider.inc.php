@@ -16,12 +16,12 @@ declare(strict_types=1);
  * be better off using a ColumnBasedGridCellProvider.
  *
  * @see ColumnBasedGridCellProvider
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards.
  */
 
 import('lib.pkp.classes.controllers.grid.GridCellProvider');
 
 class DataObjectGridCellProvider extends GridCellProvider {
+
     /** 
      * @var string|null the locale to be retrieved. 
      * [WIZDAM] Renamed from $_locale
@@ -68,7 +68,6 @@ class DataObjectGridCellProvider extends GridCellProvider {
         return $this->locale;
     }
 
-
     //
     // Template methods from GridCellProvider
     //
@@ -92,5 +91,4 @@ class DataObjectGridCellProvider extends GridCellProvider {
         return ['label' => $element->getData($columnId, $this->getLocale())];
     }
 }
-
 ?>
