@@ -115,12 +115,11 @@ class CategoryGridHandler extends GridHandler {
      * Initialize the grid handler.
      * @see GridHandler::initialize($request)
      * @param Request $request
-     * @return void
+     * @param array $args
      */
-    public function initialize($request) {
-        parent::initialize($request);
+    public function initialize($request, $args = null) {
+        parent::initialize($request, $args);
 
-        // [SECURITY FIX] Secure 'rowCategoryId' with trim() and type casting
         $rowCategoryId = $request->getUserVar('rowCategoryId');
         if ($rowCategoryId !== null) {
             $this->currentCategoryId = (string) trim((string)$rowCategoryId);
@@ -160,7 +159,6 @@ class CategoryGridHandler extends GridHandler {
      * Set the URLs for the grid.
      * @see GridHandler::setUrls()
      * @param Request $request
-     * @return void
      */
     public function setUrls($request) {
         $router = $request->getRouter();
@@ -192,7 +190,6 @@ class CategoryGridHandler extends GridHandler {
     protected function getRowDataElement($request, $rowId) {
         $rowData = parent::getRowDataElement($request, $rowId);
         
-        // [SECURITY FIX] Secure 'rowCategoryId' with trim()
         $rowCategoryId = $request->getUserVar('rowCategoryId');
         $rowCategoryId = $rowCategoryId !== null ? trim((string)$rowCategoryId) : null;
 
@@ -322,7 +319,6 @@ class CategoryGridHandler extends GridHandler {
      * @param mixed $gridDataElement
      * @param string $categoryId
      * @param int $newSequence
-     * @return void
      */
     public function saveRowDataElementSequence($gridDataElement, $categoryId, $newSequence) {
         assert(false);

@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class Dispatcher
  * @ingroup core
  *
- * @brief Class dispatching HTTP requests to handlers.
- * [WIZDAM EDITION] Modernized. PHP 8 Safe. Intelligent Caching. Strict Typed. Pure DI.
+ * @brief Class dispatching HTTP requests to handlers. Intelligent Caching. Strict Typed. Pure DI.
  */
 
 class Dispatcher {
@@ -196,6 +195,8 @@ class Dispatcher {
 
     /**
      * Instantiate a router
+     * @param string $routerName
+     * @param string $shortcut
      * @return PKPRouter
      */
     protected function _instantiateRouter(string $routerName, string $shortcut): PKPRouter {
@@ -216,8 +217,8 @@ class Dispatcher {
     }
 
     /**
-     * [WIZDAM INTELLIGENT CACHE]
-     * Menggunakan ETag (Hash) dan Cache-Control: must-revalidate.
+     * Handle a 404 error (page not found).
+     * [WIZDAM INTELLIGENT CACHE] Menggunakan ETag (Hash) dan Cache-Control: must-revalidate.
      * @param PKPRouter $router
      * @param PKPRequest $request
      */
@@ -292,7 +293,7 @@ class Dispatcher {
      * Handle a 404 error (page not found).
      * WIZDAM EDITION: Custom Error Handling
      * [HIGHER STANDARD] Explicit Method Injection. No Service Locator used.
-     * @param PKPRequest $request The request object must be passed explicitly.
+     * @param PKPRequest $request
      */
     public function handle404(PKPRequest $request): void {
         // 1. Mengumpulkan informasi URL

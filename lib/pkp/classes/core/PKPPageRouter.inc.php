@@ -28,10 +28,13 @@ class PKPPageRouter extends PKPRouter {
     // Internal state cache variables
     /** @var string the requested page */
     protected $_page;
+
     /** @var string the requested operation */
     protected $_op;
+
     /** @var string index url */
     protected $_indexUrl;
+    
     /** @var string cache filename */
     protected $_cacheFilename;
 
@@ -281,8 +284,8 @@ class PKPPageRouter extends PKPRouter {
      * @param string|array|null $path additional path info to use in the URL
      * @param array|null $params additional query parameters to use in the URL
      * @param string|null $anchor optional anchor to use in the URL
-     * @param bool $escape to escape the URL for use in HTML attributes
-     * @return string the generated URL
+     * @param bool $escape whether to escape the URL
+     * @return string
      */
     public function url($request, $newContext = null, $page = null, $op = null, $path = null, $params = null, $anchor = null, $escape = false) {
         $pathInfoEnabled = $request->isPathInfoEnabled();

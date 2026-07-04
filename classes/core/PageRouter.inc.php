@@ -17,7 +17,7 @@ declare(strict_types=1);
  * - PHP 8.x Compatibility (Ref removal, Visibility)
  * - Safe User/Journal Context Checks
  * - Native Routing Support
- * - [v2] Degradasi Routing Bertingkat: Issue → Volume → Year → Archive
+ * - Degradasi Routing Bertingkat: Issue → Volume → Year → Archive
  */
 
 import('lib.pkp.classes.core.PKPPageRouter');
@@ -25,7 +25,7 @@ import('lib.pkp.classes.core.PKPPageRouter');
 class PageRouter extends PKPPageRouter {
 
     /**
-     * get the cacheable pages
+     * Get the cacheable pages
      * @return array
      */
     public function getCacheablePages() {
@@ -333,5 +333,4 @@ class PageRouter extends PKPPageRouter {
         }
     }
 }
-
 ?>
