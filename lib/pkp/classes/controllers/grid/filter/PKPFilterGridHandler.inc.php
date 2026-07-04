@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup classes_controllers_grid_filter
  *
  * @brief Manage filter administration and settings.
- * [FIXED VERSION 3] Fixed TypeError (bool vs null) in GridColumn & Public Visibility
  */
 
 // import grid base classes
@@ -25,8 +24,8 @@ import('lib.pkp.classes.controllers.grid.filter.FilterGridCellProvider');
 // import metadata framework classes
 import('lib.pkp.classes.metadata.MetadataDescription');
 
-
 class PKPFilterGridHandler extends GridHandler {
+
     /** @var DataObject|null the context (journal, press, conference) for which we manage filters */
     protected ?DataObject $_context = null;
 
@@ -64,10 +63,10 @@ class PKPFilterGridHandler extends GridHandler {
     //
     // Getters/Setters
     //
+
     /**
      * Set the context that filters are being managed for.
      * This object must implement the getId() and getSettings() methods.
-     *
      * @param DataObject $context
      */
     public function setContext(DataObject $context): void {
@@ -76,7 +75,6 @@ class PKPFilterGridHandler extends GridHandler {
 
     /**
      * Get the context that filters are being managed for.
-     *
      * @return DataObject|null
      */
     public function getContext(): ?DataObject {
@@ -119,6 +117,7 @@ class PKPFilterGridHandler extends GridHandler {
     //
     // Overridden methods from PKPHandler
     //
+
     /**
      * Configure the grid
      * @see PKPHandler::initialize()
@@ -190,7 +189,9 @@ class PKPFilterGridHandler extends GridHandler {
     //
     // Overridden methods from GridHandler
     //
+
     /**
+     * Get a row instance.
      * @see GridHandler::getRowInstance()
      * FIXED: Must be PUBLIC to match Parent Class definition
      */
@@ -203,6 +204,7 @@ class PKPFilterGridHandler extends GridHandler {
     //
     // Public Filter Grid Actions
     //
+
     /**
      * An action to manually add a new filter
      * @param array $args
@@ -325,9 +327,9 @@ class PKPFilterGridHandler extends GridHandler {
     //
     // Protected helper functions
     //
+    
     /**
-     * This will retrieve a filter object from the
-     * grids data source based on the request arguments.
+     * This will retrieve a filter object from the grids data source based on the request arguments.
      * If no filter can be found then this will raise a fatal error.
      * @param PKPRequest $request
      * @param array $args
