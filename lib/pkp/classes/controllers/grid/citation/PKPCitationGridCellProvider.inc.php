@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup controllers_grid_citation
  *
  * @brief Grid cell provider for the citation editor grid.
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards.
  */
 
 import('lib.pkp.classes.controllers.grid.DataObjectGridCellProvider');
@@ -44,6 +43,7 @@ class PKPCitationGridCellProvider extends DataObjectGridCellProvider {
     //
     
     /**
+     * Get the template variables for a given row and column.
      * @see GridCellProvider::getTemplateVarsFromRowColumn()
      * @param GridRow $row
      * @param GridColumn $column
@@ -65,8 +65,8 @@ class PKPCitationGridCellProvider extends DataObjectGridCellProvider {
 
 
     /**
+     * Get the cell actions associated with this row/column combination.
      * @see GridCellProvider::getCellActions()
-     *
      * @param Request $request
      * @param GridRow $row
      * @param GridColumn $column
@@ -79,5 +79,4 @@ class PKPCitationGridCellProvider extends DataObjectGridCellProvider {
         return $row->getCellActions($request, $column, $position);
     }
 }
-
 ?>
