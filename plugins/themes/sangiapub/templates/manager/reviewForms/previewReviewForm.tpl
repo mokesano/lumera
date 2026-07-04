@@ -9,9 +9,9 @@
  *
  *}
 {strip}
-{assign var="pageId" value="manager.reviewFormElements.previewReviewForm"}
-{assign var="pageCrumbTitle" value=$pageTitle}
-{include file="common/header-EDITOR017.tpl"}
+	{assign var="pageId" value="manager.reviewFormElements.previewReviewForm"}
+	{assign var="pageCrumbTitle" value=$pageTitle}
+	{include file="common/header-EDITOR017.tpl"}
 {/strip}
 
 {assign var=reviewFormId value=$reviewForm->getId()}
@@ -71,7 +71,7 @@
 <br/>
 
 <form id="previewReviewForm" method="post" action="{if !$canEdit}{url op="reviewForms"}{else}{url op="editReviewForm" path=$reviewFormId}{/if}">
-    <input type="hidden" name="csrfToken" value="{$csrfToken|escape}"/>
+    <input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 	<p>
 	    <input type="submit" value="{translate key="common.close"}" class="button defaultButton" />
 	</p>
