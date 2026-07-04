@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup manager_form_setup
  *
  * @brief Form for Step 3 of journal setup.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.manager.form.setup.JournalSetupForm');
