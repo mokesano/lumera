@@ -118,7 +118,6 @@
 
 	<br/>
 
-
 	<table id="email" class="data" width="100%">
 	<tr valign="top">
 		<td class="label">{translate key="email.from"}</td>
