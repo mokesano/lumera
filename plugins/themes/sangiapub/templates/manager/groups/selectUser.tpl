@@ -6,7 +6,7 @@
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * List a set of users and allow one to be selected.
- *
+ * 
  *}
 {strip}
 {assign var=pageTitle value="manager.groups.membership.addMember"}
@@ -14,6 +14,7 @@
 {/strip}
 
 <form name="submit" method="post" action="{url op="addMembership" path=$group->getId()}">
+    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
 	<select name="searchField" size="1" class="selectMenu">
 		{html_options_translate options=$fieldOptions selected=$searchField}
 	</select>
