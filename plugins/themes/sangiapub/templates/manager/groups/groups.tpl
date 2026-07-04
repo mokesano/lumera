@@ -19,7 +19,9 @@
 $(document).ready(function() { setupTableDND("#dragTable", "moveGroup"); });
 {/literal}
 </script>
+
 <form action="{url op="setBoardEnabled"}" method="post">
+	<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
 	{url|assign:"aboutEditorialTeamUrl" page="about" op="editorialTeam"}
 	{url|assign:"peopleManagementUrl" page="manager" op="people" path="all"}
 	<div class="instruct">
@@ -35,6 +37,7 @@ $(document).ready(function() { setupTableDND("#dragTable", "moveGroup"); });
 	    <input type="submit" value="{translate key="common.record"}" class="button defaultButton"/>
 	</div>
 </form>
+
 <br/>
 <div id="groups">
 
