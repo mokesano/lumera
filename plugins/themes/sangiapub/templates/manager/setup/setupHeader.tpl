@@ -9,9 +9,9 @@
  *
  *}
 {strip}
-{assign var="pageCrumbTitle" value="manager.setup.journalSetup"}
-{url|assign:"currentUrl" op="setup"}
-{include file="common/header-ROLE.tpl"}
+	{assign var="pageCrumbTitle" value="manager.setup.journalSetup"}
+	{url|assign:"currentUrl" op="setup"}
+	{include file="common/header-ROLE.tpl"}
 {/strip}
 
 <ul class="steplist menu">
@@ -22,4 +22,4 @@
 	<li id="step5" {if $setupStep == 5} class="current"{/if}><a href="{url op="setup" path="5"}">5. {translate key="manager.setup.look"}</a></li>
 </ul>
 
-<div id="setup">
+<div id="setup" class="journal-setup">
