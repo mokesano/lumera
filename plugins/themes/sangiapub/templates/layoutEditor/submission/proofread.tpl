@@ -22,9 +22,11 @@
 	</tr>
 </table>
 {/if}
+
 <p>
-<a href="{url op="viewMetadata" path=$proofSignoff->getAssocId()}" class="action" target="_new">{translate key="submission.reviewMetadata"}</a>
+	<a href="{url op="viewMetadata" path=$proofSignoff->getAssocId()}" class="action" target="_new">{translate key="submission.reviewMetadata"}</a>
 </p>
+
 <table width="100%" class="listing">
 	<tr class="heading">
 		<td width="40%" colspan="2">&nbsp;</td>
@@ -40,7 +42,7 @@
 			{$authorProofreadSignoff->getDateNotified()|date_format:$dateFormatShort|default:"&mdash;"}
 		</td>
 		<td>
-				{$authorProofreadSignoff->getDateUnderway()|date_format:$dateFormatShort|default:"&mdash;"}
+			{$authorProofreadSignoff->getDateUnderway()|date_format:$dateFormatShort|default:"&mdash;"}
 		</td>
 		<td>
 			{$authorProofreadSignoff->getDateCompleted()|date_format:$dateFormatShort|default:"&mdash;"}
@@ -55,7 +57,7 @@
 		</td>
 		<td>
 			{if $useProofreaders}
-					{$proofreaderProofreadSignoff->getDateUnderway()|date_format:$dateFormatShort|default:"&mdash;"}
+				{$proofreaderProofreadSignoff->getDateUnderway()|date_format:$dateFormatShort|default:"&mdash;"}
 			{else}
 				{translate key="common.notApplicableShort"}
 			{/if}
@@ -90,17 +92,17 @@
 	</tr>
 </table>
 <p>
-{translate key="submission.proofread.corrections"}
-{if $submission->getMostRecentProofreadComment()}
-	{assign var="comment" value=$submission->getMostRecentProofreadComment()}
-	<a href="javascript:openComments('{url op="viewProofreadComments" path=$submission->getId() anchor=$comment->getId()}');" class="icon">{icon name="comment"}</a>{$comment->getDatePosted()|date_format:$dateFormatShort}
-{else}
-	<a href="javascript:openComments('{url op="viewProofreadComments" path=$submission->getId()}');" class="icon">{icon name="comment"}</a>{translate key="common.noComments"}
-{/if}
+	{translate key="submission.proofread.corrections"}
+	{if $submission->getMostRecentProofreadComment()}
+		{assign var="comment" value=$submission->getMostRecentProofreadComment()}
+		<a href="javascript:openComments('{url op="viewProofreadComments" path=$submission->getId() anchor=$comment->getId()}');" class="icon">{icon name="comment"}</a>{$comment->getDatePosted()|date_format:$dateFormatShort}
+	{else}
+		<a href="javascript:openComments('{url op="viewProofreadComments" path=$submission->getId()}');" class="icon">{icon name="comment"}</a>{translate key="common.noComments"}
+	{/if}
 
-{if $currentJournal->getLocalizedSetting('proofInstructions')}
-&nbsp;&nbsp;
-<a href="javascript:openHelp('{url op="instructions" path="proof"}')" class="action">{translate key="submission.proofread.instructions"}</a>
-{/if}
+	{if $currentJournal->getLocalizedSetting('proofInstructions')}
+	&nbsp;&nbsp;
+	<a href="javascript:openHelp('{url op="instructions" path="proof"}')" class="action">{translate key="submission.proofread.instructions"}</a>
+	{/if}
 </p>
 </div>
