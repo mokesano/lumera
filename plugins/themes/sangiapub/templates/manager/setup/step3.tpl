@@ -360,6 +360,7 @@
 				<h4>{translate key="manager.setup.citationFilterLookup"}</h4>
 				<p>{translate key="manager.setup.citationFilterLookupDescription"}</p>
 				{load_url_in_div id="lookupFilterGridContainer" loadMessageId="manager.setup.filter.lookup.grid.loadMessage" url="$lookupFilterGridUrl"}
+				
 				<h4>{translate key="manager.setup.citationOutput"}</h4>
 				<p>{translate key="manager.setup.citationOutputStyleDescription"}</p>
 				{fbvElement type="select" id="metaCitationOutputFilterSelect" name="metaCitationOutputFilterId"
