@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup controllers_grid_filter
  *
  * @brief Defines the filters that will be configured in this grid.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('classes.controllers.grid.filter.FilterGridHandler');
@@ -40,6 +39,7 @@ class LookupFilterGridHandler extends FilterGridHandler {
     }
 
     /**
+     * Initialize the grid handler.
      * @see PKPHandler::initialize()
      * @param PKPRequest $request
      * @param array|null $args
@@ -60,5 +60,4 @@ class LookupFilterGridHandler extends FilterGridHandler {
         parent::initialize($request, $args);
     }
 }
-
 ?>
