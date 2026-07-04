@@ -11,20 +11,20 @@
 <div id="scheduling" class="block">
 <h3>{translate key="submission.scheduling"}</h3>
 <p>
-{if $issue}
-	{assign var=issueName value=$issue->getIssueIdentification()}
-{else}
-	{translate|assign:"issueName" key="submission.scheduledIn.tba"}
-{/if}
-
-{translate key="submission.scheduledIn" issueName=$issueName}
-
-{if $issue}
-	{if $issue->getPublished()}
-		<a href="{url page="issue" op="view" path=$issue->getBestIssueId()}" class="action">{translate key="issue.toc"}</a>
+	{if $issue}
+		{assign var=issueName value=$issue->getIssueIdentification()}
 	{else}
-		<a href="{url op="issueToc" path=$issue->getId()}" class="action">{translate key="issue.toc"}</a>
+		{translate|assign:"issueName" key="submission.scheduledIn.tba"}
 	{/if}
-{/if}
+
+	{translate key="submission.scheduledIn" issueName=$issueName}
+
+	{if $issue}
+		{if $issue->getPublished()}
+			<a href="{url page="issue" op="view" path=$issue->getBestIssueId()}" class="action">{translate key="issue.toc"}</a>
+		{else}
+			<a href="{url op="issueToc" path=$issue->getId()}" class="action">{translate key="issue.toc"}</a>
+		{/if}
+	{/if}
 </p>
 </div>
