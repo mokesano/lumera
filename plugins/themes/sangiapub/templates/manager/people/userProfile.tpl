@@ -9,8 +9,8 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="manager.people"}
-{include file="common/header-USER027.tpl"}
+	{assign var="pageTitle" value="manager.people"}
+	{include file="common/header-USER027.tpl"}
 {/strip}
 
 <h3 id="userFullName">{$user->getFullName()|escape}</h3>
