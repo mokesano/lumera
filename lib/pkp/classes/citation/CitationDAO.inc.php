@@ -12,9 +12,7 @@ declare(strict_types=1);
  * @ingroup citation
  * @see Citation
  *
- * @brief Operations for retrieving and modifying Citation objects
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * @brief Operations for retrieving and modifying Citation objects.
  */
 
 // FIXME: We currently have direct dependencies on specific filter groups.
@@ -26,6 +24,7 @@ define('CITATION_LOOKUP_FILTER_GROUP', 'nlm30-element-citation=>nlm30-element-ci
 import('lib.pkp.classes.citation.Citation');
 
 class CitationDAO extends DAO {
+
     /**
      * Constructor
      */
@@ -706,5 +705,4 @@ class CitationDAO extends DAO {
         return $filteredCitation;
     }
 }
-
 ?>
