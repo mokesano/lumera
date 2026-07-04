@@ -14,7 +14,6 @@ declare(strict_types=1);
  * @ingroup core
  *
  * @brief Basic router class that has functionality common to all routers.
- * [WIZDAM EDITION] PHP 8 Compatible, Strict Visibility, Type Safety
  */
 
 class PKPRouter {
@@ -45,15 +44,14 @@ class PKPRouter {
     protected $_contexts = array();
 
     /**
-     * Constructor
-     * [MODERNISASI] Added explicit constructor
+     * Constructor.
      */
     public function __construct() {
         // Init default values if needed
     }
 
     /**
-     * get the application
+     * Get the application
      * @return PKPApplication
      */
     public function getApplication() {
@@ -63,7 +61,7 @@ class PKPRouter {
     }
 
     /**
-     * set the application
+     * Set the application
      * @param $application PKPApplication
      */
     public function setApplication($application) {
@@ -76,7 +74,7 @@ class PKPRouter {
     }
 
     /**
-     * get the dispatcher
+     * Get the dispatcher
      * @return Dispatcher
      */
     public function getDispatcher() {
@@ -85,7 +83,7 @@ class PKPRouter {
     }
 
     /**
-     * set the dispatcher
+     * Set the dispatcher
      * @param $dispatcher PKPDispatcher
      */
     public function setDispatcher($dispatcher) {
@@ -281,14 +279,14 @@ class PKPRouter {
 
     /**
      * Build a handler request URL into PKPApplication.
-     * @param $request PKPRequest the request to be routed
-     * @param $newContext mixed Optional contextual paths
-     * @param $handler string Optional name of the handler to invoke
-     * @param $op string Optional name of operation to invoke
-     * @param $path mixed Optional string or array of args to pass to handler
-     * @param $params array Optional set of name => value pairs to pass as user parameters
-     * @param $anchor string Optional name of anchor to add to URL
-     * @param $escape boolean Whether or not to escape ampersands, square brackets, etc. for this URL; default false.
+     * @param $request PKPRequest
+     * @param $newContext mixed 
+     * @param $handler string 
+     * @param $op string 
+     * @param $path mixed 
+     * @param $params array 
+     * @param $anchor string 
+     * @param $escape boolean 
      * @return string the URL
      */
     public function url($request, $newContext = null, $handler = null, $op = null, $path = null,
@@ -300,8 +298,8 @@ class PKPRouter {
     /**
      * Handle an authorization failure.
      * @param $request Request
-     * @param $authorizationMessage string a translation key with the authorization
-     * failure message.
+     * @param $authorizationMessage string
+     * @return mixed
      */
     public function handleAuthorizationFailure($request, $authorizationMessage) {
         // Must be implemented by sub-classes.
@@ -324,8 +322,7 @@ class PKPRouter {
      * @param $serviceEndpoint callable the handler operation
      * @param $request PKPRequest
      * @param $args array
-     * @param $validate boolean whether or not to execute the
-     * validation step.
+     * @param $validate boolean
      */
     public function _authorizeInitializeAndCallRequest($serviceEndpoint, $request, $args, $validate = true) {
         assert(is_callable($serviceEndpoint));
@@ -388,8 +385,9 @@ class PKPRouter {
 
     /**
      * Build the base URL and add the context part of the URL.
-     * @return array An array consisting of the base url as the first
-     * entry and the context as the remaining entries.
+     * @param $request PKPRequest the request to be routed
+     * @param $newContext array the new context to be added to the URL
+     * @return array
      */
     public function _urlGetBaseAndContext($request, $newContext = array()) {
         $pathInfoEnabled = $request->isPathInfoEnabled();
@@ -454,6 +452,9 @@ class PKPRouter {
 
     /**
      * Build the additional parameters part of the URL.
+     * @param $params array
+     * @param $escape boolean Whether or not to escape ampersands, square brackets, etc. for this URL; default false.
+     * @return array
      */
     public function _urlGetAdditionalParameters($request, $params = null, $escape = true) {
         $additionalParameters = array();
@@ -475,6 +476,12 @@ class PKPRouter {
 
     /**
      * Creates a valid URL from parts.
+     * @param $baseUrl string
+     * @param $pathInfoArray array
+     * @param $queryParametersArray array
+     * @param $anchor string
+     * @param $escape boolean Whether or not to escape ampersands, square brackets, etc. for this URL; default false.
+     * @return string
      */
     public function _urlFromParts($baseUrl, $pathInfoArray = array(), $queryParametersArray = array(), $anchor = '', $escape = false) {
         // Parse the base url
@@ -541,5 +548,4 @@ class PKPRouter {
         return $this->_flippedContextList[$contextName] + 1;
     }
 }
-
 ?>
