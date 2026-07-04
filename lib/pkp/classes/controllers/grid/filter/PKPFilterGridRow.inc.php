@@ -47,7 +47,7 @@ class PKPFilterGridRow extends GridRow {
      * @param PKPRequest $request
      * @param string $template
      */
-    public function initialize($request, $template = null) {
+    public function initialize($request, $template = 'controllers/grid/gridRow.tpl') {
         // Do the default initialization
         parent::initialize($request, $template);
 
