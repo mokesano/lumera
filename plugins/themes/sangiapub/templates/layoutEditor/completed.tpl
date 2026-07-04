@@ -35,6 +35,7 @@ function sortSearch(heading, direction) {
 	<select name="searchField" size="1" class="selectMenu">
 		{html_options_translate options=$fieldOptions selected=$searchField}
 	</select>
+	<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
 	<input type="hidden" name="sort" value="id"/>
 	<input type="hidden" name="sortDirection" value="ASC"/>
 	<select name="searchMatch" size="1" class="selectMenu">
