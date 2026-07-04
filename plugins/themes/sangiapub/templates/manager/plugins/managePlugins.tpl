@@ -8,10 +8,9 @@
  * List available import/export plugins.
  *}
 {strip}
-{assign var="pageTitle" value="manager.plugins.$path"}
-{include file="common/header-USER027.tpl"}
+	{assign var="pageTitle" value="manager.plugins.$path"}
+	{include file="common/header-USER027.tpl"}
 {/strip}
-
 
 {if $path == 'install'}
 	<div id="install">
@@ -20,6 +19,7 @@
 		{/if}
 
 		<form method="post" action="{url op="managePlugins" path="installPlugin"}" enctype="multipart/form-data">
+			<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
 			{if $error}
 				<span class="formError">{translate key="form.errorsOccurred"}:</span>
 				<ul class="formErrorList">
@@ -66,6 +66,7 @@
 		{/if}
 
 		<form method="post" action="{url path="upgradePlugin"|to_array:$category:$plugin}" enctype="multipart/form-data">
+			<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
 			{if $error}
 				<span class="formError">{translate key="form.errorsOccurred"}:</span>
 				<ul class="formErrorList">
@@ -118,6 +119,7 @@
 
 			<br />
 			<form method="post" action="{url path="deletePlugin"|to_array:$category:$plugin}" enctype="multipart/form-data">
+				<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
 				{if $error}
 					<span class="formError">{translate key="form.errorsOccurred"}:</span>
 					<ul class="formErrorList">
