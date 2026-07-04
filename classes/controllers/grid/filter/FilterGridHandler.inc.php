@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup classes_controllers_grid_filter
  *
  * @brief Handle OJS specific parts of filter grid requests.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('lib.pkp.classes.controllers.grid.filter.PKPFilterGridHandler');
@@ -53,6 +52,7 @@ class FilterGridHandler extends PKPFilterGridHandler {
     //
     
     /**
+     * Authorize the request.
      * @see PKPHandler::authorize()
      * @param PKPRequest $request
      * @param array $args
@@ -68,5 +68,4 @@ class FilterGridHandler extends PKPFilterGridHandler {
         return parent::authorize($request, $args, $roleAssignments);
     }
 }
-
 ?>
