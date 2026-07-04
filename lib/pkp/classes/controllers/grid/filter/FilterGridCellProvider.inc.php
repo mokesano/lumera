@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class FilterGridCellProvider
  * @ingroup classes_controllers_grid_filter
  *
- * @brief Base class for a cell provider that can retrieve labels from DataObjects
- * [WIZDAM EDITION] Refactored for PHP 8.x
+ * @brief Base class for a cell provider that can retrieve labels from DataObjects.
  */
 
 import('lib.pkp.classes.controllers.grid.GridCellProvider');
@@ -43,9 +42,8 @@ class FilterGridCellProvider extends GridCellProvider {
     // Template methods from GridCellProvider
     //
     /**
-     * This implementation assumes an element that is a
-     * Filter. It will display the filter name and information
-     * about filter parameters (if any).
+     * This implementation assumes an element that is a Filter. 
+     * It will display the filter name and information about filter parameters (if any).
      * @see GridCellProvider::getTemplateVarsFromRowColumn()
      * @param GridRow $row
      * @param GridColumn $column
@@ -87,5 +85,4 @@ class FilterGridCellProvider extends GridCellProvider {
         return ['label' => $label];
     }
 }
-
 ?>
