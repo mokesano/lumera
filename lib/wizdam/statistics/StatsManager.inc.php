@@ -6,13 +6,13 @@ declare(strict_types=1);
  * 
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Wizdam Team
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @class StatsManager
  * @ingroup Statistics
  * 
- * @brief Service Layer untuk Kalkulasi dan Payload Statistik [WIZDAM EDITION]
- * @version 2.0 (Strict MVC & Micro-Payloads Compliant)
+ * @brief Service class for managing and retrieving statistical data for
+ * journals and the site With Strict MVC & Micro-Payloads Compliant.
  */
 
 import('lib.wizdam.statistics.JournalStatsDAO');
@@ -20,8 +20,7 @@ import('lib.wizdam.statistics.JournalStatsDAO');
 class StatsManager {
 
     /**
-     * [WIZDAM] - Entry Point Utama untuk Controller / IndexHandler
-     * Menggantikan eksekusi tag {php} di Smarty secara total.
+     * Assigns statistical data to the template for rendering.
      * @param TemplateManager $templateMgr
      * @param Journal|null $journal
      */
@@ -173,8 +172,11 @@ class StatsManager {
         ]);
     }
 
+    //
+    // Helper Internal
+    //
     /**
-     * [WIZDAM] - Helper Matematika Internal
+     * Calculates the median value of an array.
      * @param array $arr
      * @return float
      */
@@ -187,8 +189,7 @@ class StatsManager {
     }
 
     /**
-     * [WIZDAM] - Helper Manajemen Cache Tersentralisasi
-     * Masa berlaku cache ditetapkan 1 Hari (86400 detik) untuk menghemat load DB
+     * Retrieves data from the cache.
      * @param string $cacheKey
      * @return array|false
      */
@@ -209,7 +210,7 @@ class StatsManager {
     }
 
     /**
-     * [WIZDAM] - Helper Manajemen Cache Tersentralisasi
+     * Saves data to the cache.
      * @param string $cacheKey
      * @param array $data
      */

@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class Handler
  * @ingroup handler
  *
- * @brief Base request handler application class
- * WIZDAM EDITION: PHP 8 Compatibility (Clean Inheritance) & Modular Security
+ * @brief Base request handler application class with Strict Types, Security Hardening, and Modular Captcha Support.
  */
 
 import('lib.pkp.classes.handler.PKPHandler');
@@ -23,14 +22,15 @@ class Handler extends PKPHandler {
     
     /**
      * Constructor
-     * @param $request PKPRequest
      */
     public function __construct($request = null) {
         parent::__construct($request);
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [DEPRECATED] SHIM Backward compatibility.
+     * Use __construct() instead.
+     * @deprecated
      */
     public function Handler($request = null) {
         trigger_error(
@@ -41,8 +41,9 @@ class Handler extends PKPHandler {
     }
 
     /**
-     * [WIZDAM SECURITY] Helper: Assign security flags and keys to template
+     * Assign security variables to the template.
      * @param TemplateManager $templateMgr
+     * @param string $context
      */
     protected function _assignSecurityVariables($templateMgr, string $context = '') {
         $turnstileEnabled = (bool) Config::getVar('turnstile', 'turnstile');
@@ -100,9 +101,11 @@ class Handler extends PKPHandler {
     }
 
     /**
-     * [WIZDAM SECURITY] Helper: Validasi Token Paralel & Fallback Legacy
+     * Validates security tokens for the given request and context.
+     * Helper: Validasi Token Paralel & Fallback Legacy
      * @param PKPRequest $request
-     * @return bool True jika valid, False jika gagal.
+     * @param string $context
+     * @return bool
      */
     protected function _validateSecurityTokens($request, string $context = ''): bool {
         $turnstileEnabled = (bool) Config::getVar('turnstile', 'turnstile');
@@ -224,7 +227,5 @@ class Handler extends PKPHandler {
             $templateMgr->assign('reCaptchaPublicKey', Config::getVar('recaptcha', 'recaptcha_public_key'));
         }
     }
-
 }
-
 ?>

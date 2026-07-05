@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class UserHandler
  * @ingroup pages_user
  *
- * @brief Handle requests for user functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * @brief Handle requests for user functions with Strict Compliance.
  */
 
 import('classes.handler.Handler');
@@ -28,7 +26,9 @@ class UserHandler extends Handler {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [DEPRECATED] SHIM Backward compatibility.
+     * Use __construct() instead.
+     * @deprecated
      */
     public function UserHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -114,11 +114,10 @@ class UserHandler extends Handler {
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $setLocale = array_shift($args);
-
         $site = $request->getSite();
         $journal = $request->getJournal();
+
         $journalSupportedLocales = [];
-        
         if ($journal != null) {
             $journalSupportedLocales = $journal->getSetting('supportedLocales');
             if (!is_array($journalSupportedLocales)) {
@@ -126,13 +125,20 @@ class UserHandler extends Handler {
             }
         }
 
-        if (AppLocale::isLocaleValid($setLocale) && (!isset($journalSupportedLocales) || in_array($setLocale, $journalSupportedLocales)) && in_array($setLocale, $site->getSupportedLocales())) {
-            $session = $request->getSession();
-            $session->setSessionVar('currentLocale', $setLocale);
+        $isLocaleAllowed = is_string($setLocale)
+            && preg_match('/^[a-z]{2}(_[A-Z]{2})?$/', $setLocale)
+            && AppLocale::isLocaleValid($setLocale)
+            && in_array($setLocale, $site->getSupportedLocales(), true)
+            && (empty($journalSupportedLocales) || in_array($setLocale, $journalSupportedLocales, true));
+
+        if (!$isLocaleAllowed) {
+            $this->getDispatcher()->handle404($request);
+            return;
         }
 
+        $request->getSession()->setSessionVar('currentLocale', $setLocale);
+
         $source = trim((string) $request->getUserVar('source'));
-        
         if (isset($source) && !empty($source)) {
             // [SECURITY] Prevent Open Redirect
             if (preg_match('#^($|/|index\.php)#', $source)) {
@@ -219,6 +225,7 @@ class UserHandler extends Handler {
         $authorizationMessage = htmlentities((string) $request->getUserVar('message'));
         $this->setupTemplate($request, true);
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_USER);
+
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('message', $authorizationMessage);
         return $templateMgr->display('common/message.tpl');
@@ -228,7 +235,7 @@ class UserHandler extends Handler {
      * Validate that user is logged in.
      * Redirects to login form if not logged in.
      * [WIZDAM] Polyfill for legacy signature mismatch ($loginCheck vs $requiredContexts)
-     * @param mixed $requiredContexts (Legacy boolean loginCheck or context array)
+     * @param mixed $requiredContexts
      * @param object|null $request PKPRequest
      */
     public function validate($requiredContexts = null, $request = null) {

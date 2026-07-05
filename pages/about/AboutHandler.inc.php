@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_editor
  *
  * @brief Handle requests for editor functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.handler.Handler');
@@ -28,7 +26,9 @@ class AboutHandler extends Handler {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [DEPRECATED] Backward compatibility.
+     * Use __construct() instead.
+     * @deprecated
      */
     public function AboutHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -61,7 +61,6 @@ class AboutHandler extends Handler {
             $journal = $request->getJournal();
 
             $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('journalSettings', $journalSettingsDao->getJournalSettings($journal->getId()));
 
             $customAboutItems = $journalSettingsDao->getSetting($journal->getId(), 'customAboutItems');
@@ -86,7 +85,6 @@ class AboutHandler extends Handler {
             if ($journal->getSetting('boardEnabled')) {
                 $groupDao = DAORegistry::getDAO('GroupDAO');
                 $groups = $groupDao->getGroups(ASSOC_TYPE_JOURNAL, $journal->getId(), GROUP_CONTEXT_PEOPLE);
-                // [WIZDAM] Removed assign_by_ref
                 $templateMgr->assign('peopleGroups', $groups);
             }
 
@@ -95,19 +93,18 @@ class AboutHandler extends Handler {
         } else {
             $site = $request->getSite();
             $about = $site->getLocalizedAbout();
-            $templateMgr->assign('about', $about);
 
+            $templateMgr->assign('about', $about);
             $journals = $journalDao->getJournals(true);
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('journals', $journals);
+
             $templateMgr->display('about/site.tpl');
         }
     }
 
-
     /**
      * Setup common template variables.
-     * @param bool $subclass set to true if caller is below this handler in the hierarchy
+     * @param bool $subclass
      */
     public function setupTemplate($subclass = false) {
         parent::setupTemplate();
@@ -215,8 +212,8 @@ class AboutHandler extends Handler {
             $templateMgr->assign('countries', $countries);
 
             if ($journal->getSetting('boardEnabled') != true) {
-                // Don't use the Editorial Team feature. Generate
-                // Editorial Team information using Role info.
+                // Don't use the Editorial Team feature. 
+                // Generate Editorial Team information using Role info.
                 $roleDao = DAORegistry::getDAO('RoleDAO');
 
                 $editorsIterator = $roleDao->getUsersByRoleId(ROLE_ID_EDITOR, $journalId);
@@ -365,7 +362,6 @@ class AboutHandler extends Handler {
         $journal = $request->getJournal();
         $templateMgr = TemplateManager::getManager();
         $groupId = (int) array_shift($args);
-
         $groupDao = DAORegistry::getDAO('GroupDAO');
         $group = $groupDao->getById($groupId);
 
@@ -388,11 +384,11 @@ class AboutHandler extends Handler {
 
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
-        // [WIZDAM] Removed assign_by_ref
-        $templateMgr->assign('countries', $countries);
 
+        $templateMgr->assign('countries', $countries);
         $templateMgr->assign('group', $group);
         $templateMgr->assign('memberships', $memberships);
+
         $templateMgr->display('about/displayMembership.tpl');
     }
 
@@ -467,11 +463,11 @@ class AboutHandler extends Handler {
         
         // [WIZDAM] CORE INJECTION: Resolve User Membership Title
         $userMembership = $this->_getUserMembershipContext($journal, $user);
-        $templateMgr->assign('userMembership', $userMembership);
 
-        // [WIZDAM] Removed assign_by_ref
+        $templateMgr->assign('userMembership', $userMembership);
         $templateMgr->assign('user', $user);
         $templateMgr->assign('publishEmail', $publishEmail);
+
         $templateMgr->display('about/editorialTeamBio.tpl');
     }
 
@@ -504,7 +500,6 @@ class AboutHandler extends Handler {
         $templateMgr = TemplateManager::getManager();
         $sections = $sectionDao->getJournalSections($journal->getId());
         $sections = $sections->toArray();
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('sections', $sections); 
 
         // --- MODIFIKASI UTAMA: Mengirim data yang persis diharapkan TPL ---
@@ -535,15 +530,15 @@ class AboutHandler extends Handler {
                 $countryCode = $user->getCountry();
                 $countryName = '';
                 if (!empty($countryCode)) {
-                        $countryName = $countryDao->getCountry($countryCode, $primaryLocale);
-                        if (empty($countryName)) $countryName = $countryDao->getCountry($countryCode, 'en_US');
+                    $countryName = $countryDao->getCountry($countryCode, $primaryLocale);
+                    if (empty($countryName)) $countryName = $countryDao->getCountry($countryCode, 'en_US');
                 }
 
                 // Masukkan data dengan NAMA KUNCI (KEY) YANG DIHARAPKAN OLEH .TPL
                 $richEditorData[] = [
-                        'user' => $sectionEditorObject, // Ini adalah $sectionEditorEntry.user
-                        'affiliationString' => $affiliationData, // Ini akan menjadi $editorAffiliation
-                        'countryString' => $countryName       // Ini akan menjadi $editorCountry
+                    'user' => $sectionEditorObject, // Ini adalah $sectionEditorEntry.user
+                    'affiliationString' => $affiliationData, // Ini akan menjadi $editorAffiliation
+                    'countryString' => $countryName       // Ini akan menjadi $editorCountry
                 ];
             }
             $sectionEditorEntriesBySection[$section->getId()] = $richEditorData;
@@ -628,7 +623,6 @@ class AboutHandler extends Handler {
 
         import('classes.payment.ojs.OJSPaymentManager');
         $paymentManager = new OJSPaymentManager($request);
-
         $membershipEnabled = $paymentManager->membershipEnabled();
 
         $templateMgr = TemplateManager::getManager();
@@ -668,9 +662,9 @@ class AboutHandler extends Handler {
             reset($submissionChecklist);
         }
         $templateMgr->assign('submissionChecklist', $submissionChecklist);
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('journalSettings', $journalSettings);
         $templateMgr->assign('helpTopicId','submission.authorGuidelines');
+
         $templateMgr->display('about/submissions.tpl');
     }
 
@@ -685,7 +679,6 @@ class AboutHandler extends Handler {
         $journal = Application::get()->getRequest()->getJournal();
 
         $templateMgr = TemplateManager::getManager();
-        // [WIZDAM] Removed assign_by_ref calls
         $templateMgr->assign('publisherInstitution', $journal->getSetting('publisherInstitution'));
         $templateMgr->assign('publisherUrl', $journal->getSetting('publisherUrl'));
         $templateMgr->assign('publisherNote', $journal->getLocalizedSetting('publisherNote'));
@@ -693,6 +686,7 @@ class AboutHandler extends Handler {
         $templateMgr->assign('contributors', $journal->getSetting('contributors'));
         $templateMgr->assign('sponsorNote', $journal->getLocalizedSetting('sponsorNote'));
         $templateMgr->assign('sponsors', $journal->getSetting('sponsors'));
+
         $templateMgr->display('about/journalSponsorship.tpl');
     }
 
@@ -704,9 +698,7 @@ class AboutHandler extends Handler {
         $this->setupTemplate(true);
 
         $templateMgr = TemplateManager::getManager();
-
         $journalDao = DAORegistry::getDAO('JournalDAO');
-
         $user = Application::get()->getRequest()->getUser();
         $roleDao = DAORegistry::getDAO('RoleDAO');
 
@@ -746,6 +738,7 @@ class AboutHandler extends Handler {
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('history', $journal->getLocalizedSetting('history'));
+
         $templateMgr->display('about/history.tpl');
     }
 
@@ -794,9 +787,7 @@ class AboutHandler extends Handler {
     
         $journal = $request->getJournal();
         $templateMgr = TemplateManager::getManager();
-        
         // Kirim variabel 'currentJournal' agar bisa digunakan di template
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('currentJournal', $journal);
         
         // Panggil template baru
@@ -818,7 +809,6 @@ class AboutHandler extends Handler {
 
         // 1. LOGIKA REDIRECT
         $statisticsYear = $request->getUserVar('statisticsYear');
-        
         if ($statisticsYear) {
             $targetUrl = $request->url(null, null, 'statistics');
             header("Location: $targetUrl", true, 301);
@@ -837,7 +827,6 @@ class AboutHandler extends Handler {
         try {
             // Panggil mesin statistik utama
             $journalStats = PKPWizdamStats::getStats($journal->getId(), $forceRefresh);
-            
             if (is_array($journalStats) && !isset($journalStats['error'])) {
                 // Kirim SEMUA data statistik ke template
                 foreach ($journalStats as $key => $value) {
@@ -991,6 +980,11 @@ class AboutHandler extends Handler {
         $templateMgr->display('about/publisherPage.tpl');
     }
     
+
+    //
+    // Helpers
+    //
+
     /**
      * [WIZDAM] LOGIKA UTAMA: Menentukan keanggotaan pengguna.
      * Disesuaikan untuk mendeteksi variabel 'boardEnabled'.
