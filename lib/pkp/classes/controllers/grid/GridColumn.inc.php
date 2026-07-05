@@ -25,6 +25,7 @@ define('COLUMN_ALIGNMENT_RIGHT', 'right');
 import('lib.pkp.classes.controllers.grid.GridBodyElement');
 
 class GridColumn extends GridBodyElement {
+
     /** @var string|null the column title i18n key */
     protected ?string $title;
 
@@ -36,12 +37,6 @@ class GridColumn extends GridBodyElement {
 
     /**
      * Constructor
-     * @param string $id
-     * @param string|null $title
-     * @param string|null $titleTranslated
-     * @param string $template
-     * @param GridCellProvider|null $cellProvider
-     * @param array $flags
      */
     public function __construct($id = '', $title = null, $titleTranslated = null,
             $template = 'controllers/grid/gridCell.tpl', $cellProvider = null, $flags = []) {
@@ -54,7 +49,9 @@ class GridColumn extends GridBodyElement {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [DEPRECATED] Backward compatibility.
+     * Use __construct() instead.
+     * @deprecated
      */
     public function GridColumn($id = '', $title = null, $titleTranslated = null,
             $template = 'controllers/grid/gridCell.tpl', $cellProvider = null, $flags = []) {
@@ -148,5 +145,4 @@ class GridColumn extends GridBodyElement {
         return [];
     }
 }
-
 ?>

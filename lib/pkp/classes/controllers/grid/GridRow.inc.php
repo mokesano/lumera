@@ -57,7 +57,9 @@ class GridRow extends GridBodyElement {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [DEPRECATED] Backward compatibility.
+     * Use __construct() instead.
+     * @deprecated
      */
     public function GridRow() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -75,7 +77,7 @@ class GridRow extends GridBodyElement {
     //
     
     /**
-     * Set the grid id
+     * Set the grid id.
      * @param string|null $gridId
      */
     public function setGridId($gridId) {
@@ -83,7 +85,7 @@ class GridRow extends GridBodyElement {
     }
 
     /**
-     * Get the grid id
+     * Get the grid id.
      * @return string|null
      */
     public function getGridId() {
@@ -109,7 +111,7 @@ class GridRow extends GridBodyElement {
     }
 
     /**
-     * Set the data element(s) for this controller
+     * Set the data element(s) for this controller.
      * @param mixed $data
      */
     public function setData($data) {
@@ -117,7 +119,7 @@ class GridRow extends GridBodyElement {
     }
 
     /**
-     * Get the data element(s) for this controller
+     * Get the data element(s) for this controller.
      * @return mixed
      */
     public function getData() {
@@ -125,7 +127,7 @@ class GridRow extends GridBodyElement {
     }
 
     /**
-     * Set the modified flag for the row
+     * Set the modified flag for the row.
      * @param bool $isModified
      */
     public function setIsModified($isModified) {
@@ -133,7 +135,7 @@ class GridRow extends GridBodyElement {
     }
 
     /**
-     * Get the modified flag for the row
+     * Get the modified flag for the row.
      * @return bool
      */
     public function getIsModified(): bool {
@@ -154,9 +156,9 @@ class GridRow extends GridBodyElement {
     }
 
     /**
-     * Get all actions for a given position within the controller
-     * @param string $position the position of the actions
-     * @return array the LinkActions for the given position
+     * Get all actions for a given position within the controller.
+     * @param string $position
+     * @return array
      */
     public function getActions($position = GRID_ACTION_POSITION_DEFAULT): array {
         if(!isset($this->actions[$position])) return [];
@@ -164,9 +166,9 @@ class GridRow extends GridBodyElement {
     }
 
     /**
-     * Add an action
-     * @param LinkAction $action a single action
-     * @param string $position the position of the action
+     * Add an action.
+     * @param LinkAction $action
+     * @param string $position
      */
     public function addAction($action, $position = GRID_ACTION_POSITION_DEFAULT) {
         if (!isset($this->actions[$position])) $this->actions[$position] = [];
@@ -174,7 +176,7 @@ class GridRow extends GridBodyElement {
     }
 
     /**
-     * Get the row template - override base
+     * Get the row template - override base.
      * implementation to provide a sensible default.
      * @return string|null
      */
@@ -183,7 +185,7 @@ class GridRow extends GridBodyElement {
     }
 
     /**
-     * Set the controller template
+     * Set the controller template.
      * @param string $template
      */
     public function setTemplate($template) {
@@ -195,8 +197,7 @@ class GridRow extends GridBodyElement {
     //
     
     /**
-     * Initialize a row instance.
-     * Subclasses can override this method.
+     * Initialize a row instance. Subclasses can override this method.
      * @param Request $request
      * @param string $template
      */
