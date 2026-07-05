@@ -2,23 +2,23 @@
 declare(strict_types=1);
 
 /**
- * @file pages/trends/MostPopularHandler.inc.php
+ * @file pages/trends/MostCitedHandler.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  * 
- * @class MostPopularHandler
+ * @class MostCitedHandler
  * @ingroup pages_trends
  * 
- * @brief Handler for displaying the most popular articles.
+ * @brief Handler for displaying the most cited articles.
  * 
- * URL Target: /{context}/trends/popular ATAU /index/trends/popular
+ * URL Target: /{context}/trends/cited ATAU /index/trends/cited
  */
 
 import('classes.handler.Handler');
 
-class MostPopularHandler extends Handler {
+class MostCitedHandler extends Handler {
 
     /**
      * Authorize the request.
@@ -35,12 +35,12 @@ class MostPopularHandler extends Handler {
     }
 
     /**
-     * Display the most popular articles.
+     * Display the most cited articles.
      * @param $args array
      * @param $request PKPRequest
      */
-    // Nama method WAJIB "popular" sesuai parameter $op
-    public function popular(array $args, PKPRequest $request) {
+    // Nama method WAJIB "cited" sesuai parameter $op
+    public function cited(array $args, PKPRequest $request) {
         $this->setupTemplate($request);
         $templateMgr = TemplateManager::getManager($request);
         $journal = $request->getJournal();
@@ -52,10 +52,10 @@ class MostPopularHandler extends Handler {
 
         // [WIZDAM] Eksekusi WIZDAM Trends Manager
         import('lib.wizdam.trends.WizdamTrendsManager');
-        WizdamTrendsManager::assignMostPopularPayload($templateMgr, $journal, $request);
+        WizdamTrendsManager::assignMostCitedPayload($templateMgr, $journal, $request);
 
-        // Path ke template yang menyatukan header/footer WIZDAM dan most_popular.tpl
-        return $templateMgr->display('trends/most_popular.tpl');
+        // Path ke template yang menyatukan header/footer WIZDAM dan most_cited.tpl
+        return $templateMgr->display('trends/most_cited.tpl');
     }
 }
 ?>

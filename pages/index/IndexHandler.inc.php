@@ -12,8 +12,7 @@ declare(strict_types=1);
  * @ingroup pages_index
  *
  * @brief Handle site index requests.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * 
  * Modifikasi: Pemisahan logika index Jurnal dan Publisher.
  */
 
@@ -30,7 +29,9 @@ class IndexHandler extends Handler {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [DEPRECATED] Backward compatibility.
+     * Use __construct() instead.
+     * @deprecated
      */
     public function IndexHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
