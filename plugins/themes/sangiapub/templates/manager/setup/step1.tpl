@@ -29,9 +29,9 @@
 		</table>
 	</div>
 	{/if}
+
 	<div id="generalInformation" class="block">
 		<h3>1.1 {translate key="manager.setup.generalInformation"}</h3>
-
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="title" required="true" key="manager.setup.journalTitle"}</td>
@@ -82,9 +82,7 @@
 
 	<div id="principalContact" class="block">
 		<h3>1.2 {translate key="manager.setup.principalContact"}</h3>
-
 		<p>{translate key="manager.setup.principalContactDescription"}</p>
-
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="contactName" key="user.name" required="true"}</td>
@@ -121,9 +119,7 @@
 
 	<div id="technicalSupportContact" class="block">
 		<h3>1.3 {translate key="manager.setup.technicalSupportContact"}</h3>
-
 		<p>{translate key="manager.setup.technicalSupportContactDescription"}</p>
-
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="supportName" key="user.name" required="true"}</td>
@@ -177,9 +173,7 @@
 
 	<div id="setupPublisher" class="block">
 		<h3>1.5 {translate key="manager.setup.publisher"}</h3>
-
 		<p>{translate key="manager.setup.publisherDescription"}</p>
-
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="publisherNote" key="manager.setup.note"}</td>
@@ -203,9 +197,7 @@
 
 	<div id="sponsors" class="block">
 		<h3>1.6 {translate key="manager.setup.sponsors"}</h3>
-
 		<p>{translate key="manager.setup.sponsorsDescription"}</p>
-
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="sponsorNote" key="manager.setup.note"}</td>
@@ -214,32 +206,31 @@
 					<span class="instruct">{translate key="manager.setup.sponsorNoteDescription"}</span>
 				</td>
 			</tr>
-		{foreach name=sponsors from=$sponsors key=sponsorId item=sponsor}
-			<tr valign="top">
-				<td width="20%" class="label">{fieldLabel name="sponsors-$sponsorId-institution" key="manager.setup.institution"}</td>
-				<td width="80%" class="value"><input type="text" name="sponsors[{$sponsorId|escape}][institution]" id="sponsors-{$sponsorId|escape}-institution" value="{$sponsor.institution|escape}" size="40" maxlength="90" class="textField" />{if $smarty.foreach.sponsors.total > 1} <input type="submit" name="delSponsor[{$sponsorId|escape}]" value="{translate key="common.delete"}" class="button" />{/if}</td>
-			</tr>
-			<tr valign="top">
-				<td width="20%" class="label">{fieldLabel name="sponsors-$sponsorId-url" key="common.url"}</td>
-				<td width="80%" class="value"><input type="text" name="sponsors[{$sponsorId|escape}][url]" id="sponsors-{$sponsorId|escape}-url" value="{$sponsor.url|escape}" size="40" maxlength="255" class="textField" /></td>
-			</tr>
-			{if !$smarty.foreach.sponsors.last}
-			<tr valign="top">
-				<td colspan="2" class="separator">&nbsp;</td>
-			</tr>
-			{/if}
-		{foreachelse}
-			<tr valign="top">
-				<td width="20%" class="label">{fieldLabel name="sponsors-0-institution" key="manager.setup.institution"}</td>
-				<td width="80%" class="value"><input type="text" name="sponsors[0][institution]" id="sponsors-0-institution" size="40" maxlength="90" class="textField" /></td>
-			</tr>
-			<tr valign="top">
-				<td width="20%" class="label">{fieldLabel name="sponsors-0-url" key="common.url"}</td>
-				<td width="80%" class="value"><input type="text" name="sponsors[0][url]" id="sponsors-0-url" size="40" maxlength="255" class="textField" /></td>
-			</tr>
-		{/foreach}
+			{foreach name=sponsors from=$sponsors key=sponsorId item=sponsor}
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="sponsors-$sponsorId-institution" key="manager.setup.institution"}</td>
+					<td width="80%" class="value"><input type="text" name="sponsors[{$sponsorId|escape}][institution]" id="sponsors-{$sponsorId|escape}-institution" value="{$sponsor.institution|escape}" size="40" maxlength="90" class="textField" />{if $smarty.foreach.sponsors.total > 1} <input type="submit" name="delSponsor[{$sponsorId|escape}]" value="{translate key="common.delete"}" class="button" />{/if}</td>
+				</tr>
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="sponsors-$sponsorId-url" key="common.url"}</td>
+					<td width="80%" class="value"><input type="text" name="sponsors[{$sponsorId|escape}][url]" id="sponsors-{$sponsorId|escape}-url" value="{$sponsor.url|escape}" size="40" maxlength="255" class="textField" /></td>
+				</tr>
+				{if !$smarty.foreach.sponsors.last}
+				<tr valign="top">
+					<td colspan="2" class="separator">&nbsp;</td>
+				</tr>
+				{/if}
+			{foreachelse}
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="sponsors-0-institution" key="manager.setup.institution"}</td>
+					<td width="80%" class="value"><input type="text" name="sponsors[0][institution]" id="sponsors-0-institution" size="40" maxlength="90" class="textField" /></td>
+				</tr>
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="sponsors-0-url" key="common.url"}</td>
+					<td width="80%" class="value"><input type="text" name="sponsors[0][url]" id="sponsors-0-url" size="40" maxlength="255" class="textField" /></td>
+				</tr>
+			{/foreach}
 		</table>
-
 		<p><input type="submit" name="addSponsor" value="{translate key="manager.setup.addSponsor"}" class="button" /></p>
 	</div>
 
@@ -247,9 +238,7 @@
 
 	<div id="contributors" class="block">
 		<h3>1.7 {translate key="manager.setup.contributors"}</h3>
-
 		<p>{translate key="manager.setup.contributorsDescription"}</p>
-
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="contributorNote" key="manager.setup.note"}</td>
@@ -258,32 +247,31 @@
 					<span class="instruct">{translate key="manager.setup.contributorNoteDescription"}</span>
 				</td>
 			</tr>
-		{foreach name=contributors from=$contributors key=contributorId item=contributor}
-			<tr valign="top">
-				<td width="20%" class="label">{fieldLabel name="contributors-$contributorId-name" key="manager.setup.contributor"}</td>
-				<td width="80%" class="value"><input type="text" name="contributors[{$contributorId|escape}][name]" id="contributors-{$contributorId|escape}-name" value="{$contributor.name|escape}" size="40" maxlength="90" class="textField" />{if $smarty.foreach.contributors.total > 1} <input type="submit" name="delContributor[{$contributorId|escape}]" value="{translate key="common.delete"}" class="button" />{/if}</td>
-			</tr>
-			<tr valign="top">
-				<td width="20%" class="label">{fieldLabel name="contributors-$contributorId-url" key="common.url"}</td>
-				<td width="80%" class="value"><input type="text" name="contributors[{$contributorId|escape}][url]" id="contributors-{$contributorId|escape}-url" value="{$contributor.url|escape}" size="40" maxlength="255" class="textField" /></td>
-			</tr>
-			{if !$smarty.foreach.contributors.last}
-			<tr valign="top">
-				<td colspan="2" class="separator">&nbsp;</td>
-			</tr>
-			{/if}
-		{foreachelse}
-			<tr valign="top">
-				<td width="20%" class="label">{fieldLabel name="contributors-0-name" key="manager.setup.contributor"}</td>
-				<td width="80%" class="value"><input type="text" name="contributors[0][name]" id="contributors-0-name" size="40" maxlength="90" class="textField" /></td>
-			</tr>
-			<tr valign="top">
-				<td width="20%" class="label">{fieldLabel name="contributors-0-url" key="common.url"}</td>
-				<td width="80%" class="value"><input type="text" name="contributors[0][url]" id="contributors-0-url" size="40" maxlength="255" class="textField" /></td>
-			</tr>
-		{/foreach}
+			{foreach name=contributors from=$contributors key=contributorId item=contributor}
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="contributors-$contributorId-name" key="manager.setup.contributor"}</td>
+					<td width="80%" class="value"><input type="text" name="contributors[{$contributorId|escape}][name]" id="contributors-{$contributorId|escape}-name" value="{$contributor.name|escape}" size="40" maxlength="90" class="textField" />{if $smarty.foreach.contributors.total > 1} <input type="submit" name="delContributor[{$contributorId|escape}]" value="{translate key="common.delete"}" class="button" />{/if}</td>
+				</tr>
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="contributors-$contributorId-url" key="common.url"}</td>
+					<td width="80%" class="value"><input type="text" name="contributors[{$contributorId|escape}][url]" id="contributors-{$contributorId|escape}-url" value="{$contributor.url|escape}" size="40" maxlength="255" class="textField" /></td>
+				</tr>
+				{if !$smarty.foreach.contributors.last}
+				<tr valign="top">
+					<td colspan="2" class="separator">&nbsp;</td>
+				</tr>
+				{/if}
+			{foreachelse}
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="contributors-0-name" key="manager.setup.contributor"}</td>
+					<td width="80%" class="value"><input type="text" name="contributors[0][name]" id="contributors-0-name" size="40" maxlength="90" class="textField" /></td>
+				</tr>
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="contributors-0-url" key="common.url"}</td>
+					<td width="80%" class="value"><input type="text" name="contributors[0][url]" id="contributors-0-url" size="40" maxlength="255" class="textField" /></td>
+				</tr>
+			{/foreach}
 		</table>
-
 		<p><input type="submit" name="addContributor" value="{translate key="manager.setup.addContributor"}" class="button" /></p>
 	</div>
 
@@ -291,9 +279,7 @@
 
 	<div id="searchEngineIndexing" class="block">
 		<h3>1.8 {translate key="manager.setup.searchEngineIndexing"}</h3>
-
 		<p>{translate key="manager.setup.searchEngineIndexingDescription"}</p>
-
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="searchDescription" key="common.description"}</td>
@@ -317,9 +303,7 @@
 
 	<div class="block">
 		<h3>1.9 {translate key="manager.setup.history"}</h3>
-
 		<p>{translate key="manager.setup.historyDescription"}</p>
-
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="history" key="manager.setup.history"}</td>
@@ -338,6 +322,6 @@
 
 </form>
 
-</div> {** Close tag journal-setup **}
+</div>{** Close tag journal-setup **}
 
 {include file="common/footer-parts/footer-user.tpl"}
