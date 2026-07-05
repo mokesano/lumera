@@ -4,15 +4,14 @@ declare(strict_types=1);
 /**
  * @file lib/wizdam/statistics/JournalStatsDAO.inc.php
  * 
- * Copyright (c) 2024-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Wizdam Team
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @class JournalStatsDAO
  * @ingroup Statistics
  * 
- * @brief DAO Terpadu untuk seluruh Statistik Jurnal ScholarWizdam [WIZDAM EDITION]
- * @version 2.0 (Strict MVC & PHP 8+ Compliant)
+ * @brief Data Access Object for Journal Statistics [WIZDAM EDITION]
  */
 
 import('classes.db.DAO');
@@ -26,8 +25,9 @@ if (!defined('ASSOC_TYPE_GALLEY')) define('ASSOC_TYPE_GALLEY', 258);
 class JournalStatsDAO extends DAO {
 
     /**
-     * [WIZDAM] - Diagnostik Skema Database
-     * Mendeteksi keberadaan tabel modern (metrics) dan legacy (view_stats) dengan aman.
+     * Check the database structure for required tables and columns.
+     * This method is used to determine if the modern metrics table exists,
+     * and if the legacy view_stats tables are present.
      * @return array 
      */
     public function checkDatabaseStructure(): array {
@@ -78,8 +78,9 @@ class JournalStatsDAO extends DAO {
     }
 
     /**
-     * [WIZDAM] - Pengganti getJournalStatsOptimized & getJournalStatsOriginal
-     * Mengambil Views & Downloads dengan sistem Fallback berlapis dalam SQL.
+     * Get core statistics for a journal, including total views and downloads.
+     * This method uses a fallback mechanism to retrieve data from the modern
+     * metrics table, and if not available, from the legacy view_stats tables.
      * @param int $journalId
      * @param array $dbStructure 
      * @return array
@@ -168,8 +169,9 @@ class JournalStatsDAO extends DAO {
     }
 
     /**
-     * [WIZDAM] - Perombakan Total getJournalAuthorsCount!
-     * Mengganti 3 lapis loop PHP dengan 1 kueri SQL yang sangat efisien.
+     * Get the count of unique authors for a journal.
+     * This method uses a single SQL query to efficiently count distinct authors
+     * associated with published articles in the specified journal.
      * @param int $journalId
      * @return int
      */
@@ -201,7 +203,9 @@ class JournalStatsDAO extends DAO {
     }
 
     /**
-     * [WIZDAM] - Menghitung jumlah Artikel dan Isu yang dipublikasikan
+     * Get publication counts for a journal, including articles and issues.
+     * This method retrieves the total number of published articles and issues
+     * for the specified journal.
      * @param int $journalId
      * @return array
      */
@@ -226,7 +230,9 @@ class JournalStatsDAO extends DAO {
     }
 
     /**
-     * [WIZDAM] - Metrik Penerimaan dan Penolakan (Accept/Decline Rates)
+     * Get acceptance and decline totals for a journal.
+     * This method calculates the number of reviewed, accepted, and declined 
+     * articles based on the article status in the specified journal.
      * @param int $journalId
      * @param int $currentYear
      * @return array
@@ -257,8 +263,9 @@ class JournalStatsDAO extends DAO {
     }
 
     /**
-     * [WIZDAM] - Mengambil Data Mentah Timeline untuk Dihitung Mediannya di Manager
-     * Mengembalikan array berisi selisih hari.
+     * Get the raw review timeline data for a journal.
+     * This method retrieves the raw data for review timelines, including days
+     * to review, publication, first decision, submission to acceptance, and acceptance to publication.
      * @param int $journalId
      * @param int $currentYear
      * @param bool $hasEditDecisions

@@ -13,14 +13,14 @@ declare(strict_types=1);
  * @see DAO
  *
  * @brief Maintains a static list of DAO objects so each DAO is instantiated only once.
- * MODERNIZED FOR PHP 7.4+
  */
 
 import('lib.pkp.classes.db.DAO');
 
 class DAORegistry {
 
-    /** * @var array Static list of instantiated DAOs 
+    /**
+     * @var array Static list of instantiated DAOs 
      * Menggantikan Registry::get('daos')
      */
     protected static $daos = array();
@@ -40,10 +40,7 @@ class DAORegistry {
      * @return object The registered DAO
      */
     public static function registerDAO($name, $dao) {
-        // [MODERNISASI] Hapus & pada parameter dan return
-        // Cek apakah sudah ada sebelumnya (optional logic, sesuai aslinya)
         $returner = isset(self::$daos[$name]) ? self::$daos[$name] : null;
-        
         self::$daos[$name] = $dao;
         return $returner;
     }
@@ -61,40 +58,26 @@ class DAORegistry {
         }
 
         // 2. Jika Class belum didefinisikan, coba import
-        // OJS 2 biasanya mewajibkan import() sebelum getDAO, tapi kita beri safety net.
         if (!class_exists($name)) {
-            // Coba cari path dari PKPApplication jika tersedia (Backward Compatibility)
-            // Namun jika Anda memodernisasi full, lebih baik explicit import di file pemanggil.
-            // Blok ini mencoba meniru logika lama tanpa terlalu bergantung pada global functions.
             $application = PKPApplication::getApplication();
             $className = $application->getQualifiedDAOName($name);
             
             if ($className) {
-                // Import berdasarkan hasil mapping aplikasi
-                // Format $className biasanya 'classes.journal.JournalDAO'
                 import($className);
             }
         }
 
         // 3. Instansiasi
         if (class_exists($name)) {
-            // [MODERNISASI] Gunakan native 'new' operator
-            // instanatiate() dihapus karena overhead tidak perlu.
             $instance = new $name($dbconn);
-
-            // Validasi tipe (menggantikan array('DAO', 'XMLDAO') di fungsi instantiate lama)
             if (!($instance instanceof DAO) && !is_a($instance, 'XMLDAO')) {
                  fatalError('DAORegistry: Class "' . $name . '" is not a valid DAO.');
             }
 
-            // [MODERNISASI] Setup DataSource jika diberikan
-            // Perhatikan: Constructor DAO baru Anda sudah menangani $dbconn,
-            // tapi jika DAO sudah di-instantiate tanpa dbconn, kita set di sini.
             if ($dbconn != null) {
                 $instance->setDataSource($dbconn);
             }
 
-            // Simpan ke static array
             self::$daos[$name] = $instance;
 
             return $instance;
@@ -105,5 +88,4 @@ class DAORegistry {
         return null;
     }
 }
-
 ?>

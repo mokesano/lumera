@@ -46,7 +46,9 @@ class PKPPageRouter extends PKPRouter {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [DEPRECATED] SHIM Backward compatibility.
+     * Use __construct() instead.
+     * @deprecated
      */
     public function PKPPageRouter() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -213,8 +215,8 @@ class PKPPageRouter extends PKPRouter {
             elseif (file_exists('lib/pkp/'.$sourceFile)) require('./lib/pkp/'.$sourceFile);
             elseif (empty($page)) require(ROUTER_DEFAULT_PAGE);
             else {
-                $dispatcher = $this->getDispatcher();
-                $dispatcher->handle404($request);
+                $this->getDispatcher()->handle404($request);
+                return;
             }
         }
 
@@ -257,8 +259,8 @@ class PKPPageRouter extends PKPRouter {
             }
 
             if (!$hasMagic) {
-                $dispatcher = $this->getDispatcher();
-                $dispatcher->handle404($request);
+                $this->getDispatcher()->handle404($request);
+                return;
             }
         }
 
@@ -430,9 +432,8 @@ class PKPPageRouter extends PKPRouter {
     }
     
     /**
-     * [WIZDAM] SMART ROUTER - EXECUTION ONLY
-     * Fungsi ini telah dibersihkan dari logika Caching.
-     * Caching sekarang ditangani oleh Dispatcher.inc.php menggunakan metode Smart ETag.
+     * Authorize, initialize, and call the request handler.
+     * @see PKPRouter::_authorizeInitializeAndCallRequest()
      * @param callable $serviceEndpoint the handler and operation to call
      * @param PKPRequest $request the request to be routed
      * @param array $args the arguments to pass to the handler
@@ -457,8 +458,8 @@ class PKPPageRouter extends PKPRouter {
             $hasMagic = method_exists($handler, '__call');
 
             if (!$methodExists && !$hasMagic) {
-                $dispatcher = $this->getDispatcher();
-                $dispatcher->handle404($request);
+                $this->getDispatcher()->handle404($request);
+                return;
             }
 
             // Reflection untuk Parameter Injection (Request Object)

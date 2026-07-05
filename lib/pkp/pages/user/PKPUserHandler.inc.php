@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class PKPUserHandler
  * @ingroup pages_user
  *
- * @brief Handle requests for user functions.
- *
- * [WIZDAM EDITION] PHP 8.1+ Compatibility, Strict Types, Security Hardening
+ * @brief Handle requests for user functions with Strict Types, Security Hardening
  */
 
 import('classes.handler.Handler');
@@ -28,7 +26,9 @@ class PKPUserHandler extends Handler {
     }
 
     /**
-     * [SHIM] Backward Compatibility for Legacy Calls
+     * [DEPRECATED] SHIM Backward compatibility.
+     * Use __construct() instead.
+     * @deprecated
      */
     public function PKPUserHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {

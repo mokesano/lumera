@@ -6,12 +6,13 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Lumera Teams
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @class WizdamTrendsManager
  * @ingroup wizdam_trends
  *
  * @brief Service class untuk mempopulasi data Trends.
+ * 
  * Memastikan assignment Smarty 100% presisi dengan legacy WIZDAM:
  * Termasuk Cover Image, Open Access, Keywords, dan Article Type.
  */
@@ -19,7 +20,7 @@ declare(strict_types=1);
 class WizdamTrendsManager {
 
     /**
-     * Assign data Most Popular Articles ke Smarty.
+     * Assign data Most Popular Artciles to Smarty.
      * @param TemplateManager $templateMgr
      * @param Journal|null $journal
      * @param PKPRequest $request
@@ -59,6 +60,7 @@ class WizdamTrendsManager {
     }
 
     /**
+     * Format Micro-Payload for Most Popular Articles.
      * Eksekusi Micro-Payload (Mengekstrak seluruh data ke tipe skalar murni).
      * @param array $rawViewsData
      * @param PKPRequest $request
@@ -144,7 +146,7 @@ class WizdamTrendsManager {
     //
 
     /**
-     * Mencari Cover Image dengan dukungan Multi-Locale.
+     * Find Article Cover Image with Multi-Locale Support.
      * @param int $journalId
      * @param int $articleId
      * @return array
@@ -190,7 +192,8 @@ class WizdamTrendsManager {
     }
 
     /**
-     * Deteksi Open Access tanpa Raw SQL (MVC Compliant).
+     * Check if an article is Open Access without using raw SQL (MVC Compliant).
+     * This method checks multiple sources to determine the Open Access status of an article.
      * @param Article $article
      * @param int $journalId
      * @return bool
