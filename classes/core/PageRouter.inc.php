@@ -11,10 +11,9 @@ declare(strict_types=1);
  * @class PageRouter
  * @ingroup core
  *
- * @brief Class providing OJS-specific page routing.
+ * @brief Class providing APP-specific page routing.
  *
  * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Ref removal, Visibility)
  * - Safe User/Journal Context Checks
  * - Native Routing Support
  * - Degradasi Routing Bertingkat: Issue → Volume → Year → Archive

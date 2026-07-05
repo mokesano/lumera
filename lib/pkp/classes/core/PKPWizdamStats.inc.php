@@ -5,16 +5,16 @@ declare(strict_types=1);
  * @file lib/pkp/classes/core/PKPWizdamStats.inc.php
  * 
  * Copyright (c) 2017-2026 Sangia Publishing House
- * Copyright (c) 2017-2026 Rochmady and Wizdam Team
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Rochmady and Codecanau Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  * 
  * @ingroup Statistics
  * @class PKPWizdamStats
  * 
- * @brief Mengintegrasikan logika statistik kustom (v1.24.0) ke dalam core OJS.
- * Menggabungkan logika dari journal-insight.txt, getJournalStats_v2.txt, dan allJournalStats.txt
- * @author Rochmady and Wizdam Team
- * @version v1.24.0 (Core Refactor Lengkap - Final)
+ * @brief Integrate custom statistics logic into the core APP.
+ * 
+ * Compile from journal-insight.txt, getJournalStats_v2.txt, and allJournalStats.txt
+ * @author Rochmady and Codecanau Team.
  */
 
 // Import kelas-kelas yang diperlukan
@@ -47,15 +47,16 @@ class PKPWizdamStats {
      *******************************************************/
 
     /**
+     * Get all statistics for a specific journal.
      * Fungsi utama untuk mengambil semua statistik jurnal.
      * Ini adalah "pintu depan" untuk statistik per jurnal.
-     *
      * @param $journalId int
      * @param $forceRefresh boolean
      * @return array
      */
     public static function getStats($journalId, $forceRefresh = false) {
-        
+        $journalId = (int)$journalId;
+
         // Cek cache terlebih dahulu
         if (!$forceRefresh) {
             $cacheData = self::_getJournalStatsFromCache($journalId);
@@ -74,7 +75,6 @@ class PKPWizdamStats {
      * Fungsi inti yang melakukan SEMUA perhitungan SQL dan caching.
      * Logika perhitungan timeline diperbaiki untuk memastikan semua data
      * (termasuk timeline tahunan) dihitung dengan benar.
-     *
      * @param $journalId int
      * @return array
      */
@@ -179,6 +179,7 @@ class PKPWizdamStats {
                 $dateColumn = '';
                 if (strpos($metricsColumns, 'day') !== false) $dateColumn = 'day';
                 elseif (strpos($metricsColumns, 'load_time') !== false) $dateColumn = 'load_time';
+                $dateColumn = in_array($dateColumn, array('day', 'load_time'), true) ? $dateColumn : '';
                 
                 if (!empty($dateColumn)) {
                     // Data views per tahun (dari getJournalStats.php)
@@ -513,11 +514,14 @@ class PKPWizdamStats {
         return $stats;
     }
     
-
+    //
     // --- Helper untuk MESIN #1: Statistik Per Jurnal ---
+    //
 
     /**
      * Helper untuk mengambil median (dari journal-insight.txt)
+     * @param array $arr
+     * @return float
      */
     private static function _getMedian($arr) {
         if (empty($arr)) return 0;
@@ -544,6 +548,8 @@ class PKPWizdamStats {
 
     /**
      * Helper untuk cek DB (dari journal-insight.txt)
+     * @param object $articleDao
+     * @return array
      */
     private static function _checkDatabaseStructure($articleDao) {
         $info = array('metricsTableExists' => "Tidak", 'metricsColumns' => "Tidak ditemukan", 'articleStatsExists' => "Tidak", 'galleyStatsExists' => "Tidak");
@@ -584,6 +590,8 @@ class PKPWizdamStats {
 
     /**
      * REVISI: Mengambil cache menggunakan Smart Detection (v2)
+     * @param int $journalId
+     * @return array|bool
      */
     private static function _getJournalStatsFromCache($journalId) {
         $cacheDir = self::_getCacheDir();
@@ -597,7 +605,7 @@ class PKPWizdamStats {
             // error_log("WizdamStats: Cache Check JID: $journalId - CurrentHash: $currentHash | CachedHash: $cachedHash");
             
             // Check if hash matches OR if cache is still within acceptable age (fallback)
-            if (($currentHash !== '' && $cachedHash !== '' && $currentHash == $cachedHash) || 
+            if (($currentHash !== '' && $cachedHash !== '' && hash_equals($cachedHash, $currentHash)) || 
                 (@filemtime($cacheFile) > (time() - self::STATS_CACHE_DURATION))) { // Use @ for filemtime
                 try {
                     $cachedStats = unserialize(@file_get_contents($cacheFile)); // Use @
@@ -624,6 +632,9 @@ class PKPWizdamStats {
 
     /**
      * REVISI: Menyimpan cache menggunakan Smart Detection (v2)
+     * @param int $journalId
+     * @param array $stats
+     * @return bool
      */
     private static function _cacheJournalStats($journalId, $stats) {
         $cacheDir = self::_getCacheDir();
@@ -693,6 +704,8 @@ class PKPWizdamStats {
 
     /**
      * Membuat direktori cache jika belum ada (dari v2)
+     * @param string $cacheDir
+     * @return bool
      */
     private static function _ensureCacheDirExists($cacheDir) {
         if (!file_exists($cacheDir)) {
@@ -709,6 +722,8 @@ class PKPWizdamStats {
     /**
      * Membuat hash data untuk deteksi perubahan
      * (Logika dari getJournalStats_v2.txt)
+     * @param $journalId int
+     * @return string (hash) atau '' jika gagal
      */
     private static function _getJournalStatsDataHash($journalId) {
         try {
@@ -782,7 +797,6 @@ class PKPWizdamStats {
      
     /**
      * Mengambil statistik agregat untuk semua jurnal di situs.
-     *
      * @param $forceRefresh boolean
      * @return array
      */
@@ -888,5 +902,4 @@ class PKPWizdamStats {
         }
     }
 }
-
 ?>
