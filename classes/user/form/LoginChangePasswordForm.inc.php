@@ -12,11 +12,6 @@ declare(strict_types=1);
  * @ingroup user_form
  *
  * @brief Form to change a user's password in order to login.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (create_function removal -> Closures)
- * - Constructor Standardization
- * - Visibility Explicit
  */
 
 import('lib.pkp.classes.form.Form');
@@ -38,7 +33,6 @@ class LoginChangePasswordForm extends Form {
 
         // Validation checks for this form
         if (!$confirmHash) {
-            // MOD: Replaced deprecated create_function with Closure
             $this->addCheck(new FormValidatorCustom(
                 $this, 
                 'oldPassword', 
@@ -50,7 +44,6 @@ class LoginChangePasswordForm extends Form {
             ));
         } else {
             $userDao = DAORegistry::getDAO('UserDAO');
-            // MOD: Replaced deprecated create_function with Closure (using 'use' to capture $userDao)
             $this->addCheck(new FormValidatorCustom(
                 $this, 
                 'confirmHash', 
@@ -65,8 +58,7 @@ class LoginChangePasswordForm extends Form {
 
         $this->addCheck(new FormValidatorLength($this, 'password', 'required', 'user.register.form.passwordLengthTooShort', '>=', (int) $site->getMinPasswordLength()));
         $this->addCheck(new FormValidator($this, 'password', 'required', 'user.profile.form.newPasswordRequired'));
-        
-        // MOD: Replaced deprecated create_function with Closure
+
         $this->addCheck(new FormValidatorCustom(
             $this, 
             'password', 
@@ -147,5 +139,4 @@ class LoginChangePasswordForm extends Form {
         }
     }
 }
-
 ?>
