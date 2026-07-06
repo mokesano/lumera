@@ -17,7 +17,6 @@ declare(strict_types=1);
  * This script will:
  * - Create the database (optionally), and install the database tables and initial data.
  * - Update the config file with installation parameters.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 // Default installation data
@@ -73,8 +72,7 @@ class Install extends PKPInstall {
     public function createData(): bool {
         // Add initial site data
         $locale = $this->getParam('locale');
-        
-        // [WIZDAM] Removed reference assignment (&)
+
         $siteDao = DAORegistry::getDAO('SiteDAO', $this->dbconn);
         $site = $siteDao->newDataObject();
         $site->setRedirect(0);
@@ -129,5 +127,4 @@ class Install extends PKPInstall {
         return true;
     }
 }
-
 ?>
