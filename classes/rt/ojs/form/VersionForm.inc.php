@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see Version
  *
  * @brief Form to change metadata information for an RT version.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
@@ -91,7 +89,6 @@ class VersionForm extends Form {
         $templateMgr = TemplateManager::getManager();
 
         if (isset($this->version)) {
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('version', $this->version);
             $templateMgr->assign('versionId', $this->versionId);
         }
@@ -99,7 +96,6 @@ class VersionForm extends Form {
         $templateMgr->assign('helpTopicId', 'journal.managementPages.readingTools.versions');
         parent::display($request, $template);
     }
-
 
     /**
      * Assign form data to user-submitted data.
@@ -142,6 +138,5 @@ class VersionForm extends Form {
 
         return $this->versionId;
     }
-
 }
 ?>
