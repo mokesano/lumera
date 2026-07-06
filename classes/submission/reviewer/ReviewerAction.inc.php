@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup submission
  *
  * @brief ReviewerAction class.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.submission.common.Action');
@@ -166,7 +164,7 @@ class ReviewerAction extends Action {
         if (!isset($reviewerRecommendationOptions[$recommendation])) return true;
 
         $reviewAssignment = $reviewAssignmentDao->getById($reviewerSubmission->getReviewId());
-        $reviewer = $userDao->getUser($reviewAssignment->getReviewerId());
+        $reviewer = $userDao->getById((int) $reviewAssignment->getReviewerId());
         
         if (!($reviewer instanceof User)) return true;
 
@@ -279,7 +277,7 @@ class ReviewerAction extends Action {
             $reviewAssignmentDao->updateReviewAssignment($reviewAssignment);
 
             $userDao = DAORegistry::getDAO('UserDAO');
-            $reviewer = $userDao->getUser($reviewAssignment->getReviewerId());
+            $reviewer = $userDao->getById((int) $reviewAssignment->getReviewerId());
 
             // Add log
             import('classes.article.log.ArticleLog');
