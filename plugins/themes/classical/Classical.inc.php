@@ -32,7 +32,7 @@ class Classical extends ThemePlugin {
      * @return String
      */
 	function getDisplayName(): string {
-		return 'Sangia New Classical';
+		return 'New Classical';
 	}
 
     /**
