@@ -39,6 +39,7 @@ class ReviewReminder extends ScheduledTask {
     }
 
     /**
+     * Get schedule task name. 
      * @see ScheduledTask::getName()
      * @return string
      */
@@ -118,6 +119,7 @@ class ReviewReminder extends ScheduledTask {
     }
 
     /**
+     * Execute actions scheduled task.
      * @see ScheduledTask::executeActions()
      * @return boolean
      */
@@ -134,14 +136,12 @@ class ReviewReminder extends ScheduledTask {
             // Fetch the Article and the Journal if necessary.
             if ($article == null || $article->getId() != $reviewAssignment->getSubmissionId()) {
                 unset($article);
-                // Hapus '&'
                 $article = $articleDao->getArticle($reviewAssignment->getSubmissionId());
                 // Avoid review assignments without article in database anymore.
                 if (!$article) continue;
 
                 if ($journal == null || $journal->getId() != $article->getJournalId()) {
                     unset($journal);
-                    // Hapus '&'
                     $journal = $journalDao->getById($article->getJournalId());
 
                     $inviteReminderEnabled = $journal->getSetting('remindForInvite');
@@ -179,5 +179,4 @@ class ReviewReminder extends ScheduledTask {
         return true;
     }
 }
-
 ?>
