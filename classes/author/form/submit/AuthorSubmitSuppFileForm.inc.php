@@ -12,12 +12,12 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Supplementary file author submission form.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('lib.pkp.classes.form.Form');
 
 class AuthorSubmitSuppFileForm extends Form {
+
     /** @var int the ID of the article */
     public int $articleId;
 
@@ -123,7 +123,6 @@ class AuthorSubmitSuppFileForm extends Form {
         }
 
         if (isset($this->suppFile)) {
-            // [WIZDAM] Use assign instead of assign_by_ref
             $templateMgr->assign('suppFile', $this->suppFile);
         }
         $templateMgr->assign('helpTopicId','submission.supplementaryFiles');
@@ -248,5 +247,4 @@ class AuthorSubmitSuppFileForm extends Form {
         $suppFile->setShowReviewers($this->getData('showReviewers'));
     }
 }
-
 ?>
