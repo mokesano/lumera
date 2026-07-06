@@ -16,8 +16,7 @@ declare(strict_types=1);
  * @ingroup install_form
  * @see Install
  *
- * @brief Form for system installation.
- * [WIZDAM EDITION] Refactored for PHP 8.x and Modern Prudent Standards
+ * @brief Form for system installation and Modern Prudent Standards
  */
 
 import('classes.install.Install');
@@ -97,8 +96,7 @@ class InstallForm extends Form {
         $this->addCheck(new FormValidatorAlphaNum($this, 'adminUsername', 'required', 'installer.form.usernameAlphaNumeric'));
         $this->addCheck(new FormValidatorLength($this, 'adminPassword', 'required', 'user.register.form.passwordLengthTooShort', '>=', INSTALLER_DEFAULT_MIN_PASSWORD_LENGTH));
         $this->addCheck(new FormValidator($this, 'adminPassword', 'required', 'installer.form.passwordRequired'));
-        
-        // [WIZDAM] Replaced create_function with closure
+
         $this->addCheck(new FormValidatorCustom(
             $this, 
             'adminPassword', 
@@ -177,15 +175,15 @@ class InstallForm extends Form {
             'clientCharset' => 'utf-8',
             'connectionCharset' => '',
             'databaseCharset' => '',
-            'encryption' => 'bcrypt', // [WIZDAM] Set default to bcrypt
+            'encryption' => 'bcrypt', // [LUMERA] Set default to bcrypt
             'filesDir' =>  $docRoot . 'files',
-            'databaseDriver' => 'mysqli', // [WIZDAM] Set default to modern mysqli instead of mysql
+            'databaseDriver' => 'mysqli', // [LUMERA] Set default to modern mysqli instead of mysql
             'databaseHost' => 'localhost',
-            'databaseUsername' => 'wizdam',
+            'databaseUsername' => 'lumera',
             'databasePassword' => '',
-            'databaseName' => 'wizdam',
+            'databaseName' => 'lumera',
             'createDatabase' => 1,
-            'oaiRepositoryId' => 'wizdam.' . $request->getServerHost(),
+            'oaiRepositoryId' => 'lumera.' . $request->getServerHost(),
             'enableBeacon'=> true
         ];
     }
@@ -290,7 +288,5 @@ class InstallForm extends Form {
         error_log((string)$errorMsg);
         $this->display();
     }
-
 }
-
 ?>

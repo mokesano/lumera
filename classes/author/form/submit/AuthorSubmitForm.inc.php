@@ -16,12 +16,12 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Base class for journal author submit forms.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('lib.pkp.classes.form.Form');
 
 class AuthorSubmitForm extends Form {
+
     /** @var PKPRequest|null */
     protected $request = null;
 
@@ -110,7 +110,6 @@ class AuthorSubmitForm extends Form {
         $journal = $this->request ? $this->request->getJournal() : $request->getJournal();
         
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
-        // [WIZDAM] Use assign instead of assign_by_ref
         $templateMgr->assign('journalSettings', $settingsDao->getJournalSettings($journal->getId()));
 
         parent::display($request, $template);
@@ -152,5 +151,4 @@ class AuthorSubmitForm extends Form {
         return $sectionEditors;
     }
 }
-
 ?>
