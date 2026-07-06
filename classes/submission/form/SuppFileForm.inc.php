@@ -12,13 +12,12 @@ declare(strict_types=1);
  * @ingroup submission_form
  *
  * @brief Supplementary file form.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
 
 class SuppFileForm extends Form {
+    
     /** @var int|null the ID of the supplementary file */
     public $suppFileId = null;
 
