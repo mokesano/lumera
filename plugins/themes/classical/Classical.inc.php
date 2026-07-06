@@ -2,21 +2,21 @@
 declare(strict_types=1);
 
 /**
- * @file plugins/themes/classical/SangiaClas.inc.php
+ * @file plugins/themes/classical/Classical.inc.php
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2003-2015 John Willinsky
+ * Copyright (c) 2017-2026 Codecanau, LLC and CodeLumera, LLC
+ * Copyright (c) 2017-2026 Rochmady and Teams
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @class SangiaClas
+ * @class Classical
  * @ingroup plugins_themes_classical
  *
- * @brief "SangiaClas" theme plugin
+ * @brief "Classical" theme plugin
  */
 
 import('classes.plugins.ThemePlugin');
 
-class SangiaClas extends ThemePlugin {
+class Classical extends ThemePlugin {
     
 	/**
 	 * Get the name of this plugin. The name must be unique within
@@ -24,7 +24,7 @@ class SangiaClas extends ThemePlugin {
 	 * @return String name of plugin
 	 */
 	function getName(): string {
-		return 'SangiaClas';
+		return 'Classical';
 	}
 
     /**
@@ -66,8 +66,7 @@ class SangiaClas extends ThemePlugin {
 										. DIRECTORY_SEPARATOR 
 										. 'templates';   
 											      
-		$templateMgr->compile_id = 'SangiaClas';
+		$templateMgr->compile_id = 'Classical';
 	}
 }
-
 ?>

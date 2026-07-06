@@ -76,5 +76,4 @@ class SangiaPub extends ThemePlugin {
 		$templateMgr->compile_id = 'sangiapub';
 	}
 }
-
 ?>
