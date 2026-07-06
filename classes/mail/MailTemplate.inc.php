@@ -12,14 +12,12 @@ declare(strict_types=1);
  * @ingroup mail
  *
  * @brief Subclass of PKPMailTemplate for mailing a template email.
- *
- * [WIZDAM EDITION] Refactored for PHP 7.4 and ready for 8.1+ Strict Compliance
- * [FIXED] str_contains replaced with strpos for universal compatibility
  */
 
 import('lib.pkp.classes.mail.PKPMailTemplate');
 
 class MailTemplate extends PKPMailTemplate {
+
     /** @var object|null The journal this message relates to */
     public $journal = null;
 
@@ -33,10 +31,10 @@ class MailTemplate extends PKPMailTemplate {
      * @param bool $ignorePostedData optional
      */
     public function __construct($emailKey = null, $locale = null, $enableAttachments = null, $journal = null, $includeSignature = true, $ignorePostedData = false) {
-        // [WIZDAM FIX] Explicit parent constructor call to prevent Legacy SHIM loops
+        // [LUMERA] Explicit parent constructor call to prevent Legacy SHIM loops
         parent::__construct($emailKey, $locale, $enableAttachments, $includeSignature);
 
-        // [WIZDAM] Request Singleton
+        // [LUMERA] Request Singleton
         $request = Application::get()->getRequest();
 
         // If a journal wasn't specified, use the current request.
@@ -49,7 +47,7 @@ class MailTemplate extends PKPMailTemplate {
 
         if (isset($this->emailKey)) {
             $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
-            // [WIZDAM] Strict ID checking
+            // [LUMERA] Strict ID checking
             $journalId = ($journal instanceof Journal) ? (int) $journal->getId() : 0;
             
             // ASSOC_TYPE_JOURNAL typically equals 0x0000100 (256 in decimal)
@@ -151,7 +149,7 @@ class MailTemplate extends PKPMailTemplate {
      * @return void
      */
     public function assignParams($paramArray = []) {
-        // [WIZDAM] Request Singleton
+        // [LUMERA] Request Singleton
         $request = Application::get()->getRequest();
 
         // Add commonly-used variables to the list
