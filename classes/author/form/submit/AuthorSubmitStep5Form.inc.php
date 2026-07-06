@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Form for Step 5 of author article submission.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('classes.author.form.submit.AuthorSubmitForm');
@@ -72,7 +71,6 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
         $articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
         $articleFiles = $articleFileDao->getArticleFilesByArticle($this->articleId);
 
-        // [WIZDAM] Use assign instead of assign_by_ref
         $templateMgr->assign('files', $articleFiles);
         $templateMgr->assign('journal', $journal);
 
@@ -85,13 +83,11 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
             $articleId = $this->articleId;
 
             if ($paymentManager->submissionEnabled()) {
-                // [WIZDAM] Use assign instead of assign_by_ref
                 $templateMgr->assign('submissionPayment', $completedPaymentDao->getSubmissionCompletedPayment ($journal->getId(), $articleId));
                 $templateMgr->assign('manualPayment', $journal->getSetting('paymentMethodPluginName') == 'ManualPayment');
             }
 
             if ($paymentManager->fastTrackEnabled()) {
-                // [WIZDAM] Use assign instead of assign_by_ref
                 $templateMgr->assign('fastTrackPayment', $completedPaymentDao->getFastTrackCompletedPayment ($journal->getId(), $articleId));
             }
         }
