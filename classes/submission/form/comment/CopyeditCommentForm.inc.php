@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see Form
  *
  * @brief CopyeditComment form.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.submission.form.comment.CommentForm');

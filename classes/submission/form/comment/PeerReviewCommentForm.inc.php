@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class PeerReviewCommentForm
  * @ingroup submission_form
  *
- * @brief Comment form.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * @brief Peer review comment form.
  */
 
 import('classes.submission.form.comment.CommentForm');
@@ -99,7 +97,6 @@ class PeerReviewCommentForm extends CommentForm {
      */
     public function execute($object = NULL) {
         // Personalized execute() method since now there are possibly two comments contained within each form submission.
-
         $commentDao = DAORegistry::getDAO('ArticleCommentDAO');
         $this->insertedComments = [];
 
