@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Form for Step 3 of author article submission.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('classes.author.form.submit.AuthorSubmitForm');
@@ -29,7 +28,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         parent::__construct($article, 3, $journal, $request);
 
         // Validation checks for this form
-        // [WIZDAM] Replaced create_function with Closure
         $this->addCheck(new FormValidatorCustom(
             $this, 'authors', 'required', 'author.submit.form.authorRequired',
             function($authors) { return count($authors) > 0; }
@@ -37,7 +35,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
         $this->addCheck(new FormValidatorArray($this, 'authors', 'required', 'author.submit.form.authorRequiredFields', ['firstName', 'lastName']));
 
-        // [WIZDAM] Replaced create_function with Closure for Email Validation
         $this->addCheck(new FormValidatorArrayCustom(
             $this, 'authors', 'required', 'author.submit.form.authorRequiredFields',
             function($email, $regExp) { return PKPString::regexp_match($regExp, $email); },
@@ -47,7 +44,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         ));
         
         // URL validation
-        // [WIZDAM] Replaced create_function with Closure
         $this->addCheck(new FormValidatorArrayCustom(
             $this, 'authors', 'required', 'user.profile.form.urlInvalid',
             function($url, $regExp) { return empty($url) ? true : PKPString::regexp_match($regExp, $url); },
@@ -58,7 +54,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
         // Add ORCiD validation
         import('lib.pkp.classes.validation.ValidatorORCID');
-        // [WIZDAM] Replaced create_function with Closure
         $this->addCheck(new FormValidatorArrayCustom(
             $this, 'authors', 'required', 'user.profile.form.orcidInvalid',
             function($orcid) {
@@ -77,7 +72,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         $abstractWordCount = $section->getAbstractWordCount();
 
         if (isset($abstractWordCount) && $abstractWordCount > 0) {
-            // [WIZDAM] Replaced create_function with Closure for Word Count
             $this->addCheck(new FormValidatorCustom(
                 $this, 'abstract', 'required', 'author.submit.form.wordCountAlert',
                 function($abstract, $wordCount) {
@@ -106,7 +100,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
     /**
      * Get the article associated with this object.
-     *
      * @return Article The article instance.
      * @throws Exception If the article cannot be retrieved.
      */
@@ -220,7 +213,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
-        // [WIZDAM] Use assign instead of assign_by_ref
         $templateMgr->assign('countries', $countries);
 
         if ($this->request->getUserVar('addAuthor') || $this->request->getUserVar('delAuthor')  || $this->request->getUserVar('moveAuthor')) {
@@ -292,7 +284,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
                 $author->setPrimaryContact($this->getData('primaryContact') == $i ? 1 : 0);
                 $author->setSequence($authors[$i]['seq']);
 
-                // [WIZDAM] HookRegistry call using array construction for references
+                // [LUMERA] HookRegistry call using array construction for references
                 HookRegistry::dispatch('Author::Form::Submit::AuthorSubmitStep3Form::Execute', [&$author, &$authors[$i]]);
 
                 if ($isExistingAuthor) {
@@ -327,5 +319,4 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         return $this->articleId;
     }
 }
-
 ?>
