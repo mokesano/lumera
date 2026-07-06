@@ -12,9 +12,7 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Form for Step 1 of author article submission.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
-
 
 import('classes.author.form.submit.AuthorSubmitForm');
 
@@ -27,7 +25,6 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
      * @param PKPRequest $request
      */
     public function __construct($article, $journal, $request) {
-        // [WIZDAM] Removed reference & on params
         parent::__construct($article, 1, $journal, $request);
 
         // Validation checks for this form
@@ -88,12 +85,10 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
             $articleId = $this->articleId;
 
             if ($paymentManager->submissionEnabled()) {
-                // [WIZDAM] Use assign instead of assign_by_ref
                 $templateMgr->assign('submissionPayment', $completedPaymentDao->getSubmissionCompletedPayment ($journal->getId(), $articleId));
             }
 
             if ($paymentManager->fastTrackEnabled()) {
-                // [WIZDAM] Use assign instead of assign_by_ref
                 $templateMgr->assign('fastTrackPayment', $completedPaymentDao->getFastTrackCompletedPayment ($journal->getId(), $articleId));
             }
         }
@@ -214,7 +209,5 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
 
         return $this->articleId;
     }
-
 }
-
 ?>
