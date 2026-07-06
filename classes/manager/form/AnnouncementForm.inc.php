@@ -16,8 +16,6 @@ declare(strict_types=1);
  * @ingroup manager_form
  *
  * @brief Form for journal managers to create/edit announcements.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.manager.form.PKPAnnouncementForm');
@@ -30,11 +28,8 @@ class AnnouncementForm extends PKPAnnouncementForm {
      * @param int|null $announcementId leave as default for new announcement
      */
     public function __construct($journalId, $announcementId = null) {
-        // [WIZDAM FIX] Explicit parent constructor call
         parent::__construct($journalId, $announcementId);
 
-        // [WIZDAM FIX] Replaced deprecated create_function with anonymous closure
-        // If provided, announcement type is valid
         $this->addCheck(new FormValidatorCustom(
             $this, 
             'typeId', 
@@ -90,7 +85,6 @@ class AnnouncementForm extends PKPAnnouncementForm {
      */
     protected function _setAnnouncementAssocId($announcement) {
         $journalId = $this->getContextId();
-        // [WIZDAM] Removed & reference, objects are passed by identifier
         $announcement->setAssocType(ASSOC_TYPE_JOURNAL);
         $announcement->setAssocId($journalId);
     }
@@ -101,8 +95,6 @@ class AnnouncementForm extends PKPAnnouncementForm {
      * @return Announcement
      */
     public function execute($request = null) {
-        // [WIZDAM] Removed & from $request signature
-        // Call parent execute with request argument to satisfy signature
         $announcement = parent::execute($request);
         $journalId = $this->getContextId();
 
