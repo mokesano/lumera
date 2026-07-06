@@ -179,7 +179,7 @@ class CitationForm extends Form {
      * meta-data form data and injects it into the internal citation
      * object.
      */
-    public function validate() {
+    public function validate($callHooks = true) {
         // Make sure that this method is not called twice which
         // would corrupt internal state.
         assert(empty($this->_metadataDescriptions));
@@ -288,9 +288,9 @@ class CitationForm extends Form {
     }
 
     /**
-     * Save citation
+     * Save citation changes to article.
      */
-    public function execute(...$functionArgs) {
+    public function execute($request = null) {
         // Persist citation
         $citation = $this->getCitation();
         $citationDao = DAORegistry::getDAO('CitationDAO');
@@ -326,7 +326,6 @@ class CitationForm extends Form {
         //
         // Add the citation to the template.
         $templateMgr = TemplateManager::getManager($request);
-        // [WIZDAM] Replaced assign_by_ref with assign for modern PHP/Smarty usage
         $templateMgr->assign('citation', $citation);
 
         // Does the form contain unsaved changes?
