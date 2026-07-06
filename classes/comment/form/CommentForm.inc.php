@@ -17,8 +17,7 @@ declare(strict_types=1);
  * @see Comment, CommentDAO
  *
  * @brief Form to change metadata information for an RT comment.
- * [WIZDAM EDITION] Refactored for PHP 8.x
- * - TRUE MODULAR SECURITY: Decoupled Default Captcha, reCAPTCHA, and Turnstile
+ * TRUE MODULAR SECURITY: Decoupled Default Captcha, reCAPTCHA, and Turnstile
  */
 
 import('lib.pkp.classes.form.Form');
@@ -308,7 +307,7 @@ class CommentForm extends Form {
      * Save changes to comment.
      * @return int the comment ID
      */
-    public function execute() {
+    public function execute($object = null) {
         // [WIZDAM] Singleton Fallback
         $request = Application::get()->getRequest();
         
@@ -350,6 +349,5 @@ class CommentForm extends Form {
 
         return $this->commentId;
     }
-
 }
 ?>
