@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * @file classes/subscription/form/SubscriptionPolicyForm.inc.php
@@ -11,7 +12,6 @@
  * @ingroup manager_form
  *
  * @brief Form for managers to setup subscription policies.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 define('SUBSCRIPTION_OPEN_ACCESS_DELAY_MIN', '0');
@@ -19,8 +19,8 @@ define('SUBSCRIPTION_OPEN_ACCESS_DELAY_MAX', '60');
 
 import('lib.pkp.classes.form.Form');
 
-
 class SubscriptionPolicyForm extends Form {
+
     /** @var array validDuration keys are valid open access delay months */     
     public $validDuration;
 
@@ -133,7 +133,7 @@ class SubscriptionPolicyForm extends Form {
     /**
      * Save subscription policies. 
      */
-    public function execute() {
+    public function execute($object = NULL) {
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $journal = Request::getJournal();
         $journalId = $journal->getId();
@@ -161,5 +161,4 @@ class SubscriptionPolicyForm extends Form {
         $journalSettingsDao->updateSetting($journalId, 'numWeeksAfterSubscriptionExpiryReminder', $this->getData('numWeeksAfterSubscriptionExpiryReminder'), 'int');
     }
 }
-
 ?>

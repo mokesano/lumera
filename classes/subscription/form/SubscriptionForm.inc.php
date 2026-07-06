@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * @defgroup subscription_form
@@ -15,7 +16,6 @@
  * @ingroup subscription_form
  *
  * @brief Base form class for subscription create/edits.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('lib.pkp.classes.form.Form');
@@ -42,7 +42,8 @@ class SubscriptionForm extends Form {
      * @param subscriptionId int leave as default for new subscription
      */
     public function __construct($template, $subscriptionId = null, $userId = null) {
-        parent::__construct($template); // [WIZDAM NOTE] Adapted to allow child classes to pass template
+        // [WIZDAM NOTE] Adapted to allow child classes to pass template
+        parent::__construct($template);
 
         $subscriptionId = isset($subscriptionId) ? (int) $subscriptionId : null;
         $this->userId = isset($userId) ? (int) $userId : null;
@@ -58,7 +59,6 @@ class SubscriptionForm extends Form {
 
         // User is provided and valid
         $this->addCheck(new FormValidator($this, 'userId', 'required', 'manager.subscriptions.form.userIdRequired'));
-        // [WIZDAM FIX] Closure replacement for create_function
         $this->addCheck(new FormValidatorCustom($this, 'userId', 'required', 'manager.subscriptions.form.userIdValid', function($userId) {
             $userDao = DAORegistry::getDAO('UserDAO');
             return $userDao->userExistsById($userId);
@@ -68,7 +68,6 @@ class SubscriptionForm extends Form {
         $this->addCheck(new FormValidator($this, 'userFirstName', 'required', 'user.profile.form.firstNameRequired'));
         $this->addCheck(new FormValidator($this, 'userLastName', 'required', 'user.profile.form.lastNameRequired'));
         $this->addCheck(new FormValidatorUrl($this, 'userUrl', 'optional', 'user.profile.form.urlInvalid'));
-
         $this->addCheck(new FormValidatorInSet($this, 'userCountry', 'optional', 'manager.subscriptions.form.countryValid', array_keys($this->validCountries)));
 
         // Subscription status is provided and valid
@@ -217,28 +216,22 @@ class SubscriptionForm extends Form {
         if (!$nonExpiring) {
             // Start date is provided and is valid
             $this->addCheck(new FormValidator($this, 'dateStartYear', 'required', 'manager.subscriptions.form.dateStartRequired'));
-            // [WIZDAM FIX] Closure replacement
             $this->addCheck(new FormValidatorCustom($this, 'dateStartYear', 'required', 'manager.subscriptions.form.dateStartValid', function($dateStartYear) {
                 $minYear = date('Y') + SUBSCRIPTION_YEAR_OFFSET_PAST;
                 $maxYear = date('Y') + SUBSCRIPTION_YEAR_OFFSET_FUTURE;
                 return ($dateStartYear >= $minYear && $dateStartYear <= $maxYear) ? true : false;
             }));
-
             $this->addCheck(new FormValidator($this, 'dateStartMonth', 'required', 'manager.subscriptions.form.dateStartRequired'));
-            // [WIZDAM FIX] Closure replacement
             $this->addCheck(new FormValidatorCustom($this, 'dateStartMonth', 'required', 'manager.subscriptions.form.dateStartValid', function($dateStartMonth) {
                 return ($dateStartMonth >= 1 && $dateStartMonth <= 12) ? true : false;
             }));
-
             $this->addCheck(new FormValidator($this, 'dateStartDay', 'required', 'manager.subscriptions.form.dateStartRequired'));
-            // [WIZDAM FIX] Closure replacement
             $this->addCheck(new FormValidatorCustom($this, 'dateStartDay', 'required', 'manager.subscriptions.form.dateStartValid', function($dateStartDay) {
                 return ($dateStartDay >= 1 && $dateStartDay <= 31) ? true : false;
             }));
 
             // End date is provided and is valid
             $this->addCheck(new FormValidator($this, 'dateEndYear', 'required', 'manager.subscriptions.form.dateEndRequired'));
-            // [WIZDAM FIX] Closure replacement
             $this->addCheck(new FormValidatorCustom($this, 'dateEndYear', 'required', 'manager.subscriptions.form.dateEndValid', function($dateEndYear) {
                 $minYear = date('Y') + SUBSCRIPTION_YEAR_OFFSET_PAST;
                 $maxYear = date('Y') + SUBSCRIPTION_YEAR_OFFSET_FUTURE;
@@ -246,13 +239,11 @@ class SubscriptionForm extends Form {
             }));
 
             $this->addCheck(new FormValidator($this, 'dateEndMonth', 'required', 'manager.subscriptions.form.dateEndRequired'));
-            // [WIZDAM FIX] Closure replacement
             $this->addCheck(new FormValidatorCustom($this, 'dateEndMonth', 'required', 'manager.subscriptions.form.dateEndValid', function($dateEndMonth) {
                 return ($dateEndMonth >= 1 && $dateEndMonth <= 12) ? true : false;
             }));
 
             $this->addCheck(new FormValidator($this, 'dateEndDay', 'required', 'manager.subscriptions.form.dateEndRequired'));
-            // [WIZDAM FIX] Closure replacement
             $this->addCheck(new FormValidatorCustom($this, 'dateEndDay', 'required', 'manager.subscriptions.form.dateEndValid', function($dateEndDay) {
                 return ($dateEndDay >= 1 && $dateEndDay <= 31) ? true : false;
             }));
@@ -260,7 +251,6 @@ class SubscriptionForm extends Form {
 
         // If notify email is requested, ensure subscription contact name and email exist.
         if ($this->_data['notifyEmail'] == 1) {
-            // [WIZDAM FIX] Closure replacement
             $this->addCheck(new FormValidatorCustom($this, 'notifyEmail', 'required', 'manager.subscriptions.form.subscriptionContactRequired', function() {
                 $journal = Request::getJournal();
                 $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
@@ -274,7 +264,7 @@ class SubscriptionForm extends Form {
     /**
      * Save subscription.
      */
-    public function execute() {
+    public function execute($object = NULL) {
         $journal = Request::getJournal();
         $subscription = $this->subscription;
 
@@ -364,7 +354,5 @@ class SubscriptionForm extends Form {
 
         return $mail;
     }
-
 }
-
 ?>
