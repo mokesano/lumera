@@ -37,7 +37,6 @@ class ReviewFormResponseForm extends Form {
         $reviewFormElementDao = DAORegistry::getDAO('ReviewFormElementDAO');
         $requiredReviewFormElementIds = $reviewFormElementDao->getRequiredReviewFormElementIds($this->reviewFormId);
 
-        // [WIZDAM] Replaced create_function with Anonymous Function
         $this->addCheck(new FormValidatorCustom(
             $this, 
             'reviewFormResponses', 
