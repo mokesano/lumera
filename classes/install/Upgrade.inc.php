@@ -14,8 +14,6 @@ declare(strict_types=1);
  * @brief Perform system upgrade.
  *
  * @see Installer
- *
- * [WIZDAM FORK v3.4] - PHP 8.4+ Strict Mode
  */
 
 import('lib.pkp.classes.install.Installer');
@@ -129,7 +127,7 @@ class Upgrade extends Installer {
     }
 
     /**
-     * For upgrade to OJS 2.2.0: Migrate the currency settings so the
+     * For upgrade to 2.2.0: Migrate the currency settings so the
      * currencies table can be dropped in favour of XML.
      * @return bool
      */
@@ -535,7 +533,6 @@ class Upgrade extends Installer {
             }
         }
 
-
         return true;
     }
 
@@ -843,7 +840,7 @@ class Upgrade extends Installer {
                     break;
                 case NOTIFICATION_TYPE_USER_COMMENT:
                     // Remove the last two elements of the array.  They refer to the
-                    //  galley and parent, which we no longer use
+                    // galley and parent, which we no longer use
                     $matches = array_slice($matches[0], -3);
                     $id = array_shift($matches);
                     $notification->setAssocType(ASSOC_TYPE_ARTICLE);
@@ -885,7 +882,6 @@ class Upgrade extends Installer {
 
         $result->Close();
         unset($result);
-
 
         // Retrieve all settings from pre-2.4 notification_settings table
         $result = $notificationDao->retrieve('SELECT * FROM notification_settings_old');
@@ -955,7 +951,6 @@ class Upgrade extends Installer {
 
         return true;
     }
-
 
     /**
      * For 2.3.7 Upgrade -- Remove author revised file upload IDs erroneously added to copyedit signoff
@@ -1422,7 +1417,7 @@ class Upgrade extends Installer {
 
         error_log("[WIZDAM FRONTEDGE] Migrasi Invoices Selesai Total. Sistem Siap.");
 
-        return true; // Sinyal ke OJS Installer bahwa rantai migrasi sukses
+        return true; // Sinyal ke APP Installer bahwa rantai migrasi sukses
     }
     
     /**
