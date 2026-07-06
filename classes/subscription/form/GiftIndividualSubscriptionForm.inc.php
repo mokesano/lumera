@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * @defgroup subscription_form
@@ -15,12 +16,12 @@
  * @ingroup subscription_form
  *
  * @brief Form class for purchase of individual subscription gift.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('lib.pkp.classes.form.Form');
 
 class GiftIndividualSubscriptionForm extends Form {
+
     /** @var $request PKPRequest */
     public $request;
 
@@ -50,17 +51,12 @@ class GiftIndividualSubscriptionForm extends Form {
         $this->addCheck(new FormValidator($this, 'buyerFirstName', 'required', 'user.profile.form.firstNameRequired'));
         $this->addCheck(new FormValidator($this, 'buyerLastName', 'required', 'user.profile.form.lastNameRequired'));
         $this->addCheck(new FormValidatorEmail($this, 'buyerEmail', 'required', 'user.profile.form.emailRequired'));
-        
-        // [WIZDAM FIX] Ganti create_function dengan Closure
         $this->addCheck(new FormValidatorCustom($this, 'buyerEmail', 'required', 'user.register.form.emailsDoNotMatch', function($buyerEmail) {
             return $buyerEmail == $this->getData('confirmBuyerEmail');
         }));
-
         $this->addCheck(new FormValidator($this, 'recipientFirstName', 'required', 'user.profile.form.firstNameRequired'));
         $this->addCheck(new FormValidator($this, 'recipientLastName', 'required', 'user.profile.form.lastNameRequired'));
         $this->addCheck(new FormValidatorEmail($this, 'recipientEmail', 'required', 'user.profile.form.emailRequired'));
-        
-        // [WIZDAM FIX] Ganti create_function dengan Closure
         $this->addCheck(new FormValidatorCustom($this, 'recipientEmail', 'required', 'user.register.form.emailsDoNotMatch', function($recipientEmail) {
             return $recipientEmail == $this->getData('confirmRecipientEmail');
         }));
@@ -70,7 +66,6 @@ class GiftIndividualSubscriptionForm extends Form {
         $this->addCheck(new FormValidator($this, 'giftNote', 'required', 'gifts.noteRequired'));
 
         // Ensure subscription type is valid
-        // [WIZDAM FIX] Ganti create_function dengan Closure
         $this->addCheck(new FormValidatorCustom($this, 'typeId', 'required', 'user.subscriptions.form.typeIdValid', function($typeId) use ($journalId) {
             $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
             return ($subscriptionTypeDao->subscriptionTypeExistsByTypeId($typeId, $journalId) && 
@@ -191,5 +186,4 @@ class GiftIndividualSubscriptionForm extends Form {
         $paymentManager->displayPaymentForm($queuedPaymentId, $queuedPayment);
     }
 }
-
 ?>
