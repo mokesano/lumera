@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup rt_ojs_form
  *
  * @brief Form to change metadata information for an RT search.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
@@ -101,7 +99,6 @@ class SearchForm extends Form {
         $templateMgr->assign('versionId', $this->versionId);
 
         if (isset($this->search)) {
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('search', $this->search);
             $templateMgr->assign('searchId', $this->searchId);
         }
@@ -109,7 +106,6 @@ class SearchForm extends Form {
         $templateMgr->assign('helpTopicId', 'journal.managementPages.readingTools.contexts');
         parent::display($request, $template);
     }
-
 
     /**
      * Assign form data to user-submitted data.
@@ -157,6 +153,5 @@ class SearchForm extends Form {
 
         return $this->searchId;
     }
-
 }
 ?>
