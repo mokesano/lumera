@@ -9,8 +9,8 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="reviewer.dashboard"}
-{include file="common/header-parts/header-reviewer.tpl"}
+	{assign var="pageTitle" value="reviewer.dashboard"}
+	{include file="common/header-parts/header-reviewer.tpl"}
 {/strip}
 
 <ul class="menu">
@@ -31,4 +31,3 @@
 {include file="reviewer/$pageToDisplay.tpl"}
 
 {include file="common/footer-parts/footer-user.tpl"}
-
