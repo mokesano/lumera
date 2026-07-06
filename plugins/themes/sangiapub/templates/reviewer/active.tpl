@@ -10,35 +10,35 @@
  *}
 {if !$submissions->wasEmpty()}
 <div id="submissions" class="block">
-<table class="listing" width="100%">
-	<tr><td colspan="6" class="headseparator">&nbsp;</td></tr>
-	<tr class="heading" valign="bottom">
-		<td width="5%">{sort_heading key="common.id" sort='id'}</td>
-		<td width="5%"><span class="disabled">{translate key="submission.date.mmdd"}</span><br />{sort_heading key="common.assigned" sort='assignDate'}</td>
-		<td width="5%">{sort_heading key="submissions.sec" sort='section'}</td>
-		<td width="65%">{sort_heading key="article.title" sort='title'}</td>
-		<td width="10%">{sort_heading key="submission.due" sort='dueDate'}</td>
-		<td width="10%">{sort_heading key="submissions.reviewRound" sort='round'}</td>
-	</tr>
-	<tr><td colspan="6" class="headseparator">&nbsp;</td></tr>
+	<table class="listing" width="100%">
+		<tr><td colspan="6" class="headseparator">&nbsp;</td></tr>
+		<tr class="heading" valign="bottom">
+			<td width="5%">{sort_heading key="common.id" sort='id'}</td>
+			<td width="5%"><span class="disabled">{translate key="submission.date.mmdd"}</span><br />{sort_heading key="common.assigned" sort='assignDate'}</td>
+			<td width="5%">{sort_heading key="submissions.sec" sort='section'}</td>
+			<td width="65%">{sort_heading key="article.title" sort='title'}</td>
+			<td width="10%">{sort_heading key="submission.due" sort='dueDate'}</td>
+			<td width="10%">{sort_heading key="submissions.reviewRound" sort='round'}</td>
+		</tr>
+		<tr><td colspan="6" class="headseparator">&nbsp;</td></tr>
 
-{iterate from=submissions item=submission}
-	{assign var="articleId" value=$submission->getId()}
-	{assign var="reviewId" value=$submission->getReviewId()}
+		{iterate from=submissions item=submission}
+			{assign var="articleId" value=$submission->getId()}
+			{assign var="reviewId" value=$submission->getReviewId()}
 
-	<tr valign="top">
-		<td>{$articleId|escape}</td>
-		<td>{$submission->getDateNotified()|date_format:$dateFormatTrunc}</td>
-		<td>{$submission->getSectionAbbrev()|escape}</td>
-		<td><a href="{url op="submission" path=$reviewId}" class="action">{$submission->getLocalizedTitle()|strip_tags|truncate:60:"..."}</a></td>
-		<td class="nowrap">{$submission->getDateDue()|date_format:$dateFormatTrunc}</td>
-		<td>{$submission->getRound()}</td>
-	</tr>
-	<tr>
-		<td colspan="6" class="{if $submissions->eof()}end{/if}separator">&nbsp;</td>
-	</tr>
-{/iterate}
-</table>
+			<tr valign="top">
+				<td>{$articleId|escape}</td>
+				<td>{$submission->getDateNotified()|date_format:$dateFormatTrunc}</td>
+				<td>{$submission->getSectionAbbrev()|escape}</td>
+				<td><a href="{url op="submission" path=$reviewId}" class="action">{$submission->getLocalizedTitle()|strip_tags|truncate:60:"..."}</a></td>
+				<td class="nowrap">{$submission->getDateDue()|date_format:$dateFormatTrunc}</td>
+				<td>{$submission->getRound()}</td>
+			</tr>
+			<tr>
+				<td colspan="6" class="{if $submissions->eof()}end{/if}separator">&nbsp;</td>
+			</tr>
+		{/iterate}
+	</table>
 </div>
 
 <div class="colspan u-mb-0" id="colspan">	    
