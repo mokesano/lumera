@@ -11,12 +11,7 @@ declare(strict_types=1);
  * @class ChangePasswordForm
  * @ingroup user_form
  *
- * @brief Form to change a user's password.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (create_function removal, Constructor)
- * - Security Guard Clause (User Session)
- * - Strict Visibility
+ * @brief Form to change a user's password with Security Guard Clause (User Session).
  */
 
 import('lib.pkp.classes.form.Form');
@@ -42,8 +37,6 @@ class ChangePasswordForm extends Form {
         $site = Request::getSite();
 
         // Validation checks for this form
-        
-        // MOD: Replaced deprecated create_function with Closure
         $this->addCheck(new FormValidatorCustom(
             $this, 
             'oldPassword', 
@@ -57,7 +50,6 @@ class ChangePasswordForm extends Form {
         $this->addCheck(new FormValidatorLength($this, 'password', 'required', 'user.register.form.passwordLengthTooShort', '>=', (int) $site->getMinPasswordLength()));
         $this->addCheck(new FormValidator($this, 'password', 'required', 'user.profile.form.newPasswordRequired'));
 
-        // MOD: Replaced deprecated create_function with Closure
         $this->addCheck(new FormValidatorCustom(
             $this, 
             'password', 
@@ -137,5 +129,4 @@ class ChangePasswordForm extends Form {
         $userDao->updateObject($user);
     }
 }
-
 ?>
