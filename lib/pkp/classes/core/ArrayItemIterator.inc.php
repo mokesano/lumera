@@ -14,10 +14,10 @@ declare(strict_types=1);
  * @brief Provides paging and iteration for arrays.
  */
 
-
 import('lib.pkp.classes.core.ItemIterator');
 
 class ArrayItemIterator extends ItemIterator {
+
     /** @var array The array of contents of this iterator. */
     public $theArray;
 
@@ -35,7 +35,6 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Constructor.
-     * [MODERNISASI] Native Constructor
      * @param $theArray array The array of items to iterate through
      * @param $page int the current page number
      * @param $itemsPerPage int Number of items to display per page
@@ -56,7 +55,7 @@ class ArrayItemIterator extends ItemIterator {
     }
 
     /**
-     * Legacy Constructor Shim.
+     * [SHIM] Backward Compatibility
      */
     public function ArrayItemIterator($theArray, $page=-1, $itemsPerPage=-1) {
         trigger_error(
@@ -68,7 +67,6 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Static method: Generate an iterator from an array and rangeInfo object.
-     * [MODERNISASI] Static public method, removed & reference
      * @param $theArray array
      * @param $theRange object
      */
@@ -83,7 +81,6 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Return the next item in the iterator.
-     * [MODERNISASI] Removed & reference
      * @return object
      */
     public function next() {
@@ -100,7 +97,6 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Return the next item in the iterator, with key.
-     * [MODERNISASI] Removed & reference
      * @return array (key, value)
      */
     public function nextWithKey() {
@@ -167,7 +163,6 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Convert this iterator to an array
-     * [MODERNISASI] Removed & reference
      * @return array
      */
     public function toArray() {
@@ -184,7 +179,6 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Get the range info representing the last page of results.
-     * [MODERNISASI] Removed & reference
      * @return object DBResultRange
      */
     public function getLastPageRangeInfo() {
@@ -198,7 +192,6 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * A version of array_slice that takes keys into account.
-     * [MODERNISASI] Added public visibility
      * @see http://ca3.php.net/manual/en/function.array-slice.php
      */
     public function array_slice_key($array, $offset, $len=-1) {
@@ -214,5 +207,4 @@ class ArrayItemIterator extends ItemIterator {
         return $return;
     }
 }
-
 ?>
