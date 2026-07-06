@@ -94,7 +94,6 @@ class IssueForm extends Form {
         $request = Application::get()->getRequest();
         $issueId = ($issue ? $issue->getId() : 0);
 
-        // [WIZDAM] Replaced create_function with closures
         if ($this->getData('showVolume')) {
             $this->addCheck(new FormValidatorCustom($this, 'volume', 'required', 'editor.issues.volumeRequired', function($volume) {
                 return ($volume > 0);
@@ -344,7 +343,6 @@ class IssueForm extends Form {
 
         $this->readUserDateVars(['datePublished', 'openAccessDate']);
 
-        // [WIZDAM] Replaced create_function
         $this->addCheck(new FormValidatorCustom(
             $this, 'showVolume', 'required', 'editor.issues.issueIdentificationRequired', 
             function($showVolume, $showNumber, $showYear, $showTitle) {
@@ -407,8 +405,7 @@ class IssueForm extends Form {
         $issue->setShowTitle(empty($showTitle) ? 0 : $showTitle);
         $issue->setCoverPageDescription($this->getData('coverPageDescription'), null); // Localized
         $issue->setCoverPageAltText($this->getData('coverPageAltText'), null); // Localized
-        
-        // [WIZDAM] Replaced create_function
+
         $showCoverPage = array_map(fn($arrayElement) => (int)$arrayElement, (array) $this->getData('showCoverPage'));
         foreach (array_keys($this->getData('coverPageDescription')) as $locale) {
             if (!array_key_exists($locale, $showCoverPage)) {
@@ -417,7 +414,6 @@ class IssueForm extends Form {
         }
         $issue->setShowCoverPage($showCoverPage, null); // Localized
 
-        // [WIZDAM] Replaced create_function
         $hideCoverPageArchives = array_map(fn($arrayElement) => (int)$arrayElement, (array) $this->getData('hideCoverPageArchives'));
         foreach (array_keys($this->getData('coverPageDescription')) as $locale) {
             if (!array_key_exists($locale, $hideCoverPageArchives)) {
@@ -426,7 +422,6 @@ class IssueForm extends Form {
         }
         $issue->setHideCoverPageArchives($hideCoverPageArchives, null); // Localized
 
-        // [WIZDAM] Replaced create_function
         $hideCoverPageCover = array_map(fn($arrayElement) => (int)$arrayElement, (array) $this->getData('hideCoverPageCover'));
         foreach (array_keys($this->getData('coverPageDescription')) as $locale) {
             if (!array_key_exists($locale, $hideCoverPageCover)) {
