@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * @file classes/core/Request.inc.php
@@ -13,7 +14,6 @@
  * @brief Class providing operations associated with HTTP requests.
  * Requests are assumed to be in the format http://host.tld/index.php/<journal_id>/<page_name>/<operation_name>/<arguments...>
  * <journal_id> is assumed to be "index" for top-level site requests.
- * WIZDAM EDITION: PHP 8 Compatibility (Static & Strict Types)
  */
 
 import('lib.pkp.classes.core.PKPRequest');
@@ -39,8 +39,9 @@ class Request extends PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getRequestedContextPath()
+     * @deprecated
      */
     public static function getRequestedJournalPath() {
         static $journal;
@@ -48,8 +49,6 @@ class Request extends PKPRequest {
 
         if (!isset($journal)) {
             $journal = $instance->_delegateToRouter('getRequestedContextPath', 1);
-            // WIZDAM: HookRegistry::dispatch.
-            // Note: Keep & because $journal is a string primitive we might want to modify via plugin.
             HookRegistry::dispatch('Request::getRequestedJournalPath', array(&$journal));
         }
 
@@ -57,8 +56,9 @@ class Request extends PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getContext()
+     * @deprecated
      */
     public static function getJournal() {
         $instance = PKPRequest::_checkThis();
@@ -67,14 +67,14 @@ class Request extends PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getRequestedContextPath()
+     * @deprecated
      */
     public static function getRequestedContextPath($contextLevel = null) {
         $instance = PKPRequest::_checkThis();
 
-        // Emulate the old behavior of getRequestedContextPath for
-        // backwards compatibility.
+        // Emulate the old behavior of getRequestedContextPath for backwards compatibility.
         if (is_null($contextLevel)) {
             return $instance->_delegateToRouter('getRequestedContextPaths');
         } else {
@@ -83,10 +83,13 @@ class Request extends PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getContext()
-     * Note: Parameter $level default value makes it slightly different from Parent, 
-     * but since it is static, it shadows the parent method.
+     * 
+     * Note: Adds an optional $level parameter not present in
+     * PKPRequest::getContext(). This is LSP-compatible because the added
+     * parameter is optional — callers using the parent signature are unaffected.
+     * @deprecated
      */
     public static function getContext($level = 1) {
         $instance = PKPRequest::_checkThis();
@@ -95,8 +98,9 @@ class Request extends PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getContextByName()
+     * @deprecated
      */
     public static function getContextByName($contextName) {
         $instance = PKPRequest::_checkThis();
@@ -105,8 +109,9 @@ class Request extends PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::url()
+     * @deprecated
      */
     public static function url($journalPath = null, $page = null, $op = null, $path = null,
             $params = null, $anchor = null, $escape = false) {
@@ -116,13 +121,13 @@ class Request extends PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PageRouter::redirectHome()
+     * @deprecated
      */
     public static function redirectHome() {
         $instance = PKPRequest::_checkThis();
         return $instance->_delegateToRouter('redirectHome');
     }
 }
-
 ?>
