@@ -17,12 +17,12 @@ declare(strict_types=1);
  * @see IssueGalley
  *
  * @brief Issue galley editing form.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('lib.pkp.classes.form.Form');
 
 class IssueGalleyForm extends Form {
+    
     /** @var int|null the ID of the issue */
     protected $_issueId = null;
 
@@ -62,7 +62,6 @@ class IssueGalleyForm extends Form {
         );
 
         // Ensure a locale is provided and valid
-        // [WIZDAM] Replaced create_function with closure
         $this->addCheck(
             new FormValidator(
                 $this,
@@ -157,7 +156,6 @@ class IssueGalleyForm extends Form {
 
         $galley = $this->getGalley();
         if ($galley) {
-            // [WIZDAM] Use assign instead of assign_by_ref
             $templateMgr->assign('galley', $galley);
         }
 
@@ -321,5 +319,4 @@ class IssueGalleyForm extends Form {
         return $this->getGalleyId();
     }
 }
-
 ?>
