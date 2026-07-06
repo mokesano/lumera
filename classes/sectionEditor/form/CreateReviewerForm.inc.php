@@ -16,12 +16,12 @@ declare(strict_types=1);
  * @ingroup sectionEditor_form
  *
  * @brief Form for section editors to create reviewers.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('lib.pkp.classes.form.Form');
 
 class CreateReviewerForm extends Form {
+
     /** @var int The article this form is for */
     public $articleId;
 
@@ -65,6 +65,9 @@ class CreateReviewerForm extends Form {
         self::__construct($articleId);
     }
 
+    /**
+     * Get locale field names.
+     */
     public function getLocaleFieldNames() {
         return array('biography', 'gossip');
     }
@@ -74,7 +77,6 @@ class CreateReviewerForm extends Form {
      */
     public function display($args = null, $request = null) {
         $templateMgr = TemplateManager::getManager();
-        $site = Request::getSite();
         $templateMgr->assign('articleId', $this->articleId);
 
         $site = Request::getSite();
@@ -137,7 +139,7 @@ class CreateReviewerForm extends Form {
      * Register a new user.
      * @return int userId
      */
-    public function execute() {
+    public function execute($object = null) {
         $userDao = DAORegistry::getDAO('UserDAO');
         $user = new User();
 
@@ -220,5 +222,4 @@ class CreateReviewerForm extends Form {
         return $userId;
     }
 }
-
 ?>

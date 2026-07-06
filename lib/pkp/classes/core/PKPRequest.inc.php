@@ -20,22 +20,31 @@ class PKPRequest {
     //
     /** @var PKPRouter router instance used to route this request */
     public $_router = null;
+
     /** @var Dispatcher dispatcher instance used to dispatch this request */
     public $_dispatcher = null;
+
     /** @var array the request variables cache (GET/POST) */
     public $_requestVars = null;
+
     /** @var string request base path */
     public $_basePath;
+
     /** @var string request path */
     public $_requestPath;
+
     /** @var boolean true if restful URLs are enabled in the config */
     public $_isRestfulUrlsEnabled;
+
     /** @var boolean true if path info is enabled for this server */
     public $_isPathInfoEnabled;
+
     /** @var string server host */
     public $_serverHost;
+
     /** @var string base url */
     public $_baseUrl;
+
     /** @var string request protocol */
     public $_protocol;
 
@@ -57,7 +66,7 @@ class PKPRequest {
     }
 
     /**
-     * Get the router instance
+     * Get the router instance.
      * @return PKPRouter
      */
     public static function getRouter() {
@@ -66,8 +75,8 @@ class PKPRequest {
     }
 
     /**
-     * Set the router instance
-     * @param $router instance PKPRouter
+     * Set the router instance.
+     * @param $router
      */
     public static function setRouter($router) {
         $instance = self::_checkThis();
@@ -75,8 +84,8 @@ class PKPRequest {
     }
 
     /**
-     * Set the dispatcher
-     * @param $dispatcher Dispatcher
+     * Set the dispatcher.
+     * @param $dispatcher
      */
     public static function setDispatcher($dispatcher) {
         $instance = self::_checkThis();
@@ -84,7 +93,7 @@ class PKPRequest {
     }
 
     /**
-     * Get the dispatcher
+     * Get the dispatcher.
      * @return Dispatcher
      */
     public static function getDispatcher() {
@@ -92,28 +101,26 @@ class PKPRequest {
         return $instance->_dispatcher;
     }
 
-
     /**
      * Perform an HTTP redirect to an absolute or relative (to base system URL) URL.
-     * @param $url string (exclude protocol for local redirects)
+     * @param $url string
      */
     public static function redirectUrl($url) {
         // self::_checkThis(); // Optional verification
-        
-        // HOOK: Request::redirect
+
         if (HookRegistry::dispatch('Request::redirect', array(&$url))) {
             return;
         }
 
         $url = preg_replace('/[\r\n]/', '', $url);
         
-        // [WIZDAM SECURITY] Validasi URL relatif menggunakan isPathValid() 
+        // [LUMERA SECURITY] Validasi URL relatif menggunakan isPathValid() 
         // yang sudah ada dari pemanggilan redirectUrl() langsung oleh plugin
         // dengan input yang tidak dikonstruksi melalui dispatcher.
         if (!str_starts_with($url, 'http://') && 
             !str_starts_with($url, 'https://') && 
             !self::isPathValid($url)) {
-            error_log('[WIZDAM SECURITY] redirectUrl() blocked invalid path: ' . $url);
+            error_log('[LUMERA SECURITY] redirectUrl() blocked invalid path: ' . $url);
             return;
         }
         
@@ -132,6 +139,7 @@ class PKPRequest {
         $json = new JSONMessage(true);
         $json->setEvent('redirectRequested', $url);
         header('Content-Type: application/json');
+
         return $json->getString();
     }
 
@@ -188,7 +196,6 @@ class PKPRequest {
                 // Auto-detection didn't work (e.g. this is a command-line call); use configuration param
                 $instance->_baseUrl = Config::getVar('general', 'base_url');
             }
-            // HOOK: Request::getBaseUrl
             HookRegistry::dispatch('Request::getBaseUrl', array(&$instance->_baseUrl));
         }
 
@@ -219,7 +226,6 @@ class PKPRequest {
             if ($instance->_basePath == '/' || $instance->_basePath == '\\') {
                 $instance->_basePath = '';
             }
-            // HOOK: Request::getBasePath
             HookRegistry::dispatch('Request::getBasePath', array(&$instance->_basePath));
         }
 
@@ -240,8 +246,9 @@ class PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getIndexUrl()
+     * @deprecated
      */
     public static function getIndexUrl() {
         static $indexUrl;
@@ -249,8 +256,6 @@ class PKPRequest {
         $instance = self::_checkThis();
         if (!isset($indexUrl)) {
             $indexUrl = $instance->_delegateToRouter('getIndexUrl');
-
-            // HOOK: Request::getIndexUrl
             HookRegistry::dispatch('Request::getIndexUrl', array(&$indexUrl));
         }
 
@@ -265,12 +270,10 @@ class PKPRequest {
         $instance = self::_checkThis();
 
         static $completeUrl;
-
         if (!isset($completeUrl)) {
             $completeUrl = $instance->getRequestUrl();
             $queryString = $instance->getQueryString();
             if (!empty($queryString)) $completeUrl .= "?$queryString";
-            // HOOK: Request::getCompleteUrl
             HookRegistry::dispatch('Request::getCompleteUrl', array(&$completeUrl));
         }
 
@@ -285,10 +288,8 @@ class PKPRequest {
         $instance = self::_checkThis();
 
         static $requestUrl;
-
         if (!isset($requestUrl)) {
             $requestUrl = $instance->getProtocol() . '://' . $instance->getServerHost() . $instance->getRequestPath();
-            // HOOK: Request::getRequestUrl
             HookRegistry::dispatch('Request::getRequestUrl', array(&$requestUrl));
         }
 
@@ -304,7 +305,6 @@ class PKPRequest {
 
         if (!isset($queryString)) {
             $queryString = isset($_SERVER['QUERY_STRING'])?$_SERVER['QUERY_STRING']:'';
-            // HOOK: Request::getQueryString
             HookRegistry::dispatch('Request::getQueryString', array(&$queryString));
         }
 
@@ -351,7 +351,6 @@ class PKPRequest {
             if ($instance->isPathInfoEnabled()) {
                 $instance->_requestPath .= isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
             }
-            // HOOK: Request::getRequestPath
             HookRegistry::dispatch('Request::getRequestPath', array(&$instance->_requestPath));
         }
         return $instance->_requestPath;
@@ -359,8 +358,8 @@ class PKPRequest {
 
     /**
      * Get the server hostname in the request.
-     * @param $default string Default hostname (defaults to localhost)
-     * @param $includePort boolean Whether to include non-standard port number; default true
+     * @param $default string
+     * @param $includePort boolean
      * @return string
      */
     public static function getServerHost($default = null, $includePort = true) {
@@ -373,8 +372,6 @@ class PKPRequest {
                 : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST']
                 : (isset($_SERVER['HOSTNAME']) ? $_SERVER['HOSTNAME']
                 : null));
-            
-            // HOOK: Request::getServerHost
             HookRegistry::dispatch('Request::getServerHost', array(&$instance->_serverHost, &$default, &$includePort));
         }
 
@@ -401,7 +398,6 @@ class PKPRequest {
             $httpsLower = class_exists('PKPString') ? PKPString::strtolower($https) : strtolower($https);
             
             $instance->_protocol = ($httpsLower != 'on') ? 'http' : 'https';
-            // HOOK: Request::getProtocol
             HookRegistry::dispatch('Request::getProtocol', array(&$instance->_protocol));
         }
         return $instance->_protocol;
@@ -436,7 +432,6 @@ class PKPRequest {
 
     /**
      * Get the remote IP address for the current request.
-     * [WIZDAM] Kompatibilitas PHP 7.4 dan parsing X-Forwarded-For yang benar
      * @return string
      */
     public static function getRemoteAddr() {
@@ -444,7 +439,7 @@ class PKPRequest {
         static $remoteAddr;
         if (isset($remoteAddr)) return $remoteAddr;
 
-        // PERBAIKAN 1: Baca dari [general] (sesuai kode OJS 2.4.8)
+        // PERBAIKAN 1: Baca dari [general] (sesuai kode base 2.4.8)
         // dan JANGAN gunakan default 'true' agar pengaturan 'Off' Anda dihargai.
         $trustedProxy = Config::getVar('general', 'trust_x_forwarded_for'); 
         $ip = null;
@@ -505,7 +500,6 @@ class PKPRequest {
             if ($remoteAddr) {
                 $remoteDomain = @getHostByAddr($remoteAddr);
             }
-            // HOOK: Request::getRemoteDomain
             HookRegistry::dispatch('Request::getRemoteDomain', array(&$remoteDomain));
         }
         return $remoteDomain;
@@ -527,7 +521,6 @@ class PKPRequest {
             if (!isset($userAgent) || $userAgent == false) {
                 $userAgent = '';
             }
-            // HOOK: Request::getUserAgent
             HookRegistry::dispatch('Request::getUserAgent', array(&$userAgent));
         }
         return $userAgent;
@@ -731,7 +724,7 @@ class PKPRequest {
     }
 
 	/**
-	 * Redirect to the specified page within a PKP Application.
+	 * Redirect to the specified page within Application.
 	 * Shorthand for a common call to $request->redirect($dispatcher->url($request, ROUTE_PAGE, ...)).
 	 * @param $context Array The optional contextual paths
 	 * @param $page string The name of the op to redirect to.
@@ -747,8 +740,9 @@ class PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getContext()
+     * @deprecated
      */
     public static function getContext() {
         $instance = self::_checkThis();
@@ -756,14 +750,14 @@ class PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getRequestedContextPath()
+     * @deprecated
      */
     public static function getRequestedContextPath($contextLevel = null) {
         $instance = self::_checkThis();
 
-        // Emulate the old behavior of getRequestedContextPath for
-        // backwards compatibility.
+        // Emulate the old behavior of getRequestedContextPath for backwards compatibility.
         if (is_null($contextLevel)) {
             return $instance->_delegateToRouter('getRequestedContextPaths');
         } else {
@@ -772,8 +766,9 @@ class PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getRequestedPage()
+     * @deprecated
      */
     public static function getRequestedPage() {
         $instance = self::_checkThis();
@@ -781,8 +776,9 @@ class PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getRequestedOp()
+     * @deprecated
      */
     public static function getRequestedOp() {
         $instance = self::_checkThis();
@@ -790,8 +786,9 @@ class PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getRequestedArgs()
+     * @deprecated
      */
     public static function getRequestedArgs() {
         $instance = self::_checkThis();
@@ -799,8 +796,9 @@ class PKPRequest {
     }
 
     /**
-     * Deprecated
+     * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::url()
+     * @deprecated
      */
     public static function url($context = null, $page = null, $op = null, $path = null,
             $params = null, $anchor = null, $escape = false) {
@@ -817,11 +815,11 @@ class PKPRequest {
     public static function _checkThis() {
         $instance = Registry::get('request');
         if (is_null($instance)) {
-            // [WIZDAM] Pertahankan log sebagai sinyal diagnostik
+            // [LUMERA] Pertahankan log sebagai sinyal diagnostik
             // Alihkan dari fatalError() ke error_log() agar eksekusi berlanjut
             error_log('PKPRequest singleton not properly initialized.');
             
-            // [WIZDAM] Self-initialize fallback instance agar method pemanggil
+            // [LUMERA] Self-initialize fallback instance agar method pemanggil
             // tidak menerima null dan crash dengan error yang tidak jelas
             $instance = self::_initializeFallbackInstance();
         }
@@ -829,7 +827,7 @@ class PKPRequest {
     }
 
     /**
-     * [WIZDAM] Initialize a minimal PKPRequest fallback instance.
+     * Initialize a minimal PKPRequest fallback instance.
      * Digunakan ketika singleton belum terdaftar di Registry,
      * misalnya saat CLI, cron job, atau hook yang dipanggil terlalu awal.
      * @return PKPRequest
@@ -883,13 +881,11 @@ class PKPRequest {
     
     /**
      * Check whether a path component is valid (not an external URL or malicious path).
-     * [WIZDAM SECURITY] Check whether a path component is valid.
-     * Updated for PHP 8.1 strictness.
-     * @param string|null $path Path component
+     * [LUMERA SECURITY] Check whether a path component is valid.
+     * @param string|null $path
      * @return boolean
      */
     public static function isPathValid($path) {
-        // [PHP 8 FIX] Casting ke string sebelum trim untuk menangani null
         $path = trim((string) $path);
     
         // Path kosong dianggap valid (tidak melakukan redirect berbahaya)
@@ -909,5 +905,4 @@ class PKPRequest {
         return true;
     }
 }
-
 ?>
