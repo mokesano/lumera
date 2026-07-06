@@ -236,21 +236,27 @@
                     </div>
                     <div id="standardFooter" class="sangia-footer-content u-margin-l-right-from-lg u-margin-m-right-from-md">
                         <div  class="u-hide u-remove-if-print"><div class="legal" role="contentinfo">Sangia Research Media & Publishing</div></div>
-                        <p class="sangia-ads">We use cookies to enhance our service and ads. By using this website, you agree to our <a class="anchor" href="/ISLE/pages/view/Terms%20and%20Conditions"><span class="anchor-text">Terms and Conditions</span></a>{if $currentJournal}, <a class="anchor" href="{url page="about" anchor="privacyStatement"}"><span class="anchor-text">{translate key="about.privacyStatement"}</span></a>{/if} and <a class="anchor" href="/ISLE/pages/view/Cookies"><span class="anchor-text">Cookies</span></a> policy.</p>
+                        <p class="sangia-policy">We use cookies to enhance our service and ads. By using this website, you agree to our <a class="anchor" href="/ISLE/pages/view/Terms%20and%20Conditions"><span class="anchor-text">Terms and Conditions</span></a>{if $currentJournal}, <a class="anchor" href="{url page="about" anchor="privacyStatement"}"><span class="anchor-text">{translate key="about.privacyStatement"}</span></a>{/if} and <a class="anchor" href="/ISLE/pages/view/Cookies"><span class="anchor-text">Cookies</span></a> policy.</p>
                         {if $currentJournal && $currentJournal->getSetting('onlineIssn')}
                         	{assign var=issn value=$currentJournal->getSetting('onlineIssn')}
                         {elseif $currentJournal && $currentJournal->getSetting('printIssn')}
                         	{assign var=issn value=$currentJournal->getSetting('printIssn')}
                         {/if}
                         <p class="sangia-lisensing u-hide" style="margin-bottom:0">
-                            {if $currentJournal}
-                                {$currentJournal->getLocalizedTitle()|strip_tags|escape} {if $printIssn}{else if $onlineIssn}{if $currentJournal->getSetting('printIssn')}ISSN: <a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('printIssn')}" target="_blank"><span class="anchor-text">{$currentJournal->getSetting('printIssn')}</span></a> (Print) {/if}ISSN: {if $currentJournal->getSetting('onlineIssn')}<a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('onlineIssn')}" target="_blank"><span class="anchor-text">{$currentJournal->getSetting('onlineIssn')}</span></a> (Online){else}on proccess (Online){/if}. {/if}
-                            {else}
-                                {$siteTitle}
-                            {/if}
-                        {translate|assign:"applicationName" key="common.openJournalSystems"}
-                        {assign var="applicationName" value="ScholarWizdam: Editorial Management System"}
-                        <span class="sangia-lisensing">Powered by <a class="anchor" href="//pkp.sfu.ca/software/ojs/download/archive/" target="_blank"><span class="anchor-text">{$applicationName}</span></a> and <a class="anchor" href="//github.com/masonpublishing/OJS-Theme" target="_blank"><span class="anchor-text">Mason Publishing</span></a> theme.</span></p>
+                            <span>
+                                {if $currentJournal}
+                                    {$currentJournal->getLocalizedTitle()|strip_tags|escape} {if $printIssn}{else if $onlineIssn}{if $currentJournal->getSetting('printIssn')}ISSN: <a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('printIssn')}" target="_blank"><span class="anchor-text">{$currentJournal->getSetting('printIssn')}</span></a> (Print) {/if}ISSN: {if $currentJournal->getSetting('onlineIssn')}<a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('onlineIssn')}" target="_blank"><span class="anchor-text">{$currentJournal->getSetting('onlineIssn')}</span></a> (Online){else}on proccess (Online){/if}. {/if}
+                                {else}
+                                    {$siteTitle}
+                                {/if}
+                            </span>
+                            {translate|assign:"applicationName" key="common.openJournalSystems"}
+                            {assign var="applicationName" value="Sangia Lumera"}
+                            <span class="sangia-licensing">Powered by <a class="anchor" href="https://github.com/codelumera" target="_blank">
+                                <span class="anchor-text">{$applicationName}</span></a> and <a class="anchor" href="https://github.com/masonpublishing/OJS-Theme" target="_blank">
+                                <span class="anchor-text">Mason Publishing</span></a>
+                            </span>
+                        </p>
                         <p class="sangia-footer-copyright u-mb-0" style="margin-bottom:0">Copyright © 2017-{$smarty.now|date_format:"%Y"} <a class="anchor" href="//www.sangia.org/publishing" target="_blank"><span class="anchor-text">Sangia Publishing</span></a> unless otherwise stated. Part of <a class="anchor" href="//www.insw.go.id/nib" target="_blank"><span class="anchor-text">Sangia Research Media and Publishing</span></a> | NIB: 1111220205313.</p>
                         <p class="sangia-footer-legal">Dirjen AHU No. <span class="anchor"><span class="anchor-text">AHU-050003.AH.01.30.Tahun 2022</span></span>. Certificate No. <span class="anchor"><span class="anchor-text">11112202053130002</span></span>.</p>
                         <p class="footer-section anchor">{$pageFooter}</p>       
