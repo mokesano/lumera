@@ -12,12 +12,12 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Form for Step 4 of author article submission.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('classes.author.form.submit.AuthorSubmitForm');
 
 class AuthorSubmitStep4Form extends AuthorSubmitForm {
+
     /**
      * Constructor.
      * @param Article $article
@@ -54,7 +54,6 @@ class AuthorSubmitStep4Form extends AuthorSubmitForm {
 
         // Get supplementary files for this article
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
-        // [WIZDAM] Use assign instead of assign_by_ref
         $templateMgr->assign('suppFiles', $suppFileDao->getSuppFilesByArticle($this->articleId));
 
         parent::display($request, $template);
@@ -79,5 +78,4 @@ class AuthorSubmitStep4Form extends AuthorSubmitForm {
         return $this->articleId;
     }
 }
-
 ?>
