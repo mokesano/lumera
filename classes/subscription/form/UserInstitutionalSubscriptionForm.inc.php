@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * @defgroup subscription_form
@@ -15,12 +16,12 @@
  * @ingroup subscription_form
  *
  * @brief Form class for user purchase of institutional subscription.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('lib.pkp.classes.form.Form');
 
 class UserInstitutionalSubscriptionForm extends Form {
+
     /** @var $request PKPRequest */
     public $request;
 
@@ -63,7 +64,6 @@ class UserInstitutionalSubscriptionForm extends Form {
         $this->subscriptionTypes = $subscriptionTypes->toArray();
 
         // Ensure subscription type is valid
-        // [WIZDAM FIX] Replaced create_function with Closure and use()
         $this->addCheck(new FormValidatorCustom($this, 'typeId', 'required', 'user.subscriptions.form.typeIdValid', function($typeId) use ($journalId) {
             $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
             return ($subscriptionTypeDao->subscriptionTypeExistsByTypeId($typeId, $journalId) && 
@@ -154,7 +154,6 @@ class UserInstitutionalSubscriptionForm extends Form {
         }
 
         // Domain or at least one IP range has been provided
-        // [WIZDAM FIX] Replaced create_function with Closure and use()
         $this->addCheck(new FormValidatorCustom($this, 'domain', 'required', 'user.subscriptions.form.domainIPRangeRequired', function($domain) use ($ipRangeProvided) {
             return ($domain != '' || $ipRangeProvided) ? true : false;
         }));
@@ -162,7 +161,6 @@ class UserInstitutionalSubscriptionForm extends Form {
         // If provided ensure IP ranges have IP address format; IP addresses may contain wildcards
         if ($ipRangeProvided) {    
             import('classes.subscription.InstitutionalSubscription');
-            // [WIZDAM FIX] Replaced create_function with Closure
             $this->addCheck(new FormValidatorArrayCustom($this, 'ipRanges', 'required', 'user.subscriptions.form.ipRangeValid', function($ipRange, $regExp) {
                 return PKPString::regexp_match($regExp, $ipRange);
             },
@@ -239,5 +237,4 @@ class UserInstitutionalSubscriptionForm extends Form {
         $paymentManager->displayPaymentForm($queuedPaymentId, $queuedPayment);
     }
 }
-
 ?>
