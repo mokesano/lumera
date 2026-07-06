@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see AnnouncementType
  *
  * @brief Form for journal managers to create/edit announcement types.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.manager.form.PKPAnnouncementTypeForm');
@@ -23,10 +21,9 @@ class AnnouncementTypeForm extends PKPAnnouncementTypeForm {
     
     /**
      * Constructor
-     * @param int|null $typeId leave as default for new announcement type
+     * @param int|null $typeId
      */
     public function __construct($typeId = null) {
-        // [WIZDAM FIX] Call parent constructor explicitly
         parent::__construct($typeId);
     }
 
@@ -58,15 +55,14 @@ class AnnouncementTypeForm extends PKPAnnouncementTypeForm {
 
     /**
      * Helper function to assign the AssocType and the AssocId
-     * [WIZDAM FIX] Visibility MUST BE PUBLIC to match parent definition
-     * @param AnnouncementType $announcementType the announcement type to be modified
+     * [LUMERA] Visibility MUST BE PUBLIC to match parent definition
+     * @param AnnouncementType $announcementType
      */
     public function _setAnnouncementTypeAssocId($announcementType) {
-        // [WIZDAM] Use Application Singleton instead of static Request
+        // [LUMERA] Use Application Singleton instead of static Request
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
-        
-        // [WIZDAM] Removed & reference
+
         if ($journal) {
             $announcementType->setAssocType(ASSOC_TYPE_JOURNAL);
             $announcementType->setAssocId($journal->getId());

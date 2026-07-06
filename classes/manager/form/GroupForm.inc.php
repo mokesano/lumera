@@ -13,28 +13,25 @@ declare(strict_types=1);
  * @see Group
  *
  * @brief Form for journal managers to create/edit groups.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
 import('lib.pkp.classes.group.Group');
 
 class GroupForm extends Form {
+
     /** @var Group|null the group being edited */
     public $group = null;
 
     /**
      * Constructor
-     * @param Group|null $group Group object; null to create new
+     * @param Group|null $group
      */
     public function __construct($group = null) {
-        // [WIZDAM FIX] Explicit parent constructor
         parent::__construct('manager/groups/groupForm.tpl');
 
         // Group title is provided
         $this->addCheck(new FormValidatorLocale($this, 'title', 'required', 'manager.groups.form.groupTitleRequired'));
-
         $this->addCheck(new FormValidatorPost($this));
 
         $this->group = $group;
@@ -70,10 +67,7 @@ class GroupForm extends Form {
      */
     public function display($request = null, $template = null) {
         $templateMgr = TemplateManager::getManager();
-        
-        // [WIZDAM FIX] assign_by_ref is deprecated/unnecessary for objects in modern PHP
         $templateMgr->assign('group', $this->group);
-        
         $templateMgr->assign('helpTopicId', 'journal.managementPages.groups');
         $templateMgr->assign('groupContextOptions', [
             GROUP_CONTEXT_EDITORIAL_TEAM => 'manager.groups.context.editorialTeam',
@@ -144,5 +138,4 @@ class GroupForm extends Form {
         }
     }
 }
-
 ?>

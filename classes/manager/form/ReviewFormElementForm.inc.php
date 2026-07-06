@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see ReviewFormElement
  *
  * @brief Form for creating and modifying review form elements.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
@@ -77,13 +75,9 @@ class ReviewFormElementForm extends Form {
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('reviewFormId', $this->reviewFormId);
         $templateMgr->assign('reviewFormElementId', $this->reviewFormElementId);
-        
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('multipleResponsesElementTypes', ReviewFormElement::getMultipleResponsesElementTypes());
-        
         // in order to be able to search for an element in the array in the javascript function 'togglePossibleResponses':
         $templateMgr->assign('multipleResponsesElementTypesString', ';' . implode(';', ReviewFormElement::getMultipleResponsesElementTypes()) . ';');
-        
         $templateMgr->assign('reviewFormElementTypeOptions', ReviewFormElement::getReviewFormElementTypeOptions());
         $templateMgr->assign('helpTopicId', 'journal.managementPages.reviewForms');
         
@@ -125,7 +119,7 @@ class ReviewFormElementForm extends Form {
     /**
      * Save review form element.
      */
-    public function execute() {
+    public function execute($object = null) {
         $reviewFormElementDao = DAORegistry::getDAO('ReviewFormElementDAO');
 
         if ($this->reviewFormElementId != null) {
