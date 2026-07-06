@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup submission_form
  *
  * @brief Form to change metadata information for a submission.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance & HookRegistry::dispatch
  */
 
 import('lib.pkp.classes.form.Form');
@@ -21,6 +19,7 @@ import('lib.pkp.classes.form.Form');
 define('COVER_PAGE_IMAGE_NAME', 'coverPage');
 
 class MetadataForm extends Form {
+
     /** @var object|null Article current article */
     public $article = null;
 
@@ -33,6 +32,9 @@ class MetadataForm extends Form {
     /** @var boolean is an Editor, can edit all metadata */
     public $isEditor = false;
 
+    /** @var array Locale keys (as array keys) this form instance must render fields for */
+    protected $formLocales = [];
+
     /**
      * Constructor.
      * @param object $article Article
@@ -42,7 +44,7 @@ class MetadataForm extends Form {
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
 
-        // [WIZDAM] Request Singleton
+        // [LUMERA] Request Singleton
         $request = Application::get()->getRequest();
         $user = $request->getUser();
         $roleId = $roleDao->getRoleIdFromPath($request->getRequestedPage());
@@ -90,7 +92,7 @@ class MetadataForm extends Form {
             $this->addCheck(new FormValidatorLocale($this, 'title', 'required', 'author.submit.form.titleRequired', $this->getRequiredLocale()));
             $this->addCheck(new FormValidatorArray($this, 'authors', 'required', 'author.submit.form.authorRequiredFields', ['firstName', 'lastName']));
             
-            // [WIZDAM] Replaced create_function with anonymous functions
+            // [LUMERA] Replaced create_function with anonymous functions
             $this->addCheck(new FormValidatorArrayCustom($this, 'authors', 'required', 'author.submit.form.authorRequiredFields', 
                 function($email, $regExp) {
                     return PKPString::regexp_match($regExp, $email);
@@ -154,7 +156,7 @@ class MetadataForm extends Form {
     }
     
     /**
-     * [WIZDAM] Universal getter for article object across all form types.
+     * [LUMERA] Universal getter for article object across all form types.
      * Helps plugins access the protected $article property safely.
      */
     public function getArticle() {
@@ -175,25 +177,25 @@ class MetadataForm extends Form {
             $article = $this->article;
             $this->_data = [
                 'authors' => [],
-                'title' => $article->getTitle(null), // Localized
-                'abstract' => $article->getAbstract(null), // Localized
-                'coverPageAltText' => $article->getCoverPageAltText(null), // Localized
-                'showCoverPage' => $article->getShowCoverPage(null), // Localized
-                'hideCoverPageToc' => $article->getHideCoverPageToc(null), // Localized
-                'hideCoverPageAbstract' => $article->getHideCoverPageAbstract(null), // Localized
-                'originalFileName' => $article->getOriginalFileName(null), // Localized
-                'fileName' => $article->getFileName(null), // Localized
-                'width' => $article->getWidth(null), // Localized
-                'height' => $article->getHeight(null), // Localized
-                'discipline' => $article->getDiscipline(null), // Localized
-                'subjectClass' => $article->getSubjectClass(null), // Localized
-                'subject' => $article->getSubject(null), // Localized
-                'coverageGeo' => $article->getCoverageGeo(null), // Localized
-                'coverageChron' => $article->getCoverageChron(null), // Localized
-                'coverageSample' => $article->getCoverageSample(null), // Localized
-                'type' => $article->getType(null), // Localized
+                'title' => $article->getTitle(null) ?? [],
+                'abstract' => $article->getAbstract(null) ?? [],
+                'coverPageAltText' => $article->getCoverPageAltText(null) ?? [],
+                'showCoverPage' => $article->getShowCoverPage(null) ?? [],
+                'hideCoverPageToc' => $article->getHideCoverPageToc(null) ?? [],
+                'hideCoverPageAbstract' => $article->getHideCoverPageAbstract(null) ?? [],
+                'originalFileName' => $article->getOriginalFileName(null) ?? [],
+                'fileName' => $article->getFileName(null) ?? [],
+                'width' => $article->getWidth(null) ?? [],
+                'height' => $article->getHeight(null) ?? [],
+                'discipline' => $article->getDiscipline(null) ?? [],
+                'subjectClass' => $article->getSubjectClass(null) ?? [],
+                'subject' => $article->getSubject(null) ?? [],
+                'coverageGeo' => $article->getCoverageGeo(null) ?? [],
+                'coverageChron' => $article->getCoverageChron(null) ?? [],
+                'coverageSample' => $article->getCoverageSample(null) ?? [],
+                'type' => $article->getType(null) ?? [],
                 'language' => $article->getLanguage(),
-                'sponsor' => $article->getSponsor(null), // Localized
+                'sponsor' => $article->getSponsor(null) ?? [],
                 'citations' => $article->getCitations(),
                 'hideAuthor' => $article->getHideAuthor()
             ];
@@ -211,14 +213,14 @@ class MetadataForm extends Form {
                         'firstName' => $authors[$i]->getFirstName(),
                         'middleName' => $authors[$i]->getMiddleName(),
                         'lastName' => $authors[$i]->getLastName(),
-                        'affiliation' => $authors[$i]->getAffiliation(null), // Localized
+                        'affiliation' => $authors[$i]->getAffiliation(null) ?? [],
                         'country' => $authors[$i]->getCountry(),
                         'countryLocalized' => $authors[$i]->getCountryLocalized(),
                         'email' => $authors[$i]->getEmail(),
                         'orcid' => $authors[$i]->getData('orcid'),
                         'url' => $authors[$i]->getUrl(),
-                        'competingInterests' => $authors[$i]->getCompetingInterests(null), // Localized
-                        'biography' => $authors[$i]->getBiography(null) // Localized
+                        'competingInterests' => $authors[$i]->getCompetingInterests(null) ?? [],
+                        'biography' => $authors[$i]->getBiography(null) ?? []
                     ]
                 );
                 if ($authors[$i]->getPrimaryContact()) {
@@ -226,7 +228,7 @@ class MetadataForm extends Form {
                 }
             }
             if ($this->isEditor) {
-                $this->setData('copyrightHolder', $article->getCopyrightHolder(null));
+                $this->setData('copyrightHolder', $article->getCopyrightHolder(null) ?? []);
                 $this->setData('copyrightYear', $article->getCopyrightYear());
                 $this->setData('licenseURL', $article->getLicenseURL());
             }
@@ -291,7 +293,6 @@ class MetadataForm extends Form {
 
         parent::display();
     }
-
 
     /**
      * Assign form data to user-submitted data.
@@ -370,7 +371,6 @@ class MetadataForm extends Form {
         return parent::validate();
     }
 
-
     /**
      * Save changes to article.
      * @param object|null $request PKPRequest
@@ -413,8 +413,7 @@ class MetadataForm extends Form {
         }
 
         $article->setCoverPageAltText($this->getData('coverPageAltText'), null); // Localized
-        
-        // [WIZDAM] Replaced create_function with Anonymous Function
+
         $showCoverPage = array_map(function($arrayElement) {
             return (int) $arrayElement;
         }, (array) $this->getData('showCoverPage'));
@@ -426,7 +425,6 @@ class MetadataForm extends Form {
         }
         $article->setShowCoverPage($showCoverPage, null); // Localized
 
-        // [WIZDAM] Replaced create_function with Anonymous Function
         $hideCoverPageToc = array_map(function($arrayElement) {
             return (int) $arrayElement;
         }, (array) $this->getData('hideCoverPageToc'));
@@ -438,7 +436,6 @@ class MetadataForm extends Form {
         }
         $article->setHideCoverPageToc($hideCoverPageToc, null); // Localized
 
-        // [WIZDAM] Replaced create_function with Anonymous Function
         $hideCoverPageAbstract = array_map(function($arrayElement) {
             return (int) $arrayElement;
         }, (array) $this->getData('hideCoverPageAbstract'));
@@ -499,7 +496,6 @@ class MetadataForm extends Form {
                 $author->setPrimaryContact($this->getData('primaryContact') == $i ? 1 : 0);
                 $author->setSequence($authors[$i]['seq']);
 
-                // [WIZDAM] HookRegistry::dispatch
                 HookRegistry::dispatch('Submission::Form::MetadataForm::Execute', [&$author, &$authors[$i]]);
 
                 if ($isExistingAuthor) {
