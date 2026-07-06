@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see ReviewForm
  *
  * @brief Form for creating and modifying review forms.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');

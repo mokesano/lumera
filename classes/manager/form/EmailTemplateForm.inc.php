@@ -29,7 +29,6 @@ class EmailTemplateForm extends Form {
      * Constructor.
      */
     public function __construct($emailKey, $journal) {
-        // [WIZDAM FIX] Explicit parent constructor
         parent::__construct('manager/emails/emailTemplateForm.tpl');
 
         $this->journal = $journal;
@@ -103,7 +102,7 @@ class EmailTemplateForm extends Form {
                 'enabled' => $emailTemplate->getEnabled()
             ];
         } else {
-            // Inisialisasi arrayuntuk mencegah access array type null"
+            // Inisialisasi array untuk mencegah access array type null"
             $subject = [];
             $body = [];
             $supportedLocales = $journal->getSupportedLocaleNames();
@@ -134,7 +133,7 @@ class EmailTemplateForm extends Form {
     public function readInputData() {
         $this->readUserVars(['emailId', 'subject', 'body', 'enabled', 'journalId', 'emailKey']);
 
-        $journalId = $this->journal->getId(); // [WIZDAM] Correct getter for journal ID
+        $journalId = $this->journal->getId();
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
         $emailTemplate = $emailTemplateDao->getLocaleEmailTemplate($this->emailKey, $journalId);
         

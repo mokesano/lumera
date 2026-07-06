@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup manager_form
  *
  * @brief Form for modifying journal language settings.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
@@ -89,7 +87,6 @@ class LanguageSettingsForm extends Form {
     public function display($request = null, $template = null) {
         $templateMgr = TemplateManager::getManager();
         $site = Application::get()->getRequest()->getSite();
-        
         $templateMgr->assign('availableLocales', $site->getSupportedLocaleNames());
         $templateMgr->assign('helpTopicId', 'journal.managementPages.languages');
         
