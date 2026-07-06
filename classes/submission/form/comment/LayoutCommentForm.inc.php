@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class LayoutCommentForm
  * @ingroup submission_form
  *
- * @brief LayoutComment form.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * @brief Layout Comment form.
  */
 
 import('classes.submission.form.comment.CommentForm');
@@ -78,7 +76,7 @@ class LayoutCommentForm extends CommentForm {
 
     /**
      * Email the comment.
-     * [WIZDAM] Signature adjusted to match Parent::email($recipients, $request)
+     * [LUMERA] Signature adjusted to match Parent::email($recipients, $request)
      * Legacy calls passing only ($request) are handled via type detection.
      * @param mixed $recipients (Legacy: PKPRequest object)
      * @param mixed $request (Legacy: null)

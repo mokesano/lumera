@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup submission_form
  *
  * @brief Edit comment form.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
