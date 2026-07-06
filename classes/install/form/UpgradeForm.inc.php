@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup install_form
  *
  * @brief Form for system upgrades.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('classes.install.Upgrade');
@@ -51,7 +50,6 @@ class UpgradeForm extends Form {
         if (!$request) $request = Application::get()->getRequest();
 
         $templateMgr = TemplateManager::getManager($request);
-        // [WIZDAM] Use assign instead of assign_by_ref
         $templateMgr->assign('version', VersionCheck::getCurrentCodeVersion());
 
         parent::display($request, $template);
@@ -76,7 +74,6 @@ class UpgradeForm extends Form {
             }
 
             $templateMgr->assign('notes', $installer->getNotes());
-            // [WIZDAM] Use assign instead of assign_by_ref
             $templateMgr->assign('newVersion', $installer->getNewVersion());
             $templateMgr->display('install/upgradeComplete.tpl');
 
@@ -115,7 +112,5 @@ class UpgradeForm extends Form {
         $templateMgr->assign(['isInstallError' => true, 'dbErrorMsg' => empty($errorMsg) ? __('common.error.databaseErrorUnknown') : $errorMsg]);
         $this->display();
     }
-
 }
-
 ?>
