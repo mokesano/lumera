@@ -25005,6 +25005,7 @@ html ::before {
     background-color: #d54449;
     color: white;
     border-radius:50%;
+    border-radius:10px;
     padding:4px;
     font-size: 10px;
     font-weight: bold;
