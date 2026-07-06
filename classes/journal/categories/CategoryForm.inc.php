@@ -18,13 +18,12 @@ declare(strict_types=1);
 import('lib.pkp.classes.form.Form');
 
 class CategoryForm extends Form {
+
     /** @var Category object the category being edited */
     public $category;
 
     /**
      * Constructor
-     * [MODERNISASI] Native Constructor
-     * @param $category Category object; null to create new
      */
     public function __construct($category = null) {
         parent::__construct('admin/categories/categoryForm.tpl');
@@ -41,7 +40,6 @@ class CategoryForm extends Form {
      */
     public function CategoryForm($category = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Menggunakan get_class($this) agar log mencatat NAMA CLASS ANAK yang memanggil
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor parent::CategoryForm(). Please refactor to parent::__construct().", 
                 E_USER_DEPRECATED
@@ -55,9 +53,9 @@ class CategoryForm extends Form {
      * @return array
      */
     public function getLocaleFieldNames() {
-        // [MODERNISASI] Hapus referensi &
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
         $categoryEntryDao = $categoryDao->getEntryDAO();
+        
         return $categoryEntryDao->getLocaleFieldNames();
     }
 
@@ -65,10 +63,7 @@ class CategoryForm extends Form {
      * Display the form.
      */
     public function display($request = null, $template = null) {
-        // [MODERNISASI] Hapus referensi &
         $templateMgr = TemplateManager::getManager();
-        
-        // [MODERNISASI] Gunakan assign, bukan assign_by_ref untuk kompatibilitas PHP 7/8
         $templateMgr->assign('category', $this->category);
         
         return parent::display();
@@ -96,7 +91,6 @@ class CategoryForm extends Form {
      * Save group group.
      */
     public function execute($object = null) {
-        // [MODERNISASI] Hapus referensi &
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
         $categoryEntryDao = $categoryDao->getEntryDAO();
         $categoryControlledVocab = $categoryDao->build();
@@ -118,5 +112,4 @@ class CategoryForm extends Form {
         }
     }
 }
-
 ?>
