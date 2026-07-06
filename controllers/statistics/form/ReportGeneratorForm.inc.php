@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see Form
  *
  * @brief Form to generate custom statistics reports.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('lib.pkp.classes.form.Form');
@@ -113,7 +112,7 @@ class ReportGeneratorForm extends Form {
             $reportTemplate = $reportTemplates[$reportTemplateIndex];
             $reportColumns = $reportTemplate['columns'];
             
-            // [WIZDAM] Ensure we don't skip the loop logic improperly inside `if` blocks
+            // [LUMERA] Ensure we don't skip the loop logic improperly inside `if` blocks
             if (is_array($reportColumns)) {
                 $this->setData('columns', $reportColumns);
                 $this->setData('reportTemplate', $reportTemplateIndex);
@@ -253,11 +252,12 @@ class ReportGeneratorForm extends Form {
     }
 
     /**
+     * Save changes to article.
      * @see Form::execute()
-     * @param PKPRequest $request (No reference needed in PHP8 for objects)
+     * @param PKPRequest $request
      * @return string Report URL
      */
-    public function execute($request) {
+    public function execute($request = null) {
         parent::execute($request);
         $router = $request->getRouter();
         $context = $router->getContext($request);
@@ -269,7 +269,7 @@ class ReportGeneratorForm extends Form {
             $filter[STATISTICS_DIMENSION_ASSOC_TYPE] = $this->getData('objectTypes');
         }
 
-        // [WIZDAM] Fixed logic: count($filter...) == 1 check was likely intended to check size of assoc types
+        // [LUMERA] Fixed logic: count($filter...) == 1 check was likely intended to check size of assoc types
         if ($this->getData('objectIds') && isset($filter[STATISTICS_DIMENSION_ASSOC_TYPE]) && count($filter[STATISTICS_DIMENSION_ASSOC_TYPE]) == 1) {
             $objectIds = explode(',', (string) $this->getData('objectIds'));
             $filter[STATISTICS_DIMENSION_ASSOC_ID] = $objectIds;
@@ -370,5 +370,4 @@ class ReportGeneratorForm extends Form {
         return StatisticsHelper::getReportUrl($request, $this->_metricType, $columns, $filter, $orderBy);
     }
 }
-
 ?>
