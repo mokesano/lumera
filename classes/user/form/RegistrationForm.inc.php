@@ -16,7 +16,7 @@ declare(strict_types=1);
  * @ingroup user_form
  *
  * @brief Form for user registration.
- * WIZDAM MODERNIZATION: TRUE MODULAR SECURITY: Decoupled Default Captcha, reCAPTCHA, and Turnstile
+ * [LUMERA]: TRUE MODULAR SECURITY: Decoupled Default Captcha, reCAPTCHA, and Turnstile
  */
 
 import('lib.pkp.classes.form.Form');
@@ -74,7 +74,7 @@ class RegistrationForm extends Form {
                 $this->captchaEnabled = false;
             }
 
-            // Validation checks standard...
+            // Validation checks standard.
             $this->addCheck(new FormValidator($this, 'username', 'required', 'user.profile.form.usernameRequired'));
             $this->addCheck(new FormValidator($this, 'password', 'required', 'user.profile.form.passwordRequired'));
 
@@ -92,13 +92,13 @@ class RegistrationForm extends Form {
                     return (bool) preg_match('/^[a-zA-Z0-9_.-]+$/', $username);
                 }));
                 
-                // [WIZDAM SECURITY] Validator min password length
+                // [LUMERA SECURITY] Validator min password length
                 $this->addCheck(new FormValidatorLength($this, 'password', 'required', 'user.register.form.passwordLengthTooShort', '>=', (int)$site->getMinPasswordLength()));
                 $this->addCheck(new FormValidatorCustom($this, 'password', 'required', 'user.register.form.passwordsDoNotMatch', function($password) {
                     return $password == $this->getData('password2');
                 }));
                 
-                // [WIZDAM SECURITY] Validator 5 kriteria kompleksitas password
+                // [LUMERA SECURITY] Validator 5 kriteria kompleksitas password
                 $this->addCheck(new FormValidatorCustom(
                     $this, 'password', 'required', 'user.register.form.passwordTooWeak', 
                     function($password) {
@@ -128,7 +128,7 @@ class RegistrationForm extends Form {
                 // Memastikan field Negara (Country) wajib diisi
                 $this->addCheck(new FormValidator($this, 'country', 'required', 'user.profile.form.countryRequired'));
                 
-                // [WIZDAM SECURITY] DNS Validatio & Disposable Email
+                // [LUMERA SECURITY] DNS Validatio & Disposable Email
                 $this->addCheck(new FormValidatorCustom(
                     $this, 'email', 'required', 'user.profile.form.emailRequired', 
                     function($email) {
@@ -203,7 +203,7 @@ class RegistrationForm extends Form {
                         ));
                         
                     } elseif ($this->reCaptchaVersion === 0) {
-                        // [LEGACY SHIM] Validasi reCAPTCHA v1
+                        // [SHIM] Validasi reCAPTCHA v1
                         $this->addCheck(new FormValidatorCustom(
                             $this, 'recaptcha_response_field', 'required', 'user.register.form.recaptchaError', // WIZDAM FIX
                             function($recaptchaResponse) {
@@ -326,7 +326,7 @@ class RegistrationForm extends Form {
      * Initialize default data.
      */
     public function initData() {
-        // [WIZDAM] Tetapkan nilai default
+        // [LUMERA] Tetapkan nilai default
         // --- 1. Kode Asli/Default ---
         $this->setData('registerAsReader', 1);
         $this->setData('registerAsAuthor', 1);
@@ -335,8 +335,8 @@ class RegistrationForm extends Form {
         $this->setData('userLocales', array($currentLocale));
         $this->setData('sendPassword', 0);
 
-        // [WIZDAM SSO] Cek apakah ada data dari ORCID di session
-        // --- 2. Injeksi WIZDAM SSO (Ambil dari Session) ---
+        // [LUMERA SSO] Cek apakah ada data dari ORCID di session
+        // --- 2. Injeksi LUMERA SSO (Ambil dari Session) ---
         $sessionManager = SessionManager::getManager();
         $session = $sessionManager->getUserSession();
         
@@ -349,7 +349,7 @@ class RegistrationForm extends Form {
             $this->setData('lastName', $orcidData['lastName']);
             $this->setData('orcid', $orcidData['orcid']);
             
-            // Tangkap hasil sinkronisasi WIZDAM MAGIC
+            // Tangkap hasil sinkronisasi LUMERA MAGIC
             if (!empty($orcidData['affiliation'])) {
                 $this->setData('affiliation', [$currentLocale => $orcidData['affiliation']]);
             }
