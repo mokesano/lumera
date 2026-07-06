@@ -211,7 +211,7 @@
 				<td>{$currentStep|escape}.{assign var="currentStep" value=$currentStep+1}</td>
 				<td>
 					{url|assign:"competingInterestGuidelinesUrl" page="information" op="competingInterestGuidelines"}
-					<span class="instruct">{translate key="reviewer.article.enterCompetingInterests" competingInterestGuidelinesUrl=$competingInterestGuidelinesUrl}</span>
+					<span class="instruction">{translate key="reviewer.article.enterCompetingInterests" competingInterestGuidelinesUrl=$competingInterestGuidelinesUrl}</span>
 					{if not $confirmedStatus or $declined or $submission->getCancelled() or $submission->getRecommendation()}<br/>
 						{$reviewAssignment->getCompetingInterests()|strip_unsafe_html|nl2br}
 					{else}
