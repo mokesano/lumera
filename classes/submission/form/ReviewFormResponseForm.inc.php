@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see ReviewFormResponse
  *
  * @brief Peer review form response form.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
@@ -29,8 +27,6 @@ class ReviewFormResponseForm extends Form {
 
     /**
      * Constructor.
-     * @param int $reviewId
-     * @param int $reviewFormId
      */
     public function __construct($reviewId, $reviewFormId) {
         parent::__construct('submission/reviewForm/reviewFormResponse.tpl');
@@ -117,8 +113,10 @@ class ReviewFormResponseForm extends Form {
 
     /**
      * Save the response.
+     * @param object|null $object
+     * @return mixed
      */
-    public function execute() {
+    public function execute($object = null) {
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
         $reviewAssignment = $reviewAssignmentDao->getById($this->reviewId);
         $reviewAssignmentDao->updateReviewAssignment($reviewAssignment);
@@ -159,6 +157,8 @@ class ReviewFormResponseForm extends Form {
                 $reviewFormResponseDao->insertObject($reviewFormResponse);
             }
         }
+
+        return parent::execute($object);
     }
 }
 ?>
