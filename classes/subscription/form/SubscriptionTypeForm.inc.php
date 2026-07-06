@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * @file classes/subscription/form/SubscriptionTypeForm.inc.php
@@ -11,12 +12,12 @@
  * @ingroup manager_form
  *
  * @brief Form for journal managers to create/edit subscription types.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('lib.pkp.classes.form.Form');
 
 class SubscriptionTypeForm extends Form {
+
     /** @var typeId int the ID of the subscription type being edited */
     public $typeId;
 
@@ -41,8 +42,7 @@ class SubscriptionTypeForm extends Form {
         $currencyDao = DAORegistry::getDAO('CurrencyDAO');
         $currencies = $currencyDao->getCurrencies();
         $this->validCurrencies = array();
-        
-        // [WIZDAM FIX] Replaced each() with foreach
+
         foreach ($currencies as $currency) {
             $this->validCurrencies[$currency->getCodeAlpha()] = $currency->getName() . ' (' . $currency->getCodeAlpha() . ')';
         }
@@ -55,9 +55,8 @@ class SubscriptionTypeForm extends Form {
         // Type name is provided
         $this->addCheck(new FormValidatorLocale($this, 'name', 'required', 'manager.subscriptionTypes.form.typeNameRequired'));
 
-        // Cost    is provided and is numeric and positive     
-        $this->addCheck(new FormValidator($this, 'cost', 'required', 'manager.subscriptionTypes.form.costRequired'));     
-        // [WIZDAM FIX] Replaced create_function with Closure
+        // Cost is provided and is numeric and positive     
+        $this->addCheck(new FormValidator($this, 'cost', 'required', 'manager.subscriptionTypes.form.costRequired'));
         $this->addCheck(new FormValidatorCustom($this, 'cost', 'required', 'manager.subscriptionTypes.form.costNumeric', function($cost) {
             return (is_numeric($cost) && $cost >= 0);
         }));
@@ -153,8 +152,7 @@ class SubscriptionTypeForm extends Form {
 
         // If expiring subscription type, ensure duration is provided and valid
         if ($this->getData('nonExpiring') === 0) {
-            $this->addCheck(new FormValidator($this, 'duration', 'required', 'manager.subscriptionTypes.form.durationRequired'));     
-            // [WIZDAM FIX] Replaced create_function with Closure
+            $this->addCheck(new FormValidator($this, 'duration', 'required', 'manager.subscriptionTypes.form.durationRequired'));
             $this->addCheck(new FormValidatorCustom($this, 'duration', 'required', 'manager.subscriptionTypes.form.durationNumeric', function($duration) {
                 return (is_numeric($duration) && $duration >= 0);
             }));
@@ -164,7 +162,7 @@ class SubscriptionTypeForm extends Form {
     /**
      * Save subscription type. 
      */
-    public function execute() {
+    public function execute($object = NULL) {
         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
         $journal = Request::getJournal();
 
@@ -202,5 +200,4 @@ class SubscriptionTypeForm extends Form {
         }
     }
 }
-
 ?>
