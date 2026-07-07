@@ -9,19 +9,19 @@
  *
  *}
 {strip}
-{assign var="pageCrumbTitle" value="author.submit"}
-{include file="common/header-ROLE.tpl"}
+    {assign var="pageCrumbTitle" value="author.submit"}
+    {include file="common/header-ROLE.tpl"}
 {/strip}
 
 {* Pass variables to external JS file *}
 <script type="text/javascript">
-{literal}
-<!--
-window.submitStep = {/literal}{$submitStep|default:1}{literal};
-window.submissionProgress = {/literal}{$submissionProgress|default:0}{literal};
-window.articleId = '{/literal}{$articleId|escape:"javascript"}{literal}';
-// -->
-{/literal}
+    {literal}
+        <!--
+        window.submitStep = {/literal}{$submitStep|default:1}{literal};
+        window.submissionProgress = {/literal}{$submissionProgress|default:0}{literal};
+        window.articleId = '{/literal}{$articleId|escape:"javascript"}{literal}';
+        // -->
+    {/literal}
 </script>
 
 <!-- Simple Progress Bar - Fixed Right Side -->
