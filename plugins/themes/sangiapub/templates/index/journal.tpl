@@ -643,7 +643,7 @@
 				<div class="indexedin u-mt-16">
 					<ul class="indexedin-link">
 						<li class="indexedin-item" data-test="logo-listing">
-							<a href="https://garuda.kemdikbud.go.id/journal/" target="_blank">
+							<a href="https://garuda.kemdiktisaintek.go.id/journal/" target="_blank">
 								<picture>
 									<source srcset="{$baseUrl}/assets/img/static/garuda.png?as=webp" type="image/webp">
 									<img class="garuda u-mb-0" src="{$baseUrl}/assets/img/static/garuda.png" loading="lazy" alt="Garba Rujukan Digital" />
@@ -659,7 +659,7 @@
 							</a>
 						</li>
 						<li class="indexedin-item" data-test="logo-listing">
-							<a href="http://sinta.kemdikbud.go.id/journals" target="_blank">
+							<a href="http://sinta.kemdiktisaintek.go.id/journals" target="_blank">
 								<picture>
 									<source srcset="{$baseUrl}/assets/img/static/sinta.png?as=webp" type="image/webp">
 									<img class="sinta u-mb-0" src="{$baseUrl}/assets/img/static/sinta.png" loading="lazy" alt="Sinta" />
