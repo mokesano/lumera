@@ -18,7 +18,7 @@
 	{/if}
 {/strip}
 <head>
-    <title>{$pageTitleTranslated} | Wizdam Editorial System</title>
+    <title>{$pageTitleTranslated} | Lumera Editorial Workflow</title>
     <meta name="description" content="{$metaSearchDescription|escape}" />
     <meta name="keywords" content="{$metaSearchKeywords|escape}" />
     <meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
@@ -26,7 +26,7 @@
 	{$metaCustomHeaders}
 	
 	{if $displayFavicon}
-	<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
+		<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
 	{/if}
 
 	{include file="common/jqueryScripts.tpl"}
