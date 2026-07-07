@@ -9,7 +9,7 @@
  *
  *}
 {strip}
-	{assign var="pageTitle" value="common.queue.long.$pageToDisplay"}
+	{assign var="pageTitle" value="common.reviewer.long.$pageToDisplay"}
 	{include file="common/header-parts/header-reviewer.tpl"}
 {/strip}
 
