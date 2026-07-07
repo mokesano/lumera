@@ -29,28 +29,25 @@
 					{assign var=title value=$currentJournal->getLocalizedSetting('contactTitle')}
 					{if $title}<h5 class="no-class">{$title|escape}</h5>{/if}
 
-					<p class="no-class u-mb-0">
+					<div id="contactDetails" class="no-class">
 						{if !empty($journalSettings.contactPhone)}
-							<span>{translate key="about.contact.phone"}: {$journalSettings.contactPhone|escape}</span>
-							<br/>
+							<p class="no-class u-mb-0">{translate key="about.contact.phone"}: {$journalSettings.contactPhone|escape}</p>
 						{/if}
 						
 						{if !empty($journalSettings.contactFax)}
-							<span>{translate key="about.contact.fax"}: {$journalSettings.contactFax|escape}</span>
-							<br/>
+							<p class="no-class u-mb-0">{translate key="about.contact.fax"}: {$journalSettings.contactFax|escape}</p>
 						{/if}
 						
 						{if !empty($journalSettings.contactEmail)}
-							<span>{translate key="about.contact.email"}: {mailto address=$journalSettings.contactEmail|escape encode="hex"}</span>
-							<br/>
+							<p class="no-class u-mb-0">{translate key="about.contact.email"}: {mailto address=$journalSettings.contactEmail|escape encode="hex"}</p>
 						{/if}
 					
 						{assign var=contacInstitution value=$currentJournal->getLocalizedSetting('contactAffiliation')}
-						{if $contacInstitution}<span>{$contacInstitution|escape}</span><br/>{/if}
+						{if $contacInstitution}<p class="no-class u-mb-0">{$contacInstitution|escape}</p>{/if}
 					
 						{assign var=contactAddres value=$currentJournal->getLocalizedSetting('contactMailingAddress')}
-						{if $contactAddres}<span>{$contactAddres|nl2br}</span><br/>{/if}
-					</p>
+						{if $contactAddres}<p class="u-mb-24">{$contactAddres|nl2br}</p>{/if}
+					</div>
 				</section>
 			</section>
 		{/if}
@@ -63,18 +60,16 @@
 					{if !empty($journalSettings.supportName)}
 						<h4 class="">{$journalSettings.supportName|escape}</h4>
 					{/if}
-					<section class="article-body block">
+					<section class="article-body section">
 						{assign var=s value=$currentJournal->getLocalizedSetting('contactTitle')}
 						{if $s}<h5 class="no-class">{$s|escape}</h5>{/if}
-						<p class="no-class">
+
 						{if !empty($journalSettings.supportPhone)}
-							<span>{translate key="about.contact.phone"}: {$journalSettings.supportPhone|escape}</span>
-							<br/>
+							<p class="u-mb-0">{translate key="about.contact.phone"}: {$journalSettings.supportPhone|escape}</p>
 						{/if}
 
 						{if !empty($journalSettings.supportEmail)}
-							{translate key="about.contact.email"}: {mailto address=$journalSettings.supportEmail|escape encode="hex"}
-							<br/>
+							<p class="u-mb-0">{translate key="about.contact.email"}: {mailto address=$journalSettings.supportEmail|escape encode="hex"}
 						{/if}
 					</section>
 				</section>
@@ -85,7 +80,7 @@
 			<section id="mailingAddress" class="collection section">
 				<h3 class="sub-title">Editorial Office</h3>
 				<p class="no-class">Questions about the suitability of a topic, how to submit, manuscripts under consideration, and the online submission system (if applicable).</p>
-				<section class="collection-data block">
+				<section class="collection-data section">
 					<p class="no-class">{$journalSettings.mailingAddress|nl2br}</p>
 				</section>
 			</section>
@@ -94,7 +89,8 @@
 		{if $sitePrincipalContactName || $sitePrincipalContactEmail}
 			<section id="principalContact" class="collection section">
 				{if $sitePrincipalContactName}
-					<h3 class="sub-title">{$sitePrincipalContactName|escape} (Customer Service)</h3>
+					<h3 class="sub-title">{$sitePrincipalContactName|escape}</h3>
+					<p class="no-class">Questions about how to submit and the online submission system (if applicable).</p>
 				{/if}
 				{if $sitePrincipalContactEmail}
 					<p class="no-class">
@@ -105,7 +101,7 @@
 		{/if}
 	</section>
 {else}
-	<section id="principalContact" class="collection block">
+	<section id="principalContact" class="collection section">
 		{if $sitePrincipalContactName}
 			<h3 class="sub-title">{$sitePrincipalContactName|escape}</h3>
 		{/if}

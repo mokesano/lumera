@@ -23589,6 +23589,13 @@ h6 {
  font-size:1.27892em;
  margin-top:1rem
 }
+.collection h6 {
+ font-size:1.17892em;
+ margin-top:1rem
+}
+.collection .u-mb-0 {
+  margin-bottom:0 !important;
+}
 #journalInfo h4,
 #journalInfo h5,
 #journalInfo h6,
