@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_author
  *
  * @brief Handle requests for author article submission.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.author.AuthorHandler');
@@ -57,20 +55,7 @@ class SubmitHandler extends AuthorHandler {
 
         // Pass $step explicitly to validate, since $args is shifted
         $this->validate(null, $request, $articleId, null, $step);
-        
-        // Re-check step logic inside this method scope if validate() adjusted redirection logic
-        // But validate() handles redirection if step is invalid.
-        // We need to ensure we have the correct step for form loading.
-        // If step wasn't in URL, validate() might redirect to step 1.
-        // If we are here, we proceed.
-        
-        // Re-calculate step from args if validate passed (though args was shifted)
-        // Actually, $step is local variable.
         if ($step < 1 || $step > 5) {
-             // If step is invalid/missing, usually validate() redirects to step 1.
-             // If we reach here with invalid step, force step 1? 
-             // Or rely on validate().
-             // validate() logic below handles specific step constraints.
              $step = 1; 
         }
 
@@ -109,7 +94,7 @@ class SubmitHandler extends AuthorHandler {
         $submitForm = new $formClass($article, $journal, $request);
         $submitForm->readInputData();
 
-        // [WIZDAM] Check hook signature compatibility (references)
+        // [LUMERA] Check hook signature compatibility (references)
         if (!HookRegistry::dispatch('SubmitHandler::saveSubmit', [$step, &$article, &$submitForm])) {
 
             // Check for any special cases before trying to save
@@ -191,7 +176,7 @@ class SubmitHandler extends AuthorHandler {
             if (!isset($editData) && $submitForm->validate()) {
                 $articleId = $submitForm->execute();
                 
-                // [WIZDAM] Check hook signature compatibility (references)
+                // [LUMERA] Check hook signature compatibility (references)
                 HookRegistry::dispatch('Author::SubmitHandler::saveSubmit', [&$step, &$article, &$submitForm]);
 
                 if ($step == 5) {
@@ -212,7 +197,6 @@ class SubmitHandler extends AuthorHandler {
 
                     $journal = $request->getJournal();
                     $templateMgr = TemplateManager::getManager();
-                    // [WIZDAM] Removed assign_by_ref
                     $templateMgr->assign('journal', $journal);
                     // If this is an editor and there is a
                     // submission file, article can be expedited.
@@ -364,7 +348,7 @@ class SubmitHandler extends AuthorHandler {
      * @return bool
      */
     public function validate($requiredContexts = null, $request = null, $articleId = null, $reason = null, $step = false) {
-        // 1. Normalisasi Request (Wizdam Core Security)
+        // 1. Normalisasi Request (Core Security)
         // Jika argumen pertama adalah Request, geser semua
         if ($requiredContexts instanceof PKPRequest) {
             $realRequest = $requiredContexts;
