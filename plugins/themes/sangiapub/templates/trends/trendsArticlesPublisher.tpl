@@ -8,7 +8,7 @@
  *
  *}
 
-{* Hitung artikel di bagian atas template *}
+{* Masih Tanda Tanya. Telah dihapus namun perlu melihat perkembangan *}
 {assign var="articleCount" value=0}
 {if $publishedArticles}
     {foreach from=$publishedArticles item=section}
