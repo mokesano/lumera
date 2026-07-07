@@ -27,7 +27,6 @@ class BrowseHandler extends Handler {
     public function sections($args = [], $request) {
         $this->setupTemplate($request, true);
 
-        // PHP 8 Nullsafe Operator untuk mengambil journal context
         $journal = $request->getRouter()?->getContext($request);
         if (!$journal) {
             $request->redirect(null, 'index');
@@ -54,10 +53,10 @@ class BrowseHandler extends Handler {
                 }
 
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-                // PHP 8 Style: Paksa hasil return menjadi array secara inline & safe
                 $publishedArticleIds = (array) ($publishedArticleDao->getPublishedArticleIdsBySection($sectionId) ?? []);
 
-                $rangeInfo = Handler::getRangeInfo($request, 'search');
+                // PERBAIKAN: Dikembalikan ke signature bawaan OJS lama Anda
+                $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
 
@@ -84,7 +83,8 @@ class BrowseHandler extends Handler {
                 }
                 ksort($sections);
 
-                $rangeInfo = Handler::getRangeInfo($request, 'search');
+                // PERBAIKAN: Dikembalikan ke signature bawaan OJS lama Anda
+                $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
 
@@ -126,7 +126,6 @@ class BrowseHandler extends Handler {
         
         if ($enableBrowseByIdentifyTypes) {
             if (isset($args[0]) && $args[0] === 'view') {
-                // PHP 8 Clean Trim: Amankan null value dengan Null Coalescing & String Casting
                 $identifyType = trim((string) ($request->getUserVar('identifyType') ?? ''));
                 
                 $sectionDao = DAORegistry::getDAO('SectionDAO');
@@ -142,12 +141,12 @@ class BrowseHandler extends Handler {
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                 $publishedArticleIds = [];
                 foreach ($sections as $section) {
-                    // Refaktor inline array casting untuk performa bersih
                     $publishedArticleIdsBySection = (array) ($publishedArticleDao->getPublishedArticleIdsBySection($section->getId()) ?? []);
                     $publishedArticleIds = array_merge($publishedArticleIds, $publishedArticleIdsBySection);
                 }
 
-                $rangeInfo = Handler::getRangeInfo($request, 'search');
+                // PERBAIKAN: Dikembalikan ke signature bawaan OJS lama Anda
+                $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
 
@@ -174,7 +173,8 @@ class BrowseHandler extends Handler {
                 }
                 sort($sectionidentifyTypes);
 
-                $rangeInfo = Handler::getRangeInfo($request, 'search');
+                // PERBAIKAN: Dikembalikan ke signature bawaan OJS lama Anda
+                $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
 
