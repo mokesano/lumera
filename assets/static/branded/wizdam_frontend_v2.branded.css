@@ -8102,12 +8102,14 @@ p {
   color:#fff
  }
  .cms-banner-full .cms-banner-text .cms-banner-text-inner h1 {
-  color: inherit;
-  margin: 0 0 .25em;
-  font-size: 2.17rem;
-  font-weight: 700;
-  max-width: 670px;
-  font-family: "Bliss Regular", Gulliver, Nexus Sans, "Open Sans",Calibri,"Helvetica Neue",Arial,sans-serif;
+  color:inherit;
+  /* margin:0 0 .25em; */
+  font-size:2.7rem;
+  font-weight:500;
+  line-height:3.7rem;
+  letter-spacing:normal;
+  max-width:670px;
+  font-family:"Bliss Regular",MuseoSans,Gulliver,Nexus Sans,"Open Sans",Calibri,"Helvetica Neue",Arial,sans-serif;
  }
  .cms-banner-full .cms-banner-text .cms-banner-text-inner h2,
  .cms-banner-full .cms-banner-text .cms-banner-text-inner p {
