@@ -9,109 +9,115 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="about.journalContact"}
-{include file="common/header-ABOUT.tpl"}
+	{assign var="pageTitle" value="about.journalContact"}
+	{include file="common/header-ABOUT.tpl"}
 {/strip}
 
 {if $currentJournal}
-<section id="contact" class="collection block">
-    
-    {if not ($currentJournal->getLocalizedSetting('contactTitle') == '' && $currentJournal->getLocalizedSetting('contactAffiliation') == '' && $currentJournal->getLocalizedSetting('contactMailingAddress') == '' && empty($journalSettings.contactPhone) && empty($journalSettings.contactFax) && empty($journalSettings.contactEmail))}
-    <section id="principalContact" class="collection">
-        <h3>Publishing Contact</h3>
-        <p>General questions about the journal, pre-submission queries, editorial policy or procedure, or special issue proposals.</p>
-        
-        {if !empty($journalSettings.contactName)}
-        <section class="collection-data">
-        	<h4>{$journalSettings.contactName|escape}</h4>
-        </section>
-        {/if}
-        
-    	<section class="collection-data">
-        	<p>
-        	{assign var=title value=$currentJournal->getLocalizedSetting('contactTitle')}
-        	{if $title}{$title|escape}<br />{/if}
-        
-        	{if !empty($journalSettings.contactPhone)}
-        		{translate key="about.contact.phone"}: {$journalSettings.contactPhone|escape}<br />
-        	{/if}
-        	{if !empty($journalSettings.contactFax)}
-        		{translate key="about.contact.fax"}: {$journalSettings.contactFax|escape}<br />
-        	{/if}
-        	{if !empty($journalSettings.contactEmail)}
-        		{translate key="about.contact.email"}: {mailto address=$journalSettings.contactEmail|escape encode="hex"}
-        	{/if}</p>
-        
-        	{assign var=contacInstitution value=$currentJournal->getLocalizedSetting('contactAffiliation')}
-        	{if $contacInstitution}<p>{$contacInstitution|escape}</p>{/if}
-        
-        	{assign var=contactAddres value=$currentJournal->getLocalizedSetting('contactMailingAddress')}
-        	{if $contactAddres}<p>{$contactAddres|nl2br}</p>{/if}
-        	<br />
-    	</section>
-    </section>
-    {/if}
+	<section id="contact" class="collection section">
+		
+		{if not ($currentJournal->getLocalizedSetting('contactTitle') == '' && $currentJournal->getLocalizedSetting('contactAffiliation') == '' && $currentJournal->getLocalizedSetting('contactMailingAddress') == '' && empty($journalSettings.contactPhone) && empty($journalSettings.contactFax) && empty($journalSettings.contactEmail))}
+			<section id="principalContact" class="collection section">
+				<h3 class="sub-title">Publishing Contact</h3>
+				<p class="no-class">General questions about the journal, pre-submission queries, editorial policy or procedure, or special issue proposals.</p>
+								
+				<section class="collection-data">
+					{if !empty($journalSettings.contactName)}
+						<h4 class="no-class">{$journalSettings.contactName|escape}</h4>
+					{/if}
 
-    {if not (empty($journalSettings.supportName) && empty($journalSettings.supportPhone) && empty($journalSettings.supportEmail))}
-    <section id="supportContact" class="collection block">
-        <h3>{translate key="about.contact.supportContact"}</h3>
-        <p>Questions about manuscripts already sent to production.</p>
-        <section class="support-name">
-        	{if !empty($journalSettings.supportName)}
-        		<h4>{$journalSettings.supportName|escape}</h4>
-        	{/if}
-        	<section class="article-body block">
-        	<p>
-        	{assign var=s value=$currentJournal->getLocalizedSetting('contactTitle')}
-        	{if $s}{$s|escape}<br />{/if}
-        
-        	{if !empty($journalSettings.supportPhone)}
-        		{translate key="about.contact.phone"}: {$journalSettings.supportPhone|escape}<br />
-        	{/if}
-        	{if !empty($journalSettings.supportEmail)}
-        		{translate key="about.contact.email"}: {mailto address=$journalSettings.supportEmail|escape encode="hex"}<br />
-        	{/if}
-        	</p>
-        	</section>
-        </section>
-    </section>
-    <br />
-    {/if}
-    
-    {if !empty($journalSettings.mailingAddress)}
-    <section id="mailingAddress" class="collection">
-        <h3>Editorial Office</h3>
-        <p>Questions about the suitability of a topic, how to submit, manuscripts under consideration, and the online submission system (if applicable).</p>
-    	<section class="collection-data block"><p>{$journalSettings.mailingAddress|nl2br}</p></section>
-    </section>
-    <br />
-    {/if}
-    
-    {if $sitePrincipalContactName || $sitePrincipalContactEmail}
-    <section class="collection block">
-    	{if $sitePrincipalContactName}
-    	    <h3>{$sitePrincipalContactName|escape} (Customer Service)</h3>
-    	{/if}
-    	{if $sitePrincipalContactEmail}
-    	    <p><a href="mailto:{$sitePrincipalContactEmail|escape}">{$sitePrincipalContactEmail|escape}</a></p>
-    	{/if}
-    </section>
-    {/if}
+					{assign var=title value=$currentJournal->getLocalizedSetting('contactTitle')}
+					{if $title}<h5 class="no-class">{$title|escape}</h5>{/if}
 
-</section>
+					<p class="no-class u-mb-0">
+						{if !empty($journalSettings.contactPhone)}
+							<span>{translate key="about.contact.phone"}: {$journalSettings.contactPhone|escape}</span>
+							<br/>
+						{/if}
+						
+						{if !empty($journalSettings.contactFax)}
+							<span>{translate key="about.contact.fax"}: {$journalSettings.contactFax|escape}</span>
+							<br/>
+						{/if}
+						
+						{if !empty($journalSettings.contactEmail)}
+							<span>{translate key="about.contact.email"}: {mailto address=$journalSettings.contactEmail|escape encode="hex"}</span>
+							<br/>
+						{/if}
+					
+						{assign var=contacInstitution value=$currentJournal->getLocalizedSetting('contactAffiliation')}
+						{if $contacInstitution}<span>{$contacInstitution|escape}</span><br/>{/if}
+					
+						{assign var=contactAddres value=$currentJournal->getLocalizedSetting('contactMailingAddress')}
+						{if $contactAddres}<span>{$contactAddres|nl2br}</span><br/>{/if}
+					</p>
+				</section>
+			</section>
+		{/if}
+
+		{if not (empty($journalSettings.supportName) && empty($journalSettings.supportPhone) && empty($journalSettings.supportEmail))}
+			<section id="supportContact" class="collection section">
+				<h3 class="sub-title">{translate key="about.contact.supportContact"}</h3>
+				<p class="no-class">Questions about manuscripts already sent to production.</p>
+				<section class="support-name">
+					{if !empty($journalSettings.supportName)}
+						<h4 class="">{$journalSettings.supportName|escape}</h4>
+					{/if}
+					<section class="article-body block">
+						{assign var=s value=$currentJournal->getLocalizedSetting('contactTitle')}
+						{if $s}<h5 class="no-class">{$s|escape}</h5>{/if}
+						<p class="no-class">
+						{if !empty($journalSettings.supportPhone)}
+							<span>{translate key="about.contact.phone"}: {$journalSettings.supportPhone|escape}</span>
+							<br/>
+						{/if}
+
+						{if !empty($journalSettings.supportEmail)}
+							{translate key="about.contact.email"}: {mailto address=$journalSettings.supportEmail|escape encode="hex"}
+							<br/>
+						{/if}
+					</section>
+				</section>
+			</section>
+		{/if}
+		
+		{if !empty($journalSettings.mailingAddress)}
+			<section id="mailingAddress" class="collection section">
+				<h3 class="sub-title">Editorial Office</h3>
+				<p class="no-class">Questions about the suitability of a topic, how to submit, manuscripts under consideration, and the online submission system (if applicable).</p>
+				<section class="collection-data block">
+					<p class="no-class">{$journalSettings.mailingAddress|nl2br}</p>
+				</section>
+			</section>
+		{/if}
+		
+		{if $sitePrincipalContactName || $sitePrincipalContactEmail}
+			<section id="principalContact" class="collection section">
+				{if $sitePrincipalContactName}
+					<h3 class="sub-title">{$sitePrincipalContactName|escape} (Customer Service)</h3>
+				{/if}
+				{if $sitePrincipalContactEmail}
+					<p class="no-class">
+						<a href="mailto:{$sitePrincipalContactEmail|escape}">{$sitePrincipalContactEmail|escape}</a>
+					</p>
+				{/if}
+			</section>
+		{/if}
+	</section>
 {else}
-<section class="collection block">
-	{if $sitePrincipalContactName}
-	    <h3>{$sitePrincipalContactName|escape}</h3>
-	{/if}
-	{if $siteMailingAddress}
-	    <p>{$siteMailingAddress|escape}</p>
-	{/if}
-	{if $sitePrincipalContactEmail}
-	    <p><a href="mailto:{$sitePrincipalContactEmail|escape}">{$sitePrincipalContactEmail|escape}</a></p>
-	{/if}
-</section>
+	<section id="principalContact" class="collection block">
+		{if $sitePrincipalContactName}
+			<h3 class="sub-title">{$sitePrincipalContactName|escape}</h3>
+		{/if}
+		{if $siteMailingAddress}
+			<p class="no-class">{$siteMailingAddress|escape}</p>
+		{/if}
+		{if $sitePrincipalContactEmail}
+			<p class="no-class"><a class="" title="Principal Contact Email" href="mailto:{$sitePrincipalContactEmail|escape}">{$sitePrincipalContactEmail|escape}</a></p>
+		{/if}
+	</section>
 {/if}
+
         </div>
     </div>
 </div>    
@@ -123,4 +129,3 @@
         </div>
     
 {include file="common/footer.tpl"}
-
