@@ -1,19 +1,19 @@
 {**
- * templates/index/site.tpl
+ * templates/index/publisher.tpl
  *
  * Copyright (c) 2013-2015 Simon Fraser University Library
  * Copyright (c) 2003-2015 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * Site index.
+ * Publisher index.
  *
  *}
 {strip}
-{if $siteTitle}
-	{assign var="pageTitleTranslated" value=$siteTitle}
-{/if}
-{assign var="pageDisplayed" value="site"}
-{include file="common/header-parts/header-site.tpl"}
+    {if $siteTitle}
+        {assign var="pageTitleTranslated" value=$siteTitle}
+    {/if}
+    {assign var="pageDisplayed" value="site"}
+    {include file="common/header-parts/header-site.tpl"}
 {/strip}
 
 {** Kode Statistik jurnal secara global perlu perbaikan **}
@@ -101,17 +101,17 @@
 
 <div class="cms-container cms-highlight-2">
 
-{iterate from=journals item=journal}
-	{if $site->getSetting('showTitle')}
-		<h3>{$journal->getLocalizedTitle()|escape}</h3>
-	{/if}
-	{if $site->getSetting('showDescription')}
-		{if $journal->getLocalizedDescription()}
-			<p>{$journal->getLocalizedDescription()|nl2br}</p>
-		{/if}
-	{/if}
-	<p><a href="{url journal=$journal->getPath()}" class="action">{translate key="site.journalView"}</a> | <a href="{url journal=$journal->getPath() page="issue" op="current"}" class="action">{translate key="site.journalCurrent"}</a> | <a href="{url journal=$journal->getPath() page="user" op="register"}" class="action">{translate key="site.journalRegister"}</a></p>
-{/iterate}
+    {iterate from=journals item=journal}
+        {if $site->getSetting('showTitle')}
+            <h3>{$journal->getLocalizedTitle()|escape}</h3>
+        {/if}
+        {if $site->getSetting('showDescription')}
+            {if $journal->getLocalizedDescription()}
+                <p>{$journal->getLocalizedDescription()|nl2br}</p>
+            {/if}
+        {/if}
+        <p><a href="{url journal=$journal->getPath()}" class="action">{translate key="site.journalView"}</a> | <a href="{url journal=$journal->getPath() page="issue" op="current"}" class="action">{translate key="site.journalCurrent"}</a> | <a href="{url journal=$journal->getPath() page="user" op="register"}" class="action">{translate key="site.journalRegister"}</a></p>
+    {/iterate}
 
     <div class="u-row row">
         <div class="columns small-12 ">
@@ -232,4 +232,3 @@
 </div>
 
 {include file="common/footer.tpl"}
-
