@@ -132,6 +132,14 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
                 'citations' => $article->getCitations()
             ];
 
+            // [FIX] Pastikan title dan abstract yang terlokalisasi selalu berupa array
+            if (!is_array($this->_data['title'])) {
+                $this->_data['title'] = [];
+            }
+            if (!is_array($this->_data['abstract'])) {
+                $this->_data['abstract'] = [];
+            }
+
             $authors = $article->getAuthors();
             for ($i=0, $count=count($authors); $i < $count; $i++) {
                 $this->_data['authors'][] = [
@@ -176,6 +184,17 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
             'sponsor',
             'citations'
         ]);
+
+        // [FIX] Sanitasi data input user jika bernilai null/bukan array sebelum divalidasi & dirender
+        if (!is_array($this->_data['authors'])) {
+            $this->_data['authors'] = [];
+        }
+        if (!is_array($this->_data['title'])) {
+            $this->_data['title'] = [];
+        }
+        if (!is_array($this->_data['abstract'])) {
+            $this->_data['abstract'] = [];
+        }
 
         // Load the section. This is used in the step 3 form to
         // determine whether or not to display indexing options.
@@ -284,7 +303,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
                 $author->setPrimaryContact($this->getData('primaryContact') == $i ? 1 : 0);
                 $author->setSequence($authors[$i]['seq']);
 
-                // [LUMERA] HookRegistry call using array construction for references
+                // [LUMERA] HookRegistry dispatch using array construction for references
                 HookRegistry::dispatch('Author::Form::Submit::AuthorSubmitStep3Form::Execute', [&$author, &$authors[$i]]);
 
                 if ($isExistingAuthor) {
@@ -311,7 +330,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         $citationDao = DAORegistry::getDAO('CitationDAO');
         $rawCitationList = $article->getCitations();
         if ($previousRawCitationList != $rawCitationList) {
-            // [WIZDAM] Ensure request is available
+            // [LUMERA] Ensure request is available
             $request = $this->request ? $this->request : Application::get()->getRequest();
             $citationDao->importCitations($request, ASSOC_TYPE_ARTICLE, $article->getId(), $rawCitationList);
         }
