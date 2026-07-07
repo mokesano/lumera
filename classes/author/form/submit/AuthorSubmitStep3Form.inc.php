@@ -112,6 +112,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
      */
     public function initData() {
         $sectionDao = DAORegistry::getDAO('SectionDAO');
+        $formLocale = AppLocale::getLocale(); // Ambil locale aktif saat ini
 
         if (isset($this->article)) {
             $article = $this->article;
@@ -132,28 +133,42 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
                 'citations' => $article->getCitations()
             ];
 
-            // [FIX] Pastikan title dan abstract yang terlokalisasi selalu berupa array
-            if (!is_array($this->_data['title'])) {
-                $this->_data['title'] = [];
-            }
-            if (!is_array($this->_data['abstract'])) {
-                $this->_data['abstract'] = [];
-            }
+            // [FIX] Pastikan title dan abstract selalu berupa array dengan locale aktif
+            if (!is_array($this->_data['title'])) $this->_data['title'] = [];
+            if (!isset($this->_data['title'][$formLocale])) $this->_data['title'][$formLocale] = '';
+            
+            if (!is_array($this->_data['abstract'])) $this->_data['abstract'] = [];
+            if (!isset($this->_data['abstract'][$formLocale])) $this->_data['abstract'][$formLocale] = '';
 
             $authors = $article->getAuthors();
             for ($i=0, $count=count($authors); $i < $count; $i++) {
+                // Ambil data terlokalisasi mentah dari DB
+                $affiliation = $authors[$i]->getAffiliation(null);
+                $competingInterests = $authors[$i]->getCompetingInterests(null);
+                $biography = $authors[$i]->getBiography(null);
+
+                // [FIX] Normalisasi ke array dan pastikan key locale saat ini tersedia
+                $affiliationArray = is_array($affiliation) ? $affiliation : [];
+                if (!isset($affiliationArray[$formLocale])) $affiliationArray[$formLocale] = '';
+
+                $competingInterestsArray = is_array($competingInterests) ? $competingInterests : [];
+                if (!isset($competingInterestsArray[$formLocale])) $competingInterestsArray[$formLocale] = '';
+
+                $biographyArray = is_array($biography) ? $biography : [];
+                if (!isset($biographyArray[$formLocale])) $biographyArray[$formLocale] = '';
+
                 $this->_data['authors'][] = [
                     'authorId' => $authors[$i]->getId(),
                     'firstName' => $authors[$i]->getFirstName(),
                     'middleName' => $authors[$i]->getMiddleName(),
                     'lastName' => $authors[$i]->getLastName(),
-                    'affiliation' => $authors[$i]->getAffiliation(null),
+                    'affiliation' => $affiliationArray,
                     'country' => $authors[$i]->getCountry(),
                     'email' => $authors[$i]->getEmail(),
                     'orcid' => $authors[$i]->getData('orcid'),
                     'url' => $authors[$i]->getUrl(),
-                    'competingInterests' => $authors[$i]->getCompetingInterests(null),
-                    'biography' => $authors[$i]->getBiography(null)
+                    'competingInterests' => $competingInterestsArray,
+                    'biography' => $biographyArray
                 ];
                 if ($authors[$i]->getPrimaryContact()) {
                     $this->setData('primaryContact', $i);
@@ -185,15 +200,41 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
             'citations'
         ]);
 
-        // [FIX] Sanitasi data input user jika bernilai null/bukan array sebelum divalidasi & dirender
-        if (!is_array($this->_data['authors'])) {
+        $formLocale = AppLocale::getLocale();
+
+        // [FIX] Sanitasi data input title & abstract jika kosong
+        if (!is_array($this->_data['title'])) $this->_data['title'] = [];
+        if (!isset($this->_data['title'][$formLocale])) $this->_data['title'][$formLocale] = '';
+
+        if (!is_array($this->_data['abstract'])) $this->_data['abstract'] = [];
+        if (!isset($this->_data['abstract'][$formLocale])) $this->_data['abstract'][$formLocale] = '';
+
+        // [FIX] loop internal array authors untuk memastikan struktur data form aman
+        if (is_array($this->_data['authors'])) {
+            foreach ($this->_data['authors'] as $i => $author) {
+                if (!isset($author['affiliation']) || !is_array($author['affiliation'])) {
+                    $this->_data['authors'][$i]['affiliation'] = [];
+                }
+                if (!isset($this->_data['authors'][$i]['affiliation'][$formLocale])) {
+                    $this->_data['authors'][$i]['affiliation'][$formLocale] = '';
+                }
+
+                if (!isset($author['competingInterests']) || !is_array($author['competingInterests'])) {
+                    $this->_data['authors'][$i]['competingInterests'] = [];
+                }
+                if (!isset($this->_data['authors'][$i]['competingInterests'][$formLocale])) {
+                    $this->_data['authors'][$i]['competingInterests'][$formLocale] = '';
+                }
+
+                if (!isset($author['biography']) || !is_array($author['biography'])) {
+                    $this->_data['authors'][$i]['biography'] = [];
+                }
+                if (!isset($this->_data['authors'][$i]['biography'][$formLocale])) {
+                    $this->_data['authors'][$i]['biography'][$formLocale] = '';
+                }
+            }
+        } else {
             $this->_data['authors'] = [];
-        }
-        if (!is_array($this->_data['title'])) {
-            $this->_data['title'] = [];
-        }
-        if (!is_array($this->_data['abstract'])) {
-            $this->_data['abstract'] = [];
         }
 
         // Load the section. This is used in the step 3 form to
