@@ -9,15 +9,17 @@
  *
  *}
 {strip}
-	{assign var="pageTitle" value="reviewer.dashboard"}
+	{assign var="pageTitle" value="common.queue.long.$pageToDisplay"}
 	{include file="common/header-parts/header-reviewer.tpl"}
 {/strip}
 
+{**
 <ul class="menu">
 	<li{if ($pageDisplay == "active")} class="current"{/if}><a href="{url path="invitations"}">Invitations</a></li>
 	<li{if ($pageDisplay == "completed")} class="current"{/if}><a href="{url path="reviews"}">Reviews</a></li>
 	<li{if ($pageDisplay == "certificates")} class="current"{/if}><a href="{url path="certificates"}">Certificates</a></li>
 </ul>
+**}
 
 {assign var="headerTitle" value="common.queue.long.$pageToDisplay"}
 <h3>{$headerTitleTranslated}</h3>
