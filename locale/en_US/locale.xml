@@ -159,8 +159,18 @@
 	<message key="common.queue.short.submissionsArchives">Archives</message>
 	<message key="common.queue.long.active">Active Submissions</message>
 	<message key="common.queue.short.active">Active</message>
-	<message key="common.queue.long.completed">Archive</message>
-	<message key="common.queue.short.completed">Archive</message>
+	<message key="common.queue.long.completed">Complete Archive</message>
+	<message key="common.queue.short.completed">Complete</message>
+
+	<!-- Article Editing -->
+	
+	<!-- Article Review -->
+	<message key="common.reviewer.long.active">Active Review</message>
+	<message key="common.reviewer.short.active">Active</message>
+	<message key="common.reviewer.long.completed">Review Complete</message>
+	<message key="common.reviewer.short.completed">Complete</message>
+	<message key="common.reviewer.long.expired">Review Out Date</message>
+	<message key="common.reviewer.short.expired">Expired</message>
 
 	<!--
 	 *
