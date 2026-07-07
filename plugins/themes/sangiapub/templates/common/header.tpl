@@ -10,20 +10,19 @@
  * Common site header.
  *}
 {strip}
-{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
-{if $pageCrumbTitle}
-	{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-	{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
-{translate|assign:"applicationName" key="common.openJournalSystems"}
-{assign var="applicationName" value="ScholarWizdam"}
-{assign var="VersionFork" value="1.0.0.0"}
+	{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
+	{if $pageCrumbTitle}
+		{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+	{elseif !$pageCrumbTitleTranslated}
+		{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+	{/if}
+	{translate|assign:"applicationName" key="common.openJournalSystems"}
+	{assign var="applicationName" value="Lumera"}
+	{assign var="VersionFork" value="0.0.0.1"}
 {/strip}
 <head>
+	<title>{$pageTitleTranslated} | Sangia</title>
 	<meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
-	<title>{$pageTitleTranslated}{if $currentJournal} - {$currentJournal->getLocalizedTitle()|strip_tags|escape}{/if} | Sangia</title>
-
 	{if !empty($about)}
     	<meta name="description" content="{$about|escape}" />
 	{else}
@@ -39,7 +38,7 @@
 	{$metaCustomHeaders}
 	
 	{if $displayFavicon}
-	<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
+		<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
 	{/if}
 	
 	{include file="common/jqueryScripts.tpl"}
@@ -131,86 +130,84 @@
 </head>
 
 <body id="sangia.org">
-<a id="skip-to-content" href="#main">Skip to Main Content</a>
-<a class="buttontop" href="#sangia.org"><!-- Back to top button --></a>
+	<a id="skip-to-content" href="#main">Skip to Main Content</a>
+	<a class="buttontop" href="#sangia.org"><!-- Back to top button --></a>
 
-{include file="common/banner.tpl"}
-<header class="c-header" style="border-color:#000">
-    {include file="common/navbar.tpl"}
-    {include file="common/navmenu.tpl"}
-    <div class="c-journal-header__identity c-journal-header__identity--default"></div> 
-</header>
-{include file="common/breadcrumbs.tpl"}
+	{include file="common/banner.tpl"}
+	<header class="c-header" style="border-color:#000">
+		{include file="common/navbar.tpl"}
+		{include file="common/navmenu.tpl"}
+		<div class="c-journal-header__identity c-journal-header__identity--default"></div> 
+	</header>
+	{include file="common/breadcrumbs.tpl"}
 
-<div class="journal-content sangia u-mt-48" role="main">
+	<div class="journal-content sangia u-mt-48" role="main">
+		<div class="live-area-wrapper">
+			<div class="{if !$currentJournal}u-raw{/if} row">
+				{if $leftSidebarCode || $rightSidebarCode} 
+				<div class="sidebar">
+					<section class="column u-js-hide"></section>
+					<div class="column medium-3">
+						
+						{if !$currentJournal}
+							{if $leftSidebarCode}
+								<div class="default-menu-left u-hide">
+									{$leftSidebarCode}
+								</div>
+							{/if}
+						{/if}
+						
+						{if $currentJournal}
+							<nav class="journal-subnav">
+								<div class="live">					
+									<ul class="c-sidemenu c-nav c-nav--stacked c-collapse-at-lt-md">
+										
+										<li class="c-sidemenu"><a href="{url page="about" op="editorial-team" anchor=""}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.editorialTeam"}</a></li>
+					
+										{if $membershipGroups}
+											{foreach from=$membershipGroups item=peopleGroup}
+											<li class="c-sidemenu"><a href="{url page="about" op="display-membership" path=$peopleGroup.group_id}" data-track="click" data-track-label="link" data-test="explore-nav-item">{$peopleGroup.title|escape}</a></li>
+											{/foreach}
+										{/if}
+										
+										{call_hook name="Templates::About::Index::Other"}
+										
+										{foreach from=$navMenuItems item=navItem key=navItemKey}{if $navItem.url != '' && $navItem.name != ''}
+										<li class="c-sidemenu"><a href="{if $navItem.isAbsolute}{$navItem.url|escape}{else}{$baseUrl}{$navItem.url|escape}{/if}" data-track="click" data-track-label="link" data-test="explore-nav-item" >{if $navItem.isLiteral}{$navItem.name|escape}{else}{translate key=$navItem.name}{/if}</a></li>{/if}{/foreach}
+										
+										{if $enableAnnouncements}<li class="c-sidemenu"><a href="{url page="announcement"}" data-track="click" data-track-label="link" data-test="explore-nav-item">News & Announcement</a></li>{/if}{* enableAnnouncements *}
+										
+										{if $donationEnabled}<li id="linkJournalContact" class="c-sidemenu"><a href="{url page="donations"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="payment.type.donation"}</a></li>{/if}
+					
+										{if $currentJournal->getSetting('membershipFee')}<li class="c-sidemenu u-hide"><a href="{url page="about" op="memberships"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.memberships"}</a></li>{/if}
+					
+										{if not ($currentJournal->getSetting('publisherInstitution') == '' && $currentJournal->getLocalizedSetting('publisherNote') == '' && $currentJournal->getLocalizedSetting('contributorNote') == '' && empty($journalSettings.contributors) && $currentJournal->getLocalizedSetting('sponsorNote') == '' && empty($journalSettings.sponsors))}<li class="c-sidemenu"><a href="{url page="about" op="sponsorship"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.journalSponsorship"}</a></li>{/if}
+					
+										{if $currentJournal->getLocalizedSetting('history') != ''}<li class="c-sidemenu"><a href="{url op="history"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.history"}</a></li>{/if}
+										
+										<li class="c-sidemenu"><a href="{url page="about" op="contact"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.contact"}</a></li>
+									</ul>
+								</div>
+							</nav>
 
-<div class="live-area-wrapper">
-	<div class="row">
-	{if $leftSidebarCode || $rightSidebarCode} 
-	<div class="sidebar">
-	    <section class="column u-js-hide"></section>
-		<div class="column medium-3">
-		    
-		    {if !$currentJournal}
-    		    {if $leftSidebarCode}
-        		    <div class="default-menu-left u-hide">
-        		        {$leftSidebarCode}
-                    </div>
-    		    {/if}
-		    {/if}
-            
-            {if $currentJournal}
-			<nav class="journal-subnav">
-    			<div class="live">					
-    			    <ul class="c-sidemenu c-nav c-nav--stacked c-collapse-at-lt-md">
-    			        
-    			        <li class="c-sidemenu"><a href="{url page="about" op="editorial-team" anchor=""}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.editorialTeam"}</a></li>
-    
-                        {if $membershipGroups}
-                            {foreach from=$membershipGroups item=peopleGroup}
-                            <li class="c-sidemenu"><a href="{url page="about" op="display-membership" path=$peopleGroup.group_id}" data-track="click" data-track-label="link" data-test="explore-nav-item">{$peopleGroup.title|escape}</a></li>
-                            {/foreach}
-                        {/if}
-    			        
-    			        {call_hook name="Templates::About::Index::Other"}
-    			        
-    			        {foreach from=$navMenuItems item=navItem key=navItemKey}{if $navItem.url != '' && $navItem.name != ''}
-    			        <li class="c-sidemenu"><a href="{if $navItem.isAbsolute}{$navItem.url|escape}{else}{$baseUrl}{$navItem.url|escape}{/if}" data-track="click" data-track-label="link" data-test="explore-nav-item" >{if $navItem.isLiteral}{$navItem.name|escape}{else}{translate key=$navItem.name}{/if}</a></li>{/if}{/foreach}
-                        
-    			        {if $enableAnnouncements}<li class="c-sidemenu"><a href="{url page="announcement"}" data-track="click" data-track-label="link" data-test="explore-nav-item">News & Announcement</a></li>{/if}{* enableAnnouncements *}
-    			        
-    			        {if $donationEnabled}<li id="linkJournalContact" class="c-sidemenu"><a href="{url page="donations"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="payment.type.donation"}</a></li>{/if}
-    
-    			        {if $currentJournal->getSetting('membershipFee')}<li class="c-sidemenu u-hide"><a href="{url page="about" op="memberships"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.memberships"}</a></li>{/if}
-    
-    			        {if not ($currentJournal->getSetting('publisherInstitution') == '' && $currentJournal->getLocalizedSetting('publisherNote') == '' && $currentJournal->getLocalizedSetting('contributorNote') == '' && empty($journalSettings.contributors) && $currentJournal->getLocalizedSetting('sponsorNote') == '' && empty($journalSettings.sponsors))}<li class="c-sidemenu"><a href="{url page="about" op="sponsorship"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.journalSponsorship"}</a></li>{/if}
-    
-    			        {if $currentJournal->getLocalizedSetting('history') != ''}<li class="c-sidemenu"><a href="{url op="history"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.history"}</a></li>{/if}
-    			        
-    			        <li class="c-sidemenu"><a href="{url page="about" op="contact"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.contact"}</a></li>
-    			     </ul>
-    			</div>
-			</nav>
-			{/if}
-					    
-            {if $rightSidebarCode}
-                <div class="default-menu-right">
-                    {$rightSidebarCode}
-                </div>
-            {/if}
+							{if $rightSidebarCode}
+								<div class="default-menu-right">
+									{$rightSidebarCode}
+								</div>
+							{/if}
+						{/if}
+					</div>
+				</div>
+				{/if}
 
-		</div>
-	</div>
-	{/if}
-
-    <div class="column medium-9" role="main">
-        <section class="article about">
-            <h2 class="main-heading">{$pageTitleTranslated}</h2>
-            
-            {if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
-            {if $pageSubtitleTranslated}
-            	<h3 class="sub-heading">{$pageSubtitleTranslated}</h3>
-            {/if}
-            
-            <div id="content" class="article publication content-body body">
+				<div class="column {if $currentJournal}medium-9{else}medium-12{/if}" role="main">
+					<section class="article about">
+						<h2 class="main-heading">{$pageTitleTranslated}</h2>
+						
+						{if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
+						{if $pageSubtitleTranslated}
+							<h3 class="sub-heading">{$pageSubtitleTranslated}</h3>
+						{/if}
+						
+						<div id="content" class="article publication content-body body">
 
