@@ -166,7 +166,7 @@
 	
 	<!-- Article Review -->
 	<message key="common.reviewer.long.active">Invited Review</message>
-	<message key="common.reviewer.short.active">Invited</message>
+	<message key="common.reviewer.short.invited">Invited</message>
 	<message key="common.reviewer.long.completed">Review Complete</message>
 	<message key="common.reviewer.short.completed">Complete</message>
 	<message key="common.reviewer.long.expired">Review Out Date</message>

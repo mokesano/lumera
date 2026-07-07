@@ -21,13 +21,13 @@
 </ul>
 **}
 
-{assign var="headerTitle" value="common.queue.long.$pageToDisplay"}
+{assign var="headerTitle" value="common.reviewer.long.$pageToDisplay"}
 <h3>{$headerTitleTranslated}</h3>
 
 <ul class="menu">
-	<li{if ($pageToDisplay == "active")} class="current"{/if}><a href="{url path="active"}">{translate key="common.queue.short.active"}</a></li>
-	<li{if ($pageToDisplay == "completed")} class="current"{/if}><a href="{url path="completed"}">{translate key="common.queue.short.completed"}</a></li>
-	<li{if ($pageToDisplay == "expired")} class="current"{/if}><a href="{url path="expired"}">Expired</a></li>
+	<li{if ($pageToDisplay == "active")} class="current"{/if}><a href="{url path="invited"}">{translate key="common.reviewer.short.invited"}</a></li>
+	<li{if ($pageToDisplay == "completed")} class="current"{/if}><a href="{url path="completed"}">{translate key="common.reviewer.short.completed"}</a></li>
+	<li{if ($pageToDisplay == "expired")} class="current"{/if}><a href="{url path="expired"}">{translate key="common.reviewer.short.expired"}</a></li>
 </ul>
 
 {include file="reviewer/$pageToDisplay.tpl"}
