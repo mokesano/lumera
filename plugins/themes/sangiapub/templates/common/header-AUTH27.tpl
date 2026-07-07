@@ -18,7 +18,7 @@
 	{/if}
 {/strip}
 <head>
-    <title>{if $firstName|escape !== $lastName|escape}{$firstName|escape}{/if}{if $middleName} {$middleName|escape}{/if} {$lastName|escape} - {$pageTitleTranslated} | {if $currentJournal}Sangia Publishing{else}{$siteTitle}{/if}</title>
+    <title>{if $firstName|escape !== $lastName|escape}{$firstName|escape}{/if}{if $middleName} {$middleName|escape}{/if} {$lastName|escape} - {$pageTitleTranslated} | {if $currentJournal}Sangia{else}{$siteTitle}{/if}</title>
     <meta name="description" content="{$metaSearchDescription|escape}" />
     <meta name="keywords" content="{$metaSearchKeywords|escape}" />
     <meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
