@@ -1,6 +1,14 @@
+{**
+ * templates/billing/invoice.tpl
+ *
+ * Copyright (c) 2024-2026 Sangia Lumera Publishing
+ * Copyright (c) 2024-2026 Rochmady and Codecanau
+ * Distributed under the GNU GPL v3.
+ *
+ * Billing the Author / Invoice Details.
+ *}
 {strip}
-{* pageTitle sudah di-assign secara dinamis dari BillingHandler, tidak perlu assign manual *}
-{include file="common/header.tpl"}
+    {include file="common/header.tpl"}
 {/strip}
 
 {literal}

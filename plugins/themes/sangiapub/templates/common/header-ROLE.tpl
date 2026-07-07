@@ -18,7 +18,7 @@
 	{/if}
 {/strip}
 <head>
-    <title>{$pageTitleTranslated} | Lumera Editorial Workflow</title>
+    <title>{$pageTitleTranslated} | Lumera Editorial</title>
     <meta name="description" content="{$metaSearchDescription|escape}" />
     <meta name="keywords" content="{$metaSearchKeywords|escape}" />
     <meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />

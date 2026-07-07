@@ -1,11 +1,19 @@
+{**
+ * templates/billing/history.tpl
+ *
+ * Copyright (c) 2024-2026 Sangia Lumera Publishing
+ * Copyright (c) 2024-2026 Rochmady and Codecanau
+ * Distributed under the GNU GPL v3.
+ *
+ * Billing the Author / Billing History.
+ *}
 {strip}
-{* pageTitle sudah di-assign secara dinamis dari Handler *}
-{include file="common/header.tpl"}
+    {include file="common/header.tpl"}
 {/strip}
 
 <div class="wizdam-billing-dashboard">
     
-    {* [WIZDAM UX] Tab Navigasi - Tab 'History' yang aktif *}
+    {* [LUMERA UX] Tab Navigasi - Tab 'History' yang aktif *}
     <ul style="list-style: none; padding: 0; display: flex; border-bottom: 1px solid #ccc; margin-bottom: 20px;">
         <li style="margin-right: 15px; border-bottom: {if $activeTab == 'pending'}3px solid #0056b3{else}none{/if};">
             <a href="{url page="billing" op="index"}" style="text-decoration: none; color: {if $activeTab == 'pending'}#0056b3{else}#666{/if}; font-weight: bold; padding: 5px 10px; display: block;">Active Invoices</a>
@@ -30,7 +38,7 @@
             <tbody>
                 {foreach from=$invoices item=invoice}
                     
-                    {* [WIZDAM HASH BRIDGE] Menggunakan getInvoiceId() sesuai perbaikan sebelumnya *}
+                    {* [LUMERA HASH BRIDGE] Menggunakan getInvoiceId() sesuai perbaikan sebelumnya *}
                     {assign var="invId" value=$invoice->getInvoiceId()}
                     {assign var="secureHash" value=$hashService->generateHash('invoice', $invId)}
                     {assign var="securePath" value="`$secureHash`-`$invId`"}
