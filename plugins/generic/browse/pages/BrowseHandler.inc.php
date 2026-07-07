@@ -55,7 +55,7 @@ class BrowseHandler extends Handler {
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                 $publishedArticleIds = (array) ($publishedArticleDao->getPublishedArticleIdsBySection($sectionId) ?? []);
 
-                // PERBAIKAN: Dikembalikan ke signature bawaan OJS lama Anda
+                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
@@ -83,7 +83,7 @@ class BrowseHandler extends Handler {
                 }
                 ksort($sections);
 
-                // PERBAIKAN: Dikembalikan ke signature bawaan OJS lama Anda
+                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
@@ -145,7 +145,7 @@ class BrowseHandler extends Handler {
                     $publishedArticleIds = array_merge($publishedArticleIds, $publishedArticleIdsBySection);
                 }
 
-                // PERBAIKAN: Dikembalikan ke signature bawaan OJS lama Anda
+                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
@@ -173,7 +173,7 @@ class BrowseHandler extends Handler {
                 }
                 sort($sectionidentifyTypes);
 
-                // PERBAIKAN: Dikembalikan ke signature bawaan OJS lama Anda
+                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
