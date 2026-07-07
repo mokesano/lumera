@@ -23585,6 +23585,10 @@ h6 {
  font-style:italic;
  margin-top:1.17rem
 }
+.collection h5 {
+ font-size:1.27892em;
+ margin-top:1rem
+}
 #journalInfo h4,
 #journalInfo h5,
 #journalInfo h6,
