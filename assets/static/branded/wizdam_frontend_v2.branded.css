@@ -8079,7 +8079,7 @@ p {
  .cms-banner-full {
   background-color:#ddd;
   background-position:center center;
-  background-position:0 100%;
+  background-position:100% 0;
   background-repeat:no-repeat;
   background-size:cover;
   padding:7em 0;
