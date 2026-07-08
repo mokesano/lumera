@@ -9,9 +9,9 @@
  *
  *}
 {strip}
-{translate|assign:"pageTitleTranslated" key="submission.page.review" id=$submission->getId()}
-{assign var="pageCrumbTitle" value="submission.review"}
-{include file="common/header-ROLE.tpl"}
+	{translate|assign:"pageTitleTranslated" key="submission.page.review" id=$submission->getId()}
+	{assign var="pageCrumbTitle" value="submission.review"}
+	{include file="common/header-ROLE.tpl"}
 {/strip}
 
 <ul class="menu">
@@ -19,7 +19,6 @@
 	<li class="current"><a href="{url op="submissionReview" path=$submission->getId()}">{translate key="submission.review"}</a></li>
 	<li><a href="{url op="submissionEditing" path=$submission->getId()}">{translate key="submission.editing"}</a></li>
 </ul>
-
 
 {include file="author/submission/summary.tpl"}
 
@@ -32,4 +31,3 @@
 {include file="author/submission/editorDecision.tpl"}
 
 {include file="common/footer.tpl"}
-
