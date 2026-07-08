@@ -11,13 +11,11 @@ declare(strict_types=1);
  * @class SetupHandler
  * @ingroup pages_manager
  *
- * @brief Handle requests for journal setup functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance using CheckoutHandler Blueprint
+ * @brief Handle requests for journal setup functions and using CheckoutHandler Blueprint.
  */
 
 import('pages.manager.ManagerHandler');
-import('lib.pkp.classes.validation.ValidatorCSRF'); // Penyelarasan Global Scope
+import('lib.pkp.classes.validation.ValidatorCSRF');
 
 class SetupHandler extends ManagerHandler {
     
@@ -51,7 +49,7 @@ class SetupHandler extends ManagerHandler {
         $this->validate();
         $this->setupTemplate(true);
 
-        // [WIZDAM] Singleton Fallback
+        // [LUMERA] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
         $step = isset($args[0]) ? (int) $args[0] : 0;
@@ -72,7 +70,7 @@ class SetupHandler extends ManagerHandler {
                 // Check for any special cases before trying to save
                 switch ($step) {
                     case 1:
-                        if ((int) $request->getUserVar('addSponsor')) {
+                        if ((array) $request->getUserVar('addSponsor')) {
                             $editData = true;
                             $sponsors = $setupForm->getData('sponsors');
                             array_push($sponsors, []);
@@ -86,7 +84,7 @@ class SetupHandler extends ManagerHandler {
                             array_splice($sponsors, $delSponsor, 1);
                             $setupForm->setData('sponsors', $sponsors);
 
-                        } elseif ((int) $request->getUserVar('addContributor')) {
+                        } elseif ((array) $request->getUserVar('addContributor')) {
                             $editData = true;
                             $contributors = $setupForm->getData('contributors');
                             array_push($contributors, []);
@@ -103,7 +101,7 @@ class SetupHandler extends ManagerHandler {
                         break;
 
                     case 2:
-                        if ((int) $request->getUserVar('addCustomAboutItem')) {
+                        if ((array) $request->getUserVar('addCustomAboutItem')) {
                             $editData = true;
                             $customAboutItems = $setupForm->getData('customAboutItems');
                             $customAboutItems[$formLocale][] = [];
@@ -118,7 +116,7 @@ class SetupHandler extends ManagerHandler {
                             array_splice($customAboutItems[$formLocale], $delCustomAboutItem, 1);
                             $setupForm->setData('customAboutItems', $customAboutItems);
                         }
-                        if ((int) $request->getUserVar('addReviewerDatabaseLink')) {
+                        if ((array) $request->getUserVar('addReviewerDatabaseLink')) {
                             $editData = true;
                             $reviewerDatabaseLinks = $setupForm->getData('reviewerDatabaseLinks');
                             array_push($reviewerDatabaseLinks, []);
@@ -135,7 +133,7 @@ class SetupHandler extends ManagerHandler {
                         break;
 
                     case 3:
-                        if ((int) $request->getUserVar('addChecklist')) {
+                        if ((array) $request->getUserVar('addChecklist')) {
                             $editData = true;
                             $checklist = $setupForm->getData('submissionChecklist');
                             if (!isset($checklist[$formLocale]) || !is_array($checklist[$formLocale])) {
@@ -176,7 +174,7 @@ class SetupHandler extends ManagerHandler {
                         $templates = $journal->getSetting('templates');
                         import('classes.file.JournalFileManager');
                         $journalFileManager = new JournalFileManager($journal);
-                        if ((int) $request->getUserVar('addTemplate')) {
+                        if ((array) $request->getUserVar('addTemplate')) {
                             $editData = true;
                             if (!is_array($templates)) $templates = [];
                             $templateId = count($templates);
@@ -206,55 +204,55 @@ class SetupHandler extends ManagerHandler {
                         break;
 
                     case 5:
-                        if ((int) $request->getUserVar('uploadHomeHeaderTitleImage')) {
+                        if ((array) $request->getUserVar('uploadHomeHeaderTitleImage')) {
                             if ($setupForm->uploadImage('homeHeaderTitleImage', $formLocale)) $editData = true;
                             else $setupForm->addError('homeHeaderTitleImage', __('manager.setup.homeTitleImageInvalid'));
-                        } elseif ((int) $request->getUserVar('deleteHomeHeaderTitleImage')) {
+                        } elseif ((array) $request->getUserVar('deleteHomeHeaderTitleImage')) {
                             $editData = true;
                             $setupForm->deleteImage('homeHeaderTitleImage', $formLocale);
-                        } elseif ((int) $request->getUserVar('uploadHomeHeaderLogoImage')) {
+                        } elseif ((array) $request->getUserVar('uploadHomeHeaderLogoImage')) {
                             if ($setupForm->uploadImage('homeHeaderLogoImage', $formLocale)) $editData = true;
                             else $setupForm->addError('homeHeaderLogoImage', __('manager.setup.homeHeaderImageInvalid'));
-                        } elseif ((int) $request->getUserVar('deleteHomeHeaderLogoImage')) {
+                        } elseif ((array) $request->getUserVar('deleteHomeHeaderLogoImage')) {
                             $editData = true;
                             $setupForm->deleteImage('homeHeaderLogoImage', $formLocale);
-                        } elseif ((int) $request->getUserVar('uploadJournalThumbnail')) {
+                        } elseif ((array) $request->getUserVar('uploadJournalThumbnail')) {
                             if ($setupForm->uploadImage('journalThumbnail', $formLocale)) $editData = true;
                             else $setupForm->addError('journalThumbnail', __('manager.setup.journalThumbnailInvalid'));
-                        } elseif ((int) $request->getUserVar('deleteJournalThumbnail')) {
+                        } elseif ((array) $request->getUserVar('deleteJournalThumbnail')) {
                             $editData = true;
                             $setupForm->deleteImage('journalThumbnail', $formLocale);
-                        } elseif ((int) $request->getUserVar('uploadJournalFavicon')) {
+                        } elseif ((array) $request->getUserVar('uploadJournalFavicon')) {
                             if ($setupForm->uploadImage('journalFavicon', $formLocale)) $editData = true;
                             else $setupForm->addError('journalFavicon', __('manager.setup.journalFaviconInvalid'));
-                        } elseif ((int) $request->getUserVar('deleteJournalFavicon')) {
+                        } elseif ((array) $request->getUserVar('deleteJournalFavicon')) {
                             $editData = true;
                             $setupForm->deleteImage('journalFavicon', $formLocale);
-                        } elseif ((int) $request->getUserVar('uploadPageHeaderTitleImage')) {
+                        } elseif ((array) $request->getUserVar('uploadPageHeaderTitleImage')) {
                             if ($setupForm->uploadImage('pageHeaderTitleImage', $formLocale)) $editData = true;
                             else $setupForm->addError('pageHeaderTitleImage', __('manager.setup.pageHeaderTitleImageInvalid'));
-                        } elseif ((int) $request->getUserVar('deletePageHeaderTitleImage')) {
+                        } elseif ((array) $request->getUserVar('deletePageHeaderTitleImage')) {
                             $editData = true;
                             $setupForm->deleteImage('pageHeaderTitleImage', $formLocale);
-                        } elseif ((int) $request->getUserVar('uploadPageHeaderLogoImage')) {
+                        } elseif ((array) $request->getUserVar('uploadPageHeaderLogoImage')) {
                             if ($setupForm->uploadImage('pageHeaderLogoImage', $formLocale)) $editData = true;
                             else $setupForm->addError('pageHeaderLogoImage', __('manager.setup.pageHeaderLogoImageInvalid'));
-                        } elseif ((int) $request->getUserVar('deletePageHeaderLogoImage')) {
+                        } elseif ((array) $request->getUserVar('deletePageHeaderLogoImage')) {
                             $editData = true;
                             $setupForm->deleteImage('pageHeaderLogoImage', $formLocale);
-                        } elseif ((int) $request->getUserVar('uploadHomepageImage')) {
+                        } elseif ((array) $request->getUserVar('uploadHomepageImage')) {
                             if ($setupForm->uploadImage('homepageImage', $formLocale)) $editData = true;
                             else $setupForm->addError('homepageImage', __('manager.setup.homepageImageInvalid'));
-                        } elseif ((int) $request->getUserVar('deleteHomepageImage')) {
+                        } elseif ((array) $request->getUserVar('deleteHomepageImage')) {
                             $editData = true;
                             $setupForm->deleteImage('homepageImage', $formLocale);
-                        } elseif ((int) $request->getUserVar('uploadJournalStyleSheet')) {
+                        } elseif ((array) $request->getUserVar('uploadJournalStyleSheet')) {
                             if ($setupForm->uploadStyleSheet('journalStyleSheet')) $editData = true;
                             else $setupForm->addError('journalStyleSheet', __('manager.setup.journalStyleSheetInvalid'));
-                        } elseif ((int) $request->getUserVar('deleteJournalStyleSheet')) {
+                        } elseif ((array) $request->getUserVar('deleteJournalStyleSheet')) {
                             $editData = true;
                             $setupForm->deleteImage('journalStyleSheet');
-                        } elseif ((int) $request->getUserVar('addNavItem')) {
+                        } elseif ((array) $request->getUserVar('addNavItem')) {
                             $editData = true;
                             $navItems = $setupForm->getData('navItems');
                             $navItems[$formLocale][] = [];
@@ -303,8 +301,7 @@ class SetupHandler extends ManagerHandler {
 
     /**
      * Save changes to journal settings.
-     * [WIZDAM] Proxy Method untuk Backward Compatibility
-     * Jika form di frontend masih tertinggal menunjuk op=saveSetup, request tidak akan mati
+     * [LUMERA] Proxy Method untuk Backward Compatibility.
      * @param array $args
      * @param PKPRequest|null $request
      */
@@ -320,7 +317,7 @@ class SetupHandler extends ManagerHandler {
     public function setupSaved(array $args = [], $request = null): void {
         $this->validate();
 
-        // [WIZDAM] Singleton Fallback
+        // [LUMERA] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
         $step = isset($args[0]) ? (int) $args[0] : 0;
@@ -345,7 +342,7 @@ class SetupHandler extends ManagerHandler {
     public function downloadLayoutTemplate(array $args = [], $request = null): void {
         $this->validate();
 
-        // [WIZDAM] Singleton Fallback
+        // [LUMERA] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
         $router = $request->getRouter();
@@ -369,7 +366,7 @@ class SetupHandler extends ManagerHandler {
     public function resetPermissions(array $args = [], $request = null): void {
         $this->validate();
 
-        // [WIZDAM] Singleton Fallback
+        // [LUMERA] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
         $router = $request->getRouter();
