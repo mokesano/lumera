@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_admin
  *
  * @brief Handle requests for changing site admin settings.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.admin.AdminHandler');
@@ -76,23 +74,23 @@ class AdminSettingsHandler extends AdminHandler {
         $site = $request->getSite();
 
         import('classes.admin.form.SiteSettingsForm');
-        import('classes.file.PublicFileManager'); // [WIZDAM] Explicit import
+        import('classes.file.PublicFileManager');
 
         $settingsForm = new SiteSettingsForm();
         $settingsForm->readInputData();
 
-        if ((int) $request->getUserVar('uploadSiteStyleSheet')) {
+        if ((array) $request->getUserVar('uploadSiteStyleSheet')) {
             if (!$settingsForm->uploadSiteStyleSheet()) {
                 $settingsForm->addError('siteStyleSheet', __('admin.settings.siteStyleSheetInvalid'));
             }
-        } elseif ((int) $request->getUserVar('deleteSiteStyleSheet')) {
+        } elseif ((array) $request->getUserVar('deleteSiteStyleSheet')) {
             $publicFileManager = new PublicFileManager();
             $publicFileManager->removeSiteFile($site->getSiteStyleFilename());
-        } elseif ((int) $request->getUserVar('uploadPageHeaderTitleImage')) {
+        } elseif ((array) $request->getUserVar('uploadPageHeaderTitleImage')) {
             if (!$settingsForm->uploadPageHeaderTitleImage($settingsForm->getFormLocale())) {
                 $settingsForm->addError('pageHeaderTitleImage', __('admin.settings.homeHeaderImageInvalid'));
             }
-        } elseif ((int) $request->getUserVar('deletePageHeaderTitleImage')) {
+        } elseif ((array) $request->getUserVar('deletePageHeaderTitleImage')) {
             $publicFileManager = new PublicFileManager();
             $setting = $site->getSetting('pageHeaderTitleImage');
             $formLocale = $settingsForm->getFormLocale();
@@ -101,7 +99,6 @@ class AdminSettingsHandler extends AdminHandler {
                 $setting[$formLocale] = [];
                 $site->updateSetting('pageHeaderTitleImage', $setting, 'object', true);
 
-                // Refresh site header
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign('displayPageHeaderTitle', $site->getLocalizedPageHeaderTitle());
             }
