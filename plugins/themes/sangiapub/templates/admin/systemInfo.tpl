@@ -9,10 +9,11 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="admin.systemInformation"}
-{assign var="pageDisplayed" value="site"}
-{include file="common/header.tpl"}
+    {assign var="pageTitle" value="admin.systemInformation"}
+    {assign var="pageDisplayed" value="site"}
+    {include file="common/header.tpl"}
 {/strip}
+
 <div id="systemVersion">
     <h3>{translate key="admin.systemVersion"}</h3>
     <div id="currentVersion">
@@ -90,11 +91,12 @@
         {/if}{* !empty($sectionData) *}
     {/foreach}
 </div>
+
 <div class="separator"></div>
+
 <div id="serverInformation" class="block">
     <h3>{translate key="admin.serverInformation"}</h3>
     <p>{translate key="admin.serverInformationDescription"}</p>
-    
     <table class="data" width="100%">
         {foreach from=$serverInfo key=settingName item=settingValue}
         <tr valign="top">
@@ -103,8 +105,7 @@
         </tr>
         {/foreach}
     </table>
-    
     <a class="button u-mt-32" href="{url op="phpinfo"}" target="_blank" type="button">{translate key="admin.phpInfo"}</a>
 </div>
-{include file="common/footer.tpl"}
 
+{include file="common/footer.tpl"}
