@@ -1,6 +1,16 @@
+{**
+ * templates/billing/index.tpl
+ *
+ * Copyright (c) 2024-2026 Sangia Lumera Frontedge
+ * Copyright (c) 2024-2026 Rochmady and Codecanau
+ * Distributed under the GNU GPL v3.
+ *
+ * Billing Index
+ *
+ *}
 {strip}
-{* pageTitle sudah di-assign secara dinamis dari Handler, jadi tidak perlu assign manual di sini *}
-{include file="common/header.tpl"}
+    {* pageTitle sudah di-assign secara dinamis dari Handler *}
+    {include file="common/header.tpl"}
 {/strip}
 
 <div class="wizdam-billing-dashboard">
