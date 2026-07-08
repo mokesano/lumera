@@ -9,8 +9,8 @@
  * 
  *}
 {strip}
-{assign var="pageTitle" value="about.journalPolicies"}
-{include file="common/header-gfa.tpl"}
+    {assign var="pageTitle" value="about.journalPolicies"}
+    {include file="common/header-gfa.tpl"}
 {/strip}
 
 <div class="policies-index">
