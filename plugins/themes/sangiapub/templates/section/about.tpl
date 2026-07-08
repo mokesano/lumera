@@ -1,12 +1,16 @@
 {**
  * templates/section/about.tpl
  *
+ * Copyright (c) 2024-2026 Sangia Lumera Frontedge
+ * Copyright (c) 2024-2026 Rochmady and Codecanau
+ * Distributed under the GNU GPL v3.
+ *
  * [WIZDAM] Section About Page
  * Menampilkan informasi section ini.
  *}
 {strip}
-{assign var="pageTitleTranslated" value=$section->getLocalizedTitle()}
-{include file="common/header-index.tpl"}
+    {assign var="pageTitleTranslated" value=$section->getLocalizedTitle()}
+    {include file="common/header-index.tpl"}
 {/strip}
 
 <div class="section-about">
@@ -137,7 +141,6 @@
 </div>
 
 <div id="sectionMiniJournal" class="u-js-hide">
-
     {* 2. SECTION EDITORS (DEWAN REDAKSI RUBRIK) *}
     <div id="sectionEditors" class="block">
         <h3>{translate key="user.role.sectionEditors"}</h3>
@@ -355,7 +358,6 @@
             </div>
         </div>
     {/if}
-
 </div>
 
 {include file="common/footer.tpl"}
