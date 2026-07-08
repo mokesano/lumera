@@ -9,59 +9,53 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="admin.authSources"}
-{assign var="pageDisplayed" value="site"}
-{include file="common/header.tpl"}
+	{assign var="pageTitle" value="admin.authSources"}
+	{assign var="pageDisplayed" value="site"}
+	{include file="common/header.tpl"}
 {/strip}
 
 <br />
 <div id="sourceSettings">
-<form method="post" action="{url op="updateAuthSource" path=$authId}">
-
-{* WIZDAM SECURITY: Token CSRF Wajib Ada *}
-<input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
-    
-<table class="data" width="100%">
-	<tr valign="top">
-		<td width="20%" class="label">{fieldLabel name="title" key="common.title"}</td>
-		<td width="80%" class="value"><input type="text" id="title" name="title" value="{$title|escape}" size="40" maxlength="120" class="textField" /></td>
-	</tr>
-	<tr valign="top">
-		<td class="label" colspan="2">
-			<h4>{translate key="common.options"}</h4>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td class="label" align="right">
-			<input type="checkbox" name="settings[syncProfiles]" id="syncProfiles" value="1"{if $settings.syncProfiles} checked="checked"{/if} />
-		</td>
-		<td class="value">
-			<label for="syncProfiles">{translate key="admin.auth.enableSyncProfiles"}</label>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td class="label" align="right">
-			<input type="checkbox" name="settings[syncPasswords]" id="syncPasswords" value="1"{if $settings.syncPasswords} checked="checked"{/if} />
-		</td>
-		<td class="value">
-			<label for="syncPasswords">{translate key="admin.auth.enableSyncPasswords"}</label>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td class="label" align="right">
-			<input type="checkbox" name="settings[createUsers]" id="createUsers" value="1"{if $settings.createUsers} checked="checked"{/if} />
-		</td>
-		<td class="value">
-			<label for="createUsers">{translate key="admin.auth.enableCreateUsers"}</label>
-		</td>
-	</tr>
-</table>
-
-{if $pluginTemplate}{include file=$pluginTemplate}{/if}
-
-<p><input type="submit" value="{translate key="common.save"}" class="button defaultButton" /> <input type="button" value="{translate key="common.cancel"}" class="button" onclick="document.location.href='{url op="auth" escape=false}'" /></p>
-
-</form>
+	<form method="post" action="{url op="updateAuthSource" path=$authId}">
+		<input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
+		<table class="data" width="100%">
+			<tr valign="top">
+				<td width="20%" class="label">{fieldLabel name="title" key="common.title"}</td>
+				<td width="80%" class="value"><input type="text" id="title" name="title" value="{$title|escape}" size="40" maxlength="120" class="textField" /></td>
+			</tr>
+			<tr valign="top">
+				<td class="label" colspan="2">
+					<h4>{translate key="common.options"}</h4>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="label" align="right">
+					<input type="checkbox" name="settings[syncProfiles]" id="syncProfiles" value="1"{if $settings.syncProfiles} checked="checked"{/if} />
+				</td>
+				<td class="value">
+					<label for="syncProfiles">{translate key="admin.auth.enableSyncProfiles"}</label>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="label" align="right">
+					<input type="checkbox" name="settings[syncPasswords]" id="syncPasswords" value="1"{if $settings.syncPasswords} checked="checked"{/if} />
+				</td>
+				<td class="value">
+					<label for="syncPasswords">{translate key="admin.auth.enableSyncPasswords"}</label>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="label" align="right">
+					<input type="checkbox" name="settings[createUsers]" id="createUsers" value="1"{if $settings.createUsers} checked="checked"{/if} />
+				</td>
+				<td class="value">
+					<label for="createUsers">{translate key="admin.auth.enableCreateUsers"}</label>
+				</td>
+			</tr>
+		</table>
+		{if $pluginTemplate}{include file=$pluginTemplate}{/if}
+		<p><input type="submit" value="{translate key="common.save"}" class="button defaultButton" /> <input type="button" value="{translate key="common.cancel"}" class="button" onclick="document.location.href='{url op="auth" escape=false}'" /></p>
+	</form>
 </div>
-{include file="common/footer.tpl"}
 
+{include file="common/footer.tpl"}
