@@ -8,11 +8,10 @@
  * Author's submission editing.
  *
  *}
- 
 {strip}
-{translate|assign:"pageTitleTranslated" key="submission.page.editing" id=$submission->getId()}
-{assign var="pageCrumbTitle" value="submission.editing"}
-{include file="common/header-ROLE.tpl"}
+	{translate|assign:"pageTitleTranslated" key="submission.page.editing" id=$submission->getId()}
+	{assign var="pageCrumbTitle" value="submission.editing"}
+	{include file="common/header-ROLE.tpl"}
 {/strip}
 
 <ul class="menu">
@@ -36,4 +35,3 @@
 {include file="author/submission/proofread.tpl"}
 
 {include file="common/footer.tpl"}
-
