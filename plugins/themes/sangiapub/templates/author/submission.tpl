@@ -9,9 +9,9 @@
  *
  *}
 {strip}
-{translate|assign:"pageTitleTranslated" key="submission.page.summary" id=$submission->getId()}
-{assign var="pageCrumbTitle" value="submission.summary"}
-{include file="common/header-ROLE.tpl"}
+	{translate|assign:"pageTitleTranslated" key="submission.page.summary" id=$submission->getId()}
+	{assign var="pageCrumbTitle" value="submission.summary"}
+	{include file="common/header-ROLE.tpl"}
 {/strip}
 
 <ul class="menu">
@@ -23,9 +23,8 @@
 {include file="author/submission/management.tpl"}
 
 {if $authorFees}
-<div class="separator"></div>
-
-{include file="author/submission/authorFees.tpl"}
+	<div class="separator"></div>
+	{include file="author/submission/authorFees.tpl"}
 {/if}
 
 <div class="separator"></div>
@@ -37,4 +36,3 @@
 {include file="submission/metadata/metadata.tpl"}
 
 {include file="common/footer-parts/footer-user.tpl"}
-
