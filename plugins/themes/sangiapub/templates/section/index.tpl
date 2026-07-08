@@ -1,20 +1,23 @@
 {**
  * templates/section/index.tpl
  *
+ * Copyright (c) 2024-2026 Sangia Lumera Frontedge
+ * Copyright (c) 2024-2026 Rochmady and Codecanau
+ * Distributed under the GNU GPL v3.
+ *
  * [WIZDAM] Section Index Page
  * Menampilkan editor dan artikel yang terbit di section ini.
  *}
 {strip}
-{assign var="pageTitleTranslated" value=$section->getLocalizedTitle()}
-{include file="common/header-index.tpl"}
+    {assign var="pageTitleTranslated" value=$section->getLocalizedTitle()}
+    {include file="common/header-index.tpl"}
 {/strip}
 
 <div class="section-index">
-
     {* Header Section *}
     <div class="section-header">
         {if $section->getLocalizedAbbrev()}
-        <span class="section-abbrev u-js-hide">{$section->getLocalizedAbbrev()|escape}</span>
+            <span class="section-abbrev u-js-hide">{$section->getLocalizedAbbrev()|escape}</span>
         {/if}
         <div class="section-meta u-js-hide">
             <span>{$journalTitle|escape}</span>
@@ -95,38 +98,37 @@
 
     {* Artikel di Section Ini - Artikel Terbaru — 4 saja *}
     {if $publishedArticles}
-    <div class="section-recent-articles">
-        <h2>Recent Articles</h2>
-        {foreach from=$publishedArticles item=article}
-        <div class="article-item">
-            <h3>
-                <a href="{url page="article" op="view" path=$article->getId()}">
-                    {$article->getLocalizedTitle()|escape}
-                </a>
-            </h3>
-            <div class="article-authors">
-                {foreach from=$article->getAuthors() item=author name=authorLoop}
-                    {$author->getFullName()|escape}{if !$smarty.foreach.authorLoop.last}, {/if}
-                {/foreach}
+        <div class="section-recent-articles">
+            <h2>Recent Articles</h2>
+            {foreach from=$publishedArticles item=article}
+            <div class="article-item">
+                <h3>
+                    <a href="{url page="article" op="view" path=$article->getId()}">
+                        {$article->getLocalizedTitle()|escape}
+                    </a>
+                </h3>
+                <div class="article-authors">
+                    {foreach from=$article->getAuthors() item=author name=authorLoop}
+                        {$author->getFullName()|escape}{if !$smarty.foreach.authorLoop.last}, {/if}
+                    {/foreach}
+                </div>
             </div>
+            {/foreach}
+        
+            {* Link ke semua artikel jika lebih dari 4 *}
+            {if $totalArticleCount > 4}
+            <div class="view-all-articles">
+                <a href="{$allArticlesUrl|escape}">
+                    View all {$totalArticleCount} articles →
+                </a>
+            </div>
+            {/if}
         </div>
-        {/foreach}
-    
-        {* Link ke semua artikel jika lebih dari 4 *}
-        {if $totalArticleCount > 4}
-        <div class="view-all-articles">
-            <a href="{$allArticlesUrl|escape}">
-                View all {$totalArticleCount} articles →
-            </a>
-        </div>
-        {/if}
-    </div>
     {else}
-    <div class="section-no-articles">
-        <p>{translate key="section.noArticles"}</p>
-    </div>
+        <div class="section-no-articles">
+            <p>{translate key="section.noArticles"}</p>
+        </div>
     {/if}
-
 </div>
 
 {include file="common/footer.tpl"}
