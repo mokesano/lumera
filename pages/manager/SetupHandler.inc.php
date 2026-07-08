@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @class SetupHandler
  * @ingroup pages_manager
  *
- * @brief Handle requests for journal setup functions and using CheckoutHandler Blueprint.
+ * @brief Handle requests for journal setup functions and Checkout Blueprint.
  */
 
 import('pages.manager.ManagerHandler');
@@ -66,6 +66,7 @@ class SetupHandler extends ManagerHandler {
             if ($request->isPost()) {
                 $setupForm->readInputData();
                 $formLocale = $setupForm->getFormLocale();
+                $notificationMessageKey = null;
 
                 // Check for any special cases before trying to save
                 switch ($step) {
@@ -75,6 +76,7 @@ class SetupHandler extends ManagerHandler {
                             $sponsors = $setupForm->getData('sponsors');
                             array_push($sponsors, []);
                             $setupForm->setData('sponsors', $sponsors);
+                            $notificationMessageKey = 'manager.setup.notification.sponsorAdded';
 
                         } elseif (($delSponsor = (array) $request->getUserVar('delSponsor')) && count($delSponsor) == 1) {
                             $editData = true;
@@ -83,12 +85,14 @@ class SetupHandler extends ManagerHandler {
                             $sponsors = $setupForm->getData('sponsors');
                             array_splice($sponsors, $delSponsor, 1);
                             $setupForm->setData('sponsors', $sponsors);
+                            $notificationMessageKey = 'manager.setup.notification.sponsorRemoved';
 
                         } elseif ((array) $request->getUserVar('addContributor')) {
                             $editData = true;
                             $contributors = $setupForm->getData('contributors');
                             array_push($contributors, []);
                             $setupForm->setData('contributors', $contributors);
+                            $notificationMessageKey = 'manager.setup.notification.contributorAdded';
 
                         } elseif (($delContributor = (array) $request->getUserVar('delContributor')) && count($delContributor) == 1) {
                             $editData = true;
@@ -97,6 +101,7 @@ class SetupHandler extends ManagerHandler {
                             $contributors = $setupForm->getData('contributors');
                             array_splice($contributors, $delContributor, 1);
                             $setupForm->setData('contributors', $contributors);
+                            $notificationMessageKey = 'manager.setup.notification.contributorRemoved';
                         }
                         break;
 
@@ -106,6 +111,7 @@ class SetupHandler extends ManagerHandler {
                             $customAboutItems = $setupForm->getData('customAboutItems');
                             $customAboutItems[$formLocale][] = [];
                             $setupForm->setData('customAboutItems', $customAboutItems);
+                            $notificationMessageKey = 'manager.setup.notification.itemAdded';
 
                         } elseif (($delCustomAboutItem = (array) $request->getUserVar('delCustomAboutItem')) && count($delCustomAboutItem) == 1) {
                             $editData = true;
@@ -115,12 +121,14 @@ class SetupHandler extends ManagerHandler {
                             if (!isset($customAboutItems[$formLocale])) $customAboutItems[$formLocale][] = [];
                             array_splice($customAboutItems[$formLocale], $delCustomAboutItem, 1);
                             $setupForm->setData('customAboutItems', $customAboutItems);
+                            $notificationMessageKey = 'manager.setup.notification.itemRemoved';
                         }
                         if ((array) $request->getUserVar('addReviewerDatabaseLink')) {
                             $editData = true;
                             $reviewerDatabaseLinks = $setupForm->getData('reviewerDatabaseLinks');
                             array_push($reviewerDatabaseLinks, []);
                             $setupForm->setData('reviewerDatabaseLinks', $reviewerDatabaseLinks);
+                            $notificationMessageKey = 'manager.setup.notification.itemAdded';
 
                         } elseif (($delReviewerDatabaseLink = (array) $request->getUserVar('delReviewerDatabaseLink')) && count($delReviewerDatabaseLink) == 1) {
                             $editData = true;
@@ -129,6 +137,7 @@ class SetupHandler extends ManagerHandler {
                             $reviewerDatabaseLinks = $setupForm->getData('reviewerDatabaseLinks');
                             array_splice($reviewerDatabaseLinks, $delReviewerDatabaseLink, 1);
                             $setupForm->setData('reviewerDatabaseLinks', $reviewerDatabaseLinks);
+                            $notificationMessageKey = 'manager.setup.notification.itemRemoved';
                         }
                         break;
 
@@ -144,6 +153,7 @@ class SetupHandler extends ManagerHandler {
                             }
                             array_push($checklist[$formLocale], ['order' => $lastOrder+1]);
                             $setupForm->setData('submissionChecklist', $checklist);
+                            $notificationMessageKey = 'manager.setup.notification.itemAdded';
 
                         } elseif (($delChecklist = (array) $request->getUserVar('delChecklist')) && count($delChecklist) == 1) {
                             $editData = true;
@@ -153,6 +163,7 @@ class SetupHandler extends ManagerHandler {
                             if (!isset($checklist[$formLocale])) $checklist[$formLocale] = [];
                             array_splice($checklist[$formLocale], $delChecklist, 1);
                             $setupForm->setData('submissionChecklist', $checklist);
+                            $notificationMessageKey = 'manager.setup.notification.itemRemoved';
                         }
 
                         if (!isset($editData)) {
@@ -189,6 +200,7 @@ class SetupHandler extends ManagerHandler {
                                 'title' => htmlspecialchars(trim((string) $request->getUserVar('template-title')), ENT_QUOTES, 'UTF-8')
                             ];
                             $journal->updateSetting('templates', $templates);
+                            $notificationMessageKey = 'manager.setup.notification.fileUploaded';
                             
                         } elseif (($delTemplate = (array) $request->getUserVar('delTemplate')) && count($delTemplate) == 1) {
                             $editData = true;
@@ -199,64 +211,106 @@ class SetupHandler extends ManagerHandler {
                             $journalFileManager->deleteFile($filename);
                             array_splice($templates, $delTemplate, 1);
                             $journal->updateSetting('templates', $templates);
+                            $notificationMessageKey = 'manager.setup.notification.fileRemoved';
                         }
                         $setupForm->setData('templates', $templates);
                         break;
 
                     case 5:
                         if ((array) $request->getUserVar('uploadHomeHeaderTitleImage')) {
-                            if ($setupForm->uploadImage('homeHeaderTitleImage', $formLocale)) $editData = true;
-                            else $setupForm->addError('homeHeaderTitleImage', __('manager.setup.homeTitleImageInvalid'));
+                            if ($setupForm->uploadImage('homeHeaderTitleImage', $formLocale)) {
+                                $editData = true;
+                                $notificationMessageKey = 'manager.setup.notification.fileUploaded';
+                            } else {
+                                $setupForm->addError('homeHeaderTitleImage', __('manager.setup.homeTitleImageInvalid'));
+                            }
                         } elseif ((array) $request->getUserVar('deleteHomeHeaderTitleImage')) {
                             $editData = true;
                             $setupForm->deleteImage('homeHeaderTitleImage', $formLocale);
+                            $notificationMessageKey = 'manager.setup.notification.fileRemoved';
                         } elseif ((array) $request->getUserVar('uploadHomeHeaderLogoImage')) {
-                            if ($setupForm->uploadImage('homeHeaderLogoImage', $formLocale)) $editData = true;
-                            else $setupForm->addError('homeHeaderLogoImage', __('manager.setup.homeHeaderImageInvalid'));
+                            if ($setupForm->uploadImage('homeHeaderLogoImage', $formLocale)) {
+                                $editData = true;
+                                $notificationMessageKey = 'manager.setup.notification.fileUploaded';
+                            } else {
+                                $setupForm->addError('homeHeaderLogoImage', __('manager.setup.homeHeaderImageInvalid'));
+                            }
                         } elseif ((array) $request->getUserVar('deleteHomeHeaderLogoImage')) {
                             $editData = true;
                             $setupForm->deleteImage('homeHeaderLogoImage', $formLocale);
+                            $notificationMessageKey = 'manager.setup.notification.fileRemoved';
                         } elseif ((array) $request->getUserVar('uploadJournalThumbnail')) {
-                            if ($setupForm->uploadImage('journalThumbnail', $formLocale)) $editData = true;
-                            else $setupForm->addError('journalThumbnail', __('manager.setup.journalThumbnailInvalid'));
+                            if ($setupForm->uploadImage('journalThumbnail', $formLocale)) {
+                                $editData = true;
+                                $notificationMessageKey = 'manager.setup.notification.fileUploaded';
+                            } else {
+                                $setupForm->addError('journalThumbnail', __('manager.setup.journalThumbnailInvalid'));
+                            }
                         } elseif ((array) $request->getUserVar('deleteJournalThumbnail')) {
                             $editData = true;
                             $setupForm->deleteImage('journalThumbnail', $formLocale);
+                            $notificationMessageKey = 'manager.setup.notification.fileRemoved';
                         } elseif ((array) $request->getUserVar('uploadJournalFavicon')) {
-                            if ($setupForm->uploadImage('journalFavicon', $formLocale)) $editData = true;
-                            else $setupForm->addError('journalFavicon', __('manager.setup.journalFaviconInvalid'));
+                            if ($setupForm->uploadImage('journalFavicon', $formLocale)) {
+                                $editData = true;
+                                $notificationMessageKey = 'manager.setup.notification.fileUploaded';
+                            } else {
+                                $setupForm->addError('journalFavicon', __('manager.setup.journalFaviconInvalid'));
+                            }
                         } elseif ((array) $request->getUserVar('deleteJournalFavicon')) {
                             $editData = true;
                             $setupForm->deleteImage('journalFavicon', $formLocale);
+                            $notificationMessageKey = 'manager.setup.notification.fileRemoved';
                         } elseif ((array) $request->getUserVar('uploadPageHeaderTitleImage')) {
-                            if ($setupForm->uploadImage('pageHeaderTitleImage', $formLocale)) $editData = true;
-                            else $setupForm->addError('pageHeaderTitleImage', __('manager.setup.pageHeaderTitleImageInvalid'));
+                            if ($setupForm->uploadImage('pageHeaderTitleImage', $formLocale)) {
+                                $editData = true;
+                                $notificationMessageKey = 'manager.setup.notification.fileUploaded';
+                            } else {
+                                $setupForm->addError('pageHeaderTitleImage', __('manager.setup.pageHeaderTitleImageInvalid'));
+                            }
                         } elseif ((array) $request->getUserVar('deletePageHeaderTitleImage')) {
                             $editData = true;
                             $setupForm->deleteImage('pageHeaderTitleImage', $formLocale);
+                            $notificationMessageKey = 'manager.setup.notification.fileRemoved';
                         } elseif ((array) $request->getUserVar('uploadPageHeaderLogoImage')) {
-                            if ($setupForm->uploadImage('pageHeaderLogoImage', $formLocale)) $editData = true;
-                            else $setupForm->addError('pageHeaderLogoImage', __('manager.setup.pageHeaderLogoImageInvalid'));
+                            if ($setupForm->uploadImage('pageHeaderLogoImage', $formLocale)) {
+                                $editData = true;
+                                $notificationMessageKey = 'manager.setup.notification.fileUploaded';
+                            } else {
+                                $setupForm->addError('pageHeaderLogoImage', __('manager.setup.pageHeaderLogoImageInvalid'));
+                            }
                         } elseif ((array) $request->getUserVar('deletePageHeaderLogoImage')) {
                             $editData = true;
                             $setupForm->deleteImage('pageHeaderLogoImage', $formLocale);
+                            $notificationMessageKey = 'manager.setup.notification.fileRemoved';
                         } elseif ((array) $request->getUserVar('uploadHomepageImage')) {
-                            if ($setupForm->uploadImage('homepageImage', $formLocale)) $editData = true;
-                            else $setupForm->addError('homepageImage', __('manager.setup.homepageImageInvalid'));
+                            if ($setupForm->uploadImage('homepageImage', $formLocale)) {
+                                $editData = true;
+                                $notificationMessageKey = 'manager.setup.notification.fileUploaded';
+                            } else {
+                                $setupForm->addError('homepageImage', __('manager.setup.homepageImageInvalid'));
+                            }
                         } elseif ((array) $request->getUserVar('deleteHomepageImage')) {
                             $editData = true;
                             $setupForm->deleteImage('homepageImage', $formLocale);
+                            $notificationMessageKey = 'manager.setup.notification.fileRemoved';
                         } elseif ((array) $request->getUserVar('uploadJournalStyleSheet')) {
-                            if ($setupForm->uploadStyleSheet('journalStyleSheet')) $editData = true;
-                            else $setupForm->addError('journalStyleSheet', __('manager.setup.journalStyleSheetInvalid'));
+                            if ($setupForm->uploadStyleSheet('journalStyleSheet')) {
+                                $editData = true;
+                                $notificationMessageKey = 'manager.setup.notification.fileUploaded';
+                            } else {
+                                $setupForm->addError('journalStyleSheet', __('manager.setup.journalStyleSheetInvalid'));
+                            }
                         } elseif ((array) $request->getUserVar('deleteJournalStyleSheet')) {
                             $editData = true;
                             $setupForm->deleteImage('journalStyleSheet');
+                            $notificationMessageKey = 'manager.setup.notification.fileRemoved';
                         } elseif ((array) $request->getUserVar('addNavItem')) {
                             $editData = true;
                             $navItems = $setupForm->getData('navItems');
                             $navItems[$formLocale][] = [];
                             $setupForm->setData('navItems', $navItems);
+                            $notificationMessageKey = 'manager.setup.notification.itemAdded';
                         } elseif (($delNavItem = (array) $request->getUserVar('delNavItem')) && count($delNavItem) == 1) {
                             $editData = true;
                             list($delNavItem) = array_keys($delNavItem);
@@ -265,18 +319,27 @@ class SetupHandler extends ManagerHandler {
                             if (is_array($navItems) && is_array($navItems[$formLocale])) {
                                 array_splice($navItems[$formLocale], $delNavItem, 1);
                                 $setupForm->setData('navItems', $navItems);
+                                $notificationMessageKey = 'manager.setup.notification.itemRemoved';
                             }
                         }
                         break;
                 }
 
-                if (!isset($editData) && $setupForm->validate()) {
-                    $setupForm->execute();
-                    $request->redirect(null, null, 'setupSaved', [$step]);
-                    return; // Terminasi mutlak agar tidak lanjut ke render
+                // [LUMERA] NOTIF: flash message untuk aksi kecil (add/delete/upload)
+                // yang tidak melalui redirect penuh ke setupSaved.
+                if (!empty($editData) && $notificationMessageKey) {
+                    $this->_notifyAction($request, $notificationMessageKey);
                 }
 
-                // Fallthrough: Form render ulang jika editData diset (menambah list) atau error validasi
+                if (!isset($editData) && $setupForm->validate()) {
+                    $setupForm->execute();
+                    // [LUMERA] NOTIF: Pesan sukses default.
+                    $this->_notifyAction($request);
+                    $request->redirect(null, null, 'setupSaved', [$step]);
+                    return;
+                }
+
+                // Fallthrough: Form render ulang jika editData atau error validasi
                 $setupForm->display($request);
                 return;
             }
@@ -376,6 +439,28 @@ class SetupHandler extends ManagerHandler {
         $articleDao->resetPermissions($journal->getId());
 
         $request->redirect(null, null, 'setup', ['3']);
+    }
+
+    /**
+     * [LUMERA] Kirim notifikasi trivial (flash message) ke user setelah aksi.
+     * @param PKPRequest $request
+     * @param string|null $localeKey
+     */
+    private function _notifyAction($request, $localeKey = null): void {
+        import('classes.notification.NotificationManager');
+        $notificationManager = new NotificationManager();
+        $user = $request->getUser();
+        if (!$user) return;
+
+        if ($localeKey) {
+            $notificationManager->createTrivialNotification(
+                $user->getId(),
+                NOTIFICATION_TYPE_SUCCESS,
+                ['contents' => __($localeKey)]
+            );
+        } else {
+            $notificationManager->createTrivialNotification($user->getId());
+        }
     }
 }
 ?>
