@@ -29,12 +29,12 @@
 	
 	<message key="manager.journalManagement">Journal Management</message>
 	
-	<message key="manager.language.ui">UI</message>
+	<message key="manager.language.ui">UI frontend</message>
 	<message key="manager.language.submissions">Submissions</message>
 	<message key="manager.language.forms">Forms</message>
 	<message key="manager.language.confirmDefaultSettingsOverwrite">This will replace any locale-specific journal settings you had for this locale</message>
 	<message key="manager.language.reloadLocalizedDefaultSettings">Reload defaults</message>
-	<message key="manager.languages.languageInstructions"><![CDATA[Wizdam Frontedge can be made available to users in any of several supported languages. As well, Wizdam Frontedge can operate as a multilingual system, providing users with an ability to toggle between languages on each page, and allowing certain data to be entered in several additional languages.<br /><br />If a language supported by Wizdam Frontedge is not listed below, ask your site administrator to install the language from the publisher administration interface. For instructions on adding support for new languages, please consult the Wizdam Frontedge documentation.]]></message>
+	<message key="manager.languages.languageInstructions"><![CDATA[LumeraApp can be made available to users in any of several supported languages. As well, LumeraApp can operate as a multilingual system, providing users with an ability to toggle between languages on each page, and allowing certain data to be entered in several additional languages.<br /><br />If a language supported by Wizdam Frontedge is not listed below, ask your site administrator to install the language from the publisher administration interface. For instructions on adding support for new languages, please consult the LumeraApp documentation.]]></message>
 	<message key="manager.languages.noneAvailable">Sorry, no additional languages are available. Contact your site administrator if you wish to use additional languages with this journal.</message>
 	<message key="manager.languages.primaryLocaleInstructions">This will be the default language for the journal site.</message>
 	
@@ -47,7 +47,7 @@
 	<message key="manager.payment.authorFees">Author Fees</message>
 	<message key="manager.payment.authorFeesDescription">Selected options, along with their descriptions and fees (which can be edited below), will appear in Step 1 of the submission process and in About the Journal under Submissions, as well as at points where payment is required.</message>
 	<message key="manager.payment.currency">Currency</message>
-	<message key="manager.payment.currencymessage">Wizdam Frontedge does not perform any currency conversions.  If accepting payments for subscriptions, you must ensure that the subscription currency matches the one specified here.</message>
+	<message key="manager.payment.currencymessage">LumeraApp does not perform any currency conversions.  If accepting payments for subscriptions, you must ensure that the subscription currency matches the one specified here.</message>
 	<message key="manager.payment.description">Description</message>
 	<message key="manager.payment.details">Details</message>
 	<message key="manager.payment.editSubscription">Edit Subscription</message>
@@ -131,11 +131,11 @@
 	<message key="manager.plugins.wrongCategory">The uploaded plugin does not fit the category of the upgraded plugin.</message>
 	<message key="manager.plugins.wrongName">The version.xml in the uploaded plugin contains a plugin name that does not fit the name of the upgraded plugin.</message>
 	<message key="manager.plugins.pleaseInstall">Plugin does not exist.  Please Install instead</message>
-	<message key="manager.plugins.pleaseUpgrade">Plugin already exists, but is newer than installed version.  Please upgrade instead</message>
+	<message key="manager.plugins.pleaseUpgrade">Plugin already exists, but is newer than installed version. Please upgrade instead</message>
 	<message key="manager.plugins.settings">Settings</message>
 	<message key="manager.plugins.tarCommandNotFound">The tar command is not available. Please correctly configure it in your "config.inc.php".</message>
 	<message key="manager.plugins.upgrade">Upgrade Plugin</message>
-	<message key="manager.plugins.upgradeDescription">This form allows you to upgrade a plugin.  Please ensure the plugin is compressed as a .tar.gz file.</message>
+	<message key="manager.plugins.upgradeDescription">This form allows you to upgrade a plugin. Please ensure the plugin is compressed as a .tar.gz file.</message>
 	<message key="manager.plugins.upgradeFailed">Upgrade failed</message>
 	<message key="manager.plugins.upgradeSuccessful">Successfully upgraded to version</message>
 	<message key="manager.plugins.uploadError">Error uploading file</message>
@@ -476,7 +476,7 @@
 	<message key="manager.setup.reviewOptions.showEnsuringLink"><![CDATA[Provide links to <a href="javascript:openHelp('{$blindReviewHelpId}')" class="action">Ensuring a Blind Review</a> on pages where authors and reviewers upload files.]]></message>
 	<message key="manager.setup.reviewPolicy">Review Policy</message>
 	<message key="manager.setup.reviewProcess">Review Process</message>
-	<message key="manager.setup.reviewProcessDescription"><![CDATA[Wizdam Frontedge supports two models for managing the review process. The Standard Review Process is recommended because it steps reviewers through the process, ensures a complete review history for each submission, and takes advantage of automatic reminder notification, and standard recommendations for submissions (Accept; Accept with revisions; Submit for review; Submit elsewhere; Decline; See comments).<br /><br />Select one of the following:]]></message>
+	<message key="manager.setup.reviewProcessDescription"><![CDATA[LumeraApp supports two models for managing the review process. The Standard Review Process is recommended because it steps reviewers through the process, ensures a complete review history for each submission, and takes advantage of automatic reminder notification, and standard recommendations for submissions (Accept; Accept with revisions; Submit for review; Submit elsewhere; Decline; See comments).<br /><br />Select one of the following:]]></message>
 	<message key="manager.setup.reviewProcessEmail">Email-Attachment Review Process</message>
 	<message key="manager.setup.reviewProcessStandard">Standard Review Process</message>
 	<message key="manager.setup.reviewProcessStandardDescription">Editors will email selected Reviewers the title and abstract of the submission, as well as an invitation to log into the journal web site to complete the review. Reviewers enter the journal web site to agree to do the review, to download submissions, submit their comments, and select a recommendation.</message>
@@ -486,7 +486,7 @@
 	<message key="manager.setup.sectionsDefaultSectionDescription">(If sections are not added, then items are submitted to the Articles section by default.)</message>
 	<message key="manager.setup.sectionsDescription"><![CDATA[To create or modify sections for the journal (e.g., Articles, Book Reviews, etc.), go to Section Management.<br /><br />Authors on submitting items to the journal will designate...]]></message>
 	<message key="manager.setup.securitySettings">Access and Security Settings</message>
-	<message key="manager.setup.securitySettingsDescription">Wizdam Frontedge provides a number of security-related options that can be used to restrict the journal's contents, and maintain additional information about submissions for auditing purposes.</message>
+	<message key="manager.setup.securitySettingsDescription">LumeraApp provides a number of security-related options that can be used to restrict the journal's contents, and maintain additional information about submissions for auditing purposes.</message>
 	<message key="manager.setup.selectEditorDescription">The journal editor who will see it through the editorial process.</message>
 	<message key="manager.setup.selectSectionDescription">The journal section for which the item will be considered.</message>
 	<message key="manager.setup.showGalleyLinksDescription">Always show galley links and indicate restricted access.</message>
@@ -527,7 +527,20 @@
 	<message key="manager.setup.userRegistration">User Registration</message>
 	<message key="manager.setup.useTextTitle">Title text</message>
 	<message key="manager.setup.volumePerYear">Volumes per year</message>
+	<!-- Categories -->
+	<message key="manager.setup.categories">Categories</message>
+	<message key="manager.setup.categories.description">Choose the most appropriate categories from the set listed above. Readers will be able to browse by category from the complete journal set.</message>
 	
+	<!-- Manager Setup Notifications -->
+	<message key="manager.setup.notification.sponsorAdded">New sponsor added successfully.</message>
+	<message key="manager.setup.notification.sponsorRemoved">Sponsor removed successfully.</message>
+	<message key="manager.setup.notification.contributorAdded">New contributor added successfully.</message>
+	<message key="manager.setup.notification.contributorRemoved">Contributor removed successfully.</message>
+	<message key="manager.setup.notification.itemAdded">New item added successfully.</message>
+	<message key="manager.setup.notification.itemRemoved">Item removed successfully.</message>
+	<message key="manager.setup.notification.fileUploaded">File uploaded successfully.</message>
+	<message key="manager.setup.notification.fileRemoved">File removed successfully.</message>
+
 	<!-- Manager Statistics -->
 	<message key="manager.statistics.defaultMetricDescription">
 		Your journal is configured to record more than one usage metric. Usage statistics will be displayed in severeral contexts.
@@ -564,7 +577,7 @@
 	<message key="manager.statistics.reports.orderDir.desc">Descending</message>
 	<message key="manager.statistics.reports.month.label">Use the YYYYMM format.</message>
 	<message key="manager.statistics.reports.day.label">Use the YYYYMMDD format.</message>
-	<message key="manager.statistics.reports.cities.label">One or more city names, comma separated (e.g. City Name 1,City Name 2)</message>
+	<message key="manager.statistics.reports.cities.label">One or more city names, comma separated (e.g. City Name 1, City Name 2)</message>
 	<message key="manager.statistics.reports.form.columnsRequired">You have to select at least one column to generate the report.</message>
 	<message key="manager.statistics.reports.reportUrl">Report URL</message>
 	<message key="manager.statistics.reports.reportUrl.label">The following url can be used to generate the report with this current form settings. Just copy it, paste into your browser and enter. You can use your favorites to store your custom report url generator.</message>
@@ -620,8 +633,8 @@
 	<message key="manager.subscriptionPolicies.expiryReminderBeforeWeeks1">Notify subscribers by email</message>
 	<message key="manager.subscriptionPolicies.expiryReminderBeforeWeeks2">week(s) before subscription expiry.</message>
 	<message key="manager.subscriptionPolicies.expiryReminders">Subscription Expiry Reminders</message>
-	<message key="manager.subscriptionPolicies.expiryRemindersDescription">Automated email reminders (available for editing by Journal Managers in Wizdam Frontedge's Prepared Emails) can be sent to subscribers both before and after a subscription has expired.</message>
-	<message key="manager.subscriptionPolicies.expiryRemindersDisabled"><![CDATA[<strong>Note:</strong> To activate these options, the site administrator must enable the <tt>scheduled_tasks</tt> option in the Wizdam Frontedge configuration file. Additional server configuration may be required to support this functionality (which may not be possible on all servers), as indicated in the Wizdam Frontedge documentation.]]></message>
+	<message key="manager.subscriptionPolicies.expiryRemindersDescription">Automated email reminders (available for editing by Journal Managers in LumeraApp's Prepared Emails) can be sent to subscribers both before and after a subscription has expired.</message>
+	<message key="manager.subscriptionPolicies.expiryRemindersDisabled"><![CDATA[<strong>Note:</strong> To activate these options, the site administrator must enable the <tt>scheduled_tasks</tt> option in the LumeraApp configuration file. Additional server configuration may be required to support this functionality (which may not be possible on all servers), as indicated in the LumeraApp documentation.]]></message>
 	<message key="manager.subscriptionPolicies.expirySelectOne">Select one of the following:</message>
 	<message key="manager.subscriptionPolicies.htmlInstructions"><![CDATA[HTML can be used in textarea (for font size, color, etc.), with "returns" treated as <tt>&lt;br&gt;</tt>; HTML editor works with Firefox browsers.]]></message>
 	<message key="manager.subscriptionPolicies.numMonthsAfterSubscriptionExpiryReminderValid">Please select a valid value for the number of months after subscription expiry.</message>
@@ -629,9 +642,9 @@
 	<message key="manager.subscriptionPolicies.numWeeksAfterSubscriptionExpiryReminderValid">Please select a valid value for the number of weeks after subscription expiry.</message>
 	<message key="manager.subscriptionPolicies.numWeeksBeforeSubscriptionExpiryReminderValid">Please select a valid value for the number of weeks before subscription expiry.</message>
 	<message key="manager.subscriptionPolicies.openAccessNotificationDescription">Registered readers will have the option of receiving the table of contents by email when an issue becomes open access.</message>
-	<message key="manager.subscriptionPolicies.openAccessNotificationDisabled"><![CDATA[<strong>Note:</strong> To activate this option, the site administrator must enable the <tt>scheduled_tasks</tt> option in the Wizdam Frontedge configuration file. Additional server configuration may be required to support this functionality (which may not be possible on all servers), as indicated in the Wizdam Frontedge documentation.]]></message>
+	<message key="manager.subscriptionPolicies.openAccessNotificationDisabled"><![CDATA[<strong>Note:</strong> To activate this option, the site administrator must enable the <tt>scheduled_tasks</tt> option in the LumeraApp configuration file. Additional server configuration may be required to support this functionality (which may not be possible on all servers), as indicated in the LumeraApp documentation.]]></message>
 	<message key="manager.subscriptionPolicies.onlinePaymentNotifications">Online Payment Notifications</message>
-	<message key="manager.subscriptionPolicies.onlinePaymentNotificationsDescription">Automated email notifications (available for editing by Journal Managers in Wizdam Frontedge's Prepared Emails) can be sent to the Subscription Manager upon the completion of subscription online payments.</message>
+	<message key="manager.subscriptionPolicies.onlinePaymentNotificationsDescription">Automated email notifications (available for editing by Journal Managers in LumeraApp's Prepared Emails) can be sent to the Subscription Manager upon the completion of subscription online payments.</message>
 	<message key="manager.subscriptionPolicies.enableSubscriptionOnlinePaymentNotificationPurchaseIndividual">Notify Subscription Manager by email upon online purchase of an Individual subscription.</message>
 	<message key="manager.subscriptionPolicies.enableSubscriptionOnlinePaymentNotificationPurchaseInstitutional">Notify Subscription Manager by email upon online purchase of an Institutional subscription (recommended).</message>
 	<message key="manager.subscriptionPolicies.enableSubscriptionOnlinePaymentNotificationRenewIndividual">Notify Subscription Manager by email upon online renewal of an Individual subscription.</message>
@@ -767,8 +780,4 @@
 	<message key="manager.subscriptionTypes.name">Subscription type</message>
 	<message key="manager.subscriptionTypes.noneCreated">No subscription types have been created.</message>
 	<message key="manager.subscriptionTypes.subscriptionTypeCreatedSuccessfully">Subscription type created successfully.</message>
-
-	<!-- Categories -->
-	<message key="manager.setup.categories">Categories</message>
-	<message key="manager.setup.categories.description">Choose the most appropriate categories from the set listed above. Readers will be able to browse by category from the complete journal set.</message>
 </locale>

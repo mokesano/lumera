@@ -40,6 +40,28 @@ class AdminSettingsHandler extends AdminHandler {
     }
 
     /**
+     * [WIZDAM] Kirim notifikasi (flash message) ke user setelah sebuah aksi.
+     * @param PKPRequest $request
+     * @param string|null $localeKey Jika null, gunakan pesan sukses default OJS.
+     */
+    private function _notifyAction($request, $localeKey = null): void {
+        import('classes.notification.NotificationManager');
+        $notificationManager = new NotificationManager();
+        $user = $request->getUser();
+        if (!$user) return;
+
+        if ($localeKey) {
+            $notificationManager->createTrivialNotification(
+                $user->getId(),
+                NOTIFICATION_TYPE_SUCCESS,
+                ['contents' => __($localeKey)]
+            );
+        } else {
+            $notificationManager->createTrivialNotification($user->getId());
+        }
+    }
+
+    /**
      * Display form to modify site settings.
      * @param array $args
      * @param PKPRequest $request
@@ -82,13 +104,21 @@ class AdminSettingsHandler extends AdminHandler {
         if ((array) $request->getUserVar('uploadSiteStyleSheet')) {
             if (!$settingsForm->uploadSiteStyleSheet()) {
                 $settingsForm->addError('siteStyleSheet', __('admin.settings.siteStyleSheetInvalid'));
+            } else {
+                // [WIZDAM] NOTIF
+                $this->_notifyAction($request, 'admin.settings.notification.fileUploaded');
             }
         } elseif ((array) $request->getUserVar('deleteSiteStyleSheet')) {
             $publicFileManager = new PublicFileManager();
             $publicFileManager->removeSiteFile($site->getSiteStyleFilename());
+            // [WIZDAM] NOTIF
+            $this->_notifyAction($request, 'admin.settings.notification.fileRemoved');
         } elseif ((array) $request->getUserVar('uploadPageHeaderTitleImage')) {
             if (!$settingsForm->uploadPageHeaderTitleImage($settingsForm->getFormLocale())) {
                 $settingsForm->addError('pageHeaderTitleImage', __('admin.settings.homeHeaderImageInvalid'));
+            } else {
+                // [WIZDAM] NOTIF
+                $this->_notifyAction($request, 'admin.settings.notification.fileUploaded');
             }
         } elseif ((array) $request->getUserVar('deletePageHeaderTitleImage')) {
             $publicFileManager = new PublicFileManager();
@@ -99,8 +129,12 @@ class AdminSettingsHandler extends AdminHandler {
                 $setting[$formLocale] = [];
                 $site->updateSetting('pageHeaderTitleImage', $setting, 'object', true);
 
+                // Refresh site header
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign('displayPageHeaderTitle', $site->getLocalizedPageHeaderTitle());
+
+                // [WIZDAM] NOTIF
+                $this->_notifyAction($request, 'admin.settings.notification.fileRemoved');
             }
         } elseif ($settingsForm->validate()) {
             $settingsForm->execute();
