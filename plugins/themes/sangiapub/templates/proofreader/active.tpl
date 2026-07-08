@@ -25,7 +25,6 @@
         	{assign var="articleId" value=$submission->getId()}
         	{assign var="proofreaderSignoff" value=$submission->getSignoff('SIGNOFF_PROOFREADING_PROOFREADER')}
         	{assign var="authorSignoff" value=$submission->getSignoff('SIGNOFF_PROOFREADING_AUTHOR')}
-        
         	<tr valign="top">
         		<td>{$articleId|escape}</td>
         		<td>{$proofreaderSignoff->getDateNotified()|date_format:$dateFormatTrunc}</td>
@@ -41,12 +40,12 @@
         		</td>
         	</tr>
         	{if $submissions->eof()}
-        	<tr>
-        		<td colspan="6" class="endseparator">&nbsp;</td>
-        	</tr>
+            	<tr>
+            		<td colspan="6" class="endseparator">&nbsp;</td>
+            	</tr>
         	{/if}
-        
         {/iterate}
+
         {if $submissions->wasEmpty()}
         	<tr>
         		<td colspan="6" class="nodata">{translate key="submissions.noSubmissions"}</td>
@@ -69,10 +68,10 @@
 	    <div class="c-pagination">{page_info iterator=$submissions}</div>
     </section>
     {if $submissions->getPageCount() > 1}
-    <section class="u-display-flex u-justify-content-center">
-        <div class="c-pagination">{page_links anchor="submissions" name="submissions" iterator=$submissions sort=$sort sortDirection=$sortDirection}
-       </div>
-    </section>
+		<section class="u-display-flex u-justify-content-center">
+			<div class="c-pagination">{page_links anchor="submissions" name="submissions" iterator=$submissions sort=$sort sortDirection=$sortDirection}
+		</div>
+		</section>
     {/if}
 </div>
 {/if}
