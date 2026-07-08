@@ -2,59 +2,65 @@
 <html>
 {**
  * templates/billing/invoicePdf.tpl
- * Template khusus PDF — tanpa header/footer OJS, murni HTML untuk mPDF
+ *
+ * Copyright (c) 2024-2026 Sangia Lumera Frontedge
+ * Copyright (c) 2024-2026 Rochmady and Codecanau
+ * Distributed under the GNU GPL v3.
+ *
+ * Billing Invoice PDF.
+ *
  *}
 <head>
-<meta charset="utf-8">
-{literal}
-<style>
-    body { font-family: helvetica, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 0; }
-    
-    .wi-header { display: flex; justify-content: space-between; border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 20px; }
-    .wi-journal h2 { margin: 0; font-size: 13px; font-weight: bold; color: #1a4f8b; }
-    .wi-journal p  { margin: 2px 0 0; font-size: 10px; color: #666; }
-    .wi-title h1   { margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 2px; color: #222; text-align: right; }
-    .wi-title .inv-num { font-size: 11px; color: #555; text-align: right; }
+    <meta charset="utf-8">
+    {literal}
+    <style>
+        body { font-family: helvetica, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 0; }
+        
+        .wi-header { display: flex; justify-content: space-between; border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 20px; }
+        .wi-journal h2 { margin: 0; font-size: 13px; font-weight: bold; color: #1a4f8b; }
+        .wi-journal p  { margin: 2px 0 0; font-size: 10px; color: #666; }
+        .wi-title h1   { margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 2px; color: #222; text-align: right; }
+        .wi-title .inv-num { font-size: 11px; color: #555; text-align: right; }
 
-    .wi-meta-grid { width: 100%; margin-bottom: 20px; }
-    .wi-meta-grid td { vertical-align: top; width: 50%; padding: 0 5px; }
-    .wi-meta-box { background: #f9f9f9; padding: 12px; font-size: 11px; }
-    .wi-meta-box .label { font-size: 9px; text-transform: uppercase; color: #777; font-weight: bold; margin-bottom: 4px; }
+        .wi-meta-grid { width: 100%; margin-bottom: 20px; }
+        .wi-meta-grid td { vertical-align: top; width: 50%; padding: 0 5px; }
+        .wi-meta-box { background: #f9f9f9; padding: 12px; font-size: 11px; }
+        .wi-meta-box .label { font-size: 9px; text-transform: uppercase; color: #777; font-weight: bold; margin-bottom: 4px; }
 
-    .wi-section-title { font-size: 13px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin: 20px 0 10px; }
+        .wi-section-title { font-size: 13px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin: 20px 0 10px; }
 
-    .wi-details-table { width: 100%; font-size: 11px; border-collapse: collapse; margin-bottom: 15px; }
-    .wi-details-table td { padding: 6px 0; vertical-align: top; border-bottom: 1px dotted #eee; }
-    .wi-details-table td:first-child { width: 130px; color: #666; }
+        .wi-details-table { width: 100%; font-size: 11px; border-collapse: collapse; margin-bottom: 15px; }
+        .wi-details-table td { padding: 6px 0; vertical-align: top; border-bottom: 1px dotted #eee; }
+        .wi-details-table td:first-child { width: 130px; color: #666; }
 
-    .wi-fees-table { width: 100%; font-size: 11px; border-collapse: collapse; margin-bottom: 15px; }
-    .wi-fees-table td { padding: 8px 5px; border-bottom: 1px dotted #ccc; }
-    .wi-fees-table td.amount { text-align: right; }
-    .wi-fees-table tr.subtotal td { font-weight: bold; border-top: 1px solid #333; border-bottom: none; padding-top: 10px; }
-    .wi-fees-table tr.tax td { color: #28a745; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .wi-fees-table { width: 100%; font-size: 11px; border-collapse: collapse; margin-bottom: 15px; }
+        .wi-fees-table td { padding: 8px 5px; border-bottom: 1px dotted #ccc; }
+        .wi-fees-table td.amount { text-align: right; }
+        .wi-fees-table tr.subtotal td { font-weight: bold; border-top: 1px solid #333; border-bottom: none; padding-top: 10px; }
+        .wi-fees-table tr.tax td { color: #28a745; border-bottom: 1px solid #333; padding-bottom: 10px; }
 
-    .wi-total-box { background: #f4fdf8; padding: 12px 15px; border-left: 4px solid #28a745; margin-top: 8px; }
-    .wi-total-label { font-size: 13px; font-weight: bold; text-transform: uppercase; }
-    .wi-total-amount { font-size: 20px; font-weight: bold; color: #28a745; text-align: right; }
+        .wi-total-box { background: #f4fdf8; padding: 12px 15px; border-left: 4px solid #28a745; margin-top: 8px; }
+        .wi-total-label { font-size: 13px; font-weight: bold; text-transform: uppercase; }
+        .wi-total-amount { font-size: 20px; font-weight: bold; color: #28a745; text-align: right; }
 
-    .item-table { margin-top: 15px; }
-    .item-table th { background-color: #d54449; color: #fff; padding: 8px; text-align: center; }
-    .item-table td { padding: 8px; }
-    .trasaction td { border-bottom: 1px solid #d54449; }
-    .balance { background-color: #ffe6e6; }
-    
-    .wi-notes-box { border: 1px solid #ffeeba; background: #fffaf0; padding: 12px; font-size: 10px; margin-top: 20px; }
+        .item-table { margin-top: 15px; }
+        .item-table th { background-color: #d54449; color: #fff; padding: 8px; text-align: center; }
+        .item-table td { padding: 8px; }
+        .trasaction td { border-bottom: 1px solid #d54449; }
+        .balance { background-color: #ffe6e6; }
+        
+        .wi-notes-box { border: 1px solid #ffeeba; background: #fffaf0; padding: 12px; font-size: 10px; margin-top: 20px; }
 
-    .wi-qr-section { text-align: center; margin-top: 20px; }
-    .wi-qr-section img { width: 30px; height: 30px; }
-    .wi-qr-section p { font-size: 9px; color: #888; margin: 4px 0 0; }
+        .wi-qr-section { text-align: center; margin-top: 20px; }
+        .wi-qr-section img { width: 30px; height: 30px; }
+        .wi-qr-section p { font-size: 9px; color: #888; margin: 4px 0 0; }
 
-    .wi-footer { text-align: center; font-size: 9px; color: #aaa; margin-top: 30px; border-top: 1px solid #eee; padding-top: 8px; }
+        .wi-footer { text-align: center; font-size: 9px; color: #aaa; margin-top: 30px; border-top: 1px solid #eee; padding-top: 8px; }
 
-    .status-paid   { color: #28a745; font-weight: bold; }
-    .status-unpaid { color: #dc3545; font-weight: bold; }
-</style>
-{/literal}
+        .status-paid   { color: #28a745; font-weight: bold; }
+        .status-unpaid { color: #dc3545; font-weight: bold; }
+    </style>
+    {/literal}
 </head>
 <body>
 
@@ -190,44 +196,44 @@
 </section>
 
 <section>
-<div style="margin-top: 15px; font-weight: bold; font-size: 10pt;">
-    Transactions Confirmation
-</div>
-<table class="item-table" style="margin-top: 5px; font-size: 10pt;">
-    <tr>
-        <th width="20%">Date</th>
-        <th width="50%">Transaction ID</th>
-        <th width="10%">Gateway</th>
-        <th width="20%">Amount</th>
-    </tr>
-    {if $isPaid}
-    <tr class="trasaction">
-        <td class="text-center">{$datePaid|date_format:"%d %B %Y"}</td>
-        <td class="text-center">TXN-{$invoice->getInvoiceId()}</td>
-        <td class="text-center">{$paymentMethod|escape|upper}</td>
-        <td class="text-right">{$currencyCode} {$formattedAmount}</td>
-    </tr>
-    <tr colspan="2">
-        <td width="20%"></td>
-        <td width="50%"></td>
-        <td width="20%" class="balance text-center font-bold">Balance Due</td>
-        <td width="10%" class="balance text-right font-bold">-</td>
-    </tr>
-    {else}
-    <tr class="trasaction">
-        <td class="text-center">-</td>
-        <td class="text-center">-</td>
-        <td class="text-center">-</td>
-        <td class="text-center">-</td>
-    </tr>
-    <tr>
-        <td width="20%"></td>
-        <td width="50%"></td>
-        <td width="20%" class="balance text-center font-bold">Balance Due</td>
-        <td width="10%" class="balance text-right font-bold">{$currencyCode} {$formattedAmount}</td>
-    </tr>
-    {/if}
-</table>
+    <div style="margin-top: 15px; font-weight: bold; font-size: 10pt;">
+        Transactions Confirmation
+    </div>
+    <table class="item-table" style="margin-top: 5px; font-size: 10pt;">
+        <tr>
+            <th width="20%">Date</th>
+            <th width="50%">Transaction ID</th>
+            <th width="10%">Gateway</th>
+            <th width="20%">Amount</th>
+        </tr>
+        {if $isPaid}
+        <tr class="trasaction">
+            <td class="text-center">{$datePaid|date_format:"%d %B %Y"}</td>
+            <td class="text-center">TXN-{$invoice->getInvoiceId()}</td>
+            <td class="text-center">{$paymentMethod|escape|upper}</td>
+            <td class="text-right">{$currencyCode} {$formattedAmount}</td>
+        </tr>
+        <tr colspan="2">
+            <td width="20%"></td>
+            <td width="50%"></td>
+            <td width="20%" class="balance text-center font-bold">Balance Due</td>
+            <td width="10%" class="balance text-right font-bold">-</td>
+        </tr>
+        {else}
+        <tr class="trasaction">
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+        </tr>
+        <tr>
+            <td width="20%"></td>
+            <td width="50%"></td>
+            <td width="20%" class="balance text-center font-bold">Balance Due</td>
+            <td width="10%" class="balance text-right font-bold">{$currencyCode} {$formattedAmount}</td>
+        </tr>
+        {/if}
+    </table>
 </section>
 
 <section>
@@ -264,7 +270,7 @@
 <footer>
     {* ===== FOOTER ===== *}
     <div class="wi-footer">
-        Document generated automatically by Wizdam Frontedge &bull;
+        Document generated automatically by Sangia Frontedge &bull;
         {$wizdamInvoiceNumber|escape} &bull;
         This document is digitally signed and verified.
     </div>
