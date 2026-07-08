@@ -5,7 +5,7 @@
  * Copyright (c) 2024-2026 Rochmady and Codecanau
  * Distributed under the GNU GPL v3.
  *
- * Subtemplate defining the author's submission summary table.
+ * Invoice PDF the author's submission.
  *
  *}
 {strip}
