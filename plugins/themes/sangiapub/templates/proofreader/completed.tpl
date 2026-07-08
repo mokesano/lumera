@@ -9,55 +9,56 @@
  *
  *}
 {if !$dateFrom}
-{assign var="dateFrom" value="--"}
+	{assign var="dateFrom" value="--"}
 {/if}
 
 {if !$dateTo}
-{assign var="dateTo" value="--"}
+	{assign var="dateTo" value="--"}
 {/if}
 
 <script type="text/javascript">
-{literal}
-<!--
-function sortSearch(heading, direction) {
-	var submitForm = document.getElementById('submit');
-	submitForm.sort.value = heading;
-	submitForm.sortDirection.value = direction;
-	submitForm.submit();
-}
-// -->
-{/literal}
+	{literal}
+	<!--
+	function sortSearch(heading, direction) {
+		var submitForm = document.getElementById('submit');
+		submitForm.sort.value = heading;
+		submitForm.sortDirection.value = direction;
+		submitForm.submit();
+	}
+	// -->
+	{/literal}
 </script>
 
 <div id="search" class="block sort">
 	<h4 class="heading">Filter Submissions</h4>
-<form method="post" id="submit" action="{url op="index" path=$pageToDisplay}">
-	<select name="searchField" size="1" class="selectMenu">
-		{html_options_translate options=$fieldOptions selected=$searchField}
-	</select>
-	<input type="hidden" name="sort" value="id"/>
-	<input type="hidden" name="sortDirection" value="ASC"/>
-	<select name="searchMatch" size="1" class="selectMenu">
-		<option value="contains"{if $searchMatch == 'contains'} selected="selected"{/if}>{translate key="form.contains"}</option>
-		<option value="is"{if $searchMatch == 'is'} selected="selected"{/if}>{translate key="form.is"}</option>
-		<option value="startsWith"{if $searchMatch == 'startsWith'} selected="selected"{/if}>{translate key="form.startsWith"}</option>
-	</select>
-	<input type="text" size="15" name="search" class="textField" value="{$search|escape}" />
-	<br/>
-	<select name="dateSearchField" size="1" class="selectMenu">
-		{html_options_translate options=$dateFieldOptions selected=$dateSearchField}
-	</select>
-	{translate key="common.between"}
-	{html_select_date prefix="dateFrom" time=$dateFrom all_extra="class=\"selectMenu\"" year_empty="" month_empty="" day_empty="" start_year="-5" end_year="+1"}
-	{translate key="common.and"}
-	{html_select_date prefix="dateTo" time=$dateTo all_extra="class=\"selectMenu\"" year_empty="" month_empty="" day_empty="" start_year="-5" end_year="+1"}
-	<input type="hidden" name="dateToHour" value="23" />
-	<input type="hidden" name="dateToMinute" value="59" />
-	<input type="hidden" name="dateToSecond" value="59" />
-	<br/>
-	<input type="submit" value="{translate key="common.search"}" class="button" />
-</form>
-&nbsp;
+	<form method="post" id="submit" action="{url op="index" path=$pageToDisplay}">
+		<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
+		<select name="searchField" size="1" class="selectMenu">
+			{html_options_translate options=$fieldOptions selected=$searchField}
+		</select>
+		<input type="hidden" name="sort" value="id"/>
+		<input type="hidden" name="sortDirection" value="ASC"/>
+		<select name="searchMatch" size="1" class="selectMenu">
+			<option value="contains"{if $searchMatch == 'contains'} selected="selected"{/if}>{translate key="form.contains"}</option>
+			<option value="is"{if $searchMatch == 'is'} selected="selected"{/if}>{translate key="form.is"}</option>
+			<option value="startsWith"{if $searchMatch == 'startsWith'} selected="selected"{/if}>{translate key="form.startsWith"}</option>
+		</select>
+		<input type="text" size="15" name="search" class="textField" value="{$search|escape}" />
+		<br/>
+		<select name="dateSearchField" size="1" class="selectMenu">
+			{html_options_translate options=$dateFieldOptions selected=$dateSearchField}
+		</select>
+		{translate key="common.between"}
+		{html_select_date prefix="dateFrom" time=$dateFrom all_extra="class=\"selectMenu\"" year_empty="" month_empty="" day_empty="" start_year="-5" end_year="+1"}
+		{translate key="common.and"}
+		{html_select_date prefix="dateTo" time=$dateTo all_extra="class=\"selectMenu\"" year_empty="" month_empty="" day_empty="" start_year="-5" end_year="+1"}
+		<input type="hidden" name="dateToHour" value="23" />
+		<input type="hidden" name="dateToMinute" value="59" />
+		<input type="hidden" name="dateToSecond" value="59" />
+		<br/>
+		<input type="submit" value="{translate key="common.search"}" class="button" />
+	</form>
+	&nbsp;
 </div>
 
 <div id="submissions">
@@ -76,7 +77,6 @@ function sortSearch(heading, direction) {
         {iterate from=submissions item=submission}
         	{assign var="articleId" value=$submission->getId()}
         	{assign var="proofreaderSignoff" value=$submission->getSignoff('SIGNOFF_PROOFREADING_PROOFREADER')}
-        
         	<tr valign="top">
         		<td>{$articleId|escape}</td>
         		<td>{$proofreaderSignoff->getDateNotified()|date_format:$dateFormatTrunc}</td>
@@ -98,12 +98,12 @@ function sortSearch(heading, direction) {
         		</td>
         	</tr>
         	{if $submissions->eof()}
-        	<tr>
-        		<td colspan="7" class="endseparator">&nbsp;</td>
-        	</tr>
+				<tr>
+					<td colspan="7" class="endseparator">&nbsp;</td>
+				</tr>
         	{/if}
-        	
         {/iterate}
+
         {if $submissions->wasEmpty()}
         	<tr>
         		<td colspan="7" class="nodata">{translate key="submissions.noSubmissions"}</td>
@@ -126,10 +126,10 @@ function sortSearch(heading, direction) {
 	    <div class="c-pagination">{page_info iterator=$submissions}</div>
     </section>
     {if $submissions->getPageCount() > 1}
-    <section class="u-display-flex u-justify-content-center">
-        <div class="c-pagination">{page_links anchor="submissions" name="submissions" iterator=$submissions searchField=$searchField searchMatch=$searchMatch search=$search dateFromDay=$dateFromDay dateFromYear=$dateFromYear dateFromMonth=$dateFromMonth dateToDay=$dateToDay dateToYear=$dateToYear dateToMonth=$dateToMonth dateSearchField=$dateSearchField sort=$sort sortDirection=$sortDirection}
-       </div>
-    </section>
+		<section class="u-display-flex u-justify-content-center">
+			<div class="c-pagination">{page_links anchor="submissions" name="submissions" iterator=$submissions searchField=$searchField searchMatch=$searchMatch search=$search dateFromDay=$dateFromDay dateFromYear=$dateFromYear dateFromMonth=$dateFromMonth dateToDay=$dateToDay dateToYear=$dateToYear dateToMonth=$dateToMonth dateSearchField=$dateSearchField sort=$sort sortDirection=$sortDirection}
+		</div>
+		</section>
     {/if}
 </div>
 {/if}
