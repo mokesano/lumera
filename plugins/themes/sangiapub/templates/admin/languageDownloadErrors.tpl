@@ -9,14 +9,14 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="common.languages"}
-{assign var="pageDisplayed" value="site"}
-{include file="common/header.tpl"}
+	{assign var="pageTitle" value="common.languages"}
+	{assign var="pageDisplayed" value="site"}
+	{include file="common/header.tpl"}
 {/strip}
 
 <h3>{translate key="admin.languages.downloadLocales"}</h3>
-
 <p>{translate key="admin.languages.downloadFailed"}</p>
+
 <ul>
 	{foreach from=$errors item=error}<li>{$error}</li>{/foreach}
 </ul>
@@ -24,4 +24,3 @@
 <a href="{url op="languages"}" class="action">{translate key="common.languages"}</a>
 
 {include file="common/footer.tpl"}
-
