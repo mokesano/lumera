@@ -1,12 +1,16 @@
 {**
  * templates/about/siteEditorialTeam.tpl
- *
+ * 
+ * Copyright (c) 2024-2026 Sangia Lumera Frontedge
+ * Copyright (c) 2024-2026 Rochmady and Codecanau
+ * Distributed under the GNU GPL v3.
+ * 
  * [WIZDAM EDITION] Publisher Root Level Template
  * Menampilkan Steering Committee / Core Administrators di level Site.
  *}
 {strip}
-{assign var="pageTitle" value="about.editorialTeam"}
-{include file="common/header.tpl"}
+    {assign var="pageTitle" value="about.editorialTeam"}
+    {include file="common/header.tpl"}
 {/strip}
 
 <div id="publisherEditorialTeam">
