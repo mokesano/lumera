@@ -9,9 +9,9 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="announcement.announcements"}
-{assign var="pageId" value="announcement.announcements"}
-{include file="common/header.tpl"}
+    {assign var="pageTitle" value="announcement.announcements"}
+    {assign var="pageId" value="announcement.announcements"}
+    {include file="common/header.tpl"}
 {/strip}
 
 <div id="announcementList" class="app-announcement-list-row announcements">
