@@ -23,7 +23,7 @@
 {include file="common/formErrors.tpl"}
 
 <form method="post" action="{url page="admin" op="save-payment-settings"}">
-    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
+    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
     <div style="margin-bottom: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 5px; background: #fff;">
         <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">Pengaturan Lingkungan (Environment)</h3>
         <table class="data" width="100%">
