@@ -9,8 +9,8 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="manager.payment.paymentMethods"}
-{include file="common/header-ROLE.tpl"}
+	{assign var="pageTitle" value="manager.payment.paymentMethods"}
+	{include file="common/header-ROLE.tpl"}
 {/strip}
 
 <ul class="menu">
@@ -22,43 +22,39 @@
 {include file="common/formErrors.tpl"}
 
 <script type="text/javascript">
-<!--
-
-{literal}
-function changePaymentMethod() {
-	document.getElementById('paymentSettingsForm').action="{/literal}{url|escape:"javascript" op="payMethodSettings" escape=false}{literal}";
-		document.getElementById('paymentSettingsForm').submit();
-	}
-
+	<!--
+	{literal}
+	function changePaymentMethod() {
+		document.getElementById('paymentSettingsForm').action="{/literal}{url|escape:"javascript" op="payMethodSettings" escape=false}{literal}";
+			document.getElementById('paymentSettingsForm').submit();
+		}
 	{/literal}
-// -->
+	// -->
 </script>
 
 <form method="post" id="paymentSettingsForm" action="{url op="savePayMethodSettings"}">
+	<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
+	<p>{translate key="manager.payment.paymentMethod.description"}</p>
 
-<p>{translate key="manager.payment.paymentMethod.description"}</p>
+	<table width="100%" class="data">
+		<tr>
+			<th>{translate key="manager.payment.paymentMethods"}</th>
+		</tr>
+		<tr valign="top">
+			<td class="data" colspan="2">
+				{assign var=pluginIndex value=1}
+				{foreach from=$paymentMethodPlugins item=plugin}
+					&nbsp;<input type="radio" name="paymentMethodPluginName" id="paymentMethodPluginName-{$pluginIndex|escape}" value="{$plugin->getName()|escape}" onclick="changePaymentMethod();" {if $paymentMethodPluginName == $plugin->getName()}checked="checked" {/if}/>&nbsp;<label for="paymentMethodPluginName-{$pluginIndex|escape}">{$plugin->getDisplayName()|escape}</label><br/>
+					<p>{$plugin->getDescription()}</p>
+					{assign var=pluginIndex value=$pluginIndex+1}
+				{/foreach}
+			</td>
+		</tr>
+		{call_hook name="Template::Manager::Payment::displayPaymentSettingsForm" plugin=$paymentMethodPluginName}
+	</table>
 
-
-<table width="100%" class="data">
-	<tr>
-		<th>{translate key="manager.payment.paymentMethods"}</th>
-	</tr>
-	<tr valign="top">
-		<td class="data" colspan="2">
-			{assign var=pluginIndex value=1}
-			{foreach from=$paymentMethodPlugins item=plugin}
-				&nbsp;<input type="radio" name="paymentMethodPluginName" id="paymentMethodPluginName-{$pluginIndex|escape}" value="{$plugin->getName()|escape}" onclick="changePaymentMethod();" {if $paymentMethodPluginName == $plugin->getName()}checked="checked" {/if}/>&nbsp;<label for="paymentMethodPluginName-{$pluginIndex|escape}">{$plugin->getDisplayName()|escape}</label><br/>
-				<p>{$plugin->getDescription()}</p>
-				{assign var=pluginIndex value=$pluginIndex+1}
-			{/foreach}
-		</td>
-	</tr>
-	{call_hook name="Template::Manager::Payment::displayPaymentSettingsForm" plugin=$paymentMethodPluginName}
-</table>
-
-<p><input type="submit" value="{translate key="common.save"}" class="button defaultButton" /> <input type="button" value="{translate key="common.cancel"}" class="button" onclick="document.location.href='{url page="manager"}'" /></p>
-
-<p><span class="formRequired">{translate key="common.requiredField"}</span></p>
+	<p><input type="submit" value="{translate key="common.save"}" class="button defaultButton" /> <input type="button" value="{translate key="common.cancel"}" class="button" onclick="document.location.href='{url page="manager"}'" /></p>
+	<p><span class="formRequired">{translate key="common.requiredField"}</span></p>
 
 </form>
 
