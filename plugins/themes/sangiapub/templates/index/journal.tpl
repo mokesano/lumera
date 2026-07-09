@@ -90,7 +90,7 @@
 					{if $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}
 						<picture><source type="image/webp" srcset="{$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}?as=webp 450w, {$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img class="lazyload" loading="lazy" src="{$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}" alt=""></picture>
 					{else}
-						<picture><source type="image/webp" srcset="//assets.sangia.org/static/images/not-available.webp 450w, //assets.sangia.org/static/images/not-available.webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img class="lazyload" loading="lazy" src="//assets.sangia.org/static/images/not-available.webp" alt=""></picture>
+						<picture><source type="image/webp" srcset="/assets/static/images/not-available.webp 450w, /assets/static/images/not-available.webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img class="lazyload" loading="lazy" src="/assets/static/images/not-available.webp" alt=""></picture>
 					{/if}
 				</div>
 				<div class="c-hero__copy">
