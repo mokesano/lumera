@@ -22767,19 +22767,19 @@ p {
   font-size:1.1em 
 }
 li.citations {
-  background:url(//assets.sangia.org/static/icons/sprite-1127.png) 0 -435px no-repeat 
+  background:url(/assets/ico/sprite-1127.png) 0 -435px no-repeat 
 }
 li.readers {
-  background:url(//assets.sangia.org/static/icons/sprite-1127.png) 0 -561px no-repeat 
+  background:url(/assets/ico/sprite-1127.png) 0 -561px no-repeat 
 }
 li.reviews {
-  background:url(//assets.sangia.org/static/icons/sprite-1127.png) 0 -603px no-repeat 
+  background:url(/assets/ico/sprite-1127.png) 0 -603px no-repeat 
 }
 li.mentions {
-  background:url(//assets.sangia.org/static/icons/sprite-1127.png) 0 -519px no-repeat 
+  background:url(/assets/ico/sprite-1127.png) 0 -519px no-repeat 
 }
 li.download {
-  background:url(//assets.sangia.org/static/icons/sprite-1127.png) 0 -477px no-repeat 
+  background:url(/assets/ico/sprite-1127.png) 0 -477px no-repeat 
 }
 .p-section-item--value,
 .p-section-item--name.cite-scopus+span {
