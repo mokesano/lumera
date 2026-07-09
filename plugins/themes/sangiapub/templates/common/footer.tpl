@@ -117,8 +117,8 @@
                         <div class="c-footer__header">
                             <div class="c-footer__logo">
                                 <picture loading="lazy" class="publisher-brand">
-                                    <source loading="lazy" srcset="//assets.sangia.org/img/sangia-future-branded-v2.svg" alt="Sangia Publishing" width="200" height="31">
-                                    <img loading="lazy" alt="Sangia Publishing" src="//assets.sangia.org/img/sangia-future-branded-v2.svg" width="200" height="31">                                    
+                                    <source loading="lazy" srcset="{$baseUrl}/assets/img/sangia-future-branded-v2.svg" alt="Sangia Publishing" width="200" height="31">
+                                    <img loading="lazy" alt="Sangia Publishing" src="{$baseUrl}/assets/img/sangia-future-branded-v2.svg" width="200" height="31">                                    
                                 </picture>
                             </div>
                             <ul class="c-menu c-menu--inherit u-mr-32">
