@@ -476,8 +476,8 @@
         <li class="app-membership-row__item" data-test="logo-listing">
             <a href="http://publicationethics.org/" data-test="logo-link" target="_blank">
                 <picture>
-                    <source srcset="//www.assets.sangia.org/static/images/logos/cope-8d92c4b829.png?as=webp" type="image/webp">
-                    <img class="u-mb-0" alt="Committee on Publication Ethics" data-test="logo-image" src="//www.assets.sangia.org/static/images/logos/cope-8d92c4b829.png" loading="lazy">
+                    <source srcset="/assets/img/static/logos/cope-8d92c4b829.png?as=webp" type="image/webp">
+                    <img class="u-mb-0" alt="Committee on Publication Ethics" data-test="logo-image" src="/assets/img/static/logos/cope-8d92c4b829.png" loading="lazy">
                 </picture>
             </a>
             <p class="c-meta u-mt-16" data-test="logo-label">This journal is a member of and subscribes to the principles of the Committee on Publication Ethics.</p>
@@ -485,8 +485,8 @@
         <li class="app-membership-row__item" data-test="logo-listing">
             <a href="http://www.ithenticate.com/" data-test="logo-link" target="_blank">
                 <picture>
-                    <source srcset="//www.assets.sangia.org/static/images/logos/ithenticate-eabe2377a3.png?as=webp" type="image/webp">
-                    <img class="u-mb-0" alt="Ithenticate Plagiarism Detection" data-test="logo-image" src="//www.assets.sangia.org/static/images/logos/ithenticate-eabe2377a3.png" loading="lazy">
+                    <source srcset="/assets/img/static/logos/ithenticate-eabe2377a3.png?as=webp" type="image/webp">
+                    <img class="u-mb-0" alt="Ithenticate Plagiarism Detection" data-test="logo-image" src="/assets/img/static/logos/ithenticate-eabe2377a3.png" loading="lazy">
                 </picture>
             </a>
             <p class="c-meta u-mt-16" data-test="logo-label"></p>
