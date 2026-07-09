@@ -4,7 +4,11 @@ declare(strict_types=1);
 /**
  * @file public/health.php
  * 
- * WIZDAM System Status Endpoint
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Codecanau Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * 
+ * @brief LUMERA System Status Endpoint
  * This script provides a simple JSON response indicating the system status,
  * the application name, the PHP version, and the current server time.
  *
