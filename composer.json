@@ -1,0 +1,32 @@
+{
+    "name": "mokesao/lumera",
+    "description": "Modern Editorial Workflow for Scholarly Publishing with PSR-4/PSR-12 standards",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rochmady",
+            "email": "rochmady@sangia.org"
+        },
+        {
+            "name": "Susiana",
+            "email": "susiana@sangia.org"
+        },
+        {
+            "name": "Darsilan",
+            "email": "darsilan@sangia.org"
+        }
+    ],
+    "require": {
+        "midtrans/midtrans-php": "^2.5",
+        "xendit/xendit-php": "^7.0",
+        "mpdf/mpdf": "^8.1",
+        "chillerlan/php-qrcode": "^4.3",
+        "ddn/sapp": "^1.5"
+    },
+    "config": {
+        "vendor-dir": "lib/wizdam/library",
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}
