@@ -20,10 +20,10 @@ import('classes.article.ArticleHTMLGalley');
 
 class ArticleGalleyDAO extends DAO {
 
-    /** Helper file DAOs. */
+    /** @var ArticleFileDAO $articleFileDao */
     public $articleFileDao;
     
-    /** Cache object */
+    /** @var mixed $galleyCache */
     public $galleyCache;
 
     /**
@@ -54,8 +54,7 @@ class ArticleGalleyDAO extends DAO {
     public function _getGalleyCache() {
         if (!isset($this->galleyCache)) {
             $cacheManager = CacheManager::getManager();
-            // PHP 8: Removed & from callback array
-            $this->galleyCache = $cacheManager->getObjectCache('galley', 0, array($this, '_galleyCacheMiss'));
+            $this->galleyCache = $cacheManager->getObjectCache('galley', 0, [$this, '_galleyCacheMiss']);
         }
         return $this->galleyCache;
     }
@@ -77,7 +76,7 @@ class ArticleGalleyDAO extends DAO {
      * @param int $galleyId
      * @param int|null $articleId optional
      * @param boolean $useCache optional
-     * @return ArticleGalley
+     * @return ArticleGalley|null
      */
     public function getGalley($galleyId, $articleId = null, $useCache = false) {
         if ($useCache) {
@@ -87,7 +86,7 @@ class ArticleGalleyDAO extends DAO {
             return $returner;
         }
 
-        $params = array((int) $galleyId);
+        $params = [(int) $galleyId];
         if ($articleId !== null) $params[] = (int) $articleId;
         
         $result = $this->retrieve(
@@ -104,8 +103,7 @@ class ArticleGalleyDAO extends DAO {
         if ($result->RecordCount() != 0) {
             $returner = $this->_returnGalleyFromRow($result->GetRowAssoc(false));
         } else {
-            // Hook dispatch: primitives by ref in array, objects by val
-            HookRegistry::dispatch('ArticleGalleyDAO::getNewGalley', array(&$galleyId, &$articleId, &$returner));
+            HookRegistry::dispatch('ArticleGalleyDAO::getNewGalley', [&$galleyId, &$articleId, &$returner]);
         }
 
         $result->Close();
@@ -129,14 +127,19 @@ class ArticleGalleyDAO extends DAO {
                 INNER JOIN article_galleys ag ON ags.galley_id = ag.galley_id
                 INNER JOIN articles a ON ag.article_id = a.article_id
             WHERE ags.setting_name = ? AND ags.setting_value = ? AND ags.galley_id <> ? AND a.journal_id = ?',
-            array(
+            [
                 'pub-id::'.$pubIdType,
                 $pubId,
                 (int) $galleyId,
                 (int) $journalId
-            )
+            ]
         );
-        $returner = isset($result->fields[0]) && $result->fields[0] ? true : false;
+        
+        // [WIZDAM] FIX: Type narrowing untuk $result->fields
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = isset($fields[0]) && (int) $fields[0] > 0;
+        
         $result->Close();
         return $returner;
     }
@@ -150,14 +153,7 @@ class ArticleGalleyDAO extends DAO {
      */
     public function getGalleyByPubId($pubIdType, $pubId, $articleId = null) {
         $galleys = $this->getGalleysBySetting('pub-id::'.$pubIdType, $pubId, $articleId);
-        if (empty($galleys)) {
-            $galley = null;
-        } else {
-            // assert(count($galleys) == 1); // Removed assertion for production safety
-            $galley = $galleys[0];
-        }
-
-        return $galley;
+        return !empty($galleys) ? $galleys[0] : null;
     }
 
     /**
@@ -169,10 +165,10 @@ class ArticleGalleyDAO extends DAO {
      * @return array The galleys identified by setting.
      */
     public function getGalleysBySetting($settingName, $settingValue, $articleId = null, $journalId = null) {
-        $params = array($settingName);
+        $params = [$settingName];
 
         $sql = 'SELECT g.*,
-                af.file_name, af.original_file_name, af.file_stage, af.file_type, af.file_size, af.date_uploaded, af.date_modified
+                af.file_name, af.original_file_name, af.file_stage, af.file_type, af.file_size, af.date_modified, af.date_modified
             FROM article_galleys g
                 LEFT JOIN article_files af ON (g.file_id = af.file_id)
                 INNER JOIN articles a ON a.article_id = g.article_id
@@ -198,7 +194,7 @@ class ArticleGalleyDAO extends DAO {
         $sql .= ' ORDER BY a.journal_id, pa.issue_id, g.galley_id';
         $result = $this->retrieve($sql, $params);
 
-        $galleys = array();
+        $galleys = [];
         while (!$result->EOF) {
             $galleys[] = $this->_returnGalleyFromRow($result->GetRowAssoc(false));
             $result->moveNext();
@@ -214,38 +210,29 @@ class ArticleGalleyDAO extends DAO {
      * @return array ArticleGalleys
      */
     public function getGalleysByArticle($articleId) {
-        $galleys = array();
+        $galleys = [];
 
+        // [WIZDAM] FIX: Bungkus parameter dalam array
         $result = $this->retrieve(
             'SELECT g.*,
             a.file_name, a.original_file_name, a.file_stage, a.file_type, a.file_size, a.date_uploaded, a.date_modified
             FROM article_galleys g
             LEFT JOIN article_files a ON (g.file_id = a.file_id)
             WHERE g.article_id = ? ORDER BY g.seq',
-            (int) $articleId
+            [(int) $articleId]
         );
 
-        // --- PERBAIKAN FATAL ERROR: Cek hasil query ---
         if ($result) {
-            // Jika query berhasil dan $result adalah objek resource
-            // Loop akan berjalan normal
             while (!$result->EOF) {
                 $galleys[] = $this->_returnGalleyFromRow($result->GetRowAssoc(false));
                 $result->moveNext();
             }
-            // Tutup resource hanya jika $result adalah objek
             $result->Close();
-        } else {
-            // Jika query GAGAL ($result adalah FALSE), kita sudah menginisialisasi
-            // $galleys = array(), jadi kita hanya perlu melanjutkan.
-            // (Opsional: tambahkan logging error di sini jika perlu)
         }
         
         unset($result);
-        // --- AKHIR PERBAIKAN FATAL ERROR ---
 
-        // Hook Modernization: arrays passed by reference to allow modification
-        HookRegistry::dispatch('ArticleGalleyDAO::getArticleGalleys', array(&$galleys, &$articleId));
+        HookRegistry::dispatch('ArticleGalleyDAO::getArticleGalleys', [&$galleys, &$articleId]);
 
         return $galleys;
     }
@@ -256,6 +243,7 @@ class ArticleGalleyDAO extends DAO {
      * @return DAOResultFactory
      */
     public function getGalleysByJournalId($journalId) {
+        // [WIZDAM] FIX: Bungkus parameter dalam array
         $result = $this->retrieve(
             'SELECT
                 g.*,
@@ -264,11 +252,10 @@ class ArticleGalleyDAO extends DAO {
             LEFT JOIN article_files af ON (g.file_id = af.file_id)
             INNER JOIN articles a ON (g.article_id = a.article_id)
             WHERE a.journal_id = ?',
-            (int) $journalId
+            [(int) $journalId]
         );
 
-        $returner = new DAOResultFactory($result, $this, '_returnGalleyFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnGalleyFromRow');
     }
 
     /**
@@ -289,7 +276,7 @@ class ArticleGalleyDAO extends DAO {
      * @return array
      */
     public function getLocaleFieldNames() {
-        return array();
+        return [];
     }
 
     /**
@@ -298,7 +285,6 @@ class ArticleGalleyDAO extends DAO {
      */
     public function getAdditionalFieldNames() {
         $additionalFields = parent::getAdditionalFieldNames();
-        // FIXME: Move this to a PID plug-in.
         $additionalFields[] = 'pub-id::publisher-id';
         return $additionalFields;
     }
@@ -308,9 +294,9 @@ class ArticleGalleyDAO extends DAO {
      * @param ArticleGalley $galley
      */
     public function updateLocaleFields($galley) {
-        $this->updateDataObjectSettings('article_galley_settings', $galley, array(
+        $this->updateDataObjectSettings('article_galley_settings', $galley, [
             'galley_id' => $galley->getId()
-        ));
+        ]);
     }
 
     /**
@@ -320,6 +306,8 @@ class ArticleGalleyDAO extends DAO {
      */
     public function _returnGalleyFromRow($row) {
         if ($row['html_galley']) {
+            // [WIZDAM] Type narrowing: VS Code sekarang tahu $galley adalah ArticleHTMLGalley
+            /** @var ArticleHTMLGalley $galley */
             $galley = new ArticleHTMLGalley();
 
             // HTML-specific settings
@@ -354,8 +342,7 @@ class ArticleGalleyDAO extends DAO {
 
         $this->getDataObjectSettings('article_galley_settings', 'galley_id', $row['galley_id'], $galley);
 
-        // Hook Modernization
-        HookRegistry::dispatch('ArticleGalleyDAO::_returnGalleyFromRow', array($galley, &$row));
+        HookRegistry::dispatch('ArticleGalleyDAO::_returnGalleyFromRow', [$galley, &$row]);
 
         return $galley;
     }
@@ -366,27 +353,29 @@ class ArticleGalleyDAO extends DAO {
      * @return int
      */
     public function insertGalley($galley) {
+        // [WIZDAM] Type narrowing untuk getStyleFileId()
+        $styleFileId = ($galley instanceof ArticleHTMLGalley) ? (int) $galley->getStyleFileId() : null;
+        
         $this->update(
             'INSERT INTO article_galleys
                 (article_id, file_id, label, locale, html_galley, style_file_id, seq, remote_url)
                 VALUES
                 (?, ?, ?, ?, ?, ?, ?, ?)',
-            array(
+            [
                 (int) $galley->getArticleId(),
                 (int) $galley->getFileId(),
                 $galley->getLabel(),
                 $galley->getLocale(),
                 (int) $galley->isHTMLGalley(),
-                $galley->isHTMLGalley() ? (int) $galley->getStyleFileId() : null,
+                $styleFileId,
                 $galley->getSequence() == null ? $this->getNextGalleySequence($galley->getArticleId()) : (float) $galley->getSequence(),
                 $galley->getRemoteURL()
-            )
+            ]
         );
         $galley->setId($this->getInsertGalleyId());
         $this->updateLocaleFields($galley);
 
-        // Hook Modernization: ID passed by value
-        HookRegistry::dispatch('ArticleGalleyDAO::insertNewGalley', array($galley, $galley->getId()));
+        HookRegistry::dispatch('ArticleGalleyDAO::insertNewGalley', [$galley, $galley->getId()]);
 
         return $galley->getId();
     }
@@ -396,6 +385,9 @@ class ArticleGalleyDAO extends DAO {
      * @param ArticleGalley $galley
      */
     public function updateGalley($galley) {
+        // [WIZDAM] Type narrowing untuk getStyleFileId()
+        $styleFileId = ($galley instanceof ArticleHTMLGalley) ? (int) $galley->getStyleFileId() : null;
+        
         $this->update(
             'UPDATE article_galleys
                 SET
@@ -407,16 +399,16 @@ class ArticleGalleyDAO extends DAO {
                     seq = ?,
                     remote_url = ?
                 WHERE galley_id = ?',
-            array(
+            [
                 (int) $galley->getFileId(),
                 $galley->getLabel(),
                 $galley->getLocale(),
                 (int) $galley->isHTMLGalley(),
-                $galley->isHTMLGalley() ? (int) $galley->getStyleFileId() : null,
+                $styleFileId,
                 (float) $galley->getSequence(),
                 $galley->getRemoteURL(),
                 (int) $galley->getId()
-            )
+            ]
         );
         $this->updateLocaleFields($galley);
     }
@@ -435,22 +427,22 @@ class ArticleGalleyDAO extends DAO {
      * @param int|null $articleId optional
      */
     public function deleteGalleyById($galleyId, $articleId = null) {
-
-        HookRegistry::dispatch('ArticleGalleyDAO::deleteGalleyById', array(&$galleyId, &$articleId));
+        HookRegistry::dispatch('ArticleGalleyDAO::deleteGalleyById', [&$galleyId, &$articleId]);
 
         if (isset($articleId)) {
             $this->update(
                 'DELETE FROM article_galleys WHERE galley_id = ? AND article_id = ?',
-                array((int) $galleyId, (int) $articleId)
+                [(int) $galleyId, (int) $articleId]
             );
         } else {
+            // [WIZDAM] FIX: Bungkus parameter dalam array
             $this->update(
                 'DELETE FROM article_galleys WHERE galley_id = ?', 
-                (int) $galleyId
+                [(int) $galleyId]
             );
         }
         if ($this->getAffectedRows()) {
-            $this->update('DELETE FROM article_galley_settings WHERE galley_id = ?', array((int) $galleyId));
+            $this->update('DELETE FROM article_galley_settings WHERE galley_id = ?', [(int) $galleyId]);
             $this->deleteImagesByGalley($galleyId);
         }
     }
@@ -476,10 +468,13 @@ class ArticleGalleyDAO extends DAO {
         $result = $this->retrieve(
             'SELECT COUNT(*) FROM article_galleys
             WHERE article_id = ? AND file_id = ?',
-            array((int) $articleId, (int) $fileId)
+            [(int) $articleId, (int) $fileId]
         );
 
-        $returner = isset($result->fields[0]) && $result->fields[0] == 1 ? true : false;
+        // [WIZDAM] FIX: Type narrowing untuk $result->fields
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = isset($fields[0]) && (int) $fields[0] > 0;
 
         $result->Close();
         unset($result);
@@ -492,10 +487,11 @@ class ArticleGalleyDAO extends DAO {
      * @param int $galleyId
      */
     public function incrementViews($galleyId) {
-        if ( !HookRegistry::dispatch('ArticleGalleyDAO::incrementGalleyViews', array(&$galleyId)) ) {
+        if (!HookRegistry::dispatch('ArticleGalleyDAO::incrementGalleyViews', [&$galleyId])) {
+            // [WIZDAM] FIX: Bungkus parameter dalam array
             return $this->update(
                 'UPDATE article_galleys SET views = views + 1 WHERE galley_id = ?',
-                (int) $galleyId
+                [(int) $galleyId]
             );
         } else return false;
     }
@@ -505,16 +501,21 @@ class ArticleGalleyDAO extends DAO {
      * @param int $articleId
      */
     public function resequenceGalleys($articleId) {
+        // [WIZDAM] FIX: Bungkus parameter dalam array
         $result = $this->retrieve(
             'SELECT galley_id FROM article_galleys WHERE article_id = ? ORDER BY seq',
-            (int) $articleId
+            [(int) $articleId]
         );
 
-        for ($i=1; !$result->EOF; $i++) {
-            list($galleyId) = $result->fields;
+        for ($i = 1; !$result->EOF; $i++) {
+            // [WIZDAM] FIX: Type narrowing untuk $result->fields (menggantikan list())
+            /** @var array|bool $fields */
+            $fields = $result->fields;
+            $galleyId = (int) ($fields[0] ?? 0);
+            
             $this->update(
                 'UPDATE article_galleys SET seq = ? WHERE galley_id = ?',
-                array($i, (int) $galleyId)
+                [$i, $galleyId]
             );
             $result->moveNext();
         }
@@ -529,11 +530,16 @@ class ArticleGalleyDAO extends DAO {
      * @return int
      */
     public function getNextGalleySequence($articleId) {
+        // [WIZDAM] FIX: Bungkus parameter dalam array
         $result = $this->retrieve(
             'SELECT COALESCE(MAX(seq), 0) + 1 FROM article_galleys WHERE article_id = ?',
-            (int) $articleId
+            [(int) $articleId]
         );
-        $returner = floor((float)($result->fields[0] ?? 1));
+        
+        // [WIZDAM] FIX: Type narrowing untuk $result->fields
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = (int) floor((float) ($fields[0] ?? 1));
 
         $result->Close();
         unset($result);
@@ -560,12 +566,13 @@ class ArticleGalleyDAO extends DAO {
      * @return array ArticleFile
      */
     public function getGalleyImages($galleyId) {
-        $images = array();
+        $images = [];
 
+        // [WIZDAM] FIX: Bungkus parameter dalam array
         $result = $this->retrieve(
             'SELECT a.* FROM article_html_galley_images i, article_files a
             WHERE i.file_id = a.file_id AND i.galley_id = ?',
-            (int) $galleyId
+            [(int) $galleyId]
         );
 
         while (!$result->EOF) {
@@ -591,7 +598,7 @@ class ArticleGalleyDAO extends DAO {
             (galley_id, file_id)
             VALUES
             (?, ?)',
-            array((int) $galleyId, (int) $fileId)
+            [(int) $galleyId, (int) $fileId]
         );
     }
 
@@ -604,7 +611,7 @@ class ArticleGalleyDAO extends DAO {
         return $this->update(
             'DELETE FROM article_html_galley_images
             WHERE galley_id = ? AND file_id = ?',
-            array((int) $galleyId, (int) $fileId)
+            [(int) $galleyId, (int) $fileId]
         );
     }
 
@@ -615,7 +622,7 @@ class ArticleGalleyDAO extends DAO {
     public function deleteImagesByGalley($galleyId) {
         return $this->update(
             'DELETE FROM article_html_galley_images WHERE galley_id = ?',
-            (int) $galleyId
+            [(int) $galleyId]
         );
     }
 
@@ -626,16 +633,16 @@ class ArticleGalleyDAO extends DAO {
      * @param string $pubId
      */
     public function changePubId($galleyId, $pubIdType, $pubId) {
-        $idFields = array(
+        $idFields = [
             'galley_id', 'locale', 'setting_name'
-        );
-        $updateArray = array(
+        ];
+        $updateArray = [
             'galley_id' => (int) $galleyId,
             'locale' => '',
             'setting_name' => 'pub-id::'.$pubIdType,
             'setting_type' => 'string',
-            'setting_value' => (string)$pubId
-        );
+            'setting_value' => (string) $pubId
+        ];
         $this->replace('article_galley_settings', $updateArray, $idFields);
     }
 
@@ -652,10 +659,10 @@ class ArticleGalleyDAO extends DAO {
         while ($galley = $galleys->next()) {
             $this->update(
                 'DELETE FROM article_galley_settings WHERE setting_name = ? AND galley_id = ?',
-                array(
+                [
                     $settingName,
-                    (int)$galley->getId()
-                )
+                    (int) $galley->getId()
+                ]
             );
             unset($galley);
         }
@@ -671,10 +678,10 @@ class ArticleGalleyDAO extends DAO {
         $settingName = 'pub-id::'.$pubIdType;
         $this->update(
             'DELETE FROM article_galley_settings WHERE setting_name = ? AND galley_id = ?',
-            array(
+            [
                 $settingName,
-                (int)$galleyId
-            )
+                (int) $galleyId
+            ]
         );
         $this->flushCache();
     }

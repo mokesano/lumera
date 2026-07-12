@@ -13,10 +13,6 @@ declare(strict_types=1);
  * @see StatisticsHelper
  *
  * @brief Statistics helper class.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Static methods, Ref removal)
- * - Strict Typing
  */
 
 // Dimensions:
@@ -77,7 +73,7 @@ class StatisticsHelper {
         if (isset($filter[STATISTICS_DIMENSION_CONTEXT_ID])) {
             $journalFilter = $filter[STATISTICS_DIMENSION_CONTEXT_ID];
             if (is_scalar($journalFilter)) {
-                // Retrieve the journal.
+                /** @var JournalDAO $journalDao */
                 $journalDao = DAORegistry::getDAO('JournalDAO'); /* @var $journalDao JournalDAO */
                 $journal = $journalDao->getById($journalFilter);
             }
@@ -289,7 +285,6 @@ class StatisticsHelper {
         return $dispatcher->url($request, ROUTE_PAGE, null, 'manager', 'generateReport', null, $args);
     }
 
-
     /**
      * Get the geo location tool.
      * @return object|null GeoLocationTool object or null
@@ -303,5 +298,4 @@ class StatisticsHelper {
         return $geoLocationTool;
     }
 }
-
 ?>

@@ -82,6 +82,7 @@ class PageRouter extends PKPPageRouter {
                 $journal = $request->getJournal();
 
                 if ($journal) {
+                    /** @var IssueDAO $issueDao */
                     $issueDao = DAORegistry::getDAO('IssueDAO');
                     $issuesIterator = $issueDao->getPublishedIssuesByVolume($journal->getId(), $volumeNumber);
 
@@ -291,6 +292,7 @@ class PageRouter extends PKPPageRouter {
             return;
         }
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $userId  = $user->getId();
         $journal = $this->getContext($request, 1);
@@ -309,6 +311,7 @@ class PageRouter extends PKPPageRouter {
                 $request->redirect(null, 'user');
             }
         } else {
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $roles      = $roleDao->getRolesByUserId($userId);
 

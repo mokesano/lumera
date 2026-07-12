@@ -13,12 +13,13 @@ declare(strict_types=1);
  * @see Role
  *
  * @brief Operations for retrieving and modifying Role objects.
- * [WIZDAM EDITION] PHP 7.4+ Compatible
  */
 
 import('classes.security.Role');
 
 class RoleDAO extends DAO {
+    
+    /** @var \DAO $userDao */
     public $userDao;
 
     /**
@@ -42,10 +43,9 @@ class RoleDAO extends DAO {
 
     /**
      * Retrieve a role.
-     * [MODERNISASI] Removed & reference
-     * @param $journalId int
-     * @param $userId int
-     * @param $roleId int
+     * @param mixed $journalId int
+     * @param mixed $userId int
+     * @param mixed $roleId int
      * @return Role
      */
     public function getRole($journalId, $userId, $roleId) {
@@ -57,20 +57,17 @@ class RoleDAO extends DAO {
                 (int) $roleId
             )
         );
-
         $returner = null;
         if ($result->RecordCount() != 0) {
             $returner = $this->_returnRoleFromRow($result->GetRowAssoc(false));
         }
-
         $result->Close();
         return $returner;
     }
 
     /**
      * Internal function to return a Role object from a row.
-     * [MODERNISASI] Removed & reference
-     * @param $row array
+     * @param mixed $row array
      * @return Role
      */
     public function _returnRoleFromRow($row) {
@@ -86,7 +83,7 @@ class RoleDAO extends DAO {
 
     /**
      * Insert a new role.
-     * @param $role Role
+     * @param mixed $role Role
      */
     public function insertRole($role) {
         return $this->update(
@@ -104,7 +101,7 @@ class RoleDAO extends DAO {
 
     /**
      * Delete a role.
-     * @param $role Role
+     * @param mixed $role Role
      */
     public function deleteRole($role) {
         return $this->update(
@@ -119,8 +116,7 @@ class RoleDAO extends DAO {
 
     /**
      * Retrieve a list of all roles for a specified user.
-     * [MODERNISASI] Removed & reference
-     * @param $userId int
+     * @param mixed $userId int
      * @param $journalId int optional, include roles only in this journal
      * @return array matching Roles
      */
@@ -128,45 +124,45 @@ class RoleDAO extends DAO {
         $roles = array();
         $params = array((int) $userId);
         if ($journalId !== null) $params[] = (int) $journalId;
-
         $result = $this->retrieve(
             'SELECT * FROM roles WHERE user_id = ?
             ' . (isset($journalId) ? ' AND journal_id = ?' : '') . '
             ORDER BY journal_id',
             $params
         );
-
         while (!$result->EOF) {
             $roles[] = $this->_returnRoleFromRow($result->GetRowAssoc(false));
             $result->MoveNext();
         }
-
         $result->Close();
         return $roles;
     }
 
     /**
-    * Return an array of objects corresponding to the roles a given user has,
-    * grouped by context id.
-    * [MODERNISASI] Removed & reference
-    * @param $userId int
+    * Return an array of objects corresponding to the roles a given user has, grouped by context id.
+    * @param mixed $userId int
     * @return array
     */
     public function getByUserIdGroupedByContext($userId) {
         $roles = $this->getRolesByUserId($userId);
-
         $groupedRoles = array();
         foreach ($roles as $role) {
             $groupedRoles[$role->getJournalId()][$role->getRoleId()] = $role;
         }
-
         return $groupedRoles;
     }
 
     /**
      * Retrieve a list of users in a specified role.
-     * [MODERNISASI] Removed & reference
-     * @return array matching Users
+     * @param mixed $roleId
+     * @param mixed $journalId
+     * @param mixed $searchType
+     * @param mixed $search
+     * @param mixed $searchMatch
+     * @param mixed $dbResultRange
+     * @param mixed $sortBy
+     * @param mixed $sortDirection
+     * @return DAOResultFactory matching Users
      */
     public function getUsersByRoleId($roleId = null, $journalId = null, $searchType = null, $search = null, $searchMatch = null, $dbResultRange = null, $sortBy = null, $sortDirection = SORT_DIRECTION_ASC) {
         // For security / resource usage reasons, a role or journal ID
@@ -234,7 +230,8 @@ class RoleDAO extends DAO {
 
     /**
      * Retrieve a list of all users with some role in the specified journal.
-     * [MODERNISASI] Removed & reference
+     * @param mixed $journalId
+     * @param mixed $sortDirection
      * @return array matching Users
      */
     public function getUsersByJournalId($journalId, $searchType = null, $search = null, $searchMatch = null, $dbResultRange = null, $sortBy = null, $sortDirection = SORT_DIRECTION_ASC) {
@@ -296,41 +293,51 @@ class RoleDAO extends DAO {
 
     /**
      * Retrieve the number of users associated with the specified journal.
+     * @param int $journalId
+     * @param int|null $roleId
+     * @return int
      */
     public function getJournalUsersCount($journalId, $roleId = null) {
         $params = array((int) $journalId);
-        if ($roleId !== null) $params[] = (int) $roleId;
-
+        if ($roleId !== null) {
+            $params[] = (int) $roleId;
+        }
         $result = $this->retrieve(
-            'SELECT COUNT(DISTINCT(user_id)) FROM roles WHERE journal_id = ?' . ($roleId === null?'':' AND role_id = ?'),
+            'SELECT COUNT(DISTINCT user_id) FROM roles WHERE journal_id = ?' . ($roleId === null ? '' : ' AND role_id = ?'),
             $params
         );
-
-        $returner = $result->fields[0];
+        /** @var array|false $fields */
+        $fields = $result->fields;
+        $returner = isset($fields[0]) ? (int) $fields[0] : 0;
         $result->Close();
         return $returner;
     }
 
     /**
      * Retrieve the number of users with a given role associated with the specified journal.
+     * @param int $journalId
+     * @param int $roleId
+     * @return int
      */
     public function getJournalUsersRoleCount($journalId, $roleId) {
         $result = $this->retrieve(
-            'SELECT COUNT(DISTINCT(user_id)) FROM roles WHERE journal_id = ? AND role_id = ?',
-            array (
+            'SELECT COUNT(DISTINCT user_id) FROM roles WHERE journal_id = ? AND role_id = ?',
+            array(
                 (int) $journalId,
                 (int) $roleId
             )
         );
-
-        $returner = $result->fields[0];
+        /** @var array|false $fields */
+        $fields = $result->fields;
+        $returner = isset($fields[0]) ? (int) $fields[0] : 0;
         $result->Close();
         return $returner;
     }
 
     /**
      * Select all roles for a specified journal.
-     * [MODERNISASI] Removed & reference
+     * @param mixed $journalId
+     * @param mixed $roleId
      */
     public function getRolesByJournalId($journalId = null, $roleId = null) {
         $params = array();
@@ -355,6 +362,7 @@ class RoleDAO extends DAO {
 
     /**
      * Delete all roles for a specified journal.
+     * @param mixed $journalId
      */
     public function deleteRoleByJournalId($journalId) {
         return $this->update(
@@ -364,6 +372,9 @@ class RoleDAO extends DAO {
 
     /**
      * Delete all roles for a specified journal.
+     * @param mixed $userId
+     * @param mixed $journalId
+     * @param mixed $roleId
      */
     public function deleteRoleByUserId($userId, $journalId  = null, $roleId = null) {
         return $this->update(
@@ -375,7 +386,10 @@ class RoleDAO extends DAO {
     }
 
     /**
-     * Validation check to see if a user belongs to any group that has a given role
+     * Validation check to see if a user belongs to any group that has a given role.
+     * @param mixed $journalId
+     * @param mixed $userId
+     * @param mixed $roleId
      */
     public function roleExists($journalId, $userId, $roleId) {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
@@ -384,19 +398,25 @@ class RoleDAO extends DAO {
 
     /**
      * Validation check to see if a user belongs to any group that has a given role
+     * @param mixed $journalId
+     * @param mixed $userId
+     * @param mixed $roleId
      */
     public function userHasRole($journalId, $userId, $roleId) {
         $result = $this->retrieve(
-            'SELECT COUNT(*) FROM roles WHERE journal_id = ? AND user_id = ? AND role_id = ?', array((int) $journalId, (int) $userId, (int) $roleId)
+            'SELECT COUNT(*) FROM roles WHERE journal_id = ? AND user_id = ? AND role_id = ?', 
+            array((int) $journalId, (int) $userId, (int) $roleId)
         );
-        $returner = isset($result->fields[0]) && $result->fields[0] == 1 ? true : false;
+        /** @var array|false $fields */
+        $fields = $result->fields;
+        $returner = isset($fields[0]) && (int)$fields[0] > 0;
         $result->Close();
         return $returner;
     }
 
     /**
      * Get the i18n key name associated with the specified role.
-     * [MODERNISASI] Made static
+     * @param mixed $roleId
      */
     public static function getRoleName($roleId, $plural = false) {
         switch ($roleId) {
@@ -429,7 +449,7 @@ class RoleDAO extends DAO {
 
     /**
      * Get the URL path associated with the specified role's operations.
-     * [MODERNISASI] Made static
+     * @param mixed $roleId
      */
     public static function getRolePath($roleId) {
         switch ($roleId) {
@@ -462,7 +482,7 @@ class RoleDAO extends DAO {
 
     /**
      * Get a role's ID based on its path.
-     * [MODERNISASI] Made static
+     * @param mixed $rolePath
      */
     public static function getRoleIdFromPath($rolePath) {
         switch ($rolePath) {
@@ -495,7 +515,7 @@ class RoleDAO extends DAO {
 
     /**
      * Map a column heading value to a database value for sorting
-     * [MODERNISASI] Made static
+     * @param mixed $heading string
      */
     public static function getSortMapping($heading) {
         switch ($heading) {
@@ -507,5 +527,4 @@ class RoleDAO extends DAO {
         }
     }
 }
-
 ?>

@@ -213,6 +213,7 @@ class JournalSetupStep5Form extends JournalSetupForm {
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
         
+        /** @var JournalSettingsDAO $settingsDao */
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $setting = $settingsDao->getSetting($journal->getId(), $settingName);
 
@@ -244,6 +245,7 @@ class JournalSetupStep5Form extends JournalSetupForm {
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
         
+        /** @var JournalSettingsDAO $settingsDao */
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
 
         import('classes.file.PublicFileManager');

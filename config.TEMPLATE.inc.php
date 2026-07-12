@@ -11,7 +11,7 @@
 ; Copyright (c) 2003-2019 John Willinsky
 ; Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
 ;
-; ScholarWizdam Configuration settings.
+; SangiaLumera Configuration settings.
 ; Rename config.TEMPLATE.inc.php to config.inc.php to use.
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -698,7 +698,16 @@ log_web_service_info = Off
 ; Future Settings ;
 ;;;;;;;;;;;;;;;;;;;
 
-[future]
+[lumera]
 
+; Jumlah maksimal staf editorial yang ditampilkan di homepage jurnal.
+; Ubah angka di bawah ini sesuai keinginan (misal: 5, 10, dll).
+; max_staff_show = 3
+
+; Daftar ID jurnal yang breadcrumb-nya disembunyikan di halaman utama 
+; (pisahkan dengan koma). Contoh: "1,4,7" 
+; akan menyembunyikan breadcrumb untuk jurnal dengan ID 1, 4, dan 7.
+; Kosongkan atau hapus baris ini jika semua jurnal harus menampilkan breadcrumb.
+; hide_breadcrumb_journal_ids = "1,4,7"
 
 

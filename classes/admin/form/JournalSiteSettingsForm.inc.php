@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup admin_form
  *
  * @brief Form for site administrator to edit basic journal settings.
- * [WIZDAM EDITION] Refactored for PHP 8.x (Removed create_function)
  */
 
 import('lib.pkp.classes.db.DBDataXMLParser');
@@ -36,21 +35,20 @@ class JournalSiteSettingsForm extends Form {
         $this->addCheck(new FormValidatorLocale($this, 'title', 'required', 'admin.journals.form.titleRequired'));
         $this->addCheck(new FormValidator($this, 'journalPath', 'required', 'admin.journals.form.pathRequired'));
         $this->addCheck(new FormValidatorAlphaNum($this, 'journalPath', 'required', 'admin.journals.form.pathAlphaNumeric'));
-        
-        // [WIZDAM] REPLACED create_function with Closure
-        // Using $this context directly in closure is valid in PHP 5.4+ and 8.x
+
         $this->addCheck(new FormValidatorCustom(
             $this, 
             'journalPath', 
             'required', 
             'admin.journals.form.pathExists', 
             function($path) {
+                /** @var JournalDAO $journalDao */
                 $journalDao = DAORegistry::getDAO('JournalDAO');
                 $oldPath = $this->getData('oldPath');
                 return !$journalDao->journalExistsByPath($path) || ($oldPath !== null && $oldPath == $path);
             }
         ));
-        
+
         $this->addCheck(new FormValidatorPost($this));
     }
 
@@ -64,7 +62,7 @@ class JournalSiteSettingsForm extends Form {
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($journalId);
+        $this->__construct($journalId);
     }
 
     /**
@@ -87,17 +85,17 @@ class JournalSiteSettingsForm extends Form {
      */
     public function initData() {
         if (isset($this->journalId)) {
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journal = $journalDao->getById($this->journalId);
-
             if ($journal != null) {
                 $this->_data = [
                     'title' => $journal->getSetting('title', null), // Localized
                     'description' => $journal->getSetting('description', null), // Localized
                     'journalPath' => $journal->getPath(),
-                    'enabled' => $journal->getEnabled()
+                    'enabled' => $journal->getEnabled(),
+                    'showOnHomepage' => $journal->getSetting('showOnHomepage') !== null ? $journal->getSetting('showOnHomepage') : 1
                 ];
-
             } else {
                 $this->journalId = null;
             }
@@ -105,7 +103,8 @@ class JournalSiteSettingsForm extends Form {
         
         if (!isset($this->journalId)) {
             $this->_data = [
-                'enabled' => 1
+                'enabled' => 1,
+                'showOnHomepage' => 1
             ];
         }
     }
@@ -116,8 +115,10 @@ class JournalSiteSettingsForm extends Form {
     public function readInputData() {
         $this->readUserVars(['title', 'description', 'journalPath', 'enabled']);
         $this->setData('enabled', (int)$this->getData('enabled'));
+        $this->setData('showOnHomepage', (int)$this->getData('showOnHomepage'));
 
         if (isset($this->journalId)) {
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journal = $journalDao->getById($this->journalId);
             if ($journal) {
@@ -140,32 +141,28 @@ class JournalSiteSettingsForm extends Form {
      */
     public function execute($object = null) {
         $site = Request::getSite();
-        $journalDao = DAORegistry::getDAO('JournalDAO');
 
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = null;
         if (isset($this->journalId)) {
             $journal = $journalDao->getById($this->journalId);
         }
-
         if (!isset($journal) || !$journal) {
             $journal = new Journal();
         }
-
         $journal->setPath($this->getData('journalPath'));
         $journal->setEnabled($this->getData('enabled'));
 
         $section = null;
         $isNewJournal = false;
-
         if ($journal->getId() != null) {
             $isNewJournal = false;
             $journalDao->updateJournal($journal);
         } else {
             $isNewJournal = true;
-
             // Give it a default primary locale
             $journal->setPrimaryLocale($site->getPrimaryLocale());
-
             $journalId = $journalDao->insertJournal($journal);
             $journalDao->resequenceJournals();
 
@@ -177,7 +174,7 @@ class JournalSiteSettingsForm extends Form {
                 $role->setJournalId($journalId);
                 $role->setUserId($userSession->getUserId());
                 $role->setRoleId(ROLE_ID_JOURNAL_MANAGER);
-
+                /** @var RoleDAO $roleDao */
                 $roleDao = DAORegistry::getDAO('RoleDAO');
                 $roleDao->insertRole($role);
             }
@@ -194,6 +191,7 @@ class JournalSiteSettingsForm extends Form {
             $fileManager->mkdir($publicFilesDir . '/journals/' . $journalId);
 
             // Install default journal settings
+            /** @var JournalSettingsDAO $journalSettingsDao */
             $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
             $titles = $this->getData('title');
             AppLocale::requireComponents(LOCALE_COMPONENT_APP_DEFAULT, LOCALE_COMPONENT_APPLICATION_COMMON);
@@ -210,7 +208,7 @@ class JournalSiteSettingsForm extends Form {
             $journalRtAdmin = new JournalRTAdmin($journalId);
             $journalRtAdmin->restoreVersions(false);
 
-            // Create a default "Articles" section
+            /** @var SectionDAO $sectionDao */
             $sectionDao = DAORegistry::getDAO('SectionDAO');
             $section = new Section();
             $section->setJournalId($journal->getId());
@@ -227,12 +225,12 @@ class JournalSiteSettingsForm extends Form {
         $journal->updateSetting('supportedLocales', $site->getSupportedLocales());
         $journal->updateSetting('title', $this->getData('title'), 'string', true);
         $journal->updateSetting('description', $this->getData('description'), 'string', true);
+        $journal->updateSetting('showOnHomepage', $this->getData('showOnHomepage') ? 1 : 0, 'int');
 
         // Make sure all plugins are loaded for settings preload
         PluginRegistry::loadAllPlugins();
 
         // [WIZDAM] HookRegistry dispatch - be careful with reference syntax
-        // We pass references explicitly.
         HookRegistry::dispatch('JournalSiteSettingsForm::execute', [&$this, &$journal, &$section, &$isNewJournal]);
     }
 }

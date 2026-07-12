@@ -93,7 +93,7 @@ class JournalSetupForm extends Form {
         // [WIZDAM] Request Singleton
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
-        
+        /** @var JournalSettingsDAO $settingsDao */
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
 
         foreach ($this->_data as $name => $value) {

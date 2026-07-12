@@ -43,18 +43,25 @@ class Classical extends ThemePlugin {
 		return 'Classical Sangia Publishing Group theme for journals layout';
 	}
 
-    /**
-     * Get the locale filename for this plugin.
+	/**
+	 * Get the locale file name of this plugin.
+     * @see ThemePlugin::getLocaleFilename()
+     * @param string $locale
      * @return string
-     */
+     * @return null Since this plugin does not have locale data.
+	 */
 	function getLocaleFilename($locale) {
 		return null; // No locale data
 	}
 
-    /**
-     * Activate the theme.
-     * @param $templateMgr TemplateManager
-     */
+	/**
+	 * Get the template of this plugin.
+     * The path is relative to the base directory.
+     * @see ThemePlugin::activate()
+     * @param TemplateManager $templateMgr
+     * @return string Path to the template directory for this theme plugin.
+     * @return void
+	 */
 	function activate($templateMgr) {
 		$templateMgr->template_dir[0] = Core::getBaseDir() 
 										. DIRECTORY_SEPARATOR 
