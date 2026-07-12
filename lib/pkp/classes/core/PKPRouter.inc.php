@@ -31,10 +31,10 @@ class PKPRouter {
     /** @var integer context depth */
     protected $_contextDepth;
     
-    /** @var integer context list */
+    /** @var array context list */
     protected $_contextList;
     
-    /** @var integer context list with keys and values flipped */
+    /** @var array context list with keys and values flipped */
     protected $_flippedContextList;
     
     /** @var array context paths */
@@ -42,6 +42,9 @@ class PKPRouter {
     
     /** @var array contexts */
     protected $_contexts = array();
+
+    /** @var string|null index URL cache */
+    protected $_indexUrl;
 
     /**
      * Constructor.
@@ -62,7 +65,7 @@ class PKPRouter {
 
     /**
      * Set the application
-     * @param $application PKPApplication
+     * @param mixed $application PKPApplication
      */
     public function setApplication($application) {
         $this->_application = $application;
@@ -84,7 +87,7 @@ class PKPRouter {
 
     /**
      * Set the dispatcher
-     * @param $dispatcher PKPDispatcher
+     * @param mixed $dispatcher PKPDispatcher
      */
     public function setDispatcher($dispatcher) {
         $this->_dispatcher = $dispatcher;
@@ -112,8 +115,7 @@ class PKPRouter {
 
     /**
      * A generic method to return an array of context paths (e.g. a Press or a Conference/SchedConf paths)
-     * @param $request PKPRequest the request to be routed
-     * @param $requestedContextLevel int (optional) the context level to return in the path
+     * @param mixed $request PKPRequest the request to be routed
      * @return array of string (each element the path to one context element)
      */
     public function getRequestedContextPaths($request) {
@@ -151,7 +153,7 @@ class PKPRouter {
 
     /**
      * A generic method to return a single context path (e.g. a Press or a SchedConf path)
-     * @param $request PKPRequest the request to be routed
+     * @param mixed $request PKPRequest the request to be routed
      * @param $requestedContextLevel int (optional) the context level to return
      * @return string
      */
@@ -171,7 +173,7 @@ class PKPRouter {
 
     /**
      * A Generic call to a context defining object (e.g. a Press, a Conference, or a SchedConf)
-     * @param $request PKPRequest the request to be routed
+     * @param mixed $request PKPRequest the request to be routed
      * @param $requestedContextLevel int (optional) the desired context level
      * @return object
      */
@@ -217,8 +219,8 @@ class PKPRouter {
 
     /**
      * Get the object that represents the desired context (e.g. Conference or Press)
-     * @param $request PKPRequest the request to be routed
-     * @param $requestedContextName string page context
+     * @param mixed $request PKPRequest the request to be routed
+     * @param mixed $requestedContextName string page context
      * @return object
      */
     public function getContextByName($request, $requestedContextName) {
@@ -238,7 +240,7 @@ class PKPRouter {
 
     /**
      * Get the URL to the index script.
-     * @param $request PKPRequest the request to be routed
+     * @param mixed $request PKPRequest the request to be routed
      * @return string
      */
     public function getIndexUrl($request) {
@@ -319,9 +321,9 @@ class PKPRouter {
      * 4) execution
      * 5) client response
      *
-     * @param $serviceEndpoint callable the handler operation
-     * @param $request PKPRequest
-     * @param $args array
+     * @param mixed $serviceEndpoint callable the handler operation
+     * @param mixed $request PKPRequest
+     * @param mixed $args array
      * @param $validate boolean
      */
     public function _authorizeInitializeAndCallRequest($serviceEndpoint, $request, $args, $validate = true) {
@@ -361,7 +363,7 @@ class PKPRouter {
 
     /**
      * Canonicalizes the new context.
-     * @param $newContext the raw context array
+     * @param mixed $newContext the raw context array
      * @return array the canonicalized context array
      */
     public function _urlCanonicalizeNewContext($newContext) {
@@ -385,7 +387,7 @@ class PKPRouter {
 
     /**
      * Build the base URL and add the context part of the URL.
-     * @param $request PKPRequest the request to be routed
+     * @param mixed $request PKPRequest the request to be routed
      * @param $newContext array the new context to be added to the URL
      * @return array
      */
@@ -476,7 +478,7 @@ class PKPRouter {
 
     /**
      * Creates a valid URL from parts.
-     * @param $baseUrl string
+     * @param mixed $baseUrl string
      * @param $pathInfoArray array
      * @param $queryParametersArray array
      * @param $anchor string
@@ -530,7 +532,7 @@ class PKPRouter {
 
     /**
      * Convert a context level to its corresponding context name.
-     * @param $contextLevel integer
+     * @param mixed $contextLevel integer
      * @return string context name
      */
     public function _contextLevelToContextName($contextLevel) {
@@ -540,7 +542,7 @@ class PKPRouter {
 
     /**
      * Convert a context name to its corresponding context level.
-     * @param $contextName string
+     * @param mixed $contextName string
      * @return integer context level
      */
     public function _contextNameToContextLevel($contextName) {

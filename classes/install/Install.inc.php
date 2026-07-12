@@ -40,6 +40,7 @@ class Install extends PKPInstall {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $params
      */
     public function Install($params, $descriptor = 'install.xml', $isPlugin = false) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -73,7 +74,7 @@ class Install extends PKPInstall {
         // Add initial site data
         $locale = $this->getParam('locale');
 
-        $siteDao = DAORegistry::getDAO('SiteDAO', $this->dbconn);
+        $siteDao = DAORegistry::getDAO('SiteDAO', $this->dbconn); /** @var SiteDAO $siteDao */
         $site = $siteDao->newDataObject();
         $site->setRedirect(0);
         $site->setMinPasswordLength(INSTALLER_DEFAULT_MIN_PASSWORD_LENGTH);
@@ -86,13 +87,13 @@ class Install extends PKPInstall {
             return false;
         }
 
-        $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO');
+        $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO'); /** @var SiteSettingsDAO $siteSettingsDao */
         $siteSettingsDao->installSettings('registry/siteSettings.xml', [
             'contactEmail' => $this->getParam('adminEmail')
         ]);
 
         // Add initial site administrator user
-        $userDao = DAORegistry::getDAO('UserDAO', $this->dbconn);
+        $userDao = DAORegistry::getDAO('UserDAO', $this->dbconn); /** @var UserDAO $userDao */
         $user = new User();
         $user->setUsername($this->getParam('adminUsername'));
         $user->setPassword(Validation::encryptCredentials($this->getParam('adminUsername'), $this->getParam('adminPassword'), $this->getParam('encryption')));
@@ -106,7 +107,7 @@ class Install extends PKPInstall {
         }
 
         // [WIZDAM] Corrected getDao -> getDAO case sensitivity standard
-        $roleDao = DAORegistry::getDAO('RoleDAO', $this->dbconn);
+        $roleDao = DAORegistry::getDAO('RoleDAO', $this->dbconn); /** @var RoleDAO $roleDao */
         $role = new Role();
         $role->setJournalId(0);
         $role->setUserId($user->getId());
@@ -118,7 +119,7 @@ class Install extends PKPInstall {
         }
 
         // Install email template list and data for each locale
-        $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
+        $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO'); /** @var EmailTemplateDAO $emailTemplateDao */
         $emailTemplateDao->installEmailTemplates($emailTemplateDao->getMainEmailTemplatesFilename());
         foreach ($this->installedLocales as $locale) {
             $emailTemplateDao->installEmailTemplateData($emailTemplateDao->getMainEmailTemplateDataFilename($locale));

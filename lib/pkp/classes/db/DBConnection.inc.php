@@ -24,19 +24,34 @@ class DBConnection {
     public $dbconn;
 
     /** Database connection parameters */
+    /** @var mixed $driver */
     public $driver;
+
+    /** @var mixed $host */
     public $host;
+
+    /** @var mixed $username */
     public $username;
+
+    /** @var mixed $password */
     public $password;
+
+    /** @var mixed $databaseName */
     public $databaseName;
+
+    /** @var mixed $persistent */
     public $persistent;
+
+    /** @var mixed $connectionCharset */
     public $connectionCharset;
+
+    /** @var mixed $forceNew */
     public $forceNew; // Only applicable if non-persistent
 
     /** @var boolean establish connection on initiation */
     public $connectOnInit;
 
-    /* @var boolean enable debugging output */
+    /** @var boolean enable debugging output */
     public $debug;
 
     /** @var boolean indicate connection status */
@@ -44,9 +59,6 @@ class DBConnection {
 
     /**
      * Constructor.
-     * Calls initDefaultDBConnection if no arguments are passed,
-     * otherwise calls initCustomDBConnection with custom connection
-     * parameters.
      */
     public function __construct() {
         $this->connected = false;
@@ -93,11 +105,11 @@ class DBConnection {
 
     /**
      * Create new database connection with the specified connection parameters.
-     * @param $driver string
-     * @param $host string
-     * @param $username string
-     * @param $password string
-     * @param $databaseName string
+     * @param mixed $driver string
+     * @param mixed $host string
+     * @param mixed $username string
+     * @param mixed $password string
+     * @param mixed $databaseName string
      * @param $persistent boolean use persistent connections (default false)
      * @param $connectionCharset string character set to use for the connection (default none)
      * @param $connectOnInit boolean establish database connection on initiation (default true)
@@ -262,8 +274,7 @@ class DBConnection {
     }
 
     /**
-     * Return a reference to a single static instance of the database connection
-     * [MODERNISASI] Static Method
+     * Return a reference to a single static instance of the database connection.
      * @return ADONewConnection
      */
     public static function getConn() {
@@ -281,8 +292,8 @@ class DBConnection {
 
     /**
      * Log a SQL query and execution time in the PKPProfiler debug log
-     * @param $sql string SQL statement being run
-     * @param $start string a float representing the unix microtime the query started
+     * @param mixed $sql string SQL statement being run
+     * @param mixed $start string a float representing the unix microtime the query started
      */
     public static function logQuery($sql, $start, $params = array()) {
         if (!Config::getVar('debug', 'show_stats')) return;
@@ -310,5 +321,4 @@ class DBConnection {
         Registry::set('queries', $queries);
     }
 }
-
 ?>

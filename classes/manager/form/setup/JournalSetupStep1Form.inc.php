@@ -126,6 +126,7 @@ class JournalSetupStep1Form extends JournalSetupForm {
         }
 
         // In case the category list changed, flush the cache.
+        /** @var CategoryDAO $categoryDao */
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
         $categoryDao->rebuildCache();
 
@@ -145,7 +146,9 @@ class JournalSetupStep1Form extends JournalSetupForm {
         if (Config::getVar('email', 'allow_envelope_sender'))
             $templateMgr->assign('envelopeSenderEnabled', true);
 
-        // If Categories are enabled by Site Admin, make selection tools available to Journal Manager
+        // If Categories are enabled by Site Admin, 
+        // make selection tools available to Journal Manager
+        /** @var CategoryDAO $categoryDao */
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
         $categories = $categoryDao->getCategories();
         $site = $request->getSite();

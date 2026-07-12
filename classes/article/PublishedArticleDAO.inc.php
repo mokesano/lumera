@@ -19,12 +19,22 @@ import('classes.article.PublishedArticle');
 
 class PublishedArticleDAO extends DAO {
 
+    /** @var \DAO $articleDao */
     public $articleDao;
+
+    /** @var \DAO $authorDao */
     public $authorDao;
+
+    /** @var \DAO $galleyDao */
     public $galleyDao;
+    
+    /** @var \DAO $suppFileDao */
     public $suppFileDao;
 
+    /** @var mixed $articleCache */
     public $articleCache;
+    
+    /** @var mixed $articlesInSectionsCache */
     public $articlesInSectionsCache;
 
     /**
@@ -55,8 +65,8 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Article cache miss handler.
-     * @param $cache object
-     * @param $id int
+     * @param mixed $cache object
+     * @param mixed $id int
      * @return PublishedArticle
      */
     public function _articleCacheMiss($cache, $id) {
@@ -79,8 +89,8 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Articles in sections cache miss handler.
-     * @param $cache object
-     * @param $id int
+     * @param mixed $cache object
+     * @param mixed $id int
      * @return array
      */
     public function _articlesInSectionsCacheMiss($cache, $id) {
@@ -103,7 +113,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve Published Articles by issue id.
-	 * @param $issueId int
+	 * @param mixed $issueId int
 	 * @return PublishedArticle objects array
 	 */
     public function getPublishedArticles($issueId) {
@@ -156,7 +166,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve a count of published articles in a journal.
-     * @param $journalId int
+     * @param mixed $journalId int
      * @return int
      */
     public function getPublishedArticleCountByJournalId($journalId) {
@@ -218,7 +228,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve Published Articles by issue id
-	 * @param $issueId int
+	 * @param mixed $issueId int
 	 * @param $useCache boolean optional
 	 * @return PublishedArticle objects array
 	 */
@@ -299,8 +309,8 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve Published Articles by section id
-	 * @param $sectionId int
-	 * @param $issueId int
+	 * @param mixed $sectionId int
+	 * @param mixed $issueId int
 	 * @param $simple boolean Whether or not to skip fetching dependent objects; default false
 	 * @return PublishedArticle objects array
 	 */
@@ -354,7 +364,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve Published Article by pub id
-	 * @param $publishedArticleId int
+	 * @param mixed $publishedArticleId int
 	 * @param $simple boolean Whether or not to skip fetching dependent objects; default false
 	 * @return PublishedArticle object
 	 */
@@ -384,7 +394,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve published article by article id
-	 * @param $articleId int
+	 * @param mixed $articleId int
 	 * @param $journalId int optional
 	 * @param $useCache boolean optional
 	 * @return PublishedArticle object
@@ -447,8 +457,8 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve Published Article by pub id
-     * @param $pubIdType string One of the NLM pub-id-type values
-     * @param $pubId string
+     * @param mixed $pubIdType string One of the NLM pub-id-type values
+     * @param mixed $pubId string
      * @param $journalId int
      * @param $useCache boolean optional
      * @return PublishedArticle object
@@ -474,8 +484,8 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Find published articles by querying article settings.
-     * @param $settingName string
-     * @param $settingValue mixed
+     * @param mixed $settingName string
+     * @param mixed $settingValue mixed
      * @param $journalId int optional
      * @return array The articles identified by setting.
      */
@@ -548,8 +558,8 @@ class PublishedArticleDAO extends DAO {
      * 
      * Retrieve Published Article by best published article id. (Deprecated)
      * Checks both internal ID (numeric) and public ID (publisher-id).
-     * @param $journalId int
-     * @param $articleId string|int
+     * @param mixed $journalId int
+     * @param mixed $articleId string|int
      * @param $useCache boolean
      * @return PublishedArticle
      */
@@ -569,8 +579,8 @@ class PublishedArticleDAO extends DAO {
     /**
      * Retrieve Published Article by best published article id.
      * Checks both internal ID (numeric) and public ID (publisher-id).
-     * @param $journalId int
-     * @param $articleId string|int
+     * @param mixed $journalId int
+     * @param mixed $articleId string|int
      * @param $useCache boolean
      * @return PublishedArticle
      */
@@ -672,7 +682,7 @@ class PublishedArticleDAO extends DAO {
     /**
      * Retrieve "article_id"s for published articles for a journal section, sorted
      * by reverse publish date.
-     * @param $sectionId int
+     * @param mixed $sectionId int
      * @param $useCache boolean Whether to use the query cache
      * @return array
      */
@@ -706,7 +716,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Internal function to return a PublishedArticle object from a row.
-     * @param $row array
+     * @param mixed $row array
      * @param $callHooks boolean Whether or not to call hooks
      * @return PublishedArticle object
      */
@@ -735,6 +745,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Insert a new Published Article.
+     * @param mixed $publishedArticle
 	 * @param PublishedArticle object
 	 * @return pubId int
 	 */
@@ -766,8 +777,8 @@ class PublishedArticleDAO extends DAO {
     }
 
 	/**
-	 * removes an published Article by id
-	 * @param $publishedArticleId int
+	 * Removes an published Article by id
+	 * @param mixed $publishedArticleId int
 	 */
     public function deletePublishedArticleById($publishedArticleId) {
         $this->update(
@@ -779,7 +790,7 @@ class PublishedArticleDAO extends DAO {
 	/**
 	 * Delete published article by article ID
 	 * NOTE: This does not delete the related Article or any dependent entities
-	 * @param $articleId int
+	 * @param mixed $articleId int
 	 */
     public function deletePublishedArticleByArticleId($articleId) {
         return $this->update(
@@ -790,7 +801,7 @@ class PublishedArticleDAO extends DAO {
 
 	/**
 	 * Delete published articles by section ID
-	 * @param $sectionId int
+	 * @param mixed $sectionId int
 	 */
     public function deletePublishedArticlesBySectionId($sectionId) {
         $result = $this->retrieve(
@@ -810,7 +821,7 @@ class PublishedArticleDAO extends DAO {
 
 	/**
 	 * Delete published articles by issue ID
-	 * @param $issueId int
+	 * @param mixed $issueId int
 	 */
     public function deletePublishedArticlesByIssueId($issueId) {
         $this->update(
@@ -821,6 +832,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Update a Published Article.
+     * @param mixed $publishedArticle
 	 * @param PublishedArticle object
 	 */
     public function updatePublishedArticle($publishedArticle) {
@@ -854,9 +866,9 @@ class PublishedArticleDAO extends DAO {
 	/**
 	 * [SECURITY HARDENED] updates a published article field
 	 * updates a published article field
-	 * @param $publishedArticleId int
-	 * @param $field string
-	 * @param $value mixed
+	 * @param mixed $publishedArticleId int
+	 * @param mixed $field string
+	 * @param mixed $value mixed
 	 */
     public function updatePublishedArticleField($publishedArticleId, $field, $value) {
         // Whitelist kolom yang valid di tabel published_articles
@@ -879,7 +891,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Check if a published article exists.
-     * @param $publishedArticleId int
+     * @param mixed $publishedArticleId int
      * @return boolean
      */
     public function publishedArticleExists($publishedArticleId) {
@@ -894,8 +906,8 @@ class PublishedArticleDAO extends DAO {
 
 	/**
 	 * Sequentially renumber published articles in their sequence order.
-     * @param $sectionId int
-     * @param $issueId int
+     * @param mixed $sectionId int
+     * @param mixed $issueId int
 	 */
     public function resequencePublishedArticles($sectionId, $issueId) {
         $result = $this->retrieve(
@@ -917,7 +929,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve a count of published authors in a journal.
-     * @param $journalId int
+     * @param mixed $journalId int
      * @return int
      */
     public function getPublishedAuthorCountByJournalId($journalId) {
@@ -945,7 +957,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Increment the view count for a published article.
-     * @param $articleId int
+     * @param mixed $articleId int
      * @return boolean
      */
     public function incrementViewsByArticleId($articleId) {
@@ -987,8 +999,8 @@ class PublishedArticleDAO extends DAO {
     /**
      * [LUMERA FORK] Mendapatkan artikel navigasi (sebelumnya/berikutnya)
      * SECARA GLOBAL, berdasarkan logika multi-langkah.
-     * @param $currentArticleId int
-     * @param $journalId int
+     * @param mixed $currentArticleId int
+     * @param mixed $journalId int
      * @return array('prev' => PublishedArticle, 'next' => PublishedArticle)
      */
     public function getGlobalArticleNavigation($currentArticleId, $journalId) {
@@ -1050,7 +1062,7 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Mendapatkan ID Edisi dari ID Artikel
-     * @param $articleId int
+     * @param mixed $articleId int
      * @return int|null ID Edisi atau null jika tidak ditemukan
      */
     public function _getIssueIdFromArticle($articleId) {
@@ -1070,8 +1082,8 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Mendapatkan semua artikel di 1 edisi
-     * @param $issueId int
-     * @param $journalId int
+     * @param mixed $issueId int
+     * @param mixed $journalId int
      * @return array Daftar ID artikel dalam edisi tersebut, diurutkan berdasarkan 'seq'
      */
     public function _getArticlesInIssue($issueId, $journalId) {
@@ -1097,8 +1109,8 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Mendapatkan artikel terakhir dari edisi SEBELUMNYA
-     * @param $currentIssueId int
-     * @param $journalId int
+     * @param mixed $currentIssueId int
+     * @param mixed $journalId int
      * @return int|null ID artikel atau null jika tidak ditemukan
      */
     public function _getPreviousIssueLastArticle($currentIssueId, $journalId) {
@@ -1123,8 +1135,8 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Mendapatkan artikel pertama dari edisi BERIKUTNYA
-     * @param $currentIssueId int
-     * @param $journalId int
+     * @param mixed $currentIssueId int
+     * @param mixed $journalId int
      * @return int|null ID artikel atau null jika tidak ditemukan
      */
     public function _getNextIssueFirstArticle($currentIssueId, $journalId) {

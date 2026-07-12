@@ -60,9 +60,9 @@ class SetupHandler extends ManagerHandler {
 
             $setupForm = new $formClass();
 
-            // =========================================================================
-            // TAHAP POST: Memproses Form Submission (Blueprint `billing()` style)
-            // =========================================================================
+            // =================================================================
+            // TAHAP POST: Memproses Form Submission (Blueprint `billing()`)
+            // =================================================================
             if ($request->isPost()) {
                 $setupForm->readInputData();
                 $formLocale = $setupForm->getFormLocale();
@@ -325,8 +325,7 @@ class SetupHandler extends ManagerHandler {
                         break;
                 }
 
-                // [LUMERA] NOTIF: flash message untuk aksi kecil (add/delete/upload)
-                // yang tidak melalui redirect penuh ke setupSaved.
+                // [LUMERA] NOTIF: flash message untuk aksi (add/delete/upload).
                 if (!empty($editData) && $notificationMessageKey) {
                     $this->_notifyAction($request, $notificationMessageKey);
                 }
@@ -344,9 +343,9 @@ class SetupHandler extends ManagerHandler {
                 return;
             }
 
-            // =========================================================================
-            // TAHAP GET: Render Awal Form (Blueprint `billing()` style)
-            // =========================================================================
+            // =================================================================
+            // TAHAP GET: Render Awal Form (Blueprint `billing()`)
+            // =================================================================
             if ($setupForm->isLocaleResubmit()) {
                 $setupForm->readInputData();
             } else {
@@ -435,6 +434,7 @@ class SetupHandler extends ManagerHandler {
         $router = $request->getRouter();
         $journal = $router->getContext($request);
 
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $articleDao->resetPermissions($journal->getId());
 

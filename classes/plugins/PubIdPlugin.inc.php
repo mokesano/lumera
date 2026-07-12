@@ -140,7 +140,7 @@ class PubIdPlugin extends Plugin {
                     }
                 } elseif (Request::getUserVar('clearPubIds')) {
                     $form->readInputData();
-                    $journalDao = DAORegistry::getDAO('JournalDAO'); /* @var $journalDao JournalDAO */
+                    $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
                     $journalDao->deleteAllPubIds($journal->getId(), $this->getPubIdType());
                     $this->_setBreadcrumbs();
                     $form->display();
@@ -321,7 +321,7 @@ class PubIdPlugin extends Plugin {
 
         // Check whether we still have to retrieve the journal from the database.
         if (!$journal || $journal->getId() != $journalId) {
-            $journalDao = DAORegistry::getDAO('JournalDAO'); /* @var $journalDao JournalDAO */
+            $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
             $journal = $journalDao->getById($journalId);
         }
 
@@ -353,22 +353,22 @@ class PubIdPlugin extends Plugin {
             $objectsToCheck = null;
             switch($pubObjectType) {
                 case 'Issue':
-                    $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
+                    $issueDao = DAORegistry::getDAO('IssueDAO'); /** @var IssueDAO $issueDao */
                     $objectsToCheck = $issueDao->getIssues($journalId);
                     break;
 
                 case 'Article':
-                    $articleDao = DAORegistry::getDAO('ArticleDAO'); /* @var $articleDao ArticleDAO */
+                    $articleDao = DAORegistry::getDAO('ArticleDAO'); /** @var ArticleDAO $articleDao */
                     $objectsToCheck = $articleDao->getArticlesByJournalId($journalId);
                     break;
 
                 case 'ArticleGalley':
-                    $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /* @var $galleyDao ArticleGalleyDAO */
+                    $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /** @var ArticleGalleyDAO $galleyDao */
                     $objectsToCheck = $galleyDao->getGalleysByJournalId($journalId);
                     break;
 
                 case 'SuppFile':
-                    $suppFileDao = DAORegistry::getDAO('SuppFileDAO'); /* @var $suppFileDao SuppFileDAO */
+                    $suppFileDao = DAORegistry::getDAO('SuppFileDAO'); /** @var SuppFileDAO $suppFileDao */
                     $objectsToCheck = $suppFileDao->getSuppFilesByJournalId($journalId);
                     break;
             }
@@ -452,8 +452,8 @@ class PubIdPlugin extends Plugin {
                     $settingName = $pubIdPlugin->getExcludeFormFieldName();
                     $pubIdType = $pubIdPlugin->getPubIdType();
 
-                    $articleDao = DAORegistry::getDAO('ArticleDAO'); /* @var $articleDao ArticleDAO */
-                    $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /* @var $publishedArticleDao PublishedArticleDAO */
+                    $articleDao = DAORegistry::getDAO('ArticleDAO'); /** @var ArticleDAO $articleDao */
+                    $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /** @var PublishedArticleDAO $publishedArticleDao */
                     $publishedArticles = $publishedArticleDao->getPublishedArticles($issueId);
                     foreach ($publishedArticles as $publishedArticle) {
                         if ($articlePubIdEnabled) {
@@ -465,7 +465,7 @@ class PubIdPlugin extends Plugin {
                             }
                         }
                         if ($galleyPubIdEnabled) {
-                            $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /* @var $articleGalleyDao ArticleGalleyDAO */
+                            $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /** @var ArticleGalleyDAO $articleGalleyDao */
                             $articleGalleys = $articleGalleyDao->getGalleysByArticle($publishedArticle->getId());
                             foreach ($articleGalleys as $articleGalley) {
                                 if ($exclude && !$articleGalley->getStoredPubId($pubIdType)) {
@@ -477,7 +477,7 @@ class PubIdPlugin extends Plugin {
                             }
                         }
                         if ($suppFilePubIdEnabled) {
-                            $articleSuppFileDao = DAORegistry::getDAO('SuppFileDAO'); /* @var $articleSuppFileDao SuppFileDAO */
+                            $articleSuppFileDao = DAORegistry::getDAO('SuppFileDAO'); /** @var SuppFileDAO $articleSuppFileDao */
                             $articleSuppFiles = $articleSuppFileDao->getSuppFilesByArticle($publishedArticle->getId());
                             foreach ($articleSuppFiles as $articleSuppFile) {
                                 if ($exclude && !$articleSuppFile->getStoredPubId($pubIdType)) {
@@ -624,5 +624,4 @@ class PubIdPlugin extends Plugin {
         $templateMgr->assign('pageHierarchy', $pageCrumbs);
     }
 }
-
 ?>

@@ -18,6 +18,7 @@ declare(strict_types=1);
 import('lib.pkp.classes.security.authorization.AuthorizationPolicy');
 
 class RestrictedSiteAccessPolicy extends AuthorizationPolicy {
+
     /** @var PKPRouter */
     public $_router;
 
@@ -25,17 +26,18 @@ class RestrictedSiteAccessPolicy extends AuthorizationPolicy {
     public $_request;
 
     /**
-     * Constructor
+     * Constructor.
+     * @param mixed $request
      */
     public function __construct($request) {
         parent::__construct('user.authorization.restrictedSiteAccess');
-        // Removed & reference assignments
         $this->_request = $request;
         $this->_router = $request->getRouter();
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $request
      */
     public function RestrictedSiteAccessPolicy($request) {
         trigger_error(
@@ -49,15 +51,16 @@ class RestrictedSiteAccessPolicy extends AuthorizationPolicy {
     // Implement template methods from AuthorizationPolicy
     //
     /**
+     * Applies restricts
      * @see AuthorizationPolicy::applies()
      */
     public function applies() {
-        // Removed & reference
         $context = $this->_router->getContext($this->_request);
         return ($context && $context->getSetting('restrictSiteAccess'));
     }
 
     /**
+     * Effect of restricts
      * @see AuthorizationPolicy::effect()
      */
     public function effect() {
@@ -68,7 +71,7 @@ class RestrictedSiteAccessPolicy extends AuthorizationPolicy {
             $page = null;
         }
 
-        if (Validation::isLoggedIn() || in_array($page, $this->_getLoginExemptions())) {
+        if (Validation::isLoggedIn() || in_array($page, self::_getLoginExemptions())) {
             return AUTHORIZATION_PERMIT;
         } else {
             return AUTHORIZATION_DENY;
@@ -79,14 +82,11 @@ class RestrictedSiteAccessPolicy extends AuthorizationPolicy {
     // Private helper method
     //
     /**
-     * Return the pages that can be accessed
-     * even while in restricted site mode.
-     *
+     * Return the pages that can be accessed even while in restricted site mode.
      * @return array
      */
-    protected function _getLoginExemptions() {
+    public static function _getLoginExemptions() {
         return array('user', 'login', 'help', 'header', 'payment');
     }
 }
-
 ?>

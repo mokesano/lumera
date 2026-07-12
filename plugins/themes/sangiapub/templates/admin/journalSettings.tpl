@@ -84,7 +84,14 @@
 		</tr>
 		<tr valign="top">
 			<td colspan="2" class="label">
-				<input type="checkbox" name="enabled" id="enabled" value="1"{if $enabled} checked="checked"{/if} /> <label for="enabled">{translate key="admin.journals.enableJournalInstructions"}</label>
+				<input type="checkbox" name="enabled" id="enabled" value="1"{if $enabled} checked="checked"{/if} />
+				<label for="enabled">{translate key="admin.journals.enableJournalInstructions"}</label>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td colspan="2" class="label">
+				<input type="checkbox" name="showOnHomepage" id="showOnHomepage" value="1"{if $showOnHomepage} checked="checked"{/if} />
+				<label for="enabled">{translate key="admin.journals.showOnHomepage"}</label>
 			</td>
 		</tr>
 	</table>

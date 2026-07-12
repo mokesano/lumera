@@ -37,25 +37,26 @@ class PKPNotificationManager {
 
     /**
      * Construct a set of notifications and return them as a formatted string
-     * @param $request PKPRequest
-     * @param $userId int
-     * @param $level int optional
+     * @param mixed $request PKPRequest
+     * @param mixed $userId int
+     * @param mixed $level int optional
      * @param $contextId int optional
      * @param $rangeInfo object optional
      * @param $notificationTemplate string optional Template to use for constructing an individual notification for display
      * @return string
      */
     public function getFormattedNotificationsForUser($request, $userId, $level = NOTIFICATION_LEVEL_NORMAL, $contextId = null, $rangeInfo = null, $notificationTemplate = 'notification/notification.tpl') {
+        /** @var NotificationDAO $notificationDao */
         $notificationDao = DAORegistry::getDAO('NotificationDAO');
         $notifications = $notificationDao->getByUserId($userId, $level, null, $contextId, $rangeInfo);
 
         return $this->formatNotifications($request, $notifications, $notificationTemplate);
     }
 
-    /*
+    /**
      * Return a string of formatted notifications for display
-     * @param $request PKPRequest
-     * @param $notifications object DAOResultFactory
+     * @param mixed $request PKPRequest
+     * @param mixed $notifications object DAOResultFactory
      * @param $notificationTemplate string optional Template to use for constructing an individual notification for display
      * @return string
      */
@@ -63,7 +64,6 @@ class PKPNotificationManager {
         $notificationString = '';
 
         // Build out the notifications based on their associated objects and format into a string
-        // Hapus '&' pada while loop
         while($notification = $notifications->next()) {
             $notificationString .= $this->formatNotification($request, $notification, $notificationTemplate);
             unset($notification);
@@ -74,8 +74,8 @@ class PKPNotificationManager {
 
     /**
      * Return a fully formatted notification for display
-     * @param $request PKPRequest
-     * @param $notification object Notification
+     * @param mixed $request PKPRequest
+     * @param mixed $notification object Notification
      * @return string
      */
     public function formatNotification($request, $notification, $notificationTemplate = 'notification/notification.tpl') {
@@ -83,6 +83,7 @@ class PKPNotificationManager {
 
         // Set the date read if it isn't already set
         if (!$notification->getDateRead()) {
+            /** @var NotificationDAO $notificationDao */
             $notificationDao = DAORegistry::getDAO('NotificationDAO');
             $dateRead = $notificationDao->setDateRead($notification->getId());
             $notification->setDateRead($dateRead);
@@ -119,7 +120,7 @@ class PKPNotificationManager {
      * Return a message string for the notification based on its type
      * and associated object.
      * @param $request PKPRequest
-     * @param $notification Notification
+     * @param mixed $notification Notification
      * @return string|null
      */
     public function getNotificationMessage($request, $notification) {
@@ -158,8 +159,8 @@ class PKPNotificationManager {
     /**
      * Using the notification message, construct, if needed, any additional
      * content for the notification body.
-     * @param $request Request
-     * @param $notification Notification
+     * @param mixed $request Request
+     * @param mixed $notification Notification
      * @return String
      */
     public function getNotificationContents($request, $notification) {
@@ -187,8 +188,8 @@ class PKPNotificationManager {
 
     /**
      * Helper function to get a translated string from a notification with parameters
-     * @param $key string
-     * @param $notificationId int
+     * @param mixed $key string
+     * @param mixed $notificationId int
      * @return String
      */
     public function _getTranslatedKeyWithParameters($key, $notificationId) {
@@ -198,11 +199,12 @@ class PKPNotificationManager {
 
     /**
      * Return notification settings.
-     * @param $notificationId int
+     * @param mixed $notificationId int
      * @return Array|null
      */
     public function getNotificationSettings($notificationId) {
-        $notificationSettingsDao = DAORegistry::getDAO('NotificationSettingsDAO'); /* @var $notificationSettingsDao NotificationSettingsDAO */
+        /** @var NotificationSettingsDAO $notificationSettingsDao */
+        $notificationSettingsDao = DAORegistry::getDAO('NotificationSettingsDAO');
         $notificationSettings = $notificationSettingsDao->getNotificationSettings($notificationId);
         if (empty($notificationSettings)) {
             return null;
@@ -213,7 +215,7 @@ class PKPNotificationManager {
 
     /**
      * Get the notification's title value
-     * @param $notification
+     * @param mixed $notification
      * @return string
      */
     public function getNotificationTitle($notification) {
@@ -228,10 +230,9 @@ class PKPNotificationManager {
         }
     }
 
-
     /**
      * Iterate through the localized params for a notification's locale key.
-     * @param $params array
+     * @param mixed $params array
      * @return array
      */
     public function getParamsForCurrentLocale($params) {
@@ -267,8 +268,8 @@ class PKPNotificationManager {
     }
 
     /**
-     * get notification style class
-     * @param $notification Notification
+     * Get notification style class.
+     * @param mixed $notification Notification
      * @return string
      */
     public function getStyleClass($notification) {
@@ -285,8 +286,8 @@ class PKPNotificationManager {
     }
 
     /**
-     * get notification icon style class
-     * @param $notification Notification
+     * Get notification icon style class.
+     * @param mixed $notification Notification
      * @return string
      */
     public function getIconClass($notification) {
@@ -312,22 +313,24 @@ class PKPNotificationManager {
 
     /**
      * Create a new notification with the specified arguments and insert into DB
-     * @param $request PKPRequest
+     * @param mixed $request PKPRequest
      * @param $userId int (optional)
-     * @param $notificationType int
+     * @param mixed $notificationType int
      * @param $contextId int
      * @param $assocType int
      * @param $assocId int
-     * @param $level int
+     * @param mixed $level int
      * @param $params array
      * @return Notification object
      */
     public function createNotification($request, $userId = null, $notificationType, $contextId = null, $assocType = null, $assocId = null, $level = NOTIFICATION_LEVEL_NORMAL, $params = null) {
         // Get set of notifications user does not want to be notified of
+        /** @var NotificationSubscriptionSettingsDAO $notificationSubscriptionSettingsDao */
         $notificationSubscriptionSettingsDao = DAORegistry::getDAO('NotificationSubscriptionSettingsDAO');
         $blockedNotifications = $notificationSubscriptionSettingsDao->getNotificationSubscriptionSettings('blocked_notification', $userId, (int) $contextId);
 
         if(!in_array($notificationType, $blockedNotifications)) {
+            /** @var NotificationDAO $notificationDao */
             $notificationDao = DAORegistry::getDAO('NotificationDAO');
             $notification = $notificationDao->newDataObject();
             $notification->setUserId((int) $userId);
@@ -341,6 +344,7 @@ class PKPNotificationManager {
 
             // Send notification emails
             if ($notification->getLevel() != NOTIFICATION_LEVEL_TRIVIAL) {
+                /** @var NotificationSubscriptionSettingsDAO $notificationSubscriptionSettingsDao */
                 $notificationSubscriptionSettingsDao = DAORegistry::getDAO('NotificationSubscriptionSettingsDAO');
                 $notificationEmailSettings = $notificationSubscriptionSettingsDao->getNotificationSubscriptionSettings('emailed_notification', $userId, (int) $contextId);
 
@@ -350,6 +354,7 @@ class PKPNotificationManager {
             }
 
             if ($params) {
+                /** @var NotificationSettingsDAO $notificationSettingsDao */
                 $notificationSettingsDao = DAORegistry::getDAO('NotificationSettingsDAO');
                 foreach($params as $name => $value) {
                     $notificationSettingsDao->updateNotificationSetting($notificationId, $name, $value);
@@ -363,12 +368,13 @@ class PKPNotificationManager {
 
     /**
      * Create a new notification with the specified arguments and insert into DB
-     * @param $userId int
-     * @param $notificationType int
+     * @param mixed $userId int
+     * @param mixed $notificationType int
      * @param $params array
      * @return Notification object
      */
     public function createTrivialNotification($userId, $notificationType = NOTIFICATION_TYPE_SUCCESS, $params = null) {
+        /** @var NotificationDAO $notificationDao */
         $notificationDao = DAORegistry::getDAO('NotificationDAO');
         $notification = $notificationDao->newDataObject();
         $notification->setUserId($userId);
@@ -379,6 +385,7 @@ class PKPNotificationManager {
         $notificationId = $notificationDao->insertObject($notification);
 
         if ($params) {
+            /** @var NotificationSettingsDAO $notificationSettingsDao */
             $notificationSettingsDao = DAORegistry::getDAO('NotificationSettingsDAO');
             foreach($params as $name => $value) {
                 $notificationSettingsDao->updateNotificationSetting($notificationId, $name, $value);
@@ -393,6 +400,7 @@ class PKPNotificationManager {
      * @param array $notifications
      */
     public function deleteTrivialNotifications($notifications) {
+        /** @var NotificationDAO $notificationDao */
         $notificationDao = DAORegistry::getDAO('NotificationDAO');
         foreach($notifications as $notification) {
             // Delete only trivial notifications.
@@ -404,13 +412,13 @@ class PKPNotificationManager {
 
     /**
      * General notification data formating.
-     * @param $request PKPRequest
+     * @param mixed $request PKPRequest
      * @param array $notifications
      * @return array
      */
     public function formatToGeneralNotification($request, $notifications) {
         $formattedNotificationsData = array();
-        foreach ($notifications as $notification) { /* @var $notification Notification */
+        foreach ($notifications as $notification) { /** @var Notification $notification */
             $formattedNotificationsData[$notification->getLevel()][$notification->getId()] = array(
                 'pnotify_title' => $this->getNotificationTitle($notification),
                 'pnotify_text' => $this->getNotificationContents($request, $notification),
@@ -424,8 +432,8 @@ class PKPNotificationManager {
 
     /**
      * In place notification data formating.
-     * @param $request PKPRequest
-     * @param $notifications array
+     * @param mixed $request PKPRequest
+     * @param mixed $notifications array
      * @return array
      */
     public function formatToInPlaceNotification($request, $notifications) {
@@ -443,11 +451,12 @@ class PKPNotificationManager {
 
     /**
      * Send an email to a user regarding the notification
-     * @param $request PKPRequest
-     * @param $notification object Notification
+     * @param mixed $request PKPRequest
+     * @param mixed $notification object Notification
      */
     public function sendNotificationEmail($request, $notification) {
         $userId = $notification->getUserId();
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $user = $userDao->getById($userId);
         AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
@@ -463,9 +472,7 @@ class PKPNotificationManager {
         ));
         $mail->addRecipient($user->getEmail(), $user->getFullName());
         
-        // WIZDAM UPDATE: Gunakan dispatch.
-        // Parameter adalah objek ($notification), jadi tidak perlu '&'.
-        // Jika hook mengembalikan nilai true, email dibatalkan.
+        // [LUMERA] UPDATE: HookRegistry::dispatch.
         if (!HookRegistry::dispatch('PKPNotificationManager::sendNotificationEmail', array($notification))) {
             $mail->send();
         }
@@ -473,10 +480,11 @@ class PKPNotificationManager {
 
     /**
      * Send an update to all users on the mailing list
-     * @param $request PKPRequest
-     * @param $notification object Notification
+     * @param mixed $request PKPRequest
+     * @param mixed $notification object Notification
      */
     public function sendToMailingList($request, $notification) {
+        /** @var NotificationMailListDAO $notificationMailListDao */
         $notificationMailListDao = DAORegistry::getDAO('NotificationMailListDAO');
         $mailList = $notificationMailListDao->getMailList($notification->getContextId());
         AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
@@ -503,10 +511,10 @@ class PKPNotificationManager {
 
     /**
      * Static function to send an email to a mailing list user e.g. regarding signup
-     * @param $request PKPRequest
-     * @param $email string
-     * @param $token string the user's token (for confirming and unsubscribing)
-     * @param $template string The mail template to use
+     * @param mixed $request PKPRequest
+     * @param mixed $email string
+     * @param mixed $token string the user's token (for confirming and unsubscribing)
+     * @param mixed $template string The mail template to use
      */
     public function sendMailingListEmail($request, $email, $token, $template) {
         import('classes.mail.MailTemplate');
@@ -534,5 +542,4 @@ class PKPNotificationManager {
         $mail->send();
     }
 }
-
 ?>

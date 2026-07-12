@@ -74,7 +74,8 @@
 	<message key="admin.journals.form.pathRequired">A path is required.</message>
 	<message key="admin.journals.form.pathAlphaNumeric">The path can contain only alphanumeric characters, underscores, and hyphens, and must begin and end with an alphanumeric character.</message>
 	<message key="admin.journals.form.pathExists">The selected path is already in use by another journal.</message>
-	<message key="admin.journals.enableJournalInstructions">Enable this journal to appear publicly on the publisher</message>
+	<message key="admin.journals.enableJournalInstructions">Enable this journal to appear publicly on the publisher.</message>
+	<message key="admin.journals.showOnHomepage">Display this journal on the publisher's homepage.</message>
 	<message key="admin.journals.journalDescription">Journal description</message>
 	<message key="admin.journal.pathImportInstructions">Existing journal path or path to create (e.g., "lumera").</message>
 	<message key="admin.journals.importSubscriptions">Import subscriptions</message>

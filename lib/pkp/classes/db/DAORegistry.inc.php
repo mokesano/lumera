@@ -35,8 +35,8 @@ class DAORegistry {
 
     /**
      * Register a new DAO with the system.
-     * @param $name string The name of the DAO to register
-     * @param $dao object The DAO object to be registered
+     * @param mixed $name string The name of the DAO to register
+     * @param mixed $dao object The DAO object to be registered
      * @return object The registered DAO
      */
     public static function registerDAO($name, $dao) {
@@ -47,7 +47,7 @@ class DAORegistry {
 
     /**
      * Retrieve a reference to the specified DAO.
-     * @param $name string the class name of the requested DAO
+     * @param mixed $name string the class name of the requested DAO
      * @param $dbconn ADONewConnection optional
      * @return DAO
      */

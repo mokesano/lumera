@@ -21,8 +21,9 @@ class StatsManager {
 
     /**
      * Assigns statistical data to the template for rendering.
-     * @param TemplateManager $templateMgr
-     * @param Journal|null $journal
+     * @param \TemplateManager $templateMgr
+     * @param \Journal|null $journal
+     * @param bool $forceRefresh
      */
     public static function assignWidgetPayload(TemplateManager $templateMgr, ?Journal $journal, bool $forceRefresh = false): void {
         $dao = new JournalStatsDAO();
@@ -86,12 +87,13 @@ class StatsManager {
         } else {
             // ==========================================
             // LOGIKA LEVEL SITE (AGREGAT ROOT PUBLISHER)
-            // Diadaptasi dari PKPWizdamStats::getSiteWideStats
+            // Diadaptasi dari WizdamStats::getSiteWideStats
             // ==========================================
             $cacheKey = "site_global_stats"; 
             $statsData = self::_getFromCache($cacheKey);
 
             if ($forceRefresh || $statsData === false) {
+                /** @var JournalDAO $journalDao */
                 $journalDao = DAORegistry::getDAO('JournalDAO');
                 $journals = $journalDao->getJournals(true);
                 
@@ -150,7 +152,7 @@ class StatsManager {
                     'lastUpdated' => date('Y-m-d H:i:s')
                 ];
 
-                self::_saveToCache($cacheKey, $statsData, 0); // Eksekusi ke t_wizdam/stats/
+                self::_saveToCache($cacheKey, $statsData); // Eksekusi ke t_wizdam/stats/
             }
 
             // Injeksi final ke Smarty IndexHandler
@@ -168,7 +170,7 @@ class StatsManager {
         $templateMgr->assign([
             'lastUpdated' => (string) $statsData['lastUpdated'],
             'metricsTableExists' => (string) $metricsTableExists,
-            'showDiagnostics' => false // Ubah ke true jika butuh debugging di TPL
+            'showDiagnostics' => false
         ]);
     }
 
@@ -184,8 +186,8 @@ class StatsManager {
         if (empty($arr)) return 0.0;
         sort($arr);
         $count = count($arr);
-        $middle = floor(($count - 1) / 2);
-        return ($count % 2) ? (float) $arr[$middle] : (float) (($arr[$middle] + $arr[(int)$middle + 1]) / 2);
+        $middle = (int) floor(($count - 1) / 2);
+        return ($count % 2) ? (float) $arr[$middle] : (float) (($arr[$middle] + $arr[$middle + 1]) / 2);
     }
 
     /**
@@ -206,7 +208,10 @@ class StatsManager {
         if ($cacheContent === false) return false;
 
         $cacheContent = preg_replace('/^<\?php exit\(\); \?>/', '', $cacheContent);
-        return unserialize($cacheContent);
+        $data = unserialize($cacheContent);
+
+        // [WIZDAM] Type Narrowing: Ensure unserialize result as array to @return array|false
+        return is_array($data) ? $data : false;
     }
 
     /**

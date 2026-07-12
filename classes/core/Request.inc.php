@@ -59,6 +59,7 @@ class Request extends PKPRequest {
      * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getContext()
      * @deprecated
+     * @return Journal|null
      */
     public static function getJournal() {
         $instance = PKPRequest::_checkThis();
@@ -100,6 +101,7 @@ class Request extends PKPRequest {
     /**
      * [DEPRICATED] Backward compatibility.
      * @see PKPPageRouter::getContextByName()
+     * @param mixed $contextName
      * @deprecated
      */
     public static function getContextByName($contextName) {

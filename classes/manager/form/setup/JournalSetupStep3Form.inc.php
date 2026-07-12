@@ -153,10 +153,9 @@ class JournalSetupStep3Form extends JournalSetupForm {
         $context = $router->getContext($request);
         
         if ($context) {
-            $filterDao = DAORegistry::getDAO('FilterDAO');
-            // Ambil filter nlm30
+            /** @var FilterDAO $filterDao */
+            $filterDao = DAORegistry::getDAO('FilterDAO'); // Ambil filter nlm30
             $metaCitationOutputFilterObjects = $filterDao->getObjectsByGroup('nlm30-element-citation=>plaintext', $context->getId());
-            
             $metaCitationOutputFilters = [];
             foreach($metaCitationOutputFilterObjects as $filterObject) {
                 $metaCitationOutputFilters[$filterObject->getId()] = $filterObject->getDisplayName();

@@ -17,6 +17,7 @@ declare(strict_types=1);
  *
  */
 
+/** @var string $op */
 switch($op) {
 	case 'index':
 	case 'contact':
@@ -40,5 +41,4 @@ switch($op) {
 		import('pages.about.AboutHandler');
 		break;
 }
-
 ?>

@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see PublishedArticleDAO
  *
  * @brief Published article class.
- * [WIZDAM EDITION] PHP 7.4+ Compatible, Strict Types & Fatal Error Fix
  */
 
 import('classes.article.Article');
@@ -156,7 +155,7 @@ class PublishedArticle extends Article {
     public function getAuthorProfileImages() {
         $authors = $this->getAuthors();
         $images = [];
-        $userDao = DAORegistry::getDAO('UserDAO');
+        $userDao = DAORegistry::getDAO('UserDAO'); /** @var UserDAO $userDao */
         
         foreach ($authors as $author) {
             $authorId = $author->getId();
@@ -182,7 +181,7 @@ class PublishedArticle extends Article {
     public function getAuthorUserDataMap() {
         $authors = $this->getAuthors();
         $map = [];
-        $userDao = DAORegistry::getDAO('UserDAO');
+        $userDao = DAORegistry::getDAO('UserDAO'); /** @var UserDAO $userDao */
         
         foreach ($authors as $author) {
             $authorId = $author->getId();
@@ -239,7 +238,6 @@ class PublishedArticle extends Article {
                 }
             }
             if (!empty($galleys)) {
-                // [FIX] $articleId was undefined in original code
                 $articleId = $this->getId();
                 HookRegistry::dispatch('ArticleGalleyDAO::getLocalizedGalleysByArticle', [&$galleys, $articleId]);
                 return $galleys;
@@ -273,5 +271,4 @@ class PublishedArticle extends Article {
         return $this->setData('suppFiles', $suppFiles);
     }
 }
-
 ?>
