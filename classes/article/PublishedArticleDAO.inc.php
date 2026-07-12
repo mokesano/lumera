@@ -19,16 +19,16 @@ import('classes.article.PublishedArticle');
 
 class PublishedArticleDAO extends DAO {
 
-    /** @var \DAO $articleDao */
+    /** @var ArticleDAO */
     public $articleDao;
 
-    /** @var \DAO $authorDao */
+    /** @var AuthorDAO */
     public $authorDao;
 
-    /** @var \DAO $galleyDao */
+    /** @var ArticleGalleyDAO */
     public $galleyDao;
     
-    /** @var \DAO $suppFileDao */
+    /** @var SuppFileDAO */
     public $suppFileDao;
 
     /** @var mixed $articleCache */
@@ -65,8 +65,8 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Article cache miss handler.
-     * @param mixed $cache object
-     * @param mixed $id int
+     * @param object $cache
+     * @param int $id
      * @return PublishedArticle
      */
     public function _articleCacheMiss($cache, $id) {
@@ -82,15 +82,15 @@ class PublishedArticleDAO extends DAO {
     public function _getPublishedArticleCache() {
         if (!isset($this->articleCache)) {
             $cacheManager = CacheManager::getManager();
-            $this->articleCache = $cacheManager->getObjectCache('publishedArticles', 0, array($this, '_articleCacheMiss'));
+            $this->articleCache = $cacheManager->getObjectCache('publishedArticles', 0, [$this, '_articleCacheMiss']);
         }
         return $this->articleCache;
     }
 
     /**
      * Articles in sections cache miss handler.
-     * @param mixed $cache object
-     * @param mixed $id int
+     * @param object $cache
+     * @param int $id
      * @return array
      */
     public function _articlesInSectionsCacheMiss($cache, $id) {
@@ -106,32 +106,26 @@ class PublishedArticleDAO extends DAO {
     public function _getArticlesInSectionsCache() {
         if (!isset($this->articlesInSectionsCache)) {
             $cacheManager = CacheManager::getManager();
-            $this->articlesInSectionsCache = $cacheManager->getObjectCache('articlesInSections', 0, array($this, '_articlesInSectionsCacheMiss'));
+            $this->articlesInSectionsCache = $cacheManager->getObjectCache('articlesInSections', 0, [$this, '_articlesInSectionsCacheMiss']);
         }
         return $this->articlesInSectionsCache;
     }
 
     /**
      * Retrieve Published Articles by issue id.
-	 * @param mixed $issueId int
-	 * @return PublishedArticle objects array
-	 */
+     * @param int $issueId
+     * @return array PublishedArticle objects array
+     */
     public function getPublishedArticles($issueId) {
         $primaryLocale = AppLocale::getPrimaryLocale();
         $locale = AppLocale::getLocale();
         
-        $params = array(
+        $params = [
             (int) $issueId,
-            'title',
-            $primaryLocale,
-            'title',
-            $locale,
-            'abbrev',
-            $primaryLocale,
-            'abbrev',
-            $locale,
+            'title', $primaryLocale, 'title', $locale,
+            'abbrev', $primaryLocale, 'abbrev', $locale,
             (int) $issueId
-        );
+        ];
 
         $sql = 'SELECT DISTINCT
                 pa.*,
@@ -140,21 +134,21 @@ class PublishedArticleDAO extends DAO {
                 SUBSTRING(COALESCE(sal.setting_value, sapl.setting_value) FROM 1 FOR 255) AS section_abbrev,
                 COALESCE(o.seq, s.seq) AS section_seq,
                 pa.seq
-            FROM    published_articles pa,
+            FROM published_articles pa,
                 articles a LEFT JOIN sections s ON s.section_id = a.section_id
                 LEFT JOIN custom_section_orders o ON (a.section_id = o.section_id AND o.issue_id = ?)
                 LEFT JOIN section_settings stpl ON (s.section_id = stpl.section_id AND stpl.setting_name = ? AND stpl.locale = ?)
                 LEFT JOIN section_settings stl ON (s.section_id = stl.section_id AND stl.setting_name = ? AND stl.locale = ?)
                 LEFT JOIN section_settings sapl ON (s.section_id = sapl.section_id AND sapl.setting_name = ? AND sapl.locale = ?)
                 LEFT JOIN section_settings sal ON (s.section_id = sal.section_id AND sal.setting_name = ? AND sal.locale = ?)
-            WHERE    pa.article_id = a.article_id
+            WHERE pa.article_id = a.article_id
                 AND pa.issue_id = ?
                 AND a.status <> ' . STATUS_ARCHIVED . '
             ORDER BY section_seq ASC, pa.seq ASC';
 
         $result = $this->retrieve($sql, $params);
 
-        $publishedArticles = array();
+        $publishedArticles = [];
         while (!$result->EOF) {
             $publishedArticles[] = $this->_returnPublishedArticleFromRow($result->GetRowAssoc(false));
             $result->MoveNext();
@@ -166,47 +160,45 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve a count of published articles in a journal.
-     * @param mixed $journalId int
+     * @param int $journalId
      * @return int
      */
     public function getPublishedArticleCountByJournalId($journalId) {
         $result = $this->retrieve(
             'SELECT count(*) FROM published_articles pa, articles a WHERE pa.article_id = a.article_id AND a.journal_id = ? AND a.status <> ' . STATUS_ARCHIVED,
-            (int) $journalId
+            [(int) $journalId]
         );
-        $count = $result->fields[0];
+        
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $count = isset($fields[0]) ? (int) $fields[0] : 0;
+        
         $result->Close();
         return $count;
     }
 
     /**
      * Retrieve all published articles in a journal.
-	 * @param $journalId int
-	 * @param $rangeInfo object
-	 * @param $reverse boolean Whether to reverse the sort order
-	 * @return object
-	 */
+     * @param int|null $journalId
+     * @param DBResultRange|null $rangeInfo
+     * @param bool $reverse Whether to reverse the sort order
+     * @return DAOResultFactory
+     */
     public function getPublishedArticlesByJournalId($journalId = null, $rangeInfo = null, $reverse = false) {
         $primaryLocale = AppLocale::getPrimaryLocale();
         $locale = AppLocale::getLocale();
-        $params = array(
-            'title',
-            $primaryLocale,
-            'title',
-            $locale,
-            'abbrev',
-            $primaryLocale,
-            'abbrev',
-            $locale
-        );
+        $params = [
+            'title', $primaryLocale, 'title', $locale,
+            'abbrev', $primaryLocale, 'abbrev', $locale
+        ];
         if ($journalId !== null) $params[] = (int) $journalId;
         
         $result = $this->retrieveRange(
-            'SELECT    pa.*,
+            'SELECT pa.*,
                 a.*,
                 COALESCE(stl.setting_value, stpl.setting_value) AS section_title,
                 COALESCE(sal.setting_value, sapl.setting_value) AS section_abbrev
-            FROM    published_articles pa
+            FROM published_articles pa
                 LEFT JOIN articles a ON pa.article_id = a.article_id
                 LEFT JOIN issues i ON pa.issue_id = i.issue_id
                 LEFT JOIN sections s ON s.section_id = a.section_id
@@ -214,24 +206,23 @@ class PublishedArticleDAO extends DAO {
                 LEFT JOIN section_settings stl ON (s.section_id = stl.section_id AND stl.setting_name = ? AND stl.locale = ?)
                 LEFT JOIN section_settings sapl ON (s.section_id = sapl.section_id AND sapl.setting_name = ? AND sapl.locale = ?)
                 LEFT JOIN section_settings sal ON (s.section_id = sal.section_id AND sal.setting_name = ? AND sal.locale = ?)
-            WHERE    i.published = 1
-                ' . ($journalId !== null?'AND a.journal_id = ?':'') . '
+            WHERE i.published = 1
+                ' . ($journalId !== null ? 'AND a.journal_id = ?' : '') . '
                 AND a.status <> ' . STATUS_ARCHIVED . '
-            ORDER BY date_published '. ($reverse?'DESC':'ASC'),
+            ORDER BY date_published ' . ($reverse ? 'DESC' : 'ASC'),
             $params,
             $rangeInfo
         );
 
-        $returner = new DAOResultFactory($result, $this, '_returnPublishedArticleFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnPublishedArticleFromRow');
     }
 
     /**
      * Retrieve Published Articles by issue id
-	 * @param mixed $issueId int
-	 * @param $useCache boolean optional
-	 * @return PublishedArticle objects array
-	 */
+     * @param int $issueId
+     * @param bool $useCache optional
+     * @return array PublishedArticle objects array
+     */
     public function getPublishedArticlesInSections($issueId, $useCache = false) {
         if ($useCache) {
             $cache = $this->_getArticlesInSectionsCache();
@@ -242,18 +233,12 @@ class PublishedArticleDAO extends DAO {
         $primaryLocale = AppLocale::getPrimaryLocale();
         $locale = AppLocale::getLocale();
         
-        $params = array(
+        $params = [
             (int) $issueId,
-            'title',
-            $primaryLocale,
-            'title',
-            $locale,
-            'abbrev',
-            $primaryLocale,
-            'abbrev',
-            $locale,
+            'title', $primaryLocale, 'title', $locale,
+            'abbrev', $primaryLocale, 'abbrev', $locale,
             (int) $issueId
-        );
+        ];
 
         $sql = 'SELECT DISTINCT
                 pa.*,
@@ -265,7 +250,7 @@ class PublishedArticleDAO extends DAO {
                 s.hide_author AS section_hide_author,
                 COALESCE(o.seq, s.seq) AS section_seq,
                 pa.seq
-            FROM    published_articles pa,
+            FROM published_articles pa,
                 articles a
                 LEFT JOIN sections s ON s.section_id = a.section_id
                 LEFT JOIN custom_section_orders o ON (a.section_id = o.section_id AND o.issue_id = ?)
@@ -273,7 +258,7 @@ class PublishedArticleDAO extends DAO {
                 LEFT JOIN section_settings stl ON (s.section_id = stl.section_id AND stl.setting_name = ? AND stl.locale = ?)
                 LEFT JOIN section_settings sapl ON (s.section_id = sapl.section_id AND sapl.setting_name = ? AND sapl.locale = ?)
                 LEFT JOIN section_settings sal ON (s.section_id = sal.section_id AND sal.setting_name = ? AND sal.locale = ?)
-            WHERE    pa.article_id = a.article_id
+            WHERE pa.article_id = a.article_id
                 AND pa.issue_id = ?
                 AND a.status <> ' . STATUS_ARCHIVED . '
             ORDER BY section_seq ASC, pa.seq ASC';
@@ -281,19 +266,19 @@ class PublishedArticleDAO extends DAO {
         $result = $this->retrieve($sql, $params);
 
         $currSectionId = 0;
-        $publishedArticles = array();
+        $publishedArticles = [];
         while (!$result->EOF) {
             $row = $result->GetRowAssoc(false);
             $publishedArticle = $this->_returnPublishedArticleFromRow($row);
             if ($publishedArticle->getSectionId() != $currSectionId && !isset($publishedArticles[$publishedArticle->getSectionId()])) {
                 $currSectionId = $publishedArticle->getSectionId();
-                $publishedArticles[$currSectionId] = array(
-                    'articles'=> array(),
+                $publishedArticles[$currSectionId] = [
+                    'articles' => [],
                     'title' => '',
                     'abstractsNotRequired' => $row['abstracts_not_required'],
                     'hideTitle' => $row['section_hide_title'],
                     'hideAuthor' => $row['section_hide_author']
-                );
+                ];
 
                 if (!$row['section_hide_title']) {
                     $publishedArticles[$currSectionId]['title'] = $publishedArticle->getSectionTitle();
@@ -309,47 +294,40 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve Published Articles by section id
-	 * @param mixed $sectionId int
-	 * @param mixed $issueId int
-	 * @param $simple boolean Whether or not to skip fetching dependent objects; default false
-	 * @return PublishedArticle objects array
-	 */
+     * @param int $sectionId
+     * @param int $issueId
+     * @param bool $simple Whether or not to skip fetching dependent objects; default false
+     * @return array PublishedArticle objects array
+     */
     public function getPublishedArticlesBySectionId($sectionId, $issueId, $simple = false) {
         $primaryLocale = AppLocale::getPrimaryLocale();
         $locale = AppLocale::getLocale();
-        $func = $simple?'_returnSimplePublishedArticleFromRow':'_returnPublishedArticleFromRow';
-        $publishedArticles = array();
+        $func = $simple ? '_returnSimplePublishedArticleFromRow' : '_returnPublishedArticleFromRow';
+        $publishedArticles = [];
 
         $result = $this->retrieve(
-            'SELECT    pa.*,
+            'SELECT pa.*,
                 a.*,
                 COALESCE(stl.setting_value, stpl.setting_value) AS section_title,
                 COALESCE(sal.setting_value, sapl.setting_value) AS section_abbrev
-            FROM    published_articles pa,
+            FROM published_articles pa,
                 articles a,
                 sections s
                 LEFT JOIN section_settings stpl ON (s.section_id = stpl.section_id AND stpl.setting_name = ? AND stpl.locale = ?)
                 LEFT JOIN section_settings stl ON (s.section_id = stl.section_id AND stl.setting_name = ? AND stl.locale = ?)
                 LEFT JOIN section_settings sapl ON (s.section_id = sapl.section_id AND sapl.setting_name = ? AND sapl.locale = ?)
                 LEFT JOIN section_settings sal ON (s.section_id = sal.section_id AND sal.setting_name = ? AND sal.locale = ?)
-            WHERE    a.section_id = s.section_id
+            WHERE a.section_id = s.section_id
                 AND pa.article_id = a.article_id
                 AND a.section_id = ?
                 AND pa.issue_id = ?
                 AND a.status <> ' . STATUS_ARCHIVED . '
             ORDER BY pa.seq ASC',
-            array(
-                'title',
-                $primaryLocale,
-                'title',
-                $locale,
-                'abbrev',
-                $primaryLocale,
-                'abbrev',
-                $locale,
-                (int) $sectionId,
-                (int) $issueId
-            )
+            [
+                'title', $primaryLocale, 'title', $locale,
+                'abbrev', $primaryLocale, 'abbrev', $locale,
+                (int) $sectionId, (int) $issueId
+            ]
         );
 
         while (!$result->EOF) {
@@ -364,13 +342,14 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve Published Article by pub id
-	 * @param mixed $publishedArticleId int
-	 * @param $simple boolean Whether or not to skip fetching dependent objects; default false
-	 * @return PublishedArticle object
-	 */
+     * @param int $publishedArticleId
+     * @param bool $simple Whether or not to skip fetching dependent objects; default false
+     * @return PublishedArticle|null
+     */
     public function getPublishedArticleById($publishedArticleId, $simple = false) {
         $result = $this->retrieve(
-            'SELECT * FROM published_articles WHERE published_article_id = ?', (int) $publishedArticleId
+            'SELECT * FROM published_articles WHERE published_article_id = ?', 
+            [(int) $publishedArticleId]
         );
 
         $publishedArticle = null;
@@ -385,7 +364,9 @@ class PublishedArticleDAO extends DAO {
             $publishedArticle->setSeq($row['seq']);
             $publishedArticle->setAccessStatus($row['access_status']);
 
-            if (!$simple) $publishedArticle->setSuppFiles($this->suppFileDao->getSuppFilesByArticle($row['article_id']));
+            if (!$simple && $this->suppFileDao) {
+                $publishedArticle->setSuppFiles($this->suppFileDao->getSuppFilesByArticle($row['article_id']));
+            }
         }
 
         $result->Close();
@@ -394,11 +375,11 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve published article by article id
-	 * @param mixed $articleId int
-	 * @param $journalId int optional
-	 * @param $useCache boolean optional
-	 * @return PublishedArticle object
-	 */
+     * @param int $articleId
+     * @param int|null $journalId optional
+     * @param bool $useCache optional
+     * @return PublishedArticle|null
+     */
     public function getPublishedArticleByArticleId($articleId, $journalId = null, $useCache = false) {
         if ($useCache) {
             $cache = $this->_getPublishedArticleCache();
@@ -409,45 +390,37 @@ class PublishedArticleDAO extends DAO {
 
         $primaryLocale = AppLocale::getPrimaryLocale();
         $locale = AppLocale::getLocale();
-        $params = array(
-            'title',
-            $primaryLocale,
-            'title',
-            $locale,
-            'abbrev',
-            $primaryLocale,
-            'abbrev',
-            $locale,
+        $params = [
+            'title', $primaryLocale, 'title', $locale,
+            'abbrev', $primaryLocale, 'abbrev', $locale,
             (int) $articleId
-        );
+        ];
         if ($journalId) $params[] = (int) $journalId;
 
-        $sql = 'SELECT  pa.*,
+        $sql = 'SELECT pa.*,
                 a.*,
                 COALESCE(stl.setting_value, stpl.setting_value) AS section_title,
                 COALESCE(sal.setting_value, sapl.setting_value) AS section_abbrev
-            FROM    published_articles pa,
+            FROM published_articles pa,
                 articles a
                 LEFT JOIN sections s ON s.section_id = a.section_id
                 LEFT JOIN section_settings stpl ON (s.section_id = stpl.section_id AND stpl.setting_name = ? AND stpl.locale = ?)
                 LEFT JOIN section_settings stl ON (s.section_id = stl.section_id AND stl.setting_name = ? AND stl.locale = ?)
                 LEFT JOIN section_settings sapl ON (s.section_id = sapl.section_id AND sapl.setting_name = ? AND sapl.locale = ?)
                 LEFT JOIN section_settings sal ON (s.section_id = sal.section_id AND sal.setting_name = ? AND sal.locale = ?)
-            WHERE    pa.article_id = a.article_id
+            WHERE pa.article_id = a.article_id
                 AND a.status <> ' . STATUS_ARCHIVED . '
                 AND a.article_id = ?' .
-            ($journalId?' AND a.journal_id = ?':'');
+            ($journalId ? ' AND a.journal_id = ?' : '');
 
         $result = $this->retrieve($sql, $params);
 
         $publishedArticle = null;
         
-        // [Wizdam Fix] Tambahkan pengecekan if ($result) sebelum memanggil RecordCount
         if ($result && $result->RecordCount() != 0) {
             $publishedArticle = $this->_returnPublishedArticleFromRow($result->GetRowAssoc(false));
         }
 
-        // [Wizdam Fix] Hanya close jika $result adalah object resource
         if ($result) {
             $result->Close();
         }
@@ -456,12 +429,12 @@ class PublishedArticleDAO extends DAO {
     }
 
     /**
-     * Retrieve Published Article by pub id
-     * @param mixed $pubIdType string One of the NLM pub-id-type values
-     * @param mixed $pubId string
-     * @param $journalId int
-     * @param $useCache boolean optional
-     * @return PublishedArticle object
+     * Retrieve published article by pub id
+     * @param string $pubIdType One of the NLM pub-id-type values
+     * @param string $pubId
+     * @param int|null $journalId
+     * @param bool $useCache optional
+     * @return PublishedArticle|null
      */
     public function getPublishedArticleByPubId($pubIdType, $pubId, $journalId = null, $useCache = false) {
         if ($useCache && $pubIdType == 'publisher-id') {
@@ -475,7 +448,6 @@ class PublishedArticleDAO extends DAO {
         if (!empty($pubId)) {
             $publishedArticles = $this->getBySetting('pub-id::'.$pubIdType, $pubId, $journalId);
             if (!empty($publishedArticles)) {
-                // assert(count($publishedArticles) == 1); // Removed for production safety
                 $publishedArticle = $publishedArticles[0];
             }
         }
@@ -484,32 +456,26 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Find published articles by querying article settings.
-     * @param mixed $settingName string
-     * @param mixed $settingValue mixed
-     * @param $journalId int optional
+     * @param string $settingName
+     * @param mixed $settingValue
+     * @param int|null $journalId optional
      * @return array The articles identified by setting.
      */
     public function getBySetting($settingName, $settingValue, $journalId = null) {
         $primaryLocale = AppLocale::getPrimaryLocale();
         $locale = AppLocale::getLocale();
 
-        $params = array(
-            'title',
-            $primaryLocale,
-            'title',
-            $locale,
-            'abbrev',
-            $primaryLocale,
-            'abbrev',
-            $locale,
+        $params = [
+            'title', $primaryLocale, 'title', $locale,
+            'abbrev', $primaryLocale, 'abbrev', $locale,
             $settingName
-        );
+        ];
 
-        $sql = 'SELECT    pa.*,
+        $sql = 'SELECT pa.*,
                 a.*,
                 COALESCE(stl.setting_value, stpl.setting_value) AS section_title,
                 COALESCE(sal.setting_value, sapl.setting_value) AS section_abbrev
-            FROM    published_articles pa
+            FROM published_articles pa
                 INNER JOIN articles a ON pa.article_id = a.article_id
                 LEFT JOIN sections s ON s.section_id = a.section_id
                 LEFT JOIN section_settings stpl ON (s.section_id = stpl.section_id AND stpl.setting_name = ? AND stpl.locale = ?)
@@ -518,11 +484,11 @@ class PublishedArticleDAO extends DAO {
                 LEFT JOIN section_settings sal ON (s.section_id = sal.section_id AND sal.setting_name = ? AND sal.locale = ?) ';
         if (is_null($settingValue)) {
             $sql .= 'LEFT JOIN article_settings ast ON a.article_id = ast.article_id AND ast.setting_name = ?
-                WHERE    (ast.setting_value IS NULL OR ast.setting_value = \'\')';
+                WHERE (ast.setting_value IS NULL OR ast.setting_value = \'\')';
         } else {
             $params[] = (string) $settingValue;
             $sql .= 'INNER JOIN article_settings ast ON a.article_id = ast.article_id
-                WHERE    ast.setting_name = ? AND ast.setting_value = ?';
+                WHERE ast.setting_name = ? AND ast.setting_value = ?';
         }
         if ($journalId) {
             $params[] = (int) $journalId;
@@ -533,7 +499,7 @@ class PublishedArticleDAO extends DAO {
         
         $result = $this->retrieve($sql, $params);
 
-        $publishedArticles = array();
+        $publishedArticles = [];
         while (!$result->EOF) {
             $publishedArticles[] = $this->_returnPublishedArticleFromRow($result->GetRowAssoc(false));
             $result->MoveNext();
@@ -544,45 +510,26 @@ class PublishedArticleDAO extends DAO {
     }
 
     /**
-     * [SHIM / JEMBATAN KONEKTIVITAS]
-     * Fungsi ini ada HANYA untuk Backward Compatibility (Kompatibilitas Mundur).
-     * * Kapan ini dipanggil?
-     * Jika ada Plugin tua atau kode lama yang mencoba memanggil 'getPublishedArticleByBestArticleId_OLD'
-     * secara langsung. Di OJS versi lama, kadang nama fungsi berubah-ubah.
-     * * Apa yang dilakukannya?
-     * Ia tidak memproses data sendiri. Ia langsung "melempar" tugasnya ke fungsi
-     * utama yang baru dan modern: 'getPublishedArticleByBestArticleId'.
-     * * Sampai kapan dipakai?
-     * Sebaiknya jangan dihapus selama Anda masih menggunakan plugin pihak ketiga
-     * yang mungkin belum di-update kodenya. Ini adalah "Airbag" penyelamat error.
-     * 
-     * Retrieve Published Article by best published article id. (Deprecated)
-     * Checks both internal ID (numeric) and public ID (publisher-id).
-     * @param mixed $journalId int
-     * @param mixed $articleId string|int
-     * @param $useCache boolean
-     * @return PublishedArticle
+     * [SHIM] Backward Compatibility
+     * @param int|null $journalId
+     * @param string|int $articleId
+     * @param bool $useCache
+     * @return PublishedArticle|null
      */
     public function getPublishedArticleByBestArticleId_OLD($journalId, $articleId, $useCache = false) {
-        // 1. Cek apakah mode Debug aktif. Jika ya, beri tahu developer bahwa fungsi ini sudah usang.
-        //    Ini membantu Anda bersih-bersih kode di masa depan.
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error('Deprecated function: getPublishedArticleByBestArticleId_OLD called. Please update your plugin code.', E_USER_NOTICE);
         }
-
-        // 2. LEMPAR TUGAS ke fungsi utama yang sudah dimodernisasi.
-        //    Dengan cara ini, logika pencarian data tetap satu pintu (di fungsi utama),
-        //    sehingga kode lebih rapi dan mudah dirawat.
         return $this->getPublishedArticleByBestArticleId($journalId, $articleId, $useCache);
     }
 
     /**
      * Retrieve Published Article by best published article id.
      * Checks both internal ID (numeric) and public ID (publisher-id).
-     * @param mixed $journalId int
-     * @param mixed $articleId string|int
-     * @param $useCache boolean
-     * @return PublishedArticle
+     * @param int|null $journalId
+     * @param string|int $articleId
+     * @param bool $useCache
+     * @return PublishedArticle|null
      */
     public function getPublishedArticleByBestArticleId($journalId, $articleId, $useCache = false) {
         if ($useCache) {
@@ -600,38 +547,37 @@ class PublishedArticleDAO extends DAO {
     }
 
     /**
-     * Retrieve "article_id"s for published articles for a journal, sorted
-     * alphabetically.
-     * @param $journalId int
-     * @param $useCache boolean Whether to use the query cache
+     * Retrieve "article_id"s for published articles for a journal, sorted alphabetically.
+     * @param int|null $journalId
+     * @param bool $useCache Whether to use the query cache
      * @return array
      */
     public function getPublishedArticleIdsAlphabetizedByJournal($journalId = null, $useCache = true) {
-        $params = array(
+        $params = [
             'cleanTitle', AppLocale::getLocale(),
             'cleanTitle'
-        );
+        ];
         if (isset($journalId)) $params[] = (int) $journalId;
 
-        $articleIds = array();
+        $articleIds = [];
         $functionName = $useCache ? 'retrieveCached' : 'retrieve';
         
         $result = $this->$functionName(
-            'SELECT    a.article_id AS pub_id,
+            'SELECT a.article_id AS pub_id,
                 COALESCE(atl.setting_value, atpl.setting_value) AS article_title
-            FROM    published_articles pa,
+            FROM published_articles pa,
                 issues i,
                 articles a
                 JOIN journals j ON (a.journal_id = j.journal_id)
                 LEFT JOIN sections s ON s.section_id = a.section_id
                 LEFT JOIN article_settings atl ON (a.article_id = atl.article_id AND atl.setting_name = ? AND atl.locale = ?)
                 LEFT JOIN article_settings atpl ON (a.article_id = atpl.article_id AND atpl.setting_name = ? AND atpl.locale = a.locale)
-            WHERE    pa.article_id = a.article_id
+            WHERE pa.article_id = a.article_id
                 AND a.status <> ' . STATUS_ARCHIVED . '
                 AND i.issue_id = pa.issue_id
                 AND i.published = 1
                 AND s.section_id IS NOT NULL' .
-                (isset($journalId)?' AND a.journal_id = ?':' AND j.enabled = 1') . ' ORDER BY article_title',
+                (isset($journalId) ? ' AND a.journal_id = ?' : ' AND j.enabled = 1') . ' ORDER BY article_title',
             $params
         );
 
@@ -646,27 +592,28 @@ class PublishedArticleDAO extends DAO {
     }
 
     /**
-     * Retrieve "article_id"s for published articles for a journal, sorted
-     * by reverse publish date.
-     * @param $journalId int
-     * @param $useCache boolean Whether to use the query cache
+     * Retrieve "article_id"s for published articles for a journal, sorted by reverse publish date.
+     * @param int|null $journalId
+     * @param bool $useCache Whether to use the query cache
      * @return array
      */
     public function getPublishedArticleIdsByJournal($journalId = null, $useCache = true) {
-        $articleIds = array();
+        $articleIds = [];
         $functionName = $useCache ? 'retrieveCached' : 'retrieve';
         
+        $params = isset($journalId) ? [(int) $journalId] : [];
+        
         $result = $this->$functionName(
-            'SELECT    a.article_id AS pub_id
-            FROM    published_articles pa
+            'SELECT a.article_id AS pub_id
+            FROM published_articles pa
                 JOIN articles a ON a.article_id = pa.article_id
                 JOIN sections s ON s.section_id = a.section_id
                 JOIN issues i ON pa.issue_id = i.issue_id
-            WHERE    i.published = 1
+            WHERE i.published = 1
                 AND a.status <> ' . STATUS_ARCHIVED . '
-                ' . (isset($journalId)?' AND a.journal_id = ?':'') . '
+                ' . (isset($journalId) ? ' AND a.journal_id = ?' : '') . '
             ORDER BY pa.date_published DESC',
-            isset($journalId) ? (int) $journalId : false
+            $params
         );
 
         while (!$result->EOF) {
@@ -680,28 +627,27 @@ class PublishedArticleDAO extends DAO {
     }
 
     /**
-     * Retrieve "article_id"s for published articles for a journal section, sorted
-     * by reverse publish date.
-     * @param mixed $sectionId int
-     * @param $useCache boolean Whether to use the query cache
+     * Retrieve "article_id"s for published articles for a journal section, sorted by reverse publish date.
+     * @param int $sectionId
+     * @param bool $useCache Whether to use the query cache
      * @return array
      */
     public function getPublishedArticleIdsBySection($sectionId, $useCache = true) {
-        $articleIds = array();
+        $articleIds = [];
         $functionName = $useCache ? 'retrieveCached' : 'retrieve';
         
         $result = $this->$functionName(
             'SELECT a.article_id
-            FROM    published_articles pa,
+            FROM published_articles pa,
                 articles a,
                 issues i
-            WHERE    pa.issue_id = i.issue_id
+            WHERE pa.issue_id = i.issue_id
                 AND i.published = 1
                 AND pa.article_id = a.article_id
                 AND a.section_id = ?
                 AND a.status <> ' . STATUS_ARCHIVED . '
             ORDER BY pa.date_published DESC',
-            (int) $sectionId
+            [(int) $sectionId]
         );
 
         while (!$result->EOF) {
@@ -716,14 +662,16 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Internal function to return a PublishedArticle object from a row.
-     * @param mixed $row array
-     * @param $callHooks boolean Whether or not to call hooks
-     * @return PublishedArticle object
+     * [WIZDAM] OPTIMASI: Tambahkan parameter $loadRelations untuk menghindari N+1 query
+     * 
+     * @param array $row
+     * @param bool $callHooks Whether or not to call hooks
+     * @param bool $loadRelations Whether to load galleys and suppFiles (default true)
+     * @return PublishedArticle
      */
-    public function _returnPublishedArticleFromRow($row, $callHooks = true) {
+    public function _returnPublishedArticleFromRow($row, $callHooks = true, $loadRelations = true) {
         $publishedArticle = new PublishedArticle();
         
-        // [WIZDAM FIX] Cek kolom id menggunakan nama alias atau nama asli
         $pubId = isset($row['published_article_id']) ? $row['published_article_id'] : (isset($row['pub_id']) ? $row['pub_id'] : 0);
         
         $publishedArticle->setPublishedArticleId((int) $pubId);
@@ -732,23 +680,29 @@ class PublishedArticleDAO extends DAO {
         $publishedArticle->setSeq($row['seq']);
         $publishedArticle->setAccessStatus((int) $row['access_status']);
 
-        $publishedArticle->setGalleys($this->galleyDao->getGalleysByArticle($row['article_id']));
+        if ($loadRelations) {
+            if ($this->galleyDao) {
+                $publishedArticle->setGalleys($this->galleyDao->getGalleysByArticle($row['article_id']));
+            }
+            if ($this->suppFileDao) {
+                $publishedArticle->setSuppFiles($this->suppFileDao->getSuppFilesByArticle($row['article_id']));
+            }
+        }
 
-        // Article attributes - Mengisi data dasar artikel (judul, abstrak, dll)
-        $this->articleDao->_articleFromRow($publishedArticle, $row);
+        // Article attributes
+        if ($this->articleDao) {
+            $this->articleDao->_articleFromRow($publishedArticle, $row);
+        }
 
-        $publishedArticle->setSuppFiles($this->suppFileDao->getSuppFilesByArticle($row['article_id']));
-
-        if ($callHooks) HookRegistry::dispatch('PublishedArticleDAO::_returnPublishedArticleFromRow', array(&$publishedArticle, &$row));
+        if ($callHooks) HookRegistry::dispatch('PublishedArticleDAO::_returnPublishedArticleFromRow', [&$publishedArticle, &$row]);
         return $publishedArticle;
     }
 
     /**
      * Insert a new Published Article.
-     * @param mixed $publishedArticle
-	 * @param PublishedArticle object
-	 * @return pubId int
-	 */
+     * @param PublishedArticle $publishedArticle
+     * @return int pubId
+     */
     public function insertPublishedArticle($publishedArticle) {
         $this->update(
             sprintf('INSERT INTO published_articles
@@ -756,62 +710,68 @@ class PublishedArticleDAO extends DAO {
                 VALUES
                 (?, ?, %s, ?, ?)',
                 $this->datetimeToDB($publishedArticle->getDatePublished())),
-            array(
+            [
                 (int) $publishedArticle->getId(),
                 (int) $publishedArticle->getIssueId(),
                 $publishedArticle->getSeq(),
                 (int) $publishedArticle->getAccessStatus()
-            )
+            ]
         );
 
         $publishedArticle->setPublishedArticleId($this->getInsertId('published_articles', 'pub_id'));
         return $publishedArticle->getPublishedArticleId();
     }
 
-	/**
-	 * Get the ID of the last inserted published article.
-	 * @return int
-	 */
+    /**
+     * Get the ID of the last inserted published article.
+     * @return int
+     */
     public function getInsertPublishedArticleId() {
         return $this->getInsertId('published_articles', 'published_article_id');
     }
 
-	/**
-	 * Removes an published Article by id
-	 * @param mixed $publishedArticleId int
-	 */
+    /**
+     * Removes an published Article by id
+     * @param int $publishedArticleId
+     */
     public function deletePublishedArticleById($publishedArticleId) {
         $this->update(
-            'DELETE FROM published_articles WHERE published_article_id = ?', (int) $publishedArticleId
+            'DELETE FROM published_articles WHERE published_article_id = ?', 
+            [(int) $publishedArticleId]
         );
         $this->flushCache();
     }
 
-	/**
-	 * Delete published article by article ID
-	 * NOTE: This does not delete the related Article or any dependent entities
-	 * @param mixed $articleId int
-	 */
+    /**
+     * Delete published article by article ID
+     * NOTE: This does not delete the related Article or any dependent entities
+     * @param int $articleId
+     * @return bool
+     */
     public function deletePublishedArticleByArticleId($articleId) {
-        return $this->update(
-            'DELETE FROM published_articles WHERE article_id = ?', (int) $articleId
+        $result = $this->update(
+            'DELETE FROM published_articles WHERE article_id = ?', 
+            [(int) $articleId]
         );
         $this->flushCache();
+        return $result;
     }
 
-	/**
-	 * Delete published articles by section ID
-	 * @param mixed $sectionId int
-	 */
+    /**
+     * Delete published articles by section ID
+     * @param int $sectionId
+     */
     public function deletePublishedArticlesBySectionId($sectionId) {
         $result = $this->retrieve(
-            'SELECT pa.article_id AS article_id FROM published_articles pa, articles a WHERE pa.article_id = a.article_id AND a.section_id = ?', (int) $sectionId
+            'SELECT pa.article_id AS article_id FROM published_articles pa, articles a WHERE pa.article_id = a.article_id AND a.section_id = ?', 
+            [(int) $sectionId]
         );
 
         while (!$result->EOF) {
             $row = $result->GetRowAssoc(false);
             $this->update(
-                'DELETE FROM published_articles WHERE article_id = ?', $row['article_id']
+                'DELETE FROM published_articles WHERE article_id = ?', 
+                [(int) $row['article_id']]
             );
             $result->MoveNext();
         }
@@ -819,30 +779,33 @@ class PublishedArticleDAO extends DAO {
         $this->flushCache();
     }
 
-	/**
-	 * Delete published articles by issue ID
-	 * @param mixed $issueId int
-	 */
+    /**
+     * Delete published articles by issue ID
+     * @param int $issueId
+     */
     public function deletePublishedArticlesByIssueId($issueId) {
         $this->update(
-            'DELETE FROM published_articles WHERE issue_id = ?', (int) $issueId
+            'DELETE FROM published_articles WHERE issue_id = ?', 
+            [(int) $issueId]
         );
         $this->flushCache();
     }
 
     /**
      * Update a Published Article.
-     * @param mixed $publishedArticle
-	 * @param PublishedArticle object
-	 */
+     * @param PublishedArticle $publishedArticle
+     * @return bool
+     */
     public function updatePublishedArticle($publishedArticle) {
-        // [WIZDAM DEBUG] Pastikan ID tidak kosong sebelum update
         $pubId = (int) $publishedArticle->getPublishedArticleId();
         if ($pubId <= 0) {
-            // error_log("Wizdam Fatal: Attempted to update Published Article with zero ID.");
             return false;
         }
     
+        // [WIZDAM] FIX: Gunakan datetimeToDB() untuk konsistensi dengan insert
+        $datePublished = $publishedArticle->getDatePublished();
+        $datePublishedDB = $datePublished ? $this->datetimeToDB($datePublished) : null;
+        
         $this->update(
             'UPDATE published_articles
                 SET article_id = ?,
@@ -851,38 +814,42 @@ class PublishedArticleDAO extends DAO {
                     seq = ?,
                     access_status = ?
                 WHERE published_article_id = ?',
-            array(
+            [
                 (int) $publishedArticle->getId(),
-                (int) $publishedArticle->getIssueId(), // Perubahan Volume/Edisi ada di sini
-                $publishedArticle->getDatePublished(),
+                (int) $publishedArticle->getIssueId(),
+                $datePublishedDB,
                 $publishedArticle->getSeq(),
                 (int) $publishedArticle->getAccessStatus(),
                 $pubId
-            )
+            ]
         );
         $this->flushCache();
+        return true;
     }
 
-	/**
-	 * [SECURITY HARDENED] updates a published article field
-	 * updates a published article field
-	 * @param mixed $publishedArticleId int
-	 * @param mixed $field string
-	 * @param mixed $value mixed
-	 */
+    /**
+     * [SECURITY HARDENED] updates a published article field
+     * @param int $publishedArticleId
+     * @param string $field
+     * @param mixed $value
+     * @return bool
+     */
     public function updatePublishedArticleField($publishedArticleId, $field, $value) {
-        // Whitelist kolom yang valid di tabel published_articles
-        $allowedFields = array('seq', 'access_status', 'date_published', 'section_id');
+        $allowedFields = ['seq', 'access_status', 'date_published', 'section_id'];
         
-        if (!in_array($field, $allowedFields)) {
-            // Jika field tidak dikenali, hentikan proses (atau log error)
-            // Ini mencegah SQL Injection pada nama kolom.
+        if (!in_array($field, $allowedFields, true)) {
             return false; 
+        }
+
+        if ($field === 'seq' || $field === 'access_status' || $field === 'section_id') {
+            $value = (int) $value;
+        } elseif ($field === 'date_published') {
+            $value = $this->datetimeToDB($value);
         }
 
         $this->update(
             "UPDATE published_articles SET $field = ? WHERE published_article_id = ?", 
-            array($value, (int) $publishedArticleId)
+            [$value, (int) $publishedArticleId]
         );
 
         $this->flushCache();
@@ -891,35 +858,42 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Check if a published article exists.
-     * @param mixed $publishedArticleId int
-     * @return boolean
+     * @param int $publishedArticleId
+     * @return bool
      */
     public function publishedArticleExists($publishedArticleId) {
         $result = $this->retrieve(
             'SELECT COUNT(*) FROM published_articles WHERE pub_id = ?',
-            (int) $publishedArticleId
+            [(int) $publishedArticleId]
         );
-        $returner = isset($result->fields[0]) && $result->fields[0] == 1 ? true : false;
+        
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = isset($fields[0]) && (int) $fields[0] > 0;
+        
         $result->Close();
         return $returner;
     }
 
-	/**
-	 * Sequentially renumber published articles in their sequence order.
-     * @param mixed $sectionId int
-     * @param mixed $issueId int
-	 */
+    /**
+     * Sequentially renumber published articles in their sequence order.
+     * @param int $sectionId
+     * @param int $issueId
+     */
     public function resequencePublishedArticles($sectionId, $issueId) {
         $result = $this->retrieve(
             'SELECT pa.published_article_id FROM published_articles pa, articles a WHERE a.section_id = ? AND a.article_id = pa.article_id AND pa.issue_id = ? ORDER BY pa.seq',
-            array((int) $sectionId, (int) $issueId)
+            [(int) $sectionId, (int) $issueId]
         );
 
-        for ($i=1; !$result->EOF; $i++) {
-            list($publishedArticleId) = $result->fields;
+        for ($i = 1; !$result->EOF; $i++) {
+            /** @var array|bool $fields */
+            $fields = $result->fields;
+            $publishedArticleId = (int) ($fields[0] ?? 0);
+            
             $this->update(
                 'UPDATE published_articles SET seq = ? WHERE published_article_id = ?',
-                array($i, $publishedArticleId)
+                [$i, $publishedArticleId]
             );
             $result->MoveNext();
         }
@@ -929,15 +903,19 @@ class PublishedArticleDAO extends DAO {
 
     /**
      * Retrieve a count of published authors in a journal.
-     * @param mixed $journalId int
+     * @param int $journalId
      * @return int
      */
     public function getPublishedAuthorCountByJournalId($journalId) {
         $result = $this->retrieve(
             'SELECT count(*) FROM authors aa, articles a, published_articles pa WHERE aa.submission_id = a.article_id AND pa.article_id = a.article_id AND a.journal_id = ? AND pa.date_published IS NOT NULL',
-            (int) $journalId
+            [(int) $journalId]
         );
-        $count = $result->fields[0];
+        
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $count = isset($fields[0]) ? (int) $fields[0] : 0;
+        
         $result->Close();
         return $count;
     }
@@ -952,28 +930,27 @@ class PublishedArticleDAO extends DAO {
         $cache->flush();
     }
 
-
     // --- Custom Functions ---
 
     /**
      * Increment the view count for a published article.
-     * @param mixed $articleId int
-     * @return boolean
+     * @param int $articleId
+     * @return bool
      */
     public function incrementViewsByArticleId($articleId) {
         return $this->update(
             'UPDATE published_articles SET views = views + 1 WHERE article_id = ?',
-            (int) $articleId
+            [(int) $articleId]
         );
     }
 
     /**
      * Get the range of years in which articles have been published.
-     * @param $journalId int
+     * @param int|null $journalId
      * @return array
      */
     public function getArticleYearRange($journalId = null) {
-        $params = array();
+        $params = [];
         if ($journalId) $params[] = (int) $journalId;
 
         $result = $this->retrieve(
@@ -985,10 +962,14 @@ class PublishedArticleDAO extends DAO {
             $params
         );
 
-        $returner = array();
+        $returner = [];
         if ($result) {
             if (!$result->EOF) {
-                $returner = array($result->fields[0], $result->fields[1]);
+                /** @var array|bool $fields */
+                $fields = $result->fields;
+                if (is_array($fields) && isset($fields[0]) && isset($fields[1])) {
+                    $returner = [(int) $fields[0], (int) $fields[1]];
+                }
             }
             $result->Close();
         }
@@ -999,23 +980,19 @@ class PublishedArticleDAO extends DAO {
     /**
      * [LUMERA FORK] Mendapatkan artikel navigasi (sebelumnya/berikutnya)
      * SECARA GLOBAL, berdasarkan logika multi-langkah.
-     * @param mixed $currentArticleId int
-     * @param mixed $journalId int
-     * @return array('prev' => PublishedArticle, 'next' => PublishedArticle)
+     * @param int $currentArticleId
+     * @param int $journalId
+     * @return array ['prev' => PublishedArticle|null, 'next' => PublishedArticle|null]
      */
     public function getGlobalArticleNavigation($currentArticleId, $journalId) {
         $prevArticle = null;
         $nextArticle = null;
         
-        // --- Langkah 1: Dapatkan issue ID dari artikel saat ini ---
         $currentIssueId = $this->_getIssueIdFromArticle($currentArticleId);
-        if (!$currentIssueId) return array('prev' => null, 'next' => null);
+        if (!$currentIssueId) return ['prev' => null, 'next' => null];
 
-        // --- Langkah 2: Dapatkan semua artikel dalam issue yang sama ---
-        // (Kita urutkan berdasarkan 'seq' (urutan), ini lebih aman daripada article_id)
         $articlesInIssue = $this->_getArticlesInIssue($currentIssueId, $journalId);
 
-        // --- Langkah 3: Temukan posisi artikel saat ini ---
         $currentIndex = -1;
         foreach ($articlesInIssue as $index => $articleId) {
             if ($articleId == $currentArticleId) {
@@ -1024,93 +1001,84 @@ class PublishedArticleDAO extends DAO {
             }
         }
 
-        if ($currentIndex === -1) return array('prev' => null, 'next' => null); // Artikel tidak ditemukan
+        if ($currentIndex === -1) return ['prev' => null, 'next' => null];
 
         $prevArticleId = null;
         $nextArticleId = null;
 
-        // --- Langkah 4: Tentukan artikel SEBELUMNYA ---
         if ($currentIndex > 0) {
-            // Ada artikel sebelumnya di edisi yang sama
             $prevArticleId = $articlesInIssue[$currentIndex - 1];
         } else {
-            // Artikel pertama di edisi ini, cari edisi sebelumnya
             $prevArticleId = $this->_getPreviousIssueLastArticle($currentIssueId, $journalId);
         }
 
-        // --- Langkah 5: Tentukan artikel BERIKUTNYA ---
         if ($currentIndex < (count($articlesInIssue) - 1)) {
-            // Ada artikel berikutnya di edisi yang sama
             $nextArticleId = $articlesInIssue[$currentIndex + 1];
         } else {
-            // Artikel terakhir di edisi ini, cari edisi berikutnya
             $nextArticleId = $this->_getNextIssueFirstArticle($currentIssueId, $journalId);
         }
 
-        // --- Langkah 6: Ambil objek artikel penuh ---
         if ($prevArticleId) $prevArticle = $this->getPublishedArticleByArticleId($prevArticleId);
         if ($nextArticleId) $nextArticle = $this->getPublishedArticleByArticleId($nextArticleId);
 
-        return array('prev' => $prevArticle, 'next' => $nextArticle);
+        return ['prev' => $prevArticle, 'next' => $nextArticle];
     }
 
     //
     // Helper
     //
 
-    /** --- Helper: Mendapat ID Edisi dari ID Artikel --- */
-
     /**
      * Mendapatkan ID Edisi dari ID Artikel
-     * @param mixed $articleId int
+     * @param int $articleId
      * @return int|null ID Edisi atau null jika tidak ditemukan
      */
     public function _getIssueIdFromArticle($articleId) {
         $result = $this->retrieve(
             'SELECT pa.issue_id FROM published_articles pa WHERE pa.article_id = ?',
-            array((int)$articleId)
+            [(int) $articleId]
         );
         $issueId = null;
         if ($result && !$result->EOF) {
-            $issueId = (int)$result->fields['issue_id'];
+            /** @var array|bool $fields */
+            $fields = $result->fields;
+            if (is_array($fields) && isset($fields['issue_id'])) {
+                $issueId = (int) $fields['issue_id'];
+            }
         }
         $result->Close();
         return $issueId;
     }
 
-    //** --- Helper: Mendapat semua artikel di 1 edisi --- */
-
     /**
      * Mendapatkan semua artikel di 1 edisi
-     * @param mixed $issueId int
-     * @param mixed $journalId int
+     * @param int $issueId
+     * @param int $journalId
      * @return array Daftar ID artikel dalam edisi tersebut, diurutkan berdasarkan 'seq'
      */
     public function _getArticlesInIssue($issueId, $journalId) {
-        $articles = array();
+        $articles = [];
         $result = $this->retrieve(
             'SELECT pa.article_id 
              FROM published_articles pa 
              JOIN issues i ON (pa.issue_id = i.issue_id) 
              WHERE i.issue_id = ? AND i.journal_id = ?
-             ORDER BY pa.seq ASC', // Menggunakan 'seq' lebih aman
-            array((int)$issueId, (int)$journalId)
+             ORDER BY pa.seq ASC',
+            [(int) $issueId, (int) $journalId]
         );
         while ($result && !$result->EOF) {
             $row = $result->GetRowAssoc(false);
-            $articles[] = (int)$row['article_id'];
+            $articles[] = (int) $row['article_id'];
             $result->MoveNext();
         }
         $result->Close();
         return $articles;
     }
 
-    //** --- Helper: Mendapat artikel terakhir dari edisi SEBELUMNYA --- */
-
     /**
      * Mendapatkan artikel terakhir dari edisi SEBELUMNYA
-     * @param mixed $currentIssueId int
-     * @param mixed $journalId int
+     * @param int $currentIssueId
+     * @param int $journalId
      * @return int|null ID artikel atau null jika tidak ditemukan
      */
     public function _getPreviousIssueLastArticle($currentIssueId, $journalId) {
@@ -1121,22 +1089,24 @@ class PublishedArticleDAO extends DAO {
              WHERE i.journal_id = ? AND i.issue_id < ?
              ORDER BY i.issue_id DESC, pa.seq DESC 
              LIMIT 1',
-            array((int)$journalId, (int)$currentIssueId)
+            [(int) $journalId, (int) $currentIssueId]
         );
         $articleId = null;
         if ($result && !$result->EOF) {
-            $articleId = (int)$result->fields['article_id'];
+            /** @var array|bool $fields */
+            $fields = $result->fields;
+            if (is_array($fields) && isset($fields['article_id'])) {
+                $articleId = (int) $fields['article_id'];
+            }
         }
         $result->Close();
         return $articleId;
     }
 
-    //** --- Helper: Mendapat artikel pertama dari edisi BERIKUTNYA --- */
-
     /**
      * Mendapatkan artikel pertama dari edisi BERIKUTNYA
-     * @param mixed $currentIssueId int
-     * @param mixed $journalId int
+     * @param int $currentIssueId
+     * @param int $journalId
      * @return int|null ID artikel atau null jika tidak ditemukan
      */
     public function _getNextIssueFirstArticle($currentIssueId, $journalId) {
@@ -1147,11 +1117,15 @@ class PublishedArticleDAO extends DAO {
              WHERE i.journal_id = ? AND i.issue_id > ?
              ORDER BY i.issue_id ASC, pa.seq ASC 
              LIMIT 1',
-            array((int)$journalId, (int)$currentIssueId)
+            [(int) $journalId, (int) $currentIssueId]
         );
         $articleId = null;
         if ($result && !$result->EOF) {
-            $articleId = (int)$result->fields['article_id'];
+            /** @var array|bool $fields */
+            $fields = $result->fields;
+            if (is_array($fields) && isset($fields['article_id'])) {
+                $articleId = (int) $fields['article_id'];
+            }
         }
         $result->Close();
         return $articleId;
