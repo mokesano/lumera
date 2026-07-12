@@ -91,7 +91,7 @@
 		<tr valign="top">
 			<td colspan="2" class="label">
 				<input type="checkbox" name="showOnHomepage" id="showOnHomepage" value="1"{if $showOnHomepage} checked="checked"{/if} />
-				<label for="enabled">{translate key="admin.journals.showOnHomepage"}</label>
+				<label for="showOnHomepage">{translate key="admin.journals.showOnHomepage"}</label>
 			</td>
 		</tr>
 	</table>

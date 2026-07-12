@@ -255,7 +255,7 @@ class JournalDAO extends DAO {
      * @param string|null $search optional
      * @return DAOResultFactory containing matching journals
 	 */
-    public function getJournals($enabledOnly = false, $rangeInfo = null, $sortBy = JOURNAL_FIELD_SEQUENCE, $searchField = null, $searchMatch = null, $search = null) {
+    public function getJournals($enabledOnly = false, $rangeInfo = null, $sortBy = JOURNAL_FIELD_SEQUENCE, $searchField = null, $searchMatch = null, $search = null, $showOnHomepageOnly = false) {
         $joinSql = $whereSql = $orderBySql = '';
         $params = [];
         $needTitleJoin = false;
@@ -305,6 +305,12 @@ class JournalDAO extends DAO {
                 ],
                 $params
             );
+        }
+
+        // [WIZDAM] Filter showOnHomepage
+        if ($showOnHomepageOnly) {
+            $joinSql .= " LEFT JOIN journal_settings jshome ON (jshome.journal_id = j.journal_id AND jshome.setting_name = 'showOnHomepage')";
+            $whereSql .= ($whereSql ? ' AND ' : '') . "(jshome.setting_value IS NULL OR jshome.setting_value = '1') ";
         }
 
         // Handle filtering conditions

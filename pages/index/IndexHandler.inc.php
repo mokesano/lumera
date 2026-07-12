@@ -269,41 +269,16 @@ class IndexHandler extends Handler {
 
         // [WIZDAM] Null-safety guard untuk pemanggilan DAO
         if ($journalDao) {
-            // 1. Ambil SEMUA jurnal dengan meneruskan 'null' alih-alih '$rangeInfo' ke database
-            $allJournals = $journalDao->getJournals(
+            $journals = $journalDao->getJournals(
                 true,
-                null, // Bypassing DB-level pagination untuk memastikan perhitungan PHP akurat
+                $rangeInfo,
                 $searchInitial ? JOURNAL_FIELD_TITLE : JOURNAL_FIELD_SEQUENCE,
                 $searchInitial ? JOURNAL_FIELD_TITLE : null,
                 $searchInitial ? 'startsWith' : null,
-                $searchInitial
+                $searchInitial,
+                true // [WIZDAM] Aktifkan filter khusus Homepage
             );
-            
-            // 2. Filter jurnal sesuai pengaturan showOnHomepage
-            $visibleJournals = [];
-            while ($journal = $allJournals->next()) {
-                $show = $journal->getSetting('showOnHomepage');
-                // Tampilkan jika belum diset (null) atau nilainya 1 (tercentang)
-                if ($show === null || $show) {
-                    $visibleJournals[] = $journal;
-                }
-            }
-            
-            // 3. Aplikasikan Pagination pada level PHP menggunakan ArrayItemIterator bawaan OJS
-            import('lib.pkp.classes.core.ArrayItemIterator');
-            
-            if ($usePaging && $rangeInfo) {
-                // Jika pagination aktif, hitung sesuai rentang yang diminta user
-                $page = $rangeInfo->getPage();
-                $itemsPerPage = $rangeInfo->getCount();
-                $paginatedJournals = new ArrayItemIterator($visibleJournals, $page, $itemsPerPage);
-            } else {
-                // Jika pagination mati, tampilkan semua dalam 1 halaman
-                $totalItems = count($visibleJournals);
-                $paginatedJournals = new ArrayItemIterator($visibleJournals, 1, $totalItems > 0 ? $totalItems : 1);
-            }
-            
-            $templateMgr->assign('journals', $paginatedJournals);
+            $templateMgr->assign('journals', $journals);
         } else {
             // Fallback jika DAO gagal dimuat
             $templateMgr->assign('journals', []); 
