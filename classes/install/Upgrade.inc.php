@@ -481,14 +481,18 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function dropAllIndexes(): bool {
-        $siteDao = DAORegistry::getDAO('SiteDAO'); /** @var SiteDAO $siteDao */
-        $dict = NewDataDictionary($siteDao->getDataSource());
-        $dropIndexSql = array();
+        /** @var SiteDAO $siteDao */
+        $siteDao = DAORegistry::getDAO('SiteDAO');
+        
+        // [WIZDAM] FIX: Simpan ke variabel dulu sebelum dilewatkan sebagai reference
+        $dbConn = $siteDao->getDataSource();
+        
+        /** @var \ADOdb_DataDict $dict */
+        $dict = NewDataDictionary($dbConn);
 
-        // This is a list of tables that were used in 2.1.1 (i.e.
-        // before the way indexes were used was changed). All indexes
-        // from these tables will be dropped.
-        $tables = array(
+        $dropIndexSql = [];
+
+        $tables = [
             'versions', 'site', 'site_settings', 'scheduled_tasks',
             'sessions', 'journal_settings',
             'plugin_settings', 'roles',
@@ -502,9 +506,8 @@ class Upgrade extends Installer {
             'oai_resumption_tokens', 'subscription_type_settings',
             'announcement_type_settings', 'announcement_settings',
             'group_settings', 'group_memberships'
-        );
+        ];
 
-        // Assemble a list of indexes to be dropped
         foreach ($tables as $tableName) {
             $indexes = $dict->MetaIndexes($tableName);
             if (is_array($indexes)) {
@@ -514,13 +517,11 @@ class Upgrade extends Installer {
             }
         }
 
-        // Execute the DROP INDEX statements.
+        // [WIZDAM] Eksekusi melalui SiteDAO yang memiliki method update()
         foreach ($dropIndexSql as $sql) {
             $siteDao->update($sql);
         }
 
-        // Second run: Only return primary indexes. This is necessary
-        // so that primary indexes can be dropped by MySQL.
         foreach ($tables as $tableName) {
             $indexes = $dict->MetaIndexes($tableName, true);
             if (!empty($indexes)) {
