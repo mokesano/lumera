@@ -17,7 +17,6 @@ declare(strict_types=1);
  * @see ArticleDAO
  *
  * @brief Article class.
- * [WIZDAM EDITION] PHP 7.4+ Compatible & Extended Features
  */
 
 // Submission status constants
@@ -87,6 +86,7 @@ class Article extends Submission {
     }
 
     // --- WIZDAM EXTENSION START (Article Type & Scope) ---
+
     /**
      * Get the article genre/type (e.g. Research, Review)
      * @return string
@@ -97,7 +97,7 @@ class Article extends Submission {
 
     /**
      * Set the article genre/type (e.g. Research, Review)
-     * @param $type string
+     * @param string $type string
      */
     public function setArticleType($type) {
         return $this->setData('articleType', $type);
@@ -113,13 +113,14 @@ class Article extends Submission {
 
     /**
      * Set the publication scope (e.g. Full Length, Abstract Only)
-     * @param $scope string
+     * @param string $scope string
      */
     public function setPubScope($scope) {
         return $this->setData('pubScope', $scope);
     }
     
     // [WIZDAM VALIDATION] - Milestones Genesis Editorial
+
     /**
      * Get the revision date of the article, if available.
      * @return string|null
@@ -193,7 +194,7 @@ class Article extends Submission {
     /**
      * Set ID of article. 
      * DEPRECATED in favor of setId($id)
-	 * @param $articleId int
+	 * @param int $articleId int
 	 */
     public function setArticleId($articleId) {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
@@ -208,6 +209,7 @@ class Article extends Submission {
     public function getBestArticleId($journal = null) {
         // Retrieve the journal, if necessary.
         if (!isset($journal)) {
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journal = $journalDao->getById($this->getJournalId());
         }
@@ -238,7 +240,7 @@ class Article extends Submission {
 
     /**
      * Get the copyright holder for this article.
-	 * @param $locale string Locale
+	 * @param string $locale string Locale
 	 * @return string
 	 */
     public function getDefaultCopyrightHolder($locale) {
@@ -255,8 +257,8 @@ class Article extends Submission {
 
     /**
      * Get the best guess license field for this article.
-	 * @param $locale string Locale
-	 * @param $field int PERMISSIONS_FIELD_... Which to return
+	 * @param string $locale string Locale
+	 * @param int $field int PERMISSIONS_FIELD_... Which to return
 	 */
     public function _getDefaultLicenseFieldValue($locale, $field) {
         // If already set, use the stored permissions info
@@ -278,6 +280,7 @@ class Article extends Submission {
         }
 
         // Otherwise, get the permissions info from journal settings.
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($this->getJournalId());
         
@@ -308,6 +311,7 @@ class Article extends Submission {
                 // Default copyright year to current year
                 $copyrightYear = date('Y');
                 // Override based on journal settings
+                /** @var PublishedArticleDAO $publishedArticleDao */
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                 $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($this->getId());
                 if ($publishedArticle) {
@@ -319,6 +323,7 @@ class Article extends Submission {
                         case 'issue':
                             if ($publishedArticle->getIssueId()) {
                                 // override to the issue's year if published as issue-based
+                                /** @var IssueDAO $issueDao */
                                 $issueDao = DAORegistry::getDAO('IssueDAO');
                                 $issue = $issueDao->getIssueByArticleId($this->getId());
                                 if ($issue && $issue->getDatePublished()) {
@@ -354,7 +359,7 @@ class Article extends Submission {
 
     /**
      * Get a public ID for this article.
-	 * @param $pubIdType string One of the NLM pub-id-type values or
+	 * @param string $pubIdType string One of the NLM pub-id-type values or
 	 * 'other::something' if not part of the official NLM list
 	 * (see <http://dtd.nlm.nih.gov/publishing/tag-library/n-4zh0.html>).
 	 * @var $preview boolean If true, generate a non-persisted preview only.
@@ -390,7 +395,7 @@ class Article extends Submission {
 
     /**
      * Set ID of journal.
-     * @param $journalId int
+     * @param int $journalId int
      */
     public function setJournalId($journalId) {
         return $this->setData('journalId', $journalId);
@@ -406,7 +411,7 @@ class Article extends Submission {
 
     /**
      * Set ID of article's section.
-     * @param $sectionId int
+     * @param int $sectionId int
      */
     public function setSectionId($sectionId) {
         return $this->setData('sectionId', $sectionId);
@@ -414,7 +419,7 @@ class Article extends Submission {
 
     /**
      * Get stored public ID of the submission.
-	 * @param $pubIdType string One of the NLM pub-id-type values or
+	 * @param string $pubIdType string One of the NLM pub-id-type values or
 	 * 'other::something' if not part of the official NLM list
 	 * (see <http://dtd.nlm.nih.gov/publishing/tag-library/n-4zh0.html>).
 	 * @return int
@@ -425,10 +430,10 @@ class Article extends Submission {
 
     /**
      * Set the stored public ID of the submission.
-	 * @param $pubIdType string One of the NLM pub-id-type values or
+	 * @param string $pubIdType string One of the NLM pub-id-type values or
 	 * 'other::something' if not part of the official NLM list
 	 * (see <http://dtd.nlm.nih.gov/publishing/tag-library/n-4zh0.html>).
-	 * @param $pubId string
+	 * @param int $pubId string
 	 */
     public function setStoredPubId($pubIdType, $pubId) {
         return $this->setData('pub-id::'.$pubIdType, $pubId);
@@ -436,7 +441,7 @@ class Article extends Submission {
 
     /**
      * Get stored copyright holder for the submission.
-	 * @param $locale string locale
+	 * @param string $locale string locale
 	 * @return string
 	 */
     public function getCopyrightHolder($locale) {
@@ -445,8 +450,8 @@ class Article extends Submission {
 
     /**
      * Set the stored copyright holder for the submission.
-	 * @param $copyrightHolder string Copyright holder
-	 * @param $locale string locale
+	 * @param string $copyrightHolder string Copyright holder
+	 * @param string $locale string locale
 	 */
     public function setCopyrightHolder($copyrightHolder, $locale) {
         return $this->setData('copyrightHolder', $copyrightHolder, $locale);
@@ -462,7 +467,7 @@ class Article extends Submission {
 
     /**
      * Set the stored copyright year for the submission.
-	 * @param $copyrightYear string Copyright holder
+	 * @param string $copyrightYear string Copyright holder
 	 */
     public function setCopyrightYear($copyrightYear) {
         return $this->setData('copyrightYear', $copyrightYear);
@@ -478,8 +483,9 @@ class Article extends Submission {
 
     /**
      * Set the stored license URL for the submission content.
-	 * @param $license string License of submission content
-	 */
+     * @param string $licenseUrl License URL of submission content
+     * @return void
+     */
     public function setLicenseURL($licenseUrl) {
         return $this->setData('licenseURL', $licenseUrl);
     }
@@ -494,7 +500,7 @@ class Article extends Submission {
 
     /**
      * Set title of article's section.
-	 * @param $sectionTitle string
+	 * @param string $sectionTitle string
 	 */
     public function setSectionTitle($sectionTitle) {
         return $this->setData('sectionTitle', $sectionTitle);
@@ -510,7 +516,7 @@ class Article extends Submission {
 
     /**
      * Set section abbreviation.
-	 * @param $sectionAbbrev string
+	 * @param string $sectionAbbrev string
 	 */
     public function setSectionAbbrev($sectionAbbrev) {
         return $this->setData('sectionAbbrev', $sectionAbbrev);
@@ -596,14 +602,16 @@ class Article extends Submission {
         return $this->getLocalizedSponsor();
     }
 
-	/**
-	 * Get the localized article cover filename. 
-	 * DEPRECATED in favour of getLocalizedFileName.
-	 * @return string
-	 */
+    /**
+     * Get the localized article cover filename.
+     * DEPRECATED in favour of getLocalizedFileName.
+     * @return string|null
+     */
     public function getArticleFileName() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->getLocalizedFileName('fileName');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function: getArticleFileName(). Use getLocalizedFileName() instead.', E_USER_DEPRECATED);
+        }
+        return $this->getLocalizedFileName();
     }
 
 	/**
@@ -666,7 +674,7 @@ class Article extends Submission {
 
     /**
      * Set comments to editor.
-	 * @param $commentsToEditor string
+	 * @param string $commentsToEditor string
      */
     public function setCommentsToEditor($commentsToEditor) {
         return $this->setData('commentsToEditor', $commentsToEditor);
@@ -682,7 +690,7 @@ class Article extends Submission {
 
 	/**
 	 * Set current review round.
-	 * @param $currentRound int
+	 * @param int $currentRound int
 	 */
     public function setCurrentRound($currentRound) {
         return $this->setData('currentRound', $currentRound);
@@ -698,7 +706,7 @@ class Article extends Submission {
 
 	/**
 	 * Set editor file id.
-	 * @param $editorFileId int
+	 * @param int $editorFileId int
 	 */
     public function setEditorFileId($editorFileId) {
         return $this->setData('editorFileId', $editorFileId);
@@ -714,7 +722,7 @@ class Article extends Submission {
 
 	/**
 	 * set fastTracked
-	 * @param $fastTracked boolean
+	 * @param bool $fastTracked boolean
 	 */
     public function setFastTracked($fastTracked) {
         return $this->setData('fastTracked',$fastTracked);
@@ -730,7 +738,7 @@ class Article extends Submission {
 
 	/**
 	 * Set option selection indicating if author should be hidden in issue ToC.
-	 * @param $hideAuthor int AUTHOR_TOC_...
+	 * @param bool $hideAuthor int AUTHOR_TOC_...
 	 */
     public function setHideAuthor($hideAuthor) {
         return $this->setData('hideAuthor', $hideAuthor);
@@ -762,6 +770,7 @@ class Article extends Submission {
             case COMMENTS_ENABLE:
                 return true;
             case COMMENTS_SECTION_DEFAULT:
+                /** @var SectionDAO $sectionDao */
                 $sectionDao = DAORegistry::getDAO('SectionDAO');
                 $section = $sectionDao->getSection($this->getSectionId(), $this->getJournalId(), true);
                 if (!$section || $section->getDisableComments()) {
@@ -797,6 +806,7 @@ class Article extends Submission {
      */
     public function getAssociatedUserIds($authors = true, $reviewers = true, $editors = true, $proofreader = true, $copyeditor = true, $layoutEditor = true) {
         $articleId = $this->getId();
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
 
         $userIds = array();
@@ -807,6 +817,7 @@ class Article extends Submission {
         }
 
         if($editors) {
+            /** @var EditAssignmentDAO $editAssignmentDao */
             $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
             $editAssignments = $editAssignmentDao->getEditorAssignmentsByArticleId($articleId);
             while ($editAssignment = $editAssignments->next()) {
@@ -835,6 +846,7 @@ class Article extends Submission {
         }
 
         if($reviewers) {
+            /** @var ReviewAssignmentDAO $reviewAssignmentDao */
             $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
             $reviewAssignments = $reviewAssignmentDao->getBySubmissionId($articleId);
             foreach ($reviewAssignments as $reviewAssignment) {
@@ -849,22 +861,25 @@ class Article extends Submission {
 
     /**
      * Get the signoff for this article
-	 * @param $signoffType string
+	 * @param string $signoffType string
 	 * @return Signoff
      */
     public function getSignoff($signoffType) {
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
         return $signoffDao->build($signoffType, ASSOC_TYPE_ARTICLE, $this->getId());
     }
 
     /**
      * Get the file for this article at a given signoff stage.
-	 * @param $signoffType string
+	 * @param string $signoffType string
 	 * @param $idOnly boolean Return only file ID
 	 * @return ArticleFile
      */
     public function getFileBySignoffType($signoffType, $idOnly = false) {
+        /** @var ArticleFileDAO $articleFileDao */
         $articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
 
         $signoff = $signoffDao->build($signoffType, ASSOC_TYPE_ARTICLE, $this->getId());
@@ -882,11 +897,13 @@ class Article extends Submission {
 
     /**
      * Get the user associated with a given signoff and this article.
-	 * @param $signoffType string
+	 * @param string $signoffType string
 	 * @return User
      */
     public function getUserBySignoffType($signoffType) {
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $signoff = $signoffDao->build($signoffType, ASSOC_TYPE_ARTICLE, $this->getId());
@@ -900,12 +917,12 @@ class Article extends Submission {
 
     /**
      * Get the user id associated with a given signoff and this article
-	 * @param $signoffType string
+	 * @param string $signoffType string
 	 * @return int
      */
     public function getUserIdBySignoffType($signoffType) {
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
-
         $signoff = $signoffDao->build($signoffType, ASSOC_TYPE_ARTICLE, $this->getId());
         if (!$signoff) return false;
 
@@ -925,7 +942,7 @@ class Article extends Submission {
 
     /**
      * Set the electronic locator (e-locator) of the article.
-     * @param $eLocator string
+     * @param string $eLocator string
      */
     public function setELocator($eLocator) {
         return $this->setData('eLocator', $eLocator);
@@ -941,7 +958,7 @@ class Article extends Submission {
 
     /**
      * Set the Publisher Item Identifier (PII).
-     * @param $pii string
+     * @param string $pii string
      */
     public function setPii($pii) {
         return $this->setData('pii', $pii);
@@ -998,7 +1015,7 @@ class Article extends Submission {
 
     /**
      * Initialize the copyright and license metadata for an article.
-     * @param $article Article
+     * @param Article string
      */
     public function initializePermissions() {
         $this->setLicenseURL($this->getDefaultLicenseURL());
