@@ -13,11 +13,6 @@ declare(strict_types=1);
  * @see SuppFileDAO
  *
  * @brief Supplementary file class.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor hierarchy fix)
- * - Null Safety
- * - Strict Typing
  */
 
 import('classes.article.ArticleFile');
@@ -28,7 +23,6 @@ class SuppFile extends ArticleFile {
      * Constructor.
      */
     public function __construct() {
-        // Fix: Call immediate parent (ArticleFile), not DataObject directly
         parent::__construct();
     }
 
@@ -47,7 +41,8 @@ class SuppFile extends ArticleFile {
     //
 
     /**
-     * Get ID of supplementary file.
+     * [DEPREACTED] Get ID of supplementary file.
+     * Use getId()
      * @return int
      */
     public function getSuppFileId() {
@@ -56,7 +51,8 @@ class SuppFile extends ArticleFile {
     }
 
     /**
-     * Set ID of supplementary file.
+     * [DEPRECATED] Set ID of supplementary file.
+     * Use setId()
      * @param int $suppFileId
      */
     public function setSuppFileId($suppFileId) {
@@ -409,12 +405,13 @@ class SuppFile extends ArticleFile {
     public function getBestSuppFileId($journal = null) {
         // Retrieve the journal, if necessary.
         if (!isset($journal)) {
+            /** @var ArticleDAO $articleDao */
             $articleDao = DAORegistry::getDAO('ArticleDAO');
             $article = $articleDao->getArticle($this->getArticleId());
             
             // PHP 8 Safety: Handle orphan supp files
             if (!$article) return $this->getId();
-
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journal = $journalDao->getById($article->getJournalId());
         }
@@ -426,5 +423,4 @@ class SuppFile extends ArticleFile {
         return $this->getId();
     }
 }
-
 ?>
