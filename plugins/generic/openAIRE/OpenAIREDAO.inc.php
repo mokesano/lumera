@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_openAIRE
  *
  * @brief DAO operations for OpenAIRE.
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
  */
 
 import('classes.oai.ojs.OAIDAO');
@@ -124,6 +122,7 @@ class OpenAIREDAO extends OAIDAO {
 
             return $returner;
         } else {
+            /** @var DataObjectTombstoneSettingsDAO $dataObjectTombstoneSettingsDao */
             $dataObjectTombstoneSettingsDao = DAORegistry::getDAO('DataObjectTombstoneSettingsDAO');
             return $dataObjectTombstoneSettingsDao->getSetting($row['tombstone_id'], 'openaire');
         }
