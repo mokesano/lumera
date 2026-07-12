@@ -67,9 +67,13 @@ class WizdamTrendsManager {
      * @return array
      */
     private static function _formatMicroPayload(array $rawViewsData, PKPRequest $request): array {
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
+        /** @var AuthorDAO $authorDao */
         $authorDao = DAORegistry::getDAO('AuthorDAO');
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         
         $payload = [];
@@ -205,6 +209,7 @@ class WizdamTrendsManager {
         }
 
         // Method 2: Cek dari published_articles DAO (Menggantikan Raw SQL)
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         if ($publishedArticleDao) {
             $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($article->getId());
@@ -217,6 +222,7 @@ class WizdamTrendsManager {
         if (method_exists($article, 'getIssueId')) {
             $issueId = $article->getIssueId();
             if ($issueId) {
+                /** @var IssueDAO $issueDao */
                 $issueDao = DAORegistry::getDAO('IssueDAO');
                 $issue = $issueDao->getIssueById($issueId);
                 if ($issue) {
@@ -234,6 +240,7 @@ class WizdamTrendsManager {
         }
 
         // Method 4: Cek remote URL dari ArticleGalleys (Menggantikan Raw SQL)
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         if ($galleyDao) {
             $galleys = $galleyDao->getGalleysByArticle($article->getId());
@@ -245,6 +252,7 @@ class WizdamTrendsManager {
         }
 
         // Method 5: Cek Default Journal Policy
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($journalId);
         if ($journal && method_exists($journal, 'getSetting')) {

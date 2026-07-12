@@ -302,7 +302,7 @@ class PKPHandler {
         $protectedMethods = ['post', 'put', 'patch', 'delete'];
 
         if (in_array($requestMethod, $protectedMethods)) {
-            $op = $request->getRouter()->getRequestedOp($request);
+            $op = $request->getUserVar('op');
             $exemptedOps = ['callback', 'webhook']; 
 
             if (!in_array($op, $exemptedOps)) {

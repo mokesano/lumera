@@ -19,14 +19,13 @@ declare(strict_types=1);
  * @brief OJS-specific OAI interface.
  * Designed to support both a site-wide and journal-specific OAI interface
  * (based on where the request is directed).
- *
- * [WIZDAM EDITION] REFACTOR: PHP 8.1+ Compatibility, Strict Types, Structured Returns
  */
 
 import('lib.pkp.classes.oai.OAI');
 import('classes.oai.ojs.OAIDAO');
 
 class JournalOAI extends OAI {
+
     /** @var Site $site Associated site object */
     public $site;
 
@@ -40,7 +39,8 @@ class JournalOAI extends OAI {
     public $dao;
 
     /**
-     * Constructor
+     * Constructor.
+     * @param mixed $config OAIConfig repository configuration
      */
     public function __construct($config) {
         parent::__construct($config);
@@ -111,6 +111,7 @@ class JournalOAI extends OAI {
     //
 
     /**
+     * OAI Repository info.
      * @see OAI#repositoryInfo
      * @return OAIRepository
      */
@@ -128,9 +129,9 @@ class JournalOAI extends OAI {
         $info->sampleIdentifier = $this->articleIdToIdentifier(1);
         $info->earliestDatestamp = $this->dao->getEarliestDatestamp([$this->journalId]);
 
-        // [FORK FEATURE] Wizdam Toolkit Branding
-        $info->toolkitTitle = 'Lumera - Modern Publishing';
-        $versionDao = DAORegistry::getDAO('VersionDAO');
+        // [FORK FEATURE] CodeLumera Toolkit Branding
+        $info->toolkitTitle = 'Lumera - Sangia Modern Publishing';
+        $versionDao = DAORegistry::getDAO('VersionDAO'); /** @var VersionDAO $versionDao */
         $currentVersion = $versionDao->getCurrentVersion();
         $info->toolkitVersion = $currentVersion->getVersionString();
         $info->toolkitURL = 'https://wizdam.sangia.org/';
@@ -139,6 +140,7 @@ class JournalOAI extends OAI {
     }
 
     /**
+     * OAI Valid identifier
      * @see OAI#validIdentifier
      * @param string $identifier
      * @return bool
@@ -148,6 +150,7 @@ class JournalOAI extends OAI {
     }
 
     /**
+     * OAI Identifier Exists
      * @see OAI#identifierExists
      * @param string $identifier
      * @return bool
@@ -162,6 +165,7 @@ class JournalOAI extends OAI {
     }
 
     /**
+     * OAI Record.
      * @see OAI#record
      * @param string $identifier
      * @return OAIRecord|false
@@ -178,15 +182,19 @@ class JournalOAI extends OAI {
     }
 
     /**
+     * OAI Reocrds.
      * @see OAI#records
      * [MODERNIZED] Return structured array ['records' => ..., 'total' => ...]
+     * @param mixed $metadataPrefix string specified metadata prefix
+     * @param mixed $from int minimum timestamp
+     * @param mixed $until int maximum timestamp
+     * @param mixed $set string specified set
+     * @param mixed $offset int current record offset
+     * @param mixed $limit int maximum number of records to return
      * @return array
      */
     public function records($metadataPrefix, $from, $until, $set, $offset, $limit) {
         $result = ['records' => [], 'total' => 0];
-        
-        // Hook now passes the result array container instead of individual references
-        // [Wizdam] Removed & before $result (Object/Array passed by identifier in PHP 7+)
         if (!HookRegistry::dispatch('JournalOAI::records', [$this, $from, $until, $set, $offset, $limit, &$result])) {
             $sectionId = null;
             if (isset($set)) {
@@ -202,8 +210,15 @@ class JournalOAI extends OAI {
     }
 
     /**
+     * OAI Identifiers.
      * @see OAI#identifiers
      * [MODERNIZED] Return structured array ['records' => ..., 'total' => ...]
+     * @param mixed $from
+     * @param mixed $metadataPrefix
+     * @param mixed $until
+     * @param mixed $set
+     * @param mixed $offset
+     * @param mixed $limit
      * @return array
      */
     public function identifiers($metadataPrefix, $from, $until, $set, $offset, $limit) {
@@ -224,8 +239,11 @@ class JournalOAI extends OAI {
     }
 
     /**
+     * OAI Sets.
      * @see OAI#sets
      * [MODERNIZED] Return structured array ['data' => ..., 'total' => ...]
+     * @param mixed $offset int current set offset
+     * @param mixed $limit int maximum number of sets
      * @return array
      */
     public function sets($offset, $limit) {
@@ -239,6 +257,7 @@ class JournalOAI extends OAI {
     }
 
     /**
+     * Resumption token.
      * @see OAI#resumptionToken
      * @param string $tokenId
      * @return OAIResumptionToken|false
@@ -253,6 +272,7 @@ class JournalOAI extends OAI {
     }
 
     /**
+     * Action Save Resumption Token.
      * @see OAI#saveResumptionToken
      * @param int $offset
      * @param array $params

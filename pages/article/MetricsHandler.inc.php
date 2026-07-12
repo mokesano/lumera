@@ -8,23 +8,27 @@ declare(strict_types=1);
  * Copyright (c) 2017-2026 Rochmady
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * Menangani permintaan untuk halaman "metrik" kustom sebuah artikel.
+ * @brief Menangani halaman "metrics" kustom untuk sebuah artikel:
+ *        URL: article/view/<articleId>/metrics
  *
  * @class MetricsHandler
  * @extends ArticleHandler
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.article.ArticleHandler');
+import('plugins.generic.usageStats.UsageStatsReportPlugin');
 
 class MetricsHandler extends ArticleHandler {
 
+    /** Jumlah hari default untuk data grafik */
+    const CHART_RANGE_DAYS = 30;
+
     /**
-     * Constructor.
+     * Constructor
+     * @param PKPRequest|null $request
      */
-    public function __construct() {
-        parent::__construct();
+    public function __construct($request = null) {
+        parent::__construct($request);
     }
 
     /**
@@ -42,121 +46,149 @@ class MetricsHandler extends ArticleHandler {
     }
 
     /**
-     * Menampilkan halaman metrik untuk artikel tertentu.
-     * Fungsi ini adalah titik masuk utama untuk URL:
-     * /article/view/<articleId>/metrics
-     *
-     * @param array $args Argumen URL (misal, $args[0] adalah <articleId>)
-     * @param PKPRequest $request Objek Request OJS
+     * Titik masuk utama untuk URL: article/view/<articleId>/metrics
+     * @param array $args
+     * @param PKPRequest $request
      */
     public function metrics($args = [], $request = null) {
-
-        // --- 1. Inisialisasi dan Pengambilan Data Dasar ---
-
-        // [WIZDAM] Singleton Fallback
-        if (!$request) {
+        if ($request === null) {
             $request = Application::get()->getRequest();
         }
 
-        // Ambil ID artikel dari argumen URL.
-        $articleId = isset($args[0]) ? (int) $args[0] : 0;
-
-        // Ambil objek penting: Jurnal saat ini dan Pengguna yang login (jika ada)
-        $journal = $request->getJournal();
-        $user = $request->getUser();
-
-        // --- 2. Validasi Input (Guard Clauses) ---
-
-        // Jika tidak ada ID artikel di URL, kembalikan pengguna ke halaman indeks.
-        if (!$articleId) {
-            $request->redirect(null, 'index');
-            return;
+        if (!$this->article) {
+            $articleId = $args[0] ?? 0;
+            $this->validate($request, $articleId);
         }
 
-        // Muat data artikel dari database menggunakan ArticleDAO
-        $articleDao = DAORegistry::getDAO('ArticleDAO');
-        $article = $articleDao->getArticle($articleId);
+        $article = $this->article;
+        $journal = $this->journal;
+        $issue   = $this->issue;
 
-        // Jika artikel dengan ID tersebut tidak ditemukan, kembalikan ke indeks.
         if (!$article) {
             $request->redirect(null, 'index');
             return;
         }
 
-        // --- 3. Pengecekan Izin Akses (Permission Check) ---
+        $articleId = (int) $article->getId();
+        $journalId = (int) $journal->getId();
 
-        // Aturan: Metrik hanya boleh dilihat publik jika artikel sudah 'published'.
-        // [WIZDAM] Gunakan konstanta status yang benar
-        if ($article->getStatus() != STATUS_PUBLISHED) {
-            
-            // Jika artikel BELUM 'published', kita perlu cek lebih lanjut.
-            // Apakah pengguna adalah penulis artikel ini?
-            $isAuthor = $user && $user->getId() == $article->getUserId();
-            
-            // Apakah pengguna adalah editor?
-            // [WIZDAM] Standardized OJS validation check
-            $isEditor = Validation::isEditor($journal->getId()) || Validation::isSectionEditor($journal->getId());
-
-            // Jika pengguna tidak login, ATAU
-            // jika dia bukan penulis DAN bukan editor, maka akses ditolak.
-            if (!$user || (!$isAuthor && !$isEditor)) {
-                $request->redirect(null, 'index');
-                return;
-            }
-        }
-
-        // --- 4. Menyiapkan Halaman (Template) ---
-
-        // Jika lolos semua pemeriksaan di atas, lanjutkan ke penyiapan template.
+        $this->setupTemplate($request);
         $templateMgr = TemplateManager::getManager($request);
 
-        // Kirim data artikel ke file template (.tpl)
-        $templateMgr->assign('article', $article);
+        $templateMgr->assign([
+            'article' => $article,
+            'issue'   => $issue,
+            'journal' => $journal,
+            'doi'     => $article->getPubId('doi'),
+        ]);
 
-        // --- 5. Pengambilan Statistik (Metode Coba-Coba) ---
+        // --- Ringkasan total ---
+        [$totalViews, $totalDownloads] = $this->getMetricsSummary($articleId, $journalId);
+        $templateMgr->assign([
+            'totalViews'     => $totalViews,
+            'totalDownloads' => $totalDownloads,
+        ]);
 
-        // Inisialisasi variabel statistik
-        $views = 0;
+        // --- Data grafik (N hari terakhir) ---
+        $templateMgr->assign([
+            'viewsChartData'     => $this->getDailyChartData($articleId, $journalId, ASSOC_TYPE_ARTICLE),
+            'downloadsChartData' => $this->getDailyChartData($articleId, $journalId, ASSOC_TYPE_GALLEY),
+        ]);
 
-        // PENTING: Blok ini adalah metode "rapuh" (fragile) untuk mendapatkan statistik.
-        // Ini bekerja dengan MENEBAK nama DAO (Data Access Object) statistik
-        
-        // Daftar nama DAO yang akan dicoba
-        $triedDaoNames = [
-            'UsageStatsDAO',
-            'MetricsDAO',
-            'ArticleStatisticsDAO',
-            'StatisticsDAO'
+        // --- Daftar kutipan / referensi artikel ---
+        $templateMgr->assign('citations', $this->getCitationList($articleId));
+
+        $templateMgr->assign('statsLastUpdated', date('l, d M Y H:i:s T'));
+
+        $templateMgr->display('article/metrics.tpl');
+    }
+
+    /**
+     * Total abstract views & galley downloads sepanjang waktu untuk 1 artikel.
+     * Memakai Application::getMetrics() -- API resmi, sama seperti yang
+     * dipakai Journal::getMetrics() dan Application::getPrimaryMetricByAssoc().
+     * @param int $articleId
+     * @param int $journalId
+     * @return array [totalViews, totalDownloads]
+     */
+    protected function getMetricsSummary(int $articleId, int $journalId): array {
+        $application = Application::get();
+
+        $baseFilter = [
+            STATISTICS_DIMENSION_CONTEXT_ID    => $journalId,
+            STATISTICS_DIMENSION_SUBMISSION_ID => $articleId,
         ];
 
-        foreach ($triedDaoNames as $daoName) {
-            // Coba dapatkan DAO dari registri OJS
-            $dao = DAORegistry::getDAO($daoName);
+        $viewsFilter = $baseFilter + [STATISTICS_DIMENSION_ASSOC_TYPE => ASSOC_TYPE_ARTICLE];
+        $viewsData = $application->getMetrics(OJS_METRIC_TYPE_COUNTER, [], $viewsFilter);
+        $totalViews = (is_array($viewsData) && isset($viewsData[0][STATISTICS_METRIC]))
+            ? (int) $viewsData[0][STATISTICS_METRIC] : 0;
 
-            // Periksa apakah OJS berhasil menemukan dan memuat DAO tersebut
-            // [WIZDAM] Updated is_a to instanceof
-            if ($dao && $dao instanceof DAO) {
-                
-                // Jika DAO ada, coba tebak nama fungsinya (method)
-                if (method_exists($dao, 'getTotalViews')) {
-                    $views = (int) $dao->getTotalViews($articleId);
-                    
-                    // Jika kita berhasil menemukan data, hentikan perulangan (break)
-                    break;
-                }
+        $downloadsFilter = $baseFilter + [STATISTICS_DIMENSION_ASSOC_TYPE => ASSOC_TYPE_GALLEY];
+        $downloadsData = $application->getMetrics(OJS_METRIC_TYPE_COUNTER, [], $downloadsFilter);
+        $totalDownloads = (is_array($downloadsData) && isset($downloadsData[0][STATISTICS_METRIC]))
+            ? (int) $downloadsData[0][STATISTICS_METRIC] : 0;
+
+        return [$totalViews, $totalDownloads];
+    }
+
+    /**
+     * Deret waktu harian (untuk grafik) dalam N hari terakhir.
+     * @param int $articleId
+     * @param int $journalId
+     * @param int $assocType ASSOC_TYPE_ARTICLE (views) atau ASSOC_TYPE_GALLEY (downloads)
+     * @return array [['date' => 'YYYYMMDD', 'count' => int], ...]
+     */
+    protected function getDailyChartData(int $articleId, int $journalId, int $assocType): array {
+        $application = Application::get();
+
+        $filters = [
+            STATISTICS_DIMENSION_CONTEXT_ID    => $journalId,
+            STATISTICS_DIMENSION_SUBMISSION_ID => $articleId,
+            STATISTICS_DIMENSION_ASSOC_TYPE    => $assocType,
+            STATISTICS_DIMENSION_DAY => [
+                'from' => date('Ymd', strtotime('-' . self::CHART_RANGE_DAYS . ' days')),
+                'to'   => date('Ymd'),
+            ],
+        ];
+
+        $rows = $application->getMetrics(
+            OJS_METRIC_TYPE_COUNTER,
+            [STATISTICS_DIMENSION_DAY],
+            $filters,
+            [STATISTICS_DIMENSION_DAY => 'ASC']
+        );
+
+        $series = [];
+        if (is_array($rows)) {
+            foreach ($rows as $row) {
+                $series[] = [
+                    'date'  => $row[STATISTICS_DIMENSION_DAY] ?? null,
+                    'count' => isset($row[STATISTICS_METRIC]) ? (int) $row[STATISTICS_METRIC] : 0,
+                ];
             }
-        } // Akhir dari foreach loop
+        }
+        return $series;
+    }
 
-        // --- 6. Menampilkan Halaman ---
+    /**
+     * Ambil daftar kutipan (referensi) milik artikel ini.
+     * @param int $articleId
+     * @return array daftar objek Citation
+     */
+    protected function getCitationList(int $articleId): array {
+        /** @var CitationDAO $citationDao */
+        $citationDao = DAORegistry::getDAO('CitationDAO');
+        if (!$citationDao) {
+            return [];
+        }
 
-        // Kirim data 'views' yang didapat ke template
-        $templateMgr->assign('views', $views);
-        
-        // Tampilkan file template .tpl yang sesuai
-        $templateMgr->display('article/metrics.tpl');
-        
-    } // Akhir dari fungsi metrics()
-
-} // Akhir dari kelas MetricsHandler
-
+        $citationFactory = $citationDao->getObjectsByAssocId(ASSOC_TYPE_ARTICLE, $articleId);
+        $citations = [];
+        while ($citation = $citationFactory->next()) {
+            $citations[] = $citation;
+        }
+        return $citations;
+    }
+}
 ?>

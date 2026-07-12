@@ -17,8 +17,6 @@ declare(strict_types=1);
  * @see DAORegistry
  *
  * @brief Operations for retrieving and modifying objects from a database.
- *
- * [MODERNISASI] Refactored for PHP 7.4+ Compatibility
  */
 
 import('lib.pkp.classes.db.DBConnection');
@@ -75,7 +73,7 @@ class DAO {
 
     /**
      * Set db conn.
-     * @param $dataSource ADONewConnection
+     * @param mixed $dataSource ADONewConnection
      */
     public function setDataSource($dataSource) {
         $this->_dataSource = $dataSource;
@@ -91,7 +89,7 @@ class DAO {
 
     /**
      * Execute a SELECT SQL statement.
-     * @param $sql string the SQL statement
+     * @param mixed $sql string the SQL statement
      * @param $params array parameters for the SQL statement
      * @return ADORecordSet
      */
@@ -125,7 +123,7 @@ class DAO {
 
     /**
      * Execute a cached SELECT SQL statement.
-     * @param $sql string the SQL statement
+     * @param mixed $sql string the SQL statement
      * @param $params array parameters for the SQL statement
      * @param $secsToCache int number of seconds to cache the result
      * @return ADORecordSet
@@ -156,7 +154,7 @@ class DAO {
             fatalError('DB Error: ' . $dataSource->errorMsg());
         }
         
-        // [WIZDAM FIX] CacheExecute melewati buffering normal mysqli.
+        // [FIX] CacheExecute melewati buffering normal mysqli.
         $mysqli = $dataSource->_connectionID ?? null;
         if ($mysqli instanceof mysqli && $mysqli->more_results()) {
             $mysqli->next_result();
@@ -167,7 +165,7 @@ class DAO {
 
     /**
      * Execute a SELECT SQL statement with LIMIT on the rows returned.
-     * @param $sql string the SQL statement
+     * @param mixed $sql string the SQL statement
      * @param $params array parameters for the SQL statement
      * @param $numRows int number of rows to return
      * @param $offset int the offset from which to return rows
@@ -202,7 +200,7 @@ class DAO {
 
     /**
      * Execute a SELECT SQL statment, returning rows in the range supplied.
-     * @param $sql string the SQL statement
+     * @param mixed $sql string the SQL statement
      * @param $params array parameters for the SQL statement
      * @param $dbResultRange DBResultRange the range of results to return
      * @return ADORecordSet
@@ -234,7 +232,7 @@ class DAO {
 
     /**
      * Execute an INSERT, UPDATE, or DELETE SQL statement.
-     * @param $sql string the SQL statement
+     * @param mixed $sql string the SQL statement
      * @param $params array parameters for the SQL statement
      * @return boolean true 
      */
@@ -266,9 +264,9 @@ class DAO {
 
     /**
      * Insert a row in a table, replacing an existing row if necessary.
-     * @param $table string the table name
-     * @param $arrFields array an associative array of field names and values
-     * @param $keyCols array an array of field names that are the primary keys for the table
+     * @param mixed $table string the table name
+     * @param mixed $arrFields array an associative array of field names and values
+     * @param mixed $keyCols array an array of field names that are the primary keys for the table
      */
     public function replace($table, $arrFields, $keyCols) {
         $dataSource = $this->getDataSource();
@@ -318,7 +316,7 @@ class DAO {
 
     /**
      * Return datetime formatted for DB insertion.
-     * @param $dt string|int A datetime string or timestamp
+     * @param mixed $dt string|int A datetime string or timestamp
      * @return string
      */
     public function datetimeToDB($dt) {
@@ -328,7 +326,7 @@ class DAO {
 
     /**
      * Return date formatted for DB insertion.
-     * @param $d string|int A date string or timestamp
+     * @param mixed $d string|int A date string or timestamp
      * @return string
      */
     public function dateToDB($d) {
@@ -338,7 +336,7 @@ class DAO {
 
     /**
      * Return datetime from DB as ISO datetime string.
-     * @param $dt string A datetime string from the database
+     * @param mixed $dt string A datetime string from the database
      * @return string|null An ISO datetime string, or null if the input was null
      */
     public function datetimeFromDB($dt) {
@@ -349,7 +347,7 @@ class DAO {
     
     /**
      * Return date from DB as ISO date string.
-     * @param $d string A date string from the database
+     * @param mixed $d string A date string from the database
      * @return string|null An ISO date string, or null if the input was null
      */
     public function dateFromDB($d) {
@@ -360,8 +358,8 @@ class DAO {
 
     /**
      * Convert a stored type from the database.
-     * @param $value mixed The value to convert
-     * @param $type string The type of the value
+     * @param mixed $value mixed The value to convert
+     * @param mixed $type string The type of the value
      * @return mixed The converted value
      */
     public function convertFromDB($value, $type) {
@@ -391,7 +389,7 @@ class DAO {
 
     /**
      * Get the type of a value to be stored in the database.
-     * @param $value mixed The value to check
+     * @param mixed $value mixed The value to check
      * @return string 
      */
     public function getType($value) {
@@ -416,8 +414,8 @@ class DAO {
 
     /**
      * Convert a PHP variable into a string to be stored in the DB.
-     * @param $value mixed The value to convert
-     * @param $type string 
+     * @param mixed $value mixed The value to convert
+     * @param mixed $type string
      * @return string The converted value ready for database storage
      */
     public function convertToDB($value, &$type) {
@@ -455,7 +453,7 @@ class DAO {
 
     /**
      * Convert a value to an integer, or null if the value is empty.
-     * @param $value mixed 
+     * @param mixed $value mixed
      * @return int|null 
      */
     public function nullOrInt($value) {
@@ -482,9 +480,9 @@ class DAO {
 
     /**
      * Update the settings table of a data object.
-     * @param $tableName string The name of the settings table to update
-     * @param $dataObject DataObject 
-     * @param $idArray array
+     * @param mixed $tableName string The name of the settings table to update
+     * @param mixed $dataObject DataObject
+     * @param mixed $idArray array
      */
     public function updateDataObjectSettings($tableName, $dataObject, $idArray) {
         // Initialize variables
@@ -563,10 +561,10 @@ class DAO {
 
     /**
      * Get the settings for a data object from the database and set them on the data object.
-     * @param $tableName string The name of the settings table to query
-     * @param $idFieldName string 
-     * @param $idFieldValue mixed 
-     * @param $dataObject DataObject 
+     * @param mixed $tableName string The name of the settings table to query
+     * @param mixed $idFieldName string
+     * @param mixed $idFieldValue mixed
+     * @param mixed $dataObject DataObject
      */
     public function getDataObjectSettings($tableName, $idFieldName, $idFieldValue, $dataObject) {
         if ($idFieldName !== null) {
@@ -605,7 +603,7 @@ class DAO {
 
     /**
      * Get the driver for this connection.
-     * @param $direction int 
+     * @param mixed $direction int
      * @return string 
      */
     public function getDirectionMapping($direction) {
@@ -641,8 +639,9 @@ class DAO {
     }
 
     /**
-     * Format a passed date (in English textual datetime) to a format suitable for DB storage, with optional default number of weeks to add if no date is passed.
-     * @param $date string|null The date to format (optional)
+     * Format a passed date (in English textual datetime) to a format suitable for DB storage, 
+     * with optional default number of weeks to add if no date is passed.
+     * @param mixed $date string|null The date to format (optional)
      * @param $defaultNumWeeks int|null 
      * @param $acceptPastDate bool
      * @return string A datetime string formatted for DB storage
@@ -668,10 +667,8 @@ class DAO {
             $newDueDateTimestamp = $todayTimestamp + ($numWeeks * 7 * 24 * 60 * 60);
             return date('Y-m-d H:i:s', $newDueDateTimestamp);
         } else {
-            // [MODERNISASI] Hapus assert(false) agar tidak fatal error. Return null saja.
             return null;
         }
     }
 }
-
 ?>

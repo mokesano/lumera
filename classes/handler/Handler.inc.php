@@ -169,7 +169,8 @@ class Handler extends PKPHandler {
                 }
             }
 
-            // Jika eksekusi mencapai titik ini, berarti semua modul modern yang aktif berhasil divalidasi
+            // Jika eksekusi mencapai titik ini, 
+            // berarti semua modul modern yang aktif berhasil divalidasi
             return true;
         }
 
@@ -185,6 +186,7 @@ class Handler extends PKPHandler {
             
             if (!$captchaId) return false;
             
+            /** @var CaptchaDAO $captchaDao */
             $captchaDao = DAORegistry::getDAO('CaptchaDAO');
             $captcha = $captchaDao->getCaptcha($captchaId);
             
@@ -209,12 +211,11 @@ class Handler extends PKPHandler {
      * v3 passive monitoring tidak memerlukan form submission —
      * cukup script tag di header dengan public key tersedia.
      * @param PKPRequest|null $request
-     * @param bool $subclass
      */
     public function setupTemplate($request = null) {
         parent::setupTemplate();
     
-        // [WIZDAM SECURITY] Inject reCAPTCHA v3 public key secara global.
+        // [SECURITY] Inject reCAPTCHA v3 public key secara global.
         // Hanya v3 yang perlu inject global — v2 dan Turnstile
         // ditangani eksplisit via _assignSecurityVariables() di form handler.
         $reCaptchaEnabled = (bool) Config::getVar('recaptcha', 'recaptcha');

@@ -36,7 +36,6 @@ class IssueHandler extends Handler {
 
         $this->addCheck(new HandlerValidatorJournal($this));
         
-        // [WIZDAM FIX] Replaced deprecated create_function with Closure/Anonymous Function for PHP 8+
         $this->addCheck(new HandlerValidatorCustom($this, false, null, null, function($journal) {
             return $journal->getSetting('publishingMode') != PUBLISHING_MODE_NONE;
         }, [Request::getJournal()]));
@@ -75,30 +74,40 @@ class IssueHandler extends Handler {
         $this->validate($request);
         $this->setupTemplate();
 
-        $showToc = isset($args[0]) ? $args[0] : '';
-
+        $showToc = isset($args[0]) ? (string) $args[0] : '';
         $journal = $request->getJournal();
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
-        $issue = $issueDao->getCurrentIssue((int) $journal->getId(), true);
+        $issue = $issueDao ? $issueDao->getCurrentIssue((int) $journal->getId(), true) : null;
 
-        $templateMgr = TemplateManager::getManager();
-
-        if ($issue != null) {
-            if ($showToc == 'showToc') {
-                $request->redirect(null, 'issue', 'view', [(int) $issue->getId($journal), "showToc"], $request->getQueryArray());
+        if ($issue !== null) {
+            if ($showToc === 'showToc') {
+                $request->redirect(null, 'issue', 'view', [(int) $issue->getId(), 'showToc'], $request->getQueryArray());
             } else {
-                $request->redirect(null, 'issue', 'view', (int) $issue->getId($journal), $request->getQueryArray());
+                $request->redirect(null, 'issue', 'view', (int) $issue->getId(), $request->getQueryArray());
             }
-        } else {
-            $issueCrumbTitle = __('current.noCurrentIssue');
-            $issueHeadingTitle = __('current.noCurrentIssue');
+            return;
         }
 
-        $templateMgr->assign('pageHierarchy', [[$request->url(null, 'issue', 'current'), 'current.current']]);
+        $templateMgr = TemplateManager::getManager($request);
+
+        $issueCrumbTitle   = __('current.noCurrentIssue');
+        $issueHeadingTitle = __('current.noCurrentIssue');
+
+        $templateMgr->assign('pageCrumbTitleTranslated', $issueCrumbTitle);
+        $templateMgr->assign('issueHeadingTitle', $issueHeadingTitle);
+
+        $router = $request->getRouter();
+        $templateMgr->assign('pageHierarchy', [
+            [$router->url($request, null, 'issue', 'current'), __('current.current')]
+        ]);
+
         $templateMgr->assign('helpTopicId', 'user.currentAndArchives');
+
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
-        $templateMgr->assign('pubIdPlugins', $pubIdPlugins);
+        $templateMgr->assign('pubIdPlugins', $pubIdPlugins ?: []);
+
         $templateMgr->display('issue/viewPage.tpl');
     }
 
@@ -129,6 +138,7 @@ class IssueHandler extends Handler {
             $journal = $request->getJournal();
 
             if ($issueId && $journal) {
+                /** @var IssueDAO $issueDao */
                 $issueDao = DAORegistry::getDAO('IssueDAO');
                 $issue    = $issueDao->getIssueById($issueId, $journal->getId());
 
@@ -219,6 +229,7 @@ class IssueHandler extends Handler {
         if ($issue) {
 
             // 1. Navigasi Prev/Next Issue
+            /** @var IssueDAO $issueDao */
             $issueDao = DAORegistry::getDAO('IssueDAO');
             list($prevIssue, $nextIssue) = $issueDao->getSurroundingIssues($issue->getId(), $journal->getId());
 
@@ -282,6 +293,7 @@ class IssueHandler extends Handler {
         $this->setupTemplate();
 
         $journal = $request->getJournal();
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $rangeInfo = $this->getRangeInfo('issues');
 
@@ -318,8 +330,9 @@ class IssueHandler extends Handler {
         $issue   = $this->getIssue();
         $galley  = $this->getGalley();
 
-        if (!$galley->isPdfGalley()) {
+        if (!$galley || !$galley->isPdfGalley()) {
             $request->redirect(null, null, 'viewDownloadInterstitial', [$issueId, $galleyId]);
+            return;
         }
 
         $templateMgr = TemplateManager::getManager();
@@ -327,15 +340,23 @@ class IssueHandler extends Handler {
         $templateMgr->addJavaScript('js/pdfobject.js');
         $templateMgr->addStyleSheet($request->getBaseUrl().'/styles/pdfView.css');
 
-        $templateMgr->assign('issue', $issue);
-        $templateMgr->assign('galley', $galley);
-        $templateMgr->assign('journal', $journal);
-        $templateMgr->assign('issueId', $issueId);
-        $templateMgr->assign('galleyId', $galleyId);
+        $templateMgr->assign([
+            'issue'             => $issue,
+            'galley'            => $galley,
+            'journal'           => $journal,
+            'issueId'           => $issueId,
+            'galleyId'          => $galleyId,
+            'issueHeadingTitle' => __('issue.viewIssue'),
+            'locale'            => AppLocale::getLocale()
+        ]);
 
-        $templateMgr->assign('pageHierarchy', [[$request->url(null, 'issue', 'view', $issueId), $issue->getIssueIdentification(false, true), true]]);
-        $templateMgr->assign('issueHeadingTitle', __('issue.viewIssue'));
-        $templateMgr->assign('locale', AppLocale::getLocale());
+        $router = $request->getRouter();
+        $issueUrl = $router->url($request, null, 'issue', 'view', $issueId);
+        $issueIdentification = $issue ? $issue->getIssueIdentification() : '';
+
+        $templateMgr->assign('pageHierarchy', [
+            [$issueUrl, $issueIdentification, true]
+        ]);
 
         $templateMgr->display('issue/issueGalley.tpl');
     }
@@ -465,6 +486,7 @@ class IssueHandler extends Handler {
         $issue     = null;
         $galley    = null;
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         if ($journal->getSetting('enablePublicIssueId')) {
             $issue = $issueDao->getIssueByBestIssueId($issueId, $journalId);
@@ -478,6 +500,7 @@ class IssueHandler extends Handler {
 
         if (!$galleyId) return true;
 
+        /** @var IssueGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('IssueGalleyDAO');
         if ($journal->getSetting('enablePublicGalleyId')) {
             $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $issue->getId());
@@ -513,6 +536,7 @@ class IssueHandler extends Handler {
                             Validation::redirectLogin("payment.loginRequired.forIssue");
                         }
 
+                        /** @var OJSCompletedPaymentDAO $completedPaymentDao */
                         $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
                         $dateEndMembership   = $user->getSetting('dateEndMembership', 0);
                         if ($completedPaymentDao->hasPaidPurchaseIssue($userId, (int) $issueId) || (!is_null($dateEndMembership) && $dateEndMembership > time())) {
@@ -561,8 +585,8 @@ class IssueHandler extends Handler {
         $galley  = $this->getGalley();
 
         if (!($issue instanceof Issue) || !($galley instanceof IssueGalley)) {
-            $request->getDispatcher()->handle404();
-            exit; // Hentikan eksekusi script sepenuhnya
+            $request->getDispatcher()->handle404($request);
+            exit;
         }
 
         $galleyDao = DAORegistry::getDAO('IssueGalleyDAO');
@@ -596,20 +620,20 @@ class IssueHandler extends Handler {
      */
     public static function _setupIssueTemplate($request, $issue, $showToc = false) {
         $journal   = $request->getJournal();
-        $journalId = $journal->getId();
+        $journalId = (int) $journal->getId();
         $templateMgr = TemplateManager::getManager();
+
+        import('classes.file.PublicFileManager');
+        $publicFileManager = new PublicFileManager();
 
         if (IssueHandler::_isVisibleIssue($issue, $journalId)) {
 
-            $issueHeadingTitle = $issue->getIssueIdentification(false, true);
-            $issueCrumbTitle   = $issue->getIssueIdentification(false, true);
+            $issueHeadingTitle = $issue->getIssueIdentification();
+            $issueCrumbTitle   = $issue->getIssueIdentification();
 
             $locale = AppLocale::getLocale();
 
-            import('classes.file.PublicFileManager');
-            $publicFileManager = new PublicFileManager();
-            $coverPagePath     = $request->getBaseUrl() . '/';
-            $coverPagePath    .= $publicFileManager->getJournalFilesPath($journalId) . '/';
+            $coverPagePath = $request->getBaseUrl() . '/' . $publicFileManager->getJournalFilesPath($journalId) . '/';
             $templateMgr->assign('coverPagePath', $coverPagePath);
             $templateMgr->assign('locale', $locale);
 
@@ -623,14 +647,15 @@ class IssueHandler extends Handler {
                 $templateMgr->assign('coverLocale', $coverLocale);
                 $showToc = false;
             } else {
+                /** @var IssueGalleyDAO $issueGalleyDao */
                 $issueGalleyDao = DAORegistry::getDAO('IssueGalleyDAO');
                 $issueGalleys   = $issueGalleyDao->getGalleysByIssue($issue->getId());
                 $templateMgr->assign('issueGalleys', $issueGalleys);
 
+                /** @var PublishedArticleDAO $publishedArticleDao */
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                 $publishedArticles   = $publishedArticleDao->getPublishedArticlesInSections($issue->getId(), true);
 
-                $publicFileManager = new PublicFileManager();
                 $templateMgr->assign('publishedArticles', $publishedArticles);
                 $showToc = true;
             }
@@ -641,22 +666,29 @@ class IssueHandler extends Handler {
             $subscriptionRequired    = IssueAction::subscriptionRequired($issue);
             $subscribedUser          = IssueAction::subscribedUser($journal);
             $subscribedDomain        = IssueAction::subscribedDomain($journal);
-            $subscriptionExpiryPartial = $journal->getSetting('subscriptionExpiryPartial');
+            $subscriptionExpiryPartial = (bool) $journal->getSetting('subscriptionExpiryPartial');
 
             if ($showToc && $subscriptionRequired && !$subscribedUser && !$subscribedDomain && $subscriptionExpiryPartial) {
                 $templateMgr->assign('subscriptionExpiryPartial', true);
 
+                // [WIZDAM] BUGFIX: Simpan return value dari subscribedDomain()
                 $partial = IssueAction::subscribedUser($journal, $issue->getId());
-                if (!$partial) IssueAction::subscribedDomain($journal, $issue->getId());
+                if (!$partial) {
+                    $partial = IssueAction::subscribedDomain($journal, $issue->getId());
+                }
                 $templateMgr->assign('issueExpiryPartial', $partial);
 
+                /** @var PublishedArticleDAO $publishedArticleDao */
                 $publishedArticleDao   = DAORegistry::getDAO('PublishedArticleDAO');
                 $publishedArticlesTemp = $publishedArticleDao->getPublishedArticles($issue->getId());
 
                 $articleExpiryPartial = [];
                 foreach ($publishedArticlesTemp as $publishedArticle) {
+                    // [WIZDAM] BUGFIX: Simpan return value dari subscribedDomain()
                     $partial = IssueAction::subscribedUser($journal, $issue->getId(), $publishedArticle->getId());
-                    if (!$partial) IssueAction::subscribedDomain($journal, $issue->getId(), $publishedArticle->getId());
+                    if (!$partial) {
+                        $partial = IssueAction::subscribedDomain($journal, $issue->getId(), $publishedArticle->getId());
+                    }
                     $articleExpiryPartial[$publishedArticle->getId()] = $partial;
                 }
                 $templateMgr->assign('articleExpiryPartial', $articleExpiryPartial);
@@ -665,7 +697,7 @@ class IssueHandler extends Handler {
             $templateMgr->assign('subscriptionRequired', $subscriptionRequired);
             $templateMgr->assign('subscribedUser', $subscribedUser);
             $templateMgr->assign('subscribedDomain', $subscribedDomain);
-            $templateMgr->assign('showGalleyLinks', $journal->getSetting('showGalleyLinks'));
+            $templateMgr->assign('showGalleyLinks', (bool) $journal->getSetting('showGalleyLinks'));
 
             import('classes.payment.ojs.OJSPaymentManager');
             $paymentManager = new OJSPaymentManager($request);
@@ -682,8 +714,6 @@ class IssueHandler extends Handler {
         }
 
         if ($issue && $styleFileName = $issue->getStyleFileName()) {
-            import('classes.file.PublicFileManager');
-            $publicFileManager = new PublicFileManager();
             $templateMgr->addStyleSheet(
                 $request->getBaseUrl() . '/' . $publicFileManager->getJournalFilesPath($journalId) . '/' . $styleFileName
             );

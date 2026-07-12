@@ -27,8 +27,8 @@ class ArticleDAO extends DAO {
 
     /**
      * Internal function to return an Article object from a cache miss.
-     * @param $cache ObjectCache
-     * @param $id int
+     * @param mixed $cache ObjectCache
+     * @param mixed $id int
      * @return Article
      */
     public function _cacheMiss($cache, $id) {
@@ -101,7 +101,7 @@ class ArticleDAO extends DAO {
 
     /**
      * Update the settings for this object
-     * @param $article Article
+     * @param mixed $article Article
      */
     public function updateLocaleFields($article) {
         $this->updateDataObjectSettings('article_settings', $article, array(
@@ -111,7 +111,7 @@ class ArticleDAO extends DAO {
 
     /**
      * Retrieve an article by ID.
-	 * @param $articleId int
+	 * @param mixed $articleId int
 	 * @param $journalId int optional
 	 * @param $useCache boolean optional
 	 * @return Article
@@ -165,8 +165,8 @@ class ArticleDAO extends DAO {
 
     /**
      * Find articles by querying article settings.
-	 * @param $settingName string
-	 * @param $settingValue mixed
+	 * @param mixed $settingName string
+	 * @param mixed $settingValue mixed
 	 * @param $journalId int optional
 	 * @param $rangeInfo DBResultRange optional
 	 * @return array The articles identified by setting.
@@ -217,7 +217,7 @@ class ArticleDAO extends DAO {
 
     /**
      * Internal function to return an Article object from a row.
-     * @param $row array
+     * @param mixed $row array
      * @return Article
      */
     public function _returnArticleFromRow($row) {
@@ -228,8 +228,8 @@ class ArticleDAO extends DAO {
 
     /**
      * Internal function to fill in the passed article object from the row.
-     * @param $article Article
-     * @param $row array
+     * @param mixed $article Article
+     * @param mixed $row array
      * @return Article
      */
     public function _articleFromRow($article, $row) {
@@ -265,7 +265,7 @@ class ArticleDAO extends DAO {
 
     /**
      * Insert a new Article.
-     * @param $article Article
+     * @param mixed $article Article
      */
     public function insertArticle($article) {
         $article->stampModified();
@@ -305,17 +305,11 @@ class ArticleDAO extends DAO {
 
     /**
      * Update an existing article.
-     * @param $article Article
+     * @param mixed $article Article
      */
     public function updateArticle($article) {
-        // [WIZDAM EVENT-DRIVEN GENERATOR] 
-        // Hanya trigger artikel statusnya Published (3).
         if ($article->getStatus() == 3) {
-            // Fungsi ekstrak tanggal terbit dari DB secara aman
             $identifiers = $this->getArticleIdentifiers((int) $article->getId());
-            
-            // Sinkronisasi data ke objek memory yang sedang aktif 
-            // agar komponen lain (seperti eksportir XML) tidak perlu reload
             if (is_array($identifiers)) {
                 $article->setData('eLocator', $identifiers['eLocator']);
                 $article->setData('pii', $identifiers['pii']);
@@ -389,7 +383,7 @@ class ArticleDAO extends DAO {
 
     /**
      * Delete an article.
-     * @param $article Article
+     * @param mixed $article Article
      */
     public function deleteArticle($article) {
         return $this->deleteArticleById($article->getId());
@@ -397,31 +391,38 @@ class ArticleDAO extends DAO {
 
     /**
      * Delete an article by ID.
-     * @param $articleId int
+     * @param mixed $articleId int
      */
     public function deleteArticleById($articleId) {
         $this->authorDao->deleteAuthorsByArticle($articleId);
 
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $publishedArticleDao->deletePublishedArticleByArticleId($articleId);
 
+        /** @var CommentDAO $commentDao */
         $commentDao = DAORegistry::getDAO('CommentDAO');
         $commentDao->deleteBySubmissionId($articleId);
 
+        /** @var NoteDAO $noteDao */
         $noteDao = DAORegistry::getDAO('NoteDAO');
         $noteDao->deleteByAssoc(ASSOC_TYPE_ARTICLE, $articleId);
 
+        /** @var SectionEditorSubmissionDAO $sectionEditorSubmissionDao */
         $sectionEditorSubmissionDao = DAORegistry::getDAO('SectionEditorSubmissionDAO');
         $sectionEditorSubmissionDao->deleteDecisionsByArticle($articleId);
         $sectionEditorSubmissionDao->deleteReviewRoundsByArticle($articleId);
 
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
         $reviewAssignmentDao->deleteBySubmissionId($articleId);
 
+        /** @var EditAssignmentDAO $editAssignmentDao */
         $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
         $editAssignmentDao->deleteEditAssignmentsByArticle($articleId);
 
         // Delete copyedit, layout, and proofread signoffs
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
         $copyedInitialSignoffs = $signoffDao->getBySymbolic('SIGNOFF_COPYEDITING_INITIAL', ASSOC_TYPE_ARTICLE, $articleId);
         $copyedAuthorSignoffs = $signoffDao->getBySymbolic('SIGNOFF_COPYEDITING_AUTHOR', ASSOC_TYPE_ARTICLE, $articleId);
@@ -436,40 +437,47 @@ class ArticleDAO extends DAO {
             if ( $signoff ) $signoffDao->deleteObject($signoff);
         }
 
+        /** @var ArticleCommentDAO $articleCommentDao */
         $articleCommentDao = DAORegistry::getDAO('ArticleCommentDAO');
         $articleCommentDao->deleteArticleComments($articleId);
 
+        /** @var ArticleGalleyDAO $articleGalleyDao */
         $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $articleGalleyDao->deleteGalleysByArticle($articleId);
 
+        /** @var ArticleSearchDAO $articleSearchDao */
         $articleSearchDao = DAORegistry::getDAO('ArticleSearchDAO');
         $articleSearchDao->deleteArticleKeywords($articleId);
 
+        /** @var ArticleEventLogDAO $articleEventLogDao */
         $articleEventLogDao = DAORegistry::getDAO('ArticleEventLogDAO');
         $articleEventLogDao->deleteByAssoc(ASSOC_TYPE_ARTICLE, $articleId);
 
+        /** @var ArticleEmailLogDAO $articleEmailLogDao */
         $articleEmailLogDao = DAORegistry::getDAO('ArticleEmailLogDAO');
         $articleEmailLogDao->deleteByAssoc(ASSOC_TYPE_ARTICLE, $articleId);
 
+        /** @var NotificationDAO $notificationDao */
         $notificationDao = DAORegistry::getDAO('NotificationDAO');
         $notificationDao->deleteByAssoc(ASSOC_TYPE_ARTICLE, $articleId);
 
+        /** @var SuppFileDAO $suppFileDao */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
         $suppFileDao->deleteSuppFilesByArticle($articleId);
 
         // Delete article files
         import('classes.file.ArticleFileManager');
+        /** @var ArticleFileDAO $articleFileDao  */
         $articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
         $articleFiles = $articleFileDao->getArticleFilesByArticle($articleId);
-
         $articleFileManager = new ArticleFileManager($articleId);
         foreach ($articleFiles as $articleFile) {
             $articleFileManager->deleteFile($articleFile->getFileId());
         }
-
         $articleFileDao->deleteArticleFiles($articleId);
 
         // Delete article citations.
+        /** @var CitationDAO $citationDao */
         $citationDao = DAORegistry::getDAO('CitationDAO');
         $citationDao->deleteObjectsByAssocId(ASSOC_TYPE_ARTICLE, $articleId);
 
@@ -524,7 +532,7 @@ class ArticleDAO extends DAO {
 
     /**
      * Delete all articles by journal ID.
-	 * @param $journalId int
+	 * @param mixed $journalId int
 	 */
     public function deleteArticlesByJournalId($journalId) {
         $articles = $this->getArticlesByJournalId($journalId);
@@ -537,7 +545,7 @@ class ArticleDAO extends DAO {
 
     /**
      * Get all articles for a user.
-	 * @param $userId int
+	 * @param mixed $userId int
 	 * @param $journalId int optional
 	 * @return array Articles
 	 */
@@ -584,7 +592,7 @@ class ArticleDAO extends DAO {
 
     /**
      * Get the ID of the journal an article is in.
-	 * @param $articleId int
+	 * @param mixed $articleId int
 	 * @return int
 	 */
     public function getArticleJournalId($articleId) {
@@ -599,9 +607,9 @@ class ArticleDAO extends DAO {
 
     /**
      * Check if the specified incomplete submission exists.
-	 * @param $articleId int
-	 * @param $userId int
-	 * @param $journalId int
+	 * @param mixed $articleId int
+	 * @param mixed $userId int
+	 * @param mixed $journalId int
 	 * @return int the submission progress
 	 */
     public function incompleteSubmissionExists($articleId, $userId, $journalId) {
@@ -617,8 +625,8 @@ class ArticleDAO extends DAO {
 
     /**
      * Change the status of the article
-	 * @param $articleId int
-	 * @param $status int
+	 * @param mixed $articleId int
+	 * @param mixed $status int
 	 */
     public function changeArticleStatus($articleId, $status) {
         $this->update(
@@ -629,12 +637,11 @@ class ArticleDAO extends DAO {
 
     /**
      * Add/update an article setting.
-     * [MODERNISASI] Fixed is_array logic 
 	 * Add/update an article setting.
-	 * @param $articleId int
-	 * @param $name string
-	 * @param $value mixed
-	 * @param $type string Data type of the setting.
+	 * @param mixed $articleId int
+	 * @param mixed $name string
+	 * @param mixed $value mixed
+	 * @param mixed $type string Data type of the setting.
 	 * @param $isLocalized boolean
 	 */
     public function updateSetting($articleId, $name, $value, $type, $isLocalized = false) {
@@ -642,8 +649,6 @@ class ArticleDAO extends DAO {
             if (is_array($value)) {
                 $values = $value;
             } else {
-                // We expect localized data to come in as an array.
-                // assert(false); // Removed for production safety
                 return;
             }
         } else {
@@ -679,11 +684,11 @@ class ArticleDAO extends DAO {
 
 	/**
 	 * Change the public ID of an article.
-	 * @param $articleId int
-	 * @param $pubIdType string One of the NLM pub-id-type values or
+	 * @param mixed $articleId int
+	 * @param mixed $pubIdType string One of the NLM pub-id-type values or
 	 * 'other::something' if not part of the official NLM list
 	 * (see <http://dtd.nlm.nih.gov/publishing/tag-library/n-4zh0.html>).
-	 * @param $pubId string
+	 * @param mixed $pubId string
 	 */
     public function changePubId($articleId, $pubIdType, $pubId) {
         $this->updateSetting($articleId, 'pub-id::'.$pubIdType, $pubId, 'string');
@@ -692,12 +697,12 @@ class ArticleDAO extends DAO {
 	/**
 	 * Checks if public identifier exists (other than for the specified
 	 * article ID, which is treated as an exception).
-	 * @param $pubIdType string One of the NLM pub-id-type values or
+	 * @param mixed $pubIdType string One of the NLM pub-id-type values or
 	 * 'other::something' if not part of the official NLM list
 	 * (see <http://dtd.nlm.nih.gov/publishing/tag-library/n-4zh0.html>).
-	 * @param $pubId string
-	 * @param $articleId int An ID to be excluded from the search.
-	 * @param $journalId int
+	 * @param mixed $pubId string
+	 * @param mixed $articleId int An ID to be excluded from the search.
+	 * @param mixed $journalId int
 	 * @return boolean
 	 */
     public function pubIdExists($pubIdType, $pubId, $articleId, $journalId) {
@@ -720,7 +725,7 @@ class ArticleDAO extends DAO {
 
 	/**
 	 * Removes articles from a section by section ID
-	 * @param $sectionId int
+	 * @param mixed $sectionId int
 	 */
     public function removeArticlesFromSection($sectionId) {
         $this->update(
@@ -731,7 +736,7 @@ class ArticleDAO extends DAO {
 
 	/**
 	 * Delete and re-initialize the attached licenses of all articles in a journal.
-	 * @param $journalId int
+	 * @param mixed $journalId int
 	 */
     public function resetPermissions($journalId) {
         $journalId = (int) $journalId;
@@ -756,8 +761,8 @@ class ArticleDAO extends DAO {
 
 	/**
 	 * Delete the public IDs of all articles in a journal.
-	 * @param $journalId int
-	 * @param $pubIdType string One of the NLM pub-id-type values or
+	 * @param mixed $journalId int
+	 * @param mixed $pubIdType string One of the NLM pub-id-type values or
 	 * 'other::something' if not part of the official NLM list
 	 * (see <http://dtd.nlm.nih.gov/publishing/tag-library/n-4zh0.html>).
 	 */
@@ -781,8 +786,8 @@ class ArticleDAO extends DAO {
 
 	/**
 	 * Delete the public ID of an article.
-	 * @param $articleId int
-	 * @param $pubIdType string One of the NLM pub-id-type values or
+	 * @param mixed $articleId int
+	 * @param mixed $pubIdType string One of the NLM pub-id-type values or
 	 * 'other::something' if not part of the official NLM list
 	 * (see <http://dtd.nlm.nih.gov/publishing/tag-library/n-4zh0.html>).
 	 */
@@ -813,6 +818,7 @@ class ArticleDAO extends DAO {
         $cache = $this->_getCache();
         $cache->flush();
         
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $cache = $publishedArticleDao->_getPublishedArticleCache();
         $cache->flush();
@@ -820,7 +826,7 @@ class ArticleDAO extends DAO {
     
     /**
      * [WIZDAM] Mengambil data timeline editorial (genesis).
-     * @param $articleId int
+     * @param mixed $articleId int
      * @return array
      */
     public function getEditorialTimeline($articleId) {
@@ -985,6 +991,7 @@ class ArticleDAO extends DAO {
      * @return string
      */
     private function generatePii(int $articleId, int $journalId, ?string $datePublished, string $eLocator): string {
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($journalId);
         

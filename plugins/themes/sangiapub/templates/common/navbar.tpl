@@ -112,6 +112,7 @@
                                </li>
                             </ul>
                             <ul class="c-account-nav__menu-list">
+                                <li class="c-account-nav__menu-item"><a href="{url page="notification"}">Notifications Inbox{if $unreadNotifications > 0} ({$unreadNotifications}){/if}</a></li>
                                 {if $userSession}
                                 <li class="c-account-nav__menu-item"><a href="{url page="user" op="my-profile" path=$userSession->getUserId()|string_format:"%011d"}">{translate key="user.showMyProfile"}</a></li>
                                 {/if}

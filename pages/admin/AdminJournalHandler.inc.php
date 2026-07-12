@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_admin
  *
  * @brief Handle requests for journal management in site administration.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.admin.AdminHandler');
@@ -49,7 +47,7 @@ class AdminJournalHandler extends AdminHandler {
         $this->setupTemplate();
 
         $rangeInfo = $this->getRangeInfo('journals');
-
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journals = $journalDao->getJournals(false, $rangeInfo);
 
@@ -78,7 +76,6 @@ class AdminJournalHandler extends AdminHandler {
 
         import('classes.admin.form.JournalSiteSettingsForm');
         $settingsForm = new JournalSiteSettingsForm(!isset($args) || empty($args) ? null : $args[0]);
-
         if ($settingsForm->isLocaleResubmit()) {
             $settingsForm->readInputData();
         } else {
@@ -100,7 +97,6 @@ class AdminJournalHandler extends AdminHandler {
         if (!$request) $request = Application::get()->getRequest();
 
         import('classes.admin.form.JournalSiteSettingsForm');
-
         $journalId = (int) $request->getUserVar('journalId');
         $settingsForm = new JournalSiteSettingsForm($journalId);
 
@@ -132,7 +128,7 @@ class AdminJournalHandler extends AdminHandler {
         
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
-
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
 
         if (isset($args) && !empty($args) && !empty($args[0])) {
@@ -165,7 +161,7 @@ class AdminJournalHandler extends AdminHandler {
         
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
-
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journalId = (int) $request->getUserVar('id');
         $journal = $journalDao->getById($journalId);

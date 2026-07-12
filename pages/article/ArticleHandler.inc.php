@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_article
  *
  * @brief Handle requests for article functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.rt.ojs.RTDAO');
@@ -34,13 +32,14 @@ class ArticleHandler extends Handler {
     /**
      * Constructor
      */
-    public function __construct($request) {
+    public function __construct($request = null) {
+        if ($request === null) {
+            $request = Application::get()->getRequest();
+        }
         parent::__construct($request);
         $router = $request->getRouter();
 
         $this->addCheck(new HandlerValidatorJournal($this));
-        
-        // [MODERNIZATION] Replaced deprecated create_function with Closure
         $this->addCheck(new HandlerValidatorCustom(
             $this, 
             false, 
@@ -75,39 +74,28 @@ class ArticleHandler extends Handler {
     public function view($args, $request) {
         $articleIdInput = $args[0] ?? 0;
         $op = $args[1] ?? null;
-
-        // ======== KODE METRICS ========
         if ($op === 'metrics') {
             return $this->metrics($args, $request);
         }
-        // ======== AKHIR KODE METRICS ========
         
         $router = $request->getRouter();
         $journal = $request->getJournal();
         $galleyId = $args[1] ?? 0;
         
-        // =====================================================================
-        // [WIZDAM GUARD] CEK KONTEKS JURNAL
-        // =====================================================================
         if (!$journal) {
-            // Jika jurnal tidak ditemukan (null), jangan paksa getId().
-            // Alihkan ke halaman utama atau berikan 404.
             return $request->redirect(null, 'index');
         }
-
         $currentJournalId = (int) $journal->getId();
 
-        // =====================================================================
-        // [WIZDAM FIX] DETEKSI ID YANG LEBIH CERDAS (NUMERIC PUBLIC ID)
-        // =====================================================================
+        // [WIZDAM] DETEKSI ID YANG LEBIH CERDAS (NUMERIC PUBLIC ID)
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $articleObj = null;
 
-        // 1. Coba cari pakai cara standar OJS (Best ID)
-        // Fungsi otomatis cek: input Int -> Internal ID, String -> Public ID.
-        $articleObj = $publishedArticleDao->getPublishedArticleByBestArticleId((int) $journal->getId(), $articleIdInput, true);
-
+        // 1. Coba cari pakai cara standar (Best ID)
+        $articleObj = $publishedArticleDao->getPublishedArticleByBestArticleId($currentJournalId, $articleIdInput, true);
         // 2. FALLBACK: Jika gagal, inputnya angka, paksa cari sebagai Public ID
         if (!$articleObj && is_numeric($articleIdInput)) {
             $articleObj = $publishedArticleDao->getPublishedArticleByPubId(
@@ -116,22 +104,12 @@ class ArticleHandler extends Handler {
                 $currentJournalId
             );
         }
-
         // 3. RESOLUSI ID: Pastikan $articleId jadi INTERNAL ID (Integer) valid
-        if ($articleObj) {
-            // Jika artikel ditemukan (baik via Public ID maupun Internal ID),
-            // kita ambil ID database aslinya.
-            $articleId = (int) $articleObj->getId();
-        } else {
-            // Jika tidak ketemu, kembalikan ke input awal (nanti akan gagal di validate)
-            $articleId = (int) $articleIdInput;
-        }
-        // =====================================================================
+        $articleId = $articleObj ? (int) $articleObj->getId() : (int) $articleIdInput;
         
-        // [WIZDAM FIX] PENGGUNAAN ISSUE DAO YANG AMAN
-        $issue = $issueDao->getIssueByArticleId($articleId, $journal->getId());
+        $issue = $issueDao ? $issueDao->getIssueByArticleId($articleId, $currentJournalId) : null;
 
-        // Jalankan validasi dengan Internal ID yang sudah dipastikan Integer
+        // [WIZDAM] FIX UTAMA: validate() sekarang menerima 3 parameter dengan benar
         $this->validate($request, $articleId, $galleyId);
         
         // Setup objek standar OJS
@@ -140,25 +118,30 @@ class ArticleHandler extends Handler {
         $article = $this->article;
         $this->setupTemplate($request);
 
-        $rtDao = DAORegistry::getDAO('RTDAO'); /** @var RTDAO $rtDao */
-        $journalRt = $rtDao->getJournalRTByJournal($journal);
+        /** @var RTDAO $rtDao */
+        $rtDao = DAORegistry::getDAO('RTDAO');
+        $journalRt = $rtDao ? $rtDao->getJournalRTByJournal($journal) : null;
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
-        $section = $sectionDao->getSection($article->getSectionId(), $journal->getId(), true);
+        $section = $sectionDao ? $sectionDao->getSection($article->getSectionId(), $currentJournalId, true) : null;
 
         // RTVersion sebagai Subject
         $version = null;
-        if ($journalRt->getVersion() != null) {
+        if ($journalRt && $journalRt->getVersion() != null) {
             $version = $rtDao->getVersion($journalRt->getVersion(), $journalRt->getJournalId(), true);
         }
 
         // Article Galley PDF/HTML/XML
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galley = null;
-        if ($journal->getSetting('enablePublicGalleyId')) {
-            $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $article->getId());
-        } else {
-            $galley = $galleyDao->getGalley($galleyId, $article->getId());
+        if ($galleyDao) {
+            if ($journal->getSetting('enablePublicGalleyId')) {
+                $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $article->getId());
+            } else {
+                $galley = $galleyDao->getGalley($galleyId, $article->getId());
+            }
         }
 
         if ($galley && !$galley->isHtmlGalley() && !$galley->isPdfGalley()) {
@@ -168,66 +151,72 @@ class ArticleHandler extends Handler {
                 }
             }
             if ($galley->isInlineable()) {
-                return $this->viewFile(
-                    [$galley->getArticleId(), $galley->getId()],
-                    $request
-                );
+                return $this->viewFile([$galley->getArticleId(), $galley->getId()], $request);
             } else {
-                return $this->download(
-                    [$galley->getArticleId(), $galley->getId()],
-                    $request
-                );
+                return $this->download([$galley->getArticleId(), $galley->getId()], $request);
             }
         }
 
         $templateMgr = TemplateManager::getManager($request);
-        // $templateMgr->addJavaScript('js/relatedItems.js'); // RT
         $templateMgr->addJavaScript('js/inlinePdf.js');
         $templateMgr->addJavaScript('js/pdfobject.js');
         
-        $galleys = $galleyDao->getGalleysByArticle($article->getId());
-        $templateMgr->assign('galleys', $galleys);
+        $galleys = $galleyDao ? $galleyDao->getGalleysByArticle($article->getId()) : [];
         
         if (!$galley) {
             import('classes.issue.IssueAction');
 
+            // [WIZDAM] Micro-payloads untuk data langganan
+            $subscriptionData = [
+                'galleys' => $galleys,
+                'showGalleyLinks' => (bool) $journal->getSetting('showGalleyLinks')
+            ];
+
             if ($issue) {
-                $templateMgr->assign('subscriptionRequired', IssueAction::subscriptionRequired($issue));
+                $subscriptionData['subscriptionRequired'] = IssueAction::subscriptionRequired($issue);
             }
 
-            $templateMgr->assign('subscribedUser', IssueAction::subscribedUser($journal, isset($issue) ? $issue->getId() : null, isset($article) ? $article->getId() : null));
-            $templateMgr->assign('subscribedDomain', IssueAction::subscribedDomain($journal, isset($issue) ? $issue->getId() : null, isset($article) ? $article->getId() : null));
+            $subscriptionData['subscribedUser'] = IssueAction::subscribedUser($journal, $issue ? $issue->getId() : null, $article ? $article->getId() : null);
+            $subscriptionData['subscribedDomain'] = IssueAction::subscribedDomain($journal, $issue ? $issue->getId() : null, $article ? $article->getId() : null);
 
-            $templateMgr->assign('showGalleyLinks', $journal->getSetting('showGalleyLinks'));
+            $templateMgr->assign($subscriptionData);
 
             import('classes.payment.ojs.OJSPaymentManager');
             $paymentManager = new OJSPaymentManager($request);
-            if ( $paymentManager->onlyPdfEnabled() ) {
-                $templateMgr->assign('restrictOnlyPdf', true);
+            $paymentFlags = [];
+            if ($paymentManager->onlyPdfEnabled()) {
+                $paymentFlags['restrictOnlyPdf'] = true;
             }
-            if ( $paymentManager->purchaseArticleEnabled() ) {
-                $templateMgr->assign('purchaseArticleEnabled', true);
+            if ($paymentManager->purchaseArticleEnabled()) {
+                $paymentFlags['purchaseArticleEnabled'] = true;
+            }
+            if (!empty($paymentFlags)) {
+                $templateMgr->assign($paymentFlags);
             }
 
-            // Article cover page.
-            if (isset($article) && $article->getLocalizedFileName() && $article->getLocalizedShowCoverPage() && !$article->getLocalizedHideCoverPageAbstract()) {
+            // Article cover page
+            if ($article && $article->getLocalizedFileName() && $article->getLocalizedShowCoverPage() && !$article->getLocalizedHideCoverPageAbstract()) {
                 import('classes.file.PublicFileManager');
                 $publicFileManager = new PublicFileManager();
-                $coverPagePath = $request->getBaseUrl() . '/';
-                $coverPagePath .= $publicFileManager->getJournalFilesPath($journal->getId()) . '/';
-                $templateMgr->assign('coverPagePath', $coverPagePath);
-                $templateMgr->assign('coverPageFileName', $article->getLocalizedFileName());
-                $templateMgr->assign('width', $article->getLocalizedWidth());
-                $templateMgr->assign('height', $article->getLocalizedHeight());
-                $templateMgr->assign('coverPageAltText', $article->getLocalizedCoverPageAltText());
+                $coverPagePath = $request->getBaseUrl() . '/' . $publicFileManager->getJournalFilesPath($journal->getId()) . '/';
+                $templateMgr->assign([
+                    'coverPagePath'    => $coverPagePath,
+                    'coverPageFileName' => $article->getLocalizedFileName(),
+                    'width'            => $article->getLocalizedWidth(),
+                    'height'           => $article->getLocalizedHeight(),
+                    'coverPageAltText' => $article->getLocalizedCoverPageAltText()
+                ]);
             }
 
-            // References list.
-            $citationDao = DAORegistry::getDAO('CitationDAO'); /* @var $citationDao CitationDAO */
-            $citationFactory = $citationDao->getObjectsByAssocId(ASSOC_TYPE_ARTICLE, $article->getId());
+            // References list
+            /** @var CitationDAO $citationDao */
+            $citationDao = DAORegistry::getDAO('CitationDAO');
+            $citationFactory = $citationDao ? $citationDao->getObjectsByAssocId(ASSOC_TYPE_ARTICLE, $article->getId()) : [];
             $templateMgr->assign('citationFactory', $citationFactory);
         } else {
-            if ($galley->isHTMLGalley() && $styleFile = $galley->getStyleFile()) {
+            $templateMgr->assign('galleys', $galleys);
+            import('classes.article.ArticleHTMLGalley');
+            if ($galley instanceof ArticleHTMLGalley && $styleFile = $galley->getStyleFile()) {
                 $templateMgr->addStyleSheet($router->url($request, null, 'article', 'viewFile', [
                     $article->getId(),
                     $galley->getBestGalleyId($journal),
@@ -236,48 +225,34 @@ class ArticleHandler extends Handler {
             }
         }
 
-        // =====================================================================
-        // [FIX FINAL - ANTI CRASH] PEMBERSIH SPASI (SAFE MODE)
-        // =====================================================================
+        // [WIZDAM FIX] PEMBERSIH SPASI pada abstract
         $allAbstracts = $article->getData('abstract'); 
-
         if (is_array($allAbstracts)) {
             foreach ($allAbstracts as $localeKey => $textValue) {
-                // 1. CEK KEAMANAN: Jika data kosong atau bukan string, lewati.
                 if (empty($textValue) || !is_string($textValue)) continue;
-
-                // 2. BERSIHKAN KARAKTER BANDEL
-                // Kita hapus /u di regex untuk mencegah crash pada text encoding yang rusak
                 $clean = str_replace(['&nbsp;', chr(194).chr(160)], ' ', $textValue);
-                
-                // 3. REGEX (Tanpa flag /u supaya aman dari bad-encoding)
-                // Jika preg_replace gagal (return null), kita pakai string lama ($clean)
                 $regexResult = preg_replace('/\s+/', ' ', $clean);
                 if ($regexResult !== null) {
                     $clean = $regexResult;
                 }
-
-                // 4. SIMPAN (DENGAN CASTING PAKSA KE STRING)
-                // (string) memastikan trim tidak akan pernah menerima NULL
                 $article->setData('abstract', trim((string)$clean), $localeKey);
             }
         }
-        // =====================================================================
 
-        $templateMgr->assign('issue', $issue);
-        $templateMgr->assign('article', $article);
-        $templateMgr->assign('galley', $galley);
-        $templateMgr->assign('section', $section);
+        // [WIZDAM] Micro-payloads untuk data utama
+        $templateMgr->assign([
+            'issue'      => $issue,
+            'article'    => $article,
+            'galley'     => $galley,
+            'section'    => $section,
+            'journalRt'  => $journalRt,
+            'version'    => $version,
+            'journal'    => $journal,
+            'articleId'  => $articleId,
+            'galleyId'   => $galleyId
+        ]);
         
-        // Menugaskan Variabel RT & Version (Subject)
-        $templateMgr->assign('journalRt', $journalRt);
-        $templateMgr->assign('version', $version);
-        
-        $templateMgr->assign('journal', $journal);
-        $templateMgr->assign('articleId', $articleId);
-        $templateMgr->assign('galleyId', $galleyId);
-
-        // Sepertinya ini masih jadi bagian dari RT yang seharusnya dihapus
+        // [NOTE] Ini masih jadi bagian RT, seharusnya dihapus di masa depan
         $templateMgr->assign('articleSearchByOptions', [
             'query' => 'search.allFields',
             'authors' => 'search.author',
@@ -288,48 +263,57 @@ class ArticleHandler extends Handler {
         ]);
         
         //======================================================================
-        // --- START MODIFIKASI FORK OJS (Arsitektur Bersih - Fungsional) ---
-        //======================================================================
+        // --- START MODIFIKASI FORK Lumera ---
         
         // --- 1. INTEGRASI DATA GENESIS ---
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
-        $timeline = $articleDao->getEditorialTimeline($article->getId());
-        $templateMgr->assign('revisionDate', $timeline['revisionDate']);
-        $templateMgr->assign('acceptedDate', $timeline['acceptedDate']);
-
-        // --- 2. Memanggil penugasan sebagai Objek Data Editor/Reviewer ---
+        $timeline = $articleDao ? $articleDao->getEditorialTimeline($article->getId()) : [];
+        
+        $templateMgr->assign([
+            'revisionDate'  => $timeline['revisionDate'] ?? null,
+            'acceptedDate'  => $timeline['acceptedDate'] ?? null
+        ]);
+        
+        // --- 2. Penugasan Editor/Reviewer ---
+        /** @var EditAssignmentDAO $editAssignmentDao */
         $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
-        $editorsData = $editAssignmentDao->getEditorsWithDetails($article->getId());
-        $editorsData = $editAssignmentDao->getEditorsWithDetails($article);
+        // [WIZDAM] BUGFIX: Hapus duplikasi pemanggilan yang menimpa variabel
+        $editorsData = $editAssignmentDao ? $editAssignmentDao->getEditorsWithDetails($article) : [];
         
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
-        $reviewersData = $reviewAssignmentDao->getReviewersWithDetails($article->getId());
+        $reviewersData = $reviewAssignmentDao ? $reviewAssignmentDao->getReviewersWithDetails($article->getId()) : [];
         
-        // Mengirimkan objek utuh ke Template Manager
-        $templateMgr->assign('editAssignments', $editorsData);
-        $templateMgr->assign('reviewAssignments', $reviewersData);
-        
-        // Data tambahan untuk kebutuhan tampilan tanggal & locale
-        $templateMgr->assign('locale', AppLocale::getLocale());
+        $templateMgr->assign([
+            'editAssignments'   => $editorsData,
+            'reviewAssignments' => $reviewersData,
+            'locale'            => AppLocale::getLocale()
+        ]);
 
-        // --- 3. MODIFIKASI - Foto Penulis - Logika Akurat ---
+        // --- 3. Foto Penulis ---
         $authors = $article->getAuthors(); 
+        /** @var AuthorDAO $authorDao */
         $authorDao = DAORegistry::getDAO('AuthorDAO');
-        $authorProfileData = $authorDao->getAuthorProfileDataMaps($authors); 
+        $authorProfileData = $authorDao ? $authorDao->getAuthorProfileDataMaps($authors) : ['profileImages' => [], 'gravatars' => [], 'userData' => []]; 
         
-        $templateMgr->assign('authorProfileImages', $authorProfileData['profileImages']);
-        $templateMgr->assign('authorGravatarMap', $authorProfileData['gravatars']);
-        $templateMgr->assign('authorUserDataMap', $authorProfileData['userData']);
+        $templateMgr->assign([
+            'authorProfileImages' => $authorProfileData['profileImages'] ?? [],
+            'authorGravatarMap'   => $authorProfileData['gravatars'] ?? [],
+            'authorUserDataMap'   => $authorProfileData['userData'] ?? []
+        ]);
         
         // --- 4. INTEGRASI NAVIGASI ---
-        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-        $navigation = $publishedArticleDao->getGlobalArticleNavigation($article->getId(), $journal->getId());
+        $navigation = $publishedArticleDao ? $publishedArticleDao->getGlobalArticleNavigation($article->getId(), $journal->getId()) : ['prev' => null, 'next' => null];
     
-        $templateMgr->assign('prevArticle', $navigation['prev']);
-        $templateMgr->assign('nextArticle', $navigation['next']);
+        $templateMgr->assign([
+            'prevArticle' => $navigation['prev'] ?? null,
+            'nextArticle' => $navigation['next'] ?? null
+        ]);
         
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
-        $templateMgr->assign('pubIdPlugins', $pubIdPlugins);
+        $templateMgr->assign('pubIdPlugins', $pubIdPlugins ?: []);
+        
         $templateMgr->display('article/article.tpl');
     }
 
@@ -345,25 +329,33 @@ class ArticleHandler extends Handler {
         
         $this->validate($request, $articleId, $galleyId);
         $article = $this->article;
-        $journal = $this->journal; // Used in template implicitly or by setupTemplate
+        $journal = $this->journal;
         $this->setupTemplate($request);
 
         if (!$galley) {
+            /** @var ArticleGalleyDAO $galleyDao */
             $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
-            if ($journal->getSetting('enablePublicGalleyId')) {
-                $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $article->getId());
-            } else {
-                $galley = $galleyDao->getGalley($galleyId, $article->getId());
+            if ($galleyDao) {
+                if ($journal->getSetting('enablePublicGalleyId')) {
+                    $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $article->getId());
+                } else {
+                    $galley = $galleyDao->getGalley($galleyId, $article->getId());
+                }
             }
         }
 
-        if (!$galley) $request->redirect(null, null, 'view', $articleId);
+        if (!$galley) {
+            $request->redirect(null, null, 'view', $articleId);
+            return;
+        }
 
         $templateMgr = TemplateManager::getManager($request);
-        $templateMgr->assign('articleId', $articleId);
-        $templateMgr->assign('galleyId', $galleyId);
-        $templateMgr->assign('galley', $galley);
-        $templateMgr->assign('article', $article);
+        $templateMgr->assign([
+            'articleId' => $articleId,
+            'galleyId'  => $galleyId,
+            'galley'    => $galley,
+            'article'   => $article
+        ]);
 
         $templateMgr->display('article/pdfInterstitial.tpl');
     }
@@ -384,21 +376,29 @@ class ArticleHandler extends Handler {
         $this->setupTemplate($request);
 
         if (!$galley) {
+            /** @var ArticleGalleyDAO $galleyDao */
             $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
-            if ($journal->getSetting('enablePublicGalleyId')) {
-                $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $article->getId());
-            } else {
-                $galley = $galleyDao->getGalley($galleyId, $article->getId());
+            if ($galleyDao) {
+                if ($journal->getSetting('enablePublicGalleyId')) {
+                    $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $article->getId());
+                } else {
+                    $galley = $galleyDao->getGalley($galleyId, $article->getId());
+                }
             }
         }
 
-        if (!$galley) $request->redirect(null, null, 'view', $articleId);
+        if (!$galley) {
+            $request->redirect(null, null, 'view', $articleId);
+            return;
+        }
 
         $templateMgr = TemplateManager::getManager($request);
-        $templateMgr->assign('articleId', $articleId);
-        $templateMgr->assign('galleyId', $galleyId);
-        $templateMgr->assign('galley', $galley);
-        $templateMgr->assign('article', $article);
+        $templateMgr->assign([
+            'articleId' => $articleId,
+            'galleyId'  => $galleyId,
+            'galley'    => $galley,
+            'article'   => $article
+        ]);
 
         $templateMgr->display('article/interstitial.tpl');
     }
@@ -426,24 +426,31 @@ class ArticleHandler extends Handler {
         $journal = $this->journal;
         $article = $this->article;
 
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
-        if ($journal->getSetting('enablePublicGalleyId')) {
-            $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $article->getId());
-        } else {
-            $galley = $galleyDao->getGalley($galleyId, $article->getId());
+        $galley = null;
+        if ($galleyDao) {
+            if ($journal->getSetting('enablePublicGalleyId')) {
+                $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $article->getId());
+            } else {
+                $galley = $galleyDao->getGalley($galleyId, $article->getId());
+            }
         }
 
-        if (!$galley) $request->redirect(null, null, 'view', $articleId);
+        if (!$galley) {
+            $request->redirect(null, null, 'view', $articleId);
+            return;
+        }
 
         if (!$fileId) {
             $fileId = $galley->getFileId();
         } else {
             if (!$galley->isDependentFile($fileId)) {
                 $request->redirect(null, null, 'view', $articleId);
+                return;
             }
         }
 
-        // HookRegistry keeps & for object references in array
         if (!HookRegistry::dispatch('ArticleHandler::viewFile', [&$article, &$galley, &$fileId])) {
             import('classes.submission.common.Action');
             Action::viewFile($article->getId(), $fileId);
@@ -462,11 +469,15 @@ class ArticleHandler extends Handler {
         $this->validate($request, $articleId, $galleyId);
         $article = $this->article;
 
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
-        if ($this->journal->getSetting('enablePublicGalleyId')) {
-            $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $article->getId());
-        } else {
-            $galley = $galleyDao->getGalley($galleyId, $article->getId());
+        $galley = null;
+        if ($galleyDao) {
+            if ($this->journal->getSetting('enablePublicGalleyId')) {
+                $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $article->getId());
+            } else {
+                $galley = $galleyDao->getGalley($galleyId, $article->getId());
+            }
         }
 
         if ($article && $galley) {
@@ -488,15 +499,20 @@ class ArticleHandler extends Handler {
         $articleId = isset($args[0]) ? (int) $args[0] : 0;
         $suppId = isset($args[1]) ? $args[1] : 0;
         
+        // [WIZDAM] 2 args - $galleyId akan null di validate()
         $this->validate($request, $articleId);
         $journal = $this->journal;
         $article = $this->article;
 
+        /** @var SuppFileDAO $suppFileDao */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
-        if ($journal->getSetting('enablePublicSuppFileId')) {
-            $suppFile = $suppFileDao->getSuppFileByBestSuppFileId($suppId, $article->getId());
-        } else {
-            $suppFile = $suppFileDao->getSuppFile((int) $suppId, $article->getId());
+        $suppFile = null;
+        if ($suppFileDao) {
+            if ($journal->getSetting('enablePublicSuppFileId')) {
+                $suppFile = $suppFileDao->getSuppFileByBestSuppFileId($suppId, $article->getId());
+            } else {
+                $suppFile = $suppFileDao->getSuppFile((int) $suppId, $article->getId());
+            }
         }
 
         if ($article && $suppFile && !HookRegistry::dispatch('ArticleHandler::downloadSuppFile', [&$article, &$suppFile])) {
@@ -504,6 +520,7 @@ class ArticleHandler extends Handler {
             $articleFileManager = new ArticleFileManager($article->getId());
             if ($suppFile->getRemoteURL()) {
                 $request->redirectUrl($suppFile->getRemoteURL());
+                return;
             }
             $articleFileManager->downloadFile($suppFile->getFileId(), null, $suppFile->isInlineable());
         }
@@ -511,36 +528,43 @@ class ArticleHandler extends Handler {
 
     /**
      * Validation (Refactored for PHP 8 Compatibility)
-     * @param mixed $requiredContexts (Logic swapped variable in legacy)
-     * @param PKPRequest|null $request
+     * @param mixed $arg1 Bisa $request (PKPRequest) atau $articleId (int)
+     * @param mixed $arg2 Bisa $articleId (int) atau $request (PKPRequest - legacy)
+     * @param mixed $arg3 $galleyId (int|null)
      */
-    public function validate($requiredContexts = null, $request = null) {
-        // Parameter mapping untuk kompatibilitas
-        $originalRequest = $request;
-        $articleId = $requiredContexts;
+    public function validate($arg1 = null, $arg2 = null, $arg3 = null) {
+        $request = null;
+        $articleId = null;
         $galleyId = null;
         
-        // Deteksi pemanggilan gaya lama (Legacy swap check)
-        if ($requiredContexts instanceof PKPRequest) {
-            $originalRequest = $requiredContexts;
-            $articleId = $request;
-            $request = null;
+        if ($arg1 instanceof PKPRequest) {
+            // Pola modern: validate($request, $articleId, $galleyId)
+            $request = $arg1;
+            $articleId = $arg2;
+            $galleyId = $arg3;
+        } elseif ($arg2 instanceof PKPRequest) {
+            // Pola legacy parent: validate($requiredContexts, $request)
+            $request = $arg2;
+            $articleId = $arg1;
+            $galleyId = null;
+        } else {
+            // Pola fallback: validate($articleId) atau validate()
+            $request = Application::get()->getRequest();
+            $articleId = $arg1;
+            $galleyId = $arg2;
         }
         
-        // Fallback untuk Request object
-        if ($originalRequest === null) {
-            $originalRequest = Application::get()->getRequest();
+        if ($request === null) {
+            $request = Application::get()->getRequest();
         }
-        
-        $request = $originalRequest;
-        
+
         parent::validate(null, $request);
 
         import('classes.issue.IssueAction');
 
         $router = $request->getRouter();
         $journal = $router->getContext($request);
-        $journalId = $journal->getId();
+        $journalId = (int) $journal->getId();
         $article = null;
         $publishedArticle = null;
         $issue = null;
@@ -548,48 +572,45 @@ class ArticleHandler extends Handler {
         $user = $request->getUser();
         $userId = $user ? $user->getId() : 0;
 
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-        if ($journal->getSetting('enablePublicArticleId')) {
-            $publishedArticle = $publishedArticleDao->getPublishedArticleByBestArticleId((int) $journalId, $articleId, true);
-        } else {
-            $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId((int) $articleId, (int) $journalId, true);
+        if ($publishedArticleDao) {
+            if ($journal->getSetting('enablePublicArticleId')) {
+                $publishedArticle = $publishedArticleDao->getPublishedArticleByBestArticleId($journalId, $articleId, true);
+            } else {
+                $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId((int) $articleId, $journalId, true);
+            }
         }
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         if (isset($publishedArticle)) {
-            $issue = $issueDao->getIssueById($publishedArticle->getIssueId(), $publishedArticle->getJournalId(), true);
+            $issue = $issueDao ? $issueDao->getIssueById($publishedArticle->getIssueId(), $publishedArticle->getJournalId(), true) : null;
         } else {
+            /** @var ArticleDAO $articleDao */
             $articleDao = DAORegistry::getDAO('ArticleDAO');
-            $article = $articleDao->getArticle((int) $articleId, $journalId, true);
+            $article = $articleDao ? $articleDao->getArticle((int) $articleId, $journalId, true) : null;
         }
 
-        // If this is an editorial user who can view unpublished/unscheduled
-        // articles, bypass further validation. Likewise for its author.
-        if (($article || $publishedArticle) && (($article && IssueAction::allowedPrePublicationAccess($journal, $article) || ($publishedArticle && IssueAction::allowedPrePublicationAccess($journal, $publishedArticle))))) {
+        // If this is an editorial user who can view unpublished/unscheduled articles
+        $viewableArticle = $publishedArticle ?? $article;
+        if ($viewableArticle && IssueAction::allowedPrePublicationAccess($journal, $viewableArticle)) {
             $this->journal = $journal;
             $this->issue = $issue;
-            if(isset($publishedArticle)) {
-                $this->article = $publishedArticle;
-            } else $this->article = $article;
-
+            $this->article = $viewableArticle;
             return true;
         }
 
-        // Make sure the reader has rights to view the article/issue.
-        if ($issue && $issue->getPublished() && $publishedArticle->getStatus() == STATUS_PUBLISHED) {
+        // [BUGFIX] Tambah null check pada $publishedArticle
+        if ($issue && $issue->getPublished() && $publishedArticle && $publishedArticle->getStatus() == STATUS_PUBLISHED) {
             $subscriptionRequired = IssueAction::subscriptionRequired($issue);
             $isSubscribedDomain = IssueAction::subscribedDomain($journal, $issue->getId(), $publishedArticle->getId());
 
-            // Check if login is required for viewing.
-            if (!$isSubscribedDomain && !Validation::isLoggedIn() && $journal->getSetting('restrictArticleAccess') && isset($galleyId) && $galleyId) {
+            if (!$isSubscribedDomain && !Validation::isLoggedIn() && $journal->getSetting('restrictArticleAccess') && $galleyId) {
                 Validation::redirectLogin();
             }
 
-            // bypass all validation if subscription based on domain or ip is valid
-            // or if the user is just requesting the abstract
-            if ( (!$isSubscribedDomain && $subscriptionRequired) && (isset($galleyId) && $galleyId) ) {
-
-                // Subscription Access
+            if ((!$isSubscribedDomain && $subscriptionRequired) && $galleyId) {
                 $subscribedUser = IssueAction::subscribedUser($journal, $issue->getId(), $publishedArticle->getId());
 
                 import('classes.payment.ojs.OJSPaymentManager');
@@ -597,23 +618,26 @@ class ArticleHandler extends Handler {
 
                 $purchasedIssue = false;
                 if (!$subscribedUser && $paymentManager->purchaseIssueEnabled()) {
+                    /** @var OJSCompletedPaymentDAO $completedPaymentDao */
                     $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
-                    $purchasedIssue = $completedPaymentDao->hasPaidPurchaseIssue($userId, $issue->getId());
+                    $purchasedIssue = $completedPaymentDao ? $completedPaymentDao->hasPaidPurchaseIssue($userId, $issue->getId()) : false;
                 }
 
                 if (!(!$subscriptionRequired || $publishedArticle->getAccessStatus() == ARTICLE_ACCESS_OPEN || $subscribedUser || $purchasedIssue)) {
 
-                    if ( $paymentManager->purchaseArticleEnabled() || $paymentManager->membershipEnabled() ) {
-                        /* if only pdf files are being restricted, then approve all non-pdf galleys
-                         * and continue checking if it is a pdf galley */
-                        if ( $paymentManager->onlyPdfEnabled() ) {
+                    if ($paymentManager->purchaseArticleEnabled() || $paymentManager->membershipEnabled()) {
+                        if ($paymentManager->onlyPdfEnabled()) {
+                            /** @var ArticleGalleyDAO $galleyDao */
                             $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
-                            if ($journal->getSetting('enablePublicGalleyId')) {
-                                $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $publishedArticle->getId());
-                            } else {
-                                $galley = $galleyDao->getGalley($galleyId, $publishedArticle->getId());
+                            $galley = null;
+                            if ($galleyDao) {
+                                if ($journal->getSetting('enablePublicGalleyId')) {
+                                    $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $publishedArticle->getId());
+                                } else {
+                                    $galley = $galleyDao->getGalley($galleyId, $publishedArticle->getId());
+                                }
                             }
-                            if ( $galley && !$galley->isPdfGalley() ) {
+                            if ($galley && !$galley->isPdfGalley()) {
                                 $this->journal = $journal;
                                 $this->issue = $issue;
                                 $this->article = $publishedArticle;
@@ -625,18 +649,17 @@ class ArticleHandler extends Handler {
                             Validation::redirectLogin("payment.loginRequired.forArticle");
                         }
 
-                        /* if the article has been paid for then forget about everything else
-                         * and just let them access the article */
+                        /** @var OJSCompletedPaymentDAO $completedPaymentDao */
                         $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
-                        $dateEndMembership = $user->getSetting('dateEndMembership', 0);
-                        if ($completedPaymentDao->hasPaidPurchaseArticle($userId, $publishedArticle->getId())
+                        $dateEndMembership = $user ? $user->getSetting('dateEndMembership', 0) : 0;
+                        if (($completedPaymentDao && $completedPaymentDao->hasPaidPurchaseArticle($userId, $publishedArticle->getId()))
                             || (!is_null($dateEndMembership) && $dateEndMembership > time())) {
                             $this->journal = $journal;
                             $this->issue = $issue;
                             $this->article = $publishedArticle;
                             return true;
                         } else {
-                            $queuedPayment = $paymentManager->createQueuedPayment($journalId, PAYMENT_TYPE_PURCHASE_ARTICLE, $user->getId(), $publishedArticle->getId(), $journal->getSetting('purchaseArticleFee'));
+                            $queuedPayment = $paymentManager->createQueuedPayment($journalId, PAYMENT_TYPE_PURCHASE_ARTICLE, $userId, $publishedArticle->getId(), $journal->getSetting('purchaseArticleFee'));
                             $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
 
                             $paymentManager->displayPaymentForm($queuedPaymentId, $queuedPayment);
@@ -644,7 +667,7 @@ class ArticleHandler extends Handler {
                         }
                     }
 
-                    if (!isset($galleyId) || $galleyId) {
+                    if ($galleyId) {
                         if (!Validation::isLoggedIn()) {
                             Validation::redirectLogin("reader.subscriptionRequiredLoginText");
                         }
@@ -655,6 +678,7 @@ class ArticleHandler extends Handler {
         } else {
             $request->redirect(null, 'index');
         }
+        
         $this->journal = $journal;
         $this->issue = $issue;
         $this->article = $publishedArticle;
@@ -663,24 +687,21 @@ class ArticleHandler extends Handler {
 
     /**
      * Set up the template
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function setupTemplate($request = null) {
         parent::setupTemplate();
         
-        // Dapatkan request dari arguments atau context
         if ($request === null) {
             $args = func_get_args();
             $request = isset($args[0]) ? $args[0] : null;
         }
         
-        // Jika request tidak ada, coba dapatkan dari context
         if ($request === null) {
             $request = Application::get()->getRequest();
         }
         
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_READER, LOCALE_COMPONENT_CORE_SUBMISSION);
-        
         if ($this->article) {
             $templateMgr = TemplateManager::getManager($request);
             $templateMgr->assign('ccLicenseBadge', Application::getCCLicenseBadge($this->article->getLicenseURL()));
@@ -689,96 +710,87 @@ class ArticleHandler extends Handler {
     
     /**
      * Menampilkan halaman metrik untuk artikel tertentu.
-     * [WIZDAM] Versi ini menyertakan logika "Best ID" manual yang lebih lama
-     * @param array $args Argumen URL (misal, $args[0] adalah <articleId>)
-     * @param PKPRequest $request Objek Request OJS
+     * @param array $args
+     * @param PKPRequest $request
      */
     public function metrics($args = [], $request = null) {
-
-        // --- 1. Inisialisasi dan Pengambilan Data Dasar ---
+        if ($request === null) {
+            $request = Application::get()->getRequest();
+        }
+        
         $articleId = isset($args[0]) ? $args[0] : 0;
         $journal = $request->getJournal();
         $user = $request->getUser();
+        $currentJournalId = (int) $journal->getId();
         
-        // Kita butuh PublishedArticleDAO untuk ini
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-
-        // --- 2. Logika Pemuatan Artikel (Manual "Best ID") ---
-        // Langkah 2a: Coba dulu sebagai ID Kustom (PubId) 'publisher-id' 
-        // kunci untuk ID Kustom 'true' di akhir adalah untuk checkLocale
-        $article = $publishedArticleDao->getPublishedArticleByPubId('publisher-id', $articleId, $journal->getId(), true);
-
-        if (!$article) {
-            // Langkah 2b: Jika GAGAL, coba sebagai ID Numerik internal
-            // (Kita pastikan itu integer dengan (int))
-            $article = $publishedArticleDao->getPublishedArticleByArticleId((int)$articleId, $journal->getId(), true);
+        if (!$publishedArticleDao) {
+            $request->redirect(null, 'index');
+            return;
         }
 
-        // --- 3. Validasi Input (Guard Clause) ---
-        // SEKARANG baru kita cek apakah $article valid setelah SEMUA percobaan
+        $article = $publishedArticleDao->getPublishedArticleByPubId('publisher-id', $articleId, $currentJournalId);
+
         if (!$article) {
-            // Gunakan perbaikan redirect final
-            $baseUrl = $request->getBaseUrl();
-            header("Location: " . $baseUrl . "/index");
-            exit;
+            $article = $publishedArticleDao->getPublishedArticleByArticleId((int) $articleId, $currentJournalId, true);
         }
 
-        // --- 4. Pengecekan Izin Akses (Permission Check) ---
-        $isEditor = Validation::isEditor($journal->getId());
-        
+        // [WIZDAM] FIX: Gunakan redirect, bukan header() manual
+        if (!$article) {
+            $request->redirect(null, 'index');
+            return;
+        }
+
+        $isEditor = Validation::isEditor($currentJournalId);
         if ($article->getStatus() != STATUS_PUBLISHED) {
             $isAuthor = $user && $user->getId() == $article->getUserId();
             if (!$user || (!$isAuthor && !$isEditor)) {
-                // Gunakan perbaikan redirect final
-                $baseUrl = $request->getBaseUrl();
-                header("Location: " . $baseUrl . "/index");
-                exit;
+                $request->redirect(null, 'index');
+                return;
             }
         }
 
-        // --- 5. Menyiapkan Template Manager ---
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('article', $article);
 
-        // --- 6. Pengambilan Statistik ---
-        
-        // 6a. Abstract Views
-        $views = 0;
-        if (method_exists($article, 'getViews')) {
-            $views = (int) $article->getViews();
-        }
+        // Abstract Views
+        $views = method_exists($article, 'getViews') ? (int) $article->getViews() : 0;
 
-        // 6b. Galley (Download) Views
+        // Galley (Download) Views
         $downloads = 0;
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); 
-        $galleys = $galleyDao->getGalleysByArticle($article->getId());
-        
-        foreach ($galleys as $galley) {
-            if (method_exists($galley, 'getViews')) {
-                $downloads += (int) $galley->getViews();
+        if ($galleyDao) {
+            $galleys = $galleyDao->getGalleysByArticle($article->getId());
+            foreach ($galleys as $galley) {
+                if (method_exists($galley, 'getViews')) {
+                    $downloads += (int) $galley->getViews();
+                }
             }
         }
 
-        // --- 7. Menyiapkan dan Menampilkan Halaman ---
-        $templateMgr->assign('views', $views);
-        $templateMgr->assign('downloads', $downloads);
-        
         $doi = $article->getPubId('doi');
-        $templateMgr->assign('doi', $doi); 
+        
+        // [WIZDAM] Micro-payloads
+        $templateMgr->assign([
+            'views'     => $views,
+            'downloads' => $downloads,
+            'doi'       => $doi
+        ]);
 
-        // Parent call (uses internal implicit request usually)
         $this->setupTemplate($request);
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
-        $issue = $issueDao->getIssueByArticleId($article->getId());
-
-        if ($issue && $issue->getJournalId() == $journal->getId()) {
+        $issue = $issueDao ? $issueDao->getIssueByArticleId($article->getId()) : null;
+        if ($issue && $issue->getJournalId() == $currentJournalId) {
             $templateMgr->assign('issue', $issue);
         } else {
             $templateMgr->assign('issue', null);
         }
         
-        // --- Logika "Last Updated" ---
+        // Last Updated
         $lastUpdatedString = 'N/A';
         $filesDir = Config::getVar('files', 'files_dir');
         $archiveDir = $filesDir . '/usageStats/archive/';
@@ -806,7 +818,6 @@ class ArticleHandler extends Handler {
         }
         $templateMgr->assign('statsLastUpdated', $lastUpdatedString);
 
-        // Tampilkan template
         $templateMgr->display('article/metrics.tpl');
     }
 }

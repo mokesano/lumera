@@ -17,9 +17,7 @@ declare(strict_types=1);
  * @see JournalDAO
  *
  * @brief Describes basic journal properties.
- * [WIZDAM EDITION] PHP 7.4+ Compatible & Cleaned References
  */
-
 
 define('PUBLISHING_MODE_OPEN', 0);
 define('PUBLISHING_MODE_SUBSCRIPTION', 1);
@@ -29,7 +27,6 @@ class Journal extends DataObject {
     
     /**
      * Constructor.
-     * [MODERNISASI] Native Constructor
      */
     public function __construct() {
         parent::__construct();
@@ -64,7 +61,7 @@ class Journal extends DataObject {
 
     /**
      * Set the primary locale of this journal.
-     * @param $primaryLocale string
+     * @param mixed $primaryLocale string
      */
     public function setPrimaryLocale($primaryLocale) {
         return $this->setData('primaryLocale', $primaryLocale);
@@ -72,7 +69,6 @@ class Journal extends DataObject {
 
     /**
      * Return associative array of all locales supported by the journal.
-     * [MODERNISASI] Removed & reference
      * @return array
      */
     public function getSupportedLocaleNames() {
@@ -98,7 +94,6 @@ class Journal extends DataObject {
 
     /**
      * Return associative array of all locales supported by forms of the journal.
-     * [MODERNISASI] Removed & reference
      * @return array
      */
     public function getSupportedFormLocaleNames() {
@@ -123,7 +118,6 @@ class Journal extends DataObject {
 
     /**
      * Return associative array of all locales supported for the submissions.
-     * [MODERNISASI] Removed & reference
      * @return array
      */
     public function getSupportedSubmissionLocaleNames() {
@@ -166,6 +160,11 @@ class Journal extends DataObject {
         return null;
     }
 
+    /**
+     * [DEPRICATED] Deprecated function.
+     * @param bool $home
+     * @deprecated
+     */
     public function getJournalPageHeaderTitle($home = false) {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedPageHeaderTitle($home);
@@ -184,6 +183,11 @@ class Journal extends DataObject {
         return null;
     }
 
+    /**
+     * [DEPRICATED] Deprecated function.
+     * @param bool $home
+     * @deprecated
+     */
     public function getJournalPageHeaderLogo($home = false) {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedPageHeaderLogo($home);
@@ -214,6 +218,10 @@ class Journal extends DataObject {
         return $this->getLocalizedSetting('title', $preferredLocale);
     }
 
+    /**
+     * [DEPRICATED] Deprecated function.
+     * @deprecated
+     */
     public function getJournalTitle() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedTitle();
@@ -221,7 +229,7 @@ class Journal extends DataObject {
 
     /**
      * Get title of journal
-     * @param $locale string
+     * @param mixed $locale string
      * @return string
      */
     public function getTitle($locale) {
@@ -236,6 +244,10 @@ class Journal extends DataObject {
         return $this->getLocalizedSetting('initials');
     }
 
+    /**
+     * [DEPRICATED] Deprecated function.
+     * @deprecated
+     */
     public function getJournalInitials() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedInitials();
@@ -243,7 +255,7 @@ class Journal extends DataObject {
 
     /**
      * Get the initials of the journal.
-     * @param $locale string
+     * @param mixed $locale string
      * @return string
      */
     public function getInitials($locale) {
@@ -260,15 +272,15 @@ class Journal extends DataObject {
 
     /**
      * Set enabled flag of journal
-     * @param $enabled int
+     * @param mixed $enabled int
      */
     public function setEnabled($enabled) {
         return $this->setData('enabled',$enabled);
     }
 
     /**
-     * Get ID of journal.
-     * @return int
+     * [DEPRICATED] Deprecated function.
+     * @deprecated
      */
     public function getJournalId() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
@@ -276,8 +288,9 @@ class Journal extends DataObject {
     }
 
     /**
-     * Set ID of journal.
-     * @param $journalId int
+     * [DEPRICATED] Deprecated function.
+     * @param mixed $journalId
+     * @deprecated
      */
     public function setJournalId($journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
@@ -292,6 +305,10 @@ class Journal extends DataObject {
         return $this->getLocalizedSetting('description');
     }
 
+    /**
+     * [DEPRICATED] Deprecated function.
+     * @deprecated
+     */
     public function getJournalDescription() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedDescription();
@@ -299,7 +316,7 @@ class Journal extends DataObject {
     
     /**
      * Get description of journal.
-     * @param $locale string
+     * @param mixed $locale string
      * @return string
      */
     public function getDescription($locale) {
@@ -316,7 +333,7 @@ class Journal extends DataObject {
 
     /**
      * Set path to journal (in URL).
-     * @param $path string
+     * @param mixed $path string
      */
     public function setPath($path) {
         return $this->setData('path', $path);
@@ -332,7 +349,7 @@ class Journal extends DataObject {
 
     /**
      * Set sequence of journal in site table of contents.
-     * @param $sequence float
+     * @param mixed $sequence float
      */
     public function setSequence($sequence) {
         return $this->setData('sequence', $sequence);
@@ -340,10 +357,10 @@ class Journal extends DataObject {
 
     /**
      * Retrieve array of journal settings.
-     * [MODERNISASI] Removed & reference
      * @return array
      */
     public function getSettings() {
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $settings = $journalSettingsDao->getJournalSettings($this->getId());
         return $settings;
@@ -351,9 +368,8 @@ class Journal extends DataObject {
 
     /**
      * Retrieve a localized setting.
-     * [MODERNISASI] Removed & reference
-     * @param $name string
-     * @param $preferredLocale string
+     * @param mixed $name string
+     * @param mixed $preferredLocale string
      * @return mixed
      */
     public function getLocalizedSetting($name, $preferredLocale = null) {
@@ -368,12 +384,12 @@ class Journal extends DataObject {
 
     /**
      * Retrieve a journal setting value.
-     * [MODERNISASI] Removed & reference
-     * @param $name string
+     * @param mixed $name string
      * @param $locale string
      * @return mixed
      */
     public function getSetting($name, $locale = null) {
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $setting = $journalSettingsDao->getSetting($this->getId(), $name, $locale);
         return $setting;
@@ -381,12 +397,13 @@ class Journal extends DataObject {
 
     /**
      * Update a journal setting value.
-     * @param $name string
-     * @param $value mixed
-     * @param $type string optional
-     * @param $isLocalized boolean optional
+     * @param mixed $name string
+     * @param mixed $value mixed
+     * @param mixed $type string optional
+     * @param bool $isLocalized boolean optional
      */
     public function updateSetting($name, $value, $type = null, $isLocalized = false) {
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         return $journalSettingsDao->updateSetting($this->getId(), $name, $value, $type, $isLocalized);
     }
@@ -398,8 +415,8 @@ class Journal extends DataObject {
     
     /**
      * Return all metric types supported by this journal.
-	 *
-	 * @return array An array of strings of supported metric type identifiers.
+     * @param bool $withDisplayNames
+	 * @return array
 	 */
     public function getMetricTypes($withDisplayNames = false) {
         $reportPlugins = PluginRegistry::loadCategory('reports', true, $this->getId());
@@ -422,13 +439,10 @@ class Journal extends DataObject {
 
     /**
      * Returns the currently configured default metric type for this journal.
-     * 
-	 * @return null|string A metric type identifier or null if no default metric
-	 *   type could be identified.
+	 * @return null|string
 	 */
     public function getDefaultMetricType() {
         $defaultMetricType = $this->getSetting('defaultMetricType');
-
         $availableMetrics = $this->getMetricTypes();
         if (empty($defaultMetricType)) {
             if (count($availableMetrics) === 1) {
@@ -445,16 +459,13 @@ class Journal extends DataObject {
 
     /**
      * Retrieve a statistics report pre-filtered on this journal.
-     * [MODERNISASI] Strict Type Hinting (array) for Consistency with Application.inc.php
-	 *
-	 * @param $metricType null|integer|array metrics selection
-	 * @param $columns integer|array column (aggregation level) selection
-	 * @param $filter array report-level filter selection
-	 * @param $orderBy array order criteria
-	 * @param $range null|DBResultRange paging specification
-	 *
-	 * @return null|array The selected data as a simple tabular
-	 *  result set or null if metrics are not supported by this journal.
+     * [MODERNIZED] Strict Type Hinting (array) for Consistency with Application.inc.php
+	 * @param mixed $metricType null|integer|array metrics selection
+	 * @param array $columns integer|array column (aggregation level) selection
+	 * @param array $filter array report-level filter selection
+	 * @param array $orderBy array order criteria
+	 * @param mixed $range null|DBResultRange paging specification
+	 * @return null|array
 	 */
     public function getMetrics($metricType = null, array $columns = [], array $filter = [], array $orderBy = [], $range = null) {
         // Add a journal filter and run the report.
@@ -463,5 +474,4 @@ class Journal extends DataObject {
         return $application->getMetrics($metricType, $columns, $filter, $orderBy, $range);
     }
 }
-
 ?>

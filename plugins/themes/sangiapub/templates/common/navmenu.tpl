@@ -98,7 +98,7 @@
 
                             {if $membershipGroups}
                                 {foreach from=$membershipGroups item=peopleGroup}
-                                <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="displayMembership" path=$peopleGroup.group_id}" data-track="click" data-track-label="link" data-test="explore-nav-item">{$peopleGroup.title|escape}</a></li>
+                                <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="display-membership" path=$peopleGroup.group_id}" data-track="click" data-track-label="link" data-test="explore-nav-item">{$peopleGroup.title|escape}</a></li>
                                 {/foreach}
                             {/if}
                             {call_hook name="Templates::About::Index::People"}
@@ -106,24 +106,24 @@
                                     <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.journal"}</a></li>
                                         
                                     {if $currentJournal->getLocalizedSetting('focusScopeDesc') != ''}
-                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="editorialPolicies" anchor="focusAndScope"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.focusAndScope"}</a></li>{/if}
+                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="editorial-policies" anchor="focusAndScope"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.focusAndScope"}</a></li>{/if}
                                         
                                     {foreach from=$navMenuItems item=navItem key=navItemKey}{if $navItem.url != '' && $navItem.name != ''}
                                     <li class="c-header-expander__item"><a class="c-header-expander__link" href="{if $navItem.isAbsolute}{$navItem.url|escape}{else}{$baseUrl}{$navItem.url|escape}{/if}" data-track="click" data-track-label="link" data-test="explore-nav-item">{if $navItem.isLiteral}{$navItem.name|escape}{else}{translate key=$navItem.name}{/if}</a></li>{/if}{/foreach}
                                         
-                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="editorialPolicies" anchor="sectionPolicies"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.sectionPolicies"}</a></li>
+                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="editorial-policies" anchor="sectionPolicies"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.sectionPolicies"}</a></li>
                                         
                                     {call_hook name="Templates::About::Index::Policies"}
                                         
                                     {if $currentJournal->getLocalizedSetting('pubFreqPolicy') != ''}
-                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="editorialPolicies" anchor="publicationFrequency"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.publicationFrequency"}</a></li>{/if}
+                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="editorial-policies" anchor="publicationFrequency"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.publicationFrequency"}</a></li>{/if}
                                         
                                     {if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN && $currentJournal->getLocalizedSetting('openAccessPolicy') != ''}
-                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="editorialPolicies" anchor="openAccessPolicy"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.openAccessPolicy"}</a></li>{/if}
+                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="editorial-policies" anchor="openAccessPolicy"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.openAccessPolicy"}</a></li>{/if}
                                         
                                     <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="announcement"}" data-track="click" data-track-label="link" data-test="explore-nav-item">Announcements</a></li>
                                         
-                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="editorialPolicies" anchor="archiving"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.archiving"}</a></li>
+                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="editorial-policies" anchor="archiving"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.archiving"}</a></li>
                                         
                                     {if $currentJournal->getLocalizedSetting('history') != ''}
                                     <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="history"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.history"}</a></li>
@@ -135,7 +135,7 @@
                                     {call_hook name="Templates::About::Index::Other"}
                                         
                                     {if not ($currentJournal->getSetting('publisherInstitution') == '' && $currentJournal->getLocalizedSetting('publisherNote') == '' && $currentJournal->getLocalizedSetting('contributorNote') == '' && empty($journalSettings.contributors) && $currentJournal->getLocalizedSetting('sponsorNote') == '' && empty($journalSettings.sponsors))}
-                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="journalSponsorship"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.journalSponsorship"}</a></li>{/if}
+                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="sponsorship"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.journalSponsorship"}</a></li>{/if}
                                         
                                     {if $siteCategoriesEnabled}
                                     <li class="c-header-expander__item c-header-expander__item--keyline c-header-expander__item--keyline-first-item-only u-hide-at-lg"><a class="c-header-expander__link" href="/" data-track="click" data-track-action="OAI feed" data-track-label="link"><span>{translate key="navigation.otherJournals"}</span></a></li>
@@ -196,7 +196,7 @@
                 <div class="c-header__menu u-ml-16 u-show-lg u-show-at-lg">
                     <div class="c-header__item c-header__item--pipe">
                     {if $currentJournal}
-                        {if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_SUBSCRIPTION}<a class="c-header__link" href="{url page="about" op="subscriptions"}" data-track="click" data-track-action="subscribe" data-track-label="link" data-test="menu-button-subscribe">
+                        {if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_SUBSCRIPTION}<a class="c-header__link" href="{url page="about" op="subscribe"}" data-track="click" data-track-action="subscribe" data-track-label="link" data-test="menu-button-subscribe">
                             <span>{translate key="about.subscriptions"}</span>
                         </a>{/if}{* $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_SUBSCRIPTION *}
 

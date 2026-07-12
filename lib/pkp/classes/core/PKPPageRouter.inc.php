@@ -266,7 +266,7 @@ class PKPPageRouter extends PKPRouter {
 
         // Instantiate the handler class
         $HandlerClass = HANDLER_CLASS;
-        $handler = new $HandlerClass($request);
+        $handler = new $HandlerClass();
 
         // Authorize and initialize the request
         $args = $this->getRequestedArgs($request);

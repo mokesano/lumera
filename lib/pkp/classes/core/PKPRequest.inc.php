@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 
 class PKPRequest {
+    
     //
     // Internal state - please do not reference directly
     //
@@ -76,7 +77,7 @@ class PKPRequest {
 
     /**
      * Set the router instance.
-     * @param $router
+     * @param mixed $router
      */
     public static function setRouter($router) {
         $instance = self::_checkThis();
@@ -85,7 +86,7 @@ class PKPRequest {
 
     /**
      * Set the dispatcher.
-     * @param $dispatcher
+     * @param mixed $dispatcher
      */
     public static function setDispatcher($dispatcher) {
         $instance = self::_checkThis();
@@ -103,7 +104,7 @@ class PKPRequest {
 
     /**
      * Perform an HTTP redirect to an absolute or relative (to base system URL) URL.
-     * @param $url string
+     * @param mixed $url string
      */
     public static function redirectUrl($url) {
         // self::_checkThis(); // Optional verification
@@ -132,7 +133,7 @@ class PKPRequest {
 
     /**
      * Request an HTTP redirect via JSON to be used from components.
-     * @param $url string
+     * @param mixed $url string
      */
     public static function redirectUrlJson($url) {
         import('lib.pkp.classes.core.JSONMessage');
@@ -572,6 +573,7 @@ class PKPRequest {
     public static function getSite() {
         $site = Registry::get('site', true, null);
         if ($site === null) {
+            /** @var SiteDAO $siteDao */
             $siteDao = DAORegistry::getDAO('SiteDAO');
             $site = $siteDao->getSite();
             // PHP bug? This is needed for reason or extra queries results.
@@ -613,7 +615,7 @@ class PKPRequest {
 
     /**
      * Get the value of a GET/POST variable.
-     * @return mixed
+     * @param mixed $key
      */
     public static function getUserVar($key) {
         $instance = self::_checkThis();
@@ -646,6 +648,7 @@ class PKPRequest {
     /**
      * Get the value of a GET/POST variable generated using the Smarty
      * html_select_date and/or html_select_time function.
+     * @param mixed $prefix
      * @return Date
      */
     public static function getUserDateVar($prefix, $defaultDay = null, $defaultMonth = null, $defaultYear = null, $defaultHour = 0, $defaultMinute = 0, $defaultSecond = 0) {
@@ -675,7 +678,7 @@ class PKPRequest {
     /**
      * Sanitize a user-submitted variable (i.e., GET/POST/Cookie variable).
      * Strips slashes if necessary, then sanitizes variable as per Core::cleanVar().
-     * @param $var mixed
+     * @param mixed $var mixed
      */
     public static function cleanUserVar(&$var) {
         if (isset($var) && is_array($var)) {
@@ -693,7 +696,7 @@ class PKPRequest {
 
     /**
      * Get the value of a cookie variable.
-     * @return mixed
+     * @param mixed $key
      */
     public static function getCookieVar($key) {
         $instance = self::_checkThis();
@@ -709,8 +712,8 @@ class PKPRequest {
 
     /**
      * Set a cookie variable.
-     * @param $key string
-     * @param $value mixed
+     * @param mixed $key string
+     * @param mixed $value mixed
      * @param $expire int (optional)
      */
     public static function setCookieVar($key, $value, $expire = 0) {
@@ -855,7 +858,7 @@ class PKPRequest {
      * This method exists to maintain backwards compatibility
      * with calls to methods that have been factored into the
      * Router implementations.
-     * @return mixed depends on the called method
+     * @param mixed $method
      */
     public function _delegateToRouter($method) {
         $router = $this->getRouter(); 
@@ -903,6 +906,33 @@ class PKPRequest {
         }
         
         return true;
+    }
+
+    /**
+     * Get the journal associated with the current request.
+     * Delegates to router context resolution.
+     * @return Journal|null
+     */
+    public static function getJournal() {
+        $instance = self::_checkThis();
+        $returner = $instance->_delegateToRouter('getContext', 1);
+        return $returner;
+    }
+
+    /**
+     * Get the requested journal path.
+     * @return string
+     */
+    public static function getRequestedJournalPath() {
+        static $journalPath;
+        $instance = self::_checkThis();
+
+        if (!isset($journalPath)) {
+            $journalPath = $instance->_delegateToRouter('getRequestedContextPath', 1);
+            HookRegistry::dispatch('Request::getRequestedJournalPath', array(&$journalPath));
+        }
+
+        return $journalPath;
     }
 }
 ?>
