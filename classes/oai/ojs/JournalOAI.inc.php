@@ -17,6 +17,7 @@ declare(strict_types=1);
  * @see OAIDAO
  *
  * @brief LUMERA-specific OAI interface.
+ * 
  * Designed to support both a site-wide and journal-specific OAI interface
  * (based on where the request is directed).
  */
