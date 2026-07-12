@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * @defgroup oai_ojs
+ * @defgroup oai_lumera
  */
 
 /**
@@ -13,7 +13,7 @@ declare(strict_types=1);
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @class JournalOAI
- * @ingroup oai_ojs
+ * @ingroup oai_lumera
  * @see OAIDAO
  *
  * @brief LUMERA-specific OAI interface.
