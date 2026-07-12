@@ -21,32 +21,31 @@ class ArticleCommentDAO extends DAO {
     
     /**
      * Retrieve ArticleComments by article id
+     * 
      * @param int $articleId
      * @param int|null $commentType
      * @param int|null $assocId
      * @return array ArticleComment objects
      */
     public function getArticleComments($articleId, $commentType = null, $assocId = null) {
-        $articleComments = array();
+        $articleComments = [];
 
-        if ($commentType == null) {
-            $result = $this->retrieve(
-                'SELECT a.* FROM article_comments a WHERE article_id = ? ORDER BY date_posted', 
-                (int) $articleId
-            );
-        } else {
-            if ($assocId == null) {
-                $result = $this->retrieve(
-                    'SELECT a.* FROM article_comments a WHERE article_id = ? AND comment_type = ? ORDER BY date_posted', 
-                    array((int) $articleId, (int) $commentType)
-                );
-            } else {
-                $result = $this->retrieve(
-                    'SELECT a.* FROM article_comments a WHERE article_id = ? AND comment_type = ? AND assoc_id = ? ORDER BY date_posted',
-                    array((int) $articleId, (int) $commentType, (int) $assocId)
-                );
+        $sql = 'SELECT a.* FROM article_comments a WHERE article_id = ?';
+        $params = [(int) $articleId];
+
+        if ($commentType !== null) {
+            $sql .= ' AND comment_type = ?';
+            $params[] = (int) $commentType;
+
+            if ($assocId !== null) {
+                $sql .= ' AND assoc_id = ?';
+                $params[] = (int) $assocId;
             }
         }
+
+        $sql .= ' ORDER BY date_posted';
+
+        $result = $this->retrieve($sql, $params);
 
         while (!$result->EOF) {
             $articleComments[] = $this->_returnArticleCommentFromRow($result->GetRowAssoc(false));
@@ -61,15 +60,16 @@ class ArticleCommentDAO extends DAO {
 
     /**
      * Retrieve ArticleComments by user id
+     * 
      * @param int $userId
      * @return array ArticleComment objects
      */
     public function getArticleCommentsByUserId($userId) {
-        $articleComments = array();
+        $articleComments = [];
 
         $result = $this->retrieve(
             'SELECT a.* FROM article_comments a WHERE author_id = ? ORDER BY date_posted', 
-            (int) $userId
+            [(int) $userId]
         );
 
         while (!$result->EOF) {
@@ -85,40 +85,38 @@ class ArticleCommentDAO extends DAO {
 
     /**
      * Retrieve most recent ArticleComment
+     * 
      * @param int $articleId
      * @param int|null $commentType
      * @param int|null $assocId
      * @return ArticleComment|null
      */
     public function getMostRecentArticleComment($articleId, $commentType = null, $assocId = null) {
-        if ($commentType == null) {
-            $result = $this->retrieveLimit(
-                'SELECT a.* FROM article_comments a WHERE article_id = ? ORDER BY date_posted DESC',
-                (int) $articleId,
-                1
-            );
-        } else {
-            if ($assocId == null) {
-                $result = $this->retrieveLimit(
-                    'SELECT a.* FROM article_comments a WHERE article_id = ? AND comment_type = ? ORDER BY date_posted DESC',
-                    array((int) $articleId, (int) $commentType),
-                    1
-                );
-            } else {
-                $result = $this->retrieveLimit(
-                    'SELECT a.* FROM article_comments a WHERE article_id = ? AND comment_type = ? AND assoc_id = ? ORDER BY date_posted DESC',
-                    array((int) $articleId, (int) $commentType, (int) $assocId),
-                    1
-                );
+        $sql = 'SELECT a.* FROM article_comments a WHERE article_id = ?';
+        $params = [(int) $articleId];
+
+        if ($commentType !== null) {
+            $sql .= ' AND comment_type = ?';
+            $params[] = (int) $commentType;
+
+            if ($assocId !== null) {
+                $sql .= ' AND assoc_id = ?';
+                $params[] = (int) $assocId;
             }
         }
 
+        $sql .= ' ORDER BY date_posted DESC';
+
+        $result = $this->retrieveLimit($sql, $params, 1);
+
         $returner = null;
-        if (isset($result) && !$result->EOF) {
+        if ($result && !$result->EOF) {
             $returner = $this->_returnArticleCommentFromRow($result->GetRowAssoc(false));
         }
 
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         unset($result);
 
         return $returner;
@@ -126,13 +124,14 @@ class ArticleCommentDAO extends DAO {
 
     /**
      * Retrieve Article Comment by comment id
+     * 
      * @param int $commentId
      * @return ArticleComment|null
      */
     public function getArticleCommentById($commentId) {
         $result = $this->retrieve(
             'SELECT a.* FROM article_comments a WHERE comment_id = ?', 
-            (int) $commentId
+            [(int) $commentId]
         );
 
         $articleComment = null;
@@ -148,8 +147,9 @@ class ArticleCommentDAO extends DAO {
 
     /**
      * Creates and returns an article comment object from a row
+     * 
      * @param array $row
-     * @return ArticleComment object
+     * @return ArticleComment
      */
     public function _returnArticleCommentFromRow($row) {
         $articleComment = new ArticleComment();
@@ -165,15 +165,15 @@ class ArticleCommentDAO extends DAO {
         $articleComment->setDateModified($this->datetimeFromDB($row['date_modified']));
         $articleComment->setViewable($row['viewable']);
 
-        // Guideline #3: Object by val, Primitive/Array by ref (if needed)
-        HookRegistry::dispatch('ArticleCommentDAO::_returnArticleCommentFromRow', array($articleComment, &$row));
+        HookRegistry::dispatch('ArticleCommentDAO::_returnArticleCommentFromRow', [$articleComment, &$row]);
 
         return $articleComment;
     }
 
     /**
-     * inserts a new article comment into article_comments table
-     * @param ArticleComment $articleComment (No & needed)
+     * Inserts a new article comment into article_comments table
+     * 
+     * @param ArticleComment $articleComment
      * @return int Article Comment Id
      */
     public function insertArticleComment($articleComment) {
@@ -185,7 +185,7 @@ class ArticleCommentDAO extends DAO {
                 $this->datetimeToDB($articleComment->getDatePosted()), 
                 $this->datetimeToDB($articleComment->getDateModified())
             ),
-            array(
+            [
                 (int) $articleComment->getCommentType(),
                 (int) $articleComment->getRoleId(),
                 (int) $articleComment->getArticleId(),
@@ -194,7 +194,7 @@ class ArticleCommentDAO extends DAO {
                 PKPString::substr($articleComment->getCommentTitle(), 0, 255),
                 $articleComment->getComments(),
                 $articleComment->getViewable() === null ? 0 : (int) $articleComment->getViewable()
-            )
+            ]
         );
 
         $articleComment->setId($this->getInsertArticleCommentId());
@@ -203,6 +203,7 @@ class ArticleCommentDAO extends DAO {
 
     /**
      * Get the ID of the last inserted article comment.
+     * 
      * @return int
      */
     public function getInsertArticleCommentId() {
@@ -210,41 +211,49 @@ class ArticleCommentDAO extends DAO {
     }
 
     /**
-     * removes an article comment from article_comments table
+     * Removes an article comment from article_comments table
+     * 
      * @param ArticleComment $articleComment
+     * @return bool
      */
     public function deleteArticleComment($articleComment) {
-        $this->deleteArticleCommentById($articleComment->getId());
+        return $this->deleteArticleCommentById($articleComment->getId());
     }
 
     /**
-     * removes an article note by id
+     * Removes an article note by id
+     * 
      * @param int $commentId
+     * @return bool
      */
     public function deleteArticleCommentById($commentId) {
-        $this->update(
+        return $this->update(
             'DELETE FROM article_comments WHERE comment_id = ?', 
-            (int) $commentId
+            [(int) $commentId]
         );
     }
 
     /**
      * Delete all comments for an article.
+     * 
      * @param int $articleId
+     * @return bool
      */
     public function deleteArticleComments($articleId) {
         return $this->update(
             'DELETE FROM article_comments WHERE article_id = ?', 
-            (int) $articleId
+            [(int) $articleId]
         );
     }
 
     /**
-     * updates an article comment
+     * Updates an article comment
+     * 
      * @param ArticleComment $articleComment
+     * @return bool
      */
     public function updateArticleComment($articleComment) {
-        $this->update(
+        return $this->update(
             sprintf('UPDATE article_comments
                 SET
                     comment_type = ?,
@@ -261,7 +270,7 @@ class ArticleCommentDAO extends DAO {
                 $this->datetimeToDB($articleComment->getDatePosted()), 
                 $this->datetimeToDB($articleComment->getDateModified())
             ),
-            array(
+            [
                 (int) $articleComment->getCommentType(),
                 (int) $articleComment->getRoleId(),
                 (int) $articleComment->getArticleId(),
@@ -271,7 +280,7 @@ class ArticleCommentDAO extends DAO {
                 $articleComment->getComments(),
                 $articleComment->getViewable() === null ? 1 : (int) $articleComment->getViewable(),
                 (int) $articleComment->getId()
-            )
+            ]
         );
     }
 }
