@@ -157,7 +157,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
         $returner = null;
         if ($result && $result->RecordCount() > 0) {
-            // [WIZDAM] Type narrowing untuk FetchRow()
             /** @var array|bool $row */
             $row = $result->FetchRow();
             $returner = isset($row['max_revision']) ? (int) $row['max_revision'] : null;
@@ -178,7 +177,6 @@ class ArticleFileDAO extends PKPFileDAO {
      * @return array ArticleFiles
      */
     public function getArticleFilesByArticle($articleId) {
-        // [WIZDAM] FIX: Parameter dibungkus array
         $result = $this->retrieve(
             'SELECT * FROM article_files WHERE article_id = ?',
             [(int) $articleId]
