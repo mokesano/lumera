@@ -13,11 +13,6 @@ declare(strict_types=1);
  * @see AuthorDAO
  *
  * @brief Article author metadata class.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor hierarchy)
- * - Strict SHIM
- * - Visibility explicit
  */
 
 import('lib.pkp.classes.submission.PKPAuthor');
@@ -46,8 +41,8 @@ class Author extends PKPAuthor {
     //
 
     /**
-     * Get ID of article.
-     * Deprecated in favor of getSubmissionId().
+     * [DEPRECATED] Get ID of article.
+     * Use in favor of getSubmissionId().
      * @return int
      */
     public function getArticleId() {
@@ -56,8 +51,8 @@ class Author extends PKPAuthor {
     }
 
     /**
-     * Set ID of article.
-     * Deprecated in favor of setSubmissionId().
+     * [DEPRECATED] Set ID of article.
+     * Use in favor of setSubmissionId().
      * @param int $articleId
      */
     public function setArticleId($articleId) {
@@ -74,8 +69,8 @@ class Author extends PKPAuthor {
     }
 
     /**
-     * Get author competing interests.
-     * Deprecated in favor of getLocalizedCompetingInterests().
+     * [DEPRECATED] Get author competing interests.
+     * Use in favor of getLocalizedCompetingInterests().
      * @deprecated
      * @return string
      */
@@ -102,5 +97,4 @@ class Author extends PKPAuthor {
         return $this->setData('competingInterests', $competingInterests, $locale);
     }
 }
-
 ?>
