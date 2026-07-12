@@ -18,6 +18,7 @@ declare(strict_types=1);
  * 
  * @brief HIGH PERFORMANCE BASE: Enables Pre-loading for OAI
  * Base DAO class for OAI operations in LUMERA.
+ * 
  * This class provides high-performance bulk-loading hooks and a unified
  * structure for fetching OAI Records and Identifiers.
  */
