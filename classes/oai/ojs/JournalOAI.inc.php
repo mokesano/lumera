@@ -16,7 +16,7 @@ declare(strict_types=1);
  * @ingroup oai_ojs
  * @see OAIDAO
  *
- * @brief OJS-specific OAI interface.
+ * @brief LUMERA-specific OAI interface.
  * Designed to support both a site-wide and journal-specific OAI interface
  * (based on where the request is directed).
  */
@@ -130,11 +130,11 @@ class JournalOAI extends OAI {
         $info->earliestDatestamp = $this->dao->getEarliestDatestamp([$this->journalId]);
 
         // [FORK FEATURE] CodeLumera Toolkit Branding
-        $info->toolkitTitle = 'Lumera - Sangia Modern Publishing';
+        $info->toolkitTitle = 'Sangia Lumera - Modern Workflow';
         $versionDao = DAORegistry::getDAO('VersionDAO'); /** @var VersionDAO $versionDao */
         $currentVersion = $versionDao->getCurrentVersion();
         $info->toolkitVersion = $currentVersion->getVersionString();
-        $info->toolkitURL = 'https://wizdam.sangia.org/';
+        $info->toolkitURL = 'https://lumera.sangia.org/';
 
         return $info;
     }
