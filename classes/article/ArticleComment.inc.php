@@ -11,12 +11,8 @@ declare(strict_types=1);
  * @class ArticleComment
  * @ingroup article
  * @see ArticleCommentDAO
+ * 
  * @brief Class for ArticleComment.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructors, Visibility)
- * - Strict SHIM Protocol
- * - Null Coalescing Operator
  */
 
 /** Comment associative types. All types must be defined here. */
@@ -40,7 +36,6 @@ class ArticleComment extends DataObject {
      */
     public function ArticleComment() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Gunakan get_class($this) agar menunjuk ke class PEMANGGIL
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor parent::ArticleComment(). Please refactor to parent::__construct().", 
                 E_USER_DEPRECATED
@@ -50,8 +45,8 @@ class ArticleComment extends DataObject {
     }
 
     /**
-     * Get article comment id
-     * Deprecated since 3.0.0. Use getId() instead.
+     * [DEPRECATED] Get article comment id
+     * Use getId() instead.
      * @return int
      */
     public function getCommentId() {
@@ -60,8 +55,8 @@ class ArticleComment extends DataObject {
     }
 
     /**
-     * Set article comment id
-     * Deprecated since 3.0.0. Use setId() instead.
+     * [DEPRECATED] Set article comment id
+     * Use setId() instead.
      * @param int $commentId
      */
     public function setCommentId($commentId) {
@@ -106,6 +101,7 @@ class ArticleComment extends DataObject {
      * @return string
      */
     public function getRoleName() {
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $roleName = $roleDao->getRoleName($this->getData('roleId'));
 
@@ -166,8 +162,8 @@ class ArticleComment extends DataObject {
      */
     public function getAuthorName() {
         $authorFullName = $this->getData('authorFullName');
-
         if ($authorFullName === null) {
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $authorFullName = $userDao->getUserFullName($this->getAuthorId(), true);
         }
@@ -181,8 +177,8 @@ class ArticleComment extends DataObject {
      */
     public function getAuthorEmail() {
         $authorEmail = $this->getData('authorEmail');
-
         if ($authorEmail === null) {
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $authorEmail = $userDao->getUserEmail($this->getAuthorId(), true);
         }
@@ -270,5 +266,4 @@ class ArticleComment extends DataObject {
         return $this->setData('viewable', $viewable);
     }
 }
-
 ?>
