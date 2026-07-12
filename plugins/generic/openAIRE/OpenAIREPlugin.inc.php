@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_openAIRE
  *
  * @brief OpenAIRE plugin class
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -99,6 +97,8 @@ class OpenAIREPlugin extends GenericPlugin {
 
     /**
      * Insert projectID field into author submission step 3 and metadata edit form
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function metadataFieldEdit($hookName, $params) {
         $smarty = $params[1];
@@ -110,6 +110,8 @@ class OpenAIREPlugin extends GenericPlugin {
 
     /**
      * Add projectID to the metadata view
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function metadataFieldView($hookName, $params) {
         $smarty = $params[1];
@@ -121,6 +123,8 @@ class OpenAIREPlugin extends GenericPlugin {
 
     /**
      * Add projectID element to the article
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function articleSubmitGetFieldNames($hookName, $params) {
         $fields =& $params[1]; // Reference needed for array modification in hook
@@ -130,6 +134,8 @@ class OpenAIREPlugin extends GenericPlugin {
 
     /**
      * Set article projectID
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function metadataExecute($hookName, $params) {
         $form = $params[0];
@@ -141,6 +147,8 @@ class OpenAIREPlugin extends GenericPlugin {
 
     /**
      * Add check/validation for the projectID field (= 6 numbers)
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function addCheck($hookName, $params) {
         $form = $params[0];
@@ -152,6 +160,8 @@ class OpenAIREPlugin extends GenericPlugin {
 
     /**
      * Init article projectID
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function metadataInitData($hookName, $params) {
         $form = $params[0];
@@ -163,6 +173,8 @@ class OpenAIREPlugin extends GenericPlugin {
 
     /**
      * Concern projectID field in the form
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function metadataReadUserVars($hookName, $params) {
         $userVars =& $params[1]; // Reference needed for array modification in hook
@@ -177,6 +189,8 @@ class OpenAIREPlugin extends GenericPlugin {
 
     /**
      * Add OpenAIRE set
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function sets($hookName, $params) {
         $sets =& $params[5]; // Reference needed for array modification in hook
@@ -186,6 +200,8 @@ class OpenAIREPlugin extends GenericPlugin {
 
     /**
      * Get OpenAIRE records or identifiers
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function recordsOrIdentifiers($hookName, $params) {
         $journalOAI = $params[0];
@@ -199,6 +215,7 @@ class OpenAIREPlugin extends GenericPlugin {
 
         $records = [];
         if (isset($set) && $set == 'ec_fundedresources') {
+            /** @var OpenAIREDAO $openAIREDao */
             $openAIREDao = DAORegistry::getDAO('OpenAIREDAO');
             $openAIREDao->setOAI($journalOAI);
             
@@ -218,11 +235,14 @@ class OpenAIREPlugin extends GenericPlugin {
 
     /**
      * Change OAI record or identifier to consider the OpenAIRE set
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function addSet($hookName, $params) {
         $record = $params[0];
         $row = $params[1];
 
+        /** @var OpenAIREDAO $openAIREDao */
         $openAIREDao = DAORegistry::getDAO('OpenAIREDAO');
         if ($openAIREDao->isOpenAIRERecord($row)) {
             $record->sets[] = 'ec_fundedresources';
@@ -233,6 +253,8 @@ class OpenAIREPlugin extends GenericPlugin {
     /**
      * Change Dc11 Description to consider the OpenAIRE elements
      * Note: Typo 'Desctiption' retained to match registration
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function changeDc11Desctiption($hookName, $params) {
         $adapter = $params[0];
@@ -241,8 +263,8 @@ class OpenAIREPlugin extends GenericPlugin {
         $issue = $params[3];
         $dc11Description = $params[4]; // Reference needed for object modification (DC Description)
 
+        /** @var OpenAIREDAO $openAIREDao */
         $openAIREDao = DAORegistry::getDAO('OpenAIREDAO');
-        
         // [PHP 8 FIX] Handle undefined $journalOAI safely to prevent Fatal Error
         if (isset($journalOAI)) {
              $openAIREDao->setOAI($journalOAI);
@@ -328,12 +350,16 @@ class OpenAIREPlugin extends GenericPlugin {
 
     /**
      * Consider the OpenAIRE set in the article tombstone
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function insertOpenAIREArticleTombstone($hookName, $params) {
         $articleTombstone = $params[0];
 
+        /** @var OpenAIREDAO $openAIREDao */
         $openAIREDao = DAORegistry::getDAO('OpenAIREDAO');
         if ($openAIREDao->isOpenAIREArticle($articleTombstone->getDataObjectId())) {
+            /** @var DataObjectTombstoneSettingsDAO $dataObjectTombstoneSettingsDao */
             $dataObjectTombstoneSettingsDao = DAORegistry::getDAO('DataObjectTombstoneSettingsDAO');
             $dataObjectTombstoneSettingsDao->updateSetting($articleTombstone->getId(), 'openaire', true, 'bool');
         }
