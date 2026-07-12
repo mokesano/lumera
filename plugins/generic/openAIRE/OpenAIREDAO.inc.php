@@ -33,7 +33,7 @@ class OpenAIREDAO extends OAIDAO {
             trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::OpenAIREDAO(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -66,11 +66,9 @@ class OpenAIREDAO extends OAIDAO {
         $records = [];
 
         // 1. Prepare Params
-        // Note: passing null for $set because OpenAIRE handles sets differently or expects raw IDs
         $params = $this->getOrderedRecordParams(null, $setIds, null);
 
-        // 2. Build SQL manually (Replaces the old _getRecordsRecordSet)
-        // We use the helper methods available in the modernized PKPOAIDAO
+        // 2. Build SQL manually
         $sql = $this->getRecordSelectStatement() . ' FROM mutex m ' .
                $this->getRecordJoinClause(null, $setIds, null) . ' ' .
                $this->getAccessibleRecordWhereClause() . ' ' .
@@ -80,10 +78,7 @@ class OpenAIREDAO extends OAIDAO {
         $result = $this->retrieve($sql, $params);
 
         // 4. Handle Pagination & Filtering
-        // Note: We calculate total based on DB rows before filtering, 
-        // matching original OJS behavior (though arguably imprecise)
         $total = $result->RecordCount();
-
         $result->Move($offset);
         
         for ($count = 0; $count < $limit && !$result->EOF; $count++) {
@@ -91,8 +86,6 @@ class OpenAIREDAO extends OAIDAO {
             
             // Filter: Only process if it's an OpenAIRE record
             if ($this->isOpenAIRERecord($row)) {
-                // Call the conversion function ($funcName is usually _returnRecordFromRow)
-                // We call it dynamically via $this
                 $records[] = $this->$funcName($row);
             }
             $result->moveNext();
@@ -116,7 +109,11 @@ class OpenAIREDAO extends OAIDAO {
                 'SELECT COUNT(*) FROM article_settings WHERE setting_name = ? AND setting_value IS NOT NULL AND setting_value <> \'\' AND article_id = ?',
                 $params
             );
-            $returner = (isset($result->fields[0]) && $result->fields[0] == 1) ? true : false;
+            
+            /** @var array|bool $fields */
+            $fields = $result->fields;
+            $returner = isset($fields[0]) && (int) $fields[0] > 0;
+            
             $result->Close();
             unset($result);
 
@@ -124,7 +121,7 @@ class OpenAIREDAO extends OAIDAO {
         } else {
             /** @var DataObjectTombstoneSettingsDAO $dataObjectTombstoneSettingsDao */
             $dataObjectTombstoneSettingsDao = DAORegistry::getDAO('DataObjectTombstoneSettingsDAO');
-            return $dataObjectTombstoneSettingsDao->getSetting($row['tombstone_id'], 'openaire');
+            return $dataObjectTombstoneSettingsDao ? $dataObjectTombstoneSettingsDao->getSetting($row['tombstone_id'], 'openaire') : false;
         }
     }
 
@@ -139,7 +136,11 @@ class OpenAIREDAO extends OAIDAO {
             'SELECT COUNT(*) FROM article_settings WHERE setting_name = ? AND setting_value IS NOT NULL AND setting_value <> \'\' AND article_id = ?',
             $params
         );
-        $returner = (isset($result->fields[0]) && $result->fields[0] == 1) ? true : false;
+        
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = isset($fields[0]) && (int) $fields[0] > 0;
+        
         $result->Close();
         unset($result);
 
