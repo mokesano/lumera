@@ -52,7 +52,7 @@ class PubIdPlugin extends Plugin {
      * @return bool
      */
     public function register(string $category, string $path, $mainContextId = null): bool {
-        $success = parent::register($category, $path, $mainContextId);
+        $success = parent::register($category, $path);
         if ($success) {
             // Enable storage of additional fields.
             foreach($this->_getDAOs() as $daoName) {
@@ -105,7 +105,11 @@ class PubIdPlugin extends Plugin {
      * @return bool
      */
     public function manage(string $verb, array $args, string $message = null, array $messageParams = null, $request = null): bool {
-        $templateManager = TemplateManager::getManager();
+        if ($request === null) {
+            $request = Application::getRequest();
+        }
+        
+        $templateManager = TemplateManager::getManager($request);
         $templateManager->register_function('plugin_url', [$this, 'smartyPluginUrl']);
         if (!$this->getEnabled() && $verb != 'enable') return false;
         
@@ -119,35 +123,37 @@ class PubIdPlugin extends Plugin {
                 return false;
 
             case 'settings':
-                $templateMgr = TemplateManager::getManager();
-                $journal = Request::getJournal();
+                $journal = $request->getJournal();
 
                 $settingsFormName = $this->getSettingsFormName();
                 $settingsFormNameParts = explode('.', $settingsFormName);
                 $settingsFormClassName = array_pop($settingsFormNameParts);
                 $this->import($settingsFormName);
                 $form = new $settingsFormClassName($this, (int) $journal->getId());
-                
-                if (Request::getUserVar('save')) {
+
+                if ($request->getUserVar('save')) {
                     $form->readInputData();
                     if ($form->validate()) {
                         $form->execute();
-                        Request::redirect(null, 'manager', 'plugin');
+                        $request->redirect(null, 'manager', 'plugin');
                         return false;
                     } else {
-                        $this->_setBreadcrumbs();
-                        $form->display();
+                        $this->_setBreadcrumbs($request);
+                        $form->display($request);
                     }
-                } elseif (Request::getUserVar('clearPubIds')) {
+                } elseif ($request->getUserVar('clearPubIds')) {
                     $form->readInputData();
-                    $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
-                    $journalDao->deleteAllPubIds($journal->getId(), $this->getPubIdType());
-                    $this->_setBreadcrumbs();
-                    $form->display();
+                    /** @var JournalDAO $journalDao */
+                    $journalDao = DAORegistry::getDAO('JournalDAO');
+                    if ($journalDao) {
+                        $journalDao->deleteAllPubIds($journal->getId(), $this->getPubIdType());
+                    }
+                    $this->_setBreadcrumbs($request);
+                    $form->display($request);
                 } else {
-                    $this->_setBreadcrumbs();
+                    $this->_setBreadcrumbs($request);
                     $form->initData();
-                    $form->display();
+                    $form->display($request);
                 }
                 return true;
 
@@ -309,20 +315,20 @@ class PubIdPlugin extends Plugin {
     /**
      * Get the journal object.
      * @param int $journalId
-     * @return Journal
+     * @return Journal|null
      */
     public function getJournal($journalId) {
         assert(is_numeric($journalId));
 
-        // Get the journal object from the context (optimized).
         $request = Application::getRequest();
         $router = $request->getRouter();
-        $journal = $router->getContext($request); /* @var $journal Journal */
+        $journal = $router->getContext($request);
 
         // Check whether we still have to retrieve the journal from the database.
         if (!$journal || $journal->getId() != $journalId) {
-            $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
-            $journal = $journalDao->getById($journalId);
+            /** @var JournalDAO $journalDao */
+            $journalDao = DAORegistry::getDAO('JournalDAO');
+            $journal = $journalDao ? $journalDao->getById($journalId) : null;
         }
 
         return $journal;
@@ -340,42 +346,37 @@ class PubIdPlugin extends Plugin {
      * @return bool
      */
     public function checkDuplicate($pubId, $pubObject, $journalId) {
-
-        // Check all objects of the journal whether they have
-        // the same pubId. This includes pubIds that are not yet generated
-        // but could be generated at any moment if someone accessed
-        // the object publicly. We have to check "real" pubIds rather than
-        // the pubId suffixes only as a pubId with the given suffix may exist
-        // (e.g. through import) even if the suffix itself is not in the
-        // database.
         $typesToCheck = ['Issue', 'Article', 'ArticleGalley', 'SuppFile'];
         foreach($typesToCheck as $pubObjectType) {
             $objectsToCheck = null;
             switch($pubObjectType) {
                 case 'Issue':
-                    $issueDao = DAORegistry::getDAO('IssueDAO'); /** @var IssueDAO $issueDao */
-                    $objectsToCheck = $issueDao->getIssues($journalId);
+                    /** @var IssueDAO $issueDao */
+                    $issueDao = DAORegistry::getDAO('IssueDAO');
+                    $objectsToCheck = $issueDao ? $issueDao->getIssues($journalId) : null;
                     break;
 
                 case 'Article':
-                    $articleDao = DAORegistry::getDAO('ArticleDAO'); /** @var ArticleDAO $articleDao */
-                    $objectsToCheck = $articleDao->getArticlesByJournalId($journalId);
+                    /** @var ArticleDAO $articleDao */
+                    $articleDao = DAORegistry::getDAO('ArticleDAO');
+                    $objectsToCheck = $articleDao ? $articleDao->getArticlesByJournalId($journalId) : null;
                     break;
 
                 case 'ArticleGalley':
-                    $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /** @var ArticleGalleyDAO $galleyDao */
-                    $objectsToCheck = $galleyDao->getGalleysByJournalId($journalId);
+                    /** @var ArticleGalleyDAO $galleyDao */
+                    $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+                    $objectsToCheck = $galleyDao ? $galleyDao->getGalleysByJournalId($journalId) : null;
                     break;
 
                 case 'SuppFile':
-                    $suppFileDao = DAORegistry::getDAO('SuppFileDAO'); /** @var SuppFileDAO $suppFileDao */
-                    $objectsToCheck = $suppFileDao->getSuppFilesByJournalId($journalId);
+                    /** @var SuppFileDAO $suppFileDao */
+                    $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
+                    $objectsToCheck = $suppFileDao ? $suppFileDao->getSuppFilesByJournalId($journalId) : null;
                     break;
             }
 
-            // Replacing is_a() with instanceof. Note: string class comparison not needed here
-            // because we are checking object types conceptually mapped to strings above.
-            // However, checking if $pubObject matches the current DAO type context.
+            if (!$objectsToCheck) continue;
+
             $isSameType = false;
             if ($pubObjectType === 'Issue' && $pubObject instanceof Issue) $isSameType = true;
             elseif ($pubObjectType === 'Article' && $pubObject instanceof Article) $isSameType = true;
@@ -385,13 +386,8 @@ class PubIdPlugin extends Plugin {
             $excludedId = ($isSameType ? $pubObject->getId() : null);
 
             while ($objectToCheck = $objectsToCheck->next()) {
-                // The publication object for which the new pubId
-                // should be admissible is to be ignored. Otherwise
-                // we might get false positives by checking against
-                // a pubId that we're about to change anyway.
                 if ($objectToCheck->getId() == $excludedId) continue;
 
-                // Check for ID clashes.
                 $existingPubId = $this->getPubId($objectToCheck, true);
                 if ($pubId == $existingPubId) return false;
 
@@ -401,7 +397,6 @@ class PubIdPlugin extends Plugin {
             unset($objectsToCheck);
         }
 
-        // We did not find any ID collision, so go ahead.
         return true;
     }
 
@@ -412,7 +407,7 @@ class PubIdPlugin extends Plugin {
      * @param array $params (DAO, array of additional fields)
      */
     public function getAdditionalFieldNames($hookName, $params) {
-        $fields =& $params[1]; // Reference required here to modify the array
+        $fields =& $params[1];
         $formFieldNames = $this->getFormFieldNames();
         foreach ($formFieldNames as $formFieldName) {
             $fields[] = $formFieldName;
@@ -435,14 +430,19 @@ class PubIdPlugin extends Plugin {
         $issue = $params[0];
         $issueId = $issue->getId();
 
+        $request = Application::getRequest();
+
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
         if (is_array($pubIdPlugins)) {
             foreach ($pubIdPlugins as $pubIdPlugin) {
                 $excludeSubmittName = 'excludeIssueObjects_' . $pubIdPlugin->getPubIdType();
                 $clearSubmittName = 'clearIssueObjects_' . $pubIdPlugin->getPubIdType();
                 $exclude = $clear = false;
-                if (Request::getUserVar($excludeSubmittName)) $exclude = true;
-                if (Request::getUserVar($clearSubmittName)) $clear = true;
+                
+                // [WIZDAM] FIX: Ganti Request::getUserVar() dengan $request->getUserVar()
+                if ($request->getUserVar($excludeSubmittName)) $exclude = true;
+                if ($request->getUserVar($clearSubmittName)) $clear = true;
+                
                 if ($exclude || $clear) {
                     $articlePubIdEnabled = $pubIdPlugin->isEnabled('Article', $issue->getJournalId());
                     $galleyPubIdEnabled = $pubIdPlugin->isEnabled('Galley', $issue->getJournalId());
@@ -452,11 +452,14 @@ class PubIdPlugin extends Plugin {
                     $settingName = $pubIdPlugin->getExcludeFormFieldName();
                     $pubIdType = $pubIdPlugin->getPubIdType();
 
-                    $articleDao = DAORegistry::getDAO('ArticleDAO'); /** @var ArticleDAO $articleDao */
-                    $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /** @var PublishedArticleDAO $publishedArticleDao */
-                    $publishedArticles = $publishedArticleDao->getPublishedArticles($issueId);
+                    /** @var ArticleDAO $articleDao */
+                    $articleDao = DAORegistry::getDAO('ArticleDAO');
+                    /** @var PublishedArticleDAO $publishedArticleDao */
+                    $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+                    $publishedArticles = $publishedArticleDao ? $publishedArticleDao->getPublishedArticles($issueId) : [];
+                    
                     foreach ($publishedArticles as $publishedArticle) {
-                        if ($articlePubIdEnabled) {
+                        if ($articlePubIdEnabled && $articleDao) {
                             if ($exclude && !$publishedArticle->getStoredPubId($pubIdType)) {
                                 $publishedArticle->setData($settingName, 1);
                                 $articleDao->updateArticle($publishedArticle);
@@ -465,27 +468,32 @@ class PubIdPlugin extends Plugin {
                             }
                         }
                         if ($galleyPubIdEnabled) {
-                            $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /** @var ArticleGalleyDAO $articleGalleyDao */
-                            $articleGalleys = $articleGalleyDao->getGalleysByArticle($publishedArticle->getId());
-                            foreach ($articleGalleys as $articleGalley) {
-                                if ($exclude && !$articleGalley->getStoredPubId($pubIdType)) {
-                                    $articleGalley->setData($settingName, 1);
-                                    $articleGalleyDao->updateGalley($articleGalley);
-                                } else if ($clear) {
-                                    $articleGalleyDao->deletePubId($articleGalley->getId(), $pubIdType);
+                            /** @var ArticleGalleyDAO $articleGalleyDao */
+                            $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+                            if ($articleGalleyDao) {
+                                $articleGalleys = $articleGalleyDao->getGalleysByArticle($publishedArticle->getId());
+                                foreach ($articleGalleys as $articleGalley) {
+                                    if ($exclude && !$articleGalley->getStoredPubId($pubIdType)) {
+                                        $articleGalley->setData($settingName, 1);
+                                        $articleGalleyDao->updateGalley($articleGalley);
+                                    } else if ($clear) {
+                                        $articleGalleyDao->deletePubId($articleGalley->getId(), $pubIdType);
+                                    }
                                 }
                             }
                         }
                         if ($suppFilePubIdEnabled) {
-                            $articleSuppFileDao = DAORegistry::getDAO('SuppFileDAO'); /** @var SuppFileDAO $articleSuppFileDao */
-                            $articleSuppFiles = $articleSuppFileDao->getSuppFilesByArticle($publishedArticle->getId());
-                            foreach ($articleSuppFiles as $articleSuppFile) {
-                                if ($exclude && !$articleSuppFile->getStoredPubId($pubIdType)) {
-                                    $articleSuppFile->setData($settingName, 1);
-                                    $articleSuppFileDao->updateSuppFile($articleSuppFile);
-                                } else if ($clear) {
-                                    // Fix: Original code had typo $articleGalley->getId(), changed to $articleSuppFile->getId()
-                                    $articleSuppFileDao->deletePubId($articleSuppFile->getId(), $pubIdType);
+                            /** @var SuppFileDAO $articleSuppFileDao */
+                            $articleSuppFileDao = DAORegistry::getDAO('SuppFileDAO');
+                            if ($articleSuppFileDao) {
+                                $articleSuppFiles = $articleSuppFileDao->getSuppFilesByArticle($publishedArticle->getId());
+                                foreach ($articleSuppFiles as $articleSuppFile) {
+                                    if ($exclude && !$articleSuppFile->getStoredPubId($pubIdType)) {
+                                        $articleSuppFile->setData($settingName, 1);
+                                        $articleSuppFileDao->updateSuppFile($articleSuppFile);
+                                    } else if ($clear) {
+                                        $articleSuppFileDao->deletePubId($articleSuppFile->getId(), $pubIdType);
+                                    }
                                 }
                             }
                         }
@@ -511,14 +519,12 @@ class PubIdPlugin extends Plugin {
         ];
         $pubObjectType = null;
         foreach ($allowedTypes as $allowedType => $pubObjectTypeCandidate) {
-            // Using instanceof instead of is_a
             if ($pubObject instanceof $allowedType) {
                 $pubObjectType = $pubObjectTypeCandidate;
                 break;
             }
         }
         if (is_null($pubObjectType)) {
-            // This must be a dev error, so bail with an assertion.
             assert(false);
             return null;
         }
@@ -533,14 +539,16 @@ class PubIdPlugin extends Plugin {
      */
     public function setStoredPubId($pubObject, $pubObjectType, $pubId) {
         $dao = $this->getDAO($pubObjectType);
-        $dao->changePubId($pubObject->getId(), $this->getPubIdType(), $pubId);
+        if ($dao && method_exists($dao, 'changePubId')) {
+            $dao->changePubId($pubObject->getId(), $this->getPubIdType(), $pubId);
+        }
         $pubObject->setStoredPubId($this->getPubIdType(), $pubId);
     }
 
     /**
      * Return the name of the corresponding DAO.
      * @param string $pubObjectType
-     * @return DAO
+     * @return DAO|null
      */
     public function getDAO($pubObjectType) {
         $daos = [
@@ -549,8 +557,11 @@ class PubIdPlugin extends Plugin {
             'Galley' => 'ArticleGalleyDAO',
             'SuppFile' => 'SuppFileDAO'
         ];
-        $daoName = $daos[$pubObjectType];
-        assert(!empty($daoName));
+        $daoName = $daos[$pubObjectType] ?? null;
+        if (!$daoName) {
+            assert(false);
+            return null;
+        }
         return DAORegistry::getDAO($daoName);
     }
 
@@ -577,7 +588,8 @@ class PubIdPlugin extends Plugin {
      * @return bool
      */
     public function setEnabled($enabled) {
-        $journal = Request::getJournal();
+        $request = Application::getRequest();
+        $journal = $request->getJournal();
         if ($journal) {
             $this->updateSetting(
                 $journal->getId(),
@@ -604,20 +616,27 @@ class PubIdPlugin extends Plugin {
 
     /**
      * Set the breadcrumbs, given the plugin's tree of items to append.
+     * @param PKPRequest|null $request
      */
-    protected function _setBreadcrumbs() {
-        $templateMgr = TemplateManager::getManager();
+    protected function _setBreadcrumbs($request = null) {
+        if ($request === null) {
+            $request = Application::getRequest();
+        }
+        
+        $templateMgr = TemplateManager::getManager($request);
+        
+        $router = $request->getRouter();
         $pageCrumbs = [
             [
-                Request::url(null, 'user'),
+                $router->url($request, null, 'user'),
                 'navigation.user'
             ],
             [
-                Request::url(null, 'manager'),
+                $router->url($request, null, 'manager'),
                 'user.role.manager'
             ],
             [
-                Request::url(null, 'manager', 'plugins'),
+                $router->url($request, null, 'manager', 'plugins'),
                 'manager.plugins'
             ]
         ];
