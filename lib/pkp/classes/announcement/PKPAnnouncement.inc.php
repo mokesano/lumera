@@ -17,12 +17,6 @@ declare(strict_types=1);
  * @see AnnouncementDAO, PKPAnnouncementDAO
  *
  * @brief Basic class describing a announcement.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor)
- * - Strict SHIM
- * - Visibility explicit
- * - Safe Date Handling
  */
 
 define('ANNOUNCEMENT_EXPIRE_YEAR_OFFSET_FUTURE',    '+10');
@@ -51,7 +45,8 @@ class PKPAnnouncement extends DataObject {
     //
 
     /**
-     * Get the ID of the announcement.
+     * [DEPRECATED] Get the ID of the announcement.
+     * use getId() instead.
      * @return int
      */
     public function getAnnouncementId() {
@@ -60,7 +55,8 @@ class PKPAnnouncement extends DataObject {
     }
 
     /**
-     * Set the ID of the announcement.
+     * [DEPRECATED] Set the ID of the announcement.
+     * use setId() instead.
      * @param int $announcementId
      */
     public function setAnnouncementId($announcementId) {
@@ -121,6 +117,7 @@ class PKPAnnouncement extends DataObject {
      * @return string
      */
     public function getAnnouncementTypeName() {
+        /** @var AnnouncementTypeDAO $announcementTypeDao */
         $announcementTypeDao = DAORegistry::getDAO('AnnouncementTypeDAO');
         return $announcementTypeDao->getAnnouncementTypeName($this->getData('typeId'));
     }
@@ -134,6 +131,8 @@ class PKPAnnouncement extends DataObject {
     }
 
     /**
+     * [DEPRECATED] Get localized announcement announcement title.
+     * use getLocalizedTitle() instead.
      * @deprecated
      */
     public function getAnnouncementTitle() {
@@ -157,6 +156,8 @@ class PKPAnnouncement extends DataObject {
     }
 
     /**
+     * [DEPRECATED] Get localized announcement title full.
+     * use getLocalizedTitleFull() instead.
      * @deprecated
      */
     public function getAnnouncementTitleFull() {
@@ -191,6 +192,8 @@ class PKPAnnouncement extends DataObject {
     }
 
     /**
+     * [DEPRECATED] Get localized announcement description short.
+     * use getLocalizedDescriptionShort() instead.
      * @deprecated
      */
     public function getAnnouncementDescriptionShort() {
@@ -225,6 +228,8 @@ class PKPAnnouncement extends DataObject {
     }
 
     /**
+     * [DEPRECATED] Get localized announcement description.
+     * use getLocalizedDescription() instead.
      * @deprecated
      */
     public function getAnnouncementDescription() {
@@ -301,5 +306,4 @@ class PKPAnnouncement extends DataObject {
         return $this->setData('datePosted', $datetimePosted);
     }
 }
-
 ?>

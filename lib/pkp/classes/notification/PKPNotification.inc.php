@@ -11,6 +11,7 @@ declare(strict_types=1);
  * @class Notification
  * @ingroup notification
  * @see NotificationDAO
+ * 
  * @brief Class for Notification.
  */
 
@@ -69,8 +70,8 @@ class PKPNotification extends DataObject {
     }
 
     /**
-     * set notification id
-     * @param $notificationId int
+     * Set notification id
+     * @param mixed $notificationId int
      */
     public function setNotificationId($notificationId) {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.', E_USER_DEPRECATED);
@@ -78,7 +79,7 @@ class PKPNotification extends DataObject {
     }
 
     /**
-     * get user id associated with this notification
+     * Get user id associated with this notification
      * @return int
      */
     public function getUserId() {
@@ -86,8 +87,8 @@ class PKPNotification extends DataObject {
     }
 
     /**
-     * set user id associated with this notification
-     * @param $userId int
+     * Set user id associated with this notification
+     * @param mixed $userId int
      */
     public function setUserId($userId) {
         return $this->setData('userId', $userId);
@@ -103,14 +104,14 @@ class PKPNotification extends DataObject {
 
     /**
      * Set the level (NOTIFICATION_LEVEL_...) for this notification
-     * @param $level int
+     * @param mixed $level int
      */
     public function setLevel($level) {
         return $this->setData('level', $level);
     }
 
     /**
-     * get date notification was created
+     * Get date notification was created
      * @return string (YYYY-MM-DD HH:MM:SS)
      */
     public function getDateCreated() {
@@ -118,15 +119,15 @@ class PKPNotification extends DataObject {
     }
 
     /**
-     * set date notification was created
-     * @param $dateCreated string (YYYY-MM-DD HH:MM:SS)
+     * Set date notification was created
+     * @param mixed $dateCreated string (YYYY-MM-DD HH:MM:SS)
      */
     public function setDateCreated($dateCreated) {
         return $this->setData('dateCreated', $dateCreated);
     }
 
     /**
-     * get date notification is read by user
+     * Get date notification is read by user
      * @return string (YYYY-MM-DD HH:MM:SS)
      */
     public function getDateRead() {
@@ -134,15 +135,15 @@ class PKPNotification extends DataObject {
     }
 
     /**
-     * set date notification is read by user
-     * @param $dateRead string (YYYY-MM-DD HH:MM:SS)
+     * Set date notification is read by user
+     * @param mixed $dateRead string (YYYY-MM-DD HH:MM:SS)
      */
     public function setDateRead($dateRead) {
         return $this->setData('dateRead', $dateRead);
     }
 
     /**
-     * get notification type
+     * Get notification type
      * @return int
      */
     public function getType() {
@@ -150,15 +151,15 @@ class PKPNotification extends DataObject {
     }
 
     /**
-     * set notification type
-     * @param $type int
+     * Set notification type
+     * @param mixed $type int
      */
     public function setType($type) {
         return $this->setData('type', $type);
     }
 
     /**
-     * get notification assoc type
+     * Get notification assoc type
      * @return int
      */
     public function getAssocType() {
@@ -166,15 +167,15 @@ class PKPNotification extends DataObject {
     }
 
     /**
-     * set notification assoc type
-     * @param $assocType int
+     * Set notification assoc type
+     * @param mixed $assocType int
      */
     public function setAssocType($assocType) {
         return $this->setData('assocType', $assocType);
     }
 
     /**
-     * get notification assoc id
+     * Get notification assoc id
      * @return int
      */
     public function getAssocId() {
@@ -182,15 +183,15 @@ class PKPNotification extends DataObject {
     }
 
     /**
-     * set notification assoc id
-     * @param $assocId int
+     * Set notification assoc id
+     * @param mixed $assocId int
      */
     public function setAssocId($assocId) {
         return $this->setData('assocId', $assocId);
     }
 
     /**
-     * get context id
+     * Get context id
      * @return int
      */
     public function getContextId() {
@@ -198,12 +199,11 @@ class PKPNotification extends DataObject {
     }
 
     /**
-     * set context id
-     * @param $contextId int
+     * Set context id
+     * @param mixed $contextId int
      */
     public function setContextId($contextId) {
         return $this->setData('context_id', $contextId);
     }
 }
-
 ?>

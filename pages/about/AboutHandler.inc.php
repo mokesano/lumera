@@ -54,12 +54,13 @@ class AboutHandler extends Handler {
         if (!$request) $request = Application::get()->getRequest();
 
         $templateMgr = TemplateManager::getManager();
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journalPath = $request->getRequestedJournalPath();
 
         if ($journalPath != 'index' && $journalDao->journalExistsByPath($journalPath)) {
             $journal = $request->getJournal();
-
+            /** @var JournalSettingsDAO $journalSettingsDao */
             $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
             $templateMgr->assign('journalSettings', $journalSettingsDao->getJournalSettings($journal->getId()));
 
@@ -83,6 +84,7 @@ class AboutHandler extends Handler {
             $templateMgr->assign('paymentConfigured', $paymentManager->isConfigured());
 
             if ($journal->getSetting('boardEnabled')) {
+                /** @var GroupDAO $groupDao */
                 $groupDao = DAORegistry::getDAO('GroupDAO');
                 $groups = $groupDao->getGroups(ASSOC_TYPE_JOURNAL, $journal->getId(), GROUP_CONTEXT_PEOPLE);
                 $templateMgr->assign('peopleGroups', $groups);
@@ -128,6 +130,7 @@ class AboutHandler extends Handler {
         // ==========================================================
         if ($journal) {
             $journalId = (int) $journal->getId();
+            /** @var GroupDAO $groupDao */
             $groupDao = DAORegistry::getDAO('GroupDAO');
             
             $templateMgr->assign(array(
@@ -159,6 +162,7 @@ class AboutHandler extends Handler {
             $this->setupTemplate(true);
 
             // Ambil data spesifik Jurnal
+            /** @var JournalSettingsDAO $journalSettingsDao */
             $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
             $journalSettings = $journalSettingsDao->getJournalSettings($journal->getId());
             
@@ -206,22 +210,21 @@ class AboutHandler extends Handler {
             // [WIZDAM] 6. PHP 8 Strictness: Explicit Type Casting
             $journalId = (int) $journal->getId();
 
+            /** @var CountryDAO $countryDao */
             $countryDao = DAORegistry::getDAO('CountryDAO');
             $countries = $countryDao->getCountries();
-            // [WIZDAM] Removed assign_by_ref, gunakan assign standar
             $templateMgr->assign('countries', $countries);
 
             if ($journal->getSetting('boardEnabled') != true) {
                 // Don't use the Editorial Team feature. 
                 // Generate Editorial Team information using Role info.
+                /** @var RoleDAO $roleDao */
                 $roleDao = DAORegistry::getDAO('RoleDAO');
-
                 $editorsIterator = $roleDao->getUsersByRoleId(ROLE_ID_EDITOR, $journalId);
                 $editors = $editorsIterator->toArray();
 
                 // =========================================================
                 // [WIZDAM] INJEKSI LOGIKA: Pisahkan EIC dan Regular Editor
-                // =========================================================
                 $editorInChiefs = [];
                 $regularEditors = [];
 
@@ -268,7 +271,9 @@ class AboutHandler extends Handler {
             } else {
                 // The Editorial Team feature has been enabled.
                 // Generate information using Group data.
+                /** @var GroupDAO $groupDao */
                 $groupDao = DAORegistry::getDAO('GroupDAO');
+                /** @var GroupMembershipDAO $groupMembershipDao */
                 $groupMembershipDao = DAORegistry::getDAO('GroupMembershipDAO');
 
                 $allGroups = $groupDao->getGroups(ASSOC_TYPE_JOURNAL, $journalId, GROUP_CONTEXT_EDITORIAL_TEAM);
@@ -313,12 +318,14 @@ class AboutHandler extends Handler {
             $templateMgr->assign('isSiteLevel', true);
             
             // Inisialisasi DAO yang dibutuhkan
+            /** @var RoleDAO $roleDao */
             $roleDao = DAORegistry::getDAO('RoleDAO');
+            /** @var SiteDAO $siteDao */
             $siteDao = DAORegistry::getDAO('SiteDAO');
             
             $site = $siteDao->getSite();
             
-            // OJS menggunakan ID 0 untuk entitas level Site (sering disebut CONTEXT_ID_NONE)
+            // App menggunakan ID 0 untuk entitas level Site (sering disebut CONTEXT_ID_NONE)
             $siteContextId = 0; 
 
             // Ambil semua pengguna yang memiliki Role "Site Administrator" (ID: 1)
@@ -362,6 +369,7 @@ class AboutHandler extends Handler {
         $journal = $request->getJournal();
         $templateMgr = TemplateManager::getManager();
         $groupId = (int) array_shift($args);
+        /** @var GroupDAO $groupDao */
         $groupDao = DAORegistry::getDAO('GroupDAO');
         $group = $groupDao->getById($groupId);
 
@@ -373,6 +381,7 @@ class AboutHandler extends Handler {
             $request->redirect(null, 'about');
         }
 
+        /** @var GroupMembershipDAO $groupMembershipDao */
         $groupMembershipDao = DAORegistry::getDAO('GroupMembershipDAO');
         $allMemberships = $groupMembershipDao->getMemberships($group->getId());
         $memberships = [];
@@ -382,6 +391,7 @@ class AboutHandler extends Handler {
             unset($membership);
         }
 
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
 
@@ -401,6 +411,7 @@ class AboutHandler extends Handler {
         $this->validate();
         $this->setupTemplate(true);
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $journal = Application::get()->getRequest()->getJournal();
 
@@ -421,6 +432,7 @@ class AboutHandler extends Handler {
             foreach ($roles as $role) {
                 $roleId = $role->getRoleId();
                 if (in_array($roleId, $acceptableRoles)) {
+                    /** @var UserDAO $userDao */
                     $userDao = DAORegistry::getDAO('UserDAO');
                     $user = $userDao->getById($userId);
                     break;
@@ -430,7 +442,9 @@ class AboutHandler extends Handler {
             // Currently we always publish emails in this mode.
             $publishEmail = true;
         } else {
+            /** @var GroupDAO $groupDao */
             $groupDao = DAORegistry::getDAO('GroupDAO');
+            /** @var GroupMembershipDAO $groupMembershipDao */
             $groupMembershipDao = DAORegistry::getDAO('GroupMembershipDAO');
 
             $allGroups = $groupDao->getGroups(ASSOC_TYPE_JOURNAL, $journal->getId());
@@ -455,6 +469,7 @@ class AboutHandler extends Handler {
             Application::get()->getRequest()->redirect(null, 'about', 'editorialTeam');
         }
 
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
         if ($user && $user->getCountry() != '') {
             $country = $countryDao->getCountry($user->getCountry());
@@ -484,13 +499,17 @@ class AboutHandler extends Handler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
+        /** @var SectionEditorsDAO $sectionEditorsDao */
         $sectionEditorsDao = DAORegistry::getDAO('SectionEditorsDAO');
         $journal = $request->getJournal();
         
         // --- MODIFIKASI 1: Siapkan DAOs dan Locale ---
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
-        $userDao = DAORegistry::getDAO('UserDAO'); // Kita membutuhkan ini
+        /** @var UserDAO $userDao */
+        $userDao = DAORegistry::getDAO('UserDAO');
         $primaryLocale = $journal->getPrimaryLocale();
         if (empty($primaryLocale)) {
                 $primaryLocale = AppLocale::getLocale();
@@ -518,9 +537,8 @@ class AboutHandler extends Handler {
                 $userId = $sectionEditorObject->getId();
                 $user = $userDao->getById($userId);
                 
-                if (!$user) continue; 
+                if (!$user) continue;
 
-                // Ambil Afiliasi (sebagai String, seperti {php} asli)
                 $affiliationData = $user->getAffiliation($primaryLocale);
                 if (is_array($affiliationData)) {
                     $affiliationData = implode("\n", $affiliationData);
@@ -573,7 +591,9 @@ class AboutHandler extends Handler {
             return;
         }
 
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
+        /** @var SubscriptionTypeDAO $subscriptionTypeDao */
         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
 
         $journal = $request->getJournal();
@@ -618,7 +638,6 @@ class AboutHandler extends Handler {
         
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
-        
         $journal = $request->getJournal();
 
         import('classes.payment.ojs.OJSPaymentManager');
@@ -651,6 +670,7 @@ class AboutHandler extends Handler {
         $this->validate();
         $this->setupTemplate(true);
 
+        /** @var JournalSettingsDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalSettingsDAO');
         $journal = Application::get()->getRequest()->getJournal();
 
@@ -698,8 +718,10 @@ class AboutHandler extends Handler {
         $this->setupTemplate(true);
 
         $templateMgr = TemplateManager::getManager();
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $user = Application::get()->getRequest()->getUser();
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
 
         if ($user) {
@@ -819,14 +841,14 @@ class AboutHandler extends Handler {
         $journal = $request->getJournal();
         $templateMgr = TemplateManager::getManager($request);
 
-        // 3. --- MULAI BLOK PKPWizdamStats ---
-        import('lib.pkp.classes.core.PKPWizdamStats');
+        // 3. --- MULAI BLOK WizdamStats ---
+        import('lib.wizdam.statistics.WizdamStats');
         $refreshStats = $request->getUserVar('refresh_stats');
         $forceRefresh = trim((string) $refreshStats) == 'true';
 
         try {
             // Panggil mesin statistik utama
-            $journalStats = PKPWizdamStats::getStats($journal->getId(), $forceRefresh);
+            $journalStats = WizdamStats::getStats($journal->getId(), $forceRefresh);
             if (is_array($journalStats) && !isset($journalStats['error'])) {
                 // Kirim SEMUA data statistik ke template
                 foreach ($journalStats as $key => $value) {
@@ -845,12 +867,12 @@ class AboutHandler extends Handler {
             }
         } catch (Exception $e) { 
             if (Config::getVar('debug', 'log_errors')) {
-                error_log('WizdamStats (Handler): Exception loading PKPWizdamStats for Statistics Page: ' . $e->getMessage());
+                error_log('WizdamStats (Handler): Exception loading WizdamStats for Statistics Page: ' . $e->getMessage());
             }
             $templateMgr->assign('statsError', 'Gagal memuat statistik jurnal.');
             $templateMgr->assign('statsJsonPath', '');
         }
-        // --- AKHIR BLOK PKPWizdamStats ---
+        // --- AKHIR BLOK WizdamStats ---
 
         $templateMgr->assign('helpTopicId','user.about'); 
         $templateMgr->display('about/statistics.tpl');
@@ -884,9 +906,11 @@ class AboutHandler extends Handler {
         ];
     }
     
+    //
+    // About Sites/Publisher Context
+    //
     /**
      * Menampilkan halaman statis penerbit (Misi).
-     * HANYA KONTEKS SITUS.
      * @param array $args
      * @param PKPRequest $request
      */
@@ -910,7 +934,6 @@ class AboutHandler extends Handler {
 
     /**
      * Menampilkan halaman statis penerbit (Sejarah).
-     * HANYA KONTEKS SITUS.
      * @param array $args
      * @param PKPRequest $request
      */
@@ -934,7 +957,6 @@ class AboutHandler extends Handler {
 
     /**
      * Menampilkan halaman statis penerbit (Kepemimpinan).
-     * HANYA KONTEKS SITUS.
      * @param array $args
      * @param PKPRequest $request
      */
@@ -958,7 +980,6 @@ class AboutHandler extends Handler {
 
     /**
      * Menampilkan halaman statis penerbit (Penghargaan).
-     * HANYA KONTEKS SITUS.
      * @param array $args
      * @param PKPRequest $request
      */
@@ -984,7 +1005,6 @@ class AboutHandler extends Handler {
     //
     // Helpers
     //
-
     /**
      * [WIZDAM] LOGIKA UTAMA: Menentukan keanggotaan pengguna.
      * Disesuaikan untuk mendeteksi variabel 'boardEnabled'.
@@ -996,7 +1016,7 @@ class AboutHandler extends Handler {
         $defaultTitle = __('about.editorialTeam');
         if (!$journal || !$user) return $defaultTitle;
         
-        // Memanggil request secara statis menyesuaikan OJS versi ini
+        // Memanggil request secara statis
         $request = Application::get()->getRequest();
         $journalId = (int) $journal->getId();
         $userId = (int) $user->getId();
@@ -1027,6 +1047,7 @@ class AboutHandler extends Handler {
      * @return string Judul keanggotaan yang sesuai atau kosong
      */
     private function _getGroupMembershipTitle($journalId, $userId, $context) {
+        /** @var GroupDAO $groupDao */
         $groupDao = DAORegistry::getDAO('GroupDAO');
         return $groupDao->getMembershipTitleByUser($journalId, $userId, (int) $context);
     }
@@ -1038,6 +1059,7 @@ class AboutHandler extends Handler {
      * @return string Judul keanggotaan berdasarkan peran atau kosong
      */
     private function _getRoleMembershipWithLocale($journalId, $userId) {
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $roles = $roleDao->getRolesByUserId($userId, $journalId);
         

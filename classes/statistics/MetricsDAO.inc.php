@@ -16,12 +16,6 @@ declare(strict_types=1);
  * @ingroup classes_statistics
  *
  * @brief Operations for retrieving and adding statistics data.
- *
- * [WIZDAM EDITION - ENTERPRISE PROTOCOL]
- * - Implements Sentinel Signature Caching (State-Based Invalidation)
- * - Atomic JSON.GZ Storage
- * - Fail-Fast Database Architecture
- * - PHP 8.x Strict Compatibility
  */
 
 class MetricsDAO extends DAO {
@@ -38,7 +32,6 @@ class MetricsDAO extends DAO {
      * Mendapatkan "Tanda Tangan" (Signature) Kebenaran dari Database.
      * Menggunakan MAX(load_id) sebagai penanda versi data.
      * Query sangat ringan (Index Scan) dan akurat mendeteksi perubahan data.
-     *
      * @param int|null $contextId
      * @return string Hash Signature
      */
@@ -58,6 +51,8 @@ class MetricsDAO extends DAO {
     /**
      * [SEMANTIC NAMING - STRICT MODE]
      * Menghasilkan nama file flat sesuai request: wm_hash_tipe_id.json.gz
+     * @param mixed $filters
+     * @param mixed $requestHash
      */
     private function _getSemanticCachePath($filters, $requestHash) {
         // Lokasi folder tunggal (Flat Storage)
@@ -108,14 +103,7 @@ class MetricsDAO extends DAO {
 
     /**
      * Retrieve a range of aggregate, filtered, ordered metric values.
-     * * [WIZDAM INTELLIGENT BROKER]
-     * Logic:
-     * 1. Cek Signature DB.
-     * 2. Cek Signature di dalam File Cache.
-     * 3. Jika Cocok -> Return Cache (Tanpa Query DB).
-     * 4. Jika Beda -> Query DB -> Update Cache -> Return Data.
-     *
-     * @param $metricType string|array metrics selection
+     * @param mixed $metricType string|array metrics selection
      * @param $columns string|array column (aggregation level) selection
      * @param $filters array report-level filter selection
      * @param $orderBy array order criteria
@@ -251,7 +239,9 @@ class MetricsDAO extends DAO {
 
     /**
      * Get all load ids that are associated with records filtered by the passed arguments.
-     * [LEGACY METHOD PRESERVED]
+     * @param mixed $assocType
+     * @param mixed $assocId
+     * @param mixed $metricType
      */
     public function getLoadId($assocType, $assocId, $metricType) {
         $params = array($assocType, $assocId, $metricType);
@@ -268,7 +258,7 @@ class MetricsDAO extends DAO {
 
     /**
      * Check for the presence of any record that has the passed metric type.
-     * [LEGACY METHOD PRESERVED]
+     * @param mixed $metricType
      */
     public function hasRecord($metricType) {
         $result = $this->retrieve('SELECT load_id FROM metrics WHERE metric_type = ? LIMIT 1', array($metricType));
@@ -278,7 +268,7 @@ class MetricsDAO extends DAO {
 
     /**
      * Purge a load batch before re-loading it.
-     * [LEGACY METHOD PRESERVED]
+     * @param mixed $loadId
      */
     public function purgeLoadBatch($loadId) {
         $this->update('DELETE FROM metrics WHERE load_id = ?', $loadId); 
@@ -286,7 +276,8 @@ class MetricsDAO extends DAO {
 
     /**
      * Purge all records associated with the passed metric type until the passed date.
-     * [LEGACY METHOD PRESERVED]
+     * @param mixed $metricType
+     * @param mixed $toDate
      */
     public function purgeRecords($metricType, $toDate) {
         $this->update('DELETE FROM metrics WHERE metric_type = ? AND day IS NOT NULL AND day <= ?', array($metricType, $toDate));
@@ -294,7 +285,8 @@ class MetricsDAO extends DAO {
 
     /**
      * Insert an entry into metrics table.
-     * [WIZDAM FIX] Modernized with strict type checking and instanceof
+     * @param mixed $record
+     * @param mixed $errorMsg
      */
     public function insertRecord($record, $errorMsg) { 
         $recordToStore = array();
@@ -316,6 +308,7 @@ class MetricsDAO extends DAO {
             case ASSOC_TYPE_GALLEY:
             case ASSOC_TYPE_SUPP_FILE:
                 if ($recordToStore['assoc_type'] == ASSOC_TYPE_GALLEY) {
+                    /** @var ArticleGalleyDAO $galleyDao */
                     $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); 
                     $articleFile = $galleyDao->getGalley($recordToStore['assoc_id']);
                     if (!($articleFile instanceof ArticleGalley)) {
@@ -323,6 +316,7 @@ class MetricsDAO extends DAO {
                         return false;
                     }
                 } else {
+                    /** @var SuppFileDAO $suppFileDao */
                     $suppFileDao = DAORegistry::getDAO('SuppFileDAO'); 
                     $articleFile = $suppFileDao->getSuppFile($recordToStore['assoc_id']);
                     if (!($articleFile instanceof SuppFile)) {
@@ -336,12 +330,14 @@ class MetricsDAO extends DAO {
 
             case ASSOC_TYPE_ARTICLE:
                 if (!$isArticleFile) $articleId = $recordToStore['assoc_id'];
+                /** @var PublishedArticleDAO $publishedArticleDao */
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                 $article = $publishedArticleDao->getPublishedArticleByArticleId($articleId, null, true);
                 if ($article instanceof PublishedArticle) {
                     $issueId = $article->getIssueId();
                 } else {
                     $issueId = null;
+                    /** @var ArticleDAO $articleDao */
                     $articleDao = DAORegistry::getDAO('ArticleDAO');
                     $article = $articleDao->getArticle($articleId, null, true);
                 }
@@ -354,6 +350,7 @@ class MetricsDAO extends DAO {
 
             case ASSOC_TYPE_ISSUE_GALLEY:
                 $articleId = null;
+                /** @var IssueGalleyDAO $issueGalleyDao */
                 $issueGalleyDao = DAORegistry::getDAO('IssueGalleyDAO');
                 $issueGalley = $issueGalleyDao->getGalley($recordToStore['assoc_id']);
                 if (!($issueGalley instanceof IssueGalley)) {
@@ -361,6 +358,7 @@ class MetricsDAO extends DAO {
                     return false;
                 }
                 $issueId = $issueGalley->getIssueId();
+                /** @var IssueDAO $issueDao */
                 $issueDao = DAORegistry::getDAO('IssueDAO'); 
                 $issue = $issueDao->getIssueById($issueId, null, true);
                 if (!($issue instanceof Issue)) {
@@ -373,6 +371,7 @@ class MetricsDAO extends DAO {
             case ASSOC_TYPE_ISSUE:
                 $articleId = null;
                 $issueId = $recordToStore['assoc_id'];
+                /** @var IssueDAO $issueDao */
                 $issueDao = DAORegistry::getDAO('IssueDAO');
                 $issue = $issueDao->getIssueByPubId('publisher-id', $issueId, null, true);
                 if (!$issue) {
@@ -386,6 +385,7 @@ class MetricsDAO extends DAO {
                 break;
             case ASSOC_TYPE_JOURNAL:
                 $articleId = $issueId = null;
+                /** @var JournalDAO $journalDao */
                 $journalDao = DAORegistry::getDAO('JournalDAO');
                 $journal = $journalDao->getById($recordToStore['assoc_id']);
                 if (!$journal) {
@@ -450,5 +450,4 @@ class MetricsDAO extends DAO {
         return $this->update("INSERT INTO metrics ($fields) VALUES ($placeholders)", $params);
     }
 }
-
 ?>

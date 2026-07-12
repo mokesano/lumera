@@ -50,7 +50,7 @@ class PKPWizdamStats {
      * Get all statistics for a specific journal.
      * Fungsi utama untuk mengambil semua statistik jurnal.
      * Ini adalah "pintu depan" untuk statistik per jurnal.
-     * @param $journalId int
+     * @param mixed $journalId int
      * @param $forceRefresh boolean
      * @return array
      */
@@ -75,7 +75,7 @@ class PKPWizdamStats {
      * Fungsi inti yang melakukan SEMUA perhitungan SQL dan caching.
      * Logika perhitungan timeline diperbaiki untuk memastikan semua data
      * (termasuk timeline tahunan) dihitung dengan benar.
-     * @param $journalId int
+     * @param mixed $journalId int
      * @return array
      */
     private static function _calculateAndCacheStats($journalId) {
@@ -113,11 +113,17 @@ class PKPWizdamStats {
         $daysAcceptanceToPublication = array();
 
         // Mendapatkan DAO yang diperlukan (dari getJournalStats.php)
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
+        /** @var ArticleGalleyDAO $articleGalleyDao */
         $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
         // $authorDao sudah di-import oleh class
 
@@ -720,13 +726,13 @@ class PKPWizdamStats {
     }
 
     /**
-     * Membuat hash data untuk deteksi perubahan
-     * (Logika dari getJournalStats_v2.txt)
-     * @param $journalId int
-     * @return string (hash) atau '' jika gagal
+     * Membuat hash data untuk deteksi perubahan (Logika dari getJournalStats_v2.txt)
+     * @param mixed $journalId int
+     * @return string (hash) atau ''
      */
     private static function _getJournalStatsDataHash($journalId) {
         try {
+            /** @var ArticleDAO $articleDao */
             $articleDao = DAORegistry::getDAO('ArticleDAO');
             $metrics = array();
             
@@ -814,6 +820,7 @@ class PKPWizdamStats {
             }
         }
 
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $journals = $journalDao->getJournals(true);

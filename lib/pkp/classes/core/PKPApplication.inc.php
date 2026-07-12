@@ -48,6 +48,7 @@ const ASSOC_TYPE_ACCESSIBLE_WORKFLOW_STAGES = 0x0100008;
 const ASSOC_TYPE_PLUGIN = 0x0000211;
 
 class PKPApplication {
+
     /** @var array<string, mixed>|null */
     public ?array $enabledProducts = null;
     
@@ -69,7 +70,7 @@ class PKPApplication {
         Console::logMemory('', 'PKPApplication::construct');
         Console::logSpeed('PKPApplication::construct');
 
-        mt_srand((int) ((double) microtime() * 1000000));
+        mt_srand((int) ((float) microtime() * 1000000));
 
         import('lib.pkp.classes.core.Core');
         import('lib.pkp.classes.core.PKPString');
@@ -260,7 +261,8 @@ class PKPApplication {
                 $settingContext = array_combine($this->getContextList(), $settingContext);
             }
 
-            $versionDao = DAORegistry::getDAO('VersionDAO'); /* @var $versionDao VersionDAO */
+            /** @var VersionDAO $versionDao */
+            $versionDao = DAORegistry::getDAO('VersionDAO');
             $this->enabledProducts = (array) $versionDao->getCurrentProducts($settingContext);
         }
 
@@ -473,7 +475,6 @@ class PKPApplication {
                 $dbServerInfo = $dbconn->ServerInfo();
             }
         }
-
         $message[] = "  Server info:";
         $message[] = "   OS: " . Core::serverPHPOS();
         $message[] = "   PHP Version: " . Core::serverPHPVersion();
@@ -509,7 +510,10 @@ class PKPApplication {
                     $notificationType = NOTIFICATION_TYPE_WARNING;
                     break;
                 case 'info':
-                    $notificationType = NOTIFICATION_TYPE_INFO;
+                    $notificationType = NOTIFICATION_TYPE_INFORMATION;
+                    break;
+                case 'form error':
+                    $notificationType = NOTIFICATION_TYPE_FORM_ERROR;
                     break;
                 default:
                     $notificationType = NOTIFICATION_TYPE_SUCCESS;
@@ -535,7 +539,7 @@ class PKPApplication {
         }
         assert((bool) preg_match('/^[a-zA-Z_]+$/', $name));
         
-        $constants =& self::getExposedConstants();
+        $constants = self::getExposedConstants();
         $constants[$name] = $value;
     }
 
@@ -545,7 +549,7 @@ class PKPApplication {
      * Returns REFERENCE to support defineExposedConstant modification.
      * @return array
      */
-    public static function &getExposedConstants(): array {
+    public static function getExposedConstants(): array {
         static $exposedConstants = [];
         return $exposedConstants;
     }

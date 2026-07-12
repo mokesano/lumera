@@ -8,10 +8,8 @@ declare(strict_types=1);
  * Copyright (c) 2000-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * OAI DAO untuk OJS. Mengimplementasikan logika spesifik jurnal
+ * OAI DAO untuk Lumera fork. Mengimplementasikan logika spesifik jurnal
  * di atas PKPOAIDAO yang bersifat generik.
- *
- * [WIZDAM EDITION] REFACTOR: PHP 8.1+ Compatibility, HookRegistry::dispatch
  */
 
 import('lib.pkp.classes.oai.PKPOAIDAO');
@@ -96,7 +94,6 @@ class OAIDAO extends PKPOAIDAO {
 
     /**
      * Ambil jurnal dengan cache internal.
-     *
      * @param int $journalId
      * @return Journal|null
      */
@@ -109,7 +106,6 @@ class OAIDAO extends PKPOAIDAO {
 
     /**
      * Ambil section jurnal dengan cache internal.
-     *
      * @param int $sectionId
      * @return Section|null
      */
@@ -122,7 +118,6 @@ class OAIDAO extends PKPOAIDAO {
     
     /**
      * Ambil issue dengan cache internal.
-     *
      * @param int $issueId
      * @return Issue|null
      */
@@ -165,6 +160,7 @@ class OAIDAO extends PKPOAIDAO {
             $abbrev = $journal->getPath();
             $sets[] = new OAISet(urlencode($abbrev), $title, '');
 
+            /** @var DataObjectTombstoneDAO $tombstoneDao */
             $tombstoneDao = DAORegistry::getDAO('DataObjectTombstoneDAO');
             $articleTombstoneSets = $tombstoneDao->getSets(ASSOC_TYPE_JOURNAL, $journal->getId());
 
@@ -184,7 +180,6 @@ class OAIDAO extends PKPOAIDAO {
 
         $total = count($sets);
 
-        // [WIZDAM PROTOCOL] Modernized Hook Call
         HookRegistry::dispatch('OAIDAO::getJournalSets', [$this, $journalId, $offset, $limit, $total, &$sets]);
 
         return [
@@ -199,7 +194,6 @@ class OAIDAO extends PKPOAIDAO {
 
     /**
      * Set metadata OAI spesifik untuk OJS pada objek OAIRecord atau OAIIdentifier.
-     *
      * @param OAIRecord|OAIIdentifier $record
      * @param array $row Record dari database
      * @param bool $isRecord True jika menghasilkan OAIRecord (bukan hanya identifier)
@@ -230,7 +224,6 @@ class OAIDAO extends PKPOAIDAO {
 
     /**
      * Mengambil pasangan (journalId, sectionId) untuk sebuah set OAI.
-     *
      * @param string $journalSpec Path jurnal (encoded)
      * @param string|null $sectionSpec Abreviasi section (encoded)
      * @param int|null $restrictJournalId Batasi hanya untuk jurnal tertentu
@@ -316,5 +309,4 @@ class OAIDAO extends PKPOAIDAO {
             . ' ORDER BY a.journal_id';
     }
 }
-
 ?>

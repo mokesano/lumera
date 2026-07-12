@@ -12,13 +12,12 @@ declare(strict_types=1);
  * @ingroup search
  *
  * @brief Class to maintain the article search index.
- * [WIZDAM EDITION] High Performance & PHP 8+ Compatible.
  */
 
 import('lib.pkp.classes.search.SearchFileParser');
 import('lib.pkp.classes.search.SearchHTMLParser');
 import('lib.pkp.classes.search.SearchHelperParser');
-import('classes.journal.Journal'); // [WIZDAM] Explicit Import
+import('classes.journal.Journal');
 
 define('SEARCH_STOPWORDS_FILE', 'lib/pkp/registry/stopwords.txt');
 define('SEARCH_KEYWORD_MAX_LENGTH', 40);
@@ -106,7 +105,6 @@ class ArticleSearchIndex {
 
                     $position = 0;
                     while(($text = $parser->read()) !== false) {
-                        // [WIZDAM] Ensure object ID is integer
                         $this->_indexObjectKeywords((int) $objectId, (string) $text, $position);
                     }
                     $parser->close();
@@ -134,7 +132,6 @@ class ArticleSearchIndex {
             
             foreach ($files as $file) {
                 if ($file->getFileId()) {
-                    // [WIZDAM] Explicit casting to int to satisfy ArticleSearchIndex::articleFileChanged(int, int, int)
                     $this->articleFileChanged(
                         (int) $article->getId(), 
                         (int) ARTICLE_SEARCH_SUPPLEMENTARY_FILE, 
@@ -173,14 +170,12 @@ class ArticleSearchIndex {
         if ($hookResult === false || is_null($hookResult)) {
             /** @var ArticleSearchDAO $searchDao */
             $searchDao = DAORegistry::getDAO('ArticleSearchDAO');
-            
-            // [WIZDAM FIX] Pisahkan eksekusi dan return value
             $searchDao->deleteArticleKeywords($articleId, $type, $assocId);
             
             return true;
         }
 
-        return (bool) $hookResult; // Return hook result if available
+        return (bool) $hookResult;
     }
 
     /**
@@ -366,8 +361,6 @@ class ArticleSearchIndex {
         $searchDao = DAORegistry::getDAO('ArticleSearchDAO');
         $objectId = $searchDao->insertObject((int) $articleId, (int) $type, (int) $assocId);
         $position = 0;
-        
-        // [WIZDAM] Fix: Prepare variables for pass-by-reference
         $posInt = (int) $position; 
         $objIdInt = (int) $objectId;
         $textStr = (string) (is_array($text) ? implode(' ', $text) : $text);

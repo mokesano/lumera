@@ -105,8 +105,9 @@ class Dispatcher {
         
             $isKnownJournal = false;
             if (!empty($firstSegment) && $firstSegment !== 'index') {
-                // [WIZDAM FIX] Hanya query ke DB jika aplikasi SUDAH terinstal
+                // [FIX] Hanya query ke DB jika aplikasi SUDAH terinstal
                 if (\Config::getVar('general', 'installed')) {
+                    /** @var JournalDAO $journalDao */
                     $journalDao     = DAORegistry::getDAO('JournalDAO');
                     $journalByPath  = $journalDao->getJournalByPath($firstSegment);
                     $isKnownJournal = ($journalByPath !== null);
@@ -116,7 +117,7 @@ class Dispatcher {
             if (!$isKnownJournal && $firstSegment !== 'index' && !empty($firstSegment)) {
                 $rewrittenPath = '/index' . $pathInfo;
         
-                // [WIZDAM FIX] Set keduanya agar router tidak miss
+                // [FIX] Set keduanya agar router tidak miss
                 $_SERVER['PATH_INFO']   = $rewrittenPath;
                 $_SERVER['REQUEST_URI'] = $request->getBasePath() . $rewrittenPath;
             }

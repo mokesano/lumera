@@ -12,10 +12,6 @@ declare(strict_types=1);
  * @ingroup article
  *
  * @brief An HTML galley may include an optional stylesheet and set of images.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor, Regex Callback, Ref removal)
- * - Null Safety for Image/File Iteration
  */
 
 import('classes.article.ArticleGalley');
@@ -84,7 +80,7 @@ class ArticleHTMLGalley extends ArticleGalley {
                 $contents
             );
 
-            // Replacement for other players (tested with odeo; yahoo and google player won't work w/ OJS URLs, might work for others)
+            // Replacement for other players (tested with odeo; yahoo and google player won't work w/ Lumera URLs, might work for others)
             $contents = preg_replace(
                 '/[Uu][Rr][Ll]=([^"]*' . $pattern . ')/',
                 'url=' . $imageUrl ,
@@ -92,8 +88,7 @@ class ArticleHTMLGalley extends ArticleGalley {
             );
         }
 
-        // Perform replacement for ojs://... URLs
-        // Guideline #5: Removed & from $this for callback
+        // Perform replacement for lumera://... URLs
         $contents = preg_replace_callback(
             '/(<[^<>]*")[Oo][Jj][Ss]:\/\/([^"]+)("[^<>]*>)/',
             array($this, '_handleOjsUrl'),
@@ -101,6 +96,7 @@ class ArticleHTMLGalley extends ArticleGalley {
         );
 
         // Perform variable replacement for journal, issue, site info
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $issue = $issueDao->getIssueByArticleId($this->getArticleId());
 
@@ -122,7 +118,7 @@ class ArticleHTMLGalley extends ArticleGalley {
     }
 
     /**
-     * Regex callback to handle OJS URLs
+     * Regex callback to handle URLs
      * @param array $matchArray
      * @return string
      */
@@ -284,5 +280,4 @@ class ArticleHTMLGalley extends ArticleGalley {
         return $this->setData('images', $images);
     }
 }
-
 ?>

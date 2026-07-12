@@ -13,10 +13,6 @@ declare(strict_types=1);
  * @see ArticleGalleyDAO
  *
  * @brief A galley is a final presentation version of the full-text of an article.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor hierarchy fix, Ref removal)
- * - Null Safety
  */
 
 import('classes.article.ArticleFile');
@@ -27,7 +23,6 @@ class ArticleGalley extends ArticleFile {
      * Constructor.
      */
     public function __construct() {
-        // Fix: Call direct parent constructor, not DataObject directly
         parent::__construct();
     }
 
@@ -36,7 +31,6 @@ class ArticleGalley extends ArticleFile {
      */
     public function ArticleGalley() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Untuk menangkap identitas Class Anak yang memanggil
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor parent::ArticleGalley(). Please refactor to parent::__construct().", 
                 E_USER_DEPRECATED
@@ -82,8 +76,10 @@ class ArticleGalley extends ArticleFile {
     //
 
     /**
-     * Get ID of galley.
+     * [DEPRECATED] Get ID of galley.
+     * Use getId() instead.
      * @return int
+     * @deprecated
      */
     public function getGalleyId() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.', E_USER_DEPRECATED);
@@ -91,8 +87,10 @@ class ArticleGalley extends ArticleFile {
     }
 
     /**
-     * Set ID of galley.
+     * [DEPRECATED] Set ID of galley.
+     * Use setId() instead.
      * @param int $galleyId
+     * @deprecated
      */
     public function setGalleyId($galleyId) {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.', E_USER_DEPRECATED);
@@ -105,8 +103,6 @@ class ArticleGalley extends ArticleFile {
      */
     public function getViews() {
         $application = PKPApplication::getApplication();
-        
-        // [WIZDAM FIX] Casting ID ke Integer agar sesuai Strict Typing
         return $application->getPrimaryMetricByAssoc(
             ASSOC_TYPE_GALLEY, 
             (int) $this->getId()
@@ -121,7 +117,6 @@ class ArticleGalley extends ArticleFile {
         $label = $this->getLabel();
         if ($this->getLocale() != AppLocale::getLocale()) {
             $locales = AppLocale::getAllLocales();
-            // PHP 8 Safety: Check if locale key exists
             if (isset($locales[$this->getLocale()])) {
                 $label .= ' (' . $locales[$this->getLocale()] . ')';
             }
@@ -184,9 +179,10 @@ class ArticleGalley extends ArticleFile {
      * @return string
      */
     public function getBestGalleyId($journal = null) {
-        // Guideline #2: Removed & from $journal
         if ($journal === null) {
+            /** @var ArticleDAO articleDao */
             $articleDao = DAORegistry::getDAO('ArticleDAO');
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journalId = $articleDao->getArticleJournalId($this->getArticleId());
             $journal = $journalDao->getById($journalId);
@@ -217,5 +213,4 @@ class ArticleGalley extends ArticleFile {
         return $this->getData('remoteURL');
     }
 }
-
 ?>
