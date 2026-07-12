@@ -119,7 +119,7 @@ function fatalError(string $reason, int $httpStatus = 500): void {
 
     $is404 = $httpStatus === 404;
 
-    $pageTitle   = $is404 ? 'Page Not Found (404) | Wizdam Editorial' : 'Unavailable (500) | Wizdam Editorial';
+    $pageTitle   = $is404 ? 'Page Not Found (404) | Lumera Workflow' : 'Unavailable (500) | Lumera Workflow';
     $mainMessage = $is404 ? 'Page Not Found' : 'Application Unavailable';
     
     if ($is404) {
@@ -163,6 +163,9 @@ function fatalError(string $reason, int $httpStatus = 500): void {
         @media screen and (min-width: 1024px) { html { font-size: 110%; } }
     ";
 
+    $scriptBasePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+    $brandImgSrc = htmlspecialchars($scriptBasePath . '/assets/img/sangia-black-branded-v3.svg', ENT_QUOTES, 'UTF-8');
+
     echo "<!DOCTYPE html>";
     echo "<html lang='en'>";
     echo "<head>";
@@ -174,7 +177,7 @@ function fatalError(string $reason, int $httpStatus = 500): void {
     echo "</head>";
     echo "<body>";
     echo "<div class='live-area'>";
-    echo "<img id='brand' alt='Sangia Publishing' src='//assets.sangia.org/img/sangia-black-branded-v3.svg'>";
+    echo "<img id='brand' alt='Sangia Publishing' src='{$brandImgSrc}'>";
     echo "<div class='message'>";
     echo "<h1>{$mainMessage}</h1>";
     echo $userFacingContent;
