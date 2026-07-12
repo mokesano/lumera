@@ -170,21 +170,21 @@
                                 <div class="c-footer__group" role="navigation">
                                     <h6 class="c-footer__heading">Explore content</h6>
                                     <ul class="c-footer__list">
-                                        <li class="c-footer__item"><a href="//blogs.sangia.org/">Read more on blogs</a></li>
+                                        <li class="c-footer__item"><a href="//blogs.sangia.org/">Read more on News and blogs</a></li>
                                         <li class="c-footer__item"><a href="/ISLE/pages/view/Authorship%20Guidelines">Guide for Author</a></li>
                                         <li class="c-footer__item"><a title="Browse Journals" href="{$baseUrl}" target="_blank">View Journals</a></li>
-                                        <li class="c-footer__item"><a title="View Journal Subject" href="{$baseUrl}/index/search/categories">Journals Subjects</a></li>
-                                        <li class="c-footer__item"><a title="View All Articles" href="{$baseUrl}/index/search/titles">All Articles</a></li>
+                                        <li class="c-footer__item"><a title="View Journal Subject" href="{$baseUrl}/search/categories">Journals Subjects</a></li>
+                                        <li class="c-footer__item"><a title="View All Articles" href="{$baseUrl}/search/titles">All Articles</a></li>
                                         <li class="c-footer__item"><a href="{url page="browseSearch" op="sections"}" title="Browse Section">Browse Section</a></li>
                                         <li class="u-hide c-footer__item"><a href="{url page="browseSearch" op="identifyTypes"}" title="Browse Article Type">Browse Article Type</a></li>
-                                        <li class="c-footer__item"><a title="View Authors Index" href="{$baseUrl}/index/search/authors" target="_blank">Authors Index</a></li>
+                                        <li class="c-footer__item"><a title="View Authors Index" href="{$baseUrl}/search/authors" target="_blank">Authors Index</a></li>
                                     </ul>
                                 </div>            
                             
                                 <div class="c-footer__group" role="navigation">
                                     <h6 class="c-footer__heading">Advertising & partnerships</h6>
                                     <ul class="c-footer__list">
-                                        <li class="c-footer__item"><a href="{url page="about" op="aboutThisPublishingSystem"}">{translate key="about.aboutThisPublishingSystem"}</a></li>
+                                        <li class="c-footer__item"><a href="{url page="about" op="insights"}">{translate key="about.aboutThisPublishingSystem"}</a></li>
                                         <li class="c-footer__item"><a href="/ISLE/pages/view/Guide%20for%20Registration">Registration Guide</a></li>
                                         <li class="c-footer__item"><a href="{url page="information" op="authors"}">{translate key="navigation.infoForAuthors.long"}</a></li>
                                         {if $donationEnabled}<li ><a href="{url page="donations"}">{translate key="payment.type.donation"}</a></li>{/if}
