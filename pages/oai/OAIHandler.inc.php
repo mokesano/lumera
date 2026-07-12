@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_oai
  *
  * @brief Handle OAI protocol requests.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 define('SESSION_DISABLE_INIT', 1);
