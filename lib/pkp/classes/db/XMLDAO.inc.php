@@ -14,7 +14,7 @@ declare(strict_types=1);
  * @brief Operations for retrieving and modifying objects from an XML data source.
  */
 
-import('lib.pkp.classes.xml.XMLParser');
+import('lib.pkp.classes.xml.PKPXMLParser');
 
 class XMLDAO {
     
@@ -29,7 +29,7 @@ class XMLDAO {
      */
     public function XMLDAO() {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor XMLDAO(). Please refactor to use __construct().",
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
             E_USER_DEPRECATED
         );
         self::__construct();
@@ -38,7 +38,7 @@ class XMLDAO {
     /**
      * Parse an XML file and return data in an object.
      * @see xml.XMLParser::parse()
-     * @param $file string
+     * @param string $file string
      * @return mixed
      */
     public function parse($file) {
@@ -51,8 +51,8 @@ class XMLDAO {
     /**
      * Parse an XML file with the specified handler and return data in an object
      * @see xml.XMLParser::parse()
-     * @param $file string
-     * @param $handler object Reference to the handler to use with the parser.
+     * @param string $file string
+     * @param mixed $handler object Reference to the handler to use with the parser.
      * @return mixed
      */
     public function parseWithHandler($file, $handler) {
@@ -66,7 +66,7 @@ class XMLDAO {
     /**
      * Parse an XML file and return data in an array.
      * @see xml.XMLParser::parseStruct()
-     * @param $file string
+     * @param mixed $file string
      * @param $tagsToMatch array
      * @return array
      */
@@ -76,6 +76,6 @@ class XMLDAO {
         $parser->destroy();
         return $data;
     }
+    
 }
-
 ?>

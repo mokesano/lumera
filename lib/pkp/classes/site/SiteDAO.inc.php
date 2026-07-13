@@ -27,11 +27,11 @@ class SiteDAO extends DAO {
     }
 
     /**
-     * [SHIM] Legacy Constructor Shim.
+     * [SHIM] Legacy Constructor.
      */
     public function SiteDAO() {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::SiteDAO(). Please refactor to use parent::__construct().",
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
             E_USER_DEPRECATED
         );
         self::__construct();
@@ -39,22 +39,16 @@ class SiteDAO extends DAO {
 
     /**
      * Retrieve site information.
-     * @return Site
+     * @return Site|null
      */
     public function getSite() {
+        $result = $this->retrieve('SELECT * FROM site');
         $site = null;
-        $result = $this->retrieve(
-            'SELECT * FROM site'
-        );
 
-        if ($result->RecordCount() != 0) {
+        if (!$result->EOF) {
             $site = $this->_returnSiteFromRow($result->GetRowAssoc(false));
-        }
+            $result->Close();
 
-        $result->Close();
-        unset($result);
-        
-        if ($site !== null) {
             // Query eksklusif hanya untuk 2 kolom yang dibutuhkan
             $settingsResult = $this->retrieve(
                 "SELECT setting_name, setting_value, setting_type, locale 
@@ -65,20 +59,21 @@ class SiteDAO extends DAO {
             while (!$settingsResult->EOF) {
                 $sRow = $settingsResult->GetRowAssoc(false);
                 $name = $sRow['setting_name'];
-                // Gunakan fungsi konversi bawaan DAO induk
                 $value = $this->convertFromDB($sRow['setting_value'], $sRow['setting_type']);
                 $locale = $sRow['locale'];
                     
-                if ($locale == '') {
+                if ($locale === '') {
                     $site->setData($name, $value);
                 } else {
-                    $existingData = $site->getData($name) ? $site->getData($name) : [];
+                    $existingData = $site->getData($name) ?? [];
                     $existingData[$locale] = $value;
                     $site->setData($name, $existingData);
                 }
                 $settingsResult->MoveNext();
             }
             $settingsResult->Close();
+        } else {
+            $result->Close();
         }
 
         return $site;
@@ -94,50 +89,63 @@ class SiteDAO extends DAO {
 
     /**
      * Internal function to return a Site object from a row.
-     * @param $row array
-     * @param $callHook boolean
+     * 
+     * @param array $row
+     * @param bool $callHook
      * @return Site
      */
     public function _returnSiteFromRow($row, $callHook = true) {
         $site = $this->newDataObject();
-        $site->setRedirect($row['redirect']);
-        $site->setMinPasswordLength($row['min_password_length']);
+        $site->setRedirect((int) $row['redirect']);
+        $site->setMinPasswordLength((int) $row['min_password_length']);
         $site->setPrimaryLocale($row['primary_locale']);
         $site->setOriginalStyleFilename($row['original_style_file_name']);
-        $site->setInstalledLocales(isset($row['installed_locales']) && !empty($row['installed_locales']) ? explode(':', $row['installed_locales']) : array());
-        $site->setSupportedLocales(isset($row['supported_locales']) && !empty($row['supported_locales']) ? explode(':', $row['supported_locales']) : array());
+        $site->setInstalledLocales(
+            isset($row['installed_locales']) && $row['installed_locales'] !== '' 
+                ? explode(':', (string) $row['installed_locales']) 
+                : []
+        );
+        $site->setSupportedLocales(
+            isset($row['supported_locales']) && $row['supported_locales'] !== '' 
+                ? explode(':', (string) $row['supported_locales']) 
+                : []
+        );
 
-        // MODERN HOOK: Using dispatch() and NO references for objects
-        if ($callHook) HookRegistry::dispatch('SiteDAO::_returnSiteFromRow', array($site, $row));
+        if ($callHook) {
+            HookRegistry::dispatch('SiteDAO::_returnSiteFromRow', [$site, &$row]);
+        }
 
         return $site;
     }
 
     /**
      * Insert site information.
-     * @param $site Site
+     * 
+     * @param Site $site
+     * @return bool
      */
     public function insertSite($site) {
-        $returner = $this->update(
+        return $this->update(
             'INSERT INTO site
                 (redirect, min_password_length, primary_locale, installed_locales, supported_locales, original_style_file_name)
                 VALUES
                 (?, ?, ?, ?, ?, ?)',
-            array(
-                $site->getRedirect(),
+            [
+                (int) $site->getRedirect(),
                 (int) $site->getMinPasswordLength(),
                 $site->getPrimaryLocale(),
-                join(':', $site->getInstalledLocales()),
-                join(':', $site->getSupportedLocales()),
+                implode(':', $site->getInstalledLocales()), // [WIZDAM] Modernisasi: join() -> implode()
+                implode(':', $site->getSupportedLocales()),
                 $site->getOriginalStyleFilename()
-            )
+            ]
         );
-        return $returner;
     }
 
     /**
      * Update existing site information.
-     * @param $site Site
+     * 
+     * @param Site $site
+     * @return bool
      */
     public function updateObject($site) {
         return $this->update(
@@ -149,23 +157,27 @@ class SiteDAO extends DAO {
                     installed_locales = ?,
                     supported_locales = ?,
                     original_style_file_name = ?',
-            array(
-                $site->getRedirect(),
+            [
+                (int) $site->getRedirect(),
                 (int) $site->getMinPasswordLength(),
                 $site->getPrimaryLocale(),
-                join(':', $site->getInstalledLocales()),
-                join(':', $site->getSupportedLocales()),
+                implode(':', $site->getInstalledLocales()), // [WIZDAM] Modernisasi: join() -> implode()
+                implode(':', $site->getSupportedLocales()),
                 $site->getOriginalStyleFilename()
-            )
+            ]
         );
     }
 
     /**
-     * [SHIM] Legacy Update Shim.
-     * @param $site Site
+     * [DEPRECATED] Legacy Update Shim.
+     * Use updateObject()
+     * @param Site $site
+     * @return bool
      */
     public function updateSite($site) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function. Use updateObject() instead.', E_USER_DEPRECATED);
+        }
         return $this->updateObject($site);
     }
 }

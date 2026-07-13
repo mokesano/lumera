@@ -12,10 +12,9 @@ declare(strict_types=1);
  * @ingroup xml
  *
  * @brief Extension of XMLNode for a simple DOM-style comment.
- * * REFACTORED: Wizdam Edition (PHP 8 Constructor, No References, Visibility)
  */
 
-import ('lib.pkp.classes.xml.XMLNode');
+import('lib.pkp.classes.xml.XMLNode');
 
 class XMLComment extends XMLNode {
 
@@ -23,12 +22,7 @@ class XMLComment extends XMLNode {
      * Constructor.
      */
     public function __construct() {
-        // Manually initialize properties as in legacy code
-        $this->name = '!--';
-        $this->parent = null;
-        $this->attributes = array();
-        $this->value = null;
-        $this->children = array();
+        parent::__construct('!--');
     }
 
     /**
@@ -36,88 +30,113 @@ class XMLComment extends XMLNode {
      */
     public function XMLComment() {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::XMLComment(). Please refactor to use parent::__construct().",
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
         self::__construct();
     }
 
     /**
-     * @param $includeNamespace boolean
-     * @return string|bool
+     * Get the name of the comment node.
+     * Comments do not have standard element names.
+     * 
+     * @param bool $includeNamespace
+     * @return false
      */
     public function getName($includeNamespace = true) {
         return false;
     }
 
     /**
-     * @param $name string
+     * Prevent setting a name on a comment node.
+     * 
+     * @param mixed $name
+     * @throws \BadMethodCallException
      */
     public function setName($name) {
-        assert(false);
+        throw new \BadMethodCallException('Cannot set a name on an XML comment node.');
     }
 
     /**
-     * @return array all attributes
+     * Get attributes (comments do not have attributes).
+     * 
+     * @return array
      */
     public function getAttributes() {
-        return array();
+        return [];
     }
 
     /**
-     * @param $name string attribute name
-     * @return string attribute value
+     * Get a specific attribute (comments do not have attributes).
+     * 
+     * @param string $name
+     * @return null
      */
     public function getAttribute($name) {
         return null;
     }
 
     /**
-     * @param $name string attribute name
-     * @param value string attribute value
+     * Prevent setting an attribute on a comment node.
+     * 
+     * @param string $name
+     * @param mixed $value
+     * @throws \BadMethodCallException
      */
     public function setAttribute($name, $value) {
-        assert(false);
+        throw new \BadMethodCallException('Cannot set attribute on an XML comment node.');
     }
 
     /**
-     * @param $attributes array
+     * Prevent setting attributes on a comment node.
+     * 
+     * @param array $attributes
+     * @throws \BadMethodCallException
      */
     public function setAttributes($attributes) {
-        assert(false);
+        throw new \BadMethodCallException('Cannot set attributes on an XML comment node.');
     }
 
     /**
-     * @return array this node's children (XMLNode objects)
+     * Get child nodes (comments do not have children).
+     * 
+     * @return array
      */
     public function getChildren() {
-        return array();
+        return [];
     }
 
     /**
-     * @param $name
-     * @param $index
-     * @return XMLNode|null the ($index+1)th child matching the specified name
+     * Get a child node by name (comments do not have children).
+     * 
+     * @param string|array $name
+     * @param int $index
+     * @return null
      */
     public function getChildByName($name, $index = 0) {
         return null;
     }
 
     /**
-     * Get the value of a child node.
-     * @param $name String name of node
-     * @param $index Optional integer index of child node to find
-     * @return string|null
+     * Get the value of a child node (comments do not have children).
+     * 
+     * @param string|array $name
+     * @param int $index
+     * @return null
      */
     public function getChildValue($name, $index = 0) {
         return null;
     }
 
     /**
-     * @param $node XMLNode the child node to add
+     * Prevent adding a child node to a comment.
+     * 
+     * @param mixed $node
+     * @throws \BadMethodCallException
      */
     public function addChild($node) {
-        assert(false);
+        throw new \BadMethodCallException('Cannot add child nodes to an XML comment.');
     }
+
 }
 ?>

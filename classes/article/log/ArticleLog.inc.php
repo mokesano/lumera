@@ -118,5 +118,6 @@ class ArticleLog {
         $logDao = DAORegistry::getDAO('ArticleEmailLogDAO');
         return $logDao->insertObject($entry);
     }
+    
 }
 ?>

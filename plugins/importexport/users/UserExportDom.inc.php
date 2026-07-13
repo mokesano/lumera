@@ -45,13 +45,13 @@ class UserExportDom {
 
     /**
      * Export users to XML DOM object.
-     *
      * @param object $journal Journal object
      * @param array $users Array of User objects
      * @param array|null $allowedRoles Array of allowed role paths
      * @return object DOMDocument
      */
     public function exportUsers($journal, array $users, ?array $allowedRoles = null) {
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
 
         $doc = XMLCustomWriter::createDocument('users', USERS_DTD_ID, USERS_DTD_URL);
@@ -151,5 +151,4 @@ class UserExportDom {
         return $doc;
     }
 }
-
 ?>

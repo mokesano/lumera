@@ -11,53 +11,62 @@ declare(strict_types=1);
  * @class DAOResultFactory
  * @ingroup db
  *
- * @brief Wrapper around ADORecordSet providing "factory" features for generating
- * objects from DAOs.
+ * @brief Wrapper around ADORecordSet providing "factory" features for
+ * generating objects from DAOs.
  */
 
 import('lib.pkp.classes.core.ItemIterator');
 
 class DAOResultFactory extends ItemIterator {
     
-    /** @var DAO The DAO used to create objects */
+    /** @var DAO|null The DAO used to create objects */
     public $dao;
 
-    /** @var string The name of the DAO's factory function (to be called with an associative array of values) */
+    /** @var string The name of the DAO's factory function */
     public $functionName;
 
-    /**
-     * @var array an array of primary key field names that uniquely
-     * identify a result row in the record set.
-     */
+    /** @var array An array of primary key field names that uniquely identify a result row */
     public $idFields;
 
-    /** @var object The ADORecordSet to be wrapped around */
+    /** @var object|null The ADORecordSet to be wrapped around */
     public $records;
 
     /** @var bool True iff the resultset was always empty */
     public $wasEmpty;
 
+    /** @var bool */
     public $isFirst;
+
+    /** @var bool */
     public $isLast;
+
+    /** @var int */
     public $page;
+
+    /** @var int */
     public $count;
+
+    /** @var int */
     public $pageCount;
 
     /**
      * Constructor.
      * Initialize the DAOResultFactory
-     * @param $records object ADO record set
-     * @param $dao object DAO class for factory
-     * @param $functionName string 
-     * @param $idFields array an array of primary key field names
+     * 
+     * @param object|null $records ADO record set
+     * @param DAO $dao DAO class for factory
+     * @param string $functionName 
+     * @param array $idFields An array of primary key field names
      */
-    public function __construct($records, $dao, $functionName, $idFields = array()) {
+    public function __construct($records, $dao, $functionName, $idFields = []) {
         $this->functionName = $functionName;
         $this->dao = $dao;
         $this->idFields = $idFields;
 
         if (!$records || $records->EOF) {
-            if ($records) $records->Close();
+            if ($records) {
+                $records->Close();
+            }
             $this->records = null;
             $this->wasEmpty = true;
             $this->page = 1;
@@ -78,10 +87,13 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * [SHIM] Backward compatibility.
+     * @param object|null $records
+     * @param DAO $dao DAO
+     * @param string $functionName
      */
-    public function DAOResultFactory($records, $dao, $functionName, $idFields = array()) {
+    public function DAOResultFactory($records, $dao, $functionName, $idFields = []) {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::DAOResultFactory(). Please refactor to use parent::__construct().",
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
         self::__construct($records, $dao, $functionName, $idFields);
@@ -89,29 +101,36 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * Advances the internal cursor to a specific row.
+     * 
      * @param int $to
-     * @return boolean
+     * @return bool
      */
     public function move($to) {
-        if ($this->records == null) return false;
-        if ($this->records->Move($to))
-            return true;
-        else
+        if ($this->records === null) {
             return false;
+        }
+        return (bool) $this->records->Move($to);
     }
 
     /**
      * Return the object representing the next row.
-     * @return object
+     * 
+     * @return object|null
      */
     public function next() {
-        if ($this->records == null) return $this->records;
+        if ($this->records === null) {
+            return null;
+        }
+        
         if (!$this->records->EOF) {
             $functionName = $this->functionName;
             $dao = $this->dao;
             $row = $this->records->getRowAssoc(false);
             $result = $dao->$functionName($row);
-            if (!$this->records->MoveNext()) $this->_cleanup();
+            
+            if (!$this->records->MoveNext()) {
+                $this->_cleanup();
+            }
             return $result;
         } else {
             $this->_cleanup();
@@ -121,31 +140,40 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * Return the next row, with key.
-     * @return array ($key, $value)
+     * 
+     * @param string|null $idField
+     * @return array [$key, $value]
      */
     public function nextWithKey($idField = null) {
         $result = $this->next();
-        if($idField) {
-            assert(is_a($result, 'DataObject'));
+        
+        if ($result === null) {
+            return [null, null];
+        }
+
+        if ($idField !== null) {
             $key = $result->getData($idField);
         } elseif (empty($this->idFields)) {
             $key = null;
         } else {
-            assert(is_a($result, 'DataObject') && is_array($this->idFields));
             $key = '';
-            foreach($this->idFields as $idField) {
-                assert(!is_null($result->getData($idField)));
-                if (!empty($key)) $key .= '-';
-                $key .= (string)$result->getData($idField);
+            foreach ($this->idFields as $field) {
+                $fieldValue = $result->getData($field);
+                if ($key !== '') {
+                    $key .= '-';
+                }
+                // Internal coercion to string to prevent type errors
+                $key .= (string) ($fieldValue ?? '');
             }
         }
-        $returner = array($key, $result);
-        return $returner;
+        
+        return [$key, $result];
     }
 
     /**
      * Determine whether this iterator represents the first page of a set.
-     * @return boolean
+     * 
+     * @return bool
      */
     public function atFirstPage() {
         return $this->isFirst;
@@ -153,7 +181,8 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * Determine whether this iterator represents the last page of a set.
-     * @return boolean
+     * 
+     * @return bool
      */
     public function atLastPage() {
         return $this->isLast;
@@ -161,6 +190,7 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * Get the page number of a set that this iterator represents.
+     * 
      * @return int
      */
     public function getPage() {
@@ -169,6 +199,7 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * Get the total number of items in the set.
+     * 
      * @return int
      */
     public function getCount() {
@@ -177,6 +208,7 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * Get the total number of pages in the set.
+     * 
      * @return int
      */
     public function getPageCount() {
@@ -185,10 +217,13 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * Return a boolean indicating whether or not we've reached the end of results
-     * @return boolean
+     * 
+     * @return bool
      */
     public function eof() {
-        if ($this->records == null) return true;
+        if ($this->records === null) {
+            return true;
+        }
         if ($this->records->EOF) {
             $this->_cleanup();
             return true;
@@ -198,7 +233,8 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * Return a boolean indicating whether or not this resultset was empty from the beginning
-     * @return boolean
+     * 
+     * @return bool
      */
     public function wasEmpty() {
         return $this->wasEmpty;
@@ -209,8 +245,8 @@ class DAOResultFactory extends ItemIterator {
      * This is called aggressively because it can free resources.
      */
     public function _cleanup() {
-        if ($this->records) {
-            $this->records->close();
+        if ($this->records !== null) {
+            $this->records->Close();
             unset($this->records);
             $this->records = null;
         }
@@ -218,10 +254,11 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * Convert this iterator to an array.
+     * 
      * @return array
      */
     public function toArray() {
-        $returner = array();
+        $returner = [];
         while (!$this->eof()) {
             $returner[] = $this->next();
         }
@@ -230,21 +267,25 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * Convert this iterator to an associative array by database ID.
+     * 
+     * @param string $idField
      * @return array
      */
     public function toAssociativeArray($idField = 'id') {
-        $returner = array();
+        $returner = [];
         while (!$this->eof()) {
             $result = $this->next();
-            $returner[$result->getData($idField)] = $result;
-            unset($result);
+            if ($result !== null && is_object($result) && method_exists($result, 'getData')) {
+                $returner[$result->getData($idField)] = $result;
+            }
         }
         return $returner;
     }
 
     /**
      * Determine whether or not this iterator is in the range of pages for the set it represents
-     * @return boolean
+     * 
+     * @return bool
      */
     public function isInBounds() {
         return ($this->pageCount >= $this->page);
@@ -252,13 +293,13 @@ class DAOResultFactory extends ItemIterator {
 
     /**
      * Get the RangeInfo representing the last page in the set.
-     * @return object
+     * 
+     * @return DBResultRange
      */
     public function getLastPageRangeInfo() {
         import('lib.pkp.classes.db.DBResultRange');
-        $returner = new DBResultRange($this->count, $this->pageCount);
-        return $returner;
+        return new DBResultRange($this->count, $this->pageCount);
     }
-}
 
+}
 ?>

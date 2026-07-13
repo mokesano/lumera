@@ -87,5 +87,6 @@ class DAORegistry {
         fatalError('Unrecognized DAO ' . $name . '! Please ensure the file is imported.');
         return null;
     }
+    
 }
 ?>
