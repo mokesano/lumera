@@ -12,13 +12,7 @@ declare(strict_types=1);
  * @ingroup article
  *
  * @brief Class defining basic operations for article tombstones.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor, Ref removal)
- * - Code Cleanup (Redundant calls)
- * - Strict Typing
  */
-
 
 class ArticleTombstoneManager {
     
@@ -44,19 +38,14 @@ class ArticleTombstoneManager {
      * @param Journal $journal
      */
     public function insertArticleTombstone($article, $journal) {
-        $sectionDao = DAORegistry::getDAO('SectionDAO');
+        $sectionDao = DAORegistry::getDAO('SectionDAO'); /** @var SectionDAO $sectionDao */
         $section = $sectionDao->getSection($article->getSectionId());
-
-        // PHP 8 Safety: Ensure section exists
         if (!$section) return;
 
-        $tombstoneDao = DAORegistry::getDAO('DataObjectTombstoneDAO'); /* @var $tombstoneDao DataObjectTombstoneDAO */
-        
-        // delete article tombstone -- to ensure that there aren't more than one tombstone for this article
+        $tombstoneDao = DAORegistry::getDAO('DataObjectTombstoneDAO'); /** @var DataObjectTombstoneDAO $tombstoneDao */
         $tombstoneDao->deleteByDataObjectId((int) $article->getId());
-        
-        // Removed redundant $sectionDao->getSection call here
 
+        // Removed redundant $sectionDao->getSection call here
         $setSpec = urlencode((string) $journal->getPath()) . ':' . urlencode((string) $section->getLocalizedAbbrev());
         $oaiIdentifier = 'oai:' . Config::getVar('oai', 'repository_id') . ':' . 'article/' . $article->getId();
         
@@ -79,5 +68,4 @@ class ArticleTombstoneManager {
         if (HookRegistry::dispatch('ArticleTombstoneManager::insertArticleTombstone', array($articleTombstone, $article, $journal))) return;
     }
 }
-
 ?>
