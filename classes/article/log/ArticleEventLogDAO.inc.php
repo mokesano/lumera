@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see EventLogDAO
  *
  * @brief Extension to EventLogDAO for article-specific log entries.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.log.EventLogDAO');
