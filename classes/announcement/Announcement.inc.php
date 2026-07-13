@@ -17,10 +17,6 @@ declare(strict_types=1);
  * @see AnnouncementDAO
  *
  * @brief Basic class describing a announcement.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor)
- * - Strict SHIM
  */
 
 import('lib.pkp.classes.announcement.PKPAnnouncement');
@@ -44,5 +40,4 @@ class Announcement extends PKPAnnouncement {
         self::__construct();
     }
 }
-
 ?>
