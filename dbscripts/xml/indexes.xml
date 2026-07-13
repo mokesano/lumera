@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE data SYSTEM "../../lib/pkp/dtd/xmlData.dtd">
-
 <!--
-  * ...
+  * dbscripts/xml/indexes.xml
+  *
+  * Copyright (c) 2017-2024 Sangia Publishing House
+  * Copyright (c) 2017-2026 Code Lumera
+  * Distributed under the GNU GPL v3.
+  *
+  * Lumera Indexes version information.
   -->
 <data>
 	<sql>

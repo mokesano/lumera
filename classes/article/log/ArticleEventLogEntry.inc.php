@@ -110,7 +110,7 @@ class ArticleEventLogEntry extends EventLogEntry {
     public function ArticleEventLogEntry() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::ArticleEventLogEntry(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -230,5 +230,6 @@ class ArticleEventLogEntry extends EventLogEntry {
                 return 'submission.event.general.defaultEvent';
         }
     }
+    
 }
 ?>

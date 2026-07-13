@@ -314,7 +314,7 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
      * @return object tree structure representing the document
      */
     public function getDocument($fileName) {
-        $parser = new XMLParser();
+        $parser = new PKPXMLParser();
         $returner = $parser->parse($fileName);
         return $returner;
     }

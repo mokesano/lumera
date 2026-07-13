@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class ScheduledTaskTool
  * @ingroup tools
  *
- * @brief CLI tool to execute a set of scheduled tasks.
- * [WIZDAM EDITION] Modernized Task Runner.
+ * @brief CLI tool to execute a set of scheduled with modernized Task Runner.
  */
 
 // Define registry file constant cautiously (Config might not be fully loaded yet in some envs)
@@ -23,7 +22,7 @@ if (!defined('TASKS_REGISTRY_FILE')) {
 import('lib.pkp.classes.scheduledTask.ScheduledTask');
 import('lib.pkp.classes.scheduledTask.ScheduledTaskHelper');
 import('lib.pkp.classes.scheduledTask.ScheduledTaskDAO');
-import('lib.pkp.classes.xml.XMLParser'); // [WIZDAM] Explicit Import
+import('lib.pkp.classes.xml.PKPXMLParser');
 
 class ScheduledTaskTool extends CommandLineTool {
 
@@ -88,7 +87,7 @@ class ScheduledTaskTool extends CommandLineTool {
      * @param string $file
      */
     public function parseTasks(string $file): void {
-        $xmlParser = new XMLParser();
+        $xmlParser = new PKPXMLParser();
         $tree = $xmlParser->parse($file);
 
         if (!$tree) {
@@ -124,8 +123,6 @@ class ScheduledTaskTool extends CommandLineTool {
      */
     public function executeTask(string $className, array $args): void {
         // [WIZDAM] Safe Instantiation
-        // We ensure the class is a ScheduledTask and has an execute method.
-        // instantiate() function handles Namespaces if provided in XML.
         $task = instantiate($className, 'ScheduledTask', null, 'execute', $args);
 
         if (!is_object($task)) {
@@ -143,4 +140,5 @@ class ScheduledTaskTool extends CommandLineTool {
         
         $task->execute();
     }
+
 }

@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see Version
  *
  * @brief Operations for retrieving and modifying Version objects.
- * [WIZDAM EDITION] PHP 7.4+ Compatible & Custom Logic Preserved
  */
 
 import('lib.pkp.classes.site.Version');
@@ -32,7 +31,7 @@ class VersionDAO extends DAO {
      */
     public function VersionDAO() {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::VersionDAO(). Please refactor to parent::__construct().", 
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to use parent::__construct().", 
             E_USER_DEPRECATED
         );
         self::__construct();
@@ -40,27 +39,32 @@ class VersionDAO extends DAO {
 
     /**
      * Retrieve the current version.
-     * @param $productType string
-     * @param $product string
-     * @param $isPlugin boolean
-     * @return Version
+     * 
+     * @param string|null $productType
+     * @param string|null $product
+     * @param bool $isPlugin
+     * @return Version|null
      */
-    public function getCurrentVersion($productType = null, $product = null, $isPlugin = false) {
-        if(!$productType || !$product) {
+    public function getCurrentVersion(?string $productType = null, ?string $product = null, bool $isPlugin = false): ?Version {
+        if (!$productType || !$product) {
             $application = PKPApplication::getApplication();
             $productType = 'core';
             $product = $application->getName();
         }
 
         $returner = null;
+
+        // Legacy fallback: if not a plugin, check if there's exactly ONE current version in the entire table
         if (!$isPlugin) {
-            $result = $this->retrieve(
-                'SELECT * FROM versions WHERE current = 1'
-            );
-            
-            if ($result->RecordCount() == 1) {
+            $result = $this->retrieve('SELECT * FROM versions WHERE current = 1');
+            if (!$result->EOF) {
                 $oldVersion = $this->_returnVersionFromRow($result->GetRowAssoc(false));
-                if (isset($oldVersion)) $returner = $oldVersion;
+                $result->MoveNext();
+                
+                // Pastikan hanya ada 1 baris (RecordCount == 1 di kode asli)
+                if ($result->EOF && $oldVersion) {
+                    $returner = $oldVersion;
+                }
             }
             $result->Close();
         }
@@ -68,13 +72,16 @@ class VersionDAO extends DAO {
         if (!$returner) {
             $result = $this->retrieve(
                 'SELECT * FROM versions WHERE current = 1 AND product_type = ? AND product = ?',
-                array($productType, $product)
+                [$productType, $product]
             );
-            $versionCount = $result->RecordCount();
-            if ($versionCount == 1) {
+            
+            if (!$result->EOF) {
                 $returner = $this->_returnVersionFromRow($result->GetRowAssoc(false));
-            } elseif ($versionCount > 1) {
-                fatalError('More than one current version defined for the product type "'.$productType.'" and product "'.$product.'"!');
+                $result->MoveNext();
+                
+                if (!$result->EOF) {
+                    fatalError('More than one current version defined for the product type "' . $productType . '" and product "' . $product . '"!');
+                }
             }
             $result->Close();
         }
@@ -84,14 +91,13 @@ class VersionDAO extends DAO {
 
     /**
      * Retrieve the complete version history.
- 	 * @param $productType string
-	 * @param $product string
-	 * @return array Versions
-	 */
-    public function getVersionHistory($productType = null, $product = null) {
-        $versions = array();
-
-        if(!$productType || !$product) {
+     * 
+     * @param string|null $productType
+     * @param string|null $product
+     * @return array Versions
+     */
+    public function getVersionHistory(?string $productType = null, ?string $product = null): array {
+        if (!$productType || !$product) {
             $application = PKPApplication::getApplication();
             $productType = 'core';
             $product = $application->getName();
@@ -99,9 +105,10 @@ class VersionDAO extends DAO {
 
         $result = $this->retrieve(
             'SELECT * FROM versions WHERE product_type = ? AND product = ? ORDER BY date_installed DESC',
-            array($productType, $product)
+            [$productType, $product]
         );
 
+        $versions = [];
         while (!$result->EOF) {
             $versions[] = $this->_returnVersionFromRow($result->GetRowAssoc(false));
             $result->MoveNext();
@@ -113,37 +120,38 @@ class VersionDAO extends DAO {
 
     /**
      * Internal function to return a Version object from a row.
-	 * @param $row array
-	 * @return Version
-	 */
-    public function _returnVersionFromRow($row) {
-        // [IMPORTANT] Memanggil Constructor baru dengan parameter lengkap
-        // Sesuai dengan Version.inc.php yang baru kita perbaiki
+     * 
+     * @param array $row
+     * @return Version
+     */
+    public function _returnVersionFromRow(array $row): Version {
         $version = new Version(
-            $row['major'],
-            $row['minor'],
-            $row['revision'],
-            $row['build'],
+            (int) $row['major'],
+            (int) $row['minor'],
+            (int) $row['revision'],
+            (int) $row['build'],
             $this->datetimeFromDB($row['date_installed']),
-            $row['current'],
-            (isset($row['product_type']) ? $row['product_type'] : null),
-            (isset($row['product']) ? $row['product'] : null),
-            (isset($row['product_class_name']) ? $row['product_class_name'] : ''),
-            (isset($row['lazy_load']) ? $row['lazy_load'] : 0),
-            (isset($row['sitewide']) ? $row['sitewide'] : 0)
+            (int) $row['current'],
+            $row['product_type'] ?? null,
+            $row['product'] ?? null,
+            $row['product_class_name'] ?? '',
+            (int) ($row['lazy_load'] ?? 0),
+            (int) ($row['sitewide'] ?? 0)
         );
 
-        HookRegistry::dispatch('VersionDAO::_returnVersionFromRow', array($version, $row));
+        HookRegistry::dispatch('VersionDAO::_returnVersionFromRow', [$version, &$row]);
 
         return $version;
     }
 
     /**
      * Insert a new version.
-	 * @param $version Version
-	 * @param $isPlugin boolean
-	 */
-    public function insertVersion($version, $isPlugin = false) {
+     * 
+     * @param Version $version
+     * @param bool $isPlugin
+     * @return bool
+     */
+    public function insertVersion(Version $version, bool $isPlugin = false): bool {
         $isNewVersion = true;
 
         if ($version->getCurrent()) {
@@ -151,28 +159,34 @@ class VersionDAO extends DAO {
             $oldVersion = array_shift($versionHistory);
             
             if ($oldVersion) {
-                if ($version->compare($oldVersion) == 0) {
+                $compareResult = $version->compare($oldVersion);
+                
+                if ($compareResult === 0) {
                     $isNewVersion = false;
-                } elseif ($version->compare($oldVersion) == 1) {
-                    $this->update('UPDATE versions SET current = 0 WHERE current = 1 AND product = ?', array($version->getProduct()));
+                } elseif ($compareResult === 1) {
+                    $this->update(
+                        'UPDATE versions SET current = 0 WHERE current = 1 AND product = ?',
+                        [$version->getProduct()]
+                    );
                 } else {
-                    fatalError('You are trying to downgrade the product "'.$version->getProduct().'" from version ['.$oldVersion->getVersionString().'] to version ['.$version->getVersionString().']. Downgrades are not supported.');
+                    fatalError('You are trying to downgrade the product "' . $version->getProduct() . '" from version [' . $oldVersion->getVersionString() . '] to version [' . $version->getVersionString() . ']. Downgrades are not supported.');
                 }
             }
         }
 
         if ($isNewVersion) {
-            if ($version->getDateInstalled() == null) {
+            if ($version->getDateInstalled() === null) {
                 $version->setDateInstalled(Core::getCurrentDate());
             }
 
             return $this->update(
-                sprintf('INSERT INTO versions
+                sprintf(
+                    'INSERT INTO versions
                     (major, minor, revision, build, date_installed, current, product_type, product, product_class_name, lazy_load, sitewide)
-                    VALUES
-                    (?, ?, ?, ?, %s, ?, ?, ?, ?, ?, ?)',
-                    $this->datetimeToDB($version->getDateInstalled())),
-                array(
+                    VALUES (?, ?, ?, ?, %s, ?, ?, ?, ?, ?, ?)',
+                    $this->datetimeToDB($version->getDateInstalled())
+                ),
+                [
                     (int) $version->getMajor(),
                     (int) $version->getMinor(),
                     (int) $version->getRevision(),
@@ -181,66 +195,67 @@ class VersionDAO extends DAO {
                     $version->getProductType(),
                     $version->getProduct(),
                     $version->getProductClassName(),
-                    ($version->getLazyLoad()?1:0),
-                    ($version->getSitewide()?1:0)
-                )
+                    (int) $version->getLazyLoad(),
+                    (int) $version->getSitewide()
+                ]
             );
         } else {
             return $this->update(
                 'UPDATE versions SET current = ?, product_class_name = ?, lazy_load = ?, sitewide = ?
                     WHERE product_type = ? AND product = ? AND major = ? AND minor = ? AND revision = ? AND build = ?',
-                array(
+                [
                     (int) $version->getCurrent(),
                     $version->getProductClassName(),
-                    ($version->getLazyLoad()?1:0),
-                    ($version->getSitewide()?1:0),
+                    (int) $version->getLazyLoad(),
+                    (int) $version->getSitewide(),
                     $version->getProductType(),
                     $version->getProduct(),
                     (int) $version->getMajor(),
                     (int) $version->getMinor(),
                     (int) $version->getRevision(),
                     (int) $version->getBuild()
-                )
+                ]
             );
         }
     }
 
     /**
      * Retrieve all currently enabled products.
-	 * @param $context array the application context
-	 * @return array
-	 */
-    public function getCurrentProducts($context) {
-        if (count($context)) {
+     * 
+     * @param array $context the application context (e.g., ['journal' => 1])
+     * @return array
+     */
+    public function getCurrentProducts(array $context): array {
+        $contextWhereClause = '';
+        $params = [];
+
+        if (!empty($context)) {
             $contextNames = array_keys($context);
+            $params = array_values($context);
+
             foreach ($contextNames as $contextLevel => $contextName) {
                 // Transform from camel case to ..._...
+                $words = []; 
                 PKPString::regexp_match_all('/[A-Z][a-z]*/', ucfirst($contextName), $words);
-                $contextNames[$contextLevel] = strtolower_codesafe(implode('_', $words[0]));
+                $matchedWords = isset($words[0]) && is_array($words[0]) ? $words[0] : [];
+                $contextNames[$contextLevel] = strtolower_codesafe(implode('_', $matchedWords));
             }
-            // [NOTE] Logic kompleks query ini dipertahankan
-            $contextWhereClause = 'AND (('.implode('_id = ? AND ', $contextNames).'_id = ?) OR v.sitewide = 1)';
-        } else {
-            $contextWhereClause = '';
+            
+            $contextWhereClause = ' AND ( (' . implode('_id = ? AND ', $contextNames) . '_id = ?) OR v.sitewide = 1 )';
         }
 
-        // [MODERNISASI] Fix parameter retrieve, $context harus array untuk binding, tapi query logic Anda menggunakan string concat manual untuk binding placeholder.
-        // ADODB execute expects params array.
-        // Jika $context adalah array data (bukan array kosong), maka aman.
         $result = $this->retrieve(
-                'SELECT v.*
-                 FROM versions v LEFT JOIN plugin_settings ps ON
-                    lower(v.product_class_name) = ps.plugin_name
-                    AND ps.setting_name = \'enabled\' '.$contextWhereClause.'
-                 WHERE v.current = 1 AND (ps.setting_value = \'1\' OR v.lazy_load <> 1)', 
-                 $context, // Array of values for ? placeholders
-                 false // callHooks
+            'SELECT v.*
+             FROM versions v 
+             LEFT JOIN plugin_settings ps ON lower(v.product_class_name) = ps.plugin_name AND ps.setting_name = \'enabled\' ' . $contextWhereClause . '
+             WHERE v.current = 1 AND (ps.setting_value = \'1\' OR v.lazy_load <> 1)',
+            $params,
+            false
         );
 
-        $productArray = array();
-        while(!$result->EOF) {
+        $productArray = [];
+        while (!$result->EOF) {
             $row = $result->getRowAssoc(false);
-            // [MODERNISASI] Factory call without &
             $productArray[$row['product_type']][$row['product']] = $this->_returnVersionFromRow($row);
             $result->MoveNext();
         }
@@ -249,16 +264,19 @@ class VersionDAO extends DAO {
         return $productArray;
     }
 
-	/**
-	 * Disable a product by setting its 'current' column to 0
-	 * @param $productType string
-	 * @param $product string
-	 */
-    public function disableVersion($productType, $product) {
-        $this->update(
+    /**
+     * Disable a product by setting its 'current' column to 0
+     * 
+     * @param string $productType
+     * @param string $product
+     * @return bool
+     */
+    public function disableVersion(string $productType, string $product): bool {
+        return $this->update(
             'UPDATE versions SET current = 0 WHERE current = 1 AND product_type = ? AND product = ?',
-            array($productType, $product)
+            [$productType, $product]
         );
     }
+    
 }
 ?>

@@ -32,7 +32,10 @@ class AnnouncementDAO extends PKPAnnouncementDAO {
      */
     public function AnnouncementDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class AnnouncementDAO uses deprecated constructor parent::AnnouncementDAO(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
+                E_USER_DEPRECATED
+            );
         }
         self::__construct();
     }
@@ -45,5 +48,6 @@ class AnnouncementDAO extends PKPAnnouncementDAO {
     public function newDataObject() {
         return new Announcement();
     }
+    
 }
 ?>

@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_sitemap
  *
  * @brief Produce a sitemap in XML format for submitting to search engines.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance & Fix Method Signature
  */
 
 import('lib.pkp.classes.xml.XMLCustomWriter');
@@ -45,176 +43,210 @@ class SitemapHandler extends Handler {
     }
 
     /**
-     * Generate an XML sitemap for webcrawlers
-     * Creates a sitemap index if in site context, else creates a sitemap
-     * * [WIZDAM FIX] Updated signature to match PKPHandler::index($args, $request)
+     * Generate an XML sitemap for webcrawlers.
+     * Creates a sitemap index if in site context, else creates a sitemap.
+     * 
+     * [WIZDAM] SIGNATURE COMPATIBILITY: Tidak ada type hint di parameter 
+     * agar 100% kompatibel dengan PKPHandler::index($args, $request)
+     * 
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function index($args = [], $request = null) {
-        // [WIZDAM] Singleton Fallback if request is not passed
-        if (!$request) $request = Application::get()->getRequest();
+        // Internal safety: Pastikan $request adalah objek PKPRequest
+        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        $router = $request->getRouter();
 
-        // Validasi Request untuk memastikan path jurnal benar
         $journal = $request->getJournal();
         
-        if ($request->getRequestedJournalPath() == 'index' || !$journal) {
-            $doc = $this->_createSitemapIndex();
-            header("Content-Type: application/xml");
-            header("Cache-Control: private");
-            header("Content-Disposition: inline; filename=\"sitemap_index.xml\"");
+        // Strict comparison di dalam body (aman dan tidak melanggar signature)
+        if ($request->getRequestedJournalPath() === 'index' || $journal === null) {
+            $doc = $this->_createSitemapIndex($request, $router);
+            $this->_sendXmlHeaders('sitemap_index.xml');
             XMLCustomWriter::printXML($doc);
         } else {
-            $doc = $this->_createJournalSitemap();
-            header("Content-Type: application/xml");
-            header("Cache-Control: private");
-            header("Content-Disposition: inline; filename=\"sitemap.xml\"");
+            $doc = $this->_createJournalSitemap($request, $router, $journal);
+            $this->_sendXmlHeaders('sitemap.xml');
             XMLCustomWriter::printXML($doc);
         }
     }
       
     /**
-     * Construct a sitemap index listing each journal's individual sitemap
-     * @return XMLNode
+     * Construct a sitemap index listing each journal's individual sitemap.
+     * 
+     * @param PKPRequest $request
+     * @param PKPRouter $router
+     * @return DOMDocument
      */
-    public function _createSitemapIndex() {
+    protected function _createSitemapIndex($request, $router) {
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
-        $request = Application::get()->getRequest();
         
         $doc = XMLCustomWriter::createDocument();
         $root = XMLCustomWriter::createElement($doc, 'sitemapindex');
         XMLCustomWriter::setAttribute($root, 'xmlns', SITEMAP_XSD_URL);
 
         $journals = $journalDao->getJournals(true);
-        while ($journal = $journals->next()) {
-            $sitemapUrl = $request->url($journal->getPath(), 'sitemap');
-            $sitemap = XMLCustomWriter::createElement($doc, 'sitemap');
-            XMLCustomWriter::createChildWithText($doc, $sitemap, 'loc', $sitemapUrl, false);
-            XMLCustomWriter::appendChild($root, $sitemap);
-            unset($journal);
+        if ($journals) {
+            while ($journal = $journals->next()) {
+                // [WIZDAM] FIX: Gunakan $router->url() menggantikan $request->url() yang deprecated
+                $sitemapUrl = $router->url($request, $journal->getPath(), 'sitemap');
+                $sitemap = XMLCustomWriter::createElement($doc, 'sitemap');
+                XMLCustomWriter::createChildWithText($doc, $sitemap, 'loc', $sitemapUrl, false);
+                XMLCustomWriter::appendChild($root, $sitemap);
+            }
         }
         
         XMLCustomWriter::appendChild($doc, $root);
         return $doc;
     }
 
-     /**
-     * Construct the sitemap
-     * @return XMLNode
+    /**
+     * Construct the sitemap for a specific journal.
+     * 
+     * @param PKPRequest $request
+     * @param PKPRouter $router
+     * @param Journal $journal
+     * @return DOMDocument
      */
-    public function _createJournalSitemap() {
+    protected function _createJournalSitemap($request, $router, $journal) {
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         
-        $request = Application::get()->getRequest();
-        $journal = $request->getJournal();
-        
-        // [FIX 1] Fatal Error Handler
-        // Jika tidak ada jurnal, kembalikan ke sitemap index (site-wide)
-        // Jangan panggil parent::_createSiteSitemap karena method itu tidak ada di OJS 2 Handler
-        if (!$journal) {
-            return $this->_createSitemapIndex();
-        }
-
-        $journalId = $journal->getId();
+        $journalId = (int) $journal->getId();
+        $journalPath = $journal->getPath();
         
         $doc = XMLCustomWriter::createDocument();
         $root = XMLCustomWriter::createElement($doc, 'urlset');
         XMLCustomWriter::setAttribute($root, 'xmlns', SITEMAP_XSD_URL);
         
-        // Journal home
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(),'index','index')));
+        // [WIZDAM] DRY Principle: Closure untuk menghindari repetisi kode
+        $addUrl = function($page, $op = 'index', $path = null, $date = null) use ($doc, $root, $router, $request, $journalPath) {
+            $loc = $router->url($request, $journalPath, $page, $op, $path);
+            XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $loc, $date));
+        };
+
+        // Journal home & About pages
+        $addUrl('index', 'index');
+        $addUrl('about');
+        $addUrl('about', 'editorial-team');
+        $addUrl('about', 'editorial-policies');
+        $addUrl('about', 'submissions');
+        $addUrl('about', 'siteMap');
+        $addUrl('about', 'insights');
         
-        // About page
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'about')));
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'about', 'editorial-team')));
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'about', 'editorial-policies')));
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'about', 'submissions')));
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'about', 'siteMap')));
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'about', 'insights')));
+        // Search pages
+        $addUrl('search');
+        $addUrl('search', 'authors');
+        $addUrl('search', 'titles');
         
-        // Search
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'search')));
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'search', 'authors')));
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'search', 'titles')));
+        // Issues overview
+        $addUrl('issue', 'current');
+        $addUrl('volumes');
         
-        // Issues
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'issue', 'current')));
-        XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'volumes')));
-        
-        // --- AWAL PERBAIKAN URL "NATIVE" ---
-        $baseUrl = $request->getBaseUrl();
-        $journalPath = $journal->getPath();
-        
+        // Published Issues & Articles
         $publishedIssues = $issueDao->getPublishedIssues($journalId);
-        while ($issue = $publishedIssues->next()) {
-            $volumeId = $issue->getVolume();
-            $slug = PKPString::slugify((string) $issue->getNumber());
-            $loc = $baseUrl . '/' . $journalPath . '/volumes/' . $volumeId . '/issue/' . $slug;
-            
-            // [FIX 2] Date Formatting for GSC
-            // Ambil tanggal, ubah ke format YYYY-MM-DD
-            $datePublished = $issue->getDatePublished();
-            if ($datePublished) {
-                $datePublished = date('Y-m-d', strtotime($datePublished));
-            }
-
-            XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $loc, $datePublished));
-            
-            // Articles for issue
-            $articles = $publishedArticleDao->getPublishedArticles($issue->getId());
-            foreach($articles as $article) {
-                // Artikel juga sebaiknya punya lastmod jika ada datanya
-                // Di sini kita pakai lastModified atau datePublished
-                $articleDate = $article->getLastModified() ? $article->getLastModified() : $article->getDatePublished();
-                if ($articleDate) {
-                    $articleDate = date('Y-m-d', strtotime($articleDate));
-                }
-
-                XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'article', 'view', [$article->getId()]), $articleDate));
+        if ($publishedIssues) {
+            while ($issue = $publishedIssues->next()) {
+                $volumeId = $issue->getVolume();
                 
-                $galleys = $galleyDao->getGalleysByArticle($article->getId());
-                foreach ($galleys as $galley) {
-                    XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $request->url($journal->getPath(), 'article', 'view', [$article->getId(), $galley->getId()]), $articleDate));
+                // [WIZDAM] Safe casting & fallback untuk mencegah slug kosong
+                $issueNumber = $issue->getNumber() ?? (string) $issue->getId();
+                $slug = PKPString::slugify((string) $issueNumber);
+                $slug = $slug !== '' ? $slug : (string) $issue->getId();
+                
+                $loc = $request->getBaseUrl() . '/' . $journalPath . '/volumes/' . $volumeId . '/issue/' . $slug;
+                
+                $datePublished = $this->_formatDateForSitemap($issue->getDatePublished());
+                XMLCustomWriter::appendChild($root, $this->_createUrlTree($doc, $loc, $datePublished));
+                
+                // Articles for issue
+                $articles = $publishedArticleDao->getPublishedArticles($issue->getId());
+                if (is_array($articles)) {
+                    foreach ($articles as $article) {
+                        $articleDate = $this->_formatDateForSitemap(
+                            $article->getLastModified() ?? $article->getDatePublished()
+                        );
+
+                        $articleId = (int) $article->getId();
+                        
+                        // Article abstract page
+                        $addUrl('article', 'view', [$articleId], $articleDate);
+                        
+                        // Article galley pages
+                        $galleys = $galleyDao->getGalleysByArticle($articleId);
+                        if (is_array($galleys)) {
+                            foreach ($galleys as $galley) {
+                                $addUrl('article', 'view', [$articleId, (int) $galley->getId()], $articleDate);
+                            }
+                        }
+                    }
                 }
             }
-            unset($issue);
         }
-        // --- AKHIR PERBAIKAN URL "NATIVE" ---
         
         XMLCustomWriter::appendChild($doc, $root);
         return $doc;
     }
     
     /**
-     * Create a url entry with children
-     * @param XMLNode $doc Reference to the XML document object
-     * @param string $loc URL of page (required)
-     * @param string|null $lastmod Last modification date of page (optional)
-     * @param string|null $changefreq Frequency of page modifications (optional)
-     * @param string|null $priority Subjective priority assesment of page (optional) 
-     * @return XMLNode
+     * Helper: Format date strictly for Sitemap (YYYY-MM-DD).
+     * 
+     * @param mixed $dateInput
+     * @return string|null
      */
-    public function _createUrlTree(&$doc, $loc, $lastmod = null, $changefreq = null, $priority = null) {        
+    protected function _formatDateForSitemap($dateInput) {
+        if (empty($dateInput)) {
+            return null;
+        }
+        
+        $timestamp = strtotime((string) $dateInput);
+        if ($timestamp !== false) {
+            return date('Y-m-d', $timestamp);
+        }
+        
+        return null;
+    }
+
+    /**
+     * Helper: Send XML headers.
+     * 
+     * @param string $filename
+     */
+    protected function _sendXmlHeaders($filename) {
+        header("Content-Type: application/xml; charset=UTF-8");
+        header("Cache-Control: private, max-age=0, must-revalidate");
+        header("Content-Disposition: inline; filename=\"" . (string) $filename . "\"");
+    }
+
+    /**
+     * Create a url entry with children.
+     * 
+     * @param DOMDocument $doc
+     * @param mixed $loc
+     * @param mixed $lastmod
+     * @param mixed $changefreq
+     * @param mixed $priority
+     * @return DOMElement
+     */
+    protected function _createUrlTree($doc, $loc, $lastmod = null, $changefreq = null, $priority = null) {        
         $url = XMLCustomWriter::createElement($doc, 'url');
         
-        XMLCustomWriter::createChildWithText($doc, $url, 'loc', $loc, false);
-        
-        // [FIX 3] Prevent Empty Tags
-        // Google Search Console akan error jika tag <lastmod> ada tapi isinya kosong
-        // Kita cek if (!empty($var)) sebelum membuat child node.
+        $safeLoc = (string) $loc;
+        XMLCustomWriter::createChildWithText($doc, $url, 'loc', $safeLoc, false);
         
         if (!empty($lastmod)) {
-            XMLCustomWriter::createChildWithText($doc, $url, 'lastmod', $lastmod, false);
+            XMLCustomWriter::createChildWithText($doc, $url, 'lastmod', (string) $lastmod, false);
         }
-        
         if (!empty($changefreq)) {
-            XMLCustomWriter::createChildWithText($doc, $url, 'changefreq', $changefreq, false);
+            XMLCustomWriter::createChildWithText($doc, $url, 'changefreq', (string) $changefreq, false);
         }
-        
         if (!empty($priority)) {
-            XMLCustomWriter::createChildWithText($doc, $url, 'priority', $priority, false);
+            XMLCustomWriter::createChildWithText($doc, $url, 'priority', (string) $priority, false);
         }
         
         return $url;
