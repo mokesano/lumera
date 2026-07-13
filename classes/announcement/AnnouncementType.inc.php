@@ -13,10 +13,6 @@ declare(strict_types=1);
  * @see AnnouncementTypeDAO, AnnouncementTypeForm
  *
  * @brief Basic class describing an announcement type.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor)
- * - Strict SHIM
  */
 
 import('lib.pkp.classes.announcement.PKPAnnouncementType');
@@ -40,5 +36,4 @@ class AnnouncementType extends PKPAnnouncementType {
         self::__construct();
     }
 }
-
 ?>
