@@ -14,7 +14,6 @@ declare(strict_types=1);
  *
  * @brief Base class for executing scheduled tasks.
  * All scheduled task classes must extend this class and implement execute().
- * [WIZDAM EDITION] Modernized for PHP 7.4/8.x
  */
 
 import('lib.pkp.classes.scheduledTask.ScheduledTaskHelper');
@@ -70,9 +69,8 @@ class ScheduledTask {
      */
     public function ScheduledTask($args = array()) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Smart Error Log: Menunjuk class anak (misal: UsageStatsLoader) sebagai pelaku
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::ScheduledTask(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -101,8 +99,7 @@ class ScheduledTask {
     }
 
     /**
-     * Get the scheduled task name. Override to
-     * define a custom task name.
+     * Get the scheduled task name. Override to define a custom task name.
      * @return string
      */
     public function getName() {
@@ -111,9 +108,8 @@ class ScheduledTask {
 
     /**
      * Add an entry into the execution log.
-     * @param $message string A translated message.
-     * @param $type string (optional) One of the ScheduledTaskHelper
-     * SCHEDULED_TASK_MESSAGE_TYPE... constants.
+     * @param string $message string
+     * @param $type string (optional)
      */
     public function addExecutionLogEntry($message, $type = null) {
         $logFile = $this->_executionLogFile;
@@ -139,6 +135,7 @@ class ScheduledTask {
     //
     // Protected abstract methods.
     //
+
     /**
      * Implement this method to execute the task actions.
      */
@@ -151,15 +148,11 @@ class ScheduledTask {
     //
     // Public methods.
     //
+    
     /**
      * Make sure the execution process follow the required steps.
-     * This is not the method one should extend to implement the
-     * task actions, for this see ScheduledTask::executeActions().
-     * @param boolean $notifyAdmin optional Whether or not the task
-     * will notify the site administrator about errors, warnings or
-     * completed process.
-     * @return boolean Whether or not the task was succesfully
-     * executed.
+     * @param boolean $notifyAdmin optional
+     * @return boolean
      */
     public function execute() {
         $this->addExecutionLogEntry(Config::getVar('general', 'base_url'));
@@ -174,5 +167,6 @@ class ScheduledTask {
 
         return $result;
     }
+    
 }
 ?>

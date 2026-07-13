@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see PKPSiteSettingsForm
  *
  * @brief Form to edit site settings.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('lib.pkp.classes.admin.form.PKPSiteSettingsForm');
@@ -42,34 +41,42 @@ class SiteSettingsForm extends PKPSiteSettingsForm {
 
     /**
      * Display the form.
+     * 
      * @param PKPRequest|null $request
      * @param string|null $template
      */
     public function display($request = null, $template = null) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        // [WIZDAM] Strict type check fallback
+        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
-        $journals = $journalDao->getJournalTitles();
+        $journals = $journalDao ? $journalDao->getJournalTitles() : [];
+        
         $templateMgr = TemplateManager::getManager($request);
 
         $allThemes = PluginRegistry::loadCategory('themes');
         $themes = [];
         
-        // [WIZDAM] Simplified iteration
-        if (!empty($allThemes)) {
+        // [WIZDAM] Safe iteration with null check
+        if (is_array($allThemes)) {
             foreach ($allThemes as $plugin) {
-                $themes[basename($plugin->getPluginPath())] = $plugin;
+                if ($plugin) {
+                    $themes[basename($plugin->getPluginPath())] = $plugin;
+                }
             }
         }
         
-        $templateMgr->assign('themes', $themes);
-        $templateMgr->assign('redirectOptions', $journals);
-
         $application = Application::get();
-        $templateMgr->assign('availableMetricTypes', $application->getMetricTypes(true));
+        
+        // [WIZDAM] Micro-Payload: Gabungkan assign untuk kode yang lebih bersih
+        $templateMgr->assign([
+            'themes' => $themes,
+            'redirectOptions' => $journals,
+            'availableMetricTypes' => $application ? $application->getMetricTypes(true) : [],
+        ]);
 
-        return parent::display($request, $template);
+        parent::display($request, $template);
     }
 
     /**
@@ -78,39 +85,61 @@ class SiteSettingsForm extends PKPSiteSettingsForm {
     public function initData() {
         parent::initData();
 
+        /** @var SiteDAO $siteDao */
         $siteDao = DAORegistry::getDAO('SiteDAO');
-        $site = $siteDao->getSite();
+        $site = $siteDao ? $siteDao->getSite() : null;
 
-        $this->_data['useAlphalist'] = $site->getSetting('useAlphalist');
-        $this->_data['usePaging'] = $site->getSetting('usePaging');
-        $this->_data['defaultMetricType'] = $site->getSetting('defaultMetricType');
-        $this->_data['preventManagerPluginManagement'] = $site->getSetting('preventManagerPluginManagement');
+        if ($site) {
+            $this->setData('useAlphalist', (bool) $site->getSetting('useAlphalist'));
+            $this->setData('usePaging', (bool) $site->getSetting('usePaging'));
+            $this->setData('defaultMetricType', (string) $site->getSetting('defaultMetricType'));
+            $this->setData('preventManagerPluginManagement', (bool) $site->getSetting('preventManagerPluginManagement'));
+        } else {
+            $this->setData('useAlphalist', false);
+            $this->setData('usePaging', false);
+            $this->setData('defaultMetricType', '');
+            $this->setData('preventManagerPluginManagement', false);
+        }
     }
 
     /**
      * Assign user-submitted data to form.
+     * 
      * @param bool $callHooks
+     * @return void
      */
     public function readInputData($callHooks = true) {
-        $this->readUserVars(['useAlphalist', 'usePaging', 'defaultMetricType', 'preventManagerPluginManagement']);
-        return parent::readInputData($callHooks);
+        $this->readUserVars([
+            'useAlphalist', 
+            'usePaging', 
+            'defaultMetricType', 
+            'preventManagerPluginManagement'
+        ]);
+        parent::readInputData();
     }
 
     /**
-     * Save the from parameters.
-     * @param object|null $object
+     * Save the form parameters.
+     * 
+     * @param mixed $object
+     * @return void
      */
     public function execute($object = null) {
         parent::execute($object);
 
         /** @var SiteSettingsDAO $siteSettingsDao */
-        $siteSettingsDao = $this->siteSettingsDao; 
+        $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO');
+        
+        // [WIZDAM] Null-safety check sebelum menyimpan
+        if (!$siteSettingsDao) {
+            return;
+        }
         
         $siteSettingsDao->updateSetting('useAlphalist', (bool) $this->getData('useAlphalist'), 'bool');
         $siteSettingsDao->updateSetting('usePaging', (bool) $this->getData('usePaging'), 'bool');
         $siteSettingsDao->updateSetting('defaultMetricType', (string) $this->getData('defaultMetricType'), 'string');
         $siteSettingsDao->updateSetting('preventManagerPluginManagement', (bool) $this->getData('preventManagerPluginManagement'), 'bool');
     }
-}
 
+}
 ?>

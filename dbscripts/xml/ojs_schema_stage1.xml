@@ -8,7 +8,7 @@
   * Copyright (c) 2003-2019 John Willinsky
   * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
   *
-  * OJS database schema in XML.
+  * Lumera database schema in XML.
   *
   -->
 
@@ -142,7 +142,7 @@
 		<field name="last_name" type="C2" size="90">
 			<NOTNULL/>
 		</field>
-		<field name="suffix" type="c2" size="90"/>
+		<field name="suffix" type="C2" size="90"/>
 		<field name="signature" type="X"/>
 		<field name="gender" type="C" size="1"/>
 		<field name="initials" type="C2" size="5"/>
@@ -151,11 +151,11 @@
 			<NOTNULL/>
 		</field>
 		<field name="url" type="C2" size="255"/>
-		<field name="google_scholar" type="c2" size="90"/>
-		<field name="sinta_id" type="c2" size="90"/>
-		<field name="scopus_id" type="c2" size="90"/>
-		<field name="dimension_id" type="c2" size="90"/>
-		<field name="researcher_id" type="c2" size="90"/>
+		<field name="google_scholar" type="C2" size="90"/>
+		<field name="sinta_id" type="C2" size="90"/>
+		<field name="scopus_id" type="C2" size="90"/>
+		<field name="dimension_id" type="C2" size="90"/>
+		<field name="researcher_id" type="C2" size="90"/>
 		<field name="phone" type="C2" size="24"/>
 		<field name="fax" type="C2" size="24"/>
 		<field name="mailing_address" type="C2" size="255"/>

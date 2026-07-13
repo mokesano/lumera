@@ -28,24 +28,23 @@ define('SORT_DIRECTION_DESC', 0x00002);
 
 class DAO {
     
-    /**
-     * @var object The database connection object 
-     */
+    /** @var \ADOConnection|null The database connection object */
     protected $_dataSource;
 
     /**
      * Constructor
+     * 
+     * @param \ADOConnection|null $dataSource
+     * @param bool $callHooks
      */
     public function __construct($dataSource = null, $callHooks = true) {
-        // [PENJELASAN] Hapus checkPhpVersion('4.3.0') karena redundant.
         if ($callHooks === true) {
-            // Call hooks based on the object name.
-            if (HookRegistry::dispatch(strtolower_codesafe(get_class($this)) . '::_Constructor', array($this, $dataSource))) {
+            if (HookRegistry::dispatch(strtolower_codesafe(get_class($this)) . '::_Constructor', [$this, $dataSource])) {
                 return;
             }
         }
 
-        if (!isset($dataSource)) {
+        if ($dataSource === null) {
             $this->setDataSource(DBConnection::getConn());
         } else {
             $this->setDataSource($dataSource);
@@ -57,7 +56,7 @@ class DAO {
      */
     public function DAO($dataSource = null, $callHooks = true) {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::DAO(). Please refactor to parent::__construct().", 
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
         self::__construct($dataSource, $callHooks);
@@ -65,7 +64,7 @@ class DAO {
 
     /**
      * Get db conn.
-     * @return ADONewConnection
+     * @return \ADOConnection|null
      */
     public function getDataSource() {
         return $this->_dataSource;
@@ -73,7 +72,7 @@ class DAO {
 
     /**
      * Set db conn.
-     * @param mixed $dataSource ADONewConnection
+     * @param \ADOConnection|null $dataSource
      */
     public function setDataSource($dataSource) {
         $this->_dataSource = $dataSource;
@@ -81,25 +80,26 @@ class DAO {
 
     /**
      * Concatenation.
+     * @return string
      */
     public function concat() {
         $args = func_get_args();
-        return call_user_func_array(array($this->getDataSource(), 'Concat'), $args);
+        return call_user_func_array([$this->getDataSource(), 'Concat'], $args);
     }
 
     /**
      * Execute a SELECT SQL statement.
-     * @param mixed $sql string the SQL statement
-     * @param $params array parameters for the SQL statement
-     * @return ADORecordSet
+     * @param string $sql the SQL statement
+     * @param array|mixed $params parameters for the SQL statement
+     * @param bool $callHooks
+     * @return \ADORecordSet|false
      */
-    public function retrieve($sql, $params = false, $callHooks = true) {
+    public function retrieve($sql, $params = [], $callHooks = true) {
         if ($callHooks === true) {
             $trace = debug_backtrace();
-            // [PENJELASAN] Menggunakan isset untuk mencegah warning jika stack trace tidak lengkap
             $value = null;
             if (isset($trace[1]['class'])) {
-                if (HookRegistry::dispatch(strtolower_codesafe($trace[1]['class'] . '::_' . $trace[1]['function']), array($sql, $params, $value))) {
+                if (HookRegistry::dispatch(strtolower_codesafe($trace[1]['class'] . '::_' . $trace[1]['function']), [$sql, $params, &$value])) {
                     return $value;
                 }
             }
@@ -108,32 +108,32 @@ class DAO {
         $start = Core::microtime();
         $dataSource = $this->getDataSource();
         
-        // [MODERNISASI] Logic parameter diperbaiki agar lebih mudah dibaca
-        $params = ($params !== false && !is_array($params)) ? array($params) : $params;
-        
+        // Internal coercion: Pastikan $params selalu berupa array
+        $params = is_array($params) ? $params : [$params];
         $result = $dataSource->execute($sql, $params);
         
         DBConnection::logQuery($sql, $start, $params);
         
         if ($dataSource->errorNo()) {
-            fatalError('DB Error: ' . $dataSource->errorMsg());
+            fatalError('DB Error: ' . (string) $dataSource->errorMsg());
         }
         return $result;
     }
 
     /**
      * Execute a cached SELECT SQL statement.
-     * @param mixed $sql string the SQL statement
-     * @param $params array parameters for the SQL statement
-     * @param $secsToCache int number of seconds to cache the result
-     * @return ADORecordSet
+     * @param string $sql the SQL statement
+     * @param array|mixed $params parameters for the SQL statement
+     * @param int $secsToCache number of seconds to cache the result
+     * @param bool $callHooks
+     * @return \ADORecordSet|false
      */
-    public function retrieveCached($sql, $params = false, $secsToCache = 3600, $callHooks = true) {
+    public function retrieveCached($sql, $params = [], $secsToCache = 3600, $callHooks = true) {
         if ($callHooks === true) {
             $trace = debug_backtrace();
             $value = null;
             if (isset($trace[1]['class'])) {
-                if (HookRegistry::dispatch(strtolower_codesafe($trace[1]['class'] . '::_' . $trace[1]['function']), array($sql, $params, $secsToCache, $value))) {
+                if (HookRegistry::dispatch(strtolower_codesafe($trace[1]['class'] . '::_' . $trace[1]['function']), [$sql, $params, $secsToCache, &$value])) {
                     return $value;
                 }
             }
@@ -144,17 +144,15 @@ class DAO {
         $start = Core::microtime();
         $dataSource = $this->getDataSource();
         
-        $params = ($params !== false && !is_array($params)) ? array($params) : $params;
-        
+        $params = is_array($params) ? $params : [$params];
         $result = $dataSource->CacheExecute($secsToCache, $sql, $params);
         
         DBConnection::logQuery($sql, $start, $params);
         
         if ($dataSource->errorNo()) {
-            fatalError('DB Error: ' . $dataSource->errorMsg());
+            fatalError('DB Error: ' . (string) $dataSource->errorMsg());
         }
         
-        // [FIX] CacheExecute melewati buffering normal mysqli.
         $mysqli = $dataSource->_connectionID ?? null;
         if ($mysqli instanceof mysqli && $mysqli->more_results()) {
             $mysqli->next_result();
@@ -165,18 +163,19 @@ class DAO {
 
     /**
      * Execute a SELECT SQL statement with LIMIT on the rows returned.
-     * @param mixed $sql string the SQL statement
-     * @param $params array parameters for the SQL statement
-     * @param $numRows int number of rows to return
-     * @param $offset int the offset from which to return rows
-     * @return ADORecordSet
+     * @param string $sql the SQL statement
+     * @param array|mixed $params parameters for the SQL statement
+     * @param int|false $numRows number of rows to return
+     * @param int|false $offset the offset from which to return rows
+     * @param bool $callHooks
+     * @return \ADORecordSet|false
      */
-    public function retrieveLimit($sql, $params = false, $numRows = false, $offset = false, $callHooks = true) {
+    public function retrieveLimit($sql, $params = [], $numRows = false, $offset = false, $callHooks = true) {
         if ($callHooks === true) {
             $trace = debug_backtrace();
             $value = null;
             if (isset($trace[1]['class'])) {
-                if (HookRegistry::dispatch(strtolower_codesafe($trace[1]['class'] . '::_' . $trace[1]['function']), array($sql, $params, $numRows, $offset, $value))) {
+                if (HookRegistry::dispatch(strtolower_codesafe($trace[1]['class'] . '::_' . $trace[1]['function']), [$sql, $params, $numRows, $offset, &$value])) {
                     return $value;
                 }
             }
@@ -185,44 +184,44 @@ class DAO {
         $start = Core::microtime();
         $dataSource = $this->getDataSource();
         
-        $params = ($params !== false && !is_array($params)) ? array($params) : $params;
+        $params = is_array($params) ? $params : [$params];
         
-        // [PENJELASAN] Menggunakan ternary operator untuk nilai default -1 (semantik ADODB)
         $result = $dataSource->selectLimit($sql, $numRows === false ? -1 : $numRows, $offset === false ? -1 : $offset, $params);
         
         DBConnection::logQuery($sql, $start, $params);
         
         if ($dataSource->errorNo()) {
-            fatalError('DB Error: ' . $dataSource->errorMsg());
+            fatalError('DB Error: ' . (string) $dataSource->errorMsg());
         }
         return $result;
     }
 
     /**
      * Execute a SELECT SQL statment, returning rows in the range supplied.
-     * @param mixed $sql string the SQL statement
-     * @param $params array parameters for the SQL statement
-     * @param $dbResultRange DBResultRange the range of results to return
-     * @return ADORecordSet
+     * @param string $sql the SQL statement
+     * @param array|mixed $params parameters for the SQL statement
+     * @param DBResultRange|null $dbResultRange the range of results to return
+     * @param bool $callHooks
+     * @return \ADORecordSet|false
      */
-    public function retrieveRange($sql, $params = false, $dbResultRange = null, $callHooks = true) {
+    public function retrieveRange($sql, $params = [], $dbResultRange = null, $callHooks = true) {
         if ($callHooks === true) {
             $trace = debug_backtrace();
             $value = null;
             if (isset($trace[1]['class'])) {
-                if (HookRegistry::dispatch(strtolower_codesafe($trace[1]['class'] . '::_' . $trace[1]['function']), array($sql, $params, $dbResultRange, $value))) {
+                if (HookRegistry::dispatch(strtolower_codesafe($trace[1]['class'] . '::_' . $trace[1]['function']), [$sql, $params, $dbResultRange, &$value])) {
                     return $value;
                 }
             }
         }
 
-        if (isset($dbResultRange) && $dbResultRange->isValid()) {
+        if ($dbResultRange !== null && $dbResultRange->isValid()) {
             $start = Core::microtime();
             $dataSource = $this->getDataSource();
             $result = $dataSource->PageExecute($sql, $dbResultRange->getCount(), $dbResultRange->getPage(), $params);
             DBConnection::logQuery($sql, $start, $params);
             if ($dataSource->errorNo()) {
-                fatalError('DB Error: ' . $dataSource->errorMsg());
+                fatalError('DB Error: ' . (string) $dataSource->errorMsg());
             }
         } else {
             $result = $this->retrieve($sql, $params, false);
@@ -232,16 +231,18 @@ class DAO {
 
     /**
      * Execute an INSERT, UPDATE, or DELETE SQL statement.
-     * @param mixed $sql string the SQL statement
-     * @param $params array parameters for the SQL statement
-     * @return boolean true 
+     * @param string $sql the SQL statement
+     * @param array|mixed $params parameters for the SQL statement
+     * @param bool $callHooks
+     * @param bool $dieOnError
+     * @return bool true on success
      */
-    public function update($sql, $params = false, $callHooks = true, $dieOnError = true) {
+    public function update($sql, $params = [], $callHooks = true, $dieOnError = true) {
         if ($callHooks === true) {
             $trace = debug_backtrace();
             $value = null;
             if (isset($trace[1]['class'])) {
-                if (HookRegistry::dispatch(strtolower_codesafe($trace[1]['class'] . '::_' . $trace[1]['function']), array($sql, $params, $value))) {
+                if (HookRegistry::dispatch(strtolower_codesafe($trace[1]['class'] . '::_' . $trace[1]['function']), [$sql, $params, &$value])) {
                     return $value;
                 }
             }
@@ -250,34 +251,35 @@ class DAO {
         $start = Core::microtime();
         $dataSource = $this->getDataSource();
         
-        $params = ($params !== false && !is_array($params)) ? array($params) : $params;
+        $params = is_array($params) ? $params : [$params];
         
         $dataSource->execute($sql, $params);
         
         DBConnection::logQuery($sql, $start, $params);
         
         if ($dieOnError && $dataSource->errorNo()) {
-            fatalError('DB Error: ' . $dataSource->errorMsg());
+            fatalError('DB Error: ' . (string) $dataSource->errorMsg());
         }
-        return $dataSource->errorNo() == 0 ? true : false;
+        return $dataSource->errorNo() === 0;
     }
 
     /**
      * Insert a row in a table, replacing an existing row if necessary.
-     * @param mixed $table string the table name
-     * @param mixed $arrFields array an associative array of field names and values
-     * @param mixed $keyCols array an array of field names that are the primary keys for the table
+     * @param string $table the table name
+     * @param array $arrFields an associative array of field names and values
+     * @param array $keyCols an array of field names that are the primary keys for the table
      */
     public function replace($table, $arrFields, $keyCols) {
         $dataSource = $this->getDataSource();
-        $arrFields = array_map(array($dataSource, 'qstr'), $arrFields);
+        $arrFields = array_map([$dataSource, 'qstr'], $arrFields);
         $dataSource->Replace($table, $arrFields, $keyCols, false);
     }
 
     /**
      * Return the last ID inserted in an autonumbered field.
-     * @param $table string the table name (optional, may be required by some DBMS)
-     * @param $id string the name of the ID field (optional, may be required by some DBMS)
+     * @param string $table the table name (optional)
+     * @param string $id the name of the ID field (optional)
+     * @param bool $callHooks
      * @return int
      */
     public function getInsertId($table = '', $id = '', $callHooks = true) {
@@ -287,6 +289,7 @@ class DAO {
 
     /**
      * Return the number of affected rows by the last UPDATE or DELETE.
+     * @return int
      */
     public function getAffectedRows() {
         $dataSource = $this->getDataSource();
@@ -316,7 +319,7 @@ class DAO {
 
     /**
      * Return datetime formatted for DB insertion.
-     * @param mixed $dt string|int A datetime string or timestamp
+     * @param string|int $dt A datetime string or timestamp
      * @return string
      */
     public function datetimeToDB($dt) {
@@ -326,7 +329,7 @@ class DAO {
 
     /**
      * Return date formatted for DB insertion.
-     * @param mixed $d string|int A date string or timestamp
+     * @param string|int $d A date string or timestamp
      * @return string
      */
     public function dateToDB($d) {
@@ -336,7 +339,7 @@ class DAO {
 
     /**
      * Return datetime from DB as ISO datetime string.
-     * @param mixed $dt string A datetime string from the database
+     * @param string|null $dt A datetime string from the database
      * @return string|null An ISO datetime string, or null if the input was null
      */
     public function datetimeFromDB($dt) {
@@ -347,7 +350,7 @@ class DAO {
     
     /**
      * Return date from DB as ISO date string.
-     * @param mixed $d string A date string from the database
+     * @param string|null $d A date string from the database
      * @return string|null An ISO date string, or null if the input was null
      */
     public function dateFromDB($d) {
@@ -358,8 +361,8 @@ class DAO {
 
     /**
      * Convert a stored type from the database.
-     * @param mixed $value mixed The value to convert
-     * @param mixed $type string The type of the value
+     * @param mixed $value The value to convert
+     * @param string $type The type of the value
      * @return mixed The converted value
      */
     public function convertFromDB($value, $type) {
@@ -381,7 +384,6 @@ class DAO {
                 break;
             case 'string':
             default:
-                // Nothing required.
                 break;
         }
         return $value;
@@ -389,7 +391,7 @@ class DAO {
 
     /**
      * Get the type of a value to be stored in the database.
-     * @param mixed $value mixed The value to check
+     * @param mixed $value The value to check
      * @return string 
      */
     public function getType($value) {
@@ -414,12 +416,12 @@ class DAO {
 
     /**
      * Convert a PHP variable into a string to be stored in the DB.
-     * @param mixed $value mixed The value to convert
-     * @param mixed $type string
+     * @param mixed $value The value to convert
+     * @param string|null $type
      * @return string The converted value ready for database storage
      */
     public function convertToDB($value, &$type) {
-        if ($type == null) {
+        if ($type === null) {
             $type = $this->getType($value);
         }
 
@@ -428,7 +430,6 @@ class DAO {
                 $value = serialize($value);
                 break;
             case 'bool':
-                // [PENJELASAN] Memastikan string 'false' dianggap bool false
                 $value = ($value && $value !== 'false') ? 1 : 0;
                 break;
             case 'int':
@@ -445,7 +446,7 @@ class DAO {
                 break;
             case 'string':
             default:
-                // do nothing.
+                break;
         }
 
         return $value;
@@ -453,65 +454,62 @@ class DAO {
 
     /**
      * Convert a value to an integer, or null if the value is empty.
-     * @param mixed $value mixed
+     * @param mixed $value
      * @return int|null 
      */
     public function nullOrInt($value) {
-        return (empty($value) ? null : (int) $value);
+        return ($value === null || $value === '') ? null : (int) $value;
     }
 
     /**
      * Get additional field names for a data object.
+     * @return array
      */
     public function getAdditionalFieldNames() {
-        $returner = array();
-        HookRegistry::dispatch(strtolower_codesafe(get_class($this)) . '::getAdditionalFieldNames', array($this, $returner));
+        $returner = [];
+        HookRegistry::dispatch(strtolower_codesafe(get_class($this)) . '::getAdditionalFieldNames', [$this, &$returner]);
         return $returner;
     }
 
     /**
      * Get locale field names for a data object.
+     * @return array
      */
     public function getLocaleFieldNames() {
-        $returner = array();
-        HookRegistry::dispatch(strtolower_codesafe(get_class($this)) . '::getLocaleFieldNames', array($this, $returner));
+        $returner = [];
+        HookRegistry::dispatch(strtolower_codesafe(get_class($this)) . '::getLocaleFieldNames', [$this, &$returner]);
         return $returner;
     }
 
     /**
      * Update the settings table of a data object.
-     * @param mixed $tableName string The name of the settings table to update
-     * @param mixed $dataObject DataObject
-     * @param mixed $idArray array
+     * @param string $tableName The name of the settings table to update
+     * @param DataObject $dataObject
+     * @param array $idArray
      */
     public function updateDataObjectSettings($tableName, $dataObject, $idArray) {
-        // Initialize variables
         $idFields = array_keys($idArray);
         $idFields[] = 'locale';
         $idFields[] = 'setting_name';
 
-        // Build a data structure that we can process efficiently.
         $translated = 1;
         $metadata = 1;
-        $settings = 0; // Fixed from original logic: !$metadata
+        $settings = 0;
         
-        $settingFields = array(
-            // Translated data
-            $translated => array(
+        $settingFields = [
+            $translated => [
                 $settings => $this->getLocaleFieldNames(),
                 $metadata => $dataObject->getLocaleMetadataFieldNames()
-            ),
-            // Shared data
-            !$translated => array(
+            ],
+            !$translated => [
                 $settings => $this->getAdditionalFieldNames(),
                 $metadata => $dataObject->getAdditionalMetadataFieldNames()
-            )
-        );
+            ]
+        ];
 
-        // Loop over all fields and update them in the settings table
         $updateArray = $idArray;
         $noLocale = 0;
-        $staleMetadataSettings = array();
+        $staleMetadataSettings = [];
         
         foreach ($settingFields as $isTranslated => $fieldTypes) {
             foreach ($fieldTypes as $isMetadata => $fieldNames) {
@@ -520,19 +518,16 @@ class DAO {
                         if ($isTranslated) {
                             $values = $dataObject->getData($fieldName);
                             if (!is_array($values)) {
-                                // Inconsistent data check
-                                // assert(false); // [MODERNISASI] Removed assert to prevent fatal error in production
                                 continue;
                             }
                         } else {
-                            $values = array($noLocale => $dataObject->getData($fieldName));
+                            $values = [$noLocale => $dataObject->getData($fieldName)];
                         }
 
                         foreach ($values as $locale => $value) {
                             $updateArray['locale'] = ($locale === $noLocale ? '' : $locale);
                             $updateArray['setting_name'] = $fieldName;
                             $updateArray['setting_type'] = null;
-                            // Convert the data value and implicitly set the setting type.
                             $updateArray['setting_value'] = $this->convertToDB($value, $updateArray['setting_type']);
                             $this->replace($tableName, $updateArray, $idFields);
                         }
@@ -543,36 +538,37 @@ class DAO {
             }
         }
 
-        // Remove stale meta-data
-        if (count($staleMetadataSettings)) {
+        if (count($staleMetadataSettings) > 0) {
             $removeWhere = '';
-            $removeParams = array();
+            $removeParams = [];
             foreach ($idArray as $idField => $idValue) {
-                if (!empty($removeWhere)) $removeWhere .= ' AND ';
-                $removeWhere .= $idField.' = ?';
+                if ($removeWhere !== '') $removeWhere .= ' AND ';
+                $removeWhere .= $idField . ' = ?';
                 $removeParams[] = $idValue;
             }
-            $removeWhere .= rtrim(' AND setting_name IN ( '.str_repeat('? ,', count($staleMetadataSettings)), ',').')';
+            // Modernisasi: Menggunakan implode dan array_fill untuk placeholder yang lebih bersih
+            $placeholders = implode(',', array_fill(0, count($staleMetadataSettings), '?'));
+            $removeWhere .= ' AND setting_name IN (' . $placeholders . ')';
             $removeParams = array_merge($removeParams, $staleMetadataSettings);
-            $removeSql = 'DELETE FROM '.$tableName.' WHERE '.$removeWhere;
+            $removeSql = 'DELETE FROM ' . $tableName . ' WHERE ' . $removeWhere;
             $this->update($removeSql, $removeParams);
         }
     }
 
     /**
      * Get the settings for a data object from the database and set them on the data object.
-     * @param mixed $tableName string The name of the settings table to query
-     * @param mixed $idFieldName string
-     * @param mixed $idFieldValue mixed
-     * @param mixed $dataObject DataObject
+     * @param string $tableName The name of the settings table to query
+     * @param string|null $idFieldName
+     * @param mixed $idFieldValue
+     * @param DataObject $dataObject
      */
     public function getDataObjectSettings($tableName, $idFieldName, $idFieldValue, $dataObject) {
         if ($idFieldName !== null) {
             $sql = "SELECT * FROM $tableName WHERE $idFieldName = ?";
-            $params = array($idFieldValue);
+            $params = [$idFieldValue];
         } else {
             $sql = "SELECT * FROM $tableName";
-            $params = false;
+            $params = [];
         }
         $result = $this->retrieve($sql, $params);
 
@@ -589,7 +585,6 @@ class DAO {
             $result->MoveNext();
         }
         $result->Close();
-        // [PENJELASAN] Hapus unset($result) manual, biarkan Garbage Collector PHP yang bekerja.
     }
 
     /**
@@ -602,8 +597,8 @@ class DAO {
     }
 
     /**
-     * Get the driver for this connection.
-     * @param mixed $direction int
+     * Get the direction mapping for sorting.
+     * @param int $direction
      * @return string 
      */
     public function getDirectionMapping($direction) {
@@ -616,21 +611,19 @@ class DAO {
 
     /**
      * Generate a JSON message with an event.
-     * @param $elementId string|null 
-     * @param $parentElementId string|null 
+     * @param string|null $elementId 
+     * @param string|null $parentElementId 
      * @return string A JSON message containing the event data
      */
     public function getDataChangedEvent($elementId = null, $parentElementId = null) {
-        // Create the event data.
         $eventData = null;
         if ($elementId) {
-            $eventData = array($elementId);
+            $eventData = [$elementId];
             if ($parentElementId) {
                 $eventData['parentElementId'] = $parentElementId;
             }
         }
 
-        // Create and render the JSON message
         import('lib.pkp.classes.core.JSONMessage');
         $json = new JSONMessage(true);
         $json->setEvent('dataChanged', $eventData);
@@ -639,30 +632,25 @@ class DAO {
     }
 
     /**
-     * Format a passed date (in English textual datetime) to a format suitable for DB storage, 
-     * with optional default number of weeks to add if no date is passed.
-     * @param mixed $date string|null The date to format (optional)
-     * @param $defaultNumWeeks int|null 
-     * @param $acceptPastDate bool
-     * @return string A datetime string formatted for DB storage
+     * Format a passed date to a format suitable for DB storage.
+     * @param string|null $date The date to format (optional)
+     * @param int|null $defaultNumWeeks 
+     * @param bool $acceptPastDate
+     * @return string|null A datetime string formatted for DB storage
      */
     public function formatDateToDB($date, $defaultNumWeeks = null, $acceptPastDate = true) {
         $today = getDate();
         $todayTimestamp = mktime(0, 0, 0, $today['mon'], $today['mday'], $today['year']);
         
-        if ($date != null) {
+        if ($date !== null) {
             $dueDateParts = explode('-', $date);
 
-            // If we don't accept past dates...
             if (!$acceptPastDate && $todayTimestamp > strtotime($date)) {
-                // ... return today.
                 return date('Y-m-d H:i:s', $todayTimestamp);
             } else {
-                // Return the passed date.
                 return date('Y-m-d H:i:s', mktime(0, 0, 0, (int)$dueDateParts[1], (int)$dueDateParts[2], (int)$dueDateParts[0]));
             }
-        } elseif (isset($defaultNumWeeks)) {
-            // Add the equivalent of $numWeeks weeks.
+        } elseif ($defaultNumWeeks !== null) {
             $numWeeks = max((int) $defaultNumWeeks, 2);
             $newDueDateTimestamp = $todayTimestamp + ($numWeeks * 7 * 24 * 60 * 60);
             return date('Y-m-d H:i:s', $newDueDateTimestamp);
@@ -670,5 +658,6 @@ class DAO {
             return null;
         }
     }
+    
 }
 ?>

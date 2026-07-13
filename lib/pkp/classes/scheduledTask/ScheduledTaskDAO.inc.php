@@ -2,10 +2,6 @@
 declare(strict_types=1);
 
 /**
- * @defgroup scheduledTask
- */
-
-/**
  * @file classes/scheduledTask/ScheduledTaskDAO.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
@@ -17,7 +13,6 @@ declare(strict_types=1);
  * @see ScheduledTask
  *
  * @brief Operations for retrieving and modifying Scheduled Task data.
- * [WIZDAM EDITION] Database-backed Task Registry (PHP 7.4/8.x Compatible)
  */
 
 import('lib.pkp.classes.scheduledTask.ScheduledTask');
@@ -36,9 +31,8 @@ class ScheduledTaskDAO extends DAO {
      */
     public function ScheduledTaskDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Smart Error Log
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::ScheduledTaskDAO(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().", 
                 E_USER_DEPRECATED
             );
         }
@@ -47,76 +41,82 @@ class ScheduledTaskDAO extends DAO {
 
     /**
      * Get the last time a scheduled task was executed.
-     * @param $className string
-     * @return int
+     * 
+     * @param string $className The class name of the scheduled task.
+     * @return int The Unix timestamp of the last run, or 0 if never run.
      */
-    public function getLastRunTime($className) {
-        // [MODERNISASI] Hapus referensi & pada return value method retrieve
+    public function getLastRunTime(string $className): int {
         $result = $this->retrieve(
             'SELECT last_run FROM scheduled_tasks WHERE class_name = ?',
-            array($className)
+            [$className]
         );
 
-        if ($result->RecordCount() == 0) {
-            $returner = 0;
-        } else {
-            $returner = strtotime($this->datetimeFromDB($result->fields[0]));
+        $returner = 0;
+        if (!$result->EOF) {
+            /** @var array|bool $fields */
+            $fields = $result->fields;
+            $dbDate = isset($fields[0]) ? (string) $fields[0] : '';
+            
+            if ($dbDate !== '') {
+                $parsedDate = strtotime((string) $this->datetimeFromDB($dbDate));
+                if ($parsedDate !== false) {
+                    $returner = $parsedDate;
+                }
+            }
         }
 
         $result->Close();
         unset($result);
 
-        return (int) $returner;
+        return $returner;
     }
 
     /**
      * Update a scheduled task's last run time.
-     * @param $className string
-     * @param $timestamp int optional, if omitted the current time is used.
-     * @return int
+     * 
+     * @param string $className The class name of the scheduled task.
+     * @param int|null $timestamp Optional Unix timestamp. If null, current time (NOW()) is used.
+     * @return int The number of affected rows.
      */
-    public function updateLastRunTime($className, $timestamp = null) {
-        // [MODERNISASI] Hapus referensi &
+    public function updateLastRunTime(string $className, ?int $timestamp = null): int {
         $result = $this->retrieve(
             'SELECT COUNT(*) FROM scheduled_tasks WHERE class_name = ?',
-            array($className)
+            [$className]
         );
 
-        // [WIZDAM] Optimasi pengecekan logic
-        $exists = (isset($result->fields[0]) && $result->fields[0] != 0);
-        $result->Close(); // Close result set early
-        
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $exists = isset($fields[0]) && (int) $fields[0] > 0;
+        $result->Close();
+
         if ($exists) {
-            if (isset($timestamp)) {
+            if ($timestamp !== null) {
                 $this->update(
-                    'UPDATE scheduled_tasks SET last_run = ' . $this->datetimeToDB($timestamp) . ' WHERE class_name = ?',
-                    array($className)
+                    'UPDATE scheduled_tasks SET last_run = ? WHERE class_name = ?',
+                    [$this->datetimeToDB($timestamp), $className]
                 );
             } else {
                 $this->update(
                     'UPDATE scheduled_tasks SET last_run = NOW() WHERE class_name = ?',
-                    array($className)
+                    [$className]
                 );
             }
-
         } else {
-            if (isset($timestamp)) {
+            if ($timestamp !== null) {
                 $this->update(
-                    sprintf('INSERT INTO scheduled_tasks (class_name, last_run)
-                    VALUES (?, %s)', $this->datetimeToDB($timestamp)),
-                    array($className)
+                    'INSERT INTO scheduled_tasks (class_name, last_run) VALUES (?, ?)',
+                    [$className, $this->datetimeToDB($timestamp)]
                 );
             } else {
                 $this->update(
-                    'INSERT INTO scheduled_tasks (class_name, last_run)
-                    VALUES (?, NOW())',
-                    array($className)
+                    'INSERT INTO scheduled_tasks (class_name, last_run) VALUES (?, NOW())',
+                    [$className]
                 );
             }
         }
 
         return $this->getAffectedRows();
     }
+    
 }
-
 ?>

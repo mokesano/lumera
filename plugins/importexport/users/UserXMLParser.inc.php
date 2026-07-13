@@ -15,12 +15,12 @@ declare(strict_types=1);
  * See dbscripts/xml/dtd/users.dtd for the XML schema used.
  */
 
-import('lib.pkp.classes.xml.XMLParser');
+import('lib.pkp.classes.xml.PKPXMLParser');
 
 class UserXMLParser {
 
-    /** @var XMLParser the parser to use */
-    public XMLParser $parser;
+    /** @var PKPXMLParser the parser to use */
+    public PKPXMLParser $parser;
 
     /** @var array ImportedUsers users to import */
     public array $usersToImport = [];
@@ -39,7 +39,7 @@ class UserXMLParser {
      * @param int $journalId assumed to be a valid journal ID
      */
     public function __construct(int $journalId) {
-        $this->parser = new XMLParser();
+        $this->parser = new PKPXMLParser();
         $this->journalId = $journalId;
     }
 
@@ -49,7 +49,7 @@ class UserXMLParser {
     public function UserXMLParser() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -63,11 +63,13 @@ class UserXMLParser {
      * @return array ImportedUsers the collection of users read from the file
      */
     public function parseData(string $file): array {
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
 
         $this->usersToImport = [];
         $tree = $this->parser->parse($file);
 
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($this->journalId);
         $journalPrimaryLocale = AppLocale::getPrimaryLocale();
@@ -200,8 +202,8 @@ class UserXMLParser {
         $this->importedUsers = [];
         $this->errors = [];
 
-        $userDao = DAORegistry::getDAO('UserDAO');
-        $roleDao = DAORegistry::getDAO('RoleDAO');
+        $userDao = DAORegistry::getDAO('UserDAO'); /** @var UserDAO $userDao */
+        $roleDao = DAORegistry::getDAO('RoleDAO'); /** @var RoleDAO $roleDao */
         $mail = null;
 
         if ($sendNotify) {
@@ -209,6 +211,7 @@ class UserXMLParser {
             import('classes.mail.MailTemplate');
             $mail = new MailTemplate('USER_REGISTER');
 
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journal = $journalDao->getById($this->journalId);
             $mail->setFrom($journal->getSetting('contactEmail'), $journal->getSetting('contactName'));
@@ -272,6 +275,7 @@ class UserXMLParser {
             }
 
             // Add reviewing interests to interests table
+            /** @var InterestDAO $interestDao */
             $interestDao = DAORegistry::getDAO('InterestDAO');
             $interests = $user->getTemporaryInterests();
             if ($interests) {
@@ -310,6 +314,7 @@ class UserXMLParser {
                 // Send email notification to user as if user just registered themselves
                 $mail->addRecipient($user->getEmail(), $user->getFullName());
                 $mail->sendWithParams([
+                    /** @var \Journal|null|unset $journal */
                     'journalName' => $journal->getTitle($journal->getPrimaryLocale()),
                     'username' => $user->getUsername(),
                     'password' => $user->getUnencryptedPassword() == null ? '-' : $user->getUnencryptedPassword(),
@@ -372,7 +377,9 @@ class UserXMLParser {
      * @param ImportedUser $user the user to be modified by this function
      */
     public function generateUsername(ImportedUser $user): void {
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
+
         $baseUsername = PKPString::regexp_replace('/[^A-Z0-9]/i', '', $user->getLastName());
         if (empty($baseUsername)) {
             $baseUsername = PKPString::regexp_replace('/[^A-Z0-9]/i', '', $user->getFirstName());
@@ -400,91 +407,6 @@ class UserXMLParser {
         $user->setUnencryptedPassword($password);
         $user->setPassword(Validation::encryptCredentials($user->getUsername(), $password));
     }
+    
 }
-
-
-/**
- * Helper class representing a user imported from a user data file.
- */
-import('classes.user.User');
-
-class ImportedUser extends User {
-
-    /** @var array Roles of this user */
-    public array $roles = [];
-
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        parent::__construct();
-        $this->roles = [];
-    }
-
-    /**
-     * [SHIM] Backward Compatibility
-     */
-    public function ImportedUser() {
-        if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
-                E_USER_DEPRECATED
-            );
-        }
-        $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
-    }
-
-    /**
-     * Set the unencrypted form of the user's password.
-     * @param string $unencryptedPassword
-     * @return void
-     */
-    public function setUnencryptedPassword(string $unencryptedPassword): void {
-        $this->setData('unencryptedPassword', $unencryptedPassword);
-    }
-
-    /**
-     * Get the user's unencrypted password.
-     * @return string|null
-     */
-    public function getUnencryptedPassword(): ?string {
-        return $this->getData('unencryptedPassword');
-    }
-
-    /**
-     * Add a new role to this user.
-     * @param Role $role
-     * @return void
-     */
-    public function addRole(Role $role): void {
-        $this->roles[] = $role;
-    }
-
-    /**
-     * Get this user's roles.
-     * @return array Roles
-     */
-    public function getRoles(): array {
-        return $this->roles;
-    }
-
-    /**
-     * Set the interests to be inserted after we have a user ID
-     * @param string $interests
-     * @return void
-     */
-    public function setTemporaryInterests(string $interests): void {
-        $this->setData('interests', $interests);
-    }
-
-    /**
-     * Get the interests to be inserted after we have a user ID
-     * @return string|null
-     */
-    public function getTemporaryInterests(): ?string {
-        return $this->getData('interests');
-    }
-}
-
 ?>

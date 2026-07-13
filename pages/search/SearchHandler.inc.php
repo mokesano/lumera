@@ -613,5 +613,6 @@ class SearchHandler extends Handler {
             $templateMgr->setCacheability(CACHEABILITY_PUBLIC);
         }
     }
+    
 }
 ?>

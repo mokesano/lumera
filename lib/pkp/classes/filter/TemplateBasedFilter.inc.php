@@ -21,15 +21,15 @@ class TemplateBasedFilter extends PersistableFilter {
     
     /**
      * Constructor
-     * @param $filterGroup FilterGroup
+     * @param mixed $filterGroup FilterGroup
      */
     public function __construct($filterGroup) {
-        // Menghilangkan reference (&) pada parameter
         parent::__construct($filterGroup);
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $filterGroup
      */
     public function TemplateBasedFilter($filterGroup) {
         trigger_error(
@@ -39,83 +39,79 @@ class TemplateBasedFilter extends PersistableFilter {
         self::__construct($filterGroup);
     }
 
-
     //
     // Abstract template methods
     //
+
     /**
-     * Return the base path of the filter so that we
-     * can find the filter templates.
+     * Return the base path of the filter so that we can find the filter templates.
      *
      * @return string
      */
     public function getBasePath() {
-        // Must be implemented by sub-classes.
         assert(false);
     }
 
     /**
      * Return the template name to be used by this filter.
+     * 
      * @return string
      */
     public function getTemplateName() {
-        // Must be implemented by sub-classes.
         assert(false);
     }
 
     /**
-     * Sub-classes must implement this method to add
-     * template variables to the template.
-     * @param $templateMgr TemplateManager
-     * @param $input mixed the filter input
-     * @param $request Request
-     * @param $locale AppLocale
+     * Sub-classes must implement this method to add template variables to the template.
+     * 
+     * @param mixed $templateMgr TemplateManager
+     * @param mixed $input the filter input
+     * @param mixed $request Request
+     * @param mixed $locale AppLocale
      */
-    public function addTemplateVars($templateMgr, $input, $request, $locale) { // Menghilangkan semua references (&)
-        // Must be implemented by sub-classes.
+    public function addTemplateVars($templateMgr, $input, $request, $locale) {
         assert(false);
     }
-
 
     //
     // Implement template methods from Filter
     //
+    
     /**
+     * Transform the input using a Smarty template and return the rendered output.
+     * 
      * @see Filter::process()
-     * @param $input mixed
-     * @return string
+     * @param mixed $input The data to be processed by the template.
+     * @return string The rendered template output.
      */
-    public function process($input) { // Menghilangkan reference (&) pada return dan parameter $input
-        // Initialize view
+    public function process($input) {
         $locale = AppLocale::getLocale();
         $application = PKPApplication::getApplication();
-        $request = $application->getRequest(); // Menghilangkan reference (&)
-        $templateMgr = TemplateManager::getManager($request); // Menghilangkan reference (&)
+        $request = $application->getRequest();
+        
+        /** @var TemplateManager $templateMgr */
+        $templateMgr = TemplateManager::getManager($request);
 
-        // Add the filter's directory as additional template dir so that
-        // templates can include sub-templates in the same folder.
-        array_unshift($templateMgr->template_dir, $this->getBasePath());
+        $basePath = (string) $this->getBasePath();
 
-        // Give sub-filters a chance to add their variables
-        // to the template.
+        // Internal coercion: Ensure template_dir is an array to prevent PHP 8 TypeError and resolve Intelephense P1006
+        $templateDirs = is_array($templateMgr->template_dir) ? $templateMgr->template_dir : [(string) $templateMgr->template_dir];
+        array_unshift($templateDirs, $basePath);
+        $templateMgr->template_dir = $templateDirs;
+
         $this->addTemplateVars($templateMgr, $input, $request, $locale);
 
-        // Use a base path hash as compile id to make sure that we don't
-        // get namespace problems if several filters use the same
-        // template names.
         $previousCompileId = $templateMgr->compile_id;
-        $templateMgr->compile_id = md5($this->getBasePath());
+        $templateMgr->compile_id = md5($basePath);
 
-        // Let the template engine render the citation.
-        $output = $templateMgr->fetch($this->getTemplateName());
+        $templateName = (string) $this->getTemplateName();
+        $output = (string) $templateMgr->fetch($templateName);
 
-        // Remove the additional template dir
         array_shift($templateMgr->template_dir);
-
-        // Restore the compile id.
         $templateMgr->compile_id = $previousCompileId;
 
         return $output;
     }
+
 }
 ?>
