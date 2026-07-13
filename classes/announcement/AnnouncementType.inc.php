@@ -31,9 +31,13 @@ class AnnouncementType extends PKPAnnouncementType {
      */
     public function AnnouncementType() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class AnnouncementType uses deprecated constructor parent::AnnouncementType(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
+                E_USER_DEPRECATED
+            );
         }
         self::__construct();
     }
+    
 }
 ?>

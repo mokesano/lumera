@@ -396,28 +396,25 @@
 		<data file="dbscripts/xml/upgrade/event_log_oneclickuserid.xml"/>
 	</upgrade>
 
-	<!-- Frontedge schema upgrade for OJS 2.x -->
+	<!-- Lumera schema upgrade for OJS 2.x -->
     <upgrade minversion="2.0.0.0" maxversion="2.4.9.9">
         <code function="syncArticleIdentifiers" />
-        <data file="dbscripts/xml/upgrade/frontedge_schema.xml" />
+        <data file="dbscripts/xml/upgrade/lumera_schema.xml" />
         <code function="migrateLegacyInvoicesToFrontedge" />
     </upgrade>
     
-    <!-- Prepare for Frontedge schema upgrade from OJS 3.x -->
+    <!-- Prepare for Lumera schema upgrade from OJS 3.x -->
     <upgrade minversion="3.0.0.0" maxversion="3.9.9.9">
         <code function="syncArticleIdentifiers" />
-        <data file="dbscripts/xml/upgrade/frontedge_schema.xml" />
+        <data file="dbscripts/xml/upgrade/lumera_schema.xml" />
         <code function="migrateLegacyInvoicesToFrontedge" />
     </upgrade>
     
-    <!-- Frontedge schema upgrade -->
+    <!-- Lumera schema upgrade -->
     <upgrade minversion="1.0.0.0" maxversion="1.0.9.9">
-		</upgrade>
+	</upgrade>
 
-	<!-- 
-	  * Update plugin configuration 
-	  - should be done as the final upgrade task
-	-->
+	<!-- Update plugin configuration - should be done as the final upgrade task -->
 	<code function="addPluginVersions" />
 	
 </install>

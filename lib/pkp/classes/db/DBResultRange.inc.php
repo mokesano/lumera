@@ -25,7 +25,7 @@ class DBResultRange {
     /**
      * Constructor.
      * Initialize the DBResultRange.
-     * @param $count int
+     * @param int $count int
      * @param $page int
      */
     public function __construct($count, $page = 1) {
@@ -35,10 +35,11 @@ class DBResultRange {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param int $count
      */
     public function DBResultRange($count, $page = 1) {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor DBResultRange(). Please refactor to use __construct().",
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
         self::__construct($count, $page);
@@ -62,7 +63,7 @@ class DBResultRange {
 
     /**
      * Set the count of pages to skip.
-     * @param $page int
+     * @param int $page int
      */
     public function setPage($page) {
         $this->page = (int) $page;
@@ -78,11 +79,11 @@ class DBResultRange {
 
     /**
      * Set the count of items in this range to display.
-     * @param $count int
+     * @param int $count int
      */
     public function setCount($count) {
         $this->count = (int) $count;
     }
-}
 
+}
 ?>

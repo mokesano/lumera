@@ -15,25 +15,29 @@ declare(strict_types=1);
  * See dbscripts/xml/dtd/xmldata.dtd for the XML schema used.
  */
 
-import('lib.pkp.classes.xml.XMLParser');
+import('lib.pkp.classes.xml.PKPXMLParser');
 
 class DBDataXMLParser {
 
-    /** @var XMLParser the parser to use */
+    /** @var PKPXMLParser the parser to use */
     public $parser;
 
-    /** @var ADOConnection the underlying database connection */
+    /** @var ADOConnection|null the underlying database connection */
     public $dbconn;
 
     /** @var array the array of parsed SQL statements */
     public $sql;
+
+    /** @var string|null the error message from execution */
+    public $errorMsg;
 
     /**
      * Constructor.
      */
     public function __construct() {
         $this->parser = new PKPXMLParser();
-        $this->sql = array();
+        $this->sql = [];
+        $this->errorMsg = null;
     }
 
     /**
@@ -41,7 +45,7 @@ class DBDataXMLParser {
      */
     public function DBDataXMLParser() {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::DBDataXMLParser(). Please refactor to use parent::__construct().",
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
             E_USER_DEPRECATED
         );
         self::__construct();
@@ -50,7 +54,8 @@ class DBDataXMLParser {
     /**
      * Set the database connection to use for executeData().
      * If the connection is not set, the default system database connection will be used.
-     * @param $dbconn ADOConnection the database connection
+     * 
+     * @param ADOConnection $dbconn the database connection
      */
     public function setDBConn($dbconn) {
         $this->dbconn = $dbconn;
@@ -58,123 +63,118 @@ class DBDataXMLParser {
 
     /**
      * Parse an XML data file into SQL statements.
-     * @param $file string path to the XML file to parse
+     * 
+     * @param string $file path to the XML file to parse
      * @return array the array of SQL statements parsed
      */
     public function parseData($file) {
-        $this->sql = array();
+        $this->sql = [];
         $tree = $this->parser->parse($file);
         
-        // [MODERNISASI] Hapus & pada pemanggilan MetaTables
-        $allTables = $this->dbconn->MetaTables();
-        
+        if (!$this->dbconn) {
+            $this->errorMsg = 'Database connection is not set.';
+            return $this->sql;
+        }
+
+        $allTables = $this->dbconn->MetaTables() ?: [];
+        $dbdict = null;
+
         if ($tree !== false) {
             foreach ($tree->getChildren() as $table) {
-                if ($table->getName() == 'table') {
-                    $fieldDefaultValues = array();
+                if ($table->getName() === 'table') {
+                    $fieldDefaultValues = [];
 
-                    // Match table element
                     foreach ($table->getChildren() as $row) {
-                        switch ($row->getName()) {
-                            case 'field_default':
-                                // Match a default field element
-                                list($fieldName, $value) = $this->_getFieldData($row);
-                                $fieldDefaultValues[$fieldName] = $value;
-                                break;
+                        if ($row->getName() === 'field_default') {
+                            [$fieldName, $value] = $this->_getFieldData($row);
+                            $fieldDefaultValues[$fieldName] = $value;
+                            
+                        } elseif ($row->getName() === 'row') {
+                            $fieldValues = [];
 
-                            case 'row':
-                                // Match a row element
-                                $fieldValues = array();
+                            foreach ($row->getChildren() as $field) {
+                                [$fieldName, $value] = $this->_getFieldData($field);
+                                $fieldValues[$fieldName] = $value;
+                            }
 
-                                foreach ($row->getChildren() as $field) {
-                                    // Get the field names and values for this INSERT
-                                    list($fieldName, $value) = $this->_getFieldData($field);
-                                    $fieldValues[$fieldName] = $value;
-                                }
+                            $fieldValues = array_merge($fieldDefaultValues, $fieldValues);
 
-                                $fieldValues = array_merge($fieldDefaultValues, $fieldValues);
-
-                                if (count($fieldValues) > 0) {
-                                    $this->sql[] = sprintf(
-                                            'INSERT INTO %s (%s) VALUES (%s)',
-                                            $table->getAttribute('name'),
-                                            join(', ', array_keys($fieldValues)),
-                                            join(', ', array_values($fieldValues)));
-                                }
-                                break;
-
-                            default:
-                                assert(false);
+                            if (count($fieldValues) > 0) {
+                                $this->sql[] = sprintf(
+                                    'INSERT INTO %s (%s) VALUES (%s)',
+                                    $table->getAttribute('name'),
+                                    implode(', ', array_keys($fieldValues)),
+                                    implode(', ', array_values($fieldValues))
+                                );
+                            }
+                        } else {
+                            throw new \UnexpectedValueException('Unexpected XML node in table: ' . $row->getName());
                         }
                     }
 
-                } else if ($table->getName() == 'sql') {
-                    // Match sql element (set of SQL queries)
+                } elseif ($table->getName() === 'sql') {
                     foreach ($table->getChildren() as $query) {
-                        // FIXME This code
-                        if ($query->getName() == 'drop') {
-                            if (!isset($dbdict)) {
-                                $dbdict = @NewDataDictionary($this->dbconn);
+                        if ($query->getName() === 'drop') {
+                            if ($dbdict === null) {
+                                $dbdict = NewDataDictionary($this->dbconn);
                             }
-                            $table = $query->getAttribute('table');
+                            $tableName = $query->getAttribute('table');
                             $column = $query->getAttribute('column');
+                            
                             if ($column) {
-                                // NOT PORTABLE; do not use this
-                                $this->sql[] = $dbdict->DropColumnSql($table, $column);
+                                $this->sql[] = $dbdict->DropColumnSql($tableName, $column);
                             } else {
-                                $this->sql[] = $dbdict->DropTableSQL($table);
+                                $this->sql[] = $dbdict->DropTableSQL($tableName);
                             }
 
-                        } else if ($query->getName() == 'rename') {
-                            if (!isset($dbdict)) {
-                                $dbdict = @NewDataDictionary($this->dbconn);
+                        } elseif ($query->getName() === 'rename') {
+                            if ($dbdict === null) {
+                                $dbdict = NewDataDictionary($this->dbconn);
                             }
-                            $table = $query->getAttribute('table');
+                            $tableName = $query->getAttribute('table');
                             $column = $query->getAttribute('column');
                             $to = $query->getAttribute('to');
+                            
                             if ($column) {
-                                // Make sure the target column does not yet exist.
-                                // This is to guarantee idempotence of upgrade scripts.
                                 $run = false;
-                                if (in_array($table, $allTables)) {
-                                    // [MODERNISASI] Hapus & pada pemanggilan MetaColumns
-                                    $columns = $this->dbconn->MetaColumns($table, true);
+                                if (in_array($tableName, $allTables, true)) {
+                                    $columns = $this->dbconn->MetaColumns($tableName, true) ?: [];
                                     if (!isset($columns[strtoupper($to)])) {
-                                        // Only run if the column has not yet been
-                                        // renamed.
                                         $run = true;
                                     }
                                 } else {
-                                    // If the target table does not exist then
-                                    // we assume that another rename entry will still
-                                    // rename it and we should run after it.
                                     $run = true;
                                 }
 
                                 if ($run) {
                                     $colId = strtoupper($column);
-                                    $flds = '';
+                                    $flds = [];
+                                    
                                     if (isset($columns[$colId])) {
                                         $col = $columns[$colId];
-                                        if ($col->max_length == "-1") {
-                                            $max_length = '';
-                                        } else {
-                                            $max_length = $col->max_length;
-                                        }
-                                        $fld = array('NAME' => $col->name, 'TYPE' => $dbdict->MetaType($col), 'SIZE' => $max_length);
-                                        if ($col->primary_key) $fld['KEY'] = 'KEY';
-                                        if ($col->auto_increment) $fld['AUTOINCREMENT'] = 'AUTOINCREMENT';
-                                        if ($col->not_null) $fld['NOTNULL'] = 'NOTNULL';
-                                        if ($col->has_default) $fld['DEFAULT'] = $col->default_value;
-                                        $flds = array($colId => $fld);
-                                    } else assert(false);
-                                    $this->sql[] = $dbdict->RenameColumnSQL($table, $column, $to, $flds);
+                                        $max_length = ((string) $col->max_length === '-1') ? '' : (string) $col->max_length;
+                                        
+                                        $fld = [
+                                            'NAME' => $col->name,
+                                            'TYPE' => $dbdict->MetaType($col),
+                                            'SIZE' => $max_length
+                                        ];
+                                        
+                                        if (!empty($col->primary_key)) $fld['KEY'] = 'KEY';
+                                        if (!empty($col->auto_increment)) $fld['AUTOINCREMENT'] = 'AUTOINCREMENT';
+                                        if (!empty($col->not_null)) $fld['NOTNULL'] = 'NOTNULL';
+                                        if (!empty($col->has_default)) $fld['DEFAULT'] = $col->default_value;
+                                        
+                                        $flds = [$colId => $fld];
+                                    } else {
+                                        throw new \UnexpectedValueException("Column {$colId} not found in table {$tableName} during rename operation.");
+                                    }
+                                    
+                                    $this->sql[] = $dbdict->RenameColumnSQL($tableName, $column, $to, $flds);
                                 }
                             } else {
-                                // Make sure the target table does not yet exist.
-                                // This is to guarantee idempotence of upgrade scripts.
-                                if (!in_array($to, $allTables)) {
-                                    $this->sql[] = $dbdict->RenameTableSQL($table, $to);
+                                if (!in_array($to, $allTables, true)) {
+                                    $this->sql[] = $dbdict->RenameTableSQL($tableName, $to);
                                 }
                             }
                         } else {
@@ -192,15 +192,23 @@ class DBDataXMLParser {
 
     /**
      * Execute the parsed SQL statements.
-     * @param $continueOnError boolean continue to execute remaining statements if a failure occurs
-     * @return boolean success
+     * 
+     * @param bool $continueOnError continue to execute remaining statements if a failure occurs
+     * @return bool success
      */
     public function executeData($continueOnError = false) {
         $this->errorMsg = null;
-        $dbconn = $this->dbconn == null ? DBConnection::getConn() : $this->dbconn;
+        $dbconn = $this->dbconn === null ? DBConnection::getConn() : $this->dbconn;
+        
+        if (!$dbconn) {
+            $this->errorMsg = 'No database connection available for execution.';
+            return false;
+        }
+
         foreach ($this->sql as $stmt) {
             $dbconn->execute($stmt);
-            if (!$continueOnError && $dbconn->errorNo() != 0) {
+            if (!$continueOnError && $dbconn->errorNo() !== 0) {
+                $this->errorMsg = $dbconn->errorMsg();
                 return false;
             }
         }
@@ -209,6 +217,7 @@ class DBDataXMLParser {
 
     /**
      * Return the parsed SQL statements.
+     * 
      * @return array
      */
     public function getSQL() {
@@ -216,8 +225,9 @@ class DBDataXMLParser {
     }
 
     /**
-     * Quote a string to be appear as a value in an SQL INSERT statement.
-     * @param $str string
+     * Quote a string to appear as a value in an SQL INSERT statement.
+     * 
+     * @param string $str string to quote
      * @return string
      */
     public function quoteString($str) {
@@ -231,49 +241,37 @@ class DBDataXMLParser {
         $this->parser->destroy();
     }
 
-
     //
     // Private helper methods
     //
     
     /**
-     * Retrieve a field name and value from a field node
-     * @param $fieldNode XMLNode
-     * @return array an array with two entries: the field
-     * name and the field value
+     * Retrieve a field name and value from a field node.
+     * 
+     * @param XMLNode $fieldNode
+     * @return array an array with two entries: the field name and the field value
      */
     public function _getFieldData($fieldNode) {
         $fieldName = $fieldNode->getAttribute('name');
         $fieldValue = $fieldNode->getValue();
 
-        // Is this field empty? If so: do we want NULL or
-        // an empty string?
         $isEmpty = $fieldNode->getAttribute('null');
-        if (!is_null($isEmpty)) {
-            assert(is_null($fieldValue));
-            switch($isEmpty) {
-                case 1:
-                    $fieldValue = null;
-                    break;
-
-                case 0:
-                    $fieldValue = '';
-                    break;
+        if ($isEmpty !== null) {
+            if ($isEmpty == 1) {
+                $fieldValue = null;
+            } elseif ($isEmpty == 0) {
+                $fieldValue = '';
             }
         }
 
-        // Translate null to 'NULL' for SQL use.
-        if (is_null($fieldValue)) {
+        if ($fieldValue === null) {
             $fieldValue = 'NULL';
-        } else {
-            // Quote the value.
-            if (!is_numeric($fieldValue)) {
-                $fieldValue = $this->quoteString($fieldValue);
-            }
+        } elseif (!is_numeric($fieldValue)) {
+            $fieldValue = $this->quoteString($fieldValue);
         }
 
-        return array($fieldName, $fieldValue);
+        return [$fieldName, $fieldValue];
     }
+    
 }
-
 ?>
