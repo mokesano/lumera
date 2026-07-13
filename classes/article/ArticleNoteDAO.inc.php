@@ -13,10 +13,6 @@ declare(strict_types=1);
  * @see ArticleNote
  *
  * @brief Operations for retrieving and modifying ArticleNote objects.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor, Ref removal)
- * - Strict Integer Casting
  */
 
 import('classes.article.ArticleNote');
@@ -42,7 +38,8 @@ class ArticleNoteDAO extends NoteDAO {
     }
 
     /**
-     * Retrieve Article Notes by article id.
+     * [DEPRECATED] Retrieve Article Notes by article id.
+     * Use getByAssoc()
      * @param int $articleId
      * @param DBResultRange|null $rangeInfo
      * @return DAOResultFactory containing ArticleNotes
@@ -55,7 +52,8 @@ class ArticleNoteDAO extends NoteDAO {
     }
 
     /**
-     * Retrieve Article Notes by user id.
+     * [DEPRECATED] Retrieve Article Notes by user id.
+     * Use getByUserId()
      * @param int $userId
      * @param DBResultRange|null $rangeInfo
      * @return DAOResultFactory containing ArticleNotes
@@ -68,7 +66,8 @@ class ArticleNoteDAO extends NoteDAO {
     }
 
     /**
-     * Retrieve Article Note by note id
+     * [DEPRECATED] Retrieve Article Note by note id.
+     * Use getById()
      * @param int $noteId
      * @return ArticleNote|null
      */
@@ -80,7 +79,8 @@ class ArticleNoteDAO extends NoteDAO {
     }
 
     /**
-     * inserts a new article note into notes table
+     * [DEPRECATED] Inserts a new article note into notes table.
+     * Use insertObject()
      * @param ArticleNote $articleNote
      * @return int Article Note Id
      */
@@ -92,7 +92,8 @@ class ArticleNoteDAO extends NoteDAO {
     }
 
     /**
-     * Get the ID of the last inserted article note.
+     * [DEPRECATED] Get the ID of the last inserted article note.
+     * Use getInsertNoteId()
      * @return int
      */
     public function getInsertArticleNoteId() {
@@ -101,7 +102,8 @@ class ArticleNoteDAO extends NoteDAO {
     }
 
     /**
-     * removes an article note by id
+     * [DEPRECATED] Removes an article note by id
+     * Use deleteById()
      * @param int $noteId
      * @return boolean
      */
@@ -111,7 +113,8 @@ class ArticleNoteDAO extends NoteDAO {
     }
 
     /**
-     * updates an article note
+     * [DEPRECATED] Updates an article note
+     * Use updateObject()
      * @param ArticleNote $articleNote
      * @return boolean
      */
@@ -121,7 +124,8 @@ class ArticleNoteDAO extends NoteDAO {
     }
 
     /**
-     * get all article note file ids
+     * [DEPRECATED] Get all article note file ids
+     * Use getAllFileIds()
      * @param int $articleId
      * @return array
      */
@@ -131,7 +135,8 @@ class ArticleNoteDAO extends NoteDAO {
     }
 
     /**
-     * clear all article notes
+     * [DEPRECATED] Clear all article notes
+     * Use deleteByAssoc()
      * @param int $articleId
      * @return boolean
      */
@@ -140,5 +145,4 @@ class ArticleNoteDAO extends NoteDAO {
         return $this->deleteByAssoc(ASSOC_TYPE_ARTICLE, (int) $articleId);
     }
 }
-
 ?>
