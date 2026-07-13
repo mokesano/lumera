@@ -13,11 +13,6 @@ declare(strict_types=1);
  * @see AnnouncementType
  *
  * @brief Operations for retrieving and modifying AnnouncementType objects.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor)
- * - Strict SHIM
- * - Visibility explicit
  */
 
 import('classes.announcement.AnnouncementType');
@@ -43,6 +38,7 @@ class AnnouncementTypeDAO extends PKPAnnouncementTypeDAO {
     }
 
     /**
+     * New announcement data object
      * @see PKPAnnouncementTypeDAO::newDataObject
      * @return AnnouncementType
      */
@@ -50,5 +46,4 @@ class AnnouncementTypeDAO extends PKPAnnouncementTypeDAO {
         return new AnnouncementType();
     }
 }
-
 ?>
