@@ -242,6 +242,69 @@ class VersionCheck {
         
         return false;
     }
+
+    /**
+     * Mendapatkan status versi secara komprehensif dengan fallback backend yang robust.
+     * Metode ini menjamin template selalu menerima array yang terstruktur, 
+     * terlepas dari apakah pengecekan remote berhasil atau gagal.
+     * 
+     * @return array{
+     *   status: 'up_to_date'|'update_available'|'check_failed',
+     *   current_version: string,
+     *   latest_version: ?string,
+     *   message: string,
+     *   info_url: ?string,
+     *   package_url: ?string
+     * }
+     */
+    public static function getVersionStatus(): array {
+        // 1. Ambil versi saat ini dari DB
+        $currentVersion = self::getCurrentDBVersion();
+        $currentVersionString = $currentVersion instanceof Version ? $currentVersion->getVersionString() : '0.0.0.0';
+
+        // 2. Ambil versi terbaru dari remote
+        $latestVersionInfo = self::getLatestVersion();
+
+        // 3. FALLBACK 1: Jika pengambilan data remote gagal total (misal: XML parsing gagal)
+        if (!is_array($latestVersionInfo) || !isset($latestVersionInfo['version'])) {
+            return [
+                'status'          => 'check_failed',
+                'current_version' => $currentVersionString,
+                'latest_version'  => null,
+                'message'         => 'Tidak dapat mengambil informasi versi terbaru. Pastikan file XML valid dan dapat diakses.',
+                'info_url'        => null,
+                'package_url'     => null
+            ];
+        }
+
+        /** @var Version $latestVersion */
+        $latestVersion = $latestVersionInfo['version'];
+        $latestVersionString = $latestVersion->getVersionString();
+
+        // 4. Bandingkan versi (menggunakan method compare yang sudah aman dari null)
+        $compareResult = $currentVersion instanceof Version ? $currentVersion->compare($latestVersion) : -1;
+
+        // 5. FALLBACK 2 & LOGIKA BISNIS: Tentukan status berdasarkan hasil perbandingan
+        if ($compareResult >= 0) {
+            return [
+                'status'          => 'up_to_date',
+                'current_version' => $currentVersionString,
+                'latest_version'  => $latestVersionString,
+                'message'         => 'Sistem Anda sudah menggunakan versi terbaru (' . $currentVersionString . ').',
+                'info_url'        => $latestVersionInfo['info'] ?? null,
+                'package_url'     => null
+            ];
+        } else {
+            return [
+                'status'          => 'update_available',
+                'current_version' => $currentVersionString,
+                'latest_version'  => $latestVersionString,
+                'message'         => 'Pembaruan tersedia! Versi terbaru: ' . $latestVersionString . '.',
+                'info_url'        => $latestVersionInfo['info'] ?? null,
+                'package_url'     => $latestVersionInfo['package'] ?? null
+            ];
+        }
+    }
     
 }
 ?>
