@@ -144,7 +144,8 @@ class Application extends PKPApplication {
     public function getVersionDescriptorUrl(): string {
         // [PERINGATAN] Jika ubah 'ojs2' siapkan url cek versi aplikasi.
         // Gunakan url wizdamEditin untuk versi fork Wizdam Fork Edition
-        return 'http://pkp.sfu.ca/ojs/xml/ojs-version.xml';
+        // return 'http://pkp.sfu.ca/ojs/xml/ojs-version.xml';
+        return 'https://wizdam.sangia.org/xml/lumera-version.xml';
     }
 
     /**
