@@ -244,7 +244,7 @@ class VersionCheck {
     }
 
     /**
-     * Mendapatkan status versi secara komprehensif dengan fallback backend yang robust.
+     * Mendapatkan status versi dengan fallback backend yang robust.
      * Metode ini menjamin template selalu menerima array yang terstruktur, 
      * terlepas dari apakah pengecekan remote berhasil atau gagal.
      * 
@@ -265,7 +265,7 @@ class VersionCheck {
         // 2. Ambil versi terbaru dari remote
         $latestVersionInfo = self::getLatestVersion();
 
-        // 3. FALLBACK 1: Jika pengambilan data remote gagal total (misal: XML parsing gagal)
+        // 3. FALLBACK 1: Jika data remote gagal total
         if (!is_array($latestVersionInfo) || !isset($latestVersionInfo['version'])) {
             return [
                 'status'          => 'check_failed',
@@ -281,10 +281,10 @@ class VersionCheck {
         $latestVersion = $latestVersionInfo['version'];
         $latestVersionString = $latestVersion->getVersionString();
 
-        // 4. Bandingkan versi (menggunakan method compare yang sudah aman dari null)
+        // 4. Bandingkan versi (method compare yang sudah aman dari null)
         $compareResult = $currentVersion instanceof Version ? $currentVersion->compare($latestVersion) : -1;
 
-        // 5. FALLBACK 2 & LOGIKA BISNIS: Tentukan status berdasarkan hasil perbandingan
+        // 5. FALLBACK: Tentukan status berdasarkan hasil perbandingan
         if ($compareResult >= 0) {
             return [
                 'status'          => 'up_to_date',
