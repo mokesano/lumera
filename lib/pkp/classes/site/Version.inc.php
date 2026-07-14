@@ -57,11 +57,21 @@ class Version extends DataObject {
      * @param string $version string/Version the version to compare against
      * @return int
      */
-    public function compare($version) {
-        if (is_object($version)) {
-            return $this->compare($version->getVersionString());
+    /**
+     * Compare this version to another version.
+     * @param mixed $version Version object or version string
+     * @return int -1 if older, 0 if equal, 1 if newer
+     */
+    public function compare($version): int {
+        if ($version instanceof Version) {
+            $versionString = $version->getVersionString();
+        } elseif (is_string($version)) {
+            $versionString = $version;
+        } else {
+            $versionString = '0.0.0.0'; 
         }
-        return version_compare($this->getVersionString(), $version);
+
+        return version_compare($this->getVersionString(), (string) $versionString);
     }
 
     /**
@@ -284,8 +294,18 @@ class Version extends DataObject {
      * Return complete version string.
      * @return string
      */
-    public function getVersionString() {
-        return sprintf('%d.%d.%d.%d', $this->getMajor(), $this->getMinor(), $this->getRevision(), $this->getBuild());
+    /**
+     * Get the version string.
+     * @return string
+     */
+    public function getVersionString(): string {
+        return sprintf(
+            '%d.%d.%d.%d', 
+            (int) $this->getMajor(), 
+            (int) $this->getMinor(), 
+            (int) $this->getRevision(), 
+            (int) $this->getBuild()
+        );
     }
     
 }
