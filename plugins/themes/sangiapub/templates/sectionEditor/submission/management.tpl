@@ -85,19 +85,26 @@
 		<tr>
 			<td class="label">{translate key="section.section"}</td>
 			<td class="value">{$submission->getSectionTitle()|escape}</td>
-			<td class="value"><form action="{url op="updateSection" path=$submission->getId()}" method="post">{translate key="submission.changeSection"} <select name="section" size="1" class="selectMenu">{html_options options=$sections selected=$submission->getSectionId()}</select> <input type="submit" value="{translate key="common.record"}" class="button" /></form></td>
+			<td class="value">
+				<form action="{url op="updateSection" path=$submission->getId()}" method="post">
+					<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
+					{translate key="submission.changeSection"}
+					<select name="section" size="1" class="selectMenu">{html_options options=$sections selected=$submission->getSectionId()}</select>
+					<input type="submit" value="{translate key="common.record"}" class="button" />
+				</form>
+			</td>
 		</tr>
 		{if $submission->getCommentsToEditor()}
-		<tr valign="top">
-			<td width="20%" class="label">{translate key="article.commentsToEditor"}</td>
-			<td width="80%" colspan="2" class="data">{$submission->getCommentsToEditor()|strip_unsafe_html|nl2br}</td>
-		</tr>
+			<tr valign="top">
+				<td width="20%" class="label">{translate key="article.commentsToEditor"}</td>
+				<td width="80%" colspan="2" class="data">{$submission->getCommentsToEditor()|strip_unsafe_html|nl2br}</td>
+			</tr>
 		{/if}
 		{if $publishedArticle}
-		<tr>
-			<td class="label">{translate key="submission.abstractViews"}</td>
-			<td>{$publishedArticle->getViews()}</td>
-		</tr>
+			<tr>
+				<td class="label">{translate key="submission.abstractViews"}</td>
+				<td>{$publishedArticle->getViews()}</td>
+			</tr>
 		{/if}
 	</table>
 </div>

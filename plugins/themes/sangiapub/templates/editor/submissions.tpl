@@ -41,14 +41,14 @@
 
 	<script type="text/javascript">
 		{literal}
-		<!--
-		function sortSearch(heading, direction) {
-			var submitForm = document.getElementById('submit');
-			submitForm.sort.value = heading;
-			submitForm.sortDirection.value = direction;
-			submitForm.submit();
-		}
-		// -->
+			<!--
+			function sortSearch(heading, direction) {
+				var submitForm = document.getElementById('submit');
+				submitForm.sort.value = heading;
+				submitForm.sortDirection.value = direction;
+				submitForm.submit();
+			}
+			// -->
 		{/literal}
 	</script>
 
