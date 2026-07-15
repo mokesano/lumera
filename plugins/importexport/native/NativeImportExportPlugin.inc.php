@@ -17,7 +17,7 @@ declare(strict_types=1);
 import('classes.plugins.ImportExportPlugin');
 import('lib.pkp.classes.xml.XMLCustomWriter');
 
-define('NATIVE_DTD_ID', '-//PKP//OJS Articles and Issues XML//EN');
+define('NATIVE_DTD_ID', '-//Sangia//Lumera Articles and Issues XML//EN');
 
 class NativeImportExportPlugin extends ImportExportPlugin {
 
@@ -47,6 +47,7 @@ class NativeImportExportPlugin extends ImportExportPlugin {
      * @return string
      */
     public function getDTDUrl(): string {
+        /** @var VersionDAO $versionDao */
         $versionDao = DAORegistry::getDAO('VersionDAO');
         $currentVersion = $versionDao->getCurrentVersion();
         return 'http://pkp.sfu.ca/ojs/dtds/' . urlencode($currentVersion->getMajor() . '.' . $currentVersion->getMinor() . '.' . $currentVersion->getRevision()) . '/native.dtd';
@@ -98,6 +99,7 @@ class NativeImportExportPlugin extends ImportExportPlugin {
         $templateMgr = TemplateManager::getManager();
         parent::display($args, $request);
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $journal = $request->getJournal();
         
@@ -150,6 +152,7 @@ class NativeImportExportPlugin extends ImportExportPlugin {
             case 'articles':
                 // Display a list of articles for export
                 $this->setBreadcrumbs([], true);
+                /** @var PublishedArticleDAO $publishedArticleDao */
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                 $rangeInfo = Handler::getRangeInfo('articles');
                 $articleIds = $publishedArticleDao->getPublishedArticleIdsAlphabetizedByJournal($journal->getId(), false);
@@ -166,8 +169,8 @@ class NativeImportExportPlugin extends ImportExportPlugin {
             case 'import':
                 AppLocale::requireComponents(LOCALE_COMPONENT_APP_EDITOR, LOCALE_COMPONENT_APP_AUTHOR);
                 import('classes.file.TemporaryFileManager');
-                $issueDao = DAORegistry::getDAO('IssueDAO');
-                $sectionDao = DAORegistry::getDAO('SectionDAO');
+                $issueDao = DAORegistry::getDAO('IssueDAO'); /** @var IssueDAO $issueDao */
+                $sectionDao = DAORegistry::getDAO('SectionDAO'); /** @var SectionDAO $sectionDao */
                 $user = $request->getUser();
                 $temporaryFileManager = new TemporaryFileManager();
 
@@ -433,11 +436,11 @@ class NativeImportExportPlugin extends ImportExportPlugin {
 
         AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
 
-        $journalDao = DAORegistry::getDAO('JournalDAO');
-        $issueDao = DAORegistry::getDAO('IssueDAO');
-        $sectionDao = DAORegistry::getDAO('SectionDAO');
-        $userDao = DAORegistry::getDAO('UserDAO');
-        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
+        $issueDao = DAORegistry::getDAO('IssueDAO'); /** @var IssueDAO $issueDao */
+        $sectionDao = DAORegistry::getDAO('SectionDAO'); /** @var SectionDAO $sectionDao */
+        $userDao = DAORegistry::getDAO('UserDAO'); /** @var UserDAO $userDao */
+        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /** @var PublishedArticleDAO $publishedArticleDao */
 
         $journal = $journalDao->getJournalByPath($journalPath);
 
@@ -627,5 +630,6 @@ class NativeImportExportPlugin extends ImportExportPlugin {
             'pluginName' => $this->getName()
         ]) . "\n";
     }
+
 }
 ?>
