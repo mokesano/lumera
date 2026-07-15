@@ -49,9 +49,9 @@
 <div class="block sort">
 	<h4 class="heading">Filter Submissions</h4>
 	<form method="post" id="submit" action="{url path="search"}">
-		<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
-		{if $section}<input type="hidden" name="section" value="{$section|escape:"quotes"}"/>{/if}
-		<input type="hidden" name="sort" value="id"/>
+		<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
+		{if $section}<input type="hidden" name="section" value="{$section|escape:"quotes"}" />{/if}
+		<input type="hidden" name="sort" value="id" />
 		<input type="hidden" name="sortDirection" value="ASC" />
 		<select name="searchField" size="1" class="selectMenu">
 			{html_options_translate options=$fieldOptions selected=$searchField}
