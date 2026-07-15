@@ -13,35 +13,33 @@ declare(strict_types=1);
  *
  * @brief Provides paging and iteration for "virtual" arrays -- arrays for which only
  * the current "page" is available, but are much bigger in entirety.
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards.
  */
 
 import('lib.pkp.classes.core.ItemIterator');
 
 class VirtualArrayIterator extends ItemIterator {
-    /** * @var array|null The array of contents of this iterator. 
-     * [WIZDAM] Public for legacy access.
-     */
+
+    /** @var array|null The array of contents of this iterator */
     public ?array $theArray = [];
 
-    /** * @var int Number of items to iterate through on this page */
+    /** @var int Number of items to iterate through on this page */
     public int $itemsPerPage = 0;
 
-    /** * @var int The current page. */
+    /** @var int The current page. */
     public int $page = 0;
 
-    /** * @var int The total number of items. */
+    /** @var int The total number of items. */
     public int $count = 0;
 
-    /** * @var bool Whether or not the iterator was empty from the start */
+    /** @var bool Whether or not the iterator was empty from the start */
     public bool $wasEmpty = true;
 
     /**
      * Constructor.
-     * @param array $theArray The array of items to iterate through
-     * @param int $totalItems The total number of items in the virtual "larger" array
-     * @param int $page the current page number
-     * @param int $itemsPerPage Number of items to display per page
+     * @param array $theArray
+     * @param int $totalItems
+     * @param int $page
+     * @param int $itemsPerPage
      */
     public function __construct(array $theArray, int $totalItems, int $page = -1, int $itemsPerPage = -1) {
         if ($page >= 1 && $itemsPerPage >= 1) {
@@ -64,6 +62,8 @@ class VirtualArrayIterator extends ItemIterator {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param array $theArray
+     * @param int $totalItems
      */
     public function VirtualArrayIterator($theArray, $totalItems, $page = -1, $itemsPerPage = -1) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -78,8 +78,8 @@ class VirtualArrayIterator extends ItemIterator {
 
     /**
      * Factory Method.
-     * @param array $wholeArray The whole array of items
-     * @param object $rangeInfo The number of items per page (DBResultRange)
+     * @param array $wholeArray
+     * @param object $rangeInfo
      * @return VirtualArrayIterator
      */
     public static function factory(array $wholeArray, $rangeInfo): VirtualArrayIterator {
@@ -103,7 +103,6 @@ class VirtualArrayIterator extends ItemIterator {
 
     /**
      * Return the next item in the iterator.
-     * [WIZDAM] Removed reference (&) to match Parent ItemIterator.
      * @return mixed
      */
     public function next() {
@@ -124,7 +123,6 @@ class VirtualArrayIterator extends ItemIterator {
 
     /**
      * Return the next item in the iterator, with key.
-     * [WIZDAM] Removed reference (&) to match Parent ItemIterator.
      * @return array (key, value)
      */
     public function nextWithKey() {
@@ -197,12 +195,12 @@ class VirtualArrayIterator extends ItemIterator {
 
     /**
      * Convert the iterator into an array
-     * [WIZDAM] Removed reference (&) to match Parent ItemIterator.
      * @return array
      */
     public function toArray() {
         // Return empty array if null to strictly match return type array
         return $this->theArray ?? [];
     }
+    
 }
 ?>
