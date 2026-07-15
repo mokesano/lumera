@@ -13,11 +13,11 @@ declare(strict_types=1);
  * @see Core
  *
  * @brief Any class with an associated DAO should extend this class.
- *
- * [MODERNISASI] PHP 7.4+ Compatible with Backward Compatibility Bridge
+ * 
  */
 
 class DataObject {
+
     /** @var array Array of object data */
     protected $_data = array();
 
@@ -44,18 +44,13 @@ class DataObject {
     }
 
     /**
-     * [MAGIC BRIDGE / SHIM]
-     * Backward Compatibility for Old Child Classes (Article, Issue, etc).
-     * Mencegah crash saat child class memanggil parent::DataObject()
+     * [SHIM] Backward Compatibility
      */
     public function DataObject($callHooks = true) {
-        // Memicu error level E_USER_DEPRECATED agar terekam di log tapi tidak mematikan aplikasi
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::DataObject(). Please refactor to parent::__construct().", 
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to use parent::__construct().", 
             E_USER_DEPRECATED
         );
-
-        // Teruskan ke konstruktor modern
         self::__construct($callHooks);
     }
 
@@ -66,6 +61,7 @@ class DataObject {
     /**
      * Get a piece of data for this object, localized to the current
      * locale if possible.
+     * 
      * @param string $key
      * @return mixed
      */
@@ -95,7 +91,7 @@ class DataObject {
 
     /**
      * Get the value of a data variable.
-     * [WIZDAM MODERNISASI] Smart Interception for PHP 8.4 Strict Mode
+     * 
      * @param string $key
      * @param string|null $locale (optional)
      * @return mixed
@@ -131,8 +127,10 @@ class DataObject {
 
     /**
      * Set the value of a new or existing data variable.
+     * 
      * NB: Passing in null as a value will unset the
      * data variable if it already existed.
+     * 
      * @param string $key
      * @param mixed $value
      * @param string|null $locale (optional)
@@ -165,6 +163,7 @@ class DataObject {
 
     /**
      * Check whether a value exists for a given data variable.
+     * 
      * @param string $key
      * @param string|null $locale (optional)
      * @return bool
@@ -179,6 +178,7 @@ class DataObject {
 
     /**
      * Return an array with all data variables.
+     * 
      * @return array
      */
     public function getAllData() {
@@ -187,7 +187,7 @@ class DataObject {
 
     /**
      * Set all data variables at once.
-     * [MODERNISASI] Removed (&) reference. PHP 7+ uses Copy-on-Write optimization.
+     * 
      * @param array $data
      */
     public function setAllData($data) {
@@ -196,6 +196,7 @@ class DataObject {
 
     /**
      * Get ID of object.
+     * 
      * @return int|null
      */
     public function getId() {
@@ -204,6 +205,7 @@ class DataObject {
 
     /**
      * Set ID of object.
+     * 
      * @param int $id
      */
     public function setId($id) {
@@ -216,11 +218,11 @@ class DataObject {
 
     /**
      * Upcast this data object to the target object.
-     * @param DataObject $targetObject The object to cast to.
-     * @return DataObject The upcast target object.
+     * 
+     * @param DataObject $targetObject
+     * @return DataObject
      */
     public function upcastTo($targetObject) {
-        // [MODERNISASI] Using instanceof instead of is_a()
         assert($targetObject instanceof $this);
 
         // Copy data from the source to the target.
@@ -234,7 +236,8 @@ class DataObject {
     //
 
     /**
-     * Set whether the object has loadable meta-data adapters
+     * Set whether the object has loadable meta-data adapters.
+     * 
      * @param bool $hasLoadableAdapters
      */
     public function setHasLoadableAdapters($hasLoadableAdapters) {
@@ -242,7 +245,8 @@ class DataObject {
     }
 
     /**
-     * Get whether the object has loadable meta-data adapters
+     * Get whether the object has loadable meta-data adapters.
+     * 
      * @return bool
      */
     public function getHasLoadableAdapters() {
@@ -251,6 +255,7 @@ class DataObject {
 
     /**
      * Add a meta-data adapter.
+     * 
      * @param MetadataDataObjectAdapter $metadataAdapter
      */
     public function addSupportedMetadataAdapter($metadataAdapter) {
@@ -276,7 +281,8 @@ class DataObject {
 
     /**
      * Remove all adapters for the given meta-data schema.
-     * @param string $metadataSchemaName fully qualified class name
+     * 
+     * @param string $metadataSchemaName
      * @return bool
      */
     public function removeSupportedMetadataAdapter($metadataSchemaName) {
@@ -294,12 +300,13 @@ class DataObject {
 
     /**
      * Get all meta-data extraction adapters.
+     * 
      * @return array
      */
     public function getSupportedExtractionAdapters() {
         if ($this->getHasLoadableAdapters() && !$this->_extractionAdaptersLoaded) {
+            /** @var FilterDAO $filterDao */
             $filterDao = DAORegistry::getDAO('FilterDAO');
-            // Note: Keeping generic call, verify DAORegistry compatibility in your fork
             $loadedAdapters = $filterDao->getObjectsByTypeDescription('class::%', 'metadata::%', $this);
             foreach ($loadedAdapters as $loadedAdapter) {
                 $this->addSupportedMetadataAdapter($loadedAdapter);
@@ -312,10 +319,12 @@ class DataObject {
 
     /**
      * Get all meta-data injection adapters.
+     * 
      * @return array
      */
     public function getSupportedInjectionAdapters() {
         if ($this->getHasLoadableAdapters() && !$this->_injectionAdaptersLoaded) {
+            /** @var FilterDAO $filterDao */
             $filterDao = DAORegistry::getDAO('FilterDAO');
             $loadedAdapters = $filterDao->getObjectsByTypeDescription('metadata::%', 'class::%', $this, false);
             foreach ($loadedAdapters as $loadedAdapter) {
@@ -329,6 +338,7 @@ class DataObject {
 
     /**
      * Returns all supported meta-data schemas.
+     * 
      * @return array
      */
     public function getSupportedMetadataSchemas() {
@@ -342,6 +352,7 @@ class DataObject {
 
     /**
      * Retrieve the names of meta-data properties.
+     * 
      * @param bool $translated
      * @return array
      */
@@ -357,6 +368,7 @@ class DataObject {
 
     /**
      * Retrieve the names of meta-data properties that need to be persisted.
+     * 
      * @param bool $translated
      * @return array
      */
@@ -373,6 +385,7 @@ class DataObject {
 
     /**
      * Retrieve the names of translated meta-data properties.
+     * 
      * @return array
      */
     public function getLocaleMetadataFieldNames() {
@@ -381,6 +394,7 @@ class DataObject {
 
     /**
      * Retrieve the names of additional meta-data properties.
+     * 
      * @return array
      */
     public function getAdditionalMetadataFieldNames() {
@@ -389,6 +403,7 @@ class DataObject {
 
     /**
      * Inject a meta-data description into this data object.
+     * 
      * @param MetadataDescription $metadataDescription
      * @return mixed DataObject|null
      */
@@ -406,6 +421,7 @@ class DataObject {
 
     /**
      * Extract a meta-data description from this data object.
+     * 
      * @param MetadataSchema $metadataSchema
      * @return MetadataDescription|null
      */
@@ -419,5 +435,6 @@ class DataObject {
         }
         return $metadataDescription;
     }
+
 }
 ?>
