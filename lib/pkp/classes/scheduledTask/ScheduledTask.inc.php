@@ -35,7 +35,6 @@ class ScheduledTask {
 
     /**
      * Constructor.
-     * [MODERNISASI] Native Constructor
      * @param $args array
      */
     public function __construct($args = array()) {
@@ -57,7 +56,7 @@ class ScheduledTask {
             $success = $fileMgr->mkdirtree($scheduledTaskFilesPath);
             if (!$success) {
                 // files directory wrong configuration?
-                // [WIZDAM] Fatal Error yang lebih informatif daripada assert(false)
+                // [LUMERA] Fatal Error yang lebih informatif daripada assert(false)
                 fatalError("Scheduled Task Log Directory is missing and cannot be created: $scheduledTaskFilesPath");
                 $this->_executionLogFile = null;
             }
@@ -81,6 +80,7 @@ class ScheduledTask {
     //
     // Protected methods.
     //
+
     /**
      * Get this process id.
      * @return int
@@ -122,12 +122,12 @@ class ScheduledTask {
             $log = $message;
         }
 
-        // [WIZDAM] Modern File Write
+        // [LUMERA] Modern File Write
         // Menggunakan file_put_contents dengan LOCK_EX (Exclusive Lock) untuk thread safety.
         // FILE_APPEND agar log tidak menimpa data sebelumnya.
         if (file_put_contents($logFile, $log . PHP_EOL, FILE_APPEND | LOCK_EX) === false) {
              // Jika gagal (misal disk penuh), log ke error log server sebagai cadangan
-             error_log("Wizdam ScheduledTask Error: Could not write to log file: $logFile");
+             error_log("Lumera ScheduledTask Error: Could not write to log file: $logFile");
         }
     }
 
@@ -138,10 +138,11 @@ class ScheduledTask {
 
     /**
      * Implement this method to execute the task actions.
+     * @return bool
      */
     public function executeActions() {
         // In case task does not implement it.
-        fatalError("ScheduledTask does not implement executeActions()!\n");
+        fatalError('ScheduledTask does not implement executeActions()!');
     }
 
 
@@ -151,7 +152,6 @@ class ScheduledTask {
     
     /**
      * Make sure the execution process follow the required steps.
-     * @param boolean $notifyAdmin optional
      * @return boolean
      */
     public function execute() {

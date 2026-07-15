@@ -16,28 +16,7 @@ declare(strict_types=1);
  * @ingroup plugins
  * @see PluginRegistry, PluginSettingsDAO
  *
- * @brief Abstract class for plugins
- *
- * For best performance, a plug-in should not be instantiated if it is
- * disabled or the current page/operation does not require the plug-in's
- * functionality.
- *
- * Newer plug-ins support enable/disable and request filter settings that
- * enable the PKP library plug-in framework to lazy-load plug-ins only
- * when their functionality is actually being required for a request.
- *
- * For backwards compatibility we need to assume that older plug-ins
- * do not support lazy-load because their register() method and hooks
- * may have side-effects required on all requests. We have no way of
- * knowing on which pages these side effects are important so we need
- * to load legacy plug-ins on all pages.
- *
- * In these cases the register() function will be called on every request
- * when the category the plug-in belongs to is being loaded. This was the
- * default behavior before plug-in lazy load was introduced.
- *
- * Plug-ins that want to enable lazy-load have to include a 'lazy-load'
- * setting in their version.xml:
+ * @brief Abstract class for plugins.
  *
  * <lazy-load>1</lazy-load>
  */
@@ -47,10 +26,10 @@ define('PLUGIN_FILTER_DATAFILE', 'filterConfig.xml');
 
 class PKPPlugin {
     
-    /** @var $pluginPath string Path name to files for this plugin */
+    /** @var string $pluginPath string Path name to files for this plugin */
     public string $pluginPath = '';
 
-    /** @var $pluginCategory string Category name this plugin is registered to*/
+    /** @var string $pluginCategory string Category name this plugin is registered to*/
     public string $pluginCategory = '';
 
     /**
@@ -64,13 +43,6 @@ class PKPPlugin {
      */
     /**
      * Load and initialize the plug-in and register plugin hooks.
-     *
-     * For backwards compatibility this method will be called whenever
-     * the plug-in's category is being loaded. If, however, registerOn()
-     * returns an array then this method will only be called when
-     * the plug-in is enabled and an entry in the result set of
-     * registerOn() matches the current request operation. An empty array
-     * matches all request operations.
      * @param $category String Name of category plugin was registered to
      * @param $path String The path the plugin was found in
      * @return boolean True iff plugin registered successfully; if false,
@@ -111,9 +83,7 @@ class PKPPlugin {
     //
 
     /**
-     * Get the name of this plugin. The name must be unique within
-     * its category, and should be suitable for part of a filename
-     * (ie short, no spaces, and no dependencies on cases being unique).
+     * Get the name of this plugin.
      * @return string name of plugin
      */
     public function getName(): string {
@@ -144,9 +114,7 @@ class PKPPlugin {
     //
 
     /**
-     * Return a number indicating the sequence in which this plugin
-     * should be registered compared to others of its category.
-     * Higher = later.
+     * Return a number indicating the sequence in which this plugin.
      * @return integer
      */
     public function getSeq(): int {
@@ -163,8 +131,6 @@ class PKPPlugin {
 
     /**
      * Get a list of management actions in the form of a page => value pair.
-     * The management actions from this list are passed to the manage() function
-     * when called.
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
@@ -186,9 +152,7 @@ class PKPPlugin {
     }
 
     /**
-     * Determine whether or not this plugin should be hidden from the
-     * management interface. Useful in the case of derivative plugins,
-     * i.e. when a generic plugin registers a feed plugin.
+     * Determine whether or not this plugin should be hidden.
      * @return boolean
      */
     public function getHideManagement(): bool {
@@ -201,7 +165,6 @@ class PKPPlugin {
 
     /**
      * Get the filename of the ADODB schema for this plugin.
-     * Subclasses using SQL tables should override this.
      * @return string
      */
     public function getInstallSchemaFile(): ?string {
@@ -210,17 +173,14 @@ class PKPPlugin {
 
     /**
      * Get the filename of the install data for this plugin.
-     * Subclasses using SQL tables should override this.
-     * @return string|array|null one or more data files to be installed.
+     * @return string|array|null
      */
     public function getInstallDataFile() {
         return null;
     }
 
     /**
-     * Get the filename of the settings data for this plugin to install
-     * when the system is installed (i.e. site-level plugin settings).
-     * Subclasses using default settings should override this.
+     * Get the filename of the settings data for this plugin.
      * @return string
      */
     public function getInstallSitePluginSettingsFile(): ?string {
@@ -228,11 +188,7 @@ class PKPPlugin {
     }
 
     /**
-     * Get the filename of the settings data for this plugin to install
-     * when a new application context (e.g. journal, conference or press)
-     * is installed.
-     *
-     * Subclasses using default settings should override this.
+     * Get the filename of the settings data for this plugin.
      * @return string
      */
     public function getContextSpecificPluginSettingsFile(): ?string {
@@ -241,7 +197,6 @@ class PKPPlugin {
 
     /**
      * Get the filename of the email templates for this plugin.
-     * Subclasses using email templates should override this.
      * @return string
      */
     public function getInstallEmailTemplatesFile(): ?string {
@@ -250,7 +205,6 @@ class PKPPlugin {
 
     /**
      * Get the filename of the email template data for this plugin.
-     * Subclasses using email templates should override this.
      * @return string
      */
     public function getInstallEmailTemplateDataFile(): ?string {
@@ -258,13 +212,7 @@ class PKPPlugin {
     }
 
     /**
-     * Get the filename(s) of the filter configuration data for
-     * this plugin. Subclasses using filters can override this.
-     *
-     * The default implementation establishes "well known" locations
-     * for the filter configuration. If you keep your files in these
-     * locations then there's no need to override this method.
-     *
+     * Get the filename(s) of the filter configuration data for this plugin.
      * @return string|array one or more file locations.
      */
     public function getInstallFilterConfigFiles() {
@@ -362,7 +310,7 @@ class PKPPlugin {
      * Update a plugin setting within the given context.
      * @param $context array an array of context ids
      * @param $name the setting name
-     * @param $value mixed
+     * @param int $value int
      * @param $type string optional
      */
     public function updateContextSpecificSetting(array $context, string $name, $value, $type = null): void {
@@ -382,7 +330,7 @@ class PKPPlugin {
 
     /**
      * Load a PHP file from this plugin's installation directory.
-     * @param $class string
+     * @param string $class string
      */
     public function import($class): void {
         require_once($this->getPluginPath() . '/' . str_replace('.', '/', $class) . '.inc.php');
@@ -393,14 +341,6 @@ class PKPPlugin {
      * be used by custom plug-ins)
      *
      * NB: These methods may change without notice in the future!
-     *
-     * Generate the context for this plug-in's generic
-     * settings. This is an array with the id of the main context
-     * (e.g. journal, conference or press) as the first entry
-     * and all remaining entries set to 0. If the calling
-     * application doesn't support context then the this will
-     * return an empty array (e.g. harvester).
-     *
      * For site-wide plug-ins the context will be set to 0.
      *
      * @return array
@@ -455,9 +395,8 @@ class PKPPlugin {
 
     /**
      * Get the filename for the locale data for this plugin.
-     * @param $locale string
-     * @return string|array the locale file names (the scalar return value is supported for
-     * backwards compatibility only).
+     * @param string $locale string
+     * @return string|array
      */
     public function getLocaleFilename($locale) {
         $masterLocale = MASTER_LOCALE;
@@ -474,8 +413,7 @@ class PKPPlugin {
     }
 
     /**
-     * Get the path and filename of the help mapping file, if this
-     * plugin includes help files.
+     * Get the path and filename of the help mapping file.
      * @return string
      */
     public function getHelpMappingFilename(): string {
@@ -485,7 +423,7 @@ class PKPPlugin {
     /**
      * Callback used to install data files.
      * @param $hookName string
-     * @param $args array
+     * @param array $args array
      * @return boolean
      */
     public function installData($hookName, $args): bool {
@@ -514,7 +452,7 @@ class PKPPlugin {
     /**
      * Callback used to install settings on system install.
      * @param $hookName string
-     * @param $args array
+     * @param array $args array
      * @return boolean
      */
     public function installSiteSettings($hookName, $args): bool {
@@ -541,7 +479,7 @@ class PKPPlugin {
      * Callback used to install settings on new context
      * (e.g. journal, conference or press) creation.
      * @param $hookName string
-     * @param $args array
+     * @param array $args array
      * @return boolean
      */
     public function installContextSpecificSettings($hookName, $args): bool {
@@ -557,6 +495,7 @@ class PKPPlugin {
             if (!$isNewContext) return false;
 
             // Install context specific settings
+            /** @var PluginSettingsDAO $pluginSettingsDao */
             $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
             switch ($contextDepth) {
                 case 1:
@@ -578,14 +517,14 @@ class PKPPlugin {
     /**
      * Callback used to install email templates.
      * @param $hookName string
-     * @param $args array
+     * @param array $args array
      * @return boolean
      */
     public function installEmailTemplates($hookName, $args): bool {
-        $installer = $args[0]; /* @var $installer Installer */
+        $installer = $args[0]; /** @var Installer $installer */
         $result = $args[1];
 
-        $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO'); /* @var $emailTemplateDao EmailTemplateDAO */
+        $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO'); /** @var EmailTemplateDAO $emailTemplateDao */
         $sql = $emailTemplateDao->installEmailTemplates($this->getInstallEmailTemplatesFile(), true, null, true);
 
         if ($sql === false) {
@@ -606,13 +545,14 @@ class PKPPlugin {
     /**
      * Callback used to install email template data.
      * @param $hookName string
-     * @param $args array
+     * @param array $args array
      * @return boolean
      */
     public function installEmailTemplateData($hookName, $args): bool {
         $installer = $args[0];
         $result = $args[1];
 
+        /** @var EmailTemplateDAO $emailTemplateDao */
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
         foreach ($installer->installedLocales as $locale) {
             $filename = str_replace('{$installedLocale}', $locale, $this->getInstallEmailTemplateDataFile());
@@ -631,12 +571,13 @@ class PKPPlugin {
     /**
      * Callback used to install email template data on locale install.
      * @param $hookName string
-     * @param $args array
+     * @param array $args array
      * @return boolean
      */
     public function installLocale($hookName, $args): bool {
         $locale = $args[0];
         $filename = str_replace('{$installedLocale}', $locale, $this->getInstallEmailTemplateDataFile());
+        /** @var EmailTemplateDAO $emailTemplateDao  */
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
         $emailTemplateDao->installEmailTemplateData($filename);
         return false;
@@ -645,7 +586,7 @@ class PKPPlugin {
     /**
      * Callback used to install filters.
      * @param $hookName string
-     * @param $args array
+     * @param array $args array
      */
     public function installFilters($hookName, $args): bool {
         $installer = $args[0]; /* @var $installer Installer */
@@ -677,7 +618,7 @@ class PKPPlugin {
      * Called during the install process to install the plugin schema,
      * if applicable.
      * @param $hookName string
-     * @param $args array
+     * @param array $args array
      * @return boolean
      */
     public function updateSchema($hookName, $args): bool {
@@ -700,7 +641,7 @@ class PKPPlugin {
     /**
      * Extend the {url ...} smarty to support plugins.
      * @param $params array
-     * @param $smarty Smarty
+     * @param mixed $smarty Smarty
      * @return string
      */
     public function smartyPluginUrl(array $params, $smarty): string {
@@ -722,6 +663,7 @@ class PKPPlugin {
      * @return Version
      */
     public function getCurrentVersion() {
+        /** @var VersionDAO $versionDao */
         $versionDao = DAORegistry::getDAO('VersionDAO');
         $pluginPath = $this->getPluginPath();
         $product = basename($pluginPath);
@@ -751,5 +693,6 @@ class PKPPlugin {
         $contextList = $application->getContextList();
         return ucfirst(array_shift($contextList)).'SiteSettingsForm::execute';
     }
+
 }
 ?>
