@@ -589,7 +589,7 @@ class PKPApplication {
  * @param mixed $value
  * @return void
  */
-function define_exposed(string $name, $value): void {
+function define_exposed(string $name, mixed $value): void {
     PKPApplication::defineExposedConstant($name, $value);
 }
 ?>
