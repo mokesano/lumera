@@ -1232,5 +1232,6 @@ class PKPString {
         $string = trim($string, '-'); 
         return $string;
     }
+    
 }
 ?>
