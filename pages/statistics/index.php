@@ -11,9 +11,11 @@ declare(strict_types=1);
  * @class LoginHandler
  * @ingroup pages_login
  * 
- * @brief URL Router untuk modul statistics ScholarWizdam
+ * @brief URL Router untuk modul statistics.
+ * 
  */
 
+/** @var string $op */
 switch ($op) {
     case 'index':
     case 'journal':
@@ -21,4 +23,5 @@ switch ($op) {
         import('pages.statistics.JournalStatsHandler');
         break;
 }
+
 ?>

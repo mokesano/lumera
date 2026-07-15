@@ -90,7 +90,7 @@ class ScheduledTaskHelper {
      * frequency and its last run time.
      * @param string $className string
      * @param mixed $frequency XMLNode
-     * @return string
+     * @return bool
      */
     public static function checkFrequency($className, $frequency) {
         $isValid = true;
@@ -139,14 +139,13 @@ class ScheduledTaskHelper {
     }
 
     /**
-     * Notifies site administrator about the
-     * task execution result.
+     * Notifies site administrator about the task execution result.
      * @param int $id int
      * @param string $name string
      * @param bool $result boolean
      * @param $executionLogFile string Task execution log file path
      */
-    public static function notifyExecutionResult($id, $name, $result, $executionLogFile = '') {
+    public function notifyExecutionResult($id, $name, $result, $executionLogFile = '') {
         $reportErrorOnly = Config::getVar('general', 'scheduled_tasks_report_error_only', true);
 
         if (!$result || !$reportErrorOnly) {
@@ -189,7 +188,6 @@ class ScheduledTaskHelper {
     //
     /**
      * Clear tasks execution log files.
-     * [MODERNISASI] Defined as static
      */
     public static function clearExecutionLogs() {
         import('lib.pkp.classes.file.PrivateFileManager');
@@ -283,7 +281,6 @@ class ScheduledTaskHelper {
 
     /**
      * Check if a numeric value is within the specified range.
-     * [MODERNISASI] DEFINED AS PUBLIC STATIC (PHP 8 Requirement)
      * @param int $value int
      * @param int $min int
      * @param int $max int

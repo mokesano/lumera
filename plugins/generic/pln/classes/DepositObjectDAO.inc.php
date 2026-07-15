@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class DepositObjectDAO
  * @ingroup plugins_generic_pln
  *
- * @brief Operations for adding a PLN deposit object
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Operations for adding a PLN deposit object.
  */
 
 class DepositObjectDAO extends DAO {
@@ -30,7 +28,10 @@ class DepositObjectDAO extends DAO {
      */
     public function DepositObjectDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::DepositObjectDAO(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
         call_user_func_array(array($this, '__construct'), $args);
@@ -97,6 +98,7 @@ class DepositObjectDAO extends DAO {
      * @param string $objectType
      */
     public function markHavingUpdatedContent($journalId, $objectType) {
+        /** @var DepositDAO $depositDao */
         $depositDao = DAORegistry::getDAO('DepositDAO');
     
         switch ($objectType) {
@@ -177,6 +179,7 @@ class DepositObjectDAO extends DAO {
     
         switch ($objectType) {
             case PLN_PLUGIN_DEPOSIT_OBJECT_ARTICLE:
+                /** @var PublishedArticleDAO $published_article_dao */
                 $published_article_dao = DAORegistry::getDAO('PublishedArticleDAO');
                 $result = $this->retrieve(
                     'SELECT pa.article_id FROM published_articles pa
@@ -193,6 +196,7 @@ class DepositObjectDAO extends DAO {
                 $result->Close();
                 break;
             case PLN_PLUGIN_DEPOSIT_OBJECT_ISSUE:
+                /** @var IssueDAO $issue_dao */
                 $issue_dao = DAORegistry::getDAO('IssueDAO');
                 $result = $this->retrieve(
                     'SELECT i.issue_id FROM issues i
@@ -289,11 +293,24 @@ class DepositObjectDAO extends DAO {
     }
 
     /**
+     * Delete all deposit objects for a given journal, including orphaned
+     * objects not yet attached to any deposit (deposit_id IS NULL).
+     * @param int $journalId
+     * @return boolean
+     */
+    public function deleteDepositObjectsByJournalId($journalId) {
+        return $this->update(
+            'DELETE FROM pln_deposit_objects WHERE journal_id = ?',
+            (int) $journalId
+        );
+    }
+
+    /**
      * Get the ID of the last inserted deposit object.
      * @return int
      */
     public function getInsertDepositObjectId() {
-        return $this->getInsertId('pln_deposit_objects', 'object_id');
+        return $this->getInsertId('pln_deposit_objects', 'deposit_object_id');
     }
 
     /**
@@ -324,5 +341,6 @@ class DepositObjectDAO extends DAO {
 
         return $depositObject;
     }
+
 }
 ?>

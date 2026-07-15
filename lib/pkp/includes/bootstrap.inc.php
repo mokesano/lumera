@@ -14,16 +14,14 @@ declare(strict_types=1);
  *
  * @ingroup index
  *
- * @brief Core system initialization code.
- * [WIZDAM EDITION] Modernized Kernel Bootstrap.
+ * @brief Core system initialization code, Modernized Kernel Bootstrap.
  */
 
 /**
  * Basic initialization (pre-classloading).
  */
 
-// [WIZDAM] Use Native PHP Constants
-// PHP 7.4+ guarantees DIRECTORY_SEPARATOR and PATH_SEPARATOR exist.
+// [LUMERA] Use Native PHP Constants
 // We map ENV_SEPARATOR to PATH_SEPARATOR for legacy compatibility throughout the codebase.
 define('ENV_SEPARATOR', PATH_SEPARATOR);
 
@@ -31,8 +29,7 @@ define('ENV_SEPARATOR', PATH_SEPARATOR);
 define('BASE_SYS_DIR', dirname(INDEX_FILE_LOCATION));
 chdir(BASE_SYS_DIR);
 
-// [WIZDAM] Optimized Path Configuration
-// We define paths in an array for readability, then implode them.
+// [LUMERA] Optimized Path Configuration
 $includePaths = [
     '.',
     BASE_SYS_DIR . '/classes',
@@ -50,16 +47,13 @@ $includePaths = [
 
 ini_set('include_path', implode(ENV_SEPARATOR, $includePaths));
 
-// System-wide functions (Global Helper Functions)
-// Loads import(), String wrapper, etc.
+// System-wide functions (Global Helper Functions) Loads import(), String wrapper, etc.
 require('./lib/pkp/includes/functions.inc.php');
 
-// Initialize the application environment
-// [WIZDAM] We use the import function to load the core Application class.
+// [LUMERA] Initialize the application environment.
 import('classes.core.Application');
 
-// [WIZDAM] Instantiate the Application Singleton.
-// The constructor of Application registers itself to the Registry.
+// [LUMERA] Instantiate the Application Singleton.
 // This prepares system for the Application::get()->execute() call in index.php.
 new Application();
 

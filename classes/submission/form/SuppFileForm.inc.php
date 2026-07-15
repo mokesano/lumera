@@ -50,6 +50,7 @@ class SuppFileForm extends Form {
         $this->article = $article;
 
         if (isset($suppFileId) && !empty($suppFileId)) {
+            /** @var SuppFileDAO $suppFileDao  */
             $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
             $this->suppFile = $suppFileDao->getSuppFile($suppFileId, $article->getId());
             if (isset($this->suppFile)) {
@@ -65,6 +66,9 @@ class SuppFileForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param object $article Article
+     * @param object $journal Journal
+     * @param int|null $suppFileId (optional)
      */
     public function SuppFileForm($article, $journal, $suppFileId = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -139,7 +143,7 @@ class SuppFileForm extends Form {
             $templateMgr->assign('suppFile', $this->suppFile);
         }
         $templateMgr->assign('helpTopicId','submission.supplementaryFiles');
-        // consider public identifiers
+        // Consider public identifiers
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
         $templateMgr->assign('pubIdPlugins', $pubIdPlugins);
 
@@ -155,6 +159,7 @@ class SuppFileForm extends Form {
         // [WIZDAM] Singleton Request
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
+        /** @var JournalDAO $journalDao  */
         $journalDao = DAORegistry::getDAO('JournalDAO');
 
         $publicSuppFileId = $this->getData('publicSuppFileId');
@@ -192,8 +197,8 @@ class SuppFileForm extends Form {
                 'showReviewers' => $suppFile->getShowReviewers() == 1 ? 1 : 0,
                 'publicSuppFileId' => $suppFile->getPubId('publisher-id')
             ];
-
         } else {
+            $suppFile = null;
             $this->_data = [
                 'type' => '',
                 'showReviewers' => 1
@@ -244,6 +249,7 @@ class SuppFileForm extends Form {
     public function execute($fileName = null, $createRemote = false) {
         import('classes.file.ArticleFileManager');
         $articleFileManager = new ArticleFileManager($this->article->getId());
+        /** @var SuppFileDAO $suppFileDao  */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
 
         $fileName = isset($fileName) ? $fileName : 'uploadSuppFile';
@@ -302,6 +308,7 @@ class SuppFileForm extends Form {
         $articleSearchIndex->articleChangesFinished();
 
         // Stamp the article modification (for OAI)
+        /** @var ArticleDAO $articleDao  */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $articleDao->updateArticle($this->article);
 
@@ -331,5 +338,6 @@ class SuppFileForm extends Form {
         $pubIdPluginHelper = new PubIdPluginHelper();
         $pubIdPluginHelper->execute($this, $suppFile);
     }
+
 }
 ?>
