@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @ingroup core
  *
  * @brief Class mapping an HTTP request to a handler or context.
- * [WIZDAM EDITION] Smart Routing, Magic Methods, Secure Web Cache, Strict Fixed
+ * [LUMERA] Smart Routing, Magic Methods, Secure Web Cache, Strict Fixed
  */
 
 define('ROUTER_DEFAULT_PAGE', './pages/index/index.php');
@@ -53,7 +53,7 @@ class PKPPageRouter extends PKPRouter {
     public function PKPPageRouter() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::PKPPageRouter(). Please refactor to parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -81,14 +81,15 @@ class PKPPageRouter extends PKPRouter {
     /**
      * Determine whether or not the request is cacheable.
      * @param PKPRequest $request
-     * @param bool $testOnly required for unit test
+     * 
+     * @param bool $testOnly
      * @return bool
      */
     public function isCacheable($request, $testOnly = false) {
         if (defined('SESSION_DISABLE_INIT') && !$testOnly) return false;
         if (!Config::getVar('general', 'installed')) return false;
         
-        // [WIZDAM FIX] Check $_POST strictness
+        // [FIX] Check $_POST strictness
         if (!empty($_POST) || Validation::isLoggedIn()) return false;
 
         if ($request->isPathInfoEnabled()) {
@@ -96,7 +97,7 @@ class PKPPageRouter extends PKPRouter {
         } else {
             $application = $this->getApplication();
             $ok = array_merge($application->getContextList(), ['page', 'op', 'path']);
-            // [WIZDAM FIX] PHP 8 safe array comparison
+            // [FIX] PHP 8 safe array comparison
             if (!empty($_GET) && count(array_diff(array_keys($_GET), $ok)) != 0) {
                 return false;
             }
@@ -109,8 +110,9 @@ class PKPPageRouter extends PKPRouter {
 
     /**
      * Get the page requested in the URL.
-     * @param PKPRequest $request the request to be routed
-     * @return string the page path
+     * 
+     * @param PKPRequest $request
+     * @return string
      */
     public function getRequestedPage($request) {
         if (!isset($this->_page)) {
@@ -147,9 +149,8 @@ class PKPPageRouter extends PKPRouter {
     /**
      * Get the filename to use for caching the current request.
      * @see PKPRouter::getCacheFilename()
-     * [WIZDAM NOTE] Ini adalah "Jembatan" antara Router dan Dispatcher.
-     * Dispatcher menggunakan nama file yang dihasilkan di sini untuk menyimpan/membaca cache.
-     * Kita tetap menggunakan .html agar readfile() bisa langsung menyajikannya ke browser.
+     * [NOTE] Lumera: "Jembatan" antara Router dan Dispatcher.
+     * 
      * @param PKPRequest $request
      * @return string the cache filename
      */
@@ -166,7 +167,7 @@ class PKPPageRouter extends PKPRouter {
                     $id .= (is_scalar($val) ? $val : '') . '-'; // [WIZDAM] PHP 8 Scalar check
                 }
                 
-                // [WIZDAM FIX] Strict scalar checks for concatenation
+                // [FIX] Strict scalar checks for concatenation
                 $p = $request->getUserVar('page');
                 $o = $request->getUserVar('op');
                 $pa = $request->getUserVar('path');
@@ -184,7 +185,8 @@ class PKPPageRouter extends PKPRouter {
     /**
      * Route the request to the appropriate handler.
      * @see PKPRouter::route()
-     * @param PKPRequest $request the request to be routed
+     * 
+     * @param PKPRequest $request
      */
     public function route($request) {
         // Determine the requested page and operation
@@ -206,10 +208,7 @@ class PKPPageRouter extends PKPRouter {
         // Determine the page index file.
         $sourceFile = sprintf('pages/%s/index.php', $page);
 
-        // [WIZDAM] Protocol 3 Exception: HOOKS
-        // Hook 'LoadHandler' requires parameters by reference because plugins 
-        // MAY modify which page/handler serves the request. 
-        // We keep '&' here strictly for this reason.
+        // [LUMERA] Protocol 3 Exception: HOOKS
         if (!HookRegistry::dispatch('LoadHandler', [&$page, &$op, &$sourceFile])) {
             if (file_exists($sourceFile)) require('./'.$sourceFile);
             elseif (file_exists('lib/pkp/'.$sourceFile)) require('./lib/pkp/'.$sourceFile);
@@ -226,7 +225,7 @@ class PKPPageRouter extends PKPRouter {
 
         if (empty($op)) $op = ROUTER_DEFAULT_OP;
 
-        // ----- [WIZDAM] STRICT CAMELCASE ROUTING (OPTIMIZED + GUARDED) -----
+        // [LUMERA] STRICT CAMELCASE ROUTING
         if (strpos($op, '-') !== false && defined('HANDLER_CLASS')) {
             // Guard: buang karakter selain huruf kecil, angka, dan tanda hubung
             $op = preg_replace('/[^a-z0-9-]/', '', strtolower($op));
@@ -238,7 +237,6 @@ class PKPPageRouter extends PKPRouter {
                 $op = $callableOp;
             }
         }
-        // ------------------------------------------------
         
         // 404 Check
         $methods = [];
@@ -249,7 +247,7 @@ class PKPPageRouter extends PKPRouter {
             }
         }
         
-        // [WIZDAM FIX] Magic Method Bypass
+        // [FIX] Magic Method Bypass
         if (!in_array(strtolower_codesafe($op), $methods)) {
             $hasMagic = false;
             if (defined('HANDLER_CLASS') && class_exists(HANDLER_CLASS)) {
@@ -279,14 +277,15 @@ class PKPPageRouter extends PKPRouter {
     /**
      * Generate a URL.
      * @see PKPRouter::url()
+     * 
      * @param PKPRequest $request
-     * @param string|null $newContext optional new context to use in the URL
-     * @param string|null $page optional page to use in the URL
-     * @param string|null $op optional operation to use in the URL
-     * @param string|array|null $path additional path info to use in the URL
-     * @param array|null $params additional query parameters to use in the URL
-     * @param string|null $anchor optional anchor to use in the URL
-     * @param bool $escape whether to escape the URL
+     * @param string|null $newContext
+     * @param string|null $page
+     * @param string|null $op
+     * @param string|array|null $path
+     * @param array|null $params
+     * @param string|null $anchor
+     * @param bool $escape
      * @return string
      */
     public function url($request, $newContext = null, $page = null, $op = null, $path = null, $params = null, $anchor = null, $escape = false) {
@@ -302,7 +301,7 @@ class PKPPageRouter extends PKPRouter {
         if (empty($path)) {
             $additionalPath = [];
         } else {
-            // [CRITICAL FIX] Strict type casting for rawurlencode
+            // [FIX] Strict type casting for rawurlencode
             if (is_array($path)) {
                 // Ensure every element is a string before encoding
                 $additionalPath = array_map(function($item) {
@@ -322,12 +321,11 @@ class PKPPageRouter extends PKPRouter {
         }
 
         // Page and Operation
-        // [WIZDAM FIX] Replaced is_a() with instanceof
         $currentRequestIsAPageRequest = ($request->getRouter() instanceof PKPPageRouter);
 
         // Determine the operation
         if ($op) {
-            // [CRITICAL FIX] Cast to string for safety
+            // [FIX] Cast to string for safety
             $op = rawurlencode((string)$op);
         } else {
             if (empty($newContext) && empty($page) && $currentRequestIsAPageRequest) {
@@ -394,9 +392,10 @@ class PKPPageRouter extends PKPRouter {
     /**
      * Handle an authorization failure.
      * @see PKPRouter::handleAuthorizationFailure()
+     * 
      * @param PKPRequest $request
      * @param string $authorizationMessage
-     * @return string the response to be sent to the client
+     * @return string
      */
     public function handleAuthorizationFailure($request, $authorizationMessage) {
         if (!$request->getUser()) Validation::redirectLogin();
@@ -409,9 +408,10 @@ class PKPPageRouter extends PKPRouter {
     
     /**
      * Retrieve part of the current requested url
-     * @param callable $callback the callback to retrieve the url part
-     * @param PKPRequest $request the request to be routed
-     * @return mixed the result of the callback
+     * 
+     * @param callable $callback
+     * @param PKPRequest $request
+     * @return mixed
      */
     public function _getRequestedUrlParts($callback, $request) {
         $url = null;
@@ -434,10 +434,11 @@ class PKPPageRouter extends PKPRouter {
     /**
      * Authorize, initialize, and call the request handler.
      * @see PKPRouter::_authorizeInitializeAndCallRequest()
-     * @param callable $serviceEndpoint the handler and operation to call
-     * @param PKPRequest $request the request to be routed
-     * @param array $args the arguments to pass to the handler
-     * @param bool $validate whether to call the handler's validate() method before execution
+     * 
+     * @param callable $serviceEndpoint
+     * @param PKPRequest $request
+     * @param array $args
+     * @param bool $validate
      */
     public function _authorizeInitializeAndCallRequest($serviceEndpoint, $request, $args, $validate = true) {
         assert(is_callable($serviceEndpoint));
@@ -490,5 +491,6 @@ class PKPPageRouter extends PKPRouter {
 
         if (is_string($result)) echo $result;
     }
+
 }
 ?>
