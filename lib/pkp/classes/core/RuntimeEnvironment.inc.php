@@ -12,28 +12,21 @@ declare(strict_types=1);
  * @ingroup core
  *
  * @brief Class that describes a runtime environment.
- * [WIZDAM EDITION] Refactored for PHP 7.4+/8.x Strict Standards & Logic Fixes.
+ * 
  */
 
 class RuntimeEnvironment {
-    /** * @var string 
-     * [WIZDAM] Renamed from _phpVersionMin. Public for legacy compat.
-     */
+
+    /** @var string */
     public string $phpVersionMin;
 
-    /** * @var string|null 
-     * [WIZDAM] Renamed from _phpVersionMax.
-     */
+    /** @var string|null */
     public ?string $phpVersionMax;
 
-    /** * @var array 
-     * [WIZDAM] Renamed from _phpExtensions.
-     */
+    /** @var array */
     public array $phpExtensions;
 
-    /** * @var array 
-     * [WIZDAM] Renamed from _externalPrograms.
-     */
+    /** @var array */
     public array $externalPrograms;
 
     /**
@@ -52,6 +45,7 @@ class RuntimeEnvironment {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param string $phpVersionMin
      */
     public function RuntimeEnvironment(
         $phpVersionMin = PHP_REQUIRED_VERSION, 
@@ -115,22 +109,21 @@ class RuntimeEnvironment {
      */
     public function isCompatible(): bool {
         // 1. Check Minimum PHP version
-        // [WIZDAM] Replaced legacy checkPhpVersion with native version_compare
         if (version_compare(PHP_VERSION, $this->phpVersionMin, '<')) {
-            error_log('Wizdam Environment: PHP version ' . PHP_VERSION . ' is less than required ' . $this->phpVersionMin);
+            error_log('Lumera Environment: PHP version ' . PHP_VERSION . ' is less than required ' . $this->phpVersionMin);
             return false;
         }
 
         // 2. Check Maximum PHP version (if set)
         if ($this->phpVersionMax !== null && version_compare(PHP_VERSION, $this->phpVersionMax, '>')) {
-            error_log('Wizdam Environment: PHP version ' . PHP_VERSION . ' is greater than allowed ' . $this->phpVersionMax);
+            error_log('Lumera Environment: PHP version ' . PHP_VERSION . ' is greater than allowed ' . $this->phpVersionMax);
             return false;
         }
 
         // 3. Check PHP extensions
         foreach ($this->phpExtensions as $requiredExtension) {
             if (!extension_loaded($requiredExtension)) {
-                error_log('Wizdam Environment: Missing required PHP extension: ' . $requiredExtension);
+                error_log('Lumera Environment: Missing required PHP extension: ' . $requiredExtension);
                 return false;
             }
         }
@@ -141,16 +134,14 @@ class RuntimeEnvironment {
             
             // Check if configured path exists
             if (empty($externalProgramPath) || !file_exists($externalProgramPath)) {
-                error_log("Wizdam Environment: Configured path for '$requiredProgram' not found: " . (string)$externalProgramPath);
+                error_log("Lumera Environment: Configured path for '$requiredProgram' not found: " . (string)$externalProgramPath);
                 return false;
             }
 
-            // [WIZDAM BUG FIX] 
-            // Original code checked '!is_executable($filename)' but $filename was undefined.
             // Corrected to check $externalProgramPath.
             if (function_exists('is_executable')) {
                 if (!is_executable($externalProgramPath)) {
-                    error_log("Wizdam Environment: File at '$externalProgramPath' is not executable. Check permissions.");
+                    error_log("Lumera Environment: File at '$externalProgramPath' is not executable. Check permissions.");
                     return false;
                 }
             }
@@ -159,5 +150,6 @@ class RuntimeEnvironment {
         // Compatibility check was successful
         return true;
     }
+
 }
 ?>
