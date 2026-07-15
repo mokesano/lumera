@@ -39,8 +39,7 @@ class UserImportExportPlugin extends ImportExportPlugin {
     }
 
     /**
-     * Get the name of this plugin. The name must be unique within
-     * its category.
+     * Get the name of this plugin.
      * @return string name of plugin
      */
     public function getName(): string {
@@ -66,11 +65,10 @@ class UserImportExportPlugin extends ImportExportPlugin {
     /**
      * Display the plugin UI.
      * @param array $args
-     * @param object $request
-     * @return void
+     * @param PKPRequest $request
      */
     public function display($args, $request): void {
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         parent::display($args, $request);
 
         $templateMgr->assign('roleOptions', [
@@ -89,9 +87,12 @@ class UserImportExportPlugin extends ImportExportPlugin {
 
         /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
-        $journal = Request::getJournal();
         
-        // Ensure strictly typed time limit
+        $journal = $request->getJournal();
+        if (!$journal) {
+            return; 
+        }
+        
         set_time_limit(0);
 
         $command = array_shift($args);
@@ -101,14 +102,13 @@ class UserImportExportPlugin extends ImportExportPlugin {
                 $this->import('UserXMLParser');
                 $templateMgr->assign('helpTopicId', 'journal.users.importUsers');
 
-                $sendNotify = (bool) Request::getUserVar('sendNotify');
-                $continueOnError = (bool) Request::getUserVar('continueOnError');
+                $sendNotify = (bool) $request->getUserVar('sendNotify');
+                $continueOnError = (bool) $request->getUserVar('continueOnError');
 
                 import('lib.pkp.classes.file.FileManager');
                 $fileManager = new FileManager();
                 
                 if (($userFile = $fileManager->getUploadedFilePath('userFile')) !== false) {
-                    // Import the uploaded file
                     $parser = new UserXMLParser($journal->getId());
                     $users = $parser->parseData($userFile);
 
@@ -121,68 +121,68 @@ class UserImportExportPlugin extends ImportExportPlugin {
                         $usersRoles[] = $currentRoles;
                     }
 
-                    // Use assign instead of assign_by_ref
-                    $templateMgr->assign('users', $users);
-                    $templateMgr->assign('usersRoles', $usersRoles);
-                    $templateMgr->assign('sendNotify', $sendNotify);
-                    $templateMgr->assign('continueOnError', $continueOnError);
-                    $templateMgr->assign('errors', $parser->errors);
+                    $templateMgr->assign([
+                        'users' => $users,
+                        'usersRoles' => $usersRoles,
+                        'sendNotify' => $sendNotify,
+                        'continueOnError' => $continueOnError,
+                        'errors' => $parser->getErrors()
+                    ]);
 
-                    // Show confirmation form
                     $templateMgr->display($this->getTemplatePath() . 'importUsersConfirm.tpl');
                 }
                 break;
 
             case 'import':
                 $this->import('UserXMLParser');
-                $userKeys = (array) Request::getUserVar('userKeys');
+                $userKeys = (array) $request->getUserVar('userKeys');
                 if (empty($userKeys)) $userKeys = [];
                 
-                $sendNotify = (bool) Request::getUserVar('sendNotify');
-                $continueOnError = (bool) Request::getUserVar('continueOnError');
+                $sendNotify = (bool) $request->getUserVar('sendNotify');
+                $continueOnError = (bool) $request->getUserVar('continueOnError');
 
                 $users = [];
                 foreach ($userKeys as $i) {
                     $newUser = new ImportedUser();
-                    $newUser->setFirstName((string) Request::getUserVar($i . '_firstName'));
-                    $newUser->setMiddleName((string) Request::getUserVar($i . '_middleName'));
-                    $newUser->setLastName((string) Request::getUserVar($i . '_lastName'));
-                    $newUser->setUsername((string) Request::getUserVar($i . '_username'));
-                    $newUser->setEmail((string) Request::getUserVar($i . '_email'));
+                    $newUser->setFirstName((string) $request->getUserVar($i . '_firstName'));
+                    $newUser->setMiddleName((string) $request->getUserVar($i . '_middleName'));
+                    $newUser->setLastName((string) $request->getUserVar($i . '_lastName'));
+                    $newUser->setUsername((string) $request->getUserVar($i . '_username'));
+                    $newUser->setEmail((string) $request->getUserVar($i . '_email'));
 
                     $locales = [];
-                    $userLocales = Request::getUserVar($i . '_locales');
-                    if ($userLocales !== null && is_array($userLocales)) {
+                    $userLocales = $request->getUserVar($i . '_locales');
+                    if (is_array($userLocales)) {
                         foreach ($userLocales as $locale) {
                             $locales[] = $locale;
                         }
                     }
                     $newUser->setLocales($locales);
                     
-                    $newUser->setSignature(Request::getUserVar($i . '_signature'), null);
-                    $newUser->setBiography(Request::getUserVar($i . '_biography'), null);
-                    $newUser->setTemporaryInterests((string) Request::getUserVar($i . '_interests'));
-                    $newUser->setGossip(Request::getUserVar($i . '_gossip'), null);
-                    $newUser->setCountry((string) Request::getUserVar($i . '_country'));
-                    $newUser->setMailingAddress((string) Request::getUserVar($i . '_mailingAddress'));
-                    $newUser->setFax((string) Request::getUserVar($i . '_fax'));
-                    $newUser->setPhone((string) Request::getUserVar($i . '_phone'));
-                    $newUser->setUrl((string) Request::getUserVar($i . '_url'));
-                    $newUser->setAffiliation(Request::getUserVar($i . '_affiliation'), null);
-                    $newUser->setGender((string) Request::getUserVar($i . '_gender'));
-                    $newUser->setInitials((string) Request::getUserVar($i . '_initials'));
-                    $newUser->setSalutation((string) Request::getUserVar($i . '_salutation'));
-                    $newUser->setPassword((string) Request::getUserVar($i . '_password'));
-                    $newUser->setMustChangePassword((bool) Request::getUserVar($i . '_mustChangePassword'));
-                    $newUser->setUnencryptedPassword((string) Request::getUserVar($i . '_unencryptedPassword'));
+                    $newUser->setSignature($request->getUserVar($i . '_signature'), null);
+                    $newUser->setBiography($request->getUserVar($i . '_biography'), null);
+                    $newUser->setTemporaryInterests((string) $request->getUserVar($i . '_interests'));
+                    $newUser->setGossip($request->getUserVar($i . '_gossip'), null);
+                    $newUser->setCountry((string) $request->getUserVar($i . '_country'));
+                    $newUser->setMailingAddress((string) $request->getUserVar($i . '_mailingAddress'));
+                    $newUser->setFax((string) $request->getUserVar($i . '_fax'));
+                    $newUser->setPhone((string) $request->getUserVar($i . '_phone'));
+                    $newUser->setUrl((string) $request->getUserVar($i . '_url'));
+                    $newUser->setAffiliation($request->getUserVar($i . '_affiliation'), null);
+                    $newUser->setGender((string) $request->getUserVar($i . '_gender'));
+                    $newUser->setInitials((string) $request->getUserVar($i . '_initials'));
+                    $newUser->setSalutation((string) $request->getUserVar($i . '_salutation'));
+                    $newUser->setPassword((string) $request->getUserVar($i . '_password'));
+                    $newUser->setMustChangePassword((bool) $request->getUserVar($i . '_mustChangePassword'));
+                    $newUser->setUnencryptedPassword((string) $request->getUserVar($i . '_unencryptedPassword'));
 
-                    $newUserRoles = Request::getUserVar($i . '_roles');
-                    if (is_array($newUserRoles) && count($newUserRoles) > 0) {
+                    $newUserRoles = $request->getUserVar($i . '_roles');
+                    if (is_array($newUserRoles)) {
                         foreach ($newUserRoles as $newUserRole) {
-                            if ($newUserRole != '') {
+                            if ($newUserRole !== '') {
                                 $role = new Role();
                                 $role->setRoleId(RoleDAO::getRoleIdFromPath($newUserRole));
-                                $newUser->AddRole($role);
+                                $newUser->addRole($role);
                             }
                         }
                     }
@@ -193,9 +193,10 @@ class UserImportExportPlugin extends ImportExportPlugin {
                 $parser->setUsersToImport($users);
                 
                 if (!$parser->importUsers($sendNotify, $continueOnError)) {
-                    // Failures occurred
-                    $templateMgr->assign('isError', true);
-                    $templateMgr->assign('errors', $parser->getErrors());
+                    $templateMgr->assign([
+                        'isError' => true,
+                        'errors' => $parser->getErrors()
+                    ]);
                 }
                 
                 $templateMgr->assign('importedUsers', $parser->getImportedUsers());
@@ -205,14 +206,16 @@ class UserImportExportPlugin extends ImportExportPlugin {
             case 'exportAll':
                 $this->import('UserExportDom');
                 $usersResult = $roleDao->getUsersByJournalId($journal->getId());
-                $users = $usersResult->toArray();
+                $users = $usersResult ? $usersResult->toArray() : [];
                 
                 $userExportDom = new UserExportDom();
                 $doc = $userExportDom->exportUsers($journal, $users);
                 
-                header("Content-Type: application/xml");
-                header("Cache-Control: private");
-                header("Content-Disposition: attachment; filename=\"users.xml\"");
+                if (!headers_sent()) {
+                    header("Content-Type: application/xml");
+                    header("Cache-Control: private");
+                    header("Content-Disposition: attachment; filename=\"users.xml\"");
+                }
                 echo XMLCustomWriter::getXML($doc);
                 break;
 
@@ -221,11 +224,13 @@ class UserImportExportPlugin extends ImportExportPlugin {
                 $users = [];
                 $rolePaths = [];
                 
-                $roles = (array) Request::getUserVar('roles');
+                $roles = (array) $request->getUserVar('roles');
                 foreach ($roles as $rolePath) {
                     $roleId = $roleDao->getRoleIdFromPath($rolePath);
                     $thisRoleUsers = $roleDao->getUsersByRoleId($roleId, $journal->getId());
-                    foreach ($thisRoleUsers->toArray() as $user) {
+                    $roleUsersArray = $thisRoleUsers ? $thisRoleUsers->toArray() : [];
+                    
+                    foreach ($roleUsersArray as $user) {
                         $users[$user->getId()] = $user;
                     }
                     $rolePaths[] = $rolePath;
@@ -235,9 +240,11 @@ class UserImportExportPlugin extends ImportExportPlugin {
                 $userExportDom = new UserExportDom();
                 $doc = $userExportDom->exportUsers($journal, $users, $rolePaths);
                 
-                header("Content-Type: application/xml");
-                header("Cache-Control: private");
-                header("Content-Disposition: attachment; filename=\"users.xml\"");
+                if (!headers_sent()) {
+                    header("Content-Type: application/xml");
+                    header("Cache-Control: private");
+                    header("Content-Disposition: attachment; filename=\"users.xml\"");
+                }
                 echo XMLCustomWriter::getXML($doc);
                 break;
 
@@ -259,35 +266,38 @@ class UserImportExportPlugin extends ImportExportPlugin {
         $journalPath = array_shift($args);
         $flags = $args;
 
-        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
-        $userDao = DAORegistry::getDAO('UserDAO'); /** @var UserDAO $userDao */
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
+
+        if (!$journalDao) {
+            echo "Error: JournalDAO not found.\n";
+            return false;
+        }
 
         $journal = $journalDao->getJournalByPath($journalPath);
 
         if (!$journal) {
-            if ($journalPath != '') {
+            if ($journalPath !== '') {
                 echo __('plugins.importexport.users.import.errorsOccurred') . ":\n";
                 echo __('plugins.importexport.users.unknownJournal', ['journalPath' => $journalPath]) . "\n\n";
             }
             $this->usage($scriptName);
-            return;
+            return false;
         }
 
         switch ($command) {
             case 'import':
                 $this->import('UserXMLParser');
 
-                $sendNotify = in_array('send_notify', $flags);
-                $continueOnError = in_array('continue_on_error', $flags);
+                $sendNotify = in_array('send_notify', $flags, true);
+                $continueOnError = in_array('continue_on_error', $flags, true);
 
                 import('lib.pkp.classes.file.FileManager');
 
-                // Import the uploaded file
                 $parser = new UserXMLParser($journal->getId());
                 $users = $parser->parseData($xmlFile);
 
                 if (!$parser->importUsers($sendNotify, $continueOnError)) {
-                    // Failure.
                     echo __('plugins.importexport.users.import.errorsOccurred') . ":\n";
                     foreach ($parser->getErrors() as $error) {
                         echo "\t$error\n";
@@ -295,29 +305,36 @@ class UserImportExportPlugin extends ImportExportPlugin {
                     return false;
                 }
 
-                // Success.
                 echo __('plugins.importexport.users.import.usersWereImported') . ":\n";
                 foreach ($parser->getImportedUsers() as $user) {
-                    echo "\t" . $user->getUserName() . "\n";
+                    echo "\t" . $user->getUsername() . "\n";
                 }
 
                 return true;
 
             case 'export':
                 $this->import('UserExportDom');
-                $roleDao = DAORegistry::getDAO('RoleDAO'); /** @var RoleDAO $roleDao */
+                /** @var RoleDAO $roleDao */
+                $roleDao = DAORegistry::getDAO('RoleDAO');
+                if (!$roleDao) {
+                    echo "Error: RoleDAO not found.\n";
+                    return false;
+                }
+
                 $rolePaths = null;
                 
                 if (empty($args)) {
                     $usersResult = $roleDao->getUsersByJournalId($journal->getId());
-                    $users = $usersResult->toArray();
+                    $users = $usersResult ? $usersResult->toArray() : [];
                 } else {
                     $users = [];
                     $rolePaths = [];
                     foreach ($args as $rolePath) {
                         $roleId = $roleDao->getRoleIdFromPath($rolePath);
                         $thisRoleUsers = $roleDao->getUsersByRoleId($roleId, $journal->getId());
-                        foreach ($thisRoleUsers->toArray() as $user) {
+                        $roleUsersArray = $thisRoleUsers ? $thisRoleUsers->toArray() : [];
+                        
+                        foreach ($roleUsersArray as $user) {
                             $users[$user->getId()] = $user;
                         }
                         $rolePaths[] = $rolePath;
@@ -337,14 +354,16 @@ class UserImportExportPlugin extends ImportExportPlugin {
                 fwrite($h, XMLCustomWriter::getXML($doc));
                 fclose($h);
                 return true;
+
+            default:
+                $this->usage($scriptName);
+                return false;
         }
-        $this->usage($scriptName);
     }
 
     /**
      * Display the command-line usage information
      * @param string $scriptName
-     * @return void
      */
     public function usage($scriptName): void {
         echo __('plugins.importexport.users.cliUsage', [
@@ -352,6 +371,6 @@ class UserImportExportPlugin extends ImportExportPlugin {
             'pluginName' => $this->getName()
         ]) . "\n";
     }
-    
+
 }
 ?>

@@ -131,5 +131,6 @@ class Request extends PKPRequest {
         $instance = PKPRequest::_checkThis();
         return $instance->_delegateToRouter('redirectHome');
     }
+    
 }
 ?>

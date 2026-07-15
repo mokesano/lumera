@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 import('lib.pkp.classes.xml.XMLCustomWriter');
 
-define('USERS_DTD_URL', 'http://pkp.sfu.ca/ojs/dtds/users.dtd');
-define('USERS_DTD_ID', '-//PKP/OJS Users XML//EN');
+define('USERS_DTD_PATH', __DIR__ . '/users.dtd');
+define('USERS_DTD_ID', '-//Sangia/Lumera Users XML//EN');
 
 class UserExportDom {
 
@@ -40,7 +40,7 @@ class UserExportDom {
         }
         $args = func_get_args();
         call_user_func_array(array($this, '__construct'), $args);
-        return true; // Maintain legacy return behavior (though constructor return values are ignored in 'new')
+        return true;
     }
 
     /**
@@ -54,7 +54,7 @@ class UserExportDom {
         /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
 
-        $doc = XMLCustomWriter::createDocument('users', USERS_DTD_ID, USERS_DTD_URL);
+        $doc = XMLCustomWriter::createDocument('users', USERS_DTD_ID, USERS_DTD_PATH);
         $root = XMLCustomWriter::createElement($doc, 'users');
 
         foreach ($users as $user) {
@@ -150,5 +150,6 @@ class UserExportDom {
 
         return $doc;
     }
+
 }
 ?>
