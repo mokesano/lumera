@@ -12,8 +12,7 @@ declare(strict_types=1);
  * @ingroup pages_editor
  *
  * @brief Handle requests for editor functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * 
  */
 
 import('pages.sectionEditor.SectionEditorHandler');
@@ -70,11 +69,14 @@ class EditorHandler extends SectionEditorHandler {
         $journalId = $journal->getId();
         $user = $request->getUser();
 
+        /** @var EditorSubmissionDAO $editorSubmissionDao */
         $editorSubmissionDao = DAORegistry::getDAO('EditorSubmissionDAO');
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
-
         $sections = $sectionDao->getSectionTitles($journal->getId());
-        $templateMgr->assign('sectionOptions', [0 => AppLocale::Translate('editor.allSections')] + $sections);
+        
+        // [PHP 8.x FIX] Metode AppLocale seharusnya camelCase: translate()
+        $templateMgr->assign('sectionOptions', [0 => AppLocale::translate('editor.allSections')] + $sections);
         $templateMgr->assign('fieldOptions', $this->_getSearchFieldOptions());
         $templateMgr->assign('dateFieldOptions', $this->_getDateFieldOptions());
 
@@ -90,19 +92,20 @@ class EditorHandler extends SectionEditorHandler {
             // Get the user's search conditions, if any
             $searchField = trim((string) $request->getUserVar('searchField'));
             $allowedFields = ['title', 'author', 'editor', 'abstract', SUBMISSION_FIELD_TITLE, SUBMISSION_FIELD_AUTHOR, SUBMISSION_FIELD_EDITOR, SUBMISSION_FIELD_ID]; 
-            if (!in_array($searchField, $allowedFields)) {
+            // [PHP 8.x FIX] Tambahkan parameter strict 'true' untuk mencegah type juggling
+            if (!in_array($searchField, $allowedFields, true)) {
                 $searchField = SUBMISSION_FIELD_TITLE; // Default aman
             }
             
             $dateSearchField = trim((string) $request->getUserVar('dateSearchField'));
             $allowedDateFields = ['dateSubmitted', 'dateCopyeditComplete', 'dateLayoutComplete', SUBMISSION_FIELD_DATE_SUBMITTED, SUBMISSION_FIELD_DATE_COPYEDIT_COMPLETE, SUBMISSION_FIELD_DATE_LAYOUT_COMPLETE, SUBMISSION_FIELD_DATE_PROOFREADING_COMPLETE]; 
-            if (!in_array($dateSearchField, $allowedDateFields)) {
+            if (!in_array($dateSearchField, $allowedDateFields, true)) {
                 $dateSearchField = SUBMISSION_FIELD_DATE_SUBMITTED; // Default aman
             }
             
             $searchMatch = trim((string) $request->getUserVar('searchMatch'));
             $allowedMatches = ['all', 'any', 'phrase', 'contains', 'is', 'startsWith']; 
-            if (!in_array($searchMatch, $allowedMatches)) {
+            if (!in_array($searchMatch, $allowedMatches, true)) {
                 $searchMatch = 'contains'; // Default aman
             }
             
@@ -110,7 +113,7 @@ class EditorHandler extends SectionEditorHandler {
 
             $sort = trim((string) $request->getUserVar('sort'));
             $allowedSorts = ['id', 'title', 'status', 'dateSubmitted', 'submitDate']; 
-            if (!in_array($sort, $allowedSorts)) {
+            if (!in_array($sort, $allowedSorts, true)) {
                 $sort = 'id'; // Default aman
             }
             
@@ -125,7 +128,9 @@ class EditorHandler extends SectionEditorHandler {
             if ($toDate !== null) $toDate = date('Y-m-d H:i:s', $toDate);
 
             if ($sort == 'status') {
-                $rawSubmissions = $editorSubmissionDao->_getUnfilteredEditorSubmissions(
+                // [FIX UTAMA] Gunakan method publik `getEditorSubmissions` alih-alih `_getUnfilteredEditorSubmissions` 
+                // yang bersifat protected/internal dan menyebabkan error validasi di PHP 8.x / PSR-12.
+                $submissions = $editorSubmissionDao->getEditorSubmissions(
                     $journal->getId(),
                     (int) $request->getUserVar('section'),
                     0,
@@ -135,29 +140,32 @@ class EditorHandler extends SectionEditorHandler {
                     $dateSearchField,
                     $fromDate,
                     $toDate,
-                    null,
-                    null,
+                    null, // $rangeInfo (null agar mengambil semua data untuk di-sort manual di PHP)
                     $sort,
                     $sortDirection
                 );
-                $submissions = new DAOResultFactory($rawSubmissions, $editorSubmissionDao, '_returnEditorSubmissionFromRow');
 
                 // Sort all submissions by status, which is too complex to do in the DB
                 $submissionsArray = $submissions->toArray();
                 
                 // [WIZDAM FIX] Replaced create_function with anonymous Closure
                 usort($submissionsArray, function($s1, $s2) {
-                    return strcmp($s1->getSubmissionStatus(), $s2->getSubmissionStatus());
+                    return strcmp((string) $s1->getSubmissionStatus(), (string) $s2->getSubmissionStatus());
                 });
                 
-                if($sortDirection == SORT_DIRECTION_DESC) {
+                // [PHP 8.x FIX] Strict string comparison. 
+                // Sebelumnya: `if ($sortDirection == SORT_DIRECTION_DESC)` akan selalu FALSE di PHP 8 
+                // karena membandingkan string 'DESC' dengan integer 1.
+                if ($sortDirection === 'DESC') {
                     $submissionsArray = array_reverse($submissionsArray);
                 }
+                
                 // Convert submission array back to an ItemIterator class
                 import('lib.pkp.classes.core.ArrayItemIterator');
                 $submissions = ArrayItemIterator::fromRangeInfo($submissionsArray, $rangeInfo);
             } else {
-                $rawSubmissions = $editorSubmissionDao->_getUnfilteredEditorSubmissions(
+                // [FIX UTAMA] Gunakan method publik `getEditorSubmissions`
+                $submissions = $editorSubmissionDao->getEditorSubmissions(
                     $journal->getId(),
                     (int) $request->getUserVar('section'),
                     0,
@@ -167,14 +175,12 @@ class EditorHandler extends SectionEditorHandler {
                     $dateSearchField,
                     $fromDate,
                     $toDate,
-                    null,
                     $rangeInfo,
                     $sort,
                     $sortDirection
                 );
-                $submissions = new DAOResultFactory($rawSubmissions, $editorSubmissionDao, '_returnEditorSubmissionFromRow');
+                // Baris `new DAOResultFactory(...)` dihapus karena `getEditorSubmissions` sudah mengembalikannya.
             }
-
 
             // If only result is returned from a search, fast-forward to it
             if ($search && $submissions && $submissions->getCount() == 1) {
@@ -204,6 +210,7 @@ class EditorHandler extends SectionEditorHandler {
         $submissionsCount = $editorSubmissionDao->getEditorSubmissionsCount($journal->getId());
         $templateMgr->assign('submissionsCount', $submissionsCount);
         $templateMgr->assign('helpTopicId', 'editorial.editorsRole');
+        
         $templateMgr->display('editor/index.tpl');
     }
 
@@ -220,7 +227,9 @@ class EditorHandler extends SectionEditorHandler {
         $journalId = $journal->getId();
         $user = $request->getUser();
 
+        /** @var EditorSubmissionDAO $editorSubmissionDao */
         $editorSubmissionDao = DAORegistry::getDAO('EditorSubmissionDAO');
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
 
         $page = isset($args[0]) ? $args[0] : '';
@@ -344,8 +353,6 @@ class EditorHandler extends SectionEditorHandler {
         $templateMgr->assign('editor', $user->getFullName());
         $templateMgr->assign('editorOptions', $filterEditorOptions);
         $templateMgr->assign('sectionOptions', $filterSectionOptions);
-
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('submissions', $submissions);
         $templateMgr->assign('filterEditor', $filterEditor);
         $templateMgr->assign('filterSection', $filterSection);
@@ -364,11 +371,13 @@ class EditorHandler extends SectionEditorHandler {
 
         import('classes.issue.IssueAction');
         $issueAction = new IssueAction();
+
         $templateMgr->register_function('print_issue_id', [$issueAction, 'smartyPrintIssueId']);
 
         $templateMgr->assign('helpTopicId', $helpTopicId);
         $templateMgr->assign('sort', $sort);
         $templateMgr->assign('sortDirection', $sortDirection);
+
         $templateMgr->display('editor/submissions.tpl');
     }
 
@@ -428,10 +437,12 @@ class EditorHandler extends SectionEditorHandler {
         $journal = $request->getJournal();
         $articleId = (int) $request->getUserVar('articleId');
 
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $articleDao->getArticle($articleId);
 
         if ($article && $article->getJournalId() === $journal->getId()) {
+            /** @var EditAssignmentDAO $editAssignmentDao */
             $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
             $editAssignments = $editAssignmentDao->getEditAssignmentsByArticleId($articleId);
 
@@ -462,10 +473,12 @@ class EditorHandler extends SectionEditorHandler {
         $journal = $request->getJournal();
         $editId = (int) array_shift($args);
 
+        /** @var EditAssignmentDAO $editAssignmentDao */
         $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
         $editAssignment = $editAssignmentDao->getEditAssignment($editId);
 
         if ($editAssignment) {
+            /** @var ArticleDAO $articleDao */
             $articleDao = DAORegistry::getDAO('ArticleDAO');
             $article = $articleDao->getArticle($editAssignment->getArticleId());
 
@@ -490,6 +503,7 @@ class EditorHandler extends SectionEditorHandler {
         $journal = $request->getJournal();
         $articleId = (int) $request->getUserVar('articleId');
         $editorId = (int) $request->getUserVar('editorId');
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
 
         $isSectionEditor = $roleDao->userHasRole($journal->getId(), $editorId, ROLE_ID_SECTION_EDITOR);
@@ -540,6 +554,7 @@ class EditorHandler extends SectionEditorHandler {
             }
 
             $rangeInfo = $this->getRangeInfo('editors');
+            /** @var EditorSubmissionDAO $editorSubmissionDao */
             $editorSubmissionDao = DAORegistry::getDAO('EditorSubmissionDAO');
 
             if (isset($args[0]) && $args[0] === 'editor') {
@@ -560,9 +575,11 @@ class EditorHandler extends SectionEditorHandler {
             $templateMgr->assign('rolePath', $rolePath);
             $templateMgr->assign('articleId', $articleId);
 
+            /** @var SectionDAO $sectionDao */
             $sectionDao = DAORegistry::getDAO('SectionDAO');
             $sectionEditorSections = $sectionDao->getEditorSections($journal->getId());
 
+            /** @var EditAssignmentDAO $editAssignmentDao */
             $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
             $editorStatistics = $editAssignmentDao->getEditorStatistics($journal->getId());
 
@@ -600,6 +617,7 @@ class EditorHandler extends SectionEditorHandler {
 
         $journal = $request->getJournal();
 
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $articleDao->getArticle($articleId);
 
@@ -660,5 +678,6 @@ class EditorHandler extends SectionEditorHandler {
         }
         $templateMgr->assign('pageHierarchy', $pageHierarchy);
     }
+
 }
 ?>
