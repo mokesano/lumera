@@ -13,15 +13,12 @@ declare(strict_types=1);
  *
  * @brief Maintains a static table of keyed references.
  * Used for storing/accessing single instance objects and values.
- * WIZDAM EDITION: Pure PHP 8 Strict (No References &)
+ * 
  */
-
 
 class Registry {
     
-    /** * @var array Static storage for registry items.
-     * Direct property access is optimized for PHP 8.
-     */
+    /** @var array Static storage for registry items */
     private static $_registry = array();
 
     /**
@@ -36,7 +33,7 @@ class Registry {
      */
     public function Registry() {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::Registry(). Please refactor to parent::__construct().", 
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to parent::__construct().", 
             E_USER_DEPRECATED
         );
         self::__construct();
@@ -44,7 +41,6 @@ class Registry {
 
     /**
      * Get the registry data structure.
-     * WIZDAM: Returns a COPY of the array in PHP 8 (Pass-by-value).
      * Modifying the result of this function will NOT modify the global registry 
      * unless explicitly set back via Registry::setHooks().
      * @return array
@@ -55,11 +51,10 @@ class Registry {
 
     /**
      * Get the value of an item in the registry.
-     * WIZDAM: Strictly returns by value/handle. No reference (&).
-     * * @param $key string
-     * @param $createIfEmpty boolean Whether or not to create the entry if none exists
-     * @param $createWithDefault mixed If $createIfEmpty, this value will be used as a default
-     * @return mixed The value (Object Handle or Array Copy)
+     * @param string $key string
+     * @param $createIfEmpty boolean
+     * @param $createWithDefault mixed
+     * @return mixed
      */
     public static function get($key, $createIfEmpty = false, $createWithDefault = null) {
         if (isset(self::$_registry[$key])) {
@@ -74,9 +69,8 @@ class Registry {
 
     /**
      * Set the value of an item in the registry.
-     * WIZDAM: Strictly pass by value/handle.
-     * @param $key string
-     * @param $value mixed
+     * @param string $key string
+     * @param mixed $value mixed
      */
     public static function set($key, $value) {
         self::$_registry[$key] = $value;
@@ -84,7 +78,7 @@ class Registry {
 
     /**
      * Remove an item from the registry.
-     * @param $key string
+     * @param string $key string
      */
     public static function delete($key) {
         if (isset(self::$_registry[$key])) {
@@ -98,6 +92,6 @@ class Registry {
     public static function clear() {
         self::$_registry = array();
     }
-}
 
+}
 ?>
