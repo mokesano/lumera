@@ -133,7 +133,7 @@ class PKPWizdamStats {
             if (method_exists($journal, 'getLocalizedTitle')) {
                 $journalTitle = $journal->getLocalizedTitle();
             } elseif (method_exists($journal, 'getTitle')) {
-                $journalTitle = $journal->getTitle();
+                $journalTitle = $journal->getTitle('title');
             }
         }
         
