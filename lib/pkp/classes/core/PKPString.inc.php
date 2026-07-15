@@ -8,12 +8,6 @@ declare(strict_types=1);
  * Copyright (c) 2000-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * [WIZDAM EDITION v3.4]
- * - Refactored for PHP 8.1+ Strict Mode
- * - Converted to Static Class Architecture
- * - Fixed deprecated string access syntax ({}) -> ([])
- * - Enhanced Type Safety
- *
  * @class PKPString
  * @ingroup core
  *
@@ -542,7 +536,6 @@ class PKPString {
         return $result;
     }
 
-
     /**
      * Strip unsafe HTML from the input text. Covers XSS attacks.
      * @param string $input input string
@@ -572,7 +565,7 @@ class PKPString {
                 $config->set('Cache.SerializerPath', 'cache');
                 $purifier = new HTMLPurifier($config);
             }
-            $clean = $purifier->purify($input);
+            $clean = (string) $purifier->purify($input);
             // Restore error reporting
             error_reporting($oldErrorReporting);
             return $clean;
@@ -1209,13 +1202,12 @@ class PKPString {
      * @return string
      */
     public static function generateUUID(): string {
-        // [WIZDAM] Removed mt_srand, PHP handles seeding automatically since 7.1
         $charid = strtoupper(md5(uniqid((string)rand(), true)));
         $hyphen = '-';
         $uuid = substr($charid, 0, 8).$hyphen
                 .substr($charid, 8, 4).$hyphen
                 .'4'.substr($charid,13, 3).$hyphen
-                .strtoupper(dechex(hexdec(ord(substr($charid,16,1))) % 4 + 8)).substr($charid,17, 3).$hyphen
+                .strtoupper(dechex(hexdec(substr($charid,16,1)) % 4 + 8)).substr($charid,17, 3).$hyphen
                 .substr($charid,20,12);
         return $uuid;
     }
@@ -1232,6 +1224,6 @@ class PKPString {
         $string = trim($string, '-'); 
         return $string;
     }
-    
+
 }
 ?>
