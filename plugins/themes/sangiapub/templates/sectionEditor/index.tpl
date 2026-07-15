@@ -9,43 +9,44 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="common.queue.long.$pageToDisplay"}
-{url|assign:"currentUrl" page="sectionEditor"}
-{include file="common/header-ROLE.tpl"}
+	{assign var="pageTitle" value="common.queue.long.$pageToDisplay"}
+	{url|assign:"currentUrl" page="sectionEditor"}
+	{include file="common/header-ROLE.tpl"}
 {/strip}
 
 <ul class="menu">
 	<li{if ($pageToDisplay == "submissionsInReview")} class="current"{/if}><a href="{url path="submissionsInReview"}">{translate key="common.queue.short.submissionsInReview"}</a></li>
-	<li{if ($pageToDisplay == "submissionsInEditing")} class="current"{/if}><a href="{url path="submissionsInEditing"}">{translate key="common.queue.short.submissionsInEditing}</a></li>
+	<li{if ($pageToDisplay == "submissionsInEditing")} class="current"{/if}><a href="{url path="submissionsInEditing"}">{translate key="common.queue.short.submissionsInEditing"}</a></li>
 	<li{if ($pageToDisplay == "submissionsArchives")} class="current"{/if}><a href="{url path="submissionsArchives"}">{translate key="common.queue.short.submissionsArchives"}</a></li>
 </ul>
 
 <form action="#">
-<ul class="filter menu">
-	<li>{translate key="editor.submissions.inSection"}: <select name="filterSection" onchange="location.href='{url|escape:"javascript" path=$pageToDisplay searchField=$searchField searchMatch=$searchMatch search=$search dateFromDay=$dateFromDay dateFromYear=$dateFromYear dateFromMonth=$dateFromMonth dateToDay=$dateToDay dateToYear=$dateToYear dateToMonth=$dateToMonth dateSearchField=$dateSearchField filterSection="SECTION_ID" escape=false}'.replace('SECTION_ID', this.options[this.selectedIndex].value)" size="1" class="selectMenu">{html_options options=$sectionOptions selected=$filterSection}</select></li>
-</ul>
+	<ul class="filter menu">
+		<li>{translate key="editor.submissions.inSection"}: <select name="filterSection" onchange="location.href='{url|escape:"javascript" path=$pageToDisplay searchField=$searchField searchMatch=$searchMatch search=$search dateFromDay=$dateFromDay dateFromYear=$dateFromYear dateFromMonth=$dateFromMonth dateToDay=$dateToDay dateToYear=$dateToYear dateToMonth=$dateToMonth dateSearchField=$dateSearchField filterSection="SECTION_ID" escape=false}'.replace('SECTION_ID', this.options[this.selectedIndex].value)" size="1" class="selectMenu">{html_options options=$sectionOptions selected=$filterSection}</select></li>
+	</ul>
 </form>
 
 {if !$dateFrom}
-{assign var="dateFrom" value="--"}
+	{assign var="dateFrom" value="--"}
 {/if}
 
 {if !$dateTo}
-{assign var="dateTo" value="--"}
+	{assign var="dateTo" value="--"}
 {/if}
 
 <script type="text/javascript">
-{literal}
-<!--
-function sortSearch(heading, direction) {
-	var submitForm = document.getElementById('submit');
-	submitForm.sort.value = heading;
-	submitForm.sortDirection.value = direction;
-	submitForm.submit();
-}
-// -->
-{/literal}
+	{literal}
+		<!--
+		function sortSearch(heading, direction) {
+			var submitForm = document.getElementById('submit');
+			submitForm.sort.value = heading;
+			submitForm.sortDirection.value = direction;
+			submitForm.submit();
+		}
+		// -->
+	{/literal}
 </script>
+
 <div class="block sort">
 	<h4 class="heading">Filter Submissions</h4>
     <form method="post" id="submit" action="{url op="index" path=$pageToDisplay}" class="filter menu">
@@ -80,17 +81,17 @@ function sortSearch(heading, direction) {
 {include file="sectionEditor/$pageToDisplay.tpl"}
 
 {if ($pageToDisplay == "submissionsInReview")}
-<br />
-<div id="notes">
-    <h4>{translate key="common.notes"}</h4>
-    {translate key="editor.submissionReview.notes"}
-</div>
+	<br />
+	<div id="notes">
+		<h4>{translate key="common.notes"}</h4>
+		{translate key="editor.submissionReview.notes"}
+	</div>
 {elseif ($pageToDisplay == "submissionsInEditing")}
-<br />
-<div id="notes">
-    <h4>{translate key="common.notes"}</h4>
-    {translate key="editor.submissionEditing.notes"}
-</div>
+	<br />
+	<div id="notes">
+		<h4>{translate key="common.notes"}</h4>
+		{translate key="editor.submissionEditing.notes"}
+	</div>
 {/if}
 
 {include file="common/footer-parts/footer-user.tpl"}
