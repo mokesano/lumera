@@ -15,24 +15,24 @@ declare(strict_types=1);
  * @brief Operations for retrieving and modifying Issue objects.
  */
 
-import ('classes.issue.Issue');
+import('classes.issue.Issue');
 
 class IssueDAO extends DAO {
     
-    /** @var array Cache storage */
-    protected $caches;
+    /** @var array<string, object> Cache storage */
+    protected array $caches = [];
 
     /**
      * Cache Miss Callback
-     * @param $cache object
-     * @param $id string
+     * @param object $cache
+     * @param string|int $id
      * @return Issue|null
      */
-    public function _cacheMiss($cache, $id) {
+    public function _cacheMiss($cache, $id): ?Issue {
         if ($cache->getCacheId() === 'current') {
-            $issue = $this->getCurrentIssue($id, false);
+            $issue = $this->getCurrentIssue((int) $id, false);
         } else {
-            $issue = $this->getIssueByBestIssueId($id, null, false);
+            $issue = $this->getIssueByBestIssueId((string) $id, null, false);
         }
         $cache->setCache($id, $issue);
         return $issue;
@@ -40,99 +40,96 @@ class IssueDAO extends DAO {
 
     /**
      * Get Cache object
-     * @param $cacheId string
+     * @param string $cacheId
      * @return object
      */
-    protected function _getCache($cacheId) {
-        if (!isset($this->caches)) $this->caches = array();
+    protected function _getCache(string $cacheId): object {
         if (!isset($this->caches[$cacheId])) {
             $cacheManager = CacheManager::getManager();
-            // Reference to $this removed for PHP 8 compatibility in array callback
-            $this->caches[$cacheId] = $cacheManager->getObjectCache('issues', $cacheId, array($this, '_cacheMiss'));
+            $this->caches[$cacheId] = $cacheManager->getObjectCache('issues', $cacheId, [$this, '_cacheMiss']);
         }
         return $this->caches[$cacheId];
     }
 
     /**
      * Retrieve Issue by issue id
-     * @param $issueId int
-     * @param $journalId int optional
-     * @param $useCache boolean optional
+     * @param int|string $issueId
+     * @param int|string|null $journalId optional
+     * @param bool $useCache optional
      * @return Issue|null
      */
-    public function getIssueById($issueId, $journalId = null, $useCache = false) {
+    public function getIssueById(int|string $issueId, int|string|null $journalId = null, bool $useCache = false): ?Issue {
+        $issueIdInt = (int) $issueId;
+        $journalIdInt = $journalId !== null ? (int) $journalId : null;
+
         if ($useCache) {
             $cache = $this->_getCache('issues');
-            $returner = $cache->get($issueId);
-            if ($returner && $journalId != null && $journalId != $returner->getJournalId()) $returner = null;
+            $returner = $cache->get($issueIdInt);
+            if ($returner && $journalIdInt !== null && $journalIdInt !== $returner->getJournalId()) {
+                $returner = null;
+            }
             return $returner;
         }
 
-        if (isset($journalId)) {
+        if ($journalIdInt !== null) {
             $result = $this->retrieve(
                 'SELECT i.* FROM issues i WHERE issue_id = ? AND journal_id = ?',
-                array((int) $issueId, (int) $journalId)
+                [$issueIdInt, $journalIdInt]
             );
         } else {
             $result = $this->retrieve(
                 'SELECT i.* FROM issues i WHERE issue_id = ?', 
-                (int) $issueId
+                [$issueIdInt]
             );
         }
 
         $issue = null;
-        if ($result->RecordCount() != 0) {
+        if (!$result->EOF) {
             $issue = $this->_returnIssueFromRow($result->GetRowAssoc(false));
         }
-
         $result->Close();
-        unset($result);
 
         return $issue;
     }
 
     /**
      * Retrieve Issue by public issue id
-     * @param $pubIdType string
-     * @param $pubId string
-     * @param $journalId int optional
-     * @param $useCache boolean optional
+     * @param string $pubIdType
+     * @param string $pubId
+     * @param int|string|null $journalId optional
+     * @param bool $useCache optional
      * @return Issue|null
      */
-    public function getIssueByPubId($pubIdType, $pubId, $journalId = null, $useCache = false) {
-        if ($useCache && $pubIdType == 'publisher-id') {
+    public function getIssueByPubId(string $pubIdType, string $pubId, int|string|null $journalId = null, bool $useCache = false): ?Issue {
+        if ($useCache && $pubIdType === 'publisher-id') {
             $cache = $this->_getCache('issues');
             $returner = $cache->get($pubId);
-            if ($returner && $journalId != null && $journalId != $returner->getJournalId()) $returner = null;
+            if ($returner && $journalId !== null && (int) $journalId !== $returner->getJournalId()) {
+                $returner = null;
+            }
             return $returner;
         }
 
-        $issues = $this->getIssuesBySetting('pub-id::'.$pubIdType, $pubId, $journalId);
+        $issues = $this->getIssuesBySetting('pub-id::' . $pubIdType, $pubId, $journalId);
         if (empty($issues)) {
-            $issue = null;
-        } else {
-            // Assert removed or replaced with count check for production safety
-            if (count($issues) > 1) {
-                // Log warning or handle multiple issues if strict
-            }
-            $issue = $issues[0];
+            return null;
         }
-
-        return $issue;
+        
+        return $issues[0];
     }
 
     /**
      * Find issues by querying issue settings.
-     * @param $settingName string
-     * @param $settingValue mixed
-     * @param $journalId int optional
-     * @return array The issues identified by setting.
+     * @param string $settingName
+     * @param mixed $settingValue
+     * @param int|string|null $journalId optional
+     * @return Issue[]
      */
-    public function getIssuesBySetting($settingName, $settingValue, $journalId = null) {
-        $params = array($settingName);
+    public function getIssuesBySetting(string $settingName, mixed $settingValue, int|string|null $journalId = null): array {
+        $params = [$settingName];
         $sql = 'SELECT i.* FROM issues i ';
         
-        if (is_null($settingValue)) {
+        if ($settingValue === null) {
             $sql .= 'LEFT JOIN issue_settings ist ON i.issue_id = ist.issue_id AND ist.setting_name = ?
                      WHERE (ist.setting_value IS NULL OR ist.setting_value = \'\')';
         } else {
@@ -141,15 +138,15 @@ class IssueDAO extends DAO {
                      WHERE ist.setting_name = ? AND ist.setting_value = ?';
         }
         
-        if ($journalId) {
+        if ($journalId !== null) {
             $params[] = (int) $journalId;
             $sql .= ' AND i.journal_id = ?';
         }
         
-        $sql .= ' ORDER BY i.issue_id';
+        $sql .= ' ORDER BY i.issue_id ASC';
         $result = $this->retrieve($sql, $params);
 
-        $issues = array();
+        $issues = [];
         while (!$result->EOF) {
             $issues[] = $this->_returnIssueFromRow($result->GetRowAssoc(false));
             $result->moveNext();
@@ -161,15 +158,16 @@ class IssueDAO extends DAO {
 
     /**
      * Retrieve Issue by some combination of volume, number, and year
-     * @param $journalId int
-     * @param $volume int
-     * @param $number int
-     * @param $year int
+     * @param int|string $journalId
+     * @param int|string|null $volume
+     * @param string|null $number
+     * @param int|string|null $year
      * @return DAOResultFactory
      */
-    public function getPublishedIssuesByNumber($journalId, $volume = null, $number = null, $year = null) {
+    public function getPublishedIssuesByNumber(int|string $journalId, int|string|null $volume = null, ?string $number = null, int|string|null $year = null): DAOResultFactory {
+        $journalIdInt = (int) $journalId;
         $sql = 'SELECT i.* FROM issues i WHERE i.published = 1 AND i.journal_id = ?';
-        $params = array((int) $journalId);
+        $params = [$journalIdInt];
 
         if ($volume !== null) {
             $sql .= ' AND i.volume = ?';
@@ -185,196 +183,195 @@ class IssueDAO extends DAO {
         }
 
         $result = $this->retrieve($sql, $params);
-        $returner = new DAOResultFactory($result, $this, '_returnIssueFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnIssueFromRow');
     }
 
     /**
      * Retrieve Issue by "best" issue id
-     * @param $issueId string
-     * @param $journalId int optional
-     * @param $useCache boolean optional
+     * @param int|string $issueId
+     * @param int|string|null $journalId optional
+     * @param bool $useCache optional
      * @return Issue|null
      */
-    public function getIssueByBestIssueId($issueId, $journalId = null, $useCache = false) {
-        $issue = $this->getIssueByPubId('publisher-id', $issueId, $journalId, $useCache);
-        if (!isset($issue) && ctype_digit("$issueId")) {
-            $issue = $this->getIssueById((int) $issueId, $journalId, $useCache);
+    public function getIssueByBestIssueId(int|string $issueId, int|string|null $journalId = null, bool $useCache = false): ?Issue {
+        $issueIdStr = (string) $issueId;
+        $issue = $this->getIssueByPubId('publisher-id', $issueIdStr, $journalId, $useCache);
+        if ($issue === null && ctype_digit($issueIdStr)) {
+            $issue = $this->getIssueById((int) $issueIdStr, $journalId, $useCache);
         }
         return $issue;
     }
 
     /**
      * Retrieve the last created issue
-     * @param $journalId int
+     * @param int|string $journalId
      * @return Issue|null
      */
-    public function getLastCreatedIssue($journalId) {
+    public function getLastCreatedIssue(int|string $journalId): ?Issue {
+        $journalIdInt = (int) $journalId;
         $result = $this->retrieveLimit(
             'SELECT i.* FROM issues i WHERE journal_id = ? ORDER BY year DESC, volume DESC, number DESC',
-            (int) $journalId,
+            [$journalIdInt],
             1
         );
 
         $issue = null;
-        if ($result->RecordCount() != 0) {
+        if (!$result->EOF) {
             $issue = $this->_returnIssueFromRow($result->GetRowAssoc(false));
         }
-
         $result->Close();
-        unset($result);
 
         return $issue;
     }
 
     /**
      * Retrieve current issue
-     * @param $journalId int
-     * @param $useCache boolean optional
+     * @param int|string $journalId
+     * @param bool $useCache optional
      * @return Issue|null
      */
-    public function getCurrentIssue($journalId, $useCache = false) {
+    public function getCurrentIssue(int|string $journalId, bool $useCache = false): ?Issue {
+        $journalIdInt = (int) $journalId;
         if ($useCache) {
             $cache = $this->_getCache('current');
-            $returner = $cache->get($journalId);
-            return $returner;
+            return $cache->get($journalIdInt);
         }
 
         $result = $this->retrieve(
             'SELECT i.* FROM issues i WHERE journal_id = ? AND current = 1',
-            (int) $journalId
+            [$journalIdInt]
         );
 
         $issue = null;
-        if ($result->RecordCount() != 0) {
+        if (!$result->EOF) {
             $issue = $this->_returnIssueFromRow($result->GetRowAssoc(false));
         }
-
         $result->Close();
-        unset($result);
 
         return $issue;
     }
 
     /**
      * Update current issue
-     * @param $journalId int
-     * @param $issue Issue|null
+     * @param int|string $journalId
+     * @param Issue|null $issue
      */
-    public function updateCurrentIssue($journalId, $issue = null) {
+    public function updateCurrentIssue(int|string $journalId, ?Issue $issue = null): void {
+        $journalIdInt = (int) $journalId;
         $this->update(
             'UPDATE issues SET current = 0 WHERE journal_id = ? AND current = 1',
-            (int) $journalId
+            [$journalIdInt]
         );
-        if ($issue) $this->updateIssue($issue);
-
+        if ($issue !== null) {
+            $this->updateIssue($issue);
+        }
         $this->flushCache();
     }
 
     /**
      * Change the public ID of an issue.
-     * @param $issueId int
-     * @param $pubIdType string
-     * @param $pubId string
+     * @param int|string $issueId
+     * @param string $pubIdType
+     * @param string $pubId
      */
-    public function changePubId($issueId, $pubIdType, $pubId) {
-        $idFields = array(
-            'issue_id', 'locale', 'setting_name'
-        );
-        $updateArray = array(
-            'issue_id' => $issueId,
+    public function changePubId(int|string $issueId, string $pubIdType, string $pubId): void {
+        $idFields = ['issue_id', 'locale', 'setting_name'];
+        $updateArray = [
+            'issue_id' => (int) $issueId,
             'locale' => '',
-            'setting_name' => 'pub-id::'.$pubIdType,
+            'setting_name' => 'pub-id::' . $pubIdType,
             'setting_type' => 'string',
-            'setting_value' => (string)$pubId
-        );
+            'setting_value' => (string) $pubId
+        ];
         $this->replace('issue_settings', $updateArray, $idFields);
         $this->flushCache();
     }
 
     /**
      * Creates and returns an issue object from a row
-     * @param $row array
+     * @param array<string, mixed> $row
      * @return Issue
      */
-    public function _returnIssueFromRow($row) {
+    public function _returnIssueFromRow(array $row): Issue {
         $issue = new Issue();
-        $issue->setId($row['issue_id']);
-        $issue->setJournalId($row['journal_id']);
-        $issue->setVolume($row['volume']);
+        $issue->setId((int) $row['issue_id']);
+        $issue->setJournalId((int) $row['journal_id']);
+        $issue->setVolume($row['volume'] !== null ? (int) $row['volume'] : null);
         $issue->setNumber($row['number']);
-        $issue->setYear($row['year']);
-        $issue->setPublished($row['published']);
-        $issue->setCurrent($row['current']);
+        $issue->setYear($row['year'] !== null ? (int) $row['year'] : null);
+        $issue->setPublished((int) $row['published']);
+        $issue->setCurrent((int) $row['current']);
         $issue->setDatePublished($this->datetimeFromDB($row['date_published']));
         $issue->setDateNotified($this->datetimeFromDB($row['date_notified']));
         $issue->setLastModified($this->datetimeFromDB($row['last_modified']));
-        $issue->setAccessStatus($row['access_status']);
+        $issue->setAccessStatus((int) $row['access_status']);
         $issue->setOpenAccessDate($this->datetimeFromDB($row['open_access_date']));
-        $issue->setShowVolume($row['show_volume']);
-        $issue->setShowNumber($row['show_number']);
-        $issue->setShowYear($row['show_year']);
-        $issue->setShowTitle($row['show_title']);
-        $issue->setData('numArticles', $this->getNumArticles($issue->getId()));
+        $issue->setShowVolume((int) $row['show_volume']);
+        $issue->setShowNumber((int) $row['show_number']);
+        $issue->setShowYear((int) $row['show_year']);
+        $issue->setShowTitle((int) $row['show_title']);
+        $issue->setData('numArticles', $this->getNumArticles((int) $row['issue_id']));
         $issue->setStyleFileName($row['style_file_name']);
         $issue->setOriginalStyleFileName($row['original_style_file_name']);
 
-        $this->getDataObjectSettings('issue_settings', 'issue_id', $row['issue_id'], $issue);
+        $this->getDataObjectSettings('issue_settings', 'issue_id', (int) $row['issue_id'], $issue);
 
-        // Required by System Prompt: Keep & for HookRegistry params
-        HookRegistry::dispatch('IssueDAO::_returnIssueFromRow', array(&$issue, &$row));
+        HookRegistry::dispatch('IssueDAO::_returnIssueFromRow', [&$issue, &$row]);
 
         return $issue;
     }
 
     /**
      * Get a list of fields for which localized data is supported
-     * @return array
+     * @return string[]
      */
-    public function getLocaleFieldNames() {
-        return array('title', 'coverPageDescription', 'coverPageAltText', 'showCoverPage', 'hideCoverPageArchives', 'hideCoverPageCover', 'originalFileName', 'fileName', 'width', 'height', 'description');
+    public function getLocaleFieldNames(): array {
+        return ['title', 'coverPageDescription', 'coverPageAltText', 'showCoverPage', 'hideCoverPageArchives', 'hideCoverPageCover', 'originalFileName', 'fileName', 'width', 'height', 'description'];
     }
 
     /**
      * Get a list of additional fields that do not have dedicated accessors.
-     * @return array
+     * @return string[]
      */
-    public function getAdditionalFieldNames() {
+    public function getAdditionalFieldNames(): array {
         $additionalFields = parent::getAdditionalFieldNames();
-        // FIXME: Move this to a PID plug-in.
         $additionalFields[] = 'pub-id::publisher-id';
         return $additionalFields;
     }
 
     /**
      * Update the localized fields for this object.
-     * @param $issue Issue
+     * @param Issue $issue
      */
-    public function updateLocaleFields($issue) {
-        $this->updateDataObjectSettings('issue_settings', $issue, array(
+    public function updateLocaleFields(Issue $issue): void {
+        $this->updateDataObjectSettings('issue_settings', $issue, [
             'issue_id' => $issue->getId()
-        ));
+        ]);
     }
 
     /**
      * Inserts a new issue into issues table
-     * @param $issue Issue
+     * @param Issue $issue
      * @return int Issue Id
      */
-    public function insertIssue($issue) {
+    public function insertIssue(Issue $issue): int {
         $this->update(
-            sprintf('INSERT INTO issues
+            sprintf(
+                'INSERT INTO issues
                 (journal_id, volume, number, year, published, current, date_published, date_notified, last_modified, access_status, open_access_date, show_volume, show_number, show_year, show_title, style_file_name, original_style_file_name)
-                VALUES
-                (?, ?, ?, ?, ?, ?, %s, %s, %s, ?, %s, ?, ?, ?, ?, ?, ?)',
-                $this->datetimeToDB($issue->getDatePublished()), $this->datetimeToDB($issue->getDateNotified()), $this->datetimeToDB($issue->getLastModified()), $this->datetimeToDB($issue->getOpenAccessDate())),
-            array(
+                VALUES (?, ?, ?, ?, ?, ?, %s, %s, %s, ?, %s, ?, ?, ?, ?, ?, ?)',
+                $this->datetimeToDB($issue->getDatePublished()),
+                $this->datetimeToDB($issue->getDateNotified()),
+                $this->datetimeToDB($issue->getLastModified()),
+                $this->datetimeToDB($issue->getOpenAccessDate())
+            ),
+            [
                 (int) $issue->getJournalId(),
                 (int) $issue->getVolume(),
                 $issue->getNumber(),
                 (int) $issue->getYear(),
-                $issue->getPublished(),
-                $issue->getCurrent(),
+                (int) $issue->getPublished(),
+                (int) $issue->getCurrent(),
                 (int) $issue->getAccessStatus(),
                 (int) $issue->getShowVolume(),
                 (int) $issue->getShowNumber(),
@@ -382,15 +379,14 @@ class IssueDAO extends DAO {
                 (int) $issue->getShowTitle(),
                 $issue->getStyleFileName(),
                 $issue->getOriginalStyleFileName()
-            )
+            ]
         );
 
         $issue->setId($this->getInsertIssueId());
-
         $this->updateLocaleFields($issue);
 
-        if ($this->customIssueOrderingExists($issue->getJournalId())) {
-            $this->resequenceCustomIssueOrders($issue->getJournalId());
+        if ($this->customIssueOrderingExists((int) $issue->getJournalId())) {
+            $this->resequenceCustomIssueOrders((int) $issue->getJournalId());
         }
 
         return $issue->getId();
@@ -400,61 +396,50 @@ class IssueDAO extends DAO {
      * Get the ID of the last inserted issue.
      * @return int
      */
-    public function getInsertIssueId() {
-        return $this->getInsertId('issues', 'issue_id');
+    public function getInsertIssueId(): int {
+        return (int) $this->getInsertId('issues', 'issue_id');
     }
 
     /**
      * Check if volume, number and year have already been issued
-     * @param $journalId int
-     * @param $volume int
-     * @param $number int
-     * @param $year int
-     * @param $issueId int
-     * @return boolean
+     * @param int|string $journalId
+     * @param int|string $volume
+     * @param string $number
+     * @param int|string $year
+     * @param int|string $issueId
+     * @return bool
      */
-    public function issueExists($journalId, $volume, $number, $year, $issueId) {
+    public function issueExists(int|string $journalId, int|string $volume, string $number, int|string $year, int|string $issueId): bool {
         $result = $this->retrieve(
             'SELECT i.* FROM issues i WHERE journal_id = ? AND volume = ? AND number = ? AND year = ? AND issue_id <> ?',
-            array((int) $journalId, (int) $volume, $number, (int) $year, (int) $issueId)
+            [(int) $journalId, (int) $volume, $number, (int) $year, (int) $issueId]
         );
-        $returner = $result->RecordCount() != 0 ? true : false;
-
+        $returner = !$result->EOF;
         $result->Close();
-        unset($result);
 
         return $returner;
     }
 
     /**
      * Updates an issue
-     * @param $issue Issue
+     * @param Issue $issue
      */
-    public function updateIssue($issue) {
+    public function updateIssue(Issue $issue): void {
         $issue->stampModified();
         $this->update(
-            sprintf('UPDATE issues
-                SET
-                    journal_id = ?,
-                    volume = ?,
-                    number = ?,
-                    year = ?,
-                    published = ?,
-                    current = ?,
-                    date_published = %s,
-                    date_notified = %s,
-                    last_modified = %s,
-                    open_access_date = %s,
-                    access_status = ?,
-                    show_volume = ?,
-                    show_number = ?,
-                    show_year = ?,
-                    show_title = ?,
-                    style_file_name = ?,
-                    original_style_file_name = ?
+            sprintf(
+                'UPDATE issues
+                SET journal_id = ?, volume = ?, number = ?, year = ?, published = ?, current = ?,
+                    date_published = %s, date_notified = %s, last_modified = %s, open_access_date = %s,
+                    access_status = ?, show_volume = ?, show_number = ?, show_year = ?, show_title = ?,
+                    style_file_name = ?, original_style_file_name = ?
                 WHERE issue_id = ?',
-            $this->datetimeToDB($issue->getDatePublished()), $this->datetimeToDB($issue->getDateNotified()), $this->datetimeToDB($issue->getLastModified()), $this->datetimeToDB($issue->getOpenAccessDate())),
-            array(
+                $this->datetimeToDB($issue->getDatePublished()),
+                $this->datetimeToDB($issue->getDateNotified()),
+                $this->datetimeToDB($issue->getLastModified()),
+                $this->datetimeToDB($issue->getOpenAccessDate())
+            ),
+            [
                 (int) $issue->getJournalId(),
                 (int) $issue->getVolume(),
                 $issue->getNumber(),
@@ -469,13 +454,13 @@ class IssueDAO extends DAO {
                 $issue->getStyleFileName(),
                 $issue->getOriginalStyleFileName(),
                 (int) $issue->getId()
-            )
+            ]
         );
 
         $this->updateLocaleFields($issue);
 
-        if ($this->customIssueOrderingExists($issue->getJournalId())) {
-            $this->resequenceCustomIssueOrders($issue->getJournalId());
+        if ($this->customIssueOrderingExists((int) $issue->getJournalId())) {
+            $this->resequenceCustomIssueOrders((int) $issue->getJournalId());
         }
 
         $this->flushCache();
@@ -483,31 +468,38 @@ class IssueDAO extends DAO {
 
     /**
      * Delete issue. Deletes associated issue galleys, cover pages, and published articles.
-     * @param $issue Issue
+     * @param Issue $issue
      */
-    public function deleteIssue($issue) {
+    public function deleteIssue(Issue $issue): void {
         import('classes.file.PublicFileManager');
         $publicFileManager = new PublicFileManager();
 
-        if (is_array($issue->getFileName(null))) foreach ($issue->getFileName(null) as $fileName) {
-            if ($fileName != '') {
-                $publicFileManager->removeJournalFile($issue->getJournalId(), $fileName);
+        $fileNames = $issue->getFileName(null);
+        if (is_array($fileNames)) {
+            foreach ($fileNames as $fileName) {
+                if ($fileName !== '') {
+                    $publicFileManager->removeJournalFile($issue->getJournalId(), $fileName);
+                }
             }
         }
-        if (($fileName = $issue->getStyleFileName()) != '') {
-            $publicFileManager->removeJournalFile($issue->getJournalId(), $fileName);
+        
+        $styleFileName = $issue->getStyleFileName();
+        if ($styleFileName !== '') {
+            $publicFileManager->removeJournalFile($issue->getJournalId(), $styleFileName);
         }
 
-        $issueId = $issue->getId();
+        $issueId = (int) $issue->getId();
+        $journalId = (int) $issue->getJournalId();
 
-        // Delete issue-specific ordering if it exists.
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $sectionDao->deleteCustomSectionOrdering($issueId);
 
-        // Delete published issue galleys and issue files
+        /** @var IssueGalleyDAO $issueGalleyDao */
         $issueGalleyDao = DAORegistry::getDAO('IssueGalleyDAO');
         $issueGalleyDao->deleteGalleysByIssue($issueId);
 
+        /** @var IssueFileDAO $issueFileDao */
         $issueFileDao = DAORegistry::getDAO('IssueFileDAO');
         $issueFileDao->deleteIssueFiles($issueId);
 
@@ -515,480 +507,490 @@ class IssueDAO extends DAO {
         $issueFileManager = new IssueFileManager($issueId);
         $issueFileManager->deleteIssueTree();
 
-        // Delete published articles
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $publishedArticleDao->deletePublishedArticlesByIssueId($issueId);
 
-        // Delete issue settings and issue
-        $this->update('DELETE FROM issue_settings WHERE issue_id = ?', (int) $issueId);
-        $this->update('DELETE FROM issues WHERE issue_id = ?', (int) $issueId);
-        $this->update('DELETE FROM custom_issue_orders WHERE issue_id = ?', (int) $issueId);
-        $this->resequenceCustomIssueOrders($issue->getJournalId());
-
+        $this->update('DELETE FROM issue_settings WHERE issue_id = ?', [$issueId]);
+        $this->update('DELETE FROM issues WHERE issue_id = ?', [$issueId]);
+        $this->update('DELETE FROM custom_issue_orders WHERE issue_id = ?', [$issueId]);
+        
+        $this->resequenceCustomIssueOrders($journalId);
         $this->flushCache();
     }
 
     /**
      * Delete issues by journal id. Deletes dependent entities.
-     * @param $journalId int
+     * @param int|string $journalId
      */
-    public function deleteIssuesByJournal($journalId) {
+    public function deleteIssuesByJournal(int|string $journalId): void {
         $issues = $this->getIssues($journalId);
-        while (($issue = $issues->next())) {
+        while ($issue = $issues->next()) {
             $this->deleteIssue($issue);
-            unset($issue);
         }
     }
 
     /**
      * Checks if issue exists
-     * @param $issueId int
-     * @param $journalId int
-     * @return boolean
+     * @param int|string $issueId
+     * @param int|string $journalId
+     * @return bool
      */
-    public function issueIdExists($issueId, $journalId) {
+    public function issueIdExists(int|string $issueId, int|string $journalId): bool {
         $result = $this->retrieve(
             'SELECT COUNT(*) FROM issues WHERE issue_id = ? AND journal_id = ?',
-            array((int) $issueId, (int) $journalId)
+            [(int) $issueId, (int) $journalId]
         );
-        return $result->fields[0] ? true : false;
+        
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = !$result->EOF && isset($fields[0]) && (int) $fields[0] > 0;
+
+        $result->Close();
+        return $returner;
     }
 
     /**
      * Checks if public identifier exists
-     * @param $pubIdType string
-     * @param $pubId string
-     * @param $issueId int An ID to be excluded from the search.
-     * @param $journalId int
-     * @return boolean
+     * @param string $pubIdType
+     * @param string $pubId
+     * @param int|string $issueId An ID to be excluded from the search.
+     * @param int|string $journalId
+     * @return bool
      */
-    public function pubIdExists($pubIdType, $pubId, $issueId, $journalId) {
+    public function pubIdExists(string $pubIdType, string $pubId, int|string $issueId, int|string $journalId): bool {
         $result = $this->retrieve(
             'SELECT COUNT(*)
              FROM issue_settings ist
              INNER JOIN issues i ON ist.issue_id = i.issue_id
              WHERE ist.setting_name = ? AND ist.setting_value = ? AND i.issue_id <> ? AND i.journal_id = ?',
-            array(
-                'pub-id::'.$pubIdType,
+            [
+                'pub-id::' . $pubIdType,
                 $pubId,
                 (int) $issueId,
                 (int) $journalId
-            )
+            ]
         );
-        $returner = $result->fields[0] ? true : false;
+        
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = !$result->EOF && isset($fields[0]) && (int) $fields[0] > 0;
+        
         $result->Close();
         return $returner;
     }
 
     /**
      * Get issue by article id
-     * @param $articleId int
-     * @param $journalId int optional
+     * @param int|string $articleId
+     * @param int|string|null $journalId optional
      * @return Issue|null
      */
-    public function getIssueByArticleId($articleId, $journalId = null) {
-        $params = array((int) $articleId);
+    public function getIssueByArticleId(int|string $articleId, int|string|null $journalId = null): ?Issue {
+        $articleIdInt = (int) $articleId;
+        $journalIdInt = $journalId !== null ? (int) $journalId : null;
+
         $sql = 'SELECT i.*
-            FROM issues i,
-                published_articles pa,
-                articles a
-            WHERE i.issue_id = pa.issue_id AND
-                pa.article_id = ? AND
-                pa.article_id = a.article_id';
-        if ($journalId !== null) {
+            FROM issues i
+            INNER JOIN published_articles pa ON i.issue_id = pa.issue_id
+            INNER JOIN articles a ON pa.article_id = a.article_id
+            WHERE pa.article_id = ?';
+            
+        $params = [$articleIdInt];
+        
+        if ($journalIdInt !== null) {
             $sql .= ' AND i.journal_id = ? AND a.journal_id = i.journal_id';
-            $params[] = (int) $journalId;
+            $params[] = $journalIdInt;
         }
 
         $result = $this->retrieve($sql, $params);
 
         $issue = null;
-        if ($result->RecordCount() != 0) {
-            // $publishedArticleDao not needed here?
+        if (!$result->EOF) {
             $issue = $this->_returnIssueFromRow($result->GetRowAssoc(false));
         }
-
         $result->Close();
-        unset($result);
 
         return $issue;
     }
 
     /**
      * Get all issues organized by published date
-     * @param $journalId int
-     * @param $rangeInfo object DBResultRange (optional)
+     * @param int|string $journalId
+     * @param mixed $rangeInfo DBResultRange (optional)
      * @return DAOResultFactory
      */
-    public function getIssues($journalId, $rangeInfo = null) {
+    public function getIssues(int|string $journalId, mixed $rangeInfo = null): DAOResultFactory {
         $result = $this->retrieveRange(
             'SELECT i.* FROM issues i WHERE journal_id = ? ORDER BY current DESC, date_published DESC',
-            (int) $journalId,
+            [(int) $journalId],
             $rangeInfo
         );
 
-        $returner = new DAOResultFactory($result, $this, '_returnIssueFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnIssueFromRow');
     }
 
     /**
      * Get published issues organized by published date
-     * @param $journalId int
-     * @param $rangeInfo object DBResultRange
+     * @param int|string $journalId
+     * @param mixed $rangeInfo DBResultRange
      * @return DAOResultFactory
      */
-    public function getPublishedIssues($journalId, $rangeInfo = null) {
+    public function getPublishedIssues(int|string $journalId, mixed $rangeInfo = null): DAOResultFactory {
         $result = $this->retrieveRange(
             'SELECT i.* FROM issues i LEFT JOIN custom_issue_orders o ON (o.issue_id = i.issue_id) WHERE i.journal_id = ? AND i.published = 1 ORDER BY o.seq ASC, i.current DESC, i.date_published DESC',
-            (int) $journalId, $rangeInfo
+            [(int) $journalId],
+            $rangeInfo
         );
 
-        $returner = new DAOResultFactory($result, $this, '_returnIssueFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnIssueFromRow');
     }
 
     /**
      * Get unpublished issues organized by published date
-     * @param $journalId int
-     * @param $rangeInfo object DBResultRange
+     * @param int|string $journalId
+     * @param mixed $rangeInfo DBResultRange
      * @return DAOResultFactory
      */
-    public function getUnpublishedIssues($journalId, $rangeInfo = null) {
+    public function getUnpublishedIssues(int|string $journalId, mixed $rangeInfo = null): DAOResultFactory {
         $result = $this->retrieveRange(
             'SELECT i.* FROM issues i WHERE journal_id = ? AND published = 0 ORDER BY year ASC, volume ASC, number ASC',
-            (int) $journalId, $rangeInfo
+            [(int) $journalId],
+            $rangeInfo
         );
 
-        $returner = new DAOResultFactory($result, $this, '_returnIssueFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnIssueFromRow');
     }
 
     /**
      * Return number of articles assigned to an issue.
-     * @param $issueId int
+     * @param int|string $issueId
      * @return int
      */
-    public function getNumArticles($issueId) {
-        $result = $this->retrieve('SELECT COUNT(*) FROM published_articles WHERE issue_id = ?', (int) $issueId);
-        $returner = isset($result->fields[0]) ? (int) $result->fields[0] : 0;
+    public function getNumArticles(int|string $issueId): int {
+        $result = $this->retrieve(
+            'SELECT COUNT(*) FROM published_articles WHERE issue_id = ?', 
+            [(int) $issueId]
+        );
+        
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = !$result->EOF && isset($fields[0]) ? (int) $fields[0] : 0;
 
         $result->Close();
-        unset($result);
-
         return $returner;
     }
 
     /**
      * Delete the custom ordering of a published issue.
-     * @param $journalId int
+     * @param int|string $journalId
      */
-    public function deleteCustomIssueOrdering($journalId) {
-        return $this->update(
-            'DELETE FROM custom_issue_orders WHERE journal_id = ?', (int) $journalId
+    public function deleteCustomIssueOrdering(int|string $journalId): void {
+        $this->update(
+            'DELETE FROM custom_issue_orders WHERE journal_id = ?', 
+            [(int) $journalId]
         );
     }
 
     /**
      * Sequentially renumber custom issue orderings in their sequence order.
-     * @param $journalId int
+     * @param int|string $journalId
      */
-    public function resequenceCustomIssueOrders($journalId) {
+    public function resequenceCustomIssueOrders(int|string $journalId): void {
+        $journalIdInt = (int) $journalId;
         $result = $this->retrieve(
-            'SELECT i.issue_id FROM issues i LEFT JOIN custom_issue_orders o ON (o.issue_id = i.issue_id) WHERE i.journal_id = ? ORDER BY o.seq',
-            (int) $journalId
+            'SELECT i.issue_id FROM issues i LEFT JOIN custom_issue_orders o ON (o.issue_id = i.issue_id) WHERE i.journal_id = ? ORDER BY o.seq ASC, i.date_published DESC',
+            [$journalIdInt]
         );
 
-        for ($i=1; !$result->EOF; $i++) {
-            list($issueId) = $result->fields;
-            $resultB = $this->retrieve('SELECT issue_id FROM custom_issue_orders WHERE journal_id=? AND issue_id=?', array((int) $journalId, (int) $issueId));
-            if (!$resultB->EOF) {
+        $seq = 1;
+        while (!$result->EOF) {
+            /** @var array|bool $fields */
+            $fields = $result->fields;
+            $issueId = isset($fields[0]) ? (int) $fields[0] : 0;
+            
+            $checkResult = $this->retrieve(
+                'SELECT issue_id FROM custom_issue_orders WHERE journal_id = ? AND issue_id = ?', 
+                [$journalIdInt, $issueId]
+            );
+            
+            /** @var array|bool $checkFields */
+            $checkFields = $checkResult->fields;
+            if (!$checkResult->EOF && isset($checkFields[0])) {
                 $this->update(
                     'UPDATE custom_issue_orders SET seq = ? WHERE issue_id = ? AND journal_id = ?',
-                    array($i, (int) $issueId, (int) $journalId)
+                    [$seq, $issueId, $journalIdInt]
                 );
             } else {
-                // This entry is missing. Create it.
-                $this->insertCustomIssueOrder($journalId, $issueId, $i);
+                $this->insertCustomIssueOrder($journalIdInt, $issueId, $seq);
             }
-            $resultB->Close();
-            unset($resultB);
+            $checkResult->Close();
+            
+            $seq++;
             $result->moveNext();
         }
-
-        $result->close();
-        unset($result);
+        $result->Close();
     }
 
     /**
      * Check if a journal has custom issue ordering.
-     * @param $journalId int
-     * @return boolean
+     * @param int|string $journalId
+     * @return bool
      */
-    public function customIssueOrderingExists($journalId) {
+    public function customIssueOrderingExists(int|string $journalId): bool {
         $result = $this->retrieve(
             'SELECT COUNT(*) FROM custom_issue_orders WHERE journal_id = ?',
-            (int) $journalId
+            [(int) $journalId]
         );
-        $returner = isset($result->fields[0]) && $result->fields[0] == 0 ? false : true;
+        
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = !$result->EOF && isset($fields[0]) && (int) $fields[0] > 0;
 
         $result->Close();
-        unset($result);
-
         return $returner;
     }
 
     /**
      * Get the custom issue order of a journal.
-     * @param $journalId int
-     * @param $issueId int
+     * @param int|string $journalId
+     * @param int|string $issueId
      * @return int|null
      */
-    public function getCustomIssueOrder($journalId, $issueId) {
+    public function getCustomIssueOrder(int|string $journalId, int|string $issueId): ?int {
         $result = $this->retrieve(
             'SELECT seq FROM custom_issue_orders WHERE journal_id = ? AND issue_id = ?',
-            array((int) $journalId, (int) $issueId)
+            [(int) $journalId, (int) $issueId]
         );
 
-        $returner = null;
-        if (!$result->EOF) {
-            list($returner) = $result->fields;
-        }
-        $result->Close();
-        unset($result);
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = !$result->EOF && isset($fields[0]) ? (int) $fields[0] : null;
 
+        $result->Close();
         return $returner;
     }
 
     /**
-     * Import the current issue orders into the specified journal as custom
-     * issue orderings.
-     * @param $journalId int
+     * Import the current issue orders into the specified journal as custom issue orderings.
+     * @param int|string $journalId
      */
-    public function setDefaultCustomIssueOrders($journalId) {
+    public function setDefaultCustomIssueOrders(int|string $journalId): void {
         $publishedIssues = $this->getPublishedIssues($journalId);
-        $i=1;
+        $seq = 1;
         while ($issue = $publishedIssues->next()) {
-            $this->insertCustomIssueOrder($journalId, $issue->getId(), $i);
-            unset($issue);
-            $i++;
+            $this->insertCustomIssueOrder((int) $journalId, (int) $issue->getId(), $seq);
+            $seq++;
         }
     }
 
     /**
      * INTERNAL USE ONLY: Insert a custom issue ordering
-     * @param $journalId int
-     * @param $issueId int
-     * @param $seq int
+     * @param int|string $journalId
+     * @param int|string $issueId
+     * @param int $seq
      */
-    public function insertCustomIssueOrder($journalId, $issueId, $seq) {
+    public function insertCustomIssueOrder(int|string $journalId, int|string $issueId, int $seq): void {
         $this->update(
             'INSERT INTO custom_issue_orders (issue_id, journal_id, seq) VALUES (?, ?, ?)',
-            array(
-                $issueId,
-                $journalId,
-                $seq
-            )
+            [(int) $issueId, (int) $journalId, $seq]
         );
     }
 
     /**
      * Move a custom issue ordering up or down, resequencing as necessary.
-     * @param $journalId int
-     * @param $issueId int
-     * @param $newPos int The new position (0-based) of this section
+     * @param int|string $journalId
+     * @param int|string $issueId
+     * @param int $newPos The new position (0-based) of this section
      */
-    public function moveCustomIssueOrder($journalId, $issueId, $newPos) {
-        $result = $this->retrieve('SELECT issue_id FROM custom_issue_orders WHERE journal_id=? AND issue_id=?', array((int) $journalId, (int) $issueId));
+    public function moveCustomIssueOrder(int|string $journalId, int|string $issueId, int $newPos): void {
+        $journalIdInt = (int) $journalId;
+        $issueIdInt = (int) $issueId;
+        
+        $result = $this->retrieve(
+            'SELECT issue_id FROM custom_issue_orders WHERE journal_id = ? AND issue_id = ?', 
+            [$journalIdInt, $issueIdInt]
+        );
+        
         if (!$result->EOF) {
             $this->update(
                 'UPDATE custom_issue_orders SET seq = ? WHERE journal_id = ? AND issue_id = ?',
-                array($newPos, (int) $journalId, (int) $issueId)
+                [$newPos, $journalIdInt, $issueIdInt]
             );
         } else {
-            // This entry is missing. Create it.
-            $this->insertCustomIssueOrder($journalId, $issueId, $newPos);
+            $this->insertCustomIssueOrder($journalIdInt, $issueIdInt, $newPos);
         }
         $result->Close();
-        unset($result);
-        $this->resequenceCustomIssueOrders($journalId);
+        
+        $this->resequenceCustomIssueOrders($journalIdInt);
     }
 
     /**
      * Delete the public IDs of all issues of a journal.
-     * @param $journalId int
-     * @param $pubIdType string
+     * @param int|string $journalId
+     * @param string $pubIdType
      */
-    public function deleteAllPubIds($journalId, $pubIdType) {
-        $journalId = (int) $journalId;
-        $settingName = 'pub-id::'.$pubIdType;
-
-        // issues
+    public function deleteAllPubIds(int|string $journalId, string $pubIdType): void {
+        $settingName = 'pub-id::' . $pubIdType;
         $issues = $this->getIssues($journalId);
+        
         while ($issue = $issues->next()) {
             $this->update(
                 'DELETE FROM issue_settings WHERE setting_name = ? AND issue_id = ?',
-                array(
-                    $settingName,
-                    (int)$issue->getId()
-                )
+                [$settingName, (int) $issue->getId()]
             );
-            unset($issue);
         }
         $this->flushCache();
     }
 
     /**
      * Delete the public ID of an issue.
-     * @param $issueId int
-     * @param $pubIdType string
+     * @param int|string $issueId
+     * @param string $pubIdType
      */
-    public function deletePubId($issueId, $pubIdType) {
-        $settingName = 'pub-id::'.$pubIdType;
+    public function deletePubId(int|string $issueId, string $pubIdType): void {
+        $settingName = 'pub-id::' . $pubIdType;
         $this->update(
             'DELETE FROM issue_settings WHERE setting_name = ? AND issue_id = ?',
-            array(
-                $settingName,
-                (int)$issueId
-            )
+            [$settingName, (int) $issueId]
         );
         $this->flushCache();
     }
 	
-	// ---------------------------------------------------------
-    // WIZDAM CUSTOM METHODS (MODERNIZED)
+    // ---------------------------------------------------------
+    // LUMERA METHODS (MODERNIZED)
     // ---------------------------------------------------------
 
     /**
      * Mengambil semua issue yang terbit dalam satu volume.
-     * Menggunakan iterator untuk efisiensi memori.
-     * @param int $journalId
-     * @param int $volume
+     * @param int|string $journalId
+     * @param int|string $volume
      * @return DAOResultFactory
      */
-    public function getPublishedIssuesByVolume($journalId, $volume) {
+    public function getPublishedIssuesByVolume(int|string $journalId, int|string $volume): DAOResultFactory {
         $result = $this->retrieve(
             'SELECT i.* FROM issues i
              WHERE i.journal_id = ? AND i.volume = ? AND i.published = 1
              ORDER BY i.date_published DESC, i.number DESC',
-            array((int)$journalId, (int)$volume)
+            [(int) $journalId, (int) $volume]
         );
     
-        // Factory digunakan agar object issue dibuat hanya saat diloop (Lazy Loading)
-        $returner = new DAOResultFactory($result, $this, '_returnIssueFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnIssueFromRow');
     }
     
     /**
      * Mengambil issue terbit SEBELUMNYA dan BERIKUTNYA berdasarkan tanggal terbit.
-     * Logic: Mencari tanggal terbit > (Next) dan < (Prev).
-     * @param int $issueId ID issue saat ini
-     * @param int $journalId ID jurnal saat ini
-     * @return array [Issue|null, Issue|null] -> [Prev, Next]
+     * @param int|string $issueId ID issue saat ini
+     * @param int|string $journalId ID jurnal saat ini
+     * @return array{0: Issue|null, 1: Issue|null} [Prev, Next]
      */
-    public function getSurroundingIssues($issueId, $journalId) {
-        $prevIssue = null;
-        $nextIssue = null;
-    
+    public function getSurroundingIssues(int|string $issueId, int|string $journalId): array {
+        $issueIdInt = (int) $issueId;
+        $journalIdInt = (int) $journalId;
+
         // 1. Dapatkan tanggal issue saat ini
         $result = $this->retrieve(
             'SELECT date_published FROM issues WHERE issue_id = ?',
-            (int)$issueId
+            [$issueIdInt]
         );
 
-        if ($result->RecordCount() == 0) {
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        if ($result->EOF || !isset($fields[0])) {
             $result->Close();
-            return array(null, null);
+            return [null, null];
         }
         
-        $currentDate = $result->fields[0];
+        $currentDate = $fields[0];
         $result->Close();
     
         // 2. Dapatkan Issue BERIKUTNYA (Lebih Baru: Date > Current)
-        // FIX: Urutan param retrieveLimit($sql, $params, $numRows)
         $resultNext = $this->retrieveLimit(
             'SELECT i.* FROM issues i
-             WHERE i.journal_id = ? AND i.published = 1
-             AND i.date_published > ?
+             WHERE i.journal_id = ? AND i.published = 1 AND i.date_published > ?
              ORDER BY i.date_published ASC',
-            array((int)$journalId, $currentDate), // Params dulu
-            1 // Baru Limit
+            [$journalIdInt, $currentDate], 
+            1 
         );
     
-        if ($resultNext->RecordCount() > 0) {
+        $nextIssue = null;
+        if (!$resultNext->EOF) {
             $nextIssue = $this->_returnIssueFromRow($resultNext->GetRowAssoc(false));
         }
         $resultNext->Close();
     
         // 3. Dapatkan Issue SEBELUMNYA (Lebih Lama: Date < Current)
-        // FIX: Urutan param retrieveLimit($sql, $params, $numRows)
         $resultPrev = $this->retrieveLimit(
             'SELECT i.* FROM issues i
-             WHERE i.journal_id = ? AND i.published = 1
-             AND i.date_published < ?
+             WHERE i.journal_id = ? AND i.published = 1 AND i.date_published < ?
              ORDER BY i.date_published DESC',
-            array((int)$journalId, $currentDate), // Params dulu
-            1 // Baru Limit
+            [$journalIdInt, $currentDate], 
+            1 
         );
     
-        if ($resultPrev->RecordCount() > 0) {
+        $prevIssue = null;
+        if (!$resultPrev->EOF) {
             $prevIssue = $this->_returnIssueFromRow($resultPrev->GetRowAssoc(false));
         }
         $resultPrev->Close();
     
-        return array($prevIssue, $nextIssue);
+        return [$prevIssue, $nextIssue];
     }
     
     /**
      * Mendapatkan ID Volume terbit SEBELUMNYA dan BERIKUTNYA.
-     * Menggunakan fungsi agregat SQL (MIN/MAX) yang sangat cepat.
-     * @param int $journalId
-     * @param int $currentVolumeId
-     * @return array [int|null, int|null] -> [PrevID, NextID]
+     * @param int|string $journalId
+     * @param int|string $currentVolumeId
+     * @return array{0: int|null, 1: int|null} [PrevID, NextID]
      */
-    public function getSurroundingVolumeIds($journalId, $currentVolumeId) {
+    public function getSurroundingVolumeIds(int|string $journalId, int|string $currentVolumeId): array {
+        $journalIdInt = (int) $journalId;
+        $currentVolumeIdInt = (int) $currentVolumeId;
+
         // 1. Next Volume (Angka Volume Lebih Besar Terdekat) -> MIN(volume > current)
         $resultNext = $this->retrieve(
             'SELECT MIN(i.volume) FROM issues i
-             WHERE i.journal_id = ? AND i.published = 1
-             AND i.volume > ?',
-            array((int)$journalId, (int)$currentVolumeId)
+             WHERE i.journal_id = ? AND i.published = 1 AND i.volume > ?',
+            [$journalIdInt, $currentVolumeIdInt]
         );
-        // Casting ke int jika ada hasil, null jika tidak
-        $nextVolumeId = isset($resultNext->fields[0]) ? (int)$resultNext->fields[0] : null;
+        
+        /** @var array|bool $fieldsNext */
+        $fieldsNext = $resultNext->fields;
+        $nextVolumeId = !$resultNext->EOF && isset($fieldsNext[0]) && $fieldsNext[0] !== null ? (int) $fieldsNext[0] : null;
         $resultNext->Close();
     
         // 2. Prev Volume (Angka Volume Lebih Kecil Terdekat) -> MAX(volume < current)
         $resultPrev = $this->retrieve(
             'SELECT MAX(i.volume) FROM issues i
-             WHERE i.journal_id = ? AND i.published = 1
-             AND i.volume < ?',
-            array((int)$journalId, (int)$currentVolumeId)
+             WHERE i.journal_id = ? AND i.published = 1 AND i.volume < ?',
+            [$journalIdInt, $currentVolumeIdInt]
         );
-        $prevVolumeId = isset($resultPrev->fields[0]) ? (int)$resultPrev->fields[0] : null;
+        
+        /** @var array|bool $fieldsPrev */
+        $fieldsPrev = $resultPrev->fields;
+        $prevVolumeId = !$resultPrev->EOF && isset($fieldsPrev[0]) && $fieldsPrev[0] !== null ? (int) $fieldsPrev[0] : null;
         $resultPrev->Close();
     
-        return array($prevVolumeId, $nextVolumeId);
+        return [$prevVolumeId, $nextVolumeId];
     }
     
     /**
      * Mengambil satu issue berdasarkan Journal ID, Volume, dan Nomor.
-     * Digunakan untuk routing URL cantik /volume/1/issue/2
-     * @param int $journalId
-     * @param int $volume
+     * @param int|string $journalId
+     * @param int|string $volume
      * @param string $number (Bisa berupa '1', '1-2', 'SA')
      * @return Issue|null
      */
-    public function getIssueByVolumeAndNumber($journalId, $volume, $number) {
-        // FIX: Urutan param retrieveLimit($sql, $params, $numRows)
+    public function getIssueByVolumeAndNumber(int|string $journalId, int|string $volume, string $number): ?Issue {
         $result = $this->retrieveLimit(
             'SELECT i.* FROM issues i
              WHERE i.journal_id = ? AND i.volume = ? AND i.number = ? AND i.published = 1',
-            array((int)$journalId, (int)$volume, (string)$number), // Params dulu
-            1 // Baru Limit
+            [(int) $journalId, (int) $volume, $number], 
+            1 
         );
     
         $issue = null;
-        if ($result->RecordCount() != 0) {
+        if (!$result->EOF) {
             $issue = $this->_returnIssueFromRow($result->GetRowAssoc(false));
         }
         $result->Close();
@@ -998,15 +1000,14 @@ class IssueDAO extends DAO {
 
     /**
      * Flush the issue cache.
-     * Diperbarui untuk visibilitas public.
      */
-    public function flushCache() {
+    public function flushCache(): void {
         $cache = $this->_getCache('issues');
         $cache->flush();
-        unset($cache);
         
         $cache = $this->_getCache('current');
         $cache->flush();
     }
+    
 }
 ?>
