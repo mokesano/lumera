@@ -11,12 +11,13 @@ declare(strict_types=1);
  * @class PKPProfiler
  * @ingroup core
  *
- * @brief Basic shell class used to wrap the PHP Quick Profiler Class
- * WIZDAM EDITION: PHP 8 Compatibility
+ * @brief Basic shell class used to wrap the PHP Quick Profiler Class.
  */
 
 require_once('./lib/pkp/lib/pqp/classes/PhpQuickProfiler.php');
 require_once('./lib/pkp/lib/pqp/classes/Console.php');
+
+import('lib.pkp.classes.core.PKPDBProfiler');
 
 class PKPProfiler {
 
@@ -35,7 +36,7 @@ class PKPProfiler {
      */
     public function PKPProfiler() {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::PKPProfiler(). Please refactor to parent::__construct().", 
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to parent::__construct().", 
             E_USER_DEPRECATED
         );
         self::__construct();
@@ -43,7 +44,7 @@ class PKPProfiler {
 
     /**
      * Gather information to be used to display profiling
-     * @return array of stored profiling information
+     * @return array
      */
     public function getData() {
         $profiler = $this->profiler;
@@ -57,37 +58,6 @@ class PKPProfiler {
 
         return $profiler->output;
     }
+
 }
-
-class PKPDBProfiler {
-
-    /** @var int property to wrap DB connection query count */
-    public $queryCount;
-
-    /** @var array property to store queries (PHP 8 require explicit declaration) */
-    public $queries;
-
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        // PHP 8: Objects are passed by handle, reference & removed
-        $dbconn = DBConnection::getInstance();
-
-        $this->queryCount = $dbconn->getNumQueries();
-        $this->queries = Registry::get('queries', true, array());
-    }
-
-    /**
-     * [SHIM] Backward Compatibility
-     */
-    public function PKPDBProfiler() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::PKPDBProfiler(). Please refactor to parent::__construct().", 
-            E_USER_DEPRECATED
-        );
-        self::__construct();
-    }
-}
-
 ?>
