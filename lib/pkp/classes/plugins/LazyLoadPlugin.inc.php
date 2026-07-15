@@ -11,11 +11,7 @@ declare(strict_types=1);
  * @class CachedPlugin
  * @ingroup plugins
  *
- * @brief Abstract class for plugins that optionally
- * support lazy load.
- * * MODERNIZED FOR PHP 7.4+ (OJS FORK)
- * - Constructor updated to __construct
- * - Parent constructor call updated
+ * @brief Abstract class for plugins that optionally.
  */
 
 import('classes.plugins.Plugin');
@@ -32,9 +28,8 @@ class LazyLoadPlugin extends Plugin {
     /**
 	 * Override public methods from PKPPlugin.
      * @see PKPPlugin::register()
-	 * @param category
-	 * @param path
-     * @param lazyLoad
+	 * @param string $category
+	 * @param string $path
 	 * @return bool
      */
     public function register(string $category, string $path): bool {
@@ -66,12 +61,12 @@ class LazyLoadPlugin extends Plugin {
      * Determine whether or not this plugin is currently enabled.
 	 * @see PKPPlugin::getContextSpecificSetting()
 	 * @param string $request
-	 * @param mixed $request
      * @return bool
      */
     public function getEnabled($request = null): bool {
-        // [WIZDAM FIX] CLI/Acron Guard (PHP 7.4 - 8.4+ Safe)
-        // Cegah fatal error: Jika Aplikasi belum diinisialisasi (null) saat tugas latar belakang, tidak mungkin ada konteks. Kembalikan false secara aman tanpa mengakses PKPPlugin.
+        // Cegah fatal error: 
+        // Jika Aplikasi belum diinisialisasi (null) saat tugas latar belakang, tidak mungkin ada konteks. 
+        // Kembalikan false secara aman tanpa mengakses PKPPlugin.
         if (!PKPApplication::getApplication()) {
             return false;
         }
@@ -90,5 +85,6 @@ class LazyLoadPlugin extends Plugin {
         $this->updateContextSpecificSetting($this->getSettingMainContext($request), 'enabled', $enabled, 'bool');
         return true;
     }
+
 }
 ?>

@@ -31,7 +31,10 @@ class SuppFile extends ArticleFile {
      */
     public function SuppFile() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class SuppFile uses deprecated constructor parent::SuppFile(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'. Please refactor to parent::__construct().",
+                E_USER_DEPRECATED
+            );
         }
         self::__construct();
     }
@@ -403,13 +406,11 @@ class SuppFile extends ArticleFile {
      * @return string
      */
     public function getBestSuppFileId($journal = null) {
-        // Retrieve the journal, if necessary.
         if (!isset($journal)) {
             /** @var ArticleDAO $articleDao */
             $articleDao = DAORegistry::getDAO('ArticleDAO');
             $article = $articleDao->getArticle($this->getArticleId());
             
-            // PHP 8 Safety: Handle orphan supp files
             if (!$article) return $this->getId();
             /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
@@ -422,5 +423,6 @@ class SuppFile extends ArticleFile {
         }
         return $this->getId();
     }
+
 }
 ?>

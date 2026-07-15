@@ -30,6 +30,9 @@ class AuthorSubmitStep4Form extends AuthorSubmitForm {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param Article $article
+     * @param Journal $journal
+     * @param PKPRequest $request
      */
     public function AuthorSubmitStep4Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -53,6 +56,7 @@ class AuthorSubmitStep4Form extends AuthorSubmitForm {
         $templateMgr = TemplateManager::getManager($request);
 
         // Get supplementary files for this article
+        /** @var SuppFileDAO $suppFileDao  */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
         $templateMgr->assign('suppFiles', $suppFileDao->getSuppFilesByArticle($this->articleId));
 
@@ -65,6 +69,7 @@ class AuthorSubmitStep4Form extends AuthorSubmitForm {
      * @return int the article ID
      */
     public function execute($object = null) {
+        /** @var ArticleDAO $articleDao  */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
 
         // Update article
@@ -77,5 +82,6 @@ class AuthorSubmitStep4Form extends AuthorSubmitForm {
 
         return $this->articleId;
     }
+
 }
 ?>

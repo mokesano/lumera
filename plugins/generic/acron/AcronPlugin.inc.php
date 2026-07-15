@@ -298,7 +298,6 @@ class AcronPlugin extends GenericPlugin {
     /**
      * Handle graceful HTTP connection closure to allow background processing.
      * Compatible with both Nginx/PHP-FPM and Apache mod_php.
-     * @param Request|null $request
      */
     protected function _closeHttpConnectionGracefully(): void {
         // Lepaskan lock session agar user bisa lanjut browsing di tab lain
@@ -306,7 +305,7 @@ class AcronPlugin extends GenericPlugin {
             session_write_close();
         }
 
-        // [WIZDAM MODERN COMPATIBILITY] Eksekusi absolut untuk PHP-FPM
+        // Eksekusi absolut untuk PHP-FPM
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
             return;
@@ -331,8 +330,6 @@ class AcronPlugin extends GenericPlugin {
     /**
      * Arrange task execution flow and delegate to single task executor.
      * @param array $tasksToRun
-     * @param ScheduledTaskDAO $taskDao 
-     * @param array $currentTasksToRun
      */
     protected function _executeScheduledTasks(array $tasksToRun): void {
         /** @var ScheduledTaskDAO $taskDao */
@@ -503,7 +500,7 @@ class AcronPlugin extends GenericPlugin {
 
     /**
      * Evaluate if a task is ready to be executed based on its frequency.
-     * @param array $task Array dengan keys: 'className', 'frequency', 'args'.
+     * @param $task Array dengan keys: 'className', 'frequency', 'args'.
      * @return bool True jika tugas siap dieksekusi, false jika tidak.
      */
     protected function _isTaskReadyToExecute(array $task): bool {
@@ -522,5 +519,6 @@ class AcronPlugin extends GenericPlugin {
         
         return ScheduledTaskHelper::checkFrequency($task['className'], $frequencyNode);
     }
+    
 }
 ?>
