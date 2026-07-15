@@ -452,5 +452,6 @@ class EmailHandler extends ManagerHandler {
             ['contents' => __($message)]
         );
     }
+    
 }
 ?>
