@@ -579,6 +579,7 @@ class PKPApplication {
     public function getJSLocaleKeys(): array {
         return ['form.dataHasChanged'];
     }
+    
 }
 
 /**
@@ -592,4 +593,5 @@ class PKPApplication {
 function define_exposed(string $name, mixed $value): void {
     PKPApplication::defineExposedConstant($name, $value);
 }
+
 ?>
