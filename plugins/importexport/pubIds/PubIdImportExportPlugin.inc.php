@@ -17,8 +17,8 @@ declare(strict_types=1);
 import('classes.plugins.ImportExportPlugin');
 import('lib.pkp.classes.xml.XMLCustomWriter');
 
-define('PID_DTD_URL', 'http://pkp.sfu.ca/ojs/dtds/2.3/pubIds.dtd');
-define('PID_DTD_ID', '-//PKP//OJS PubIds XML//EN');
+define('PID_DTD_PATH', __DIR__ . '/pubIds.dtd');
+define('PID_DTD_ID', '-//Sangia//Lumera PubIds XML//EN');
 
 class PubIdImportExportPlugin extends ImportExportPlugin {
 
@@ -103,6 +103,7 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
         $templateMgr = TemplateManager::getManager();
         parent::display($args, $request);
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $journal = $request->getJournal();
         
@@ -181,22 +182,25 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
      * @return bool
      */
     public function exportPubIdsForIssues($journal, $issues, $outputFile = null): bool {
-        $doc = XMLCustomWriter::createDocument('pubIds', PID_DTD_URL, PID_DTD_URL);
+        $doc = XMLCustomWriter::createDocument('pubIds', PID_DTD_PATH, PID_DTD_PATH);
         $pubIdsNode = XMLCustomWriter::createElement($doc, 'pubIds');
         XMLCustomWriter::appendChild($doc, $pubIdsNode);
 
         foreach ($issues as $issue) {
             $this->generatePubId($doc, $pubIdsNode, $issue, $journal->getId());
 
+            /** @var PublishedArticleDAO $publishedArticleDao */
             $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
             foreach ($publishedArticleDao->getPublishedArticles($issue->getId()) as $publishedArticle) {
                 $this->generatePubId($doc, $pubIdsNode, $publishedArticle, $journal->getId());
 
+                /** @var ArticleGalleyDAO $articleGalleyDao */
                 $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
                 foreach ($articleGalleyDao->getGalleysByArticle($publishedArticle->getId()) as $articleGalley) {
                     $this->generatePubId($doc, $pubIdsNode, $articleGalley, $journal->getId());
                 }
 
+                /** @var SuppFileDAO $suppFileDao */
                 $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
                 foreach ($suppFileDao->getSuppFilesByArticle($publishedArticle->getId()) as $suppFile) {
                     $this->generatePubId($doc, $pubIdsNode, $suppFile, $journal->getId());
@@ -425,15 +429,18 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
         $xmlFile = array_shift($args);
         $journalPath = array_shift($args);
 
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
-
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
 
         $journal = $journalDao->getJournalByPath($journalPath);
-
         if (!$journal) {
             if ($journalPath != '') {
                 echo __('plugins.importexport.pubIds.cliError') . "\n";
@@ -544,5 +551,6 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
             'pluginName' => $this->getName()
         ]) . "\n";
     }
+
 }
 ?>
