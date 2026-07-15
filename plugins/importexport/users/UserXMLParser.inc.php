@@ -16,6 +16,7 @@ declare(strict_types=1);
  */
 
 import('lib.pkp.classes.xml.PKPXMLParser');
+import('plugins.importexport.users.ImportedUser');
 
 class UserXMLParser {
 
@@ -274,6 +275,10 @@ class UserXMLParser {
                 }
             }
 
+            /** @var JournalDAO $journalDao */
+            $journalDao = DAORegistry::getDAO('JournalDAO');
+            $journal = $journalDao->getById($this->journalId);
+
             // Add reviewing interests to interests table
             /** @var InterestDAO $interestDao */
             $interestDao = DAORegistry::getDAO('InterestDAO');
@@ -314,7 +319,6 @@ class UserXMLParser {
                 // Send email notification to user as if user just registered themselves
                 $mail->addRecipient($user->getEmail(), $user->getFullName());
                 $mail->sendWithParams([
-                    /** @var \Journal|null|unset $journal */
                     'journalName' => $journal->getTitle($journal->getPrimaryLocale()),
                     'username' => $user->getUsername(),
                     'password' => $user->getUnencryptedPassword() == null ? '-' : $user->getUnencryptedPassword(),
