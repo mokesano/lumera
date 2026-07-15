@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @class PLNGatewayPlugin
  * @ingroup plugins_generic_pln
  *
- * @brief Gateway component of web feed plugin
+ * @brief Gateway component of web feed plugin.
  *
  */
 
@@ -32,6 +32,7 @@ class PLNGatewayPlugin extends GatewayPlugin {
 
 	/**
 	 * Constructor.
+	 * @param mixed $parentPluginName
 	 */
 	public function __construct($parentPluginName) {
 		parent::__construct();
@@ -111,22 +112,25 @@ class PLNGatewayPlugin extends GatewayPlugin {
 	 * @return array
 	 */
 	public function getManagementVerbs(array $verbs = [], $request = null): array {
-        return array();
+        return [];
 	}
         
 	/**
 	 * Handle fetch requests for this plugin.
+	 * @param array $args
+	 * @param object $request
 	 */
 	public function fetch($args, $request) {
 		$plugin = $this->getPLNPlugin();
 		$templateMgr = TemplateManager::getManager();
 
-		$journal = Request::getJournal();
-		$templateMgr->assign_by_ref('journal', $journal);
+		$journal = $request->getJournal();
+		$templateMgr->assign('journal', $journal);
 
 		$pluginVersionFile = $this->getPluginPath() . DIRECTORY_SEPARATOR . 'version.xml';
 		$pluginVersion = VersionCheck::parseVersionXml($pluginVersionFile);
-		$templateMgr->assign_by_ref('pluginVersion', $pluginVersion);
+
+		$templateMgr->assign('pluginVersion', $pluginVersion);
 
 		$terms = array();
 		$termsAccepted = $plugin->termsAgreed($journal->getId());
@@ -151,9 +155,9 @@ class PLNGatewayPlugin extends GatewayPlugin {
 			'zipInstalled' => class_exists('ZipArchive') ? 'yes' : 'no',
 			'tarInstalled' => class_exists('Archive_Tar') ? 'yes' : 'no',
 			'acron' => isset($products['acron']) ? 'yes' : 'no',
-			'tasks' => Config::getVar('scheduled_tasks', false) ? 'yes' : 'no',
+			'tasks' => Config::getVar('general', 'scheduled_tasks', false) ? 'yes' : 'no',
 		);
-		$templateMgr->assign_by_ref('prerequisites', $prerequisites);
+		$templateMgr->assign('prerequisites', $prerequisites);
 
 		$termKeys = array_keys($terms);
 		$termsDisplay = array();
@@ -167,19 +171,23 @@ class PLNGatewayPlugin extends GatewayPlugin {
 		}
 		$templateMgr->assign('termsDisplay', new ArrayItemIterator($termsDisplay));
 
+		/** @var VersionDAO $versionDao  */
 		$versionDao = DAORegistry::getDAO('VersionDAO');
 		$ojsVersion = $versionDao->getCurrentVersion();
 		$templateMgr->assign('ojsVersion', $ojsVersion->getVersionString());
 
+		/** @var PublishedArticleDAO $publishedArticlesDAO */
 		$publishedArticlesDAO = DAORegistry::getDAO('PublishedArticleDAO');
 		$range = new DBResultRange(PLN_PLUGIN_PING_ARTICLE_COUNT);
 		$publishedArticles = $publishedArticlesDAO->getPublishedArticlesByJournalId($journal->getId(), $range, true);
-		$templateMgr->assign_by_ref('articles', $publishedArticles);
-		$templateMgr->assign_by_ref('pln_network', $plugin->getSetting($journal->getId(), 'pln_network'));
+
+		$templateMgr->assign('articles', $publishedArticles);
+		$templateMgr->assign('pln_network', $plugin->getSetting($journal->getId(), 'pln_network'));
 
 		$templateMgr->display($this->getTemplatePath() . DIRECTORY_SEPARATOR . 'ping.tpl', 'text/xml');
 
 		return true;
 	}
+
 }
 ?>

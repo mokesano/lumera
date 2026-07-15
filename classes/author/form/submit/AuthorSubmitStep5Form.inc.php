@@ -33,6 +33,9 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param Article $article
+     * @param Journal $journal
+     * @param PKPRequest $request
      */
     public function AuthorSubmitStep5Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -68,6 +71,7 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
         $templateMgr = TemplateManager::getManager($request);
 
         // Get article file for this article
+        /** @var ArticleFileDAO $articleFileDao  */
         $articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
         $articleFiles = $articleFileDao->getArticleFilesByArticle($this->articleId);
 
@@ -79,6 +83,7 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
         $paymentManager = new OJSPaymentManager($this->request);
         if ( $paymentManager->submissionEnabled() || $paymentManager->fastTrackEnabled() || $paymentManager->publicationEnabled()) {
             $templateMgr->assign('authorFees', true);
+            /** @var OJSCompletedPaymentDAO $completedPaymentDao  */
             $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
             $articleId = $this->articleId;
 
@@ -129,6 +134,7 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
             $articleId = $this->articleId;
             $user = $this->request->getUser();
 
+            /** @var OJSCompletedPaymentDAO $completedPaymentDao  */
             $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
             if ($completedPaymentDao->hasPaidSubmission($journalId, $articleId)) {
                 return parent::validate();
@@ -154,7 +160,9 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
      * @return int the article ID
      */
     public function execute($object = null) {
+        /** @var ArticleDAO $articleDao  */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
+        /** @var SignoffDAO $signoffDao  */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
 
         $journal = $this->request->getJournal();
@@ -177,6 +185,7 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
         $articleDao->updateLocaleFields($article);
 
         // Designate this as the review version by default.
+        /** @var AuthorSubmissionDAO $authorSubmissionDao  */
         $authorSubmissionDao = DAORegistry::getDAO('AuthorSubmissionDAO');
         $authorSubmission = $authorSubmissionDao->getAuthorSubmission($article->getId());
         AuthorAction::designateReviewVersion($authorSubmission, true);
@@ -256,5 +265,6 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
 
         return $this->articleId;
     }
+    
 }
 ?>

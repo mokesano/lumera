@@ -54,6 +54,7 @@ class AuthorSubmitSuppFileForm extends Form {
         $this->articleId = (int) $article->getId();
 
         if (isset($suppFileId) && !empty($suppFileId)) {
+            /** @var SuppFileDAO $suppFileDao  */
             $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
             $this->suppFile = $suppFileDao->getSuppFile($suppFileId, $article->getId());
             if (isset($this->suppFile)) {
@@ -68,6 +69,9 @@ class AuthorSubmitSuppFileForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param Article $article
+     * @param Journal $journal
+     * @param int|null $suppFileId
      */
     public function AuthorSubmitSuppFileForm($article, $journal, $suppFileId = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -186,6 +190,7 @@ class AuthorSubmitSuppFileForm extends Form {
     public function execute($object = null) {
         import('classes.file.ArticleFileManager');
         $articleFileManager = new ArticleFileManager($this->articleId);
+        /** @var SuppFileDAO $suppFileDao  */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
 
         $fileName = 'uploadSuppFile';
@@ -246,5 +251,6 @@ class AuthorSubmitSuppFileForm extends Form {
         $suppFile->setLanguage($this->getData('language'));
         $suppFile->setShowReviewers($this->getData('showReviewers'));
     }
+    
 }
 ?>

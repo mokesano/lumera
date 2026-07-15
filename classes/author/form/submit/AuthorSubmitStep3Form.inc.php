@@ -67,6 +67,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
         $this->addCheck(new FormValidatorLocale($this, 'title', 'required', 'author.submit.form.titleRequired', $this->getRequiredLocale()));
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $section = $sectionDao->getSection($article->getSectionId());
         $abstractWordCount = $section->getAbstractWordCount();
@@ -87,6 +88,9 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param Article $article
+     * @param Journal $journal
+     * @param PKPRequest $request
      */
     public function AuthorSubmitStep3Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -111,51 +115,51 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
      * Initialize form data from current article.
      */
     public function initData() {
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
-        $formLocale = AppLocale::getLocale(); // Ambil locale aktif saat ini
+        $formLocales = $this->getSubmissionLocales();
 
         if (isset($this->article)) {
             $article = $this->article;
             $this->_data = [
                 'authors' => [],
-                'title' => $article->getTitle(null), // Localized
-                'abstract' => $article->getAbstract(null), // Localized
-                'discipline' => $article->getDiscipline(null), // Localized
-                'subjectClass' => $article->getSubjectClass(null), // Localized
-                'subject' => $article->getSubject(null), // Localized
-                'coverageGeo' => $article->getCoverageGeo(null), // Localized
-                'coverageChron' => $article->getCoverageChron(null), // Localized
-                'coverageSample' => $article->getCoverageSample(null), // Localized
-                'type' => $article->getType(null), // Localized
+                'title' => $article->getTitle(null),
+                'abstract' => $article->getAbstract(null),
+                'discipline' => $article->getDiscipline(null),
+                'subjectClass' => $article->getSubjectClass(null),
+                'subject' => $article->getSubject(null),
+                'coverageGeo' => $article->getCoverageGeo(null),
+                'coverageChron' => $article->getCoverageChron(null),
+                'coverageSample' => $article->getCoverageSample(null),
+                'type' => $article->getType(null),
                 'language' => $article->getLanguage(),
-                'sponsor' => $article->getSponsor(null), // Localized
+                'sponsor' => $article->getSponsor(null),
                 'section' => $sectionDao->getSection($article->getSectionId()),
                 'citations' => $article->getCitations()
             ];
 
-            // [FIX] Pastikan title dan abstract selalu berupa array dengan locale aktif
             if (!is_array($this->_data['title'])) $this->_data['title'] = [];
-            if (!isset($this->_data['title'][$formLocale])) $this->_data['title'][$formLocale] = '';
-            
             if (!is_array($this->_data['abstract'])) $this->_data['abstract'] = [];
-            if (!isset($this->_data['abstract'][$formLocale])) $this->_data['abstract'][$formLocale] = '';
+            foreach ($formLocales as $locale) {
+                if (!isset($this->_data['title'][$locale])) $this->_data['title'][$locale] = '';
+                if (!isset($this->_data['abstract'][$locale])) $this->_data['abstract'][$locale] = '';
+            }
 
             $authors = $article->getAuthors();
             for ($i=0, $count=count($authors); $i < $count; $i++) {
-                // Ambil data terlokalisasi mentah dari DB
-                $affiliation = $authors[$i]->getAffiliation(null);
-                $competingInterests = $authors[$i]->getCompetingInterests(null);
-                $biography = $authors[$i]->getBiography(null);
+                $affiliationArray = $authors[$i]->getAffiliation(null);
+                $competingInterestsArray = $authors[$i]->getCompetingInterests(null);
+                $biographyArray = $authors[$i]->getBiography(null);
 
-                // [FIX] Normalisasi ke array dan pastikan key locale saat ini tersedia
-                $affiliationArray = is_array($affiliation) ? $affiliation : [];
-                if (!isset($affiliationArray[$formLocale])) $affiliationArray[$formLocale] = '';
+                $affiliationArray = is_array($affiliationArray) ? $affiliationArray : [];
+                $competingInterestsArray = is_array($competingInterestsArray) ? $competingInterestsArray : [];
+                $biographyArray = is_array($biographyArray) ? $biographyArray : [];
 
-                $competingInterestsArray = is_array($competingInterests) ? $competingInterests : [];
-                if (!isset($competingInterestsArray[$formLocale])) $competingInterestsArray[$formLocale] = '';
-
-                $biographyArray = is_array($biography) ? $biography : [];
-                if (!isset($biographyArray[$formLocale])) $biographyArray[$formLocale] = '';
+                foreach ($formLocales as $locale) {
+                    if (!isset($affiliationArray[$locale])) $affiliationArray[$locale] = '';
+                    if (!isset($competingInterestsArray[$locale])) $competingInterestsArray[$locale] = '';
+                    if (!isset($biographyArray[$locale])) $biographyArray[$locale] = '';
+                }
 
                 $this->_data['authors'][] = [
                     'authorId' => $authors[$i]->getId(),
@@ -200,45 +204,45 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
             'citations'
         ]);
 
-        $formLocale = AppLocale::getLocale();
+        $formLocales = $this->getSubmissionLocales();
 
-        // [FIX] Sanitasi data input title & abstract jika kosong
         if (!is_array($this->_data['title'])) $this->_data['title'] = [];
-        if (!isset($this->_data['title'][$formLocale])) $this->_data['title'][$formLocale] = '';
-
         if (!is_array($this->_data['abstract'])) $this->_data['abstract'] = [];
-        if (!isset($this->_data['abstract'][$formLocale])) $this->_data['abstract'][$formLocale] = '';
+        foreach ($formLocales as $formLocale) {
+            if (!isset($this->_data['title'][$formLocale])) $this->_data['title'][$formLocale] = '';
+            if (!isset($this->_data['abstract'][$formLocale])) $this->_data['abstract'][$formLocale] = '';
+        }
 
-        // [FIX] loop internal array authors untuk memastikan struktur data form aman
         if (is_array($this->_data['authors'])) {
             foreach ($this->_data['authors'] as $i => $author) {
                 if (!isset($author['affiliation']) || !is_array($author['affiliation'])) {
                     $this->_data['authors'][$i]['affiliation'] = [];
                 }
-                if (!isset($this->_data['authors'][$i]['affiliation'][$formLocale])) {
-                    $this->_data['authors'][$i]['affiliation'][$formLocale] = '';
-                }
-
                 if (!isset($author['competingInterests']) || !is_array($author['competingInterests'])) {
                     $this->_data['authors'][$i]['competingInterests'] = [];
                 }
-                if (!isset($this->_data['authors'][$i]['competingInterests'][$formLocale])) {
-                    $this->_data['authors'][$i]['competingInterests'][$formLocale] = '';
-                }
-
                 if (!isset($author['biography']) || !is_array($author['biography'])) {
                     $this->_data['authors'][$i]['biography'] = [];
                 }
-                if (!isset($this->_data['authors'][$i]['biography'][$formLocale])) {
-                    $this->_data['authors'][$i]['biography'][$formLocale] = '';
+
+                foreach ($formLocales as $formLocale) {
+                    if (!isset($this->_data['authors'][$i]['affiliation'][$formLocale])) {
+                        $this->_data['authors'][$i]['affiliation'][$formLocale] = '';
+                    }
+                    if (!isset($this->_data['authors'][$i]['competingInterests'][$formLocale])) {
+                        $this->_data['authors'][$i]['competingInterests'][$formLocale] = '';
+                    }
+                    if (!isset($this->_data['authors'][$i]['biography'][$formLocale])) {
+                        $this->_data['authors'][$i]['biography'][$formLocale] = '';
+                    }
                 }
             }
         } else {
             $this->_data['authors'] = [];
         }
 
-        // Load the section. This is used in the step 3 form to
-        // determine whether or not to display indexing options.
+        // Load the section.
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $this->_data['section'] = $sectionDao->getSection($this->article->getSectionId());
 
@@ -271,6 +275,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
         $templateMgr = TemplateManager::getManager($request);
 
+        /** @var CountryDAO $countryDao  */
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
         $templateMgr->assign('countries', $countries);
@@ -288,7 +293,9 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
      * @return int the article ID
      */
     public function execute($object = null) {
+        /** @var ArticleDAO $articleDao  */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
+        /** @var AuthorDAO $authorDao  */
         $authorDao = DAORegistry::getDAO('AuthorDAO');
         $article = $this->article;
 
@@ -368,6 +375,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         $articleDao->updateArticle($article);
 
         // Update references list if it changed.
+        /** @var CitationDAO $citationDao  */
         $citationDao = DAORegistry::getDAO('CitationDAO');
         $rawCitationList = $article->getCitations();
         if ($previousRawCitationList != $rawCitationList) {
@@ -378,5 +386,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
         return $this->articleId;
     }
+
 }
 ?>
