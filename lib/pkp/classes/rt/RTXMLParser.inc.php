@@ -173,5 +173,6 @@ class RTXMLParser {
 
         return $newSearch;
     }
+    
 }
 ?>
