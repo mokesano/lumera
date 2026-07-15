@@ -232,7 +232,9 @@ class RoleDAO extends DAO {
      * Retrieve a list of all users with some role in the specified journal.
      * @param mixed $journalId
      * @param mixed $sortDirection
-     * @return array matching Users
+     * @param int $journalId
+     * @param DBResultRange|null $dbResultRange
+     * @return DAOResultFactory|null
      */
     public function getUsersByJournalId($journalId, $searchType = null, $search = null, $searchMatch = null, $dbResultRange = null, $sortBy = null, $sortDirection = SORT_DIRECTION_ASC) {
         $paramArray = array('interest', (int) $journalId);
@@ -526,5 +528,6 @@ class RoleDAO extends DAO {
             default: return null;
         }
     }
+    
 }
 ?>
