@@ -112,7 +112,7 @@ class PKPApplication {
             if (!$conn->isConnected()) {
                 if ((bool) Config::getVar('database', 'debug')) {
                     $dbconn = $conn->getDBConn();
-                    fatalError('Database connection failed: ' . strval($dbconn->errorMsg()));
+                    fatalError('Database connection failed: ' . (string) $dbconn->errorMsg());
                 } else {
                     fatalError('Database connection failed!');
                 }
