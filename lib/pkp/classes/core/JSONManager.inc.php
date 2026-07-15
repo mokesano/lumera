@@ -11,10 +11,9 @@ declare(strict_types=1);
  * @class JSONManager
  * @ingroup core
  *
- * @brief Class to build and manipulate JSON (Javascript Object Notation) objects.
+ * @brief to build and manipulate JSON (Javascript Object Notation) objects.
  *
  */
-
 
 class JSONManager {
     
@@ -25,10 +24,13 @@ class JSONManager {
     }
 
     /**
-     * Backward compatibility shim for PHP 4 constructor.
+     * [SHIM] Backward Compatibility
      */
     public function JSONManager() {
-        trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::JSONManager(). Please refactor to use parent::__construct().", E_USER_DEPRECATED);
+        trigger_error(
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to use parent::__construct().",
+            E_USER_DEPRECATED
+        );
         self::__construct();
     }
 
@@ -49,7 +51,8 @@ class JSONManager {
 
     /**
      * Decode a JSON string.
-     * @param $json string The content to decode.
+     * 
+     * @param mixed $json string
      * @return mixed
      */
     public function decode($json) {
@@ -68,6 +71,6 @@ class JSONManager {
         require_once('lib/pkp/lib/json/JSON.php');
         return new Services_JSON();
     }
-}
 
+}
 ?>
