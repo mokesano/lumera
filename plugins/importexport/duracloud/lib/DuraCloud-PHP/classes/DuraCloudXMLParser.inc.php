@@ -10,8 +10,7 @@ declare(strict_types=1);
  * @class DuraCloudXMLParser
  * @ingroup duracloud_classes
  *
- * @brief DuraCloud PHP client XML helper class
- * [WIZDAM EDITION] Refactored for PHP 8.0+ (Strict Types, XMLParser Object, Standardized SHIM)
+ * @brief DuraCloud PHP client XML helper class.
  */
 
 class DuraCloudXMLParser {
@@ -30,15 +29,12 @@ class DuraCloudXMLParser {
      */
     public function __construct() {
         $this->data = ['children' => []];
-        // Reference is REQUIRED here because we are traversing an array tree structure
-        $this->currentElement =& $this->data;
-        
+        $this->currentElement =& $this->data; // Reference is REQUIRED here because we are traversing an array tree structure
         $encoding = defined('DURACLOUD_XML_ENCODING') ? DURACLOUD_XML_ENCODING : 'UTF-8';
         $this->parser = xml_parser_create($encoding);
 
         if ($this->parser) {
             xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, 0);
-            // xml_set_object is valid in PHP 8
             xml_set_object($this->parser, $this); 
             xml_set_element_handler($this->parser, 'startElement', 'endElement');
             xml_set_character_data_handler($this->parser, 'charData');
@@ -145,5 +141,6 @@ class DuraCloudXMLParser {
             $this->currentElement['content'] .= $data;
         }
     }
+
 }
 ?>
