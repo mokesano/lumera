@@ -141,6 +141,7 @@ class Core {
         if (!isset(self::$botRegexps[$botRegexpsFile])) {
             $botFileCacheId = md5($botRegexpsFile);
             $cacheManager = CacheManager::getManager();
+            /** @var \FileCache $cache */
             $cache = $cacheManager->getCache('core', $botFileCacheId, array('Core', '_botFileListCacheMiss'), CACHE_TYPE_FILE);
             self::$botRegexps[$botRegexpsFile] = $cache->getContents();
         }
