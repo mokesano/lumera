@@ -33,6 +33,7 @@ import('lib.pkp.classes.core.PKPRouter');
 import('classes.core.Request');
 
 class PKPComponentRouter extends PKPRouter {
+
     //
     // Internal state cache variables
     // NB: Please do not access directly but
@@ -40,31 +41,33 @@ class PKPComponentRouter extends PKPRouter {
     //
     /** @var string the requested component handler */
     public $_component;
+
     /** @var string the requested operation */
     public $_op;
+    
     /** @var array the rpc service endpoint parts from the request */
     public $_rpcServiceEndpointParts = false;
+
     /** @var callable the rpc service endpoint the request was routed to */
     public $_rpcServiceEndpoint = false;
 
     /**
      * Determines whether this router can route the given request.
-     * @param $request PKPRequest
-     * @return boolean true, if the router supports this request, otherwise false
+     * 
+     * @param PKPRequest $request 
+     * @return boolean
      */
     public function supports($request) {
-        // See whether we can resolve the request to
-        // a valid service endpoint.
+        // See whether we can resolve the request to a valid service endpoint.
         return is_callable($this->getRpcServiceEndpoint($request));
     }
 
     /**
      * Retrieve the requested component from the request.
-     * NB: This can be a component that not actually exists
-     * in the code base.
-     * @param $request PKPRequest
-     * @return string the requested component or an empty string
-     * if none can be found.
+     * NB: This can be a component that not actually exists in the code base.
+     * 
+     * @param PKPRequest $request
+     * @return string
      */
     public function getRequestedComponent($request) {
         if (is_null($this->_component)) {
@@ -100,9 +103,9 @@ class PKPComponentRouter extends PKPRouter {
      * Retrieve the requested operation from the request
      * NB: This can be an operation that not actually
      * exists in the requested component.
-     * @param $request PKPRequest
-     * @return string the requested operation or an empty string
-     * if none can be found.
+     * 
+     * @param PKPRequest $request
+     * @return string
      */
     public function getRequestedOp($request) {
         if (is_null($this->_op)) {
@@ -126,9 +129,9 @@ class PKPComponentRouter extends PKPRouter {
      * Get the (validated) RPC service endpoint from the request.
      * If no such RPC service endpoint can be constructed then the method
      * returns null.
-     * @param $request PKPRequest the request to be routed
-     * @return callable an array with the handler instance
-     * and the handler operation to be called by call_user_func().
+     * 
+     * @param PKPRequest $request
+     * @return callable
      */
     public function getRpcServiceEndpoint($request) {
         if ($this->_rpcServiceEndpoint === false) {
@@ -199,7 +202,8 @@ class PKPComponentRouter extends PKPRouter {
     /**
      * Route the given request to a component handler operation.
      * @see PKPRouter::route()
-     * @param $request PKPRequest the request to be routed
+     * 
+     * @param PKPRequest $request
      * @return mixed
      */
     public function route($request) {
@@ -220,8 +224,9 @@ class PKPComponentRouter extends PKPRouter {
     /**
      * Generate a URL to a component handler operation.
      * @see PKPRouter::url()
-     * @param $request 
-     * @return string the generated URL
+     * 
+     * @param PKPRequest $request 
+     * @return string 
      */
     public function url($request, $newContext = null, $component = null, $op = null, $path = null,
             $params = null, $anchor = null, $escape = false) {
@@ -313,8 +318,9 @@ class PKPComponentRouter extends PKPRouter {
      * Handle an authorization failure for a component request. This will return
      * a JSON error message with the translated authorization error message.
      * @see PKPRouter::handleAuthorizationFailure()
-     * @param $request PKPRequest the request that failed authorization
-     * @param $authorizationMessage string the authorization error message to be translated and returned
+     * 
+     * @param PKPRequest $request
+     * @param string $authorizationMessage string
      */
     public function handleAuthorizationFailure($request, $authorizationMessage) {
         // Translate the authorization error message.
@@ -346,9 +352,9 @@ class PKPComponentRouter extends PKPRouter {
      * Get the (validated) RPC service endpoint parts from the request.
      * If no such RPC service endpoint parts can be retrieved
      * then the method returns null.
-     * @param $request PKPRequest the request to be routed
-     * @return array a string array with the RPC service endpoint
-     * parts as values.
+     * 
+     * @param PKPRequest $request
+     * @return array
      */
     public function _getValidatedServiceEndpointParts($request) {
         if ($this->_rpcServiceEndpointParts === false) {
@@ -381,9 +387,9 @@ class PKPComponentRouter extends PKPRouter {
      * Try to retrieve a (non-validated) array with the service
      * endpoint parts from the request. See the classdoc for the
      * URL patterns supported here.
-     * @param $request PKPRequest the request to be routed
-     * @return array an array of (non-validated) service endpoint
-     * parts or null if the request is not an RPC request.
+     * 
+     * @param PKPRequest $request
+     * @return array
      */
     public function _retrieveServiceEndpointParts($request) {
         // URL pattern depends on whether the server has path info
@@ -432,9 +438,9 @@ class PKPComponentRouter extends PKPRouter {
      * This method pre-validates the service endpoint parts before
      * we try to convert them to a file/method name. This also
      * converts all parts to lower case.
-     * @param $rpcServiceEndpointParts array
-     * @return array the validated service endpoint parts or null if validation
-     * does not succeed.
+     * 
+     * @param string $rpcServiceEndpointParts array
+     * @return array
      */
     public function _validateServiceEndpointParts($rpcServiceEndpointParts) {
         // Do we have data at all?
@@ -464,5 +470,6 @@ class PKPComponentRouter extends PKPRouter {
 
         return $rpcServiceEndpointParts;
     }
+
 }
 ?>
