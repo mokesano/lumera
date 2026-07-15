@@ -142,5 +142,6 @@ class ONIXParserDOMHandler extends XMLParserDOMHandler {
     public function getResult(): array {
         return [$this->_listName => $this->_listItems];
     }
+    
 }
 ?>
