@@ -3,7 +3,11 @@ declare(strict_types=1);
 
 /**
  * @file lib/pkp/classes/core/PKPWizdamEditorStaff.inc.php
- *
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Codecanau Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * 
  * @brief Sistem cache data staff jurnal (Manager dan Editor) untuk homepage.
  * Versi core dari skrip tema kustom.
  *
@@ -27,9 +31,9 @@ class PKPWizdamEditorStaff {
 
     /**
      * @brief Metode publik utama untuk dipanggil dari handler lain (spt IndexHandler).
-     * @param $journal Journal Objek jurnal saat ini
-     * @param $templateMgr TemplateManager Objek template manager
-     * @param $maxDisplayCount int Jumlah maksimum staff yang ditampilkan
+     * @param Journal $journal
+     * @param TemplateManager $templateMgr
+     * @param $maxDisplayCount int
      */
     public static function displayHomepageStaff($journal, $templateMgr, $maxDisplayCount = 3) {
 
@@ -68,9 +72,9 @@ class PKPWizdamEditorStaff {
         $editors = array();
         $managerUserIds = array(); 
 
-        $roleDao = &DAORegistry::getDAO('RoleDAO');
-        $userDao = &DAORegistry::getDAO('UserDAO');
-        $countryDao = &DAORegistry::getDAO('CountryDAO');
+        $roleDao = DAORegistry::getDAO('RoleDAO'); /** @var RoleDAO $roleDao  */
+        $userDao = DAORegistry::getDAO('UserDAO'); /** @var UserDAO $userDao  */
+        $countryDao = DAORegistry::getDAO('CountryDAO'); /** @var CountryDAO $countryDao  */
 
         // Mendapatkan daftar manager
         $managersObj = $roleDao->getUsersByRoleId(self::ROLE_JOURNAL_MANAGER, $journalId);
@@ -126,9 +130,9 @@ class PKPWizdamEditorStaff {
 
     /**
      * @brief Memproses objek User menjadi array data yang siap ditampilkan.
-     * @param $user User Objek user
-     * @param $locale string Locale
-     * @param $countryDao CountryDAO Objek CountryDAO
+     * @param User $user User 
+     * @param Locale $locale string
+     * @param CountryDAO $countryDao
      * @return array
      */
     private static function processUserData($user, $locale, $countryDao) {
@@ -193,7 +197,7 @@ class PKPWizdamEditorStaff {
 
     /**
      * @brief Memastikan direktori cache ada.
-     * @param $dir string Path
+     * @param string $dir string Path
      */
     private static function ensureCacheDir($dir) {
         if (!is_dir($dir)) {
@@ -208,8 +212,8 @@ class PKPWizdamEditorStaff {
      * @return string MD5 hash
      */
     private static function getStaffDataHash($journalId, $maxDisplayCount) {
-        $roleDao = &DAORegistry::getDAO('RoleDAO');
-        $userDao = &DAORegistry::getDAO('UserDAO');
+        $roleDao = &DAORegistry::getDAO('RoleDAO'); /** @var RoleDAO $roleDao */
+        $userDao = &DAORegistry::getDAO('UserDAO'); /** @var UserDAO $userDao */
         $hashData = array();
         $managerIds = array();
 
@@ -298,7 +302,8 @@ class PKPWizdamEditorStaff {
      * @return string
      */
     private static function getUserSetting($userId, $settingName, $locale) {
-        $userSettingsDao = &DAORegistry::getDAO('UserSettingsDAO');
+        /** @var UserSettingsDAO $userSettingsDao */
+        $userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
         return $userSettingsDao->getSetting($userId, $settingName, $locale);
     }
 
@@ -360,7 +365,6 @@ class PKPWizdamEditorStaff {
             'http' => array('timeout' => 2, 'method' => 'HEAD')
         ));
 
-        // [WIZDAM FIX] PHP 8.0+: parameter $associative harus bool, bukan int
         $headers = @get_headers($gravatarUrl, false, $context);
 
         // Pastikan $headers tidak false sebelum mengakses array index 0
@@ -370,6 +374,6 @@ class PKPWizdamEditorStaff {
         
         return array('imageUrl' => null, 'hasProfileImage' => false);
     }
-}
 
+}
 ?>
