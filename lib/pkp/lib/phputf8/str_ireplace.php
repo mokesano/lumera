@@ -14,7 +14,9 @@
 * Notes: it's based on the assumption that the lower and uppercase
 * versions of a UTF-8 character will have the same length in bytes
 * which is currently true given the hash table to strtolower
-* @param string
+* @param string $search
+* @param string $replace
+* @param string $str
 * @return string
 * @see http://www.php.net/str_ireplace
 * @see utf8_strtolower
@@ -76,5 +78,3 @@ function utf8_ireplace($search, $replace, $str, $count = NULL){
     }
 
 }
-
-

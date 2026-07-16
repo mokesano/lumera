@@ -25,7 +25,7 @@
 * Comes from W3 FAQ: Multilingual Forms
 * Note: modified to include full ASCII range including control chars
 * @see http://www.w3.org/International/questions/qa-forms-utf-8
-* @param string
+* @param string $str
 * @return mixed integer byte index or FALSE if no bad found
 * @package utf8
 * @subpackage bad
@@ -62,7 +62,7 @@ function utf8_bad_find($str) {
 * Comes from W3 FAQ: Multilingual Forms
 * Note: modified to include full ASCII range including control chars
 * @see http://www.w3.org/International/questions/qa-forms-utf-8
-* @param string
+* @param string $str
 * @return mixed array of integers or FALSE if no bad found
 * @package utf8
 * @subpackage bad
@@ -101,7 +101,7 @@ function utf8_bad_findall($str) {
 * Comes from W3 FAQ: Multilingual Forms
 * Note: modified to include full ASCII range including control chars
 * @see http://www.w3.org/International/questions/qa-forms-utf-8
-* @param string
+* @param string $str
 * @return string
 * @package utf8
 * @subpackage bad
@@ -137,8 +137,8 @@ function utf8_bad_strip($str) {
 * Comes from W3 FAQ: Multilingual Forms
 * Note: modified to include full ASCII range including control chars
 * @see http://www.w3.org/International/questions/qa-forms-utf-8
-* @param string to search
-* @param string to replace bad bytes with (defaults to '?') - use ASCII
+* @param string $str to search
+* @param string $replace to replace bad bytes with (defaults to '?') - use ASCII
 * @return string
 * @package utf8
 * @subpackage bad
@@ -240,7 +240,8 @@ define('UTF8_BAD_SEQINCOMPLETE',7);
 * Reports on the type of bad byte found in a UTF-8 string. Returns a
 * status code on the first bad byte found
 * @author <hsivonen@iki.fi>
-* @param string UTF-8 encoded string
+* @param string $str UTF-8 encoded string
+* @param mixed &$i mixed
 * @return mixed integer constant describing problem or FALSE if valid UTF-8
 * @see utf8_bad_explain
 * @see http://hsivonen.iki.fi/php-utf8/
@@ -375,7 +376,7 @@ function utf8_bad_identify($str, &$i) {
 /**
 * Takes a return code from utf8_bad_identify() are returns a message
 * (in English) explaining what the problem is.
-* @param int return code from utf8_bad_identify
+* @param int $code return code from utf8_bad_identify
 * @return mixed string message or FALSE if return code unknown
 * @see utf8_bad_identify
 * @package utf8
