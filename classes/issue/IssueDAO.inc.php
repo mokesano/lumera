@@ -93,24 +93,26 @@ class IssueDAO extends DAO {
     }
 
     /**
-     * Retrieve Issue by public issue id
+     * Retrieve Issue by public issue id.
      * @param string $pubIdType
-     * @param string $pubId
+     * @param int|string $pubId
      * @param int|string|null $journalId optional
      * @param bool $useCache optional
      * @return Issue|null
      */
-    public function getIssueByPubId(string $pubIdType, string $pubId, int|string|null $journalId = null, bool $useCache = false): ?Issue {
+    public function getIssueByPubId(string $pubIdType, int|string $pubId, int|string|null $journalId = null, bool $useCache = false): ?Issue {
+        $pubIdStr = (string) $pubId;
+        
         if ($useCache && $pubIdType === 'publisher-id') {
             $cache = $this->_getCache('issues');
-            $returner = $cache->get($pubId);
+            $returner = $cache->get($pubIdStr);
             if ($returner && $journalId !== null && (int) $journalId !== $returner->getJournalId()) {
                 $returner = null;
             }
             return $returner;
         }
 
-        $issues = $this->getIssuesBySetting('pub-id::' . $pubIdType, $pubId, $journalId);
+        $issues = $this->getIssuesBySetting('pub-id::' . $pubIdType, $pubIdStr, $journalId);
         if (empty($issues)) {
             return null;
         }
@@ -272,9 +274,9 @@ class IssueDAO extends DAO {
      * Change the public ID of an issue.
      * @param int|string $issueId
      * @param string $pubIdType
-     * @param string $pubId
+     * @param int|string $pubId
      */
-    public function changePubId(int|string $issueId, string $pubIdType, string $pubId): void {
+    public function changePubId(int|string $issueId, string $pubIdType, int|string $pubId): void {
         $idFields = ['issue_id', 'locale', 'setting_name'];
         $updateArray = [
             'issue_id' => (int) $issueId,
