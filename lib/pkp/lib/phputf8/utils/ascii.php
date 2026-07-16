@@ -22,7 +22,7 @@
 * }
 * </code>
 * 
-* @param string
+* @param string $str
 * @return boolean TRUE if it's all ASCII
 * @package utf8
 * @subpackage ascii
@@ -39,7 +39,7 @@ function utf8_is_ascii($str) {
 * control codes omitted. The device control codes can be found on the
 * second table here: http://www.w3schools.com/tags/ref_ascii.asp
 * 
-* @param string
+* @param string $str
 * @return boolean TRUE if it's all ASCII without device control codes
 * @package utf8
 * @subpackage ascii
@@ -59,7 +59,7 @@ function utf8_is_ascii_ctrl($str) {
 * Strip out all non-7bit ASCII bytes
 * If you need to transmit a string to system which you know can only
 * support 7bit ASCII, you could use this function.
-* @param string
+* @param string $str
 * @return string with non ASCII bytes removed
 * @package utf8
 * @subpackage ascii
@@ -87,7 +87,7 @@ function utf8_strip_non_ascii($str) {
 * multi-byte characters untouched - it only removes device
 * control codes
 * @see http://hsivonen.iki.fi/producing-xml/#controlchar
-* @param string
+* @param string $str
 * @return string control codes removed
 */
 function utf8_strip_ascii_ctrl($str) {
@@ -111,7 +111,7 @@ function utf8_strip_ascii_ctrl($str) {
 * For a list of ASCII device control codes see the 2nd table here:
 * http://www.w3schools.com/tags/ref_ascii.asp
 * 
-* @param string
+* @param string $str
 * @return boolean TRUE if it's all ASCII
 * @package utf8
 * @subpackage ascii
@@ -146,8 +146,8 @@ function utf8_strip_non_ascii_ctrl($str) {
 * available from the phputf8 project downloads:
 * http://prdownloads.sourceforge.net/phputf8
 *
-* @param string UTF-8 string
-* @param int (optional) -1 lowercase only, +1 uppercase only, 1 both cases
+* @param string $str UTF-8 string
+* @param int $case (optional) -1 lowercase only, +1 uppercase only, 1 both cases
 * @param string UTF-8 with accented characters replaced by ASCII chars
 * @return string accented chars replaced with ascii equivalents
 * @author Andreas Gohr <andi@splitbrain.org>

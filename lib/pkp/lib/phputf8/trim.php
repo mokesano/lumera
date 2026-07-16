@@ -14,6 +14,7 @@
 * @author Andreas Gohr <andi@splitbrain.org>
 * @see http://www.php.net/ltrim
 * @see http://dev.splitbrain.org/view/darcs/dokuwiki/inc/utf8.php
+* @param string $str
 * @return string
 * @package utf8
 * @subpackage strings
@@ -36,6 +37,7 @@ function utf8_ltrim( $str, $charlist = FALSE ) {
 * @author Andreas Gohr <andi@splitbrain.org>
 * @see http://www.php.net/rtrim
 * @see http://dev.splitbrain.org/view/darcs/dokuwiki/inc/utf8.php
+* @param string $str
 * @return string
 * @package utf8
 * @subpackage strings
@@ -58,6 +60,7 @@ function utf8_rtrim( $str, $charlist = FALSE ) {
 * @author Andreas Gohr <andi@splitbrain.org>
 * @see http://www.php.net/trim
 * @see http://dev.splitbrain.org/view/darcs/dokuwiki/inc/utf8.php
+* @param string $str
 * @return string
 * @package utf8
 * @subpackage strings

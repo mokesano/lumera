@@ -12,6 +12,9 @@
 * @see http://www.php.net/substr_replace
 * @see utf8_strlen
 * @see utf8_substr
+* @param string $str
+* @param string $repl
+* @param string $start 
 */
 function utf8_substr_replace($str, $repl, $start , $length = NULL ) {
     preg_match_all('/./us', $str, $ar);
