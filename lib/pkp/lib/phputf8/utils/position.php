@@ -122,8 +122,8 @@ function utf8_byte_position() {
 * this function will step backwards, looking for the index where
 * curent UTF-8 character begins
 * @author Chris Smith<chris@jalakai.co.uk>
-* @param string
-* @param int byte index in the string
+* @param string $str
+* @param int $idx byte index in the string
 * @return int byte index of start of next UTF-8 character
 * @package utf8
 * @subpackage position
@@ -150,8 +150,8 @@ function utf8_locate_current_chr( &$str, $idx ) {
 * position. If the next character begins at the same place as the
 * supplied byte index, that byte index will be returned.
 * @author Chris Smith<chris@jalakai.co.uk>
-* @param string
-* @param int byte index in the string
+* @param string $str
+* @param int $idx byte index in the string
 * @return int byte index of start of next UTF-8 character
 * @package utf8
 * @subpackage position
@@ -170,4 +170,3 @@ function utf8_locate_next_chr( &$str, $idx ) {
     
     return $idx;
 }
-

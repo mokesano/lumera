@@ -53,6 +53,9 @@ class PKPRequest {
      * Constructor.
      */
     public function __construct() {
+        // [SEO & DOI PROTECTION]
+        // Pelindung URL cerdas, aman untuk DOI, dan sinkron dengan restful_urls
+        $this->_enforceSmartRestfulUrl();
     }
 
     /**
@@ -64,6 +67,65 @@ class PKPRequest {
             E_USER_DEPRECATED
         );
         self::__construct();
+    }
+
+/**
+     * [WIZDAM SEO] Logika Cerdas Pengalihan index.php
+     * 1. HANYA aktif jika restful_urls = On di config.inc.php.
+     * 2. HANYA me-redirect request GET/HEAD (melindungi payload POST dari formulir lama).
+     * 3. Mempertahankan struktur path (DOI endpoint) dan query string secara absolut.
+     * 
+     * @return void
+     */
+    private function _enforceSmartRestfulUrl(): void {
+        // Syarat: Hanya jika restful_urls aktif
+        $isRestful = Config::getVar('general', 'restful_urls') ? true : false;
+        
+        if ($isRestful) {
+            // PROTEKSI 1: Jangan redirect request POST/PUT/DELETE.
+            $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+            if (!in_array(strtoupper($method), ['GET', 'HEAD'])) {
+                return; // Keluar, biarkan index.php melayani request ini
+            }
+
+            $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+            $parsedUri = parse_url($requestUri);
+            $path = $parsedUri['path'] ?? '';
+            
+            // Cek: Apakah request membawa /index.php secara eksplisit?
+            if (str_contains($path, '/index.php')) {
+                // PROTEKSI 2: Hapus index.php dan pertahankan sisa path
+                // Contoh: /index.php/ISLE/article/view/10 -> /ISLE/article/view/10
+                $cleanPath = str_replace('/index.php', '', $path);
+                
+                // Jika URL root, pastikan tidak menjadi string kosong
+                if ($cleanPath === '') {
+                    $cleanPath = '/';
+                }
+                
+                // Pertahankan parameter GET (misal: ?search=mangrove)
+                $query = isset($parsedUri['query']) ? '?' . $parsedUri['query'] : '';
+                
+                // Deteksi Protokol secara akurat
+                $https = $_SERVER['HTTPS'] ?? '';
+                $httpsLower = class_exists('PKPString') ? PKPString::strtolower($https) : strtolower($https);
+                $protocol = ($httpsLower === 'on' || $httpsLower === '1') ? 'https' : 'http';
+                
+                // Deteksi Host
+                $host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? ($_SERVER['HTTP_HOST'] ?? ($_SERVER['HOSTNAME'] ?? 'localhost'));
+                
+                // Rakit URL baru yang bersih dan identik secara konten
+                $redirectUrl = $protocol . '://' . $host . $cleanPath . $query;
+                
+                // SEO: Permanent Redirect (301)
+                // Sinyal Google untuk update URL Endpoint mereka.
+                if (!headers_sent()) {
+                    header('HTTP/1.1 301 Moved Permanently');
+                    header('Location: ' . $redirectUrl);
+                    exit();
+                }
+            }
+        }
     }
 
     /**

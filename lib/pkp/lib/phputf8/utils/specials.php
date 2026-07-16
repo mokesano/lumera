@@ -99,7 +99,7 @@ function utf8_specials_pattern() {
 * in the string, including ASCII device control characters.
 * @package utf8
 * @subpackage utils
-* @param string to check
+* @param string $str to check
 * @return boolean TRUE if the string only contains word characters
 * @see utf8_specials_pattern
 */
@@ -120,12 +120,10 @@ function utf8_is_word_chars($str) {
 * @subpackage utils
 * @author Andreas Gohr <andi@splitbrain.org>
 * @param string $string The UTF8 string to strip of special chars
-* @param string (optional) $repl   Replace special with this string
+* @param string $repl (optional) $repl   Replace special with this string
 * @return string with common non-alphanumeric characters removed
 * @see utf8_specials_pattern
 */
 function utf8_strip_specials($string, $repl=''){
     return preg_replace(utf8_specials_pattern(), $repl, $string);
 }
-
-

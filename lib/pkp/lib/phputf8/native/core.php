@@ -25,7 +25,7 @@ if ( !defined('UTF8_CORE') ) {
 * @author <chernyshevsky at hotmail dot com>
 * @link   http://www.php.net/manual/en/function.strlen.php
 * @link   http://www.php.net/manual/en/function.utf8-decode.php
-* @param string UTF-8 string
+* @param string $str UTF-8 string
 * @return int number of UTF-8 characters in string
 * @package utf8
 * @subpackage strings
@@ -41,9 +41,9 @@ function utf8_strlen($str){
 * Find position of first occurrence of a string
 * Note: This will get alot slower if offset is used
 * Note: requires utf8_strlen amd utf8_substr to be loaded
-* @param string haystack
-* @param string needle (you should validate this with utf8_is_valid)
-* @param integer offset in characters (from left)
+* @param string $str haystack
+* @param string $needle needle (you should validate this with utf8_is_valid)
+* @param integer $offset offset in characters (from left)
 * @return mixed integer position or FALSE on failure
 * @see http://www.php.net/strpos
 * @see utf8_strlen
@@ -85,9 +85,9 @@ function utf8_strpos($str, $needle, $offset = NULL) {
 * Find position of last occurrence of a char in a string
 * Note: This will get alot slower if offset is used
 * Note: requires utf8_substr and utf8_strlen to be loaded
-* @param string haystack
-* @param string needle (you should validate this with utf8_is_valid)
-* @param integer (optional) offset (from left)
+* @param string $str haystack
+* @param string $needle needle (you should validate this with utf8_is_valid)
+* @param integer $offset (optional) offset (from left)
 * @return mixed integer position or FALSE on failure
 * @see http://www.php.net/strrpos
 * @see utf8_substr
@@ -150,9 +150,9 @@ function utf8_strrpos($str, $needle, $offset = NULL) {
 * necessary. It isn't necessary for +ve offsets and no specified length
 *
 * @author Chris Smith<chris@jalakai.co.uk>
-* @param string
-* @param integer number of UTF-8 characters offset (from left)
-* @param integer (optional) length in UTF-8 characters from offset
+* @param string $str
+* @param integer $offset number of UTF-8 characters offset (from left)
+* @param integer $length (optional) length in UTF-8 characters from offset
 * @return mixed string or FALSE if failure
 * @package utf8
 * @subpackage strings
@@ -271,7 +271,7 @@ function utf8_substr($str, $offset, $length = NULL) {
 * Annex #21: Case Mappings
 * Note: requires utf8_to_unicode and utf8_from_unicode
 * @author Andreas Gohr <andi@splitbrain.org>
-* @param string
+* @param string $string
 * @return mixed either string in lowercase or FALSE is UTF-8 invalid
 * @see http://www.php.net/strtolower
 * @see utf8_to_unicode
@@ -359,7 +359,7 @@ function utf8_strtolower($string){
 * Annex #21: Case Mappings
 * Note: requires utf8_to_unicode and utf8_from_unicode
 * @author Andreas Gohr <andi@splitbrain.org>
-* @param string
+* @param string $string
 * @return mixed either string in lowercase or FALSE is UTF-8 invalid
 * @see http://www.php.net/strtoupper
 * @see utf8_to_unicode
