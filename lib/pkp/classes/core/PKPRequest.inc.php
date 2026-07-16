@@ -69,7 +69,7 @@ class PKPRequest {
         self::__construct();
     }
 
-/**
+    /**
      * [WIZDAM SEO] Logika Cerdas Pengalihan index.php
      * 1. HANYA aktif jika restful_urls = On di config.inc.php.
      * 2. HANYA me-redirect request GET/HEAD (melindungi payload POST dari formulir lama).
