@@ -10,7 +10,8 @@
 * UTF-8 aware alternative to strcspn
 * Find length of initial segment not matching mask
 * Note: requires utf8_strlen and utf8_substr (if start, length are used)
-* @param string
+* @param string $str
+* @param string $mask
 * @return int
 * @see http://www.php.net/strcspn
 * @see utf8_strlen
@@ -38,4 +39,3 @@ function utf8_strcspn($str, $mask, $start = NULL, $length = NULL) {
     return 0;
     
 }
-
