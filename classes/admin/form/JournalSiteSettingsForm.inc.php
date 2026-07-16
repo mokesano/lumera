@@ -58,7 +58,7 @@ class JournalSiteSettingsForm extends Form {
     public function JournalSiteSettingsForm($journalId = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor. Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to parent::__construct().", 
                 E_USER_DEPRECATED
             );
         }
@@ -113,7 +113,7 @@ class JournalSiteSettingsForm extends Form {
      * Assign form data to user-submitted data.
      */
     public function readInputData() {
-        $this->readUserVars(['title', 'description', 'journalPath', 'enabled']);
+        $this->readUserVars(['title', 'description', 'journalPath', 'enabled', 'showOnHomepage']);
         $this->setData('enabled', (int)$this->getData('enabled'));
         $this->setData('showOnHomepage', (int)$this->getData('showOnHomepage'));
 
@@ -233,5 +233,6 @@ class JournalSiteSettingsForm extends Form {
         // [WIZDAM] HookRegistry dispatch - be careful with reference syntax
         HookRegistry::dispatch('JournalSiteSettingsForm::execute', [&$this, &$journal, &$section, &$isNewJournal]);
     }
+
 }
 ?>
