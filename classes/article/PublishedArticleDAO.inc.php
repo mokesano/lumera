@@ -53,7 +53,7 @@ class PublishedArticleDAO extends DAO {
      */
     public function PublishedArticleDAO() {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::PublishedArticleDAO(). Please refactor to parent::__construct().", 
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to parent::__construct().", 
             E_USER_DEPRECATED
         );
         self::__construct();
@@ -801,28 +801,28 @@ class PublishedArticleDAO extends DAO {
         if ($pubId <= 0) {
             return false;
         }
-    
-        // [WIZDAM] FIX: Gunakan datetimeToDB() untuk konsistensi dengan insert
-        $datePublished = $publishedArticle->getDatePublished();
-        $datePublishedDB = $datePublished ? $this->datetimeToDB($datePublished) : null;
-        
+
+        // Perbaikan WIZDAM: Gunakan sprintf dan %s untuk menghindari double-escaping dari ADODB
         $this->update(
-            'UPDATE published_articles
-                SET article_id = ?,
-                    issue_id = ?,
-                    date_published = ?,
-                    seq = ?,
-                    access_status = ?
-                WHERE published_article_id = ?',
+            sprintf(
+                'UPDATE published_articles
+                    SET article_id = ?,
+                        issue_id = ?,
+                        date_published = %s,
+                        seq = ?,
+                        access_status = ?
+                    WHERE published_article_id = ?',
+                $this->datetimeToDB($publishedArticle->getDatePublished())
+            ),
             [
                 (int) $publishedArticle->getId(),
                 (int) $publishedArticle->getIssueId(),
-                $datePublishedDB,
                 $publishedArticle->getSeq(),
                 (int) $publishedArticle->getAccessStatus(),
                 $pubId
             ]
         );
+        
         $this->flushCache();
         return true;
     }
@@ -1130,5 +1130,6 @@ class PublishedArticleDAO extends DAO {
         $result->Close();
         return $articleId;
     }
+    
 }
 ?>
