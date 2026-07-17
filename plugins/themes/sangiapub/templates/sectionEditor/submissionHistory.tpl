@@ -10,40 +10,40 @@
  *
  *}
 {strip}
-{translate|assign:"pageTitleTranslated" key="submission.page.history" id=$submission->getId()}
-{assign var="pageCrumbTitle" value="submission.history"}
-{include file="common/header-ROLE.tpl"}
+	{translate|assign:"pageTitleTranslated" key="submission.page.history" id=$submission->getId()}
+	{assign var="pageCrumbTitle" value="submission.history"}
+	{include file="common/header-ROLE.tpl"}
 {/strip}
 
 {literal}
-<script type="text/javascript">
-<!--
-	var toggleAll = 0;
-	var noteArray = new Array();
-	function toggleNote(divNoteId) {
-		var domStyle = getBrowserObject(divNoteId,1);
-		domStyle.display = (domStyle.display == "block") ? "none" : "block";
-	}
-
-	function toggleNoteAll() {
-		for(var i = 0; i < noteArray.length; i++) {
-			var domStyle = getBrowserObject(noteArray[i],1);
-			domStyle.display = toggleAll ? "none" : "block";
+	<script type="text/javascript">
+	<!--
+		var toggleAll = 0;
+		var noteArray = new Array();
+		function toggleNote(divNoteId) {
+			var domStyle = getBrowserObject(divNoteId,1);
+			domStyle.display = (domStyle.display == "block") ? "none" : "block";
 		}
-		toggleAll = toggleAll ? 0 : 1;
 
-		var collapse = getBrowserObject("collapseNotes",1);
-		var expand = getBrowserObject("expandNotes",1);
-		if (collapse.display == "inline") {
-			collapse.display = "none";
-			expand.display = "inline";
-		} else {
-			collapse.display = "inline";
-			expand.display = "none";
+		function toggleNoteAll() {
+			for(var i = 0; i < noteArray.length; i++) {
+				var domStyle = getBrowserObject(noteArray[i],1);
+				domStyle.display = toggleAll ? "none" : "block";
+			}
+			toggleAll = toggleAll ? 0 : 1;
+
+			var collapse = getBrowserObject("collapseNotes",1);
+			var expand = getBrowserObject("expandNotes",1);
+			if (collapse.display == "inline") {
+				collapse.display = "none";
+				expand.display = "inline";
+			} else {
+				collapse.display = "inline";
+				expand.display = "none";
+			}
 		}
-	}
-// -->
-</script>
+	// -->
+	</script>
 {/literal}
 
 <ul class="menu block">
@@ -73,8 +73,8 @@
         	<tr class="heading" valign="bottom">
         		<td width="7%">{translate key="common.date"}</td>
         		<td width="25%">{translate key="common.user"}</td>
-        		<td>{translate key="common.event"}</td>
-        		<td width="56" align="right">{translate key="common.action"}</td>
+        		<td width="50%">{translate key="common.event"}</td>
+        		<td width="56" align="center">{translate key="common.action"}</td>
         	</tr>
         	<tr><td class="headseparator" colspan="4">&nbsp;</td></tr>
         </thead>
@@ -92,7 +92,7 @@
         			<br />
         			{$logEntry->getTranslatedMessage()|strip_tags|truncate:60:"..."}
         		</td>
-        		<td align="right"><a href="{url op="submissionEventLog" path=$submission->getId()|to_array:$logEntry->getId()}" class="action">{translate key="common.view"}</a>{if $isEditor}&nbsp;|&nbsp;<a href="{url page="editor" op="clearSubmissionEventLog" path=$submission->getId()|to_array:$logEntry->getId()}" class="action" onclick="return confirm('{translate|escape:"jsparam" key="submission.event.confirmDeleteLogEntry"}')">{translate key="common.delete"}</a>{/if}</td>
+        		<td align="center"><a href="{url op="submissionEventLog" path=$submission->getId()|to_array:$logEntry->getId()}" class="action">{translate key="common.view"}</a>{if $isEditor}&nbsp;|&nbsp;<a href="{url page="editor" op="clearSubmissionEventLog" path=$submission->getId()|to_array:$logEntry->getId()}" class="action" onclick="return confirm('{translate|escape:"jsparam" key="submission.event.confirmDeleteLogEntry"}')">{translate key="common.delete"}</a>{/if}</td>
         	</tr>
         	<tr valign="top">
         		<td colspan="4" class="{if $eventLogEntries->eof()}end{/if}separator">&nbsp;</td>
@@ -117,6 +117,7 @@
 <br /><br />
 
 <div class="separator"></div>
+
 <div id="submissionEmailLog">
     <h3>{translate key="submission.history.submissionEmailLog"} - {translate key="submission.history.recentLogEntries"}</h3>
     <table width="100%" class="listing">
@@ -126,8 +127,8 @@
         		<td width="7%">{translate key="common.date"}</td>
         		<td width="25%">{translate key="email.sender"}</td>
         		<td width="20%">{translate key="email.recipients"}</td>
-        		<td>{translate key="common.subject"}</td>
-        		<td width="60" align="right">{translate key="common.action"}</td>
+        		<td width="33%">{translate key="common.subject"}</td>
+        		<td width="60" align="center">{translate key="common.action"}</td>
         	</tr>
         	<tr><td class="headseparator" colspan="6">&nbsp;</td></tr>
         </thead>
@@ -138,7 +139,7 @@
         		<td>{$logEntry->getFrom()|truncate:40:"..."|escape}</td>
         		<td>{$logEntry->getRecipients()|truncate:40:"..."|escape}</td>
         		<td>{$logEntry->getSubject()|truncate:60:"..."|escape}</td>
-        		<td><a href="{url op="submissionEmailLog" path=$submission->getId()|to_array:$logEntry->getId()}" class="action">{translate key="common.view"}</a>{if $isEditor}&nbsp;|&nbsp;<a href="{url page="editor" op="clearSubmissionEmailLog" path=$submission->getId()|to_array:$logEntry->getId()}" onclick="return confirm('{translate|escape:"jsparam" key="submission.email.confirmDeleteLogEntry"}')" class="action">{translate key="common.delete"}</a>{/if}</td>
+        		<td align="center"><a href="{url op="submissionEmailLog" path=$submission->getId()|to_array:$logEntry->getId()}" class="action">{translate key="common.view"}</a>{if $isEditor}&nbsp;|&nbsp;<a href="{url page="editor" op="clearSubmissionEmailLog" path=$submission->getId()|to_array:$logEntry->getId()}" onclick="return confirm('{translate|escape:"jsparam" key="submission.email.confirmDeleteLogEntry"}')" class="action">{translate key="common.delete"}</a>{/if}</td>
         	</tr>
         	<tr valign="top">
         		<td colspan="5" class="{if $emailLogEntries->eof()}end{/if}separator">&nbsp;</td>
@@ -163,6 +164,7 @@
 <br /><br />
 
 <div class="separator"></div>
+
 <div id="submissionNotes">
     <h3>{translate key="submission.notes"}</h3>
     <table width="100%" class="listing">
@@ -172,7 +174,7 @@
         		<td width="7%">{translate key="common.date"}</td>
         		<td width="60%">{translate key="common.title"}</td>
         		<td width="25%">{translate key="submission.notes.attachedFile"}</td>
-        		<td width="10%" align="right">{translate key="common.action"}</td>
+        		<td width="10%" align="center">{translate key="common.action"}</td>
         	</tr>
         	<tr><td colspan="6" class="headseparator">&nbsp;</td></tr>
         </thead>
@@ -187,7 +189,7 @@
         		<td>{$note->getDateCreated()|date_format:$dateFormatShort}</td>
         		<td><a class="action" href="javascript:toggleNote({$note->getId()})">{$note->getTitle()|escape}</a><div style="display: none" id="{$note->getId()}" name="{$note->getId()}">{$note->getNote()|strip_unsafe_html|nl2br}</div></td>
         		<td>{if $note->getFileId()}<a class="action" href="{url op="downloadFile" path=$submission->getId()|to_array:$note->getFileId()}">{$note->getOriginalFileName()|escape}</a>{else}&mdash;{/if}</td>
-        		<td align="right"><a href="{url op="submissionNotes" path=$submission->getId()|to_array:"edit":$note->getId()}" class="action">{translate key="common.view"}</a>&nbsp;|&nbsp;<a href="{url op="removeSubmissionNote" articleId=$submission->getId() noteId=$note->getId() fileId=$note->getFileId()}" onclick="return confirm('{translate|escape:"jsparam" key="submission.notes.confirmDelete"}')" class="action">{translate key="common.delete"}</a></td>
+        		<td align="center"><a href="{url op="submissionNotes" path=$submission->getId()|to_array:"edit":$note->getId()}" class="action">{translate key="common.view"}</a>&nbsp;|&nbsp;<a href="{url op="removeSubmissionNote" articleId=$submission->getId() noteId=$note->getId() fileId=$note->getFileId()}" onclick="return confirm('{translate|escape:"jsparam" key="submission.notes.confirmDelete"}')" class="action">{translate key="common.delete"}</a></td>
         	</tr>
         	<tr valign="top">
         		<td colspan="6" class="{if $submissionNotes->eof()}end{/if}separator">&nbsp;</td>
@@ -214,4 +216,3 @@
 </div>
 
 {include file="common/footer-parts/footer-user.tpl"}
-
