@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * @file lib/pkp/classes/core/PKPWizdamEditorStaff.inc.php
+ * @file lib/pkp/classes/core/EditorialStaff.inc.php
  * 
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Codecanau Team
@@ -23,9 +23,9 @@ declare(strict_types=1);
 // import('classes.user.User');
 // import('classes.i18n.CountryDAO'); // Path yang benar
 
-class PKPWizdamEditorStaff {
+class EditorialStaff {
 
-    // Role ID - konstanta OJS
+    // Role ID - Konstanta Role
     const ROLE_JOURNAL_MANAGER = 16;
     const ROLE_EDITOR = 256;
 
@@ -36,9 +36,7 @@ class PKPWizdamEditorStaff {
      * @param $maxDisplayCount int
      */
     public static function displayHomepageStaff($journal, $templateMgr, $maxDisplayCount = 3) {
-
         if (!$journal) return;
-
         $journalId = $journal->getId();
 
         // Konfigurasi cache

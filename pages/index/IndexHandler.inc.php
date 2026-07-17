@@ -12,8 +12,8 @@ declare(strict_types=1);
  * @ingroup pages_index
  *
  * @brief Handle site index requests.
- * 
  * Modifikasi: Pemisahan logika index Jurnal dan Publisher.
+ * 
  */
 
 import('classes.handler.Handler');
@@ -62,7 +62,7 @@ class IndexHandler extends Handler {
 
         $templateMgr->assign('helpTopicId', 'user.home');
 
-        // [WIZDAM FIX] Initialize forceRefresh to prevent undefined variable error in strict mode
+        // [FIX] Initialize forceRefresh to prevent undefined variable error in strict mode
         $forceRefresh = (bool) $request->getUserVar('refresh');
 
         if ($journal) {
@@ -156,15 +156,15 @@ class IndexHandler extends Handler {
             }
         }
         
-        // --- WIZDAM Editor Staff ---
-        import('lib.pkp.classes.core.PKPWizdamEditorStaff');
+        // [LUMERA] Editor Staff ---
+        import('lib.pkp.classes.core.EditorialStaff');
         $maxStaffToShow = (int) Config::getVar('lumera', 'max_staff_show');
         if ($maxStaffToShow <= 0) {
             $maxStaffToShow = 3; 
         }
-        PKPWizdamEditorStaff::displayHomepageStaff($journal, $templateMgr, $maxStaffToShow);
+        EditorialStaff::displayHomepageStaff($journal, $templateMgr, $maxStaffToShow);
         
-        // --- WIZDAM STATS JURNAL ---
+        // [LUMERA] STATS JURNAL ---
         $journalId = (int) $journal->getId();
         try {
             $journalStats = WizdamStats::getStats($journalId, $forceRefresh);
@@ -188,7 +188,7 @@ class IndexHandler extends Handler {
         $jsonPath = $basePath . '/public/wizdam_cache/stats/journal_' . $journalId . '_stats.json.gz';
         $templateMgr->assign('statsJsonPath', $jsonPath);
         
-        // --- [TRENDS] WIZDAM Most Popular ---
+        // [TRENDS] Most Popular ---
         import('lib.wizdam.trends.WizdamTrendsManager');
         WizdamTrendsManager::assignMostPopularPayload($templateMgr, $journal, $request);
         
@@ -207,7 +207,7 @@ class IndexHandler extends Handler {
         /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
 
-        // WIZDAM STATS 2: ROOT WIZDAM EDITORIAL SYSTEM
+        // [LUMERA] STATS 2: ROOT EDITORIAL SYSTEM
         try {
             $siteStats = WizdamStats::getSiteWideStats($forceRefresh);
             
@@ -221,7 +221,6 @@ class IndexHandler extends Handler {
                 }
             } else {
                 $templateMgr->assign('statsError', 'Data statistik situs tidak valid.');
-                // [WIZDAM] Fallback array kosong untuk mencegah error di TPL
                 $templateMgr->assign('journalsStats', []);
                 $templateMgr->assign('allTotalViews', 0);
                 $templateMgr->assign('allTotalDownloads', 0);
@@ -236,14 +235,12 @@ class IndexHandler extends Handler {
                 error_log('WizdamStats (Handler): Exception loading WizdamStats (Site-Wide): ' . $e->getMessage());
             }
             $templateMgr->assign('statsError', 'Gagal memuat statistik situs.');
-            // [WIZDAM] Fallback array kosong
             $templateMgr->assign('journalsStats', []);
             $templateMgr->assign('allTotalViews', 0);
             $templateMgr->assign('allTotalDownloads', 0);
             $templateMgr->assign('allTotalAuthors', 0);
         }
-        
-        // [WIZDAM] Strict null check dan casting untuk redirect
+
         $redirectId = $site->getRedirect();
         if ($redirectId && $journalDao && ($redirectJournal = $journalDao->getById((int) $redirectId)) !== null) {
             $request->redirect($redirectJournal->getPath());
@@ -267,7 +264,7 @@ class IndexHandler extends Handler {
         $templateMgr->assign('searchInitial', $searchInitial);
         $templateMgr->assign('useAlphalist', (bool) $site->getSetting('useAlphalist'));
 
-        // [WIZDAM] Null-safety guard untuk pemanggilan DAO
+        // [LUMERA] Null-safety guard untuk pemanggilan DAO
         if ($journalDao) {
             $journals = $journalDao->getJournals(
                 true,
@@ -276,7 +273,7 @@ class IndexHandler extends Handler {
                 $searchInitial ? JOURNAL_FIELD_TITLE : null,
                 $searchInitial ? 'startsWith' : null,
                 $searchInitial,
-                true // [WIZDAM] Aktifkan filter khusus Homepage
+                true // [LUMERA] Aktifkan filter khusus Homepage
             );
             $templateMgr->assign('journals', $journals);
         } else {
@@ -289,7 +286,7 @@ class IndexHandler extends Handler {
             'sitePrincipalContactEmail' => (string) $site->getLocalizedData('contactEmail')
         ]);
         
-        // --- WIZDAM Most Popular ---
+        // [LUMERA] Most Popular ---
         import('lib.wizdam.trends.WizdamTrendsManager');
         WizdamTrendsManager::assignMostPopularPayload($templateMgr, null, $request);
 
@@ -297,5 +294,6 @@ class IndexHandler extends Handler {
         $templateMgr->setCacheability(CACHEABILITY_PUBLIC);
         $templateMgr->display('index/publisher.tpl');
     }
+
 }
 ?>
