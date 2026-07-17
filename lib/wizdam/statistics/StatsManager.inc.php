@@ -6,13 +6,13 @@ declare(strict_types=1);
  * 
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Wizdam Team
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @class StatsManager
  * @ingroup Statistics
  * 
- * @brief Service Layer untuk Kalkulasi dan Payload Statistik [WIZDAM EDITION]
- * @version 2.0 (Strict MVC & Micro-Payloads Compliant)
+ * @brief Service class for managing and retrieving statistical data for
+ * journals and the site With Strict MVC & Micro-Payloads Compliant.
  */
 
 import('lib.wizdam.statistics.JournalStatsDAO');
@@ -20,10 +20,10 @@ import('lib.wizdam.statistics.JournalStatsDAO');
 class StatsManager {
 
     /**
-     * [WIZDAM] - Entry Point Utama untuk Controller / IndexHandler
-     * Menggantikan eksekusi tag {php} di Smarty secara total.
-     * @param TemplateManager $templateMgr
-     * @param Journal|null $journal
+     * Assigns statistical data to the template for rendering.
+     * @param \TemplateManager $templateMgr
+     * @param \Journal|null $journal
+     * @param bool $forceRefresh
      */
     public static function assignWidgetPayload(TemplateManager $templateMgr, ?Journal $journal, bool $forceRefresh = false): void {
         $dao = new JournalStatsDAO();
@@ -87,12 +87,13 @@ class StatsManager {
         } else {
             // ==========================================
             // LOGIKA LEVEL SITE (AGREGAT ROOT PUBLISHER)
-            // Diadaptasi dari PKPWizdamStats::getSiteWideStats
+            // Diadaptasi dari WizdamStats::getSiteWideStats
             // ==========================================
             $cacheKey = "site_global_stats"; 
             $statsData = self::_getFromCache($cacheKey);
 
             if ($forceRefresh || $statsData === false) {
+                /** @var JournalDAO $journalDao */
                 $journalDao = DAORegistry::getDAO('JournalDAO');
                 $journals = $journalDao->getJournals(true);
                 
@@ -151,7 +152,7 @@ class StatsManager {
                     'lastUpdated' => date('Y-m-d H:i:s')
                 ];
 
-                self::_saveToCache($cacheKey, $statsData, 0); // Eksekusi ke t_wizdam/stats/
+                self::_saveToCache($cacheKey, $statsData); // Eksekusi ke t_wizdam/stats/
             }
 
             // Injeksi final ke Smarty IndexHandler
@@ -169,12 +170,15 @@ class StatsManager {
         $templateMgr->assign([
             'lastUpdated' => (string) $statsData['lastUpdated'],
             'metricsTableExists' => (string) $metricsTableExists,
-            'showDiagnostics' => false // Ubah ke true jika butuh debugging di TPL
+            'showDiagnostics' => false
         ]);
     }
 
+    //
+    // Helper Internal
+    //
     /**
-     * [WIZDAM] - Helper Matematika Internal
+     * Calculates the median value of an array.
      * @param array $arr
      * @return float
      */
@@ -182,13 +186,12 @@ class StatsManager {
         if (empty($arr)) return 0.0;
         sort($arr);
         $count = count($arr);
-        $middle = floor(($count - 1) / 2);
-        return ($count % 2) ? (float) $arr[$middle] : (float) (($arr[$middle] + $arr[(int)$middle + 1]) / 2);
+        $middle = (int) floor(($count - 1) / 2);
+        return ($count % 2) ? (float) $arr[$middle] : (float) (($arr[$middle] + $arr[$middle + 1]) / 2);
     }
 
     /**
-     * [WIZDAM] - Helper Manajemen Cache Tersentralisasi
-     * Masa berlaku cache ditetapkan 1 Hari (86400 detik) untuk menghemat load DB
+     * Retrieves data from the cache.
      * @param string $cacheKey
      * @return array|false
      */
@@ -205,11 +208,14 @@ class StatsManager {
         if ($cacheContent === false) return false;
 
         $cacheContent = preg_replace('/^<\?php exit\(\); \?>/', '', $cacheContent);
-        return unserialize($cacheContent);
+        $data = unserialize($cacheContent);
+
+        // [WIZDAM] Type Narrowing: Ensure unserialize result as array to @return array|false
+        return is_array($data) ? $data : false;
     }
 
     /**
-     * [WIZDAM] - Helper Manajemen Cache Tersentralisasi
+     * Saves data to the cache.
      * @param string $cacheKey
      * @param array $data
      */

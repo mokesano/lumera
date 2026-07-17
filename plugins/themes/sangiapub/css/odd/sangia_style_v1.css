@@ -3660,7 +3660,7 @@ section.medium-10.cms-person {
 		padding: 1em 1.5em;
 		h3 {
 			display: inline-block;
-			background-image: url(//assets.sangia.org/static/img/stipwunaraha_logo_light.svg),linear-gradient(transparent,transparent);
+			background-image: url(/assets/images/sangia_logo_light.svg),linear-gradient(transparent,transparent);
 			background-repeat: no-repeat;
 			background-position: 0 0;
 			background-size: contain;

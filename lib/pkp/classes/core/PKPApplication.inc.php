@@ -10,11 +10,9 @@ declare(strict_types=1);
  *
  * @class PKPApplication
  * @ingroup core
+ * 
  * @brief Class describing this application.
- *
- * WIZDAM FORK v3.4 MODIFICATIONS:
- * - Added Publisher/Site Centric Constants
- * - Strict Typing enforced
+ * [LUMERA] Added Publisher/Site Centric Constants
  */
 
 if (!headers_sent()) {
@@ -30,13 +28,13 @@ const CONTEXT_SITE = 0;
 const CONTEXT_ID_NONE = 0;
 const REVIEW_ROUND_NONE = 0;
 
-// --- [WIZDAM FORK ARCHITECTURE: PUBLISHER CENTRIC CONSTANTS] ---
-// Kami menetapkan Site/Publisher sebagai Root Entity dengan ID 1 (Hex 0x1).
-// Ini membedakan antara "Tidak ada data" (0) dengan "Milik Publisher" (1).
+// [LUMERA ARCHITECTURE: PUBLISHER CENTRIC CONSTANTS] ---
+// Site/Publisher sebagai Root Entity dengan ID 1 (Hex 0x1).
+// Membedakan "Tidak ada data" (0) dengan "Milik Publisher" (1).
 const ASSOC_TYPE_SITE = 0x00000001;      // Decimal: 1
 const ASSOC_TYPE_PUBLISHER = 0x00000001; // Alias Semantik
 
-// --- [STANDARD ENTITIES] ---
+// [STANDARD ENTITIES] ---
 const ASSOC_TYPE_USER = 0x00001000;
 const ASSOC_TYPE_USER_GROUP = 0x0100002;
 const ASSOC_TYPE_CITATION = 0x0100003;
@@ -48,6 +46,7 @@ const ASSOC_TYPE_ACCESSIBLE_WORKFLOW_STAGES = 0x0100008;
 const ASSOC_TYPE_PLUGIN = 0x0000211;
 
 class PKPApplication {
+
     /** @var array<string, mixed>|null */
     public ?array $enabledProducts = null;
     
@@ -69,7 +68,7 @@ class PKPApplication {
         Console::logMemory('', 'PKPApplication::construct');
         Console::logSpeed('PKPApplication::construct');
 
-        mt_srand((int) ((double) microtime() * 1000000));
+        mt_srand((int) ((float) microtime() * 1000000));
 
         import('lib.pkp.classes.core.Core');
         import('lib.pkp.classes.core.PKPString');
@@ -82,11 +81,9 @@ class PKPApplication {
 
         Registry::set('application', $this);
         
-        // Request dibuat DI SINI, sebelum komponen lain memintanya.
         import('classes.core.Request');
         $request = new Request();
         Registry::set('request', $request);
-        // ---------------------------
 
         import('lib.pkp.classes.db.DAORegistry');
         import('lib.pkp.classes.db.XMLDAO');
@@ -115,7 +112,7 @@ class PKPApplication {
             if (!$conn->isConnected()) {
                 if ((bool) Config::getVar('database', 'debug')) {
                     $dbconn = $conn->getDBConn();
-                    fatalError('Database connection failed: ' . $dbconn->errorMsg());
+                    fatalError('Database connection failed: ' . (string) $dbconn->errorMsg());
                 } else {
                     fatalError('Database connection failed!');
                 }
@@ -129,7 +126,7 @@ class PKPApplication {
     public function PKPApplication() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::PKPApplication(). Please refactor to use parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to use parent::__construct().", 
                 E_USER_DEPRECATED
             );
         }
@@ -139,6 +136,7 @@ class PKPApplication {
 
     /**
      * Get the current application object
+     * 
      * @return PKPApplication|object|null
      */
     public static function getApplication() {
@@ -147,6 +145,7 @@ class PKPApplication {
 
     /**
      * Get the request implementation singleton
+     * 
      * @return Request
      */
     public static function getRequest(): PKPRequest {
@@ -155,6 +154,7 @@ class PKPApplication {
 
     /**
      * Get the dispatcher implementation singleton
+     * 
      * @return Dispatcher
      */
     public static function getDispatcher(): Dispatcher {
@@ -179,6 +179,7 @@ class PKPApplication {
 
     /**
      * This executes the application by delegating the request to the dispatcher.
+     * 
      * @return void
      */
     public function execute(): void {
@@ -188,6 +189,7 @@ class PKPApplication {
 
     /**
      * Get the symbolic name of this application
+     * 
      * @return string
      */
     public function getName(): string {
@@ -196,6 +198,7 @@ class PKPApplication {
 
     /**
      * Get the locale key for the name of this application.
+     * 
      * @return string
      */
     public function getNameKey(): string {
@@ -205,6 +208,7 @@ class PKPApplication {
 
     /**
      * Get the "context depth" of this application.
+     * 
      * @return int
      */
     public function getContextDepth(): int {
@@ -214,6 +218,7 @@ class PKPApplication {
 
     /**
      * Get the list of the contexts available for this application
+     * 
      * @return array
      */
     public static function getContextList(): array {
@@ -223,6 +228,7 @@ class PKPApplication {
 
     /**
      * Get the URL to the XML descriptor for the current version of this application.
+     * 
      * @return string
      */
     public function getVersionDescriptorUrl(): string {
@@ -232,6 +238,7 @@ class PKPApplication {
 
     /**
      * This function retrieves all enabled product versions.
+     * 
      * @param string|null $category
      * @param int|null $mainContextId
      * @return array
@@ -260,7 +267,8 @@ class PKPApplication {
                 $settingContext = array_combine($this->getContextList(), $settingContext);
             }
 
-            $versionDao = DAORegistry::getDAO('VersionDAO'); /* @var $versionDao VersionDAO */
+            /** @var VersionDAO $versionDao */
+            $versionDao = DAORegistry::getDAO('VersionDAO');
             $this->enabledProducts = (array) $versionDao->getCurrentProducts($settingContext);
         }
 
@@ -275,6 +283,7 @@ class PKPApplication {
 
     /**
      * Get the list of plugin categories for this application.
+     * 
      * @return array
      */
     public function getPluginCategories(): array {
@@ -284,6 +293,7 @@ class PKPApplication {
 
     /**
      * Return the current version of the application.
+     * 
      * @return Version
      */
     public function getCurrentVersion(): Version {
@@ -293,6 +303,7 @@ class PKPApplication {
 
     /**
      * Get the map of DAOName => full.class.Path for this application.
+     * 
      * @return array
      */
     public function getDAOMap(): array {
@@ -338,6 +349,7 @@ class PKPApplication {
 
     /**
      * Return the fully-qualified (e.g. page.name.ClassNameDAO) name of the given DAO.
+     * 
      * @param string $name
      * @return string|null
      */
@@ -349,6 +361,7 @@ class PKPApplication {
 
     /**
      * Instantiate the help object for this application.
+     * 
      * @return object
      */
     public function instantiateHelp(): object {
@@ -357,7 +370,8 @@ class PKPApplication {
     }
 
     /**
-     * Custom error handler
+     * Custom error handler.
+     * 
      * @param int $errorno
      * @param string $errstr
      * @param string $errfile
@@ -379,6 +393,7 @@ class PKPApplication {
 
     /**
      * Auxiliary function to errorHandler that returns a formatted error message.
+     * 
      * @param int $errorno
      * @param string $errstr
      * @param string $errfile
@@ -473,7 +488,6 @@ class PKPApplication {
                 $dbServerInfo = $dbconn->ServerInfo();
             }
         }
-
         $message[] = "  Server info:";
         $message[] = "   OS: " . Core::serverPHPOS();
         $message[] = "   PHP Version: " . Core::serverPHPVersion();
@@ -488,9 +502,10 @@ class PKPApplication {
 
     /**
      * Send a flash notification to the current user interface.
-     * @param string $message The localized message to display
-     * @param string $type 'success', 'warning', 'error', 'info'
-     * @param bool $blocked If true, shows a modal overlay instead of a toast
+     * 
+     * @param string $message
+     * @param string $type
+     * @param bool $blocked
      * @return void
      */
     public static function notifyUser(string $message, string $type = 'success', bool $blocked = false): void {
@@ -509,7 +524,10 @@ class PKPApplication {
                     $notificationType = NOTIFICATION_TYPE_WARNING;
                     break;
                 case 'info':
-                    $notificationType = NOTIFICATION_TYPE_INFO;
+                    $notificationType = NOTIFICATION_TYPE_INFORMATION;
+                    break;
+                case 'form error':
+                    $notificationType = NOTIFICATION_TYPE_FORM_ERROR;
                     break;
                 default:
                     $notificationType = NOTIFICATION_TYPE_SUCCESS;
@@ -525,6 +543,7 @@ class PKPApplication {
 
     /**
      * Define a constant so that it can be exposed to the JS front-end.
+     * 
      * @param string $name
      * @param mixed $value
      * @return void
@@ -535,7 +554,7 @@ class PKPApplication {
         }
         assert((bool) preg_match('/^[a-zA-Z_]+$/', $name));
         
-        $constants =& self::getExposedConstants();
+        $constants = self::getExposedConstants();
         $constants[$name] = $value;
     }
 
@@ -543,9 +562,10 @@ class PKPApplication {
      * Get an associative array of defined constants that should be exposed
      * to the JS front-end.
      * Returns REFERENCE to support defineExposedConstant modification.
+     * 
      * @return array
      */
-    public static function &getExposedConstants(): array {
+    public static function getExposedConstants(): array {
         static $exposedConstants = [];
         return $exposedConstants;
     }
@@ -553,21 +573,25 @@ class PKPApplication {
     /**
      * Get an array of locale keys that define strings that should be made available to
      * JavaScript classes in the JS front-end.
+     * 
      * @return array<string>
      */
     public function getJSLocaleKeys(): array {
         return ['form.dataHasChanged'];
     }
+    
 }
 
 /**
  * Helper function outside class
  * @see PKPApplication::defineExposedConstant
+ * 
  * @param string $name
  * @param mixed $value
  * @return void
  */
-function define_exposed(string $name, $value): void {
+function define_exposed(string $name, mixed $value): void {
     PKPApplication::defineExposedConstant($name, $value);
 }
+
 ?>

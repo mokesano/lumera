@@ -11,12 +11,12 @@ declare(strict_types=1);
  * @class JournalStatsHandler
  * @ingroup pages_statistics
  * 
- * @brief Unified Handler untuk Halaman Standalone Statistik Jurnal & Site [WIZDAM EDITION]
+ * @brief Unified Handler untuk Halaman Standalone Statistik Jurnal & Publisher
  * @version 2.0 (Strict MVC Compliant)
  */
 
 import('classes.handler.Handler');
-import('lib.wizdam.statistics.StatsManager'); // Load Service Layer WIZDAM
+import('lib.wizdam.statistics.StatsManager');
 
 class JournalStatsHandler extends Handler {
 
@@ -28,8 +28,8 @@ class JournalStatsHandler extends Handler {
     }
 
     /**
-     * [WIZDAM] - Golden Rule 5: Otorisasi Fleksibel (Bypass ContextRequiredPolicy)
-     * Mengizinkan halaman statistik ini diakses di root (Site Level) tanpa memicu error 404/Context Required.
+     * Mengizinkan halaman statistik ini diakses di root (Site Level)
+     * tanpa memicu error 404/Context Required.
      * @param Request $request
      * @param array $args
      * @param array $roleAssignments
@@ -43,22 +43,18 @@ class JournalStatsHandler extends Handler {
     }
 
     /**
-     * [WIZDAM] - Unified Index Method (Golden Rule 1 & 2)
      * Menggabungkan logika Site Level dan Journal Level di satu tempat.
      * @param array $args
      * @param Request $request
      */
     public function index(array $args = [], $request = NULL) {
-        // Ambil objek jurnal (akan null jika diakses dari root/site level)
         $journal = $request->getJournal();
         $templateMgr = TemplateManager::getManager($request);
 
-        // Fitur WIZDAM: Parameter opsional untuk memaksa refresh cache via URL (?refresh_stats=true)
+        // Fitur: Parameter refresh cache via URL (?refresh_stats=true)
         $forceRefresh = ($request->getUserVar('refresh_stats') === 'true');
 
-        // [WIZDAM] - Context-Aware Controller
         if ($journal) {
-            // Validasi tambahan khusus untuk level jurnal
             import('classes.handler.validation.HandlerValidatorJournal');
             $this->addCheck(new HandlerValidatorJournal($this));
         }
@@ -66,16 +62,12 @@ class JournalStatsHandler extends Handler {
         // Setup dasar halaman
         $this->setupTemplate($request);
 
-        // [WIZDAM] - Panggil Service Layer untuk menyuntikkan Micro-Payloads ke TemplateManager
-        // Ini akan otomatis mendeteksi apakah kita di level jurnal atau site berdasarkan parameter $journal
         StatsManager::assignWidgetPayload($templateMgr, $journal, $forceRefresh);
-
-        // [WIZDAM] - Tentukan file View (.tpl) yang akan dimuat
         if ($journal) {
-            // Tampilan Standalone untuk Level Jurnal
+            // Tampilan Level Jurnal
             $templateMgr->display('trends/journalStats_standalone.tpl');
         } else {
-            // Tampilan Standalone untuk Level Site (Publisher Root)
+            // Tampilan Level Publisher
             $templateMgr->display('trends/siteStats_standalone.tpl');
         }
     }
@@ -84,11 +76,10 @@ class JournalStatsHandler extends Handler {
      * Helper untuk memuat template header/footer standar OJS
      * @param Request $request
      */
-    public function setupTemplate() {
+    public function setupTemplate($request = null) {
         parent::setupTemplate($request);
         $templateMgr = TemplateManager::getManager($request);
         
-        // [WIZDAM] - Set breadcrumb yang sesuai
         $pageHierarchy = [
             [
                 $request->url(null, 'index'),
@@ -96,7 +87,8 @@ class JournalStatsHandler extends Handler {
             ]
         ];
         $templateMgr->assign('pageHierarchy', $pageHierarchy);
-        $templateMgr->assign('pageTitle', 'navigation.statistics'); // Pastikan key locale ini ada
+        $templateMgr->assign('pageTitle', 'navigation.statistics');
     }
+
 }
 ?>

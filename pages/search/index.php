@@ -14,10 +14,9 @@ declare(strict_types=1);
  *
  * @ingroup pages_search
  * @brief Handle search requests.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
+/** @var string $op */
 switch ($op) {
     case 'index':
     case 'search':

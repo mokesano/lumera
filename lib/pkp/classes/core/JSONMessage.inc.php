@@ -16,6 +16,7 @@ declare(strict_types=1);
  */
 
 class JSONMessage {
+
     /** @var string The status of an event (e.g. false if form validation fails). */
     public $_status;
 
@@ -36,10 +37,11 @@ class JSONMessage {
 
     /**
      * Constructor.
-     * @param $status boolean The status of an event (e.g. false if form validation fails).
-     * @param $content Mixed The message to be delivered back to the calling script.
-     * @param $elementId string The DOM element to be replaced.
-     * @param $additionalAttributes array Additional data to be returned.
+     * 
+     * @param $status boolean
+     * @param $content Mixed
+     * @param $elementId string
+     * @param $additionalAttributes array
      */
     public function __construct($status = true, $content = '', $elementId = '0', $additionalAttributes = null) {
         // Set internal state.
@@ -52,15 +54,19 @@ class JSONMessage {
     }
 
     /**
-     * Backward compatibility shim for PHP 4 constructor.
+     * [SHIM] Backward Compatibility
      */
     public function JSONMessage($status = true, $content = '', $elementId = '0', $additionalAttributes = null) {
-        trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::JSONMessage(). Please refactor to use parent::__construct().", E_USER_DEPRECATED);
+        trigger_error(
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to use parent::__construct().",
+            E_USER_DEPRECATED
+        );
         self::__construct($status, $content, $elementId, $additionalAttributes);
     }
 
     /**
-     * Get the status string
+     * Get the status string.
+     * 
      * @return string
      */
     public function getStatus () {
@@ -68,8 +74,9 @@ class JSONMessage {
     }
 
     /**
-     * Set the status string
-     * @param $status string
+     * Set the status string.
+     * 
+     * @param mixed $status string
      */
     public function setStatus($status) {
         assert(is_bool($status));
@@ -77,7 +84,8 @@ class JSONMessage {
     }
 
     /**
-     * Get the content string
+     * Get the content string.
+     * 
      * @return mixed
      */
     public function getContent() {
@@ -85,15 +93,17 @@ class JSONMessage {
     }
 
     /**
-     * Set the content data
-     * @param $content mixed
+     * Set the content data.
+     * 
+     * @param mixed $content mixed
      */
     public function setContent($content) {
         $this->_content = $content;
     }
 
     /**
-     * Get the elementId string
+     * Get the elementId string.
+     * 
      * @return string
      */
     public function getElementId() {
@@ -101,8 +111,9 @@ class JSONMessage {
     }
 
     /**
-     * Set the elementId string
-     * @param $elementId string
+     * Set the elementId string.
+     * 
+     * @param string $elementId string
      */
     public function setElementId($elementId) {
         // In strict mode or PHP 8, make sure we aren't passing null before assertion if possible,
@@ -113,7 +124,8 @@ class JSONMessage {
 
     /**
      * Set the event to trigger with this JSON message
-     * @param $eventName string
+     * 
+     * @param mixed $eventName string
      * @param $eventData string
      */
     public function setEvent($eventName, $eventData = null) {
@@ -128,6 +140,7 @@ class JSONMessage {
 
     /**
      * Get the event to trigger with this JSON message
+     * 
      * @return array
      */
     public function getEvent() {
@@ -135,7 +148,8 @@ class JSONMessage {
     }
 
     /**
-     * Get the additionalAttributes array
+     * Get the additionalAttributes array.
+     * 
      * @return array
      */
     public function getAdditionalAttributes() {
@@ -143,8 +157,9 @@ class JSONMessage {
     }
 
     /**
-     * Set the additionalAttributes array
-     * @param $additionalAttributes array
+     * Set the additionalAttributes array.
+     * 
+     * @param mixed $additionalAttributes array
      */
     public function setAdditionalAttributes($additionalAttributes) {
         assert(is_array($additionalAttributes));
@@ -154,7 +169,8 @@ class JSONMessage {
     /**
      * Set to simulate a PHP4 environment.
      * This is for internal use in unit tests only.
-     * @param $simulatePhp4 boolean
+     * 
+     * @param mixed $simulatePhp4 boolean
      */
     public function setSimulatePhp4($simulatePhp4) {
         assert(is_bool($simulatePhp4));
@@ -162,7 +178,8 @@ class JSONMessage {
     }
 
     /**
-     * Construct a JSON string to use for AJAX communication
+     * Construct a JSON string to use for AJAX communication.
+     * 
      * @return string
      */
     public function getString() {
@@ -186,6 +203,6 @@ class JSONMessage {
         $jsonManager = new JSONManager();
         return $jsonManager->encode($jsonObject);
     }
+    
 }
-
 ?>

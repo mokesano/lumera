@@ -16,9 +16,7 @@ declare(strict_types=1);
  * @ingroup citation
  * @see MetadataDescription
  *
- * @brief Class representing a citation (bibliographic reference)
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * @brief Class representing a citation (bibliographic reference).
  */
 
 define('CITATION_RAW', 0x01);
@@ -32,6 +30,7 @@ import('lib.pkp.plugins.metadata.nlm30.schema.Nlm30CitationSchema');
 import('lib.pkp.plugins.metadata.nlm30.filter.Nlm30CitationSchemaCitationAdapter');
 
 class Citation extends DataObject {
+
     /** @var int citation state (raw, edited, parsed, looked-up) */
     protected $_citationState = CITATION_RAW;
 
@@ -78,9 +77,7 @@ class Citation extends DataObject {
     // Getters and Setters
     //
     /**
-     * Set meta-data descriptions discovered for this
-     * citation from external sources.
-     *
+     * Set meta-data descriptions discovered for this citation from external sources.
      * @param array $sourceDescriptions MetadataDescriptions
      */
     public function setSourceDescriptions($sourceDescriptions) {
@@ -90,7 +87,6 @@ class Citation extends DataObject {
     /**
      * Add a meta-data description discovered for this
      * citation from an external source.
-     *
      * @param MetadataDescription $sourceDescription
      * @return int the source description's sequence number.
      */
@@ -117,9 +113,7 @@ class Citation extends DataObject {
     }
 
     /**
-     * Get all meta-data descriptions discovered for this
-     * citation from external sources.
-     *
+     * Get all meta-data descriptions discovered for this citation from external sources.
      * @return array MetadataDescriptions
      */
     public function getSourceDescriptions() {

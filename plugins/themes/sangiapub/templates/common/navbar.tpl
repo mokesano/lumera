@@ -25,17 +25,17 @@
                     <picture class="c-header__logo" loading="lazy">
                         {if $currentJournal}
                             {if $currentJournal->getSetting('initials') == "Sangia"}
-                            <source loading="lazy" srcset="//assets.sangia.org/img/sangia-black-branded-v1.svg" alt="sangia" width="auto">
-                            <img loading="lazy" src="//assets.sangia.org/img/sangia-black-branded-v1.svg" alt="{$currentJournal->getLocalizedInitials()|strip_tags|escape}" width="auto">
+                                <source loading="lazy" srcset="{$baseUrl}/assets/img/sangia-black-branded-v1.svg" alt="sangia" width="auto">
+                                <img loading="lazy" src="{$baseUrl}/assets/img/sangia-black-branded-v1.svg" alt="{$currentJournal->getLocalizedInitials()|strip_tags|escape}" width="auto">
                             {elseif !$currentJournal->getSetting('initials')}
-                            <source loading="lazy" srcset="//assets.sangia.org/img/sangia-black-branded-v3.svg" alt="{$siteTitle}" width="auto">
-                            <img loading="lazy" src="//assets.sangia.org/img/sangia-black-branded-v3.svg" alt="{$siteTitle}" width="auto">
+                                <source loading="lazy" srcset="{$baseUrl}/assets/img/sangia-black-branded-v3.svg" alt="{$siteTitle}" width="auto">
+                                <img loading="lazy" src="{$baseUrl}/assets/img/sangia-black-branded-v3.svg" alt="{$siteTitle}" width="auto">
                             {else}
                                 {$currentJournal->getLocalizedInitials()|strip_tags|escape|lower}
                             {/if}
                         {else}
-                            <source loading="lazy" srcset="//assets.sangia.org/img/sangia-black-branded-v3.svg" alt="{$siteTitle}" width="auto">
-                            <img loading="lazy" src="//assets.sangia.org/img/sangia-black-branded-v3.svg" alt="{$siteTitle}" width="auto">
+                            <source loading="lazy" srcset="{$baseUrl}/assets/img/sangia-black-branded-v3.svg" alt="{$siteTitle}" width="auto">
+                            <img loading="lazy" src="{$baseUrl}/assets/img/sangia-black-branded-v3.svg" alt="{$siteTitle}" width="auto">
                         {/if}
                     </picture>
                 </a>
@@ -65,18 +65,18 @@
                     <nav class="c-account-nav" aria-labelledby="account-nav-title">
                         <a id="my-account" class="c-header__link eds-c-header__link c-account-nav__anchor" href="{url page="user"}" data-test="login-link" data-track="click" data-track-action="my account" data-track-category="sangia-split-header" data-track-label="link" aria-expanded="true">
                             {if $userData}
-                            <span>{if $userData.firstName|escape !== $userData.lastName|escape}{$userData.firstName|escape|substr:0:1}.{/if}{if $userData.middleName} {$userData.middleName|escape|substr:0:1}.{/if} {$userData.lastName|escape}</span>
-                            <div class="Ibar__userLogged u-ml-8">
-                                <figure class="Avatar Avatar--size-32">
-                                    {if $userData.profileImage && $userData.profileImage.uploadName}<img src="{$sitePublicFilesDir}/{$userData.profileImage.uploadName}" alt="{$userData.firstName|escape}{if $userData.middleName} {$userData.middleName|escape}{/if} {$userData.lastName|escape}" class="Avatar__img is-inside-mask">{else}<img class="Avatar__img is-inside-mask" src="//assets.sangia.org/static/images/default_203.jpg?as=webp" alt="{$userData.firstName|escape}">{/if}
-                                </figure>
-                            </div>
+                                <span>{if $userData.firstName|escape !== $userData.lastName|escape}{$userData.firstName|escape|substr:0:1}.{/if}{if $userData.middleName} {$userData.middleName|escape|substr:0:1}.{/if} {$userData.lastName|escape}</span>
+                                <div class="Ibar__userLogged u-ml-8">
+                                    <figure class="Avatar Avatar--size-32">
+                                        {if $userData.profileImage && $userData.profileImage.uploadName}<img src="{$sitePublicFilesDir}/{$userData.profileImage.uploadName}" alt="{$userData.firstName|escape}{if $userData.middleName} {$userData.middleName|escape}{/if} {$userData.lastName|escape}" class="Avatar__img is-inside-mask">{else}<img class="Avatar__img is-inside-mask" src="//assets.sangia.org/static/images/default_203.jpg?as=webp" alt="{$userData.firstName|escape}">{/if}
+                                    </figure>
+                                </div>
                             {else}
-                            <span>{translate key="user.myAccount"}</span>
-                            <svg id="account-icon" role="img" aria-hidden="true" focusable="false" height="22" width="22" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M10.238 16.905a7.96 7.96 0 003.53-1.48c-.874-2.514-2.065-3.936-3.768-4.319V9.83a3.001 3.001 0 10-2 0v1.277c-1.703.383-2.894 1.805-3.767 4.319A7.96 7.96 0 009 17c.419 0 .832-.032 1.238-.095zm4.342-2.172a8 8 0 10-11.16 0c.757-2.017 1.84-3.608 3.49-4.322a4 4 0 114.182 0c1.649.714 2.731 2.305 3.488 4.322zM9 18A9 9 0 119 0a9 9 0 010 18z" fill="#333" fill-rule="evenodd"></path></svg>
+                                <span>{translate key="user.myAccount"}</span>
+                                <svg id="account-icon" role="img" aria-hidden="true" focusable="false" height="22" width="22" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M10.238 16.905a7.96 7.96 0 003.53-1.48c-.874-2.514-2.065-3.936-3.768-4.319V9.83a3.001 3.001 0 10-2 0v1.277c-1.703.383-2.894 1.805-3.767 4.319A7.96 7.96 0 009 17c.419 0 .832-.032 1.238-.095zm4.342-2.172a8 8 0 10-11.16 0c.757-2.017 1.84-3.608 3.49-4.322a4 4 0 114.182 0c1.649.714 2.731 2.305 3.488 4.322zM9 18A9 9 0 119 0a9 9 0 010 18z" fill="#333" fill-rule="evenodd"></path></svg>
                             {/if}
                             {if $unreadNotifications > 0}
-                            <span class="notification-icon" id="notification-count">{$unreadNotifications}</span>
+                                <span class="notification-icon" id="notification-count">{$unreadNotifications}</span>
                             {/if}
                             <svg class="chevron" role="img" aria-hidden="true" focusable="false" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m5.58578644 3-3.29289322-3.29289322c-.39052429-.39052429-.39052429-1.02368927 0-1.41421356s1.02368927-.39052429 1.41421356 0l4 4c.39052429.39052429.39052429 1.02368927 0 1.41421356l-4 4c-.39052429.39052429-1.02368927.39052429-1.41421356 0s-.39052429-1.02368927 0-1.41421356z" transform="matrix(0 1 -1 0 11 3)"></path></svg>
                         </a>
@@ -88,7 +88,7 @@
                                     {if $userData.profileImage && $userData.profileImage.uploadName}
                                         <img class="Avatar__img is-inside-mask" src="{$sitePublicFilesDir}/{$userData.profileImage.uploadName}?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">
                                     {elseif $userData.gender == 'F'}
-                                        <img class="Avatar__img is-inside-mask" src="//assets.sangia.org/static/images/contactPersonF.png?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">{elseif $userData.gender == 'M'}<img class="Avatar__img is-inside-mask" src="//assets.sangia.org/static/images/contactPersonM.png?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">{else}<img class="Avatar__img is-inside-mask" src="//assets.sangia.org/static/images/default_203.jpg?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">
+                                        <img class="Avatar__img is-inside-mask" src="{$baseUrl}/assets/img/contactPersonF.png?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">{elseif $userData.gender == 'M'}<img class="Avatar__img is-inside-mask" src="{$baseUrl}/assets/img/contactPersonM.png?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">{else}<img class="Avatar__img is-inside-mask" src="//assets.sangia.org/static/images/default_203.jpg?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">
                                     {/if}
                                     </figure>
                                     
@@ -112,6 +112,7 @@
                                </li>
                             </ul>
                             <ul class="c-account-nav__menu-list">
+                                <li class="c-account-nav__menu-item"><a href="{url page="notification"}">Notifications Inbox{if $unreadNotifications > 0} ({$unreadNotifications}){/if}</a></li>
                                 {if $userSession}
                                 <li class="c-account-nav__menu-item"><a href="{url page="user" op="my-profile" path=$userSession->getUserId()|string_format:"%011d"}">{translate key="user.showMyProfile"}</a></li>
                                 {/if}

@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class Dispatcher
  * @ingroup core
  *
- * @brief Class dispatching HTTP requests to handlers.
- * [WIZDAM EDITION] Modernized. PHP 8 Safe. Intelligent Caching. Strict Typed. Pure DI.
+ * @brief Class dispatching HTTP requests to handlers. Intelligent Caching. Strict Typed. Pure DI.
  */
 
 class Dispatcher {
@@ -32,11 +31,12 @@ class Dispatcher {
     /** @var PKPRequest|null Used for a callback hack */
     protected ?PKPRequest $_requestCallbackHack = null;
 
-    // [WIZDAM CONSTANT] - Default cache TTL fallback
+    // [LUMERA] CONSTANT: Default cache TTL fallback
     const WIZDAM_CACHE_TTL_DEFAULT = 3600;
 
     /**
-     * Get the application
+     * Get the application.
+     * 
      * @return PKPApplication
      */
     public function getApplication(): PKPApplication {
@@ -44,7 +44,8 @@ class Dispatcher {
     }
 
     /**
-     * Set the application
+     * Set the application.
+     * 
      * @param PKPApplication $application
      */
     public function setApplication(PKPApplication $application): void {
@@ -52,7 +53,8 @@ class Dispatcher {
     }
 
     /**
-     * Get the router names
+     * Get the router names.
+     * 
      * @return array
      */
     public function getRouterNames(): array {
@@ -61,6 +63,7 @@ class Dispatcher {
 
     /**
      * Add a router name.
+     * 
      * @param string $routerName
      * @param string $shortcut
      */
@@ -70,11 +73,12 @@ class Dispatcher {
 
     /**
      * Determine the correct router for this request.
+     * 
      * @param PKPRequest $request
      */
     public function dispatch(PKPRequest $request): void {
         
-        // [WIZDAM] NEW Routing url tanpa /index/ di level root/publisher
+        // [LUMERA] NEW Routing url tanpa /index/ di level root/publisher
         if ($request->isPathInfoEnabled()) {
         
             // Ambil pathInfo dengan fallback ke REQUEST_URI
@@ -106,8 +110,9 @@ class Dispatcher {
         
             $isKnownJournal = false;
             if (!empty($firstSegment) && $firstSegment !== 'index') {
-                // [WIZDAM FIX] Hanya query ke DB jika aplikasi SUDAH terinstal
+                // [FIX] Hanya query ke DB jika aplikasi SUDAH terinstal
                 if (\Config::getVar('general', 'installed')) {
+                    /** @var JournalDAO $journalDao */
                     $journalDao     = DAORegistry::getDAO('JournalDAO');
                     $journalByPath  = $journalDao->getJournalByPath($firstSegment);
                     $isKnownJournal = ($journalByPath !== null);
@@ -117,12 +122,12 @@ class Dispatcher {
             if (!$isKnownJournal && $firstSegment !== 'index' && !empty($firstSegment)) {
                 $rewrittenPath = '/index' . $pathInfo;
         
-                // [WIZDAM FIX] Set keduanya agar router tidak miss
+                // [FIX] Set keduanya agar router tidak miss
                 $_SERVER['PATH_INFO']   = $rewrittenPath;
                 $_SERVER['REQUEST_URI'] = $request->getBasePath() . $rewrittenPath;
             }
         }
-        // [WIZDAM] END routing url tanpa /index/ level root/publisher
+        // [LUMERA] END routing url tanpa /index/ level root/publisher
     
         $routerNames = $this->getRouterNames();
         if (count($routerNames) === 0) {
@@ -145,7 +150,7 @@ class Dispatcher {
         }
 
         if (is_null($router)) {
-            // [WIZDAM DI] Pass request explicitly instead of relying on global state
+            // [LUMERA] Pass request explicitly instead of relying on global state
             $this->handle404($request);
             return; // handle404 calls fatalError/exit, but return for safety
         }
@@ -175,6 +180,7 @@ class Dispatcher {
 
     /**
      * Build a handler request URL into PKPApplication.
+     * 
      * @return string the URL
      */
     public function url(PKPRequest $request, string $shortcut, $newContext = null, $handler = null, $op = null, $path = null,
@@ -195,7 +201,10 @@ class Dispatcher {
     //
 
     /**
-     * Instantiate a router
+     * Instantiate a router.
+     * 
+     * @param string $routerName
+     * @param string $shortcut
      * @return PKPRouter
      */
     protected function _instantiateRouter(string $routerName, string $shortcut): PKPRouter {
@@ -216,8 +225,9 @@ class Dispatcher {
     }
 
     /**
-     * [WIZDAM INTELLIGENT CACHE]
-     * Menggunakan ETag (Hash) dan Cache-Control: must-revalidate.
+     * Handle a 404 error (page not found).
+     * [LUMERA] INTELLIGENT CACHE: Menggunakan ETag (Hash) dan Cache-Control: must-revalidate.
+     * 
      * @param PKPRouter $router
      * @param PKPRequest $request
      */
@@ -260,7 +270,8 @@ class Dispatcher {
 
     /**
      * Cache content as a local file.
-     * [WIZDAM FIX] Saves Pure HTML ensuring Atomic Writes.
+     * [WIZDAM] Saves Pure HTML ensuring Atomic Writes.
+     * 
      * @param string $contents
      * @return string
      */
@@ -269,7 +280,7 @@ class Dispatcher {
         
         $filename = $this->_router->getCacheFilename($this->_requestCallbackHack);
         
-        // [WIZDAM SANITIZER] Cleanup timestamp garbage from legacy outputs
+        // [LUMERA] SANITIZER: Cleanup timestamp garbage from legacy outputs
         if (preg_match('/^\d{10}:/', $contents)) {
             $contents = preg_replace('/^\d{10}:/', '', $contents);
         }
@@ -282,7 +293,7 @@ class Dispatcher {
             return $contents;
         }
 
-        // [WIZDAM ATOMIC WRITE]
+        // [LUMERA]: ATOMIC WRITE
         file_put_contents($filename, $contents, LOCK_EX);
         
         return $contents;
@@ -292,7 +303,8 @@ class Dispatcher {
      * Handle a 404 error (page not found).
      * WIZDAM EDITION: Custom Error Handling
      * [HIGHER STANDARD] Explicit Method Injection. No Service Locator used.
-     * @param PKPRequest $request The request object must be passed explicitly.
+     * 
+     * @param PKPRequest $request
      */
     public function handle404(PKPRequest $request): void {
         // 1. Mengumpulkan informasi URL
@@ -300,7 +312,7 @@ class Dispatcher {
         $queryString = $request->getQueryString();
         $fullUrl = $path . ($queryString ? '?' . $queryString : '');
         
-        // [WIZDAM SECURITY] Sanitasi mencegah Log Injection.
+        // [LUMERA SECURITY] Sanitasi mencegah Log Injection.
         $sanitize = function(string $value, int $maxLen): string {
             $value = strip_tags($value);
             $value = str_replace(["\r\n", "\r", "\n"], ' ', $value);
@@ -325,5 +337,6 @@ class Dispatcher {
         header('HTTP/1.0 404 Not Found');
         fatalError($errorMessage, 404);
     }
+
 }
 ?>

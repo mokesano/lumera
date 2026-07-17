@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup manager_form_setup
  *
  * @brief Form for Step 1 of journal setup.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.manager.form.setup.JournalSetupForm');
@@ -128,6 +126,7 @@ class JournalSetupStep1Form extends JournalSetupForm {
         }
 
         // In case the category list changed, flush the cache.
+        /** @var CategoryDAO $categoryDao */
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
         $categoryDao->rebuildCache();
 
@@ -147,8 +146,9 @@ class JournalSetupStep1Form extends JournalSetupForm {
         if (Config::getVar('email', 'allow_envelope_sender'))
             $templateMgr->assign('envelopeSenderEnabled', true);
 
-        // If Categories are enabled by Site Admin, make selection
-        // tools available to Journal Manager
+        // If Categories are enabled by Site Admin, 
+        // make selection tools available to Journal Manager
+        /** @var CategoryDAO $categoryDao */
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
         $categories = $categoryDao->getCategories();
         $site = $request->getSite();
@@ -158,7 +158,6 @@ class JournalSetupStep1Form extends JournalSetupForm {
             $templateMgr->assign('allCategories', $categories);
         }
 
-        // --- TAMBAHAN FIX PHP 8 ---
         // Pastikan 'history' selalu berupa array agar Smarty tidak error saat memanggil index locale
         if (!isset($this->_data['history']) || !is_array($this->_data['history'])) {
             $this->_data['history'] = [];

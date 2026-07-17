@@ -12,13 +12,12 @@ declare(strict_types=1);
  * @ingroup pages_index
  *
  * @brief Handle site index requests.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  * Modifikasi: Pemisahan logika index Jurnal dan Publisher.
+ * 
  */
 
 import('classes.handler.Handler');
-import('lib.pkp.classes.core.PKPWizdamStats');
+import('lib.wizdam.statistics.WizdamStats');
 
 class IndexHandler extends Handler {
     
@@ -30,7 +29,9 @@ class IndexHandler extends Handler {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [DEPRECATED] Backward compatibility.
+     * Use __construct() instead.
+     * @deprecated
      */
     public function IndexHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -48,6 +49,7 @@ class IndexHandler extends Handler {
      * Otherwise, display the index page for the selected journal.
      * @param array $args
      * @param PKPRequest $request
+     * @return void
      */
     public function index($args = [], $request = null) {
         $this->validate();
@@ -60,8 +62,8 @@ class IndexHandler extends Handler {
 
         $templateMgr->assign('helpTopicId', 'user.home');
 
-        // [WIZDAM FIX] Initialize forceRefresh to prevent undefined variable error in strict mode
-        $forceRefresh = $request->getUserVar('refresh') ? true : false;
+        // [FIX] Initialize forceRefresh to prevent undefined variable error in strict mode
+        $forceRefresh = (bool) $request->getUserVar('refresh');
 
         if ($journal) {
             $this->journal($journal, $request, $templateMgr, $forceRefresh);
@@ -76,6 +78,7 @@ class IndexHandler extends Handler {
      * @param PKPRequest $request
      * @param TemplateManager $templateMgr
      * @param bool $forceRefresh
+     * @return void
      */
     private function journal($journal, $request, $templateMgr, $forceRefresh) {
         // Assign header and content for home page
@@ -88,57 +91,86 @@ class IndexHandler extends Handler {
         $templateMgr->assign('homepageImageAltText', $journal->getLocalizedSetting('homepageImageAltText'));
         $templateMgr->assign('journalDescription', $journal->getLocalizedSetting('description'));
 
-        $displayCurrentIssue = $journal->getSetting('displayCurrentIssue');
-        $issueDao = DAORegistry::getDAO('IssueDAO');
-        $issue = $issueDao->getCurrentIssue($journal->getId(), true);
+        $displayCurrentIssue = (bool) $journal->getSetting('displayCurrentIssue');
         
-        if ($displayCurrentIssue && isset($issue)) {
+        /** @var IssueDAO $issueDao */
+        $issueDao = DAORegistry::getDAO('IssueDAO');
+        $issue = $issueDao ? $issueDao->getCurrentIssue((int) $journal->getId(), true) : null;
+        
+        if ($displayCurrentIssue && $issue !== null) {
             import('pages.issue.IssueHandler');
-            // The current issue TOC/cover page should be displayed below the custom home page.
-            IssueHandler::_setupIssueTemplate($request, $issue);
+            IssueHandler::_setupIssueTemplate($request, $issue); // The current issue TOC/cover.
 
-            // --- WIZDAM FIX: Kalkulasi total artikel untuk validasi Homepage ---
-            // Ambil array publishedArticles yang baru saja di-assign oleh IssueHandler
+            // [UI/UX] Reset breadcrumb agar volume tidak muncul di Homepage Jurnal
+            $journalId = (int) $journal->getId();
+            // 1. Ambil nama jurnal
+            $journalName = (string) $journal->getLocalizedTitle();
+            if (empty($journalName)) {
+                $journalName = (string) $journal->getPath();
+            }
+            // 2. Ambil URL homepage menggunakan Router
+            $router = $request->getRouter();
+            $homeUrl = $router->url($request, null, 'index');
+            // 3. Cek apakah jurnal breadcrumb-nya dari config.inc.php
+            $hiddenIdsRaw = (string) Config::getVar('lumera', 'hide_breadcrumb_journal_ids');
+            $hiddenIds = [];
+            if (!empty($hiddenIdsRaw)) {
+                $hiddenIds = array_map('trim', explode(',', $hiddenIdsRaw));
+            }
+            // 4. Tentukan isi breadcrumb berdasarkan konfigurasi
+            if (in_array((string) $journalId, $hiddenIds, true)) {
+                $templateMgr->assign('pageHierarchy', []);
+            } else {
+                $templateMgr->assign('pageHierarchy', [
+                    [$homeUrl, $journalName]
+                ]);
+            }
+
+            // FIX: Kalkulasi total artikel untuk validasi Homepage ---
             $publishedArticles = $templateMgr->getTemplateVars('publishedArticles');
             $homepageArticleCount = 0;
             
-            if (!empty($publishedArticles) && is_array($publishedArticles)) {
+            if (is_array($publishedArticles)) {
                 foreach ($publishedArticles as $section) {
                     if (isset($section['articles']) && is_array($section['articles'])) {
                         $homepageArticleCount += count($section['articles']);
                     }
                 }
             }
-            // Assign hasil kalkulasi ke Smarty
             $templateMgr->assign('homepageArticleCount', $homepageArticleCount);
-            // --- AKHIR WIZDAM FIX ---
         }
 
-        $enableAnnouncements = $journal->getSetting('enableAnnouncements');
+        $enableAnnouncements = (bool) $journal->getSetting('enableAnnouncements');
         if ($enableAnnouncements) {
-            $enableAnnouncementsHomepage = $journal->getSetting('enableAnnouncementsHomepage');
+            $enableAnnouncementsHomepage = (bool) $journal->getSetting('enableAnnouncementsHomepage');
             if ($enableAnnouncementsHomepage) {
-                $numAnnouncementsHomepage = $journal->getSetting('numAnnouncementsHomepage');
+                $numAnnouncementsHomepage = (int) $journal->getSetting('numAnnouncementsHomepage');
+                
+                /** @var AnnouncementDAO $announcementDao */
                 $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
-                $announcements = $announcementDao->getNumAnnouncementsNotExpiredByAssocId(ASSOC_TYPE_JOURNAL, $journal->getId(), $numAnnouncementsHomepage);
-                $templateMgr->assign('announcements', $announcements);
-                $templateMgr->assign('enableAnnouncementsHomepage', $enableAnnouncementsHomepage);
+                if ($announcementDao) {
+                    $announcements = $announcementDao->getNumAnnouncementsNotExpiredByAssocId(ASSOC_TYPE_JOURNAL, (int) $journal->getId(), $numAnnouncementsHomepage);
+                    $templateMgr->assign('announcements', $announcements);
+                    $templateMgr->assign('enableAnnouncementsHomepage', $enableAnnouncementsHomepage);
+                }
             }
         }
         
-        // --- MODIFIKASI DIMULAI (WIZDAM Editor Staff) ---
-        import('lib.pkp.classes.core.PKPWizdamEditorStaff');
-        $maxStaffToShow = 3; 
-        PKPWizdamEditorStaff::displayHomepageStaff($journal, $templateMgr, $maxStaffToShow);
-        // --- MODIFIKASI SELESAI (WIZDAM Editor Staff) ---
+        // [LUMERA] Editor Staff ---
+        import('lib.pkp.classes.core.EditorialStaff');
+        $maxStaffToShow = (int) Config::getVar('lumera', 'max_staff_show');
+        if ($maxStaffToShow <= 0) {
+            $maxStaffToShow = 3; 
+        }
+        EditorialStaff::displayHomepageStaff($journal, $templateMgr, $maxStaffToShow);
         
-        // --- BLOK WIZDAM STATS JURNAL DIMULAI ---
-        $journalId = $journal->getId();
+        // [LUMERA] STATS JURNAL ---
+        $journalId = (int) $journal->getId();
         try {
-            $journalStats = PKPWizdamStats::getStats($journalId, $forceRefresh);
+            $journalStats = WizdamStats::getStats($journalId, $forceRefresh);
             if (is_array($journalStats) && !isset($journalStats['error'])) {
                 foreach ($journalStats as $key => $value) {
-                    $templateMgr->assign($key, $value);
+                    $templateMgr->assign((string) $key, $value);
                 }
             } else {
                  $templateMgr->assign('statsError', 'Data statistik tidak valid.');
@@ -148,16 +180,15 @@ class IndexHandler extends Handler {
             }
         } catch (Exception $e) { 
             if (Config::getVar('debug', 'log_errors')) {
-                error_log('WizdamStats (Handler): Exception loading PKPWizdamStats for JID ' . $journalId . ': ' . $e->getMessage());
+                error_log('WizdamStats (Handler): Exception loading WizdamStats for JID ' . $journalId . ': ' . $e->getMessage());
             }
             $templateMgr->assign('statsError', 'Gagal memuat statistik jurnal.');
         }
         $basePath = $request->getBasePath();
         $jsonPath = $basePath . '/public/wizdam_cache/stats/journal_' . $journalId . '_stats.json.gz';
         $templateMgr->assign('statsJsonPath', $jsonPath);
-        // --- AKHIR BLOK WIZDAM STATS JURNAL SELESAI ---
         
-        // --- [TRENDS] WIZDAM Most Popular ---
+        // [TRENDS] Most Popular ---
         import('lib.wizdam.trends.WizdamTrendsManager');
         WizdamTrendsManager::assignMostPopularPayload($templateMgr, $journal, $request);
         
@@ -170,49 +201,48 @@ class IndexHandler extends Handler {
      * @param PKPRequest $request
      * @param TemplateManager $templateMgr
      * @param bool $forceRefresh
+     * @return void
      */
     private function publisher($site, $request, $templateMgr, $forceRefresh) {
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
 
-        // WIZDAM STATS 2: ROOT WIZDAM EDITORIAL SYSTEM
+        // [LUMERA] STATS 2: ROOT EDITORIAL SYSTEM
         try {
-            $siteStats = PKPWizdamStats::getSiteWideStats($forceRefresh);
+            $siteStats = WizdamStats::getSiteWideStats($forceRefresh);
             
             if (Config::getVar('debug', 'log_errors')) {
-                error_log("DEBUG IndexHandler (Site-Wide): Isi \$siteStats['journalsStats'] = " . print_r($siteStats['journalsStats'], true)); 
+                error_log("DEBUG IndexHandler (Site-Wide): Isi \$siteStats['journalsStats'] = " . print_r($siteStats['journalsStats'] ?? [], true)); 
             }
         
             if (is_array($siteStats) && !isset($siteStats['error'])) {
                 foreach ($siteStats as $key => $value) {
-                    $templateMgr->assign($key, $value);
+                    $templateMgr->assign((string) $key, $value);
                 }
             } else {
                 $templateMgr->assign('statsError', 'Data statistik situs tidak valid.');
-                
-                // PERBAIKAN KRITIS UNTUK PHP 7.4+
                 $templateMgr->assign('journalsStats', []);
                 $templateMgr->assign('allTotalViews', 0);
                 $templateMgr->assign('allTotalDownloads', 0);
                 $templateMgr->assign('allTotalAuthors', 0);
                 
-                 if (isset($siteStats['error']) && Config::getVar('debug', 'log_errors')) {
+                if (isset($siteStats['error']) && Config::getVar('debug', 'log_errors')) {
                      error_log('WizdamStats (Handler): getSiteWideStats() returned an error: '. $siteStats['error']);
-                 }
+                }
             }
         } catch (Exception $e) { 
             if (Config::getVar('debug', 'log_errors')) {
-                error_log('WizdamStats (Handler): Exception loading PKPWizdamStats (Site-Wide): ' . $e->getMessage());
+                error_log('WizdamStats (Handler): Exception loading WizdamStats (Site-Wide): ' . $e->getMessage());
             }
             $templateMgr->assign('statsError', 'Gagal memuat statistik situs.');
-            
-            // PERBAIKAN KRITIS UNTUK PHP 7.4+
             $templateMgr->assign('journalsStats', []);
             $templateMgr->assign('allTotalViews', 0);
             $templateMgr->assign('allTotalDownloads', 0);
             $templateMgr->assign('allTotalAuthors', 0);
         }
-        
-        if ($site->getRedirect() && ($redirectJournal = $journalDao->getById($site->getRedirect())) != null) {
+
+        $redirectId = $site->getRedirect();
+        if ($redirectId && $journalDao && ($redirectJournal = $journalDao->getById((int) $redirectId)) !== null) {
             $request->redirect($redirectJournal->getPath());
         }
         
@@ -221,7 +251,7 @@ class IndexHandler extends Handler {
         $templateMgr->assign('journalFilesPath', $request->getBaseUrl() . '/' . Config::getVar('files', 'public_files_dir') . '/journals/');
 
         // If we're using paging, fetch the parameters
-        $usePaging = $site->getSetting('usePaging');
+        $usePaging = (bool) $site->getSetting('usePaging');
         $rangeInfo = $usePaging ? $this->getRangeInfo('journals') : null;
         $templateMgr->assign('usePaging', $usePaging);
 
@@ -232,24 +262,31 @@ class IndexHandler extends Handler {
         }
         
         $templateMgr->assign('searchInitial', $searchInitial);
-        $templateMgr->assign('useAlphalist', $site->getSetting('useAlphalist'));
+        $templateMgr->assign('useAlphalist', (bool) $site->getSetting('useAlphalist'));
 
-        $journals = $journalDao->getJournals(
-            true,
-            $rangeInfo,
-            $searchInitial ? JOURNAL_FIELD_TITLE : JOURNAL_FIELD_SEQUENCE,
-            $searchInitial ? JOURNAL_FIELD_TITLE : null,
-            $searchInitial ? 'startsWith' : null,
-            $searchInitial
-        );
-        $templateMgr->assign('journals', $journals);
+        // [LUMERA] Null-safety guard untuk pemanggilan DAO
+        if ($journalDao) {
+            $journals = $journalDao->getJournals(
+                true,
+                $rangeInfo,
+                $searchInitial ? JOURNAL_FIELD_TITLE : JOURNAL_FIELD_SEQUENCE,
+                $searchInitial ? JOURNAL_FIELD_TITLE : null,
+                $searchInitial ? 'startsWith' : null,
+                $searchInitial,
+                true // [LUMERA] Aktifkan filter khusus Homepage
+            );
+            $templateMgr->assign('journals', $journals);
+        } else {
+            // Fallback jika DAO gagal dimuat
+            $templateMgr->assign('journals', []); 
+        }
         
         $templateMgr->assign('site', $site);
         $templateMgr->assign([
-            'sitePrincipalContactEmail' => $site->getLocalizedData('contactEmail')
+            'sitePrincipalContactEmail' => (string) $site->getLocalizedData('contactEmail')
         ]);
         
-        // --- [TRENDS] WIZDAM Most Popular ---
+        // [LUMERA] Most Popular ---
         import('lib.wizdam.trends.WizdamTrendsManager');
         WizdamTrendsManager::assignMostPopularPayload($templateMgr, null, $request);
 
@@ -257,5 +294,6 @@ class IndexHandler extends Handler {
         $templateMgr->setCacheability(CACHEABILITY_PUBLIC);
         $templateMgr->display('index/publisher.tpl');
     }
+
 }
 ?>

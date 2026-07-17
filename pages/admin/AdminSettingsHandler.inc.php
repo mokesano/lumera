@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_admin
  *
  * @brief Handle requests for changing site admin settings.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.admin.AdminHandler');
@@ -39,6 +37,28 @@ class AdminSettingsHandler extends AdminHandler {
         }
         $args = func_get_args();
         call_user_func_array([$this, '__construct'], $args);
+    }
+
+    /**
+     * [WIZDAM] Kirim notifikasi (flash message) ke user setelah sebuah aksi.
+     * @param PKPRequest $request
+     * @param string|null $localeKey Jika null, gunakan pesan sukses default OJS.
+     */
+    private function _notifyAction($request, $localeKey = null): void {
+        import('classes.notification.NotificationManager');
+        $notificationManager = new NotificationManager();
+        $user = $request->getUser();
+        if (!$user) return;
+
+        if ($localeKey) {
+            $notificationManager->createTrivialNotification(
+                $user->getId(),
+                NOTIFICATION_TYPE_SUCCESS,
+                ['contents' => __($localeKey)]
+            );
+        } else {
+            $notificationManager->createTrivialNotification($user->getId());
+        }
     }
 
     /**
@@ -76,23 +96,31 @@ class AdminSettingsHandler extends AdminHandler {
         $site = $request->getSite();
 
         import('classes.admin.form.SiteSettingsForm');
-        import('classes.file.PublicFileManager'); // [WIZDAM] Explicit import
+        import('classes.file.PublicFileManager');
 
         $settingsForm = new SiteSettingsForm();
         $settingsForm->readInputData();
 
-        if ((int) $request->getUserVar('uploadSiteStyleSheet')) {
+        if ((array) $request->getUserVar('uploadSiteStyleSheet')) {
             if (!$settingsForm->uploadSiteStyleSheet()) {
                 $settingsForm->addError('siteStyleSheet', __('admin.settings.siteStyleSheetInvalid'));
+            } else {
+                // [WIZDAM] NOTIF
+                $this->_notifyAction($request, 'admin.settings.notification.fileUploaded');
             }
-        } elseif ((int) $request->getUserVar('deleteSiteStyleSheet')) {
+        } elseif ((array) $request->getUserVar('deleteSiteStyleSheet')) {
             $publicFileManager = new PublicFileManager();
             $publicFileManager->removeSiteFile($site->getSiteStyleFilename());
-        } elseif ((int) $request->getUserVar('uploadPageHeaderTitleImage')) {
+            // [WIZDAM] NOTIF
+            $this->_notifyAction($request, 'admin.settings.notification.fileRemoved');
+        } elseif ((array) $request->getUserVar('uploadPageHeaderTitleImage')) {
             if (!$settingsForm->uploadPageHeaderTitleImage($settingsForm->getFormLocale())) {
                 $settingsForm->addError('pageHeaderTitleImage', __('admin.settings.homeHeaderImageInvalid'));
+            } else {
+                // [WIZDAM] NOTIF
+                $this->_notifyAction($request, 'admin.settings.notification.fileUploaded');
             }
-        } elseif ((int) $request->getUserVar('deletePageHeaderTitleImage')) {
+        } elseif ((array) $request->getUserVar('deletePageHeaderTitleImage')) {
             $publicFileManager = new PublicFileManager();
             $setting = $site->getSetting('pageHeaderTitleImage');
             $formLocale = $settingsForm->getFormLocale();
@@ -104,6 +132,9 @@ class AdminSettingsHandler extends AdminHandler {
                 // Refresh site header
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign('displayPageHeaderTitle', $site->getLocalizedPageHeaderTitle());
+
+                // [WIZDAM] NOTIF
+                $this->_notifyAction($request, 'admin.settings.notification.fileRemoved');
             }
         } elseif ($settingsForm->validate()) {
             $settingsForm->execute();

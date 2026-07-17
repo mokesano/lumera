@@ -13,11 +13,6 @@ declare(strict_types=1);
  * @see ArticleFile
  *
  * @brief Operations for retrieving and modifying ArticleFile objects.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Ref removal, Visibility)
- * - Strict Integer Casting
- * - Hook Dispatch
  */
 
 import('lib.pkp.classes.file.PKPFileDAO');
@@ -26,7 +21,8 @@ import('classes.article.ArticleFile');
 class ArticleFileDAO extends PKPFileDAO {
 
     /**
-     * Retrieve an article by ID.
+     * Retrieve an article file by ID.
+     * 
      * @param int $fileId
      * @param int|null $revision optional, if omitted latest revision is used
      * @param int|null $articleId optional
@@ -37,41 +33,34 @@ class ArticleFileDAO extends PKPFileDAO {
             return null;
         }
 
-        if ($revision == null) {
-            if ($articleId != null) {
-                $result = $this->retrieveLimit(
-                    'SELECT a.* FROM article_files a WHERE file_id = ? AND article_id = ? ORDER BY revision DESC',
-                    array((int) $fileId, (int) $articleId),
-                    1
-                );
-            } else {
-                $result = $this->retrieveLimit(
-                    'SELECT a.* FROM article_files a WHERE file_id = ? ORDER BY revision DESC',
-                    (int) $fileId,
-                    1
-                );
-            }
+        $sql = 'SELECT a.* FROM article_files a WHERE file_id = ?';
+        $params = [(int) $fileId];
 
+        if ($revision !== null) {
+            $sql .= ' AND revision = ?';
+            $params[] = (int) $revision;
+        }
+
+        if ($articleId !== null) {
+            $sql .= ' AND article_id = ?';
+            $params[] = (int) $articleId;
+        }
+
+        if ($revision === null) {
+            $sql .= ' ORDER BY revision DESC';
+            $result = $this->retrieveLimit($sql, $params, 1);
         } else {
-            if ($articleId != null) {
-                $result = $this->retrieve(
-                    'SELECT a.* FROM article_files a WHERE file_id = ? AND revision = ? AND article_id = ?',
-                    array((int) $fileId, (int) $revision, (int) $articleId)
-                );
-            } else {
-                $result = $this->retrieve(
-                    'SELECT a.* FROM article_files a WHERE file_id = ? AND revision = ?',
-                    array((int) $fileId, (int) $revision)
-                );
-            }
+            $result = $this->retrieve($sql, $params);
         }
 
         $returner = null;
-        if (isset($result) && $result->RecordCount() != 0) {
+        if ($result && $result->RecordCount() != 0) {
             $returner = $this->_returnArticleFileFromRow($result->GetRowAssoc(false));
         }
 
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         unset($result);
 
         return $returner;
@@ -79,29 +68,29 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Retrieve all revisions of an article file.
+     * 
      * @param int $fileId
      * @param int|null $round
      * @return array ArticleFiles
      */
     public function getArticleFileRevisions($fileId, $round = null) {
         if ($fileId === null) {
-            return null;
+            return [];
         }
-        $articleFiles = array();
+        
+        $sql = 'SELECT a.* FROM article_files a WHERE file_id = ?';
+        $params = [(int) $fileId];
 
-        // FIXME If "round" is review-specific, it shouldn't be in this table
-        if ($round == null) {
-            $result = $this->retrieve(
-                'SELECT a.* FROM article_files a WHERE file_id = ? ORDER BY revision',
-                (int) $fileId
-            );
-        } else {
-            $result = $this->retrieve(
-                'SELECT a.* FROM article_files a WHERE file_id = ? AND round = ? ORDER BY revision',
-                array((int) $fileId, (int) $round)
-            );
+        if ($round !== null) {
+            $sql .= ' AND round = ?';
+            $params[] = (int) $round;
         }
 
+        $sql .= ' ORDER BY revision';
+
+        $result = $this->retrieve($sql, $params);
+
+        $articleFiles = [];
         while (!$result->EOF) {
             $articleFiles[] = $this->_returnArticleFileFromRow($result->GetRowAssoc(false));
             $result->moveNext();
@@ -115,6 +104,7 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Retrieve revisions of an article file in a range.
+     * 
      * @param int $fileId
      * @param int $start
      * @param int|null $end
@@ -122,22 +112,22 @@ class ArticleFileDAO extends PKPFileDAO {
      */
     public function getArticleFileRevisionsInRange($fileId, $start = 1, $end = null) {
         if ($fileId === null) {
-            return null;
-        }
-        $articleFiles = array();
-
-        if ($end == null) {
-            $result = $this->retrieve(
-                'SELECT a.* FROM article_files a WHERE file_id = ? AND revision >= ?',
-                array((int) $fileId, (int) $start)
-            );
-        } else {
-            $result = $this->retrieve(
-                'SELECT a.* FROM article_files a WHERE file_id = ? AND revision >= ? AND revision <= ?',
-                array((int) $fileId, (int) $start, (int) $end)
-            );
+            return [];
         }
 
+        $sql = 'SELECT a.* FROM article_files a WHERE file_id = ? AND revision >= ?';
+        $params = [(int) $fileId, (int) $start];
+
+        if ($end !== null) {
+            $sql .= ' AND revision <= ?';
+            $params[] = (int) $end;
+        }
+
+        $sql .= ' ORDER BY revision';
+
+        $result = $this->retrieve($sql, $params);
+
+        $articleFiles = [];
         while (!$result->EOF) {
             $articleFiles[] = $this->_returnArticleFileFromRow($result->GetRowAssoc(false));
             $result->moveNext();
@@ -151,6 +141,7 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Retrieve the current revision number for a file.
+     * 
      * @param int $fileId
      * @return int|null
      */
@@ -158,19 +149,22 @@ class ArticleFileDAO extends PKPFileDAO {
         if ($fileId === null) {
             return null;
         }
+        
         $result = $this->retrieve(
             'SELECT MAX(revision) AS max_revision FROM article_files a WHERE file_id = ?',
-            (int) $fileId
+            [(int) $fileId]
         );
 
-        if ($result->RecordCount() == 0) {
-            $returner = null;
-        } else {
+        $returner = null;
+        if ($result && $result->RecordCount() > 0) {
+            /** @var array|bool $row */
             $row = $result->FetchRow();
-            $returner = $row['max_revision'];
+            $returner = isset($row['max_revision']) ? (int) $row['max_revision'] : null;
         }
 
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         unset($result);
 
         return $returner;
@@ -178,17 +172,17 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Retrieve all article files for an article.
+     * 
      * @param int $articleId
      * @return array ArticleFiles
      */
     public function getArticleFilesByArticle($articleId) {
-        $articleFiles = array();
-
         $result = $this->retrieve(
             'SELECT * FROM article_files WHERE article_id = ?',
-            (int) $articleId
+            [(int) $articleId]
         );
 
+        $articleFiles = [];
         while (!$result->EOF) {
             $articleFiles[] = $this->_returnArticleFileFromRow($result->GetRowAssoc(false));
             $result->moveNext();
@@ -202,19 +196,20 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Retrieve all article files for a file stage and assoc ID.
+     * 
      * @param int $assocId
      * @param int $fileStage
      * @return array ArticleFiles
      */
     public function getArticleFilesByAssocId($assocId, $fileStage) {
         import('classes.file.ArticleFileManager');
-        $articleFiles = array();
-
+        
         $result = $this->retrieve(
             'SELECT * FROM article_files WHERE assoc_id = ? AND file_stage = ?',
-            array((int) $assocId, (int) $fileStage)
+            [(int) $assocId, (int) $fileStage]
         );
 
+        $articleFiles = [];
         while (!$result->EOF) {
             $articleFiles[] = $this->_returnArticleFileFromRow($result->GetRowAssoc(false));
             $result->moveNext();
@@ -228,6 +223,7 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Internal function to return an ArticleFile object from a row.
+     * 
      * @param array $row
      * @return ArticleFile
      */
@@ -249,35 +245,34 @@ class ArticleFileDAO extends PKPFileDAO {
         $articleFile->setRound($row['round']);
         $articleFile->setViewable($row['viewable']);
         
-        // Guideline #3: Dispatch, Object by val, Array by ref
-        HookRegistry::dispatch('ArticleFileDAO::_returnArticleFileFromRow', array($articleFile, &$row));
+        HookRegistry::dispatch('ArticleFileDAO::_returnArticleFileFromRow', [$articleFile, &$row]);
         
         return $articleFile;
     }
 
     /**
      * Insert a new ArticleFile.
+     * 
      * @param ArticleFile $articleFile
      * @return int
      */
     public function insertArticleFile($articleFile) {
         $fileId = $articleFile->getFileId();
         
-        // PHP 8: Safe logic for params
-        $params = array(
+        $params = [
             $articleFile->getRevision() === null ? 1 : (int) $articleFile->getRevision(),
             (int) $articleFile->getArticleId(),
             $articleFile->getSourceFileId() ? (int) $articleFile->getSourceFileId() : null,
             $articleFile->getSourceRevision() ? (int) $articleFile->getSourceRevision() : null,
             $articleFile->getFileName(),
             $articleFile->getFileType(),
-            $articleFile->getFileSize(),
+            (int) $articleFile->getFileSize(),
             $articleFile->getOriginalFileName(),
             (int) $articleFile->getFileStage(),
             (int) $articleFile->getRound(),
             $articleFile->getViewable(),
             $articleFile->getAssocId() ? (int) $articleFile->getAssocId() : null
-        );
+        ];
 
         if ($fileId) {
             array_unshift($params, (int) $fileId);
@@ -303,6 +298,7 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Update an existing article file.
+     * 
      * @param ArticleFile $articleFile
      * @return int
      */
@@ -327,13 +323,13 @@ class ArticleFileDAO extends PKPFileDAO {
                 $this->datetimeToDB($articleFile->getDateUploaded()), 
                 $this->datetimeToDB($articleFile->getDateModified())
             ),
-            array(
+            [
                 (int) $articleFile->getArticleId(),
                 $articleFile->getSourceFileId() ? (int) $articleFile->getSourceFileId() : null,
                 $articleFile->getSourceRevision() ? (int) $articleFile->getSourceRevision() : null,
                 $articleFile->getFileName(),
                 $articleFile->getFileType(),
-                $articleFile->getFileSize(),
+                (int) $articleFile->getFileSize(),
                 $articleFile->getOriginalFileName(),
                 (int) $articleFile->getFileStage(),
                 (int) $articleFile->getRound(),
@@ -341,16 +337,17 @@ class ArticleFileDAO extends PKPFileDAO {
                 $articleFile->getAssocId() ? (int) $articleFile->getAssocId() : null,
                 (int) $articleFile->getFileId(),
                 (int) $articleFile->getRevision()
-            )
+            ]
         );
 
         return $articleFile->getFileId();
-
     }
 
     /**
      * Delete an article file.
+     * 
      * @param ArticleFile $articleFile
+     * @return bool
      */
     public function deleteArticleFile($articleFile) {
         return $this->deleteArticleFileById($articleFile->getFileId(), $articleFile->getRevision());
@@ -358,41 +355,43 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Delete an article file by ID.
+     * 
      * @param int $fileId
      * @param int|null $revision
+     * @return bool
      */
     public function deleteArticleFileById($fileId, $revision = null) {
-        if ($revision == null) {
-            return $this->update(
-                'DELETE FROM article_files WHERE file_id = ?', 
-                (int) $fileId
-            );
-        } else {
-            return $this->update(
-                'DELETE FROM article_files WHERE file_id = ? AND revision = ?', 
-                array((int) $fileId, (int) $revision)
-            );
+        $sql = 'DELETE FROM article_files WHERE file_id = ?';
+        $params = [(int) $fileId];
+
+        if ($revision !== null) {
+            $sql .= ' AND revision = ?';
+            $params[] = (int) $revision;
         }
+
+        return $this->update($sql, $params);
     }
 
     /**
      * Delete all article files for an article.
+     * 
      * @param int $articleId
+     * @return bool
      */
     public function deleteArticleFiles($articleId) {
         return $this->update(
             'DELETE FROM article_files WHERE article_id = ?', 
-            (int) $articleId
+            [(int) $articleId]
         );
     }
 
     /**
      * Get the ID of the last inserted article file.
+     * 
      * @return int
      */
     public function getInsertArticleFileId() {
         return $this->getInsertId('article_files', 'file_id');
     }
 }
-
 ?>

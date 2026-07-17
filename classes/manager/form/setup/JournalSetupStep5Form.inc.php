@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup manager_form_setup
  *
  * @brief Form for Step 5 of journal setup.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.manager.form.setup.JournalSetupForm');
@@ -215,6 +213,7 @@ class JournalSetupStep5Form extends JournalSetupForm {
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
         
+        /** @var JournalSettingsDAO $settingsDao */
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $setting = $settingsDao->getSetting($journal->getId(), $settingName);
 
@@ -246,6 +245,7 @@ class JournalSetupStep5Form extends JournalSetupForm {
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
         
+        /** @var JournalSettingsDAO $settingsDao */
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
 
         import('classes.file.PublicFileManager');

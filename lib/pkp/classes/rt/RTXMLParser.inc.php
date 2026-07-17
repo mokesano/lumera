@@ -13,24 +13,23 @@ declare(strict_types=1);
  * @see RT
  *
  * @brief Class to parse Reading Tools data from an XML format.
- * * REFACTORED: Wizdam Edition (PHP 8 Compatibility, Visibility, No References)
  */
 
-import('lib.pkp.classes.xml.XMLParser');
+import('lib.pkp.classes.xml.PKPXMLParser');
 import('lib.pkp.classes.rt.RTStruct');
 
 class RTXMLParser {
 
-    /** @var XMLParser the parser to use */
+    /** @var PKPXMLParser the parser to use */
     public $parser;
 
     /**
      * Parse an RT version XML file.
-     * @param $file string path to the XML file
+     * @param string $file string path to the XML file
      * @return RTVersion|bool
      */
     public function parse($file) {
-        $parser = new XMLParser();
+        $parser = new PKPXMLParser();
         $tree = $parser->parse($file);
         $parser->destroy();
         $version = false;
@@ -43,10 +42,9 @@ class RTXMLParser {
         return $version;
     }
 
-
     /**
      * Parse all RT version XML files in a directory.
-     * @param $dir string path to the directory
+     * @param string $dir string path to the directory
      * @return array RTVersion
      */
     public function parseAll($dir) {
@@ -71,10 +69,9 @@ class RTXMLParser {
     // PRIVATE
     //
 
-
     /**
      * Parse version entity.
-     * @param $version XMLNode
+     * @param mixed $version XMLNode
      * @return RTVersion
      */
     public function parseVersion($version) {
@@ -105,7 +102,7 @@ class RTXMLParser {
 
     /**
      * Parse context entity.
-     * @param $context XMLNode
+     * @param mixed $context XMLNode
      * @return RTContext
      */
     public function parseContext($context) {
@@ -148,7 +145,7 @@ class RTXMLParser {
 
     /**
      * Parse search entity.
-     * @param $search XMLNode
+     * @param mixed $search XMLNode
      * @return RTSearch
      */
     public function parseSearch($search) {
@@ -176,6 +173,6 @@ class RTXMLParser {
 
         return $newSearch;
     }
+    
 }
-
 ?>

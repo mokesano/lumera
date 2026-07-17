@@ -10,11 +10,11 @@
   * Installation descriptor file.
   -->
 
-<install version="2.4.8.5">
+<install version="0.0.1.7">
 	<code function="createDirectories"/>
 	<code function="createDatabase"/>
 
-	<!-- PKP schema components -->
+	<!-- Lumera schema components -->
 	<schema file="lib/pkp/xml/schema/common.xml" />
 	<schema file="lib/pkp/xml/schema/groups.xml" />
 	<schema file="lib/pkp/xml/schema/log.xml" />
@@ -34,10 +34,10 @@
 	<schema file="lib/pkp/xml/schema/tombstone.xml" />
 	<schema file="lib/pkp/xml/schema/metrics.xml" />
 
-	<!-- PKP data components -->
+	<!-- Lumera Library data components -->
 	<data file="lib/pkp/xml/mutexData.xml" />
 	
-	<!-- OJS schema -->
+	<!-- Code Lumera schema -->
 	<schema file="dbscripts/xml/ojs_schema.xml" />
 
 	<!-- CLOB/Text indexes handled differently for MySQL and PostgreSQL -->

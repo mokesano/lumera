@@ -2,8 +2,13 @@
 declare(strict_types=1);
 
 /*
- * WIZDAM System Diagnostic Endpoint
- *
+ * @file diagnostic.php
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Codecanau Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * 
+ * @brief LUMERA System Diagnostic Endpoint.
  * This script provides a simple JSON response indicating the system status,
  * the application name, the PHP version, and the current server time.
  *
@@ -11,17 +16,17 @@ declare(strict_types=1);
  */
 
 // --- 1. Logika Health Check (Pengecekan Kesehatan) ---
-// Kita cek resource sebelum membuat output JSON
+// SPACE: Cek resource sebelum membuat output JSON
 $diskFree = disk_free_space(".");
 $diskTotal = disk_total_space(".");
 $memUsage = memory_get_usage();
 
-// Default status: OK (200)
+// MONITORING: Default status: OK (200)
 $httpCode = 200;
 $statusText = 'ok';
 $message = 'System is operational.';
 
-// CONTOH ALERT: Jika sisa disk kurang dari 100MB, ubah status jadi 503 (Error)
+// ALERT: Jika sisa disk kurang dari 100MB, ubah status jadi 503 (Error)
 if ($diskFree < (100 * 1024 * 1024)) {
     $httpCode = 503; // Service Unavailable
     $statusText = 'warning';
@@ -36,7 +41,8 @@ header('Content-Type: application/json; charset=utf-8');
 // --- 3. Fungsi Helper ---
 function formatSize($bytes) {
     if ($bytes <= 0) return '0 B';
-    $i = floor(log($bytes, 1024));
+    $bytes = (float) $bytes;
+    $i = (int) floor(log($bytes, 1024));
     return round($bytes / pow(1024, $i), 2) . ' ' . ['B', 'KB', 'MB', 'GB', 'TB'][$i];
 }
 
@@ -56,9 +62,9 @@ $response = [
 
     // [APP] Informasi Aplikasi
     'app_info' => [
-        'name'        => 'Wizdam Editorial Systems',
-        'version'     => '1.0.0.0',
-        'last_update' => '2025-10-27',
+        'name'        => 'Lumera Editorial Workflow',
+        'version'     => '0.0.1.0',
+        'last_update' => '2025-10-09',
         'environment' => 'production'
     ],
 
@@ -100,15 +106,9 @@ $response = [
          [
             'name'    => 'Rochmady',
             'role'    => 'Lead Project',
-            'github'  => 'https://github.com/rochmady',
+            'github'  => 'https://github.com/mokesano',
             'website' => 'https://wizdam.sangia.org',
             'contact' => 'rochmady@sangia.org'
-        ],
-        [
-            'name'    => 'Wizdam Core Team',
-            'role'    => 'Lead Development',
-            'website' => 'https://wizdam.sangia.org',
-            'contact' => 'tech@sangia.org'
         ],
         [
             'name'    => 'Susiana',

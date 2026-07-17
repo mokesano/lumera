@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * @defgroup subscription_form
@@ -15,7 +16,6 @@
  * @ingroup subscription_form
  *
  * @brief Form class for individual subscription create/edits.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('classes.subscription.form.SubscriptionForm');
@@ -24,7 +24,7 @@ class IndividualSubscriptionForm extends SubscriptionForm {
 
     /**
      * Constructor
-     * @param subscriptionId int leave as default for new subscription
+     * @param subscriptionId int
      */
     public function __construct($subscriptionId = null, $userId = null) {
         parent::__construct('subscription/individualSubscriptionForm.tpl', $subscriptionId, $userId);
@@ -53,7 +53,6 @@ class IndividualSubscriptionForm extends SubscriptionForm {
         }
 
         // Ensure subscription type is valid
-        // [WIZDAM FIX] Replaced create_function with Closure
         $this->addCheck(new FormValidatorCustom($this, 'typeId', 'required', 'manager.subscriptions.form.typeIdValid', function($typeId) use ($journalId) {
             $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
             return ($subscriptionTypeDao->subscriptionTypeExistsByTypeId($typeId, $journalId) && $subscriptionTypeDao->getSubscriptionTypeInstitutional($typeId) == 0);
@@ -63,7 +62,6 @@ class IndividualSubscriptionForm extends SubscriptionForm {
         if (!isset($subscriptionId)) {
             $this->addCheck(new FormValidatorCustom($this, 'userId', 'required', 'manager.subscriptions.form.subscriptionExists', array(DAORegistry::getDAO('IndividualSubscriptionDAO'), 'subscriptionExistsByUserForJournal'), array($journalId), true));
         } else {
-            // [WIZDAM FIX] Replaced create_function with Closure
             $this->addCheck(new FormValidatorCustom($this, 'userId', 'required', 'manager.subscriptions.form.subscriptionExists', function($userId) use ($journalId, $subscriptionId) {
                 $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
                 $checkId = $subscriptionDao->getSubscriptionIdByUser($userId, $journalId);
@@ -86,7 +84,7 @@ class IndividualSubscriptionForm extends SubscriptionForm {
     /**
      * Save individual subscription. 
      */
-    public function execute() {
+    public function execute($object = NULL) {
         $insert = false;
         if (!isset($this->subscription)) {
             import('classes.subscription.IndividualSubscription');
@@ -110,5 +108,4 @@ class IndividualSubscriptionForm extends SubscriptionForm {
         } 
     }
 }
-
 ?>

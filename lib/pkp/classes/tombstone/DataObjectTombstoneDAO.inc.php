@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see DataObjectTombstone
  *
  * @brief Base class for retrieving and modifying DataObjectTombstone objects.
- * * REFACTORED: Wizdam Edition (PHP 8 Constructor, No References, Critical Variable Fix)
  */
 
 import('lib.pkp.classes.tombstone.DataObjectTombstone');
@@ -64,7 +63,7 @@ class DataObjectTombstoneDAO extends DAO {
             'SELECT DISTINCT * ' . $this->_getSelectTombstoneSql($assocType, $assocId), $params);
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if (!$result->EOF) {
             $returner = $this->_fromRow($result->GetRowAssoc(false));
         }
 
@@ -84,7 +83,10 @@ class DataObjectTombstoneDAO extends DAO {
             'SELECT * FROM data_object_tombstones WHERE data_object_id = ?', (int) $dataObjectId
         );
 
-        $dataObjectTombstone = $this->_fromRow($result->GetRowAssoc(false));
+        $dataObjectTombstone = null;
+        if (!$result->EOF) { // ← cek dulu sebelum ambil row
+            $dataObjectTombstone = $this->_fromRow($result->GetRowAssoc(false));
+        }
 
         $result->Close();
         unset($result);
@@ -147,6 +149,7 @@ class DataObjectTombstoneDAO extends DAO {
      */
     public function deleteByDataObjectId($dataObjectId) {
         $dataObjectTombstone = $this->getByDataObjectId($dataObjectId);
+        if (!$dataObjectTombstone) return false; // ← tombstone tidak ada, tidak perlu dihapus
         return $this->deleteById($dataObjectTombstone->getId());
     }
 
@@ -342,5 +345,4 @@ class DataObjectTombstoneDAO extends DAO {
             (isset($assocId) && isset($assocType) ? 'AND oso.assoc_type = ? AND oso.assoc_id = ?' : '');
     }
 }
-
 ?>

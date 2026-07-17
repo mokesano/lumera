@@ -10,7 +10,7 @@ declare(strict_types=1);
  *
  * @class ONIXParserDOMHandler
  * @ingroup codelist
- * @see XMLParser
+ * @see PKPXMLParser
  *
  * @brief This parser extracts a specific xs:simpleType based on a name attribute
  * representing a code list within it. It returns the xs:enumeration values
@@ -52,6 +52,7 @@ class ONIXParserDOMHandler extends XMLParserDOMHandler {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $listName
      */
     public function ONIXParserDOMHandler($listName) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -141,5 +142,6 @@ class ONIXParserDOMHandler extends XMLParserDOMHandler {
     public function getResult(): array {
         return [$this->_listName => $this->_listItems];
     }
+    
 }
 ?>

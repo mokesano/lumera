@@ -12,12 +12,12 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Supplementary file author submission form.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('lib.pkp.classes.form.Form');
 
 class AuthorSubmitSuppFileForm extends Form {
+
     /** @var int the ID of the article */
     public int $articleId;
 
@@ -54,6 +54,7 @@ class AuthorSubmitSuppFileForm extends Form {
         $this->articleId = (int) $article->getId();
 
         if (isset($suppFileId) && !empty($suppFileId)) {
+            /** @var SuppFileDAO $suppFileDao  */
             $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
             $this->suppFile = $suppFileDao->getSuppFile($suppFileId, $article->getId());
             if (isset($this->suppFile)) {
@@ -68,6 +69,9 @@ class AuthorSubmitSuppFileForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param Article $article
+     * @param Journal $journal
+     * @param int|null $suppFileId
      */
     public function AuthorSubmitSuppFileForm($article, $journal, $suppFileId = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -123,7 +127,6 @@ class AuthorSubmitSuppFileForm extends Form {
         }
 
         if (isset($this->suppFile)) {
-            // [WIZDAM] Use assign instead of assign_by_ref
             $templateMgr->assign('suppFile', $this->suppFile);
         }
         $templateMgr->assign('helpTopicId','submission.supplementaryFiles');
@@ -187,6 +190,7 @@ class AuthorSubmitSuppFileForm extends Form {
     public function execute($object = null) {
         import('classes.file.ArticleFileManager');
         $articleFileManager = new ArticleFileManager($this->articleId);
+        /** @var SuppFileDAO $suppFileDao  */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
 
         $fileName = 'uploadSuppFile';
@@ -247,6 +251,6 @@ class AuthorSubmitSuppFileForm extends Form {
         $suppFile->setLanguage($this->getData('language'));
         $suppFile->setShowReviewers($this->getData('showReviewers'));
     }
+    
 }
-
 ?>

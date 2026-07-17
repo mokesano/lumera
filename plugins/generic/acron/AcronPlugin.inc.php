@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_acron
  *
  * @brief Removes dependency on 'cron' for scheduled tasks.
- * REFACTORED: Wizdam Edition (Throttling + Strict Standards)
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -26,8 +25,10 @@ class AcronPlugin extends GenericPlugin {
     /** @var array */
     public $_tasksToRun;
     
-    // Penunjang Kehidupan Singleton di Fase Shutdown
+    /** @var mixed $_preservedApplication */
     protected $_preservedApplication = null;
+
+    /** @var mixed $_preservedRequest */
     protected $_preservedRequest = null;
 
     /**
@@ -43,7 +44,7 @@ class AcronPlugin extends GenericPlugin {
     public function AcronPlugin() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::AcronPlugin(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -60,11 +61,9 @@ class AcronPlugin extends GenericPlugin {
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
         
-        // [MODERNISASI] Hapus referensi & pada $this
         HookRegistry::register('Installer::postInstall', array($this, 'callbackPostInstall'));
 
         if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return $success;
-        
         if ($success) {
             $this->addLocaleData();
             HookRegistry::register('LoadHandler', array($this, 'callbackLoadHandler'));
@@ -299,7 +298,6 @@ class AcronPlugin extends GenericPlugin {
     /**
      * Handle graceful HTTP connection closure to allow background processing.
      * Compatible with both Nginx/PHP-FPM and Apache mod_php.
-     * @param Request|null $request
      */
     protected function _closeHttpConnectionGracefully(): void {
         // Lepaskan lock session agar user bisa lanjut browsing di tab lain
@@ -307,7 +305,7 @@ class AcronPlugin extends GenericPlugin {
             session_write_close();
         }
 
-        // [WIZDAM MODERN COMPATIBILITY] Eksekusi absolut untuk PHP-FPM
+        // Eksekusi absolut untuk PHP-FPM
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
             return;
@@ -332,10 +330,9 @@ class AcronPlugin extends GenericPlugin {
     /**
      * Arrange task execution flow and delegate to single task executor.
      * @param array $tasksToRun
-     * @param ScheduledTaskDAO $taskDao 
-     * @param array $currentTasksToRun
      */
     protected function _executeScheduledTasks(array $tasksToRun): void {
+        /** @var ScheduledTaskDAO $taskDao */
         $taskDao = DAORegistry::getDAO('ScheduledTaskDAO');
         $currentTasksToRun = $this->_getTasksToRun(); // Refresh state untuk race condition
         
@@ -388,7 +385,7 @@ class AcronPlugin extends GenericPlugin {
         $taskFilesPath[] = Config::getVar('general', 'registry_dir') . '/scheduledTasks.xml';
 
         // 2. Ekstrak data tugas dari setiap file
-        $xmlParser = new XMLParser();
+        $xmlParser = new PKPXMLParser();
         $tasks = array();
         
         foreach ($taskFilesPath as $filePath) {
@@ -406,10 +403,10 @@ class AcronPlugin extends GenericPlugin {
     /**
      * Extract tasks from a specific XML file.
      * @param string $filePath
-     * @param XMLParser $xmlParser
+     * @param PKPXMLParser $xmlParser
      * @return array Array tugas yang diekstrak, atau array kosong salah parsing
      */
-    protected function _extractTasksFromXml(string $filePath, XMLParser $xmlParser): array {
+    protected function _extractTasksFromXml(string $filePath, PKPXMLParser $xmlParser): array {
         $tree = $xmlParser->parse($filePath);
 
         if (!$tree) {
@@ -503,7 +500,7 @@ class AcronPlugin extends GenericPlugin {
 
     /**
      * Evaluate if a task is ready to be executed based on its frequency.
-     * @param array $task Array dengan keys: 'className', 'frequency', 'args'.
+     * @param $task Array dengan keys: 'className', 'frequency', 'args'.
      * @return bool True jika tugas siap dieksekusi, false jika tidak.
      */
     protected function _isTaskReadyToExecute(array $task): bool {
@@ -516,11 +513,12 @@ class AcronPlugin extends GenericPlugin {
             return false;
         }
 
-        // Rekonstruksi XMLNode (Legacy OJS requirement untuk checkFrequency)
+        // Rekonstruksi XMLNode (Legacy requirement untuk checkFrequency)
         $frequencyNode = new XMLNode();
         $frequencyNode->setAttribute($key, current($task['frequency']));
         
         return ScheduledTaskHelper::checkFrequency($task['className'], $frequencyNode);
     }
+    
 }
 ?>

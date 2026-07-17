@@ -16,8 +16,6 @@ declare(strict_types=1);
  * @ingroup article_log
  *
  * @brief Static class for adding / accessing article log entries.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.article.log.ArticleEventLogEntry');
@@ -37,11 +35,9 @@ class ArticleLog {
     public static function logEvent(PKPRequest $request, Article $article, int $eventType, string $messageKey, array $params = []): ?ArticleEventLogEntry {
         $journal = $request->getJournal();
         
-        // [FIX WIZDAM] Kembalikan ke logika standar OJS: Argumen ke-2 adalah Article ID, bukan User ID.
-        // Ditambah (int) casting untuk keamanan tipe data PHP 8.
         return self::logEventHeadless(
             $journal, 
-            (int) $article->getId(), // <--- PERBAIKAN DISINI (Ganti $userId jadi $article->getId())
+            (int) $article->getId(),
             $article, 
             $eventType, 
             $messageKey, 
@@ -61,7 +57,7 @@ class ArticleLog {
      */
     public static function logEventHeadless(Journal $journal, int $userId, Article $article, int $eventType, string $messageKey, array $params = []): ?ArticleEventLogEntry {
 
-        // Create a new entry object
+        /** @var ArticleEventLogDAO $articleEventLogDao */
         $articleEventLogDao = DAORegistry::getDAO('ArticleEventLogDAO');
         $entry = $articleEventLogDao->newDataObject();
 
@@ -81,9 +77,6 @@ class ArticleLog {
         $entry->setMessage($messageKey);
         $entry->setParams($params);
         $entry->setIsTranslated(0);
-        
-        // [WIZDAM FIX] Removed duplicate setParams call
-        // $entry->setParams($params); 
 
         // Insert the resulting object
         $articleEventLogDao->insertObject($entry);
@@ -98,6 +91,7 @@ class ArticleLog {
      * @return int|false ID of inserted object or false
      */
     public static function logEmail(int $articleId, ArticleEmailLogEntry $entry, ?PKPRequest $request = null) {
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $journalId = $articleDao->getArticleJournalId($articleId);
 
@@ -120,8 +114,10 @@ class ArticleLog {
 
         $entry->setDateSent(Core::getCurrentDate());
 
+        /** @var ArticleEmailLogDAO $logDao */
         $logDao = DAORegistry::getDAO('ArticleEmailLogDAO');
         return $logDao->insertObject($entry);
     }
+    
 }
 ?>

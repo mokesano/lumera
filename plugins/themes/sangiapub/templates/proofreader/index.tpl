@@ -9,8 +9,8 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="common.queue.long.$pageToDisplay"}
-{include file="common/header-ROLE.tpl"}
+	{assign var="pageTitle" value="common.queue.long.$pageToDisplay"}
+	{include file="common/header-ROLE.tpl"}
 {/strip}
 
 <ul class="menu">
@@ -21,4 +21,3 @@
 {include file="proofreader/$pageToDisplay.tpl"}
 
 {include file="common/footer-parts/footer-user.tpl"}
-

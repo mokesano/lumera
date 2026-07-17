@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup classes_controllers_grid_citation_form
  *
  * @brief Form for adding/editing a citation.
- * [WIZDAM EDITION] Refactored for PHP 8.x (Removed create_function)
  */
 
 import('lib.pkp.classes.form.Form');
@@ -21,6 +20,7 @@ define('CITATION_FORM_FULL_TEMPLATE', 'controllers/grid/citation/form/citationFo
 define('CITATION_FORM_COMPARISON_TEMPLATE', 'controllers/grid/citation/form/citationFormErrorsAndComparison.tpl');
 
 class CitationForm extends Form {
+
     /** @var Citation the citation being edited */
     protected Citation $_citation;
 
@@ -92,8 +92,7 @@ class CitationForm extends Form {
     //
     
     /**
-     * Get the citation
-     * [WIZDAM] Removed reference from return
+     * Get the citation.
      * @return Citation
      */
     public function getCitation() {
@@ -102,7 +101,6 @@ class CitationForm extends Form {
 
     /**
      * Get the object the citation belongs to.
-     * [WIZDAM] Removed reference from return
      * @return DataObject
      */
     public function getAssocObject() {
@@ -119,8 +117,7 @@ class CitationForm extends Form {
     }
 
     /**
-     * Returns true if the form contains unsaved changes,
-     * otherwise false.
+     * Returns true if the form contains unsaved changes, otherwise false.
      * @return bool
      */
     public function getUnsavedChanges(): bool {
@@ -182,7 +179,7 @@ class CitationForm extends Form {
      * meta-data form data and injects it into the internal citation
      * object.
      */
-    public function validate() {
+    public function validate($callHooks = true) {
         // Make sure that this method is not called twice which
         // would corrupt internal state.
         assert(empty($this->_metadataDescriptions));
@@ -291,9 +288,9 @@ class CitationForm extends Form {
     }
 
     /**
-     * Save citation
+     * Save citation changes to article.
      */
-    public function execute(...$functionArgs) {
+    public function execute($request = null) {
         // Persist citation
         $citation = $this->getCitation();
         $citationDao = DAORegistry::getDAO('CitationDAO');
@@ -329,7 +326,6 @@ class CitationForm extends Form {
         //
         // Add the citation to the template.
         $templateMgr = TemplateManager::getManager($request);
-        // [WIZDAM] Replaced assign_by_ref with assign for modern PHP/Smarty usage
         $templateMgr->assign('citation', $citation);
 
         // Does the form contain unsaved changes?
@@ -456,7 +452,7 @@ class CitationForm extends Form {
                 'articleTitle' => strip_tags($assocObject->getLocalizedTitle()),
                 'rawCitation' => strip_tags($citation->getRawCitation())
             ];
-            import('lib.pkp.classes.mail.MailTemplate');
+            import('classes.mail.MailTemplate');
             $mail = new MailTemplate('CITATION_EDITOR_AUTHOR_QUERY', null, false, null, true, true);
             $mail->assignParams($emailParams);
             $templateMgr->assign('authorQuerySubject', $mail->getSubject());
@@ -566,9 +562,7 @@ class CitationForm extends Form {
     }
 
     /**
-     * Alphabetically order the given field list by display
-     * name.
-     * [WIZDAM] Replaced create_function with Arrow Function
+     * Alphabetically order the given field list by display name.
      * @param array $fieldList expects an array of entries with a sub-key "displayName".
      * @return array the ordered field.
      */
@@ -577,5 +571,4 @@ class CitationForm extends Form {
         return $fieldList;
     }
 }
-
 ?>

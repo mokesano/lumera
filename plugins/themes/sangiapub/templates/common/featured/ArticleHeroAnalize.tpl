@@ -1,6 +1,12 @@
 {**
- * Article Hero Template Implementation - FIXED
- * Contoh lengkap penggunaan dengan PHP proxy dan data yang dihasilkan
+ * templates/about/statistics.tpl
+ *
+ * Copyright (c) 2024-2026 Sangia Lumera Frontedge
+ * Copyright (c) 2024-2026 Rochmady and Codecanau
+ * Distributed under the GNU GPL v3.
+ *
+ * Subtemplate defining the statistics table.
+ *
  *}
 
 {* Include article hero PHP dengan proxy yang sudah diperbaiki *}
@@ -182,39 +188,39 @@ foreach ((array)$this->template_dir as $dir) {
         
         {* Hero Selection Info - ALWAYS SHOW *}
         {if $heroSelectionInfo}
-        <div class="hero-debug-info u-hide" style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 5px; font-size: 0.875rem;">
-            <strong>🎯 Hero Selection Info:</strong><br>
-            Mode: {$heroSelectionInfo.mode|default:'Not Set'}<br>
-            Selection Method: {$heroSelectionInfo.selection_method|default:'Not Set'}<br>
-            Total Candidates: {$heroSelectionInfo.total_candidates|default:0}<br>
-            {if $heroSelectionInfo.grace_period_active}
-                Grace Period: ✅ Active<br>
-                {if $heroSelectionInfo.days_since_publish}
-                    Days Since Publish: {$heroSelectionInfo.days_since_publish}<br>
+            <div class="hero-debug-info u-hide" style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 5px; font-size: 0.875rem;">
+                <strong>🎯 Hero Selection Info:</strong><br>
+                Mode: {$heroSelectionInfo.mode|default:'Not Set'}<br>
+                Selection Method: {$heroSelectionInfo.selection_method|default:'Not Set'}<br>
+                Total Candidates: {$heroSelectionInfo.total_candidates|default:0}<br>
+                {if $heroSelectionInfo.grace_period_active}
+                    Grace Period: ✅ Active<br>
+                    {if $heroSelectionInfo.days_since_publish}
+                        Days Since Publish: {$heroSelectionInfo.days_since_publish}<br>
+                    {/if}
+                {else}
+                    Grace Period: ❌ Expired<br>
                 {/if}
-            {else}
-                Grace Period: ❌ Expired<br>
-            {/if}
-            Hero Article ID: {$heroSelectionInfo.hero_article_id|default:'None'}<br>            
-            {if $heroSelectionInfo.hero_views}
-                Hero Views: {$heroSelectionInfo.hero_views}<br>
-            {/if}
-            {if $heroSelectionInfo.hero_downloads}
-                Hero Downloads: {$heroSelectionInfo.hero_downloads}<br>
-            {/if}
-            {if $heroSelectionInfo.hero_score}
-                Selection Score: {$heroSelectionInfo.hero_score}<br>
-            {/if}
-            
-            {if $heroSelectionInfo.reason}
-                Reason: {$heroSelectionInfo.reason}<br>
-            {/if}
-        </div>
+                Hero Article ID: {$heroSelectionInfo.hero_article_id|default:'None'}<br>            
+                {if $heroSelectionInfo.hero_views}
+                    Hero Views: {$heroSelectionInfo.hero_views}<br>
+                {/if}
+                {if $heroSelectionInfo.hero_downloads}
+                    Hero Downloads: {$heroSelectionInfo.hero_downloads}<br>
+                {/if}
+                {if $heroSelectionInfo.hero_score}
+                    Selection Score: {$heroSelectionInfo.hero_score}<br>
+                {/if}
+                
+                {if $heroSelectionInfo.reason}
+                    Reason: {$heroSelectionInfo.reason}<br>
+                {/if}
+            </div>
         {else}
-        <div class="hero-debug-info" style="margin-top: 2rem; padding: 1rem; background: #ffebee; border-radius: 5px; font-size: 0.875rem; color: #c62828;">
-            <strong>⚠️ Hero Selection Info:</strong> NOT AVAILABLE
-            <br><small>Variable $heroSelectionInfo is not assigned to template</small>
-        </div>
+            <div class="hero-debug-info" style="margin-top: 2rem; padding: 1rem; background: #ffebee; border-radius: 5px; font-size: 0.875rem; color: #c62828;">
+                <strong>⚠️ Hero Selection Info:</strong> NOT AVAILABLE
+                <br><small>Variable $heroSelectionInfo is not assigned to template</small>
+            </div>
         {/if}
 
         {* DETAILED SCORING TABLES *}
@@ -336,24 +342,24 @@ foreach ((array)$this->template_dir as $dir) {
 
         {* Cache Info *}
         {if $cacheInfo}
-        <div class="cache-debug-info" style="margin-top: 1rem; padding: 1rem; background: #e8f4f8; border-radius: 5px; font-size: 0.875rem;text-align: center;">
-            <strong>🔧 Cache Info:</strong>
-            Cache {if $cacheInfo.hit}Hit{else}Miss{/if} | 
-            File: {$cacheInfo.file} | 
-            Hash: {$cacheInfo.hash} | 
-            Last Update: {$lastUpdateDate} | 
-            Total Articles: {$totalLatestArticles}<br>
-            <small>
-                Cache Dir: {if $cacheInfo.cache_dir_exists}✅ Exists{else}❌ Missing{/if} | 
-                Writable: {if $cacheInfo.cache_dir_writable}✅ Yes{else}❌ No{/if} | 
-                File Size: {$cacheInfo.cache_file_size} bytes
-            </small>
-        </div>
+            <div class="cache-debug-info" style="margin-top: 1rem; padding: 1rem; background: #e8f4f8; border-radius: 5px; font-size: 0.875rem;text-align: center;">
+                <strong>🔧 Cache Info:</strong>
+                Cache {if $cacheInfo.hit}Hit{else}Miss{/if} | 
+                File: {$cacheInfo.file} | 
+                Hash: {$cacheInfo.hash} | 
+                Last Update: {$lastUpdateDate} | 
+                Total Articles: {$totalLatestArticles}<br>
+                <small>
+                    Cache Dir: {if $cacheInfo.cache_dir_exists}✅ Exists{else}❌ Missing{/if} | 
+                    Writable: {if $cacheInfo.cache_dir_writable}✅ Yes{else}❌ No{/if} | 
+                    File Size: {$cacheInfo.cache_file_size} bytes
+                </small>
+            </div>
         {else}
-        <div class="cache-debug-info" style="margin-top: 1rem; padding: 1rem; background: #ffebee; border-radius: 5px; font-size: 0.875rem; color: #c62828;text-align: center;">
-            <strong>⚠️ Cache Info:</strong> NOT AVAILABLE
-            <br><small>Variable $cacheInfo is not assigned to template</small>
-        </div>
+            <div class="cache-debug-info" style="margin-top: 1rem; padding: 1rem; background: #ffebee; border-radius: 5px; font-size: 0.875rem; color: #c62828;text-align: center;">
+                <strong>⚠️ Cache Info:</strong> NOT AVAILABLE
+                <br><small>Variable $cacheInfo is not assigned to template</small>
+            </div>
         {/if}
 
         {* Simple Variables Test *}

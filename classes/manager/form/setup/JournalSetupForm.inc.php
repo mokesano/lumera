@@ -16,13 +16,12 @@ declare(strict_types=1);
  * @ingroup manager_form_setup
  *
  * @brief Base class for journal setup forms.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
 
 class JournalSetupForm extends Form {
+
     /** @var int The step number */
     public $step;
 
@@ -32,7 +31,7 @@ class JournalSetupForm extends Form {
     /**
      * Constructor.
      * @param int $step the step number
-     * @param array $settings an associative array with the setting names as keys and associated types as values
+     * @param array $settings 
      */
     public function __construct($step, $settings) {
         parent::__construct(sprintf('manager/setup/step%d.tpl', $step));
@@ -94,7 +93,7 @@ class JournalSetupForm extends Form {
         // [WIZDAM] Request Singleton
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
-        
+        /** @var JournalSettingsDAO $settingsDao */
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
 
         foreach ($this->_data as $name => $value) {

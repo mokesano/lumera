@@ -15,11 +15,11 @@ declare(strict_types=1);
  * providing specific implementations.
  */
 
-
 class ItemIterator {
     
     /**
      * Return the next item in the iterator.
+     * 
      * @return mixed
      */
     public function next() {
@@ -28,6 +28,7 @@ class ItemIterator {
 
     /**
      * Return the next item with key.
+     * 
      * @return array ($key, $value);
      */
     public function nextWithKey() {
@@ -36,6 +37,7 @@ class ItemIterator {
 
     /**
      * Determine whether this iterator represents the first page of a set.
+     * 
      * @return boolean
      */
     public function atFirstPage() {
@@ -44,6 +46,7 @@ class ItemIterator {
 
     /**
      * Determine whether this iterator represents the last page of a set.
+     * 
      * @return boolean
      */
     public function atLastPage() {
@@ -52,6 +55,7 @@ class ItemIterator {
 
     /**
      * Get the page number of a set that this iterator represents.
+     * 
      * @return int
      */
     public function getPage() {
@@ -60,6 +64,7 @@ class ItemIterator {
 
     /**
      * Get the total number of items in the set.
+     * 
      * @return int
      */
     public function getCount() {
@@ -68,6 +73,7 @@ class ItemIterator {
 
     /**
      * Get the total number of pages in the set.
+     * 
      * @return int
      */
     public function getPageCount() {
@@ -75,7 +81,8 @@ class ItemIterator {
     }
 
     /**
-     * Return a boolean indicating whether or not we've reached the end of results
+     * Return a boolean indicating whether or not we've reached the end of results.
+     * 
      * @return boolean
      */
     public function eof() {
@@ -83,7 +90,8 @@ class ItemIterator {
     }
 
     /**
-     * Return a boolean indicating whether or not this iterator was empty from the beginning
+     * Return a boolean indicating whether or not this iterator was empty from the beginning.
+     * 
      * @return boolean
      */
     public function wasEmpty() {
@@ -92,11 +100,12 @@ class ItemIterator {
 
     /**
      * Convert this iterator to an array.
+     * 
      * @return array
      */
     public function toArray() {
         return array();
     }
+    
 }
-
 ?>

@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class PaymentSettingsForm
  * @ingroup payments
  *
- * @brief Form for managers to modify Payment costs and settings
- * * MODERNIZED FOR WIZDAM FORK
+ * @brief Form for managers to modify Payment costs and settings.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -32,7 +31,6 @@ class PaymentSettingsForm extends Form {
      * Constructor
      */
     public function __construct() {
-
         parent::__construct('payments/paymentSettings.tpl');
 
         $this->settings = [

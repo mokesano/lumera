@@ -1,25 +1,24 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * header.tpl
+ * header-AUTHOR.tpl
  *
  * Copyright (c) 2013-2015 Simon Fraser University Library
  * Copyright (c) 2000-2015 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * Common site header.
+ * Common AUTHOR header.
  *}
 {strip}
-{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
-{if $pageCrumbTitle}
-	{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-	{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
+	{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
+	{if $pageCrumbTitle}
+		{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+	{elseif !$pageCrumbTitleTranslated}
+		{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+	{/if}
 {/strip}
 <head>
-    <title>{if $firstName|escape !== $lastName|escape}{$firstName|escape}{/if}{if $middleName} {$middleName|escape}{/if} {$lastName|escape} - {$pageTitleTranslated} | {if $currentJournal}Sangia Publishing{else}{$siteTitle}{/if}</title>
-
+    <title>{if $firstName|escape !== $lastName|escape}{$firstName|escape}{/if}{if $middleName} {$middleName|escape}{/if} {$lastName|escape} - {$pageTitleTranslated} | {if $currentJournal}Sangia{else}{$siteTitle}{/if}</title>
     <meta name="description" content="{$metaSearchDescription|escape}" />
     <meta name="keywords" content="{$metaSearchKeywords|escape}" />
     <meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
@@ -27,7 +26,7 @@
 	{$metaCustomHeaders}
 	
 	{if $displayFavicon}
-	<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
+		<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
 	{/if}
 
 	{include file="common/jqueryScripts.tpl"}
@@ -109,19 +108,19 @@
 </head>
 
 <body id="sangia.org">
-<a id="skip-to-content" href="#main">Skip to Main Content</a>
-<a class="buttontop" href="#sangia.org"></a><!-- Back to top button -->
+	<a id="skip-to-content" href="#main">Skip to Main Content</a>
+	<a class="buttontop" href="#sangia.org"><!-- Back to top button --></a>
 
-{include file="common/banner.tpl"}
-<header class="c-header" style="border-color:#000">
-    {include file="common/navbar.tpl"}
-    {include file="common/navmenu.tpl"}
-    <div class="c-journal-header__identity c-journal-header__identity--default"></div> 
-</header>
-{** include file="common/breadcrumbs.tpl" **}
+	{include file="common/banner.tpl"}
+	<header class="c-header" style="border-color:#000">
+		{include file="common/navbar.tpl"}
+		{include file="common/navmenu.tpl"}
+		<div class="c-journal-header__identity c-journal-header__identity--default"></div> 
+	</header>
+	{** include file="common/breadcrumbs.tpl" **}
 
-<div class="journal-page">
-<div class="author-content" role="main">
-<div class="live-area-wrapper">
-	<div class="u-row row">
-		<div class="column small-12">
+	<div class="journal-page">
+		<div class="author-content" role="main">
+			<div class="live-area-wrapper">
+				<div class="u-row row">
+					<div class="column small-12">

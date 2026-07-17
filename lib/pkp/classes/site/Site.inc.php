@@ -29,11 +29,11 @@ class Site extends DataObject {
     }
 
     /**
-     * [SHIM] Legacy Constructor Shim.
+     * [SHIM] Legacy Constructor.
      */
     public function Site() {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::Site(). Please refactor to use parent::__construct().",
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
             E_USER_DEPRECATED
         );
         self::__construct();
@@ -87,7 +87,8 @@ class Site extends DataObject {
     }
 
     /**
-     * [SHIM] DEPRECATED Legacy Get Site Title Shim.
+     * [DEPRECATED] Legacy Get Site Title Shim.
+     * Use getLocalizedTitle()
      * @return string
      */
     public function getSiteTitle() {
@@ -117,7 +118,8 @@ class Site extends DataObject {
     }
 
     /**
-     * [SHIM] DEPRECATED Legacy Get Site Page Header Title Shim.
+     * [DEPRECATED] Legacy Get Site Page Header Title Shim.
+     * Use getLocalizedPageHeaderTitle()
      * @return string
      */
     public function getSitePageHeaderTitle() {
@@ -134,7 +136,8 @@ class Site extends DataObject {
     }
 
     /**
-     * [SHIM] DEPRECATED Legacy Get Site Page Header Title Type Shim.
+     * [DEPRECATED] Legacy Get Site Page Header Title Type Shim.
+     * Use getLocalizedPageHeaderTitleType()
      * @return boolean
      */
     public function getSitePageHeaderTitleType() {
@@ -152,7 +155,7 @@ class Site extends DataObject {
 
     /**
      * Set original site stylesheet filename.
-     * @param $originalStyleFilename string
+     * @param string $originalStyleFilename string
      */
     public function setOriginalStyleFilename($originalStyleFilename) {
         return $this->setData('originalStyleFilename', $originalStyleFilename);
@@ -167,7 +170,8 @@ class Site extends DataObject {
     }
 
     /**
-     * [SHIM] DEPRECATED Legacy Get Site Intro Shim.
+     * [DEPRECATED] Legacy Get Site Intro Shim.
+     * Use getLocalizedIntro()
      * @return string
      */
     public function getSiteIntro() {
@@ -185,10 +189,10 @@ class Site extends DataObject {
 
     /**
      * Set redirect
-     * @param $redirect int
+     * @param int $redirect int
      */
     public function setRedirect($redirect) {
-        return $this->setData('redirect', (int)$redirect);
+        return $this->setData('redirect', (int) $redirect);
     }
 
     /**
@@ -200,7 +204,8 @@ class Site extends DataObject {
     }
 
     /**
-     * [SHIM] DEPRECATED Legacy Get Site About Shim.
+     * [DEPRECATED] Legacy Get Site About Shim.
+     * Use getLocalizedAbout()
      * @return string
      */
     public function getSiteAbout() {
@@ -217,7 +222,8 @@ class Site extends DataObject {
     }
 
     /**
-     * [SHIM] DEPRECATED Legacy Get Site Contact Name Shim.
+     * [DEPRECATED] Legacy Get Site Contact Name Shim.
+     * Use getLocalizedContactName()
      * @return string
      */
     public function getSiteContactName() {
@@ -234,7 +240,8 @@ class Site extends DataObject {
     }
 
     /**
-     * [SHIM] DEPRECATED Legacy Get Site Contact Email Shim.
+     * [DEPRECATED] Legacy Get Site Contact Email Shim.
+     * Use getLocalizedContactEmail()
      * @return string
      */
     public function getSiteContactEmail() {
@@ -252,7 +259,7 @@ class Site extends DataObject {
 
     /**
      * Set minimum password length.
-     * @param $minPasswordLength int
+     * @param int $minPasswordLength int
      */
     public function setMinPasswordLength($minPasswordLength) {
         return $this->setData('minPasswordLength', $minPasswordLength);
@@ -268,7 +275,7 @@ class Site extends DataObject {
 
     /**
      * Set primary locale.
-     * @param $primaryLocale string
+     * @param string $primaryLocale string
      */
     public function setPrimaryLocale($primaryLocale) {
         return $this->setData('primaryLocale', $primaryLocale);
@@ -285,7 +292,7 @@ class Site extends DataObject {
 
     /**
      * Set installed locales.
-     * @param $installedLocales array
+     * @param array $installedLocales array
      */
     public function setInstalledLocales($installedLocales) {
         return $this->setData('installedLocales', $installedLocales);
@@ -302,7 +309,7 @@ class Site extends DataObject {
 
     /**
      * Set array of all supported locales (for static text).
-     * @param $supportedLocales array
+     * @param array $supportedLocales array
      */
     public function setSupportedLocales($supportedLocales) {
         return $this->setData('supportedLocales', $supportedLocales);
@@ -318,18 +325,19 @@ class Site extends DataObject {
 
     /**
      * Retrieve a site setting value.
-     * @param $name string
+     * @param string $name string
      * @param $locale string
      * @return mixed
      */
     public function getSetting($name, $locale = null) {
+        /** @var SiteSettingsDAO $siteSettingsDao */
         $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO');
         return $siteSettingsDao->getSetting($name, $locale);
     }
 
     /**
      * Get a localized setting using the current locale.
-     * @param $name string Setting name
+     * @param string $name string Setting name
      * @return mixed
      */
     public function getLocalizedSetting($name) {
@@ -343,14 +351,16 @@ class Site extends DataObject {
 
     /**
      * Update a site setting value.
-     * @param $name string
-     * @param $value mixed
+     * @param string $name string
+     * @param mixed $value mixed
      * @param $type string optional
      * @param $isLocalized boolean optional
      */
     public function updateSetting($name, $value, $type = null, $isLocalized = false) {
+        /** @var SiteSettingsDAO $siteSettingsDao */
         $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO');
         return $siteSettingsDao->updateSetting($name, $value, $type, $isLocalized);
     }
+    
 }
 ?>

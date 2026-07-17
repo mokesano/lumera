@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class EmailHandler
  * @ingroup pages_manager
  *
- * @brief Handle requests for email management functions. 
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * @brief Handle requests for email management functions.
  */
 
 import('pages.manager.ManagerHandler');
@@ -49,13 +47,13 @@ class EmailHandler extends ManagerHandler {
     public function emails($args = [], $request = null) {
         $this->validate();
         $this->setupTemplate(true);
-
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
         $rangeInfo = $this->getRangeInfo('emails');
 
         $journal = $request->getJournal();
+        /** @var EmailTemplateDAO $emailTemplateDao */
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
         $emailTemplates = $emailTemplateDao->getEmailTemplates(AppLocale::getLocale(), $journal->getId());
 
@@ -64,7 +62,6 @@ class EmailHandler extends ManagerHandler {
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('pageHierarchy', [[$request->url(null, 'manager'), 'manager.journalManagement']]);
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('emailTemplates', $emailTemplates);
         $templateMgr->assign('helpTopicId', 'journal.managementPages.emails');
         $templateMgr->display('manager/emails/emails.tpl');
@@ -93,9 +90,7 @@ class EmailHandler extends ManagerHandler {
         $templateMgr->append('pageHierarchy', [$request->url(null, 'manager', 'emails'), 'manager.emails']);
 
         $emailKey = !isset($args) || empty($args) ? null : $args[0];
-
         import('classes.manager.form.EmailTemplateForm');
-
         $emailTemplateForm = new EmailTemplateForm($emailKey, $journal);
         $emailTemplateForm->initData();
         $emailTemplateForm->display();
@@ -109,16 +104,13 @@ class EmailHandler extends ManagerHandler {
     public function updateEmail($args = [], $request = null) {
         $this->validate();
         $this->setupTemplate(true);
-        
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
         $journal = $request->getJournal();
 
         import('classes.manager.form.EmailTemplateForm');
-
         // [SECURITY FIX] Terapkan trim() untuk sanitasi string
         $emailKey = trim((string) $request->getUserVar('emailKey'));
-
         $emailTemplateForm = new EmailTemplateForm($emailKey, $journal);
         $emailTemplateForm->readInputData();
 
@@ -138,15 +130,14 @@ class EmailHandler extends ManagerHandler {
      */
     public function deleteCustomEmail($args, $request = null) {
         $this->validate();
-        
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
         $journal = $request->getJournal();
-        
-        $emailKey = array_shift($args);
 
+        $emailKey = array_shift($args);
+        /** @var EmailTemplateDAO $emailTemplateDao */
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
-        if ($emailTemplateDao->customTemplateExistsByKey($emailKey, $journal->getId())) {
+        if ($emailTemplateDao->customTemplateExistsByKey($emailKey, null, $journal->getId())) {
             $emailTemplateDao->deleteEmailTemplateByKey($emailKey, $journal->getId());
         }
 
@@ -160,13 +151,12 @@ class EmailHandler extends ManagerHandler {
      */
     public function resetEmail($args, $request = null) {
         $this->validate();
-
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
 
         if (isset($args) && !empty($args)) {
-            $journal = $request->getJournal();
-
+            /** @var EmailTemplateDAO $emailTemplateDao */
             $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
             $emailTemplateDao->deleteEmailTemplateByKey($args[0], $journal->getId());
         }
@@ -181,11 +171,11 @@ class EmailHandler extends ManagerHandler {
      */
     public function resetAllEmails($args = [], $request = null) {
         $this->validate();
-
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
-
         $journal = $request->getJournal();
+
+        /** @var EmailTemplateDAO $emailTemplateDao */
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
         $emailTemplateDao->deleteEmailTemplatesByJournal($journal->getId());
 
@@ -199,13 +189,12 @@ class EmailHandler extends ManagerHandler {
      */
     public function disableEmail($args, $request = null) {
         $this->validate();
-
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
 
         if (isset($args) && !empty($args)) {
-            $journal = $request->getJournal();
-
+            /** @var EmailTemplateDAO $emailTemplateDao */
             $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
             $emailTemplate = $emailTemplateDao->getBaseEmailTemplate($args[0], $journal->getId());
 
@@ -237,20 +226,17 @@ class EmailHandler extends ManagerHandler {
      */
     public function enableEmail($args, $request = null) {
         $this->validate();
-
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
 
         if (isset($args) && !empty($args)) {
-            $journal = $request->getJournal();
-
+            /** @var EmailTemplateDAO $emailTemplateDao */
             $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
             $emailTemplate = $emailTemplateDao->getBaseEmailTemplate($args[0], $journal->getId());
-
             if (isset($emailTemplate)) {
                 if ($emailTemplate->getCanDisable()) {
                     $emailTemplate->setEnabled(1);
-
                     if ($emailTemplate->getEmailId() != null) {
                         $emailTemplateDao->updateBaseEmailTemplate($emailTemplate);
                     } else {
@@ -287,7 +273,7 @@ class EmailHandler extends ManagerHandler {
         $emailTexts = XMLCustomWriter::createElement($doc, 'email_texts');
         $emailTexts->setAttribute('locale', AppLocale::getLocale());
         $emailTexts->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
-        
+        /** @var EmailTemplateDAO $emailTemplateDao */
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
         $emailTemplates = $emailTemplateDao->getEmailTemplates(AppLocale::getLocale(), $journal->getId());
         
@@ -329,6 +315,7 @@ class EmailHandler extends ManagerHandler {
      */
     public function uploadEmails($args, $request) {
         $this->validate();
+
         import('lib.pkp.classes.file.FileManager');
         $fileManager = new FileManager();
 
@@ -368,11 +355,12 @@ class EmailHandler extends ManagerHandler {
      */
     protected function _saveEmailTemplates($filePath, $journal) {
         $this->validate();
-        import('lib.pkp.classes.xml.XMLParser');
+
+        /** @var EmailTemplateDAO $emailTemplateDao */
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
-        
-        $xmlParser = new XMLParser();
-        
+
+        import('lib.pkp.classes.xml.PKPXMLParser');
+        $xmlParser = new PKPXMLParser();
         $struct = $xmlParser->parseStruct($filePath);
         if (!isset($struct['email_texts'][0]['attributes']['locale'])) {
             return false;
@@ -443,6 +431,7 @@ class EmailHandler extends ManagerHandler {
      */
     protected function _showMessage($request, $success = true) {
         $this->validate();
+
         import('classes.notification.NotificationManager');
         $notificationManager = new NotificationManager();
 
@@ -463,5 +452,6 @@ class EmailHandler extends ManagerHandler {
             ['contents' => __($message)]
         );
     }
+    
 }
 ?>

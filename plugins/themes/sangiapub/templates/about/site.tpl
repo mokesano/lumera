@@ -9,8 +9,8 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="about.aboutSite"}
-{include file="common/header.tpl"}
+    {assign var="pageTitle" value="about.aboutSite"}
+    {include file="common/header.tpl"}
 {/strip}
 
 {if !empty($about)}
@@ -20,12 +20,14 @@
 {/if}
 
 <div id="journals">
-    <header class="c-anchored-heading"><h3>{translate key="journal.journals"}</h3><a class="c-anchored-heading__helper" href="#navbarMenu">Back to top</a>
+    <header class="c-anchored-heading">
+        <h3>{translate key="journal.journals"}</h3>
+        <a class="c-anchored-heading__helper" href="#navbarMenu">Back to top</a>
     </header>
     <ul>
-    {iterate from=journals item=journal}
-    	<li><a href="{url journal=$journal->getPath() page="about" op="index"}">{$journal->getLocalizedTitle()|escape}</a></li>
-    {/iterate}
+        {iterate from=journals item=journal}
+            <li><a href="{url journal=$journal->getPath() page="about" op="index"}">{$journal->getLocalizedTitle()|escape}</a></li>
+        {/iterate}
     </ul>
 </div>
 

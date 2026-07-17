@@ -9,16 +9,17 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="manager.people.mergeUsers"}
-{include file="common/header-ROLE.tpl"}
+	{assign var="pageTitle" value="manager.people.mergeUsers"}
+	{include file="common/header-ROLE.tpl"}
 {/strip}
+
 <div id="selectMergeUsers">
     <p class="u-mt-24 u-mb-24">{if !empty($oldUserIds)}{translate key="manager.people.mergeUsers.into.description"}{else}{translate key="manager.people.mergeUsers.from.description"}{/if}
     </p>
     <div id="roles">
         <h3>{translate key=$roleName}</h3>
         <form method="post" action="{url path=$roleSymbolic oldUserIds=$oldUserIds}">
-            <input type="hidden" name="csrfToken" value="{$csrfToken|escape}"/>
+            <input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
         	<select name="roleSymbolic" class="selectMenu">
         		<option {if $roleSymbolic=='all'}selected="selected" {/if}value="all">{translate key="manager.people.allUsers"}</option>
         		<option {if $roleSymbolic=='managers'}selected="selected" {/if}value="managers">{translate key="user.role.managers"}</option>
@@ -88,6 +89,7 @@
     	{* Selecting user(s) to merge; include checkboxes on LHS *}
     	{assign var="numCols" value=5}
     	<form method="post" action="{url}">
+			<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
     {/if}
     <table width="100%" class="listing">
     	<tr>

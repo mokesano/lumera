@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Form for Step 2 of author article submission.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('classes.author.form.submit.AuthorSubmitForm');
@@ -33,6 +32,9 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param Article $article
+     * @param Journal $journal
+     * @param PKPRequest $request
      */
     public function AuthorSubmitStep2Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -72,10 +74,9 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
 
         $templateMgr = TemplateManager::getManager($request);
 
-        // Get supplementary files for this article
+        /** @var ArticleFileDAO $articleFileDao  */
         $articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
         if ($this->article->getSubmissionFileId() != null) {
-            // [WIZDAM] Use assign instead of assign_by_ref
             $templateMgr->assign('submissionFile', $articleFileDao->getArticleFile($this->article->getSubmissionFileId()));
         }
         parent::display($request, $template);
@@ -90,6 +91,7 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
         import('classes.file.ArticleFileManager');
 
         $articleFileManager = new ArticleFileManager($this->articleId);
+        /** @var ArticleDAO $articleDao  */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
 
         $submissionFileId = null;
@@ -114,6 +116,7 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
      */
     public function execute($object = null) {
         // Update article
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $this->article;
 
@@ -127,5 +130,4 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
     }
 
 }
-
 ?>

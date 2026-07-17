@@ -9,13 +9,13 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="admin.siteAdmin"}
-{assign var="pageDisplayed" value="site"}
-{include file="common/header.tpl"}
+	{assign var="pageTitle" value="admin.siteAdmin"}
+	{assign var="pageDisplayed" value="site"}
+	{include file="common/header.tpl"}
 {/strip}
 
 {if $newVersionAvailable}
-<div class="warningMessage">{translate key="site.upgradeAvailable.admin" currentVersion=$currentVersion latestVersion=$latestVersion}</div>
+	<div class="warningMessage">{translate key="site.upgradeAvailable.admin" currentVersion=$currentVersion latestVersion=$latestVersion}</div>
 {/if}
 
 <div id="siteManagement">
@@ -50,4 +50,3 @@
 </div>
 
 {include file="common/footer.tpl"}
-

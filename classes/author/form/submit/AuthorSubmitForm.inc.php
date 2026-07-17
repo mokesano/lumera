@@ -16,12 +16,12 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Base class for journal author submit forms.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('lib.pkp.classes.form.Form');
 
 class AuthorSubmitForm extends Form {
+
     /** @var PKPRequest|null */
     protected $request = null;
 
@@ -33,6 +33,9 @@ class AuthorSubmitForm extends Form {
 
     /** @var int the current step */
     protected $step = 0;
+
+    /** @var array daftar kode locale yang didukung untuk submission ini */
+    protected $submissionLocales = [];
 
     /**
      * Constructor.
@@ -48,14 +51,17 @@ class AuthorSubmitForm extends Form {
         $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
         if (empty($supportedSubmissionLocales)) $supportedSubmissionLocales = array($journal->getPrimaryLocale());
         
+        $formLocales = array_flip(array_intersect(
+            array_flip(AppLocale::getAllLocales()),
+            $supportedSubmissionLocales
+        ));
+        $this->submissionLocales = array_keys($formLocales);
+
         parent::__construct(
             sprintf('author/submit/step%d.tpl', $step),
             true,
             $article ? $article->getLocale() : AppLocale::getLocale(),
-            array_flip(array_intersect(
-                array_flip(AppLocale::getAllLocales()),
-                $supportedSubmissionLocales
-            ))
+            $formLocales
         );
         $this->addCheck(new FormValidatorPost($this));
         $this->step = (int) $step;
@@ -66,6 +72,10 @@ class AuthorSubmitForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param Article|null $article
+     * @param int $step
+     * @param Journal $journal
+     * @param PKPRequest $request
      */
     public function AuthorSubmitForm($article, $step, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -75,6 +85,14 @@ class AuthorSubmitForm extends Form {
             );
         }
         self::__construct($article, $step, $journal, $request);
+    }
+
+    /**
+     * Get list of locale codes supported for this submission.
+     * @return array
+     */
+    public function getSubmissionLocales() {
+        return $this->submissionLocales;
     }
 
     /**
@@ -90,10 +108,10 @@ class AuthorSubmitForm extends Form {
         $templateMgr->assign('articleId', $this->articleId);
         $templateMgr->assign('submitStep', $this->step);
 
-        if (isset($this->article)) {
-            $templateMgr->assign('submissionProgress', $this->article->getSubmissionProgress());
-        }
-
+        $templateMgr->assign(
+            'submissionProgress',
+            $this->article ? $this->article->getSubmissionProgress() : 0
+        );
         switch($this->step) {
             case 3:
                 $helpTopicId = 'submission.indexingAndMetadata';
@@ -108,10 +126,11 @@ class AuthorSubmitForm extends Form {
 
         // [WIZDAM] Use properties or passed request, ensure consistency
         $journal = $this->request ? $this->request->getJournal() : $request->getJournal();
-        
+
+        /** @var JournalSettingsDAO $settingsDao  */
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
-        // [WIZDAM] Use assign instead of assign_by_ref
-        $templateMgr->assign('journalSettings', $settingsDao->getJournalSettings($journal->getId()));
+        $journalSettings = $journal ? $settingsDao->getJournalSettings($journal->getId()) : array();
+        $templateMgr->assign('journalSettings', is_array($journalSettings) ? $journalSettings : array());
 
         parent::display($request, $template);
     }
@@ -135,8 +154,8 @@ class AuthorSubmitForm extends Form {
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
 
-        $sectionEditorsDao = DAORegistry::getDAO('SectionEditorsDAO');
-        $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO'); /* @var $editAssignmentDao EditAssignmentDAO */
+        $sectionEditorsDao = DAORegistry::getDAO('SectionEditorsDAO'); /** @var SectionEditorsDAO $sectionEditorsDao */
+        $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO'); /** @var EditAssignmentDAO $editAssignmentDao */
         $sectionEditors = $sectionEditorsDao->getEditorsBySectionId($journal->getId(), $sectionId);
 
         foreach ($sectionEditors as $sectionEditorEntry) {
@@ -151,6 +170,6 @@ class AuthorSubmitForm extends Form {
 
         return $sectionEditors;
     }
-}
 
+}
 ?>

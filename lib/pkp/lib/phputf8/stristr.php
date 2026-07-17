@@ -10,8 +10,8 @@
 * UTF-8 aware alternative to stristr
 * Find first occurrence of a string using case insensitive comparison
 * Note: requires utf8_strtolower
-* @param string
-* @param string
+* @param string $str
+* @param string $search
 * @return int
 * @see http://www.php.net/strcasecmp
 * @see utf8_strtolower

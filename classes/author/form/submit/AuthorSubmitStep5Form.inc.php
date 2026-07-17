@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Form for Step 5 of author article submission.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('classes.author.form.submit.AuthorSubmitForm');
@@ -34,6 +33,9 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param Article $article
+     * @param Journal $journal
+     * @param PKPRequest $request
      */
     public function AuthorSubmitStep5Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -69,10 +71,10 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
         $templateMgr = TemplateManager::getManager($request);
 
         // Get article file for this article
+        /** @var ArticleFileDAO $articleFileDao  */
         $articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
         $articleFiles = $articleFileDao->getArticleFilesByArticle($this->articleId);
 
-        // [WIZDAM] Use assign instead of assign_by_ref
         $templateMgr->assign('files', $articleFiles);
         $templateMgr->assign('journal', $journal);
 
@@ -81,17 +83,16 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
         $paymentManager = new OJSPaymentManager($this->request);
         if ( $paymentManager->submissionEnabled() || $paymentManager->fastTrackEnabled() || $paymentManager->publicationEnabled()) {
             $templateMgr->assign('authorFees', true);
+            /** @var OJSCompletedPaymentDAO $completedPaymentDao  */
             $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
             $articleId = $this->articleId;
 
             if ($paymentManager->submissionEnabled()) {
-                // [WIZDAM] Use assign instead of assign_by_ref
                 $templateMgr->assign('submissionPayment', $completedPaymentDao->getSubmissionCompletedPayment ($journal->getId(), $articleId));
                 $templateMgr->assign('manualPayment', $journal->getSetting('paymentMethodPluginName') == 'ManualPayment');
             }
 
             if ($paymentManager->fastTrackEnabled()) {
-                // [WIZDAM] Use assign instead of assign_by_ref
                 $templateMgr->assign('fastTrackPayment', $completedPaymentDao->getFastTrackCompletedPayment ($journal->getId(), $articleId));
             }
         }
@@ -133,6 +134,7 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
             $articleId = $this->articleId;
             $user = $this->request->getUser();
 
+            /** @var OJSCompletedPaymentDAO $completedPaymentDao  */
             $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
             if ($completedPaymentDao->hasPaidSubmission($journalId, $articleId)) {
                 return parent::validate();
@@ -158,7 +160,9 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
      * @return int the article ID
      */
     public function execute($object = null) {
+        /** @var ArticleDAO $articleDao  */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
+        /** @var SignoffDAO $signoffDao  */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
 
         $journal = $this->request->getJournal();
@@ -181,6 +185,7 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
         $articleDao->updateLocaleFields($article);
 
         // Designate this as the review version by default.
+        /** @var AuthorSubmissionDAO $authorSubmissionDao  */
         $authorSubmissionDao = DAORegistry::getDAO('AuthorSubmissionDAO');
         $authorSubmission = $authorSubmissionDao->getAuthorSubmission($article->getId());
         AuthorAction::designateReviewVersion($authorSubmission, true);
@@ -260,5 +265,6 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
 
         return $this->articleId;
     }
+    
 }
 ?>

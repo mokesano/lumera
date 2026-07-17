@@ -16,14 +16,14 @@ declare(strict_types=1);
  * @ingroup issue_form
  * @see Issue
  *
- * @brief Form to create or edit an issue
- * [WIZDAM EDITION] Refactored for PHP 8.x (Removed create_function)
+ * @brief Form to create or edit an issue.
  */
 
 import('lib.pkp.classes.form.Form');
 import('classes.issue.Issue'); // Bring in constants
 
 class IssueForm extends Form {
+
     /** @var Issue|null current issue */
     protected ?Issue $issue = null;
 
@@ -94,7 +94,6 @@ class IssueForm extends Form {
         $request = Application::get()->getRequest();
         $issueId = ($issue ? $issue->getId() : 0);
 
-        // [WIZDAM] Replaced create_function with closures
         if ($this->getData('showVolume')) {
             $this->addCheck(new FormValidatorCustom($this, 'volume', 'required', 'editor.issues.volumeRequired', function($volume) {
                 return ($volume > 0);
@@ -271,6 +270,15 @@ class IssueForm extends Form {
                     break;
             }
 
+            // [WIZDAM FIX] Issue baru belum punya field ber-locale di DB, tapi createIssue.tpl
+            // tetap melakukan iterasi per-locale (title, description, coverPage*, dst).
+            $supportedLocales = is_array($this->supportedLocales) && !empty($this->supportedLocales)
+                ? array_keys($this->supportedLocales)
+                : array_keys(AppLocale::getSupportedFormLocales());
+
+            $emptyLocalizedText = array_fill_keys($supportedLocales, '');
+            $emptyLocalizedFlag = array_fill_keys($supportedLocales, 0);
+
             $this->_data = [
                 'showVolume' => $showVolume,
                 'showNumber' => $showNumber,
@@ -279,7 +287,22 @@ class IssueForm extends Form {
                 'volume' => $volume,
                 'number' => $number,
                 'year' => $year,
-                'accessStatus' => $accessStatus
+                'accessStatus' => $accessStatus,
+
+                // [WIZDAM FIX] Default per-locale, konsisten dengan cabang isset($issue)
+                'title' => $emptyLocalizedText,
+                'description' => $emptyLocalizedText,
+                'publicIssueId' => '',
+                'openAccessDate' => null,
+                'coverPageDescription' => $emptyLocalizedText,
+                'coverPageAltText' => $emptyLocalizedText,
+                'showCoverPage' => $emptyLocalizedFlag,
+                'hideCoverPageArchives' => $emptyLocalizedFlag,
+                'hideCoverPageCover' => $emptyLocalizedFlag,
+                'fileName' => $emptyLocalizedText,
+                'originalFileName' => $emptyLocalizedText,
+                'styleFileName' => '',
+                'originalStyleFileName' => ''
             ];
         }
     }
@@ -320,7 +343,6 @@ class IssueForm extends Form {
 
         $this->readUserDateVars(['datePublished', 'openAccessDate']);
 
-        // [WIZDAM] Replaced create_function
         $this->addCheck(new FormValidatorCustom(
             $this, 'showVolume', 'required', 'editor.issues.issueIdentificationRequired', 
             function($showVolume, $showNumber, $showYear, $showTitle) {
@@ -383,8 +405,7 @@ class IssueForm extends Form {
         $issue->setShowTitle(empty($showTitle) ? 0 : $showTitle);
         $issue->setCoverPageDescription($this->getData('coverPageDescription'), null); // Localized
         $issue->setCoverPageAltText($this->getData('coverPageAltText'), null); // Localized
-        
-        // [WIZDAM] Replaced create_function
+
         $showCoverPage = array_map(fn($arrayElement) => (int)$arrayElement, (array) $this->getData('showCoverPage'));
         foreach (array_keys($this->getData('coverPageDescription')) as $locale) {
             if (!array_key_exists($locale, $showCoverPage)) {
@@ -393,7 +414,6 @@ class IssueForm extends Form {
         }
         $issue->setShowCoverPage($showCoverPage, null); // Localized
 
-        // [WIZDAM] Replaced create_function
         $hideCoverPageArchives = array_map(fn($arrayElement) => (int)$arrayElement, (array) $this->getData('hideCoverPageArchives'));
         foreach (array_keys($this->getData('coverPageDescription')) as $locale) {
             if (!array_key_exists($locale, $hideCoverPageArchives)) {
@@ -402,7 +422,6 @@ class IssueForm extends Form {
         }
         $issue->setHideCoverPageArchives($hideCoverPageArchives, null); // Localized
 
-        // [WIZDAM] Replaced create_function
         $hideCoverPageCover = array_map(fn($arrayElement) => (int)$arrayElement, (array) $this->getData('hideCoverPageCover'));
         foreach (array_keys($this->getData('coverPageDescription')) as $locale) {
             if (!array_key_exists($locale, $hideCoverPageCover)) {

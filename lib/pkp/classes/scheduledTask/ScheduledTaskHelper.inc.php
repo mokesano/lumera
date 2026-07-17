@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup scheduledTask
  *
  * @brief Helper class for common scheduled tasks operations.
- * [WIZDAM EDITION] PHP 8 Static Compliance & Modernized References
  */
 
 define('SCHEDULED_TASK_MESSAGE_TYPE_COMPLETED', 'common.completed');
@@ -36,9 +35,8 @@ class ScheduledTaskHelper {
      */
     public function __construct($email = '', $contactName = '') {
         if (!$email || !$contactName) {
-            // [MODERNISASI] Hapus referensi &
-            $siteDao = DAORegistry::getDAO('SiteDAO'); /* @var $siteDao SiteDAO */
-            $site = $siteDao->getSite(); /* @var $site Site */
+            $siteDao = DAORegistry::getDAO('SiteDAO'); /** @var SiteDAO $siteDao */
+            $site = $siteDao->getSite(); /** @var Site $site */
             $email = $site->getLocalizedContactEmail();
             $contactName = $site->getLocalizedContactName();
         }
@@ -53,7 +51,7 @@ class ScheduledTaskHelper {
     public function ScheduledTaskHelper($email = '', $contactName = '') {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::ScheduledTaskHelper(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().", 
                 E_USER_DEPRECATED
             );
         }
@@ -72,10 +70,10 @@ class ScheduledTaskHelper {
 
     /**
      * Get the arguments for a task from the parsed XML.
-     * @param XMLNode
+     * @param mixed $task
      * @return array
      */
-    public function getTaskArgs($task) {
+    public static function getTaskArgs($task) {
         $args = array();
         $index = 0;
 
@@ -90,20 +88,18 @@ class ScheduledTaskHelper {
     /**
      * Check if the specified task should be executed according to the specified
      * frequency and its last run time.
-     * @param $className string
-     * @param $frequency XMLNode
-     * @return string
+     * @param string $className string
+     * @param mixed $frequency XMLNode
+     * @return bool
      */
     public static function checkFrequency($className, $frequency) {
         $isValid = true;
-        // [MODERNISASI] Hapus referensi &
-        $taskDao = DAORegistry::getDAO('ScheduledTaskDAO'); /* @var $taskDao ScheduledTaskDAO */
+        $taskDao = DAORegistry::getDAO('ScheduledTaskDAO'); /** @var ScheduledTaskDAO $taskDao */
         $lastRunTime = $taskDao->getLastRunTime($className);
 
         // Check day of week
         $dayOfWeek = $frequency->getAttribute('dayofweek');
         if (isset($dayOfWeek)) {
-            // [MODERNISASI] Panggil sebagai static method yang benar
             $isValid = self::_isInRange($dayOfWeek, (int)date('w'), $lastRunTime, 'day', strtotime('-1 week'));
         }
 
@@ -143,15 +139,13 @@ class ScheduledTaskHelper {
     }
 
     /**
-     * Notifies site administrator about the
-     * task execution result.
-     * @param $id int Task id.
-     * @param $name string Task name.
-     * @param $result boolean Whether or not the task
-     * execution was successful.
-     * @param $executionLogFile string Task execution log file path.
+     * Notifies site administrator about the task execution result.
+     * @param int $id int
+     * @param string $name string
+     * @param bool $result boolean
+     * @param $executionLogFile string Task execution log file path
      */
-    public static function notifyExecutionResult($id, $name, $result, $executionLogFile = '') {
+    public function notifyExecutionResult($id, $name, $result, $executionLogFile = '') {
         $reportErrorOnly = Config::getVar('general', 'scheduled_tasks_report_error_only', true);
 
         if (!$result || !$reportErrorOnly) {
@@ -174,7 +168,7 @@ class ScheduledTaskHelper {
 
     /**
      * Get execution log email message.
-     * @param $executionLogFile string
+     * @param string $executionLogFile string
      * @return string
      */
     public function getMessage($executionLogFile) {
@@ -182,7 +176,6 @@ class ScheduledTaskHelper {
             return __('admin.scheduledTask.noLog');
         }
         
-        // [MODERNISASI] Hapus referensi &
         $application = Application::getApplication();
         $request = $application->getRequest();
         $router = $request->getRouter();
@@ -195,7 +188,6 @@ class ScheduledTaskHelper {
     //
     /**
      * Clear tasks execution log files.
-     * [MODERNISASI] Defined as static
      */
     public static function clearExecutionLogs() {
         import('lib.pkp.classes.file.PrivateFileManager');
@@ -206,7 +198,7 @@ class ScheduledTaskHelper {
 
     /**
      * Download execution log file.
-     * @param $file string
+     * @param string $file string
      */
     public function downloadExecutionLog($file) {
         import('lib.pkp.classes.file.PrivateFileManager');
@@ -221,8 +213,8 @@ class ScheduledTaskHelper {
     //
     /**
      * Send email to the site administrator.
-     * @param $message string
-     * @param $subject string
+     * @param string $message string
+     * @param string $subject string
      * @return boolean
      */
     protected function _sendEmail($message, $subject) {
@@ -236,12 +228,11 @@ class ScheduledTaskHelper {
 
     /**
      * Check if a value is within the specified range.
-     * [MODERNISASI] DEFINED AS PUBLIC STATIC (PHP 8 Requirement)
-     * * @param $rangeStr string the range (e.g., 0, 1-5, *, etc.)
-     * @param $currentValue int value to check if its in the range
-     * @param $lastTimestamp int the last time the task was executed
-     * @param $timeCompareStr string value to use in strtotime("-X $timeCompareStr")
-     * @param $cutoffTimestamp int value will be considered valid if older than this
+     * @param string $rangeStr string the range (e.g., 0, 1-5, *, etc.)
+     * @param int $currentValue int value to check if its in the range
+     * @param int $lastTimestamp int the last time the task was executed
+     * @param string $timeCompareStr string value to use in strtotime("-X $timeCompareStr")
+     * @param int $cutoffTimestamp int value will be considered valid if older than this
      * @return boolean
      */
     public static function _isInRange($rangeStr, $currentValue, $lastTimestamp, $timeCompareStr, $cutoffTimestamp) {
@@ -290,10 +281,9 @@ class ScheduledTaskHelper {
 
     /**
      * Check if a numeric value is within the specified range.
-     * [MODERNISASI] DEFINED AS PUBLIC STATIC (PHP 8 Requirement)
-     * * @param $value int
-     * @param $min int
-     * @param $max int
+     * @param int $value int
+     * @param int $min int
+     * @param int $max int
      * @return boolean
      */
     public static function _isInNumericRange($value, $min, $max) {
@@ -301,5 +291,4 @@ class ScheduledTaskHelper {
     }
 
 }
-
 ?>

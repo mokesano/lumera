@@ -2,19 +2,22 @@
 declare(strict_types=1);
 
 /**
- * cURL Sinta Score dan Sinta Grade di Sinta Kemdikti Saintek Indonesia
  * @file SintaScoreNEW.php
-
- * @brief Script Sinta Impact dengan Smart Detection (Efficient Version)
- * Menggunakan prinsip 1 file cache, hash-based detection, weekly expiry
  * 
- * @brief Script untuk mengakses Sinta Impact dengan caching (Versi Final)
+ * Copyright (c) 2017-2026 Sangia Code Lumera 
+ * Copyright (c) 2024-2026 Rochmady and Development Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * 
+ * @brief Script Sinta Impact dengan Smart Detection dengan caching.
+ * Menggunakan prinsip 1 file cache, hash-based detection, weekly expiry
+ * cURL Sinta Score dan Sinta Grade di Sinta Kemdikti Saintek Indonesia
+ * 
  * @author Rochmady and Wizdam Team
  * Last update 2025-06-12
  */
 
 // -----------------------------------------------------------------
-// BAGIAN #1: MONITORING (UP/DOWN)
+// MONITORING (UP/DOWN)
 // -----------------------------------------------------------------
 if (empty($_GET)) {
     http_response_code(200);

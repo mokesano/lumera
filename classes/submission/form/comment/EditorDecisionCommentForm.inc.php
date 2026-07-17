@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class EditorDecisionCommentForm
  * @ingroup submission_form
  *
- * @brief EditorDecisionComment form.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * @brief Editor Decision Comment form.
  */
 
 import('classes.submission.form.comment.CommentForm');
@@ -86,7 +84,7 @@ class EditorDecisionCommentForm extends CommentForm {
 
     /**
      * Email the comment.
-     * [WIZDAM] Signature adjusted to match Parent::email($recipients, $request)
+     * [LUMERA] Signature adjusted to match Parent::email($recipients, $request)
      * Legacy calls passing only ($request) are handled via type detection.
      * @param mixed $recipients (Legacy: PKPRequest object)
      * @param mixed $request (Legacy: null)

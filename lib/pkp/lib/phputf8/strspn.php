@@ -10,7 +10,8 @@
 * UTF-8 aware alternative to strspn
 * Find length of initial segment matching mask
 * Note: requires utf8_strlen and utf8_substr (if start, length are used)
-* @param string
+* @param string $str
+* @param string $mask
 * @return int
 * @see http://www.php.net/strspn
 * @package utf8

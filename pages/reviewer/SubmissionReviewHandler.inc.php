@@ -12,14 +12,12 @@ declare(strict_types=1);
  * @ingroup pages_reviewer
  *
  * @brief Handle requests for submission tracking.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.reviewer.ReviewerHandler');
 
 class SubmissionReviewHandler extends ReviewerHandler {
-    
+
     /**
      * Constructor
      */
@@ -58,7 +56,7 @@ class SubmissionReviewHandler extends ReviewerHandler {
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
         $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
         $reviewFormResponseDao = DAORegistry::getDAO('ReviewFormResponseDAO');
-        
+
         $confirmedStatus = ($submission->getDateConfirmed() == null) ? 0 : 1;
 
         $this->setupTemplate(true, $reviewAssignment->getSubmissionId(), $reviewId);
@@ -90,10 +88,10 @@ class SubmissionReviewHandler extends ReviewerHandler {
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $reviewId = (int) trim((string) $request->getUserVar('reviewId'));
-        
+
         // [FIX] Ambil raw value dulu untuk pengecekan logic
         $rawDeclineReview = $request->getUserVar('declineReview');
-        
+
         // Logika: Jika user klik 'Will do the review', parameter declineReview biasanya null.
         // Jika klik 'Unable to do review', param ini bernilai 1.
         $decline = (!empty($rawDeclineReview)) ? 1 : 0;
@@ -106,9 +104,10 @@ class SubmissionReviewHandler extends ReviewerHandler {
 
         if (!$reviewerSubmission->getCancelled()) {
             $sendFlag = ($request->getUserVar('send') !== null);
-            
-            if (ReviewerAction::confirmReview($reviewerSubmission, $decline, $sendFlag, $request)) { 
-                $request->redirect(null, null, 'submission', $reviewId); 
+
+            $reviewerAction = new ReviewerAction();
+            if ($reviewerAction->confirmReview($reviewerSubmission, $decline, $sendFlag, $request)) {
+                $request->redirect(null, null, 'submission', $reviewId);
             }
         } else {
             $request->redirect(null, null, 'submission', $reviewId);
@@ -151,7 +150,8 @@ class SubmissionReviewHandler extends ReviewerHandler {
 
         if (!$reviewerSubmission->getCancelled()) {
             $sendFlag = ($request->getUserVar('send') !== null);
-            if (ReviewerAction::recordRecommendation($reviewerSubmission, $recommendation, $sendFlag, $request)) {
+            $reviewerAction = new ReviewerAction();
+            if ($reviewerAction->recordRecommendation($reviewerSubmission, $recommendation, $sendFlag, $request)) {
                 $request->redirect(null, null, 'submission', $reviewId);
             }
         } else {
@@ -177,7 +177,8 @@ class SubmissionReviewHandler extends ReviewerHandler {
 
         $this->setupTemplate(true, $articleId, $reviewId);
 
-        ReviewerAction::viewMetadata($reviewerSubmission, $journal);
+        $reviewerAction = new ReviewerAction();
+        $reviewerAction->viewMetadata($reviewerSubmission, $journal);
     }
 
     /**
@@ -196,7 +197,8 @@ class SubmissionReviewHandler extends ReviewerHandler {
         $this->setupTemplate(true);
 
         if ($request->isPost() && isset($_FILES['upload']) && $_FILES['upload']['name'] !== '') {
-            ReviewerAction::uploadReviewerVersion($reviewId, $this->submission, $request);
+            $reviewerAction = new ReviewerAction();
+            $reviewerAction->uploadReviewerVersion($reviewId, $this->submission, $request);
         }
 
         $request->redirect(null, null, 'submission', $reviewId);
@@ -220,7 +222,8 @@ class SubmissionReviewHandler extends ReviewerHandler {
         $reviewerSubmission = $this->submission;
 
         if (!$reviewerSubmission->getCancelled()) {
-            ReviewerAction::deleteReviewerVersion($reviewId, $fileId, $revision);
+            $reviewerAction = new ReviewerAction();
+            $reviewerAction->deleteReviewerVersion($reviewId, $fileId, $revision);
         }
         $request->redirect(null, null, 'submission', $reviewId);
     }
@@ -247,7 +250,8 @@ class SubmissionReviewHandler extends ReviewerHandler {
         $this->validate($request, $reviewId);
         $reviewerSubmission = $this->submission;
 
-        if (!ReviewerAction::downloadReviewerFile($reviewId, $reviewerSubmission, $fileId, $revision)) {
+        $reviewerAction = new ReviewerAction();
+        if (!$reviewerAction->downloadReviewerFile($reviewId, $reviewerSubmission, $fileId, $revision)) {
             $request->redirect(null, null, 'submission', $reviewId);
         }
     }
@@ -275,7 +279,8 @@ class SubmissionReviewHandler extends ReviewerHandler {
         $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
         $reviewFormId = $reviewAssignment->getReviewFormId();
         if ($reviewFormId != null) {
-            ReviewerAction::editReviewFormResponse($reviewId, $reviewFormId);
+            $reviewerAction = new ReviewerAction();
+            $reviewerAction->editReviewFormResponse($reviewId, $reviewFormId);
         }
     }
 
@@ -294,7 +299,8 @@ class SubmissionReviewHandler extends ReviewerHandler {
         $this->validate($request, $reviewId);
         $this->setupTemplate(true);
 
-        if (ReviewerAction::saveReviewFormResponse($reviewId, $reviewFormId, $request)) {
+        $reviewerAction = new ReviewerAction();
+        if ($reviewerAction->saveReviewFormResponse($reviewId, $reviewFormId, $request)) {
             $request->redirect(null, null, 'submission', $reviewId);
         }
     }

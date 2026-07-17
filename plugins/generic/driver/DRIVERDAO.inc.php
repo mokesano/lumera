@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * @file plugins/generic/driver/DRIVERDAO.inc.php
@@ -11,7 +12,6 @@
  * @ingroup plugins_generic_driver
  *
  * @brief DAO operations for DRIVER.
- * * FIXED: Updated for PHP 7.4 Compatibility & Modernized OAI Core
  */
 
 import('classes.oai.ojs.OAIDAO');
@@ -98,6 +98,5 @@ class DRIVERDAO extends OAIDAO {
 
         return $records;
     }
-
 }
 ?>

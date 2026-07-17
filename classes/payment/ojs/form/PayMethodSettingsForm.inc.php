@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class PayMethodSettingsForm
  * @ingroup payments 
  *
- * @brief Form for managers to modify Payment Plugin settings
- * * MODERNIZED FOR WIZDAM FORK
+ * @brief Form for managers to modify Payment Plugin settings.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -33,8 +32,6 @@ class PayMethodSettingsForm extends Form {
 
         // Load the plugins.
         $this->plugins = PluginRegistry::loadCategory('paymethod');
-
-        // Add form checks
         $this->addCheck(new FormValidatorInSet($this, 'paymentMethodPluginName', 'optional', 'manager.payment.paymentPluginInvalid', array_keys($this->plugins)));
     }
 
@@ -120,5 +117,4 @@ class PayMethodSettingsForm extends Form {
         }
     }
 }
-
 ?>

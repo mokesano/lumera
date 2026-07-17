@@ -13,10 +13,6 @@ declare(strict_types=1);
  * @see ArticleNoteDAO
  *
  * @brief Class for ArticleNote.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor)
- * - Strict SHIM
  */
 
 import('classes.note.Note');
@@ -35,7 +31,6 @@ class ArticleNote extends Note {
      */
     public function ArticleNote() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Untuk menangkap identitas Class Anak/Pemanggil
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor parent::ArticleNote(). Please refactor to parent::__construct().", 
                 E_USER_DEPRECATED
@@ -44,5 +39,4 @@ class ArticleNote extends Note {
         self::__construct();
     }
 }
-
 ?>

@@ -13,11 +13,6 @@ declare(strict_types=1);
  * @see SuppFile
  *
  * @brief Operations for retrieving and modifying SuppFile objects.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Ref removal, Visibility, Cache Callback)
- * - Strict Integer Casting
- * - Hook Dispatch
  */
 
 import('classes.article.SuppFile');
@@ -34,8 +29,7 @@ class SuppFileDAO extends DAO {
     public function _getSuppFileCache() {
         if (!isset($this->suppFileCache)) {
             $cacheManager = CacheManager::getManager();
-            // PHP 8: Removed & from callback array
-            $this->suppFileCache = $cacheManager->getObjectCache('suppfile', 0, array($this, '_suppFileCacheMiss'));
+            $this->suppFileCache = $cacheManager->getObjectCache('suppfile', 0, [$this, '_suppFileCacheMiss']);
         }
         return $this->suppFileCache;
     }
@@ -65,7 +59,7 @@ class SuppFileDAO extends DAO {
      * Retrieve a supplementary file by ID.
      * @param int $suppFileId
      * @param int|null $articleId optional
-     * @param boolean $useCache optional
+     * @param bool $useCache optional
      * @return SuppFile|null
      */
     public function getSuppFile($suppFileId, $articleId = null, $useCache = false) {
@@ -76,7 +70,7 @@ class SuppFileDAO extends DAO {
             return $returner;
         }
 
-        $params = array((int) $suppFileId);
+        $params = [(int) $suppFileId];
         if ($articleId) $params[] = (int) $articleId;
 
         $result = $this->retrieve(
@@ -107,14 +101,7 @@ class SuppFileDAO extends DAO {
      */
     public function getSuppFileByPubId($pubIdType, $pubId, $articleId = null) {
         $suppFiles = $this->getSuppFilesBySetting('pub-id::'.$pubIdType, $pubId, $articleId);
-        if (empty($suppFiles)) {
-            $suppFile = null;
-        } else {
-            // assert(count($suppFiles) == 1);
-            $suppFile = $suppFiles[0];
-        }
-
-        return $suppFile;
+        return !empty($suppFiles) ? $suppFiles[0] : null;
     }
 
     /**
@@ -126,7 +113,7 @@ class SuppFileDAO extends DAO {
      * @return array The supp files identified by setting.
      */
     public function getSuppFilesBySetting($settingName, $settingValue, $articleId = null, $journalId = null) {
-        $params = array($settingName);
+        $params = [$settingName];
 
         $sql = 'SELECT s.*, af.file_name, af.original_file_name, af.file_type, af.file_size, af.date_uploaded, af.date_modified
             FROM article_supplementary_files s
@@ -154,7 +141,7 @@ class SuppFileDAO extends DAO {
         $sql .= ' ORDER BY a.journal_id, pa.issue_id, s.supp_id';
         $result = $this->retrieve($sql, $params);
 
-        $suppFiles = array();
+        $suppFiles = [];
         while (!$result->EOF) {
             $suppFiles[] = $this->_returnSuppFileFromRow($result->GetRowAssoc(false));
             $result->moveNext();
@@ -170,16 +157,15 @@ class SuppFileDAO extends DAO {
      * @return array SuppFiles
      */
     public function getSuppFilesByArticle($articleId) {
-        $suppFiles = array();
-
         $result = $this->retrieve(
             'SELECT s.*, a.file_name, a.original_file_name, a.file_type, a.file_size, a.date_uploaded, a.date_modified 
             FROM article_supplementary_files s 
             LEFT JOIN article_files a ON (s.file_id = a.file_id) 
             WHERE s.article_id = ? ORDER BY s.seq',
-            (int) $articleId
+            [(int) $articleId]
         );
 
+        $suppFiles = [];
         while (!$result->EOF) {
             $suppFiles[] = $this->_returnSuppFileFromRow($result->GetRowAssoc(false));
             $result->moveNext();
@@ -205,11 +191,10 @@ class SuppFileDAO extends DAO {
             LEFT JOIN article_files af ON (s.file_id = af.file_id)
             INNER JOIN articles a ON (s.article_id = a.article_id)
             WHERE a.journal_id = ?',
-            (int) $journalId
+            [(int) $journalId]
         );
 
-        $returner = new DAOResultFactory($result, $this, '_returnSuppFileFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnSuppFileFromRow');
     }
 
     /**
@@ -217,17 +202,15 @@ class SuppFileDAO extends DAO {
      * @return array
      */
     public function getLocaleFieldNames() {
-        return array('title', 'creator', 'subject', 'typeOther', 'description', 'publisher', 'sponsor', 'source');
+        return ['title', 'creator', 'subject', 'typeOther', 'description', 'publisher', 'sponsor', 'source'];
     }
 
     /**
-     * Get a list of additional fields that do not have
-     * dedicated accessors.
+     * Get a list of additional fields that do not have dedicated accessors.
      * @return array
      */
     public function getAdditionalFieldNames() {
         $additionalFields = parent::getAdditionalFieldNames();
-        // FIXME: Move this to a PID plug-in.
         $additionalFields[] = 'pub-id::publisher-id';
         return $additionalFields;
     }
@@ -237,9 +220,9 @@ class SuppFileDAO extends DAO {
      * @param SuppFile $suppFile
      */
     public function updateLocaleFields($suppFile) {
-        $this->updateDataObjectSettings('article_supp_file_settings', $suppFile, array(
+        $this->updateDataObjectSettings('article_supp_file_settings', $suppFile, [
             'supp_id' => $suppFile->getId()
-        ));
+        ]);
     }
 
     /**
@@ -260,7 +243,7 @@ class SuppFileDAO extends DAO {
         $suppFile->setDateSubmitted($this->datetimeFromDB($row['date_submitted']));
         $suppFile->setSequence($row['seq']);
 
-        //ArticleFile set methods
+        // ArticleFile set methods
         $suppFile->setFileName($row['file_name']);
         $suppFile->setOriginalFileName($row['original_file_name']);
         $suppFile->setFileType($row['file_type']);
@@ -270,8 +253,7 @@ class SuppFileDAO extends DAO {
 
         $this->getDataObjectSettings('article_supp_file_settings', 'supp_id', $row['supp_id'], $suppFile);
 
-        // Hook Modernization: Object by val, array by ref
-        HookRegistry::dispatch('SuppFileDAO::_returnSuppFileFromRow', array($suppFile, &$row));
+        HookRegistry::dispatch('SuppFileDAO::_returnSuppFileFromRow', [$suppFile, &$row]);
 
         return $suppFile;
     }
@@ -296,7 +278,7 @@ class SuppFileDAO extends DAO {
                 $this->dateToDB($suppFile->getDateCreated()), 
                 $this->datetimeToDB($suppFile->getDateSubmitted())
             ),
-            array(
+            [
                 $suppFile->getRemoteURL(),
                 (int) $suppFile->getFileId(),
                 (int) $suppFile->getArticleId(),
@@ -304,7 +286,7 @@ class SuppFileDAO extends DAO {
                 $suppFile->getLanguage(),
                 (int) $suppFile->getShowReviewers(),
                 (float) $suppFile->getSequence()
-            )
+            ]
         );
         $suppFile->setId($this->getInsertSuppFileId());
         $this->updateLocaleFields($suppFile);
@@ -314,7 +296,7 @@ class SuppFileDAO extends DAO {
     /**
      * Update an existing SuppFile.
      * @param SuppFile $suppFile
-     * @return boolean
+     * @return bool
      */
     public function updateSuppFile($suppFile) {
         $returner = $this->update(
@@ -330,7 +312,7 @@ class SuppFileDAO extends DAO {
                 WHERE supp_id = ?',
                 $this->dateToDB($suppFile->getDateCreated())
             ),
-            array(
+            [
                 $suppFile->getRemoteURL(),
                 (int) $suppFile->getFileId(),
                 $suppFile->getType(),
@@ -338,7 +320,7 @@ class SuppFileDAO extends DAO {
                 (int) $suppFile->getShowReviewers(),
                 (float) $suppFile->getSequence(),
                 (int) $suppFile->getId()
-            )
+            ]
         );
         $this->updateLocaleFields($suppFile);
         return $returner;
@@ -347,7 +329,7 @@ class SuppFileDAO extends DAO {
     /**
      * Delete a SuppFile.
      * @param SuppFile $suppFile
-     * @return boolean
+     * @return bool
      */
     public function deleteSuppFile($suppFile) {
         return $this->deleteSuppFileById($suppFile->getId());
@@ -357,22 +339,25 @@ class SuppFileDAO extends DAO {
      * Delete a supplementary file by ID.
      * @param int $suppFileId
      * @param int|null $articleId optional
-     * @return boolean
+     * @return bool
      */
     public function deleteSuppFileById($suppFileId, $articleId = null) {
         if (isset($articleId)) {
             $returner = $this->update(
                 'DELETE FROM article_supplementary_files WHERE supp_id = ? AND article_id = ?', 
-                array((int) $suppFileId, (int) $articleId)
+                [(int) $suppFileId, (int) $articleId]
             );
-            if ($returner) $this->update('DELETE FROM article_supp_file_settings WHERE supp_id = ?', (int) $suppFileId);
+            if ($returner) {
+                $this->update('DELETE FROM article_supp_file_settings WHERE supp_id = ?', [(int) $suppFileId]);
+            }
             return $returner;
 
         } else {
-            $this->update('DELETE FROM article_supp_file_settings WHERE supp_id = ?', (int) $suppFileId);
+            // [WIZDAM] FIX: Parameter dibungkus array
+            $this->update('DELETE FROM article_supp_file_settings WHERE supp_id = ?', [(int) $suppFileId]);
             return $this->update(
                 'DELETE FROM article_supplementary_files WHERE supp_id = ?', 
-                (int) $suppFileId
+                [(int) $suppFileId]
             );
         }
     }
@@ -392,16 +377,18 @@ class SuppFileDAO extends DAO {
      * Check if a supplementary file exists with the associated file ID.
      * @param int $articleId
      * @param int $fileId
-     * @return boolean
+     * @return bool
      */
     public function suppFileExistsByFileId($articleId, $fileId) {
         $result = $this->retrieve(
             'SELECT COUNT(*) FROM article_supplementary_files
             WHERE article_id = ? AND file_id = ?',
-            array((int) $articleId, (int) $fileId)
+            [(int) $articleId, (int) $fileId]
         );
 
-        $returner = isset($result->fields[0]) && $result->fields[0] == 1 ? true : false;
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = isset($fields[0]) && (int) $fields[0] > 0;
 
         $result->Close();
         unset($result);
@@ -416,14 +403,17 @@ class SuppFileDAO extends DAO {
     public function resequenceSuppFiles($articleId) {
         $result = $this->retrieve(
             'SELECT supp_id FROM article_supplementary_files WHERE article_id = ? ORDER BY seq',
-            (int) $articleId
+            [(int) $articleId]
         );
 
-        for ($i=1; !$result->EOF; $i++) {
-            list($suppId) = $result->fields;
+        for ($i = 1; !$result->EOF; $i++) {
+            /** @var array|bool $fields */
+            $fields = $result->fields;
+            $suppId = (int) ($fields[0] ?? 0);
+            
             $this->update(
                 'UPDATE article_supplementary_files SET seq = ? WHERE supp_id = ?',
-                array($i, (int) $suppId)
+                [$i, $suppId]
             );
             $result->moveNext();
         }
@@ -440,9 +430,13 @@ class SuppFileDAO extends DAO {
     public function getNextSuppFileSequence($articleId) {
         $result = $this->retrieve(
             'SELECT MAX(seq) + 1 FROM article_supplementary_files WHERE article_id = ?',
-            (int) $articleId
+            [(int) $articleId]
         );
-        $returner = floor($result->fields[0]);
+        
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $value = isset($fields[0]) ? $fields[0] : null;
+        $returner = (int) floor($value !== null ? (float) $value : 1);
 
         $result->Close();
         unset($result);
@@ -466,7 +460,9 @@ class SuppFileDAO extends DAO {
      */
     public function getSuppFileByBestSuppFileId($suppId, $articleId) {
         $suppFile = $this->getSuppFileByPubId('publisher-id', $suppId, $articleId);
-        if (!isset($suppFile) && ctype_digit((string)$suppId)) $suppFile = $this->getSuppFile((int) $suppId, $articleId);
+        if ($suppFile === null && ctype_digit((string)$suppId)) {
+            $suppFile = $this->getSuppFile((int) $suppId, $articleId);
+        }
         return $suppFile;
     }
 
@@ -476,7 +472,7 @@ class SuppFileDAO extends DAO {
      * @param string $pubId
      * @param int $suppId An ID to be excluded from the search.
      * @param int $journalId
-     * @return boolean
+     * @return bool
      */
     public function pubIdExists($pubIdType, $pubId, $suppId, $journalId) {
         $result = $this->retrieve(
@@ -485,14 +481,18 @@ class SuppFileDAO extends DAO {
                 INNER JOIN article_supplementary_files f ON sfs.supp_id = f.supp_id
                 INNER JOIN articles a ON f.article_id = a.article_id
             WHERE sfs.setting_name = ? AND sfs.setting_value = ? AND f.supp_id <> ? AND a.journal_id = ?',
-            array(
+            [
                 'pub-id::'.$pubIdType,
                 $pubId,
                 (int) $suppId,
                 (int) $journalId
-            )
+            ]
         );
-        $returner = isset($result->fields[0]) && $result->fields[0] ? true : false;
+        
+        /** @var array|bool $fields */
+        $fields = $result->fields;
+        $returner = isset($fields[0]) && (int) $fields[0] > 0;
+        
         $result->Close();
         return $returner;
     }
@@ -504,19 +504,18 @@ class SuppFileDAO extends DAO {
      * @param string $pubId
      */
     public function changePubId($suppFileId, $pubIdType, $pubId) {
-        $idFields = array(
+        $idFields = [
             'supp_id', 'locale', 'setting_name'
-        );
-        $updateArray = array(
+        ];
+        $updateArray = [
             'supp_id' => (int) $suppFileId,
             'locale' => '',
             'setting_name' => 'pub-id::'.$pubIdType,
             'setting_type' => 'string',
-            'setting_value' => (string)$pubId
-        );
+            'setting_value' => (string) $pubId
+        ];
         $this->replace('article_supp_file_settings', $updateArray, $idFields);
     }
-
 
     /**
      * Delete the public IDs of all supplementary files in a journal.
@@ -531,10 +530,10 @@ class SuppFileDAO extends DAO {
         while ($suppFile = $suppFiles->next()) {
             $this->update(
                 'DELETE FROM article_supp_file_settings WHERE setting_name = ? AND supp_id = ?',
-                array(
+                [
                     $settingName,
-                    (int)$suppFile->getId()
-                )
+                    (int) $suppFile->getId()
+                ]
             );
             unset($suppFile);
         }
@@ -550,13 +549,12 @@ class SuppFileDAO extends DAO {
         $settingName = 'pub-id::'.$pubIdType;
         $this->update(
             'DELETE FROM article_supp_file_settings WHERE setting_name = ? AND supp_id = ?',
-            array(
+            [
                 $settingName,
-                (int)$suppFileId
-            )
+                (int) $suppFileId
+            ]
         );
         $this->flushCache();
     }
 }
-
 ?>

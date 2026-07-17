@@ -12,12 +12,12 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Form for Step 4 of author article submission.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('classes.author.form.submit.AuthorSubmitForm');
 
 class AuthorSubmitStep4Form extends AuthorSubmitForm {
+
     /**
      * Constructor.
      * @param Article $article
@@ -30,6 +30,9 @@ class AuthorSubmitStep4Form extends AuthorSubmitForm {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param Article $article
+     * @param Journal $journal
+     * @param PKPRequest $request
      */
     public function AuthorSubmitStep4Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -53,8 +56,8 @@ class AuthorSubmitStep4Form extends AuthorSubmitForm {
         $templateMgr = TemplateManager::getManager($request);
 
         // Get supplementary files for this article
+        /** @var SuppFileDAO $suppFileDao  */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
-        // [WIZDAM] Use assign instead of assign_by_ref
         $templateMgr->assign('suppFiles', $suppFileDao->getSuppFilesByArticle($this->articleId));
 
         parent::display($request, $template);
@@ -66,6 +69,7 @@ class AuthorSubmitStep4Form extends AuthorSubmitForm {
      * @return int the article ID
      */
     public function execute($object = null) {
+        /** @var ArticleDAO $articleDao  */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
 
         // Update article
@@ -78,6 +82,6 @@ class AuthorSubmitStep4Form extends AuthorSubmitForm {
 
         return $this->articleId;
     }
-}
 
+}
 ?>

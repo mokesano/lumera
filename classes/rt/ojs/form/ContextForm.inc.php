@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup rt_ojs_form
  *
  * @brief Form to change metadata information for an RT context.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
@@ -93,11 +91,8 @@ class ContextForm extends Form {
         $journal = $request->getJournal();
         
         $templateMgr = TemplateManager::getManager();
-
         $templateMgr->assign('versionId', $this->versionId);
-
         if (isset($this->context)) {
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('context', $this->context);
             $templateMgr->assign('contextId', $this->contextId);
         }
@@ -105,7 +100,6 @@ class ContextForm extends Form {
         $templateMgr->assign('helpTopicId', 'journal.managementPages.readingTools.contexts');
         parent::display($request, $template);
     }
-
 
     /**
      * Assign form data to user-submitted data.
@@ -131,13 +125,11 @@ class ContextForm extends Form {
      */
     public function execute($object = null) {
         $rtDao = DAORegistry::getDAO('RTDAO');
-
         $context = $this->context;
         if (!isset($context)) {
             $context = new RTContext();
             $context->setVersionId($this->versionId);
         }
-
         $context->setTitle($this->getData('title'));
         $context->setAbbrev($this->getData('abbrev'));
         $context->setCitedBy($this->getData('citedBy') == true);
@@ -156,6 +148,5 @@ class ContextForm extends Form {
 
         return $this->contextId;
     }
-
 }
 ?>

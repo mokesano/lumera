@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup manager_form
  *
  * @brief Form for journal managers to edit user profiles.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
@@ -59,8 +57,6 @@ class UserManagementForm extends Form {
             if (!$implicitAuth || strtolower($implicitAuth) === IMPLICIT_AUTH_OPTIONAL) {
                 $this->addCheck(new FormValidator($this, 'password', 'required', 'user.profile.form.passwordRequired'));
                 $this->addCheck(new FormValidatorLength($this, 'password', 'required', 'user.register.form.passwordLengthTooShort', '>=', (int) $site->getMinPasswordLength()));
-                
-                // [WIZDAM FIX] Replaced create_function with Closure
                 $this->addCheck(new FormValidatorCustom(
                     $this, 
                     'password', 
@@ -74,7 +70,6 @@ class UserManagementForm extends Form {
             }
         } else {
             $this->addCheck(new FormValidatorLength($this, 'password', 'optional', 'user.register.form.passwordLengthTooShort', '>=', (int) $site->getMinPasswordLength()));
-            // [WIZDAM FIX] Replaced create_function with Closure
             $this->addCheck(new FormValidatorCustom(
                 $this, 
                 'password', 
@@ -187,7 +182,6 @@ class UserManagementForm extends Form {
 
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('countries', $countries);
 
         $authDao = DAORegistry::getDAO('AuthSourceDAO');
@@ -400,7 +394,6 @@ class UserManagementForm extends Form {
                 // FIXME Should try to create user here too?
                 $auth->doSetUserInfo($user);
             }
-            // [WIZDAM] Removed & ref
             parent::execute($user);
             $userDao->updateObject($user);
         } else {
@@ -424,7 +417,6 @@ class UserManagementForm extends Form {
             }
 
             $user->setDateRegistered(Core::getCurrentDate());
-            // [WIZDAM] Removed & ref
             parent::execute($user);
             $userId = $userDao->insertUser($user);
 
@@ -464,5 +456,4 @@ class UserManagementForm extends Form {
         $interestManager->setInterestsForUser($user, $interests);
     }
 }
-
 ?>

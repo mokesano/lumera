@@ -11,13 +11,12 @@ declare(strict_types=1);
  * @class PageRouter
  * @ingroup core
  *
- * @brief Class providing OJS-specific page routing.
+ * @brief Class providing APP-specific page routing.
  *
  * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Ref removal, Visibility)
  * - Safe User/Journal Context Checks
  * - Native Routing Support
- * - [v2] Degradasi Routing Bertingkat: Issue → Volume → Year → Archive
+ * - Degradasi Routing Bertingkat: Issue → Volume → Year → Archive
  */
 
 import('lib.pkp.classes.core.PKPPageRouter');
@@ -25,7 +24,7 @@ import('lib.pkp.classes.core.PKPPageRouter');
 class PageRouter extends PKPPageRouter {
 
     /**
-     * get the cacheable pages
+     * Get the cacheable pages
      * @return array
      */
     public function getCacheablePages() {
@@ -83,6 +82,7 @@ class PageRouter extends PKPPageRouter {
                 $journal = $request->getJournal();
 
                 if ($journal) {
+                    /** @var IssueDAO $issueDao */
                     $issueDao = DAORegistry::getDAO('IssueDAO');
                     $issuesIterator = $issueDao->getPublishedIssuesByVolume($journal->getId(), $volumeNumber);
 
@@ -292,6 +292,7 @@ class PageRouter extends PKPPageRouter {
             return;
         }
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $userId  = $user->getId();
         $journal = $this->getContext($request, 1);
@@ -310,6 +311,7 @@ class PageRouter extends PKPPageRouter {
                 $request->redirect(null, 'user');
             }
         } else {
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $roles      = $roleDao->getRolesByUserId($userId);
 
@@ -333,5 +335,4 @@ class PageRouter extends PKPPageRouter {
         }
     }
 }
-
 ?>

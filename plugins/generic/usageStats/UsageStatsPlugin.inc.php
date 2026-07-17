@@ -12,9 +12,7 @@ declare(strict_types=1);
  * @ingroup plugins_generic_usageStats
  *
  * @brief Provide usage statistics to data objects.
- * MODERNIZED FOR PHP 7.4+ & OJS FORK
  */
-
 
 import('lib.pkp.classes.plugins.GenericPlugin');
 

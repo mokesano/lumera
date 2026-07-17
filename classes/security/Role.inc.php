@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see RoleDAO
  *
  * @brief Describes user roles within the system and the associated permissions.
- * [WIZDAM EDITION] PHP 7.4+ Compatible
  */
 
 /** ID codes for all user roles */
@@ -33,7 +32,6 @@ class Role extends DataObject {
 
     /**
      * Constructor.
-     * [MODERNISASI] Native Constructor
      */
     public function __construct() {
         parent::__construct();
@@ -80,7 +78,7 @@ class Role extends DataObject {
 
     /**
      * Set journal ID associated with role.
-     * @param $journalId int
+     * @param mixed $journalId int
      */
     public function setJournalId($journalId) {
         return $this->setData('journalId', $journalId);
@@ -96,7 +94,7 @@ class Role extends DataObject {
 
     /**
      * Set user ID associated with role.
-     * @param $userId int
+     * @param mixed $userId int
      */
     public function setUserId($userId) {
         return $this->setData('userId', $userId);
@@ -112,11 +110,10 @@ class Role extends DataObject {
 
     /**
      * Set role ID of this role.
-     * @param $roleId int
+     * @param mixed $roleId int
      */
     public function setRoleId($roleId) {
         return $this->setData('roleId', $roleId);
     }
 }
-
 ?>

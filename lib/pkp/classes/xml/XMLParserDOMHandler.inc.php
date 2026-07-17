@@ -14,27 +14,25 @@ declare(strict_types=1);
  *
  * @brief Default handler for XMLParser returning a simple DOM-style object.
  * This handler parses an XML document into a tree structure of XMLNode objects.
- * * REFACTORED: Wizdam Edition (PHP 8 Constructor, No References, Visibility)
  */
 
 import('lib.pkp.classes.xml.XMLNode');
 
 class XMLParserDOMHandler extends PKPXMLParserHandler {
 
-    /** @var XMLNode reference to the root node */
+    /** @var XMLNode|null reference to the root node */
     public $rootNode;
 
-    /** @var XMLNode reference to the node currently being parsed */
+    /** @var XMLNode|null reference to the node currently being parsed */
     public $currentNode;
 
-    /** @var reference to the current data */
+    /** @var string|null reference to the current data */
     public $currentData;
 
     /**
      * Constructor.
      */
     public function __construct() {
-        // WIZDAM FIX: Fixed typo from rootNodes to rootNode to match property
         $this->rootNode = null;
         $this->currentNode = null;
         $this->currentData = null;
@@ -45,61 +43,75 @@ class XMLParserDOMHandler extends PKPXMLParserHandler {
      */
     public function XMLParserDOMHandler() {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::XMLParserDOMHandler(). Please refactor to use parent::__construct().",
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
         self::__construct();
     }
 
+    /**
+     * Destructor.
+     * Frees memory used by this handler.
+     */
     public function destroy() {
         unset($this->currentNode, $this->currentData, $this->rootNode);
     }
 
     /**
      * Callback function to act as the start element handler.
+     * 
+     * @param resource $parser
+     * @param string $tag
+     * @param array|null $attributes
      */
     public function startElement($parser, $tag, $attributes) {
         $this->currentData = null;
         $node = new XMLNode($tag);
-        $node->setAttributes($attributes);
+        
+        $node->setAttributes(is_array($attributes) ? $attributes : []);
 
-        if (isset($this->currentNode)) {
+        if ($this->currentNode !== null) {
             $this->currentNode->addChild($node);
             $node->setParent($this->currentNode);
-
         } else {
-            // WIZDAM FIX: No reference needed
             $this->rootNode = $node;
         }
 
-        // WIZDAM FIX: No reference needed
         $this->currentNode = $node;
     }
 
     /**
      * Callback function to act as the end element handler.
+     * 
+     * @param resource $parser
+     * @param string $tag
      */
     public function endElement($parser, $tag) {
-        $this->currentNode->setValue($this->currentData);
-        // WIZDAM FIX: No reference needed
-        $this->currentNode = $this->currentNode->getParent();
+        if ($this->currentNode !== null) {
+            $this->currentNode->setValue($this->currentData);
+            $this->currentNode = $this->currentNode->getParent();
+        }
         $this->currentData = null;
     }
 
     /**
      * Callback function to act as the character data handler.
+     * 
+     * @param resource $parser
+     * @param string $data
      */
     public function characterData($parser, $data) {
-        $this->currentData .= $data;
+        $this->currentData = ($this->currentData ?? '') . (string) $data;
     }
 
     /**
      * Returns a reference to the root node of the tree representing the document.
-     * @return XMLNode
+     * 
+     * @return XMLNode|null
      */
     public function getResult() {
         return $this->rootNode;
     }
-}
 
+}
 ?>

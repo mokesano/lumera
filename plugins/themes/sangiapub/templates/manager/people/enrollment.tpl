@@ -9,14 +9,14 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="manager.people.enrollment"}
-{include file="common/header-ROLE.tpl"}
+	{assign var="pageTitle" value="manager.people.enrollment"}
+	{include file="common/header-ROLE.tpl"}
 {/strip}
 
 <form id="disableUser" method="post" action="{url op="disableUser"}">
-    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
-	<input type="hidden" name="reason" value=""/>
-	<input type="hidden" name="userId" value=""/>
+    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
+	<input type="hidden" name="reason" value="" />
+	<input type="hidden" name="userId" value="" />
 </form>
 
 <script type="text/javascript">
@@ -46,7 +46,7 @@ function confirmAndPrompt(userId) {
 
 <h3>{translate key=$roleName}</h3>
 <form method="post" action="{url path=$roleSymbolic}">
-    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
+    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
 	<select name="roleSymbolic" class="selectMenu">
 		<option {if $roleSymbolic=='all'}selected="selected" {/if}value="all">{translate key="manager.people.allUsers"}</option>
 		<option {if $roleSymbolic=='managers'}selected="selected" {/if}value="managers">{translate key="user.role.managers"}</option>
@@ -108,8 +108,8 @@ function confirmAndPrompt(userId) {
 {/if}
 
 <form id="people" action="{url page="user" op="email"}" method="post">
-<input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
-<input type="hidden" name="redirectUrl" value="{url path=$roleSymbolic}"/>
+<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
+<input type="hidden" name="redirectUrl" value="{url path=$roleSymbolic}" />
 
 <div id="users">
 <table width="100%" class="listing">

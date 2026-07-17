@@ -105,29 +105,30 @@ class HelpTopicDAO extends XMLDAO {
      * @param $id mixed
      * @return mixed
      */
-    public function _cacheMiss($cache, $id) { // Menghapus reference (&) pada $cache
-        $data = Registry::get('helpTopicData', true, null); // Menghapus reference (&)
+    public function _cacheMiss($cache, $id) {
+        $data = Registry::get('helpTopicData', true, null);
         if ($data === null) {
             $helpFile = $this->getFilename($cache->getCacheId());
 
-            // Add a debug note indicating an XML load.
             $notes = Registry::get('system.debug.notes', true, array());
             $notes[] = array('debug.notes.helpTopicLoad', array('id' => $id, 'filename' => $helpFile));
             Registry::set('system.debug.notes', $notes);
 
-            // [WIZDAM FIX] Jangan parse jika file tidak ditemukan
             if ($helpFile === null || !file_exists($helpFile)) {
-                return false;
+                return false; // file tidak ditemukan, kembalikan false
             }
-            $data = $this->parseStruct($helpFile); // Menghapus reference (&)
 
-            // check if data exists before saving it to cache
-            if ($data === false) {
-                return false;
+            $data = $this->parseStruct($helpFile);
+
+            if ($data === false || !is_array($data) || !isset($data['topic'])) {
+                return false; // struktur XML tidak valid
             }
+
             $cache->setEntireCache($data);
+            Registry::set('helpTopicData', $data); // simpan juga ke registry
         }
-        return null;
+
+        return $data; // kembalikan data yang sudah divalidasi
     }
 
     /**
@@ -135,28 +136,35 @@ class HelpTopicDAO extends XMLDAO {
      * @param $topicId string
      * @return HelpTopic|false
      */
-    public function getTopic($topicId) { // Menghapus reference (&)
-        $cache = $this->_getCache($topicId); // Menghapus reference (&)
+    public function getTopic($topicId) {
+        $cache = $this->_getCache($topicId);
         $data = $cache->getContents();
 
-        // check if data exists after loading
-        if (!is_array($data)) {
+        // Validasi: harus array non-kosong dengan struktur yang benar
+        if (!is_array($data) || !isset($data['topic'][0]['attributes'])) {
+            return false;
+        }
+
+        $attrs = $data['topic'][0]['attributes'];
+
+        // Validasi atribut wajib sebelum digunakan
+        if (!isset($attrs['id'], $attrs['title'], $attrs['toc'])) {
             return false;
         }
 
         $topic = new HelpTopic();
+        $topic->setId($attrs['id']);
+        $topic->setTitle($attrs['title']);
+        $topic->setTocId($attrs['toc']);
 
-        $topic->setId($data['topic'][0]['attributes']['id']);
-        $topic->setTitle($data['topic'][0]['attributes']['title']);
-        $topic->setTocId($data['topic'][0]['attributes']['toc']);
-        if (isset($data['topic'][0]['attributes']['subtoc'])) {
-            $topic->setSubTocId($data['topic'][0]['attributes']['subtoc']);
+        if (isset($attrs['subtoc'])) {
+            $topic->setSubTocId($attrs['subtoc']);
         }
 
         if (isset($data['section'])) {
             foreach ($data['section'] as $sectionData) {
                 $section = new HelpTopicSection();
-                $section->setTitle(isset($sectionData['attributes']['title']) ? $sectionData['attributes']['title'] : null);
+                $section->setTitle($sectionData['attributes']['title'] ?? null);
                 $section->setContent($sectionData['value']);
                 $topic->addSection($section);
             }
@@ -164,8 +172,10 @@ class HelpTopicDAO extends XMLDAO {
 
         if (isset($data['related_topic'])) {
             foreach ($data['related_topic'] as $relatedTopic) {
-                $relatedTopicArray = array('id' => $relatedTopic['attributes']['id'], 'title' => $relatedTopic['attributes']['title']);
-                $topic->addRelatedTopic($relatedTopicArray);
+                $topic->addRelatedTopic([
+                    'id'    => $relatedTopic['attributes']['id'],
+                    'title' => $relatedTopic['attributes']['title'],
+                ]);
             }
         }
 
@@ -257,5 +267,4 @@ class HelpTopicDAO extends XMLDAO {
         }
     }
 }
-
 ?>

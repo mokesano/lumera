@@ -13,13 +13,7 @@ declare(strict_types=1);
  * @see Announcement
  *
  * @brief Operations for retrieving and modifying Announcement objects.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor)
- * - Strict SHIM
- * - Visibility explicit
  */
-
 
 import('classes.announcement.Announcement');
 import('lib.pkp.classes.announcement.PKPAnnouncementDAO');
@@ -38,18 +32,22 @@ class AnnouncementDAO extends PKPAnnouncementDAO {
      */
     public function AnnouncementDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class AnnouncementDAO uses deprecated constructor parent::AnnouncementDAO(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
+                E_USER_DEPRECATED
+            );
         }
         self::__construct();
     }
 
     /**
+     * New announcement data object
      * @see PKPAnnouncementDAO::newDataObject
      * @return Announcement
      */
     public function newDataObject() {
         return new Announcement();
     }
+    
 }
-
 ?>

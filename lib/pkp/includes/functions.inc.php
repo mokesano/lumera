@@ -11,12 +11,11 @@ declare(strict_types=1);
  * @ingroup index
  *
  * @brief Contains definitions for common functions used system-wide.
- * [WIZDAM EDITION] Enhanced for Namespaces, API Responses & Strict Typing.
+ * [LUMERA] Enhanced for Namespaces, API Responses & Strict Typing.
  */
 
 /**
- * [WIZDAM POLYFILL] PHP 8.0+ string functions — PHP 7.x safe 
- * (strncmp/substr sejak PHP 4)
+ * [LUMERA POLYFILL] PHP 8.0+ string functions — PHP 7.x safe (strncmp/substr sejak PHP 4)
  */
 if (!function_exists('str_starts_with')) {
     function str_starts_with(string $haystack, string $needle): bool {
@@ -39,7 +38,7 @@ if (!function_exists('str_contains')) {
 
 /**
  * Emulate a Java-style import statement.
- * [WIZDAM] Updated to support PSR-4 Autoloading bypass.
+ * [LUMERA] Updated to support PSR-4 Autoloading bypass.
  * If a class contains backslashes, we assume it's handled by Composer/Autoloader.
  * @param string $class the complete name of the class to be imported
  */
@@ -70,7 +69,7 @@ if (!function_exists('import')) {
 
 /**
  * Wrapper around die() to pretty-print an error message.
- * [WIZDAM BLUEPRINT] Uses custom Sangia error page for clean user experience.
+ * [LUMERA BLUEPRINT] Uses custom Sangia error page for clean user experience.
  * @param string $reason
  * @param int $httpStatus (Status code: 404 for Not Found, 500 for Fatal Error)
  */
@@ -82,7 +81,7 @@ function fatalError(string $reason, int $httpStatus = 500): void {
     $statusHeader = $httpStatus === 404 ? 'HTTP/1.0 404 Not Found' : 'HTTP/1.1 500 Internal Server Error';
     header($statusHeader);
 
-    // [WIZDAM FIX-A] Closure menggantikan goto
+    // [LUMERA] Closure menggantikan goto
     $logAndDie = function() use ($reason): void {
         $applicationName = '';
         if (class_exists('Registry')) {
@@ -92,7 +91,7 @@ function fatalError(string $reason, int $httpStatus = 500): void {
             }
         }
         error_log($applicationName . $reason);
-        // [WIZDAM FIX] PHP 8.4: E_USER_ERROR deprecated dalam trigger_error()
+        // [FIX] PHP 8.4: E_USER_ERROR deprecated dalam trigger_error()
         // Ganti dengan throw Exception agar kompatibel PHP 7.4 hingga 8.4
         if (defined('DONT_DIE_ON_ERROR') && DONT_DIE_ON_ERROR === true) {
             throw new \RuntimeException($reason);
@@ -100,11 +99,11 @@ function fatalError(string $reason, int $httpStatus = 500): void {
         die();
     };
 
-    // [WIZDAM FIX-C] OJS 2.x tidak memiliki REST API — hanya AJAX internal jQuery
+    // [FIX] OJS 2.x tidak memiliki REST API — hanya AJAX internal jQuery
     $isAjaxRequest = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
                      strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
-    // [WIZDAM FIX-B] JSON response: pesan generik ke client, $reason hanya ke error_log
+    // [FIX] JSON response: pesan generik ke client, $reason hanya ke error_log
     if ($isAjaxRequest) {
         header('Content-Type: application/json');
         echo json_encode([
@@ -119,17 +118,17 @@ function fatalError(string $reason, int $httpStatus = 500): void {
 
     $is404 = $httpStatus === 404;
 
-    $pageTitle   = $is404 ? 'Page Not Found (404) | Wizdam Editorial' : 'Unavailable (500) | Wizdam Editorial';
+    $pageTitle   = $is404 ? 'Page Not Found (404) | SangiaLumera Workflow' : 'Unavailable (500) | SangiaLumera Workflow';
     $mainMessage = $is404 ? 'Page Not Found' : 'Application Unavailable';
     
     if ($is404) {
-        $userFacingContent = '<p>The page you requested could not be found. Please check the URL address or return to the main page. This could be due to an incorrect address or an internal routing issue. ScholarWizdam part of Sangia unless otherwise stated.</p>';
+        $userFacingContent = '<p>The page you requested could not be found. Please check the URL address or return to the main page. This could be due to an incorrect address or an internal routing issue. SangiaLumera part of Sangia unless otherwise stated.</p>';
     } else {
         $errorContext = '';
         if (!empty($reason)) {
             $errorContext .= ' (' . htmlspecialchars($reason, ENT_QUOTES, 'UTF-8') . ').';
         }
-        $userFacingContent = "<p>This ScholarWizdam application is currently unavailable due to an internal system error. {$errorContext} ScholarWizdam part of Sangia unless otherwise stated.</p>";
+        $userFacingContent = "<p>This SangiaLumera application is currently unavailable due to an internal system error. {$errorContext} SangiaLumera part of Sangia unless otherwise stated.</p>";
     }
 
     $css = "
@@ -163,6 +162,9 @@ function fatalError(string $reason, int $httpStatus = 500): void {
         @media screen and (min-width: 1024px) { html { font-size: 110%; } }
     ";
 
+    $scriptBasePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+    $brandImgSrc = htmlspecialchars($scriptBasePath . '/assets/img/sangia-black-branded-v3.svg', ENT_QUOTES, 'UTF-8');
+
     echo "<!DOCTYPE html>";
     echo "<html lang='en'>";
     echo "<head>";
@@ -174,7 +176,7 @@ function fatalError(string $reason, int $httpStatus = 500): void {
     echo "</head>";
     echo "<body>";
     echo "<div class='live-area'>";
-    echo "<img id='brand' alt='Sangia Publishing' src='//assets.sangia.org/img/sangia-black-branded-v3.svg'>";
+    echo "<img id='brand' alt='Sangia Publishing' src='{$brandImgSrc}'>";
     echo "<div class='message'>";
     echo "<h1>{$mainMessage}</h1>";
     echo $userFacingContent;
@@ -206,7 +208,7 @@ function cloneObject(object $object): object {
 
 /**
  * Instantiates an object for a given fully qualified class name.
- * [WIZDAM] Updated Regex to allow Namespaces (Backslashes).
+ * [LUMERA] Updated Regex to allow Namespaces (Backslashes).
  * @param string $fullyQualifiedClassName (e.g., 'lib.pkp...Core' OR 'APP\core\Application')
  * @param mixed $expectedTypes
  * @param mixed $expectedPackages
@@ -218,8 +220,8 @@ function instantiate(string $fullyQualifiedClassName, $expectedTypes = null, $ex
     $errorFlag = false;
 
     if (!PKPString::regexp_match('/^[a-zA-Z0-9._\\\\]+$/', $fullyQualifiedClassName)) {
-        // [WIZDAM FIX-D] Log agar silent fail tidak menyulitkan debugging di production
-        error_log('[WIZDAM] instantiate(): Invalid class name rejected: ' . $fullyQualifiedClassName);
+        // [FIX] Log agar silent fail tidak menyulitkan debugging di production
+        error_log('[LUMERA] instantiate(): Invalid class name rejected: ' . $fullyQualifiedClassName);
         return $errorFlag;
     }
 

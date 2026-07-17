@@ -9,8 +9,8 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="common.queue.long.$pageToDisplay"}
-{include file="common/header-ROLE.tpl"}
+    {assign var="pageTitle" value="common.queue.long.$pageToDisplay"}
+    {include file="common/header-ROLE.tpl"}
 {/strip}
 
 <div id="submitStart" class="block submit-box">
@@ -31,9 +31,8 @@
 {capture assign="additionalItems"}{call_hook name="Templates::Author::Index::AdditionalItems"}{/capture}
 {if $additionalItems|trim}
 <div class="block refbacks">
-{$additionalItems}
+    {$additionalItems}
 </div>
 {/if}
 
 {include file="common/footer-parts/footer-user.tpl"}
-

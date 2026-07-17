@@ -6,9 +6,13 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM] - Standalone Handler for Most Popular Module.
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * 
+ * @class MostPopularHandler
+ * @ingroup pages_trends
+ * 
+ * @brief Handler for displaying the most popular articles.
+ * 
  * URL Target: /{context}/trends/popular ATAU /index/trends/popular
  */
 
@@ -16,6 +20,13 @@ import('classes.handler.Handler');
 
 class MostPopularHandler extends Handler {
 
+    /**
+     * Authorize the request.
+     * @param $request PKPRequest
+     * @param $args array
+     * @param $roleAssignments array
+     * @return boolean
+     */
     public function authorize($request, $args, $roleAssignments) {
         import('lib.pkp.classes.security.authorization.ContextRequiredPolicy');
         // Set context required false, agar bisa diakses di site level maupun journal level
@@ -23,6 +34,11 @@ class MostPopularHandler extends Handler {
         return parent::authorize($request, $args, $roleAssignments);
     }
 
+    /**
+     * Display the most popular articles.
+     * @param $args array
+     * @param $request PKPRequest
+     */
     // Nama method WAJIB "popular" sesuai parameter $op
     public function popular(array $args, PKPRequest $request) {
         $this->setupTemplate($request);

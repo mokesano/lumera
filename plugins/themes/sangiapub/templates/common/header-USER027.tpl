@@ -1,25 +1,24 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * header.tpl
+ * header-USER.tpl
  *
  * Copyright (c) 2013-2015 Simon Fraser University Library
  * Copyright (c) 2000-2015 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * Common site header.
+ * Common USER header.
  *}
 {strip}
-{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
-{if $pageCrumbTitle}
-	{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-	{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
+	{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
+	{if $pageCrumbTitle}
+		{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+	{elseif !$pageCrumbTitleTranslated}
+		{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+	{/if}
 {/strip}
 <head>
-    <title>{$pageTitleTranslated} | ScholarWizdam Editorial System</title>
-        
+    <title>{$pageTitleTranslated} | Lumera Editorial</title>
     <meta name="description" content="{$metaSearchDescription|escape}" />
     <meta name="keywords" content="{$metaSearchKeywords|escape}" />
     <meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
@@ -27,7 +26,7 @@
 	{$metaCustomHeaders}
 	
 	{if $displayFavicon}
-	<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
+		<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
 	{/if}
 	
 	{include file="common/jqueryScripts.tpl"}
@@ -111,75 +110,74 @@
 	
 </head>
 
-<body id="sangia.org" class="user-role">
-<a id="skip-to-content" href="#main">Skip to Main Content</a>
-<a class="buttontop" href="#sangia.org"><!-- Back to top button --></a>
+<body id="sangia" class="user-role">
+	<a id="skip-to-content" href="#main">Skip to Main Content</a>
+	<a class="buttontop" href="#sangia"><!-- Back to top button --></a>
 
-{include file="common/banner.tpl"}
-<header class="c-header" style="border-color:#000">
-    {include file="common/navbar.tpl"}
-    {include file="common/navmenu.tpl"}
-    <div class="c-journal-header__identity c-journal-header__identity--default"></div> 
-</header>
-{include file="common/breadcrumbs.tpl"}
+	{include file="common/banner.tpl"}
+	<header class="c-header" style="border-color:#000">
+		{include file="common/navbar.tpl"}
+		{include file="common/navmenu.tpl"}
+		<div class="c-journal-header__identity c-journal-header__identity--default"></div> 
+	</header>
+	{include file="common/breadcrumbs.tpl"}
 
-<div class="journal-content sangia user admin u-mt-48" role="main">
+	<div class="journal-content sangia user admin u-mt-48" role="main">
 
-<div class="live-area-wrapper">
-	<div class="row">
-	<div class="sidebar">
-			<section class="column medium-3">
-				<div id="myAccount" class="block pseudoMenu">
-					<h3>{translate key="user.myAccount"}</h3>
-					<ul>
-					    {if $userSession}
-					    <li><a href="{url page="user" op="my-profile" path=$userSession->getUserId()|string_format:"%011d"}">{translate key="user.showMyProfile"}</a></li>
-						{/if}
-						<li><a href="{url page="user" op="update-profile"}">{translate key="user.editMyProfile"}</a></li>
-						{if $hasOtherJournals}
-							{if !$showAllJournals}
-							<li><a href="{url journal="index" page="user"}">{translate key="user.showAllJournals"}</a></li>
-							{/if}
-						{/if}
-						{if $currentJournal}
-							{if $subscriptionsEnabled}
-							<li><a href="{url page="user" op="subscriptions"}">{translate key="user.manageMySubscriptions"}</a></li>
-							{/if}
-						{/if}
-						{if $currentJournal}
-							{if $acceptGiftPayments}
-							<li><a href="{url page="user" op="gifts"}">{translate key="gifts.manageMyGifts"}</a></li>
-							{/if}
-						{/if}
-						{if !$implicitAuth}
-						<li><a href="{url page="user" op="changePassword"}">{translate key="user.changeMyPassword"}</a></li>
-						{/if}
-
-						{if $currentJournal}
-							{if $journalPaymentsEnabled && $membershipEnabled}
-								{if $dateEndMembership}
-								<li><a href="{url page="user" op="payMembership"}">{translate key="payment.membership.renewMembership"}</a> ({translate key="payment.membership.ends"}: {$dateEndMembership|date_format:$dateFormatShort})</li>
-								{else}
-								<li><a href="{url page="user" op="payMembership"}">{translate key="payment.membership.buyMembership"}</a></li>
+		<div class="live-area-wrapper">
+			<div class="row">
+				<div class="sidebar">
+					<section class="column medium-3">
+						<div id="myAccount" class="block pseudoMenu">
+							<h3>{translate key="user.myAccount"}</h3>
+							<ul>
+								{if $userSession}
+								<li><a href="{url page="user" op="my-profile" path=$userSession->getUserId()|string_format:"%011d"}">{translate key="user.showMyProfile"}</a></li>
 								{/if}
-							{/if}{* $journalPaymentsEnabled && $membershipEnabled *}
-						{/if}{* $userJournal *}
+								<li><a href="{url page="user" op="update-profile"}">{translate key="user.editMyProfile"}</a></li>
+								{if $hasOtherJournals}
+									{if !$showAllJournals}
+									<li><a href="{url journal="index" page="user"}">{translate key="user.showAllJournals"}</a></li>
+									{/if}
+								{/if}
+								{if $currentJournal}
+									{if $subscriptionsEnabled}
+									<li><a href="{url page="user" op="subscriptions"}">{translate key="user.manageMySubscriptions"}</a></li>
+									{/if}
+								{/if}
+								{if $currentJournal}
+									{if $acceptGiftPayments}
+									<li><a href="{url page="user" op="gifts"}">{translate key="gifts.manageMyGifts"}</a></li>
+									{/if}
+								{/if}
+								{if !$implicitAuth}
+								<li><a href="{url page="user" op="changePassword"}">{translate key="user.changeMyPassword"}</a></li>
+								{/if}
 
-						<li><a href="{url page="login" op="signOut"}">{translate key="user.logOut"}</a></li>
-						{call_hook name="Templates::User::Index::MyAccount"}
-					</ul>
+								{if $currentJournal}
+									{if $journalPaymentsEnabled && $membershipEnabled}
+										{if $dateEndMembership}
+										<li><a href="{url page="user" op="payMembership"}">{translate key="payment.membership.renewMembership"}</a> ({translate key="payment.membership.ends"}: {$dateEndMembership|date_format:$dateFormatShort})</li>
+										{else}
+										<li><a href="{url page="user" op="payMembership"}">{translate key="payment.membership.buyMembership"}</a></li>
+										{/if}
+									{/if}{* $journalPaymentsEnabled && $membershipEnabled *}
+								{/if}{* $userJournal *}
+
+								<li><a href="{url page="login" op="signOut"}">{translate key="user.logOut"}</a></li>
+								{call_hook name="Templates::User::Index::MyAccount"}
+							</ul>
+						</div>
+					</section>
 				</div>
-			</section>
-	</div>	
 
-<div class="column medium-9" role="main">
+				<div class="column medium-9" role="main">
+					<h2 class="main-heading">{$pageTitleTranslated}</h2>
 
-<h2 class="main-heading">{$pageTitleTranslated}</h2>
+					{if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
+					{if $pageSubtitleTranslated}
+						<h3 class="sub-heading">{$pageSubtitleTranslated}</h3>
+					{/if}
 
-{if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
-{if $pageSubtitleTranslated}
-	<h3 class="sub-heading">{$pageSubtitleTranslated}</h3>
-{/if}
-
-<div id="content" class="sangia-user sangia-admin sangia-content article">
+					<div id="content" class="sangia-user sangia-admin sangia-content article">
 

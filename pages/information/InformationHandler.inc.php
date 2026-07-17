@@ -14,7 +14,6 @@ declare(strict_types=1);
  * @brief Display journal information.
  */
 
-
 import('classes.handler.Handler');
 
 class InformationHandler extends Handler {
@@ -41,7 +40,7 @@ class InformationHandler extends Handler {
 
     /**
      * Display the information page for the journal.
-     * * @param array $args
+     * @param array $args
      * @param mixed $request
      */
     public function index(array $args = [], $request = null) {

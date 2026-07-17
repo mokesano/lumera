@@ -2,13 +2,25 @@
 declare(strict_types=1);
 
 /**
+ * @defgroup oai_lumera
+ */
+
+/**
  * @file classes/oai/PKPOAIDAO.inc.php
- * HIGH PERFORMANCE BASE: Enables Pre-loading for OAI
  *
- * Base DAO class for OAI operations in PKP/OJS.
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2003-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * @class PKPOAIDAO
+ * @ingroup oai_lumera
+ * @see OAIDAO
+ * 
+ * @brief HIGH PERFORMANCE BASE: Enables Pre-loading for OAI
+ * Base DAO class for OAI operations in LUMERA.
+ * 
  * This class provides high-performance bulk-loading hooks and a unified
  * structure for fetching OAI Records and Identifiers.
- * * REFACTORED: Wizdam Edition (PHP 7.4 - 8.x Modernization)
  */
 
 import('lib.pkp.classes.oai.OAIStruct');
@@ -49,7 +61,9 @@ class PKPOAIDAO extends DAO {
         $this->oai = $oai;
     }
 
+    //
     // --- Records Fetching with TURBO HOOK ---
+    //
 
     /**
      * Fetch full OAI records (not just identifiers).
@@ -196,7 +210,9 @@ class PKPOAIDAO extends DAO {
         // Default: Do nothing
     }
 
+    //
     // --- Standard OAI Utility Methods ---
+    //
 
     /**
      * Return the earliest datestamp from a data set.
@@ -273,7 +289,9 @@ class PKPOAIDAO extends DAO {
         return $returner;
     }
 
+    //
     // --- Resumption Token Management ---
+    //
 
     /**
      * Remove expired resumption tokens.
@@ -322,7 +340,9 @@ class PKPOAIDAO extends DAO {
         return $token;
     }
 
+    //
     // --- Parameter preparation and abstract interface definitions ---
+    //
 
     /**
      * Assemble ordered parameters for SQL queries depending on object ID,
@@ -397,7 +417,9 @@ class PKPOAIDAO extends DAO {
      */
     public function setOAIData($record, $row, $isRecord) { return $record; }
 
+    //
     // --- Row → Object conversion helpers ---
+    //
 
     /**
      * Convert row to OAIRecord.
@@ -408,7 +430,6 @@ class PKPOAIDAO extends DAO {
     public function _returnRecordFromRow($row) {
         $record = new OAIRecord();
         $record = $this->_doCommonOAIFromRowOperations($record, $row);
-        // MODERNIZATION: HookRegistry::dispatch
         HookRegistry::dispatch('OAIDAO::_returnRecordFromRow', array($record, $row));
         return $record;
     }

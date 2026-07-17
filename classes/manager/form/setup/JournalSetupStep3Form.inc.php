@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup manager_form_setup
  *
  * @brief Form for Step 3 of journal setup.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.manager.form.setup.JournalSetupForm');
@@ -64,7 +62,6 @@ class JournalSetupStep3Form extends JournalSetupForm {
         $this->addCheck(new FormValidatorEmail($this, 'copySubmissionAckAddress', 'optional', 'user.profile.form.emailRequired'));
         
         // Only check the subject classification URL if the subject classification is enabled
-        // [WIZDAM] Replaced create_function with Anonymous Function
         $this->addCheck(new FormValidatorCustom(
             $this, 
             'metaSubjectClassUrl', 
@@ -156,10 +153,9 @@ class JournalSetupStep3Form extends JournalSetupForm {
         $context = $router->getContext($request);
         
         if ($context) {
-            $filterDao = DAORegistry::getDAO('FilterDAO');
-            // Ambil filter nlm30
+            /** @var FilterDAO $filterDao */
+            $filterDao = DAORegistry::getDAO('FilterDAO'); // Ambil filter nlm30
             $metaCitationOutputFilterObjects = $filterDao->getObjectsByGroup('nlm30-element-citation=>plaintext', $context->getId());
-            
             $metaCitationOutputFilters = [];
             foreach($metaCitationOutputFilterObjects as $filterObject) {
                 $metaCitationOutputFilters[$filterObject->getId()] = $filterObject->getDisplayName();
@@ -169,7 +165,6 @@ class JournalSetupStep3Form extends JournalSetupForm {
 
         $templateMgr->assign('ccLicenseOptions', Application::getCCLicenseOptions());
 
-        // --- VAKSINASI ANTI-ERROR PHP 8 ---
         // Memastikan field multi-bahasa tidak bernilai null sebelum dilempar ke template
         $localizedFields = [
             'metaSubjectClassTitle',
@@ -188,7 +183,6 @@ class JournalSetupStep3Form extends JournalSetupForm {
         }
         // ----------------------------------
 
-        // [WIZDAM FINAL] Template null agar tidak konflik dengan parent
         $template = null;
         parent::display($request, $template);
     }

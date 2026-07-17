@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class PKPFilterGridRow
  * @ingroup classes_controllers_grid_filter
  *
- * @brief The filter grid row definition
- * [WIZDAM EDITION] Refactored for PHP 8.x
+ * @brief The filter grid row definition.
  */
 
 import('lib.pkp.classes.controllers.grid.GridRow');
@@ -42,14 +41,15 @@ class PKPFilterGridRow extends GridRow {
     //
     // Overridden methods from GridRow
     //
-    
     /**
+     * Initialize the grid row.
      * @see GridRow::initialize()
      * @param PKPRequest $request
+     * @param string $template
      */
-    public function initialize($request, $template = null) {
+    public function initialize($request, $template = 'controllers/grid/gridRow.tpl') {
         // Do the default initialization
-        parent::initialize($request);
+        parent::initialize($request, $template);
 
         // Is this a new row or an existing row?
         $rowId = $this->getId();
@@ -97,5 +97,4 @@ class PKPFilterGridRow extends GridRow {
         }
     }
 }
-
 ?>

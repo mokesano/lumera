@@ -14,10 +14,10 @@ declare(strict_types=1);
  * @brief Provides paging and iteration for arrays.
  */
 
-
 import('lib.pkp.classes.core.ItemIterator');
 
 class ArrayItemIterator extends ItemIterator {
+
     /** @var array The array of contents of this iterator. */
     public $theArray;
 
@@ -35,10 +35,9 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Constructor.
-     * [MODERNISASI] Native Constructor
-     * @param $theArray array The array of items to iterate through
-     * @param $page int the current page number
-     * @param $itemsPerPage int Number of items to display per page
+     * @param mixed $theArray array
+     * @param $page int
+     * @param $itemsPerPage int
      */
     public function __construct($theArray, $page=-1, $itemsPerPage=-1) {
         if ($page>=1 && $itemsPerPage>=1) {
@@ -56,11 +55,12 @@ class ArrayItemIterator extends ItemIterator {
     }
 
     /**
-     * Legacy Constructor Shim.
+     * [SHIM] Backward Compatibility
+     * @param mixed $theArray
      */
     public function ArrayItemIterator($theArray, $page=-1, $itemsPerPage=-1) {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor ArrayItemIterator(). Please refactor to use __construct().",
+            "Class '" . get_class($this) . "' uses deprecated constructor::'" . get_class($this) . "'(). Please refactor to use __construct().",
             E_USER_DEPRECATED
         );
         self::__construct($theArray, $page, $itemsPerPage);
@@ -68,9 +68,9 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Static method: Generate an iterator from an array and rangeInfo object.
-     * [MODERNISASI] Static public method, removed & reference
-     * @param $theArray array
-     * @param $theRange object
+     * 
+     * @param mixed $theArray array
+     * @param mixed $theRange object
      */
     public static function fromRangeInfo($theArray, $theRange) {
         if ($theRange && $theRange->isValid()) {
@@ -83,7 +83,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Return the next item in the iterator.
-     * [MODERNISASI] Removed & reference
+     * 
      * @return object
      */
     public function next() {
@@ -100,7 +100,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Return the next item in the iterator, with key.
-     * [MODERNISASI] Removed & reference
+     * 
      * @return array (key, value)
      */
     public function nextWithKey() {
@@ -111,6 +111,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Determine whether or not this iterator represents the first page
+     * 
      * @return boolean
      */
     public function atFirstPage() {
@@ -119,6 +120,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Determine whether or not this iterator represents the last page
+     * 
      * @return boolean
      */
     public function atLastPage() {
@@ -127,6 +129,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Get the current page number
+     * 
      * @return int
      */
     public function getPage() {
@@ -135,6 +138,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Get the total count of items
+     * 
      * @return int
      */
     public function getCount() {
@@ -143,6 +147,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Get the number of pages
+     * 
      * @return int
      */
     public function getPageCount() {
@@ -151,6 +156,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Return a boolean indicating whether or not we've reached the end of results
+     * 
      * @return boolean
      */
     public function eof() {
@@ -159,6 +165,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Return a boolean indicating whether or not this iterator was empty from the beginning
+     * 
      * @return boolean
      */
     public function wasEmpty() {
@@ -167,7 +174,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Convert this iterator to an array
-     * [MODERNISASI] Removed & reference
+     * 
      * @return array
      */
     public function toArray() {
@@ -176,6 +183,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Determine whether or not the iterator is within bounds.
+     * 
      * @return boolean
      */
     public function isInBounds() {
@@ -184,7 +192,7 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * Get the range info representing the last page of results.
-     * [MODERNISASI] Removed & reference
+     * 
      * @return object DBResultRange
      */
     public function getLastPageRangeInfo() {
@@ -198,8 +206,10 @@ class ArrayItemIterator extends ItemIterator {
 
     /**
      * A version of array_slice that takes keys into account.
-     * [MODERNISASI] Added public visibility
      * @see http://ca3.php.net/manual/en/function.array-slice.php
+     * 
+     * @param mixed $array
+     * @param mixed $offset
      */
     public function array_slice_key($array, $offset, $len=-1) {
         if (!is_array($array)) return false;
@@ -213,6 +223,6 @@ class ArrayItemIterator extends ItemIterator {
 
         return $return;
     }
+    
 }
-
 ?>

@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_proofreader
  *
  * @brief Handle requests for proofreader submission functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.proofreader.ProofreaderHandler');
@@ -181,10 +179,15 @@ class SubmissionProofreadHandler extends ProofreaderHandler {
         $articleId = (int) array_shift($args);
         $galleyId = (int) array_shift($args);
         $this->validate($request, $articleId);
+        $submission = $this->submission;
+        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+        $galley = $galleyDao->getGalley($galleyId, $articleId);
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('articleId', $articleId);
         $templateMgr->assign('galleyId', $galleyId);
+        $templateMgr->assign('article', $submission);
+        $templateMgr->assign('galley', $galley);
         $templateMgr->assign('backHandler', 'submission');
         $templateMgr->display('submission/layout/proofGalleyTop.tpl');
     }

@@ -15,7 +15,6 @@ declare(strict_types=1);
  * cells within a column are displayed (cell provider) and can also be used
  * to configure a editing strategy (not yet implemented). Contains all column-
  * specific configuration (e.g. column title).
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards.
  */
 
 define('COLUMN_ALIGNMENT_LEFT', 'left');
@@ -25,6 +24,7 @@ define('COLUMN_ALIGNMENT_RIGHT', 'right');
 import('lib.pkp.classes.controllers.grid.GridBodyElement');
 
 class GridColumn extends GridBodyElement {
+
     /** @var string|null the column title i18n key */
     protected ?string $title;
 
@@ -36,25 +36,20 @@ class GridColumn extends GridBodyElement {
 
     /**
      * Constructor
-     * @param string $id
-     * @param string|null $title
-     * @param string|null $titleTranslated
-     * @param string $template
-     * @param GridCellProvider|null $cellProvider
-     * @param array $flags
      */
     public function __construct($id = '', $title = null, $titleTranslated = null,
             $template = 'controllers/grid/gridCell.tpl', $cellProvider = null, $flags = []) {
-
         parent::__construct($id, $cellProvider, $flags);
-
+        
         $this->title = $title;
         $this->titleTranslated = $titleTranslated;
         $this->template = $template;
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [DEPRECATED] Backward compatibility.
+     * Use __construct() instead.
+     * @deprecated
      */
     public function GridColumn($id = '', $title = null, $titleTranslated = null,
             $template = 'controllers/grid/gridCell.tpl', $cellProvider = null, $flags = []) {
@@ -66,7 +61,7 @@ class GridColumn extends GridBodyElement {
     //
     
     /**
-     * Get the column title
+     * Get the column title.
      * @return string|null
      */
     public function getTitle(): ?string {
@@ -74,7 +69,7 @@ class GridColumn extends GridBodyElement {
     }
 
     /**
-     * Set the column title (already translated)
+     * Set the column title (already translated).
      * @param string|null $title
      */
     public function setTitle($title) {
@@ -82,7 +77,7 @@ class GridColumn extends GridBodyElement {
     }
 
     /**
-     * Set the column title (already translated)
+     * Set the column title (already translated).
      * @param string|null $titleTranslated
      */
     public function setTitleTranslated($titleTranslated) {
@@ -90,7 +85,7 @@ class GridColumn extends GridBodyElement {
     }
 
     /**
-     * Get the translated column title
+     * Get the translated column title.
      * @return string
      */
     public function getLocalizedTitle(): string {
@@ -99,7 +94,7 @@ class GridColumn extends GridBodyElement {
     }
 
     /**
-     * get the column's cell template
+     * Get the column's cell template.
      * @return string
      */
     public function getTemplate(): string {
@@ -107,7 +102,7 @@ class GridColumn extends GridBodyElement {
     }
 
     /**
-     * set the column's cell template
+     * Set the column's cell template.
      * @param string $template
      */
     public function setTemplate($template) {
@@ -115,6 +110,7 @@ class GridColumn extends GridBodyElement {
     }
 
     /**
+     * Get the cell provider for this column.
      * @see GridBodyElement::getCellProvider()
      * @return GridCellProvider
      */
@@ -139,14 +135,13 @@ class GridColumn extends GridBodyElement {
      * implementation returns an empty array.
      *
      * @param Request $request
-     * @param GridRow $row The row for which actions are being requested.
+     * @param GridRow $row
      * @param string $position
-     * @return array An array of LinkActions for the cell.
+     * @return array
      */
     public function getCellActions($request, $row, $position = GRID_ACTION_POSITION_DEFAULT): array {
         // The default implementation returns an empty array
         return [];
     }
 }
-
 ?>

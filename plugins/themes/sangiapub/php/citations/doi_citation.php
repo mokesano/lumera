@@ -2,31 +2,37 @@
 declare(strict_types=1);
 
 /**
- * doi_citation.php
- * Script untuk mengambil data kutipan artikel berbasis DOI
- * Versi yang diperbarui dengan pendekatan kredensial dan sumber data tambahan:
- * OpenCitations → Crossref Cited-by → OpenAlex → Semantic Scholar → Dimensions
+ * @file doi_citation.php
  * 
- * Fitur tambahan:
- * - Kompresi data cache
- * - Penyimpanan data dalam satu file json
- * - Penambahan informasi halaman dan ID artikel
- * - Optimalisasi permintaan API
- * - Penanganan kredensial Crossref (username/password yang digunakan untuk deposit)
- * 
- * Kompatibel dengan PHP 5.4+
+ * Copyright (c) 2017-2026 Sangia Code Lumera 
+ * Copyright (c) 2024-2026 Rochmady and Development Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ *
+ * @class DOICitationHandler
+ * @ingroup plugins_themes_sangiapub
+ *
+ * @brief Script untuk mengambil data kutipan artikel berbasis DOI.
+ * Pendekatan kredensial dan sumber data tambahan:
+ * OpenCitations → Crossref Cited-by → OpenAlex → Semantic Scholar → Dimensions.
  */
 
 // -----------------------------------------------------------------
-// BAGIAN #1: MONITORING (UP/DOWN)
+// MONITORING (UP/DOWN)
 // -----------------------------------------------------------------
 if (empty($_GET)) {
     http_response_code(200);
     header('Content-Type: application/json');
-    echo json_encode(['status' => 'up', 'message' => 'Endpoint is operational', 'version' => 'v1.0.0']);
+    echo json_encode([
+        'status' => 'up', 
+        'message' => 'Endpoint is operational', 
+        'version' => 'v1.0.0'
+        ]);
     exit;
 }
 
+// -----------------------------------------------------------------
+// Kode Utama Citation by DOI
+// -----------------------------------------------------------------
 header('Content-Type: application/json');
 
 // Definisikan konfigurasi

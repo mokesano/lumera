@@ -11,31 +11,26 @@ declare(strict_types=1);
  * @class Transcoder
  * @ingroup db
  *
- * @brief Multi-class transcoder; uses mbstring and iconv if available, otherwise falls back to built-in classes
- * [WIZDAM EDITION] Refactored for PHP 7.4+/8.x Strict Standards & Type Safety.
+ * @brief Multi-class transcoder; uses mbstring and iconv if available, 
+ * otherwise falls back to built-in classes.
  */
 
 class Transcoder {
-    /** * @var string Name of source encoding 
-     * [WIZDAM] Public visibility maintained for legacy compatibility
-     */
+
+    /** @var string Name of source encoding */
     public $fromEncoding = '';
 
-    /** * @var string Name of target encoding 
-     * [WIZDAM] Public visibility maintained for legacy compatibility
-     */
+    /** @var string Name of target encoding */
     public $toEncoding = '';
 
-    /** * @var bool Whether or not to transliterate while transcoding 
-     * [WIZDAM] Public visibility maintained for legacy compatibility
-     */
+    /** @var bool Whether or not to transliterate while transcoding */
     public $translit = false;
 
     /**
      * Constructor
-     * @param string $fromEncoding Name of source encoding
-     * @param string $toEncoding Name of target encoding
-     * @param bool $translit Whether or not to transliterate while transcoding
+     * @param string $fromEncoding
+     * @param string $toEncoding
+     * @param bool $translit
      */
     public function __construct(string $fromEncoding, string $toEncoding, bool $translit = false) {
         $this->fromEncoding = $fromEncoding;
@@ -45,6 +40,8 @@ class Transcoder {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param string $fromEncoding
+     * @param string $toEncoding
      */
     public function Transcoder($fromEncoding, $toEncoding, $translit = false) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -63,7 +60,6 @@ class Transcoder {
      */
     public function trans(string $string): string {
         // Detect existence of encoding conversion libraries
-        // [WIZDAM NOTE] In modern PHP, these are almost always available, but we check for robustness.
         $mbstring = function_exists('mb_convert_encoding');
         $iconv = function_exists('iconv');
 
@@ -74,25 +70,23 @@ class Transcoder {
 
         // 'HTML-ENTITIES' is not a valid encoding for iconv, so transcode manually
         if ($this->toEncoding === 'HTML-ENTITIES' && !$mbstring) {
-            // [WIZDAM CLEANUP] Removed legacy PHP < 5.2.3 checks. 
             // We strictly use the 4-parameter version to prevent double encoding.
             return htmlentities($string, ENT_COMPAT, $this->fromEncoding, false);
 
         } elseif ($this->fromEncoding === 'HTML-ENTITIES' && !$mbstring) {
-            // [WIZDAM CLEANUP] Removed legacy PHP < 4.3.0 checks.
             // Directly use html_entity_decode.
             return html_entity_decode($string, ENT_COMPAT, $this->toEncoding);
 
         // Special cases for transliteration ("down-sampling")
         } elseif ($this->translit && $iconv) {
             // Use the iconv library to transliterate
-            // [WIZDAM] Cast return to string to satisfy strict return type (iconv can return false on failure)
+            // Cast return to string to satisfy strict return type (iconv can return false on failure)
             $result = iconv($this->fromEncoding, $this->toEncoding . '//TRANSLIT', $string);
             return $result === false ? $string : $result;
 
         } elseif ($this->translit && $this->fromEncoding === "UTF-8" && $this->toEncoding === "ASCII") {
             // Use the utf2ascii library
-            // [WIZDAM] Path check for safety
+            // Path check for safety
             $libPath = './lib/pkp/lib/phputf8/utf8_to_ascii.php';
             if (file_exists($libPath)) {
                 require_once $libPath;
@@ -117,5 +111,6 @@ class Transcoder {
             return $string;
         }
     }
+
 }
 ?>

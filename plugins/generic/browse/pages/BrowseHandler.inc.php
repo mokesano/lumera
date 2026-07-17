@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_browse
  *
  * @brief Handle requests for additional browse functions.
- * [WIZDAM EDITION] Modernized. PHP 8 Safe.
  */
 
 import('classes.handler.Handler');
@@ -22,38 +21,50 @@ class BrowseHandler extends Handler {
 
     /**
      * Show list of journal sections.
+     * @param array $args
+     * @param PKPRequest $request
      */
-    public function sections($args = array(), $request) {
+    public function sections($args = [], $request) {
         $this->setupTemplate($request, true);
 
-        $router = $request->getRouter();
-        $journal = $router->getContext($request);
+        $journal = $request->getRouter()?->getContext($request);
+        if (!$journal) {
+            $request->redirect(null, 'index');
+            return;
+        }
 
         $browsePlugin = PluginRegistry::getPlugin('generic', BROWSE_PLUGIN_NAME);
-        $enableBrowseBySections = $browsePlugin->getSetting($journal->getId(), 'enableBrowseBySections');
+        if (!$browsePlugin) {
+            $request->redirect(null, 'index');
+            return;
+        }
+
+        $enableBrowseBySections = (bool) $browsePlugin->getSetting($journal->getId(), 'enableBrowseBySections');
         
         if ($enableBrowseBySections) {
-            if (isset($args[0]) && $args[0] == 'view') {
-                // [SECURITY FIX] Cast to int
+            if (isset($args[0]) && $args[0] === 'view') {
                 $sectionId = (int) $request->getUserVar('sectionId');
-                
-                // [MODERNISASI] Hapus referensi &
+
                 $sectionDao = DAORegistry::getDAO('SectionDAO');
                 $section = $sectionDao->getSection($sectionId);
                 if (!$section) {
                     $request->redirect(null, 'index');
                     return;
                 }
-                $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-                $publishedArticleIds = $publishedArticleDao->getPublishedArticleIdsBySection($sectionId);
 
+                $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+                $publishedArticleIds = (array) ($publishedArticleDao->getPublishedArticleIdsBySection($sectionId) ?? []);
+
+                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
+                $page = (int) ($rangeInfo?->getPage() ?? 1);
+                $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
+
                 $totalResults = count($publishedArticleIds);
-                $publishedArticleIds = array_slice($publishedArticleIds, $rangeInfo->getCount() * ($rangeInfo->getPage()-1), $rangeInfo->getCount());
-                $results = new VirtualArrayIterator(ArticleSearch::formatResults($publishedArticleIds), $totalResults, $rangeInfo->getPage(), $rangeInfo->getCount());
+                $publishedArticleIds = array_slice($publishedArticleIds, $count * ($page - 1), $count);
+                $results = new VirtualArrayIterator(ArticleSearch::formatResults($publishedArticleIds), $totalResults, $page, $count);
 
                 $templateMgr = TemplateManager::getManager();
-                // [MODERNISASI] Gunakan assign
                 $templateMgr->assign('results', $results);
                 $templateMgr->assign('title', $section->getLocalizedTitle());
                 $templateMgr->assign('sectionId', $sectionId);
@@ -63,19 +74,23 @@ class BrowseHandler extends Handler {
                 $excludedSections = $browsePlugin->getSetting($journal->getId(), 'excludedSections');
                 $sectionDao = DAORegistry::getDAO('SectionDAO');
                 $sectionsIterator = $sectionDao->getJournalSections($journal->getId());
-                $sections = array();
+                $sections = [];
                 
-                while (($section = $sectionsIterator->next())) {
-                    if (!in_array($section->getId(), (array)$excludedSections)) { // Cast array untuk safety
+                while ($sectionsIterator && ($section = $sectionsIterator->next())) {
+                    if (!in_array($section->getId(), (array)$excludedSections, true)) { 
                         $sections[$section->getLocalizedTitle()] = $section->getId();
                     }
                 }
                 ksort($sections);
 
+                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
+                $page = (int) ($rangeInfo?->getPage() ?? 1);
+                $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
+
                 $totalResults = count($sections);
-                $sections = array_slice($sections, $rangeInfo->getCount() * ($rangeInfo->getPage()-1), $rangeInfo->getCount());
-                $results = new VirtualArrayIterator($sections, $totalResults, $rangeInfo->getPage(), $rangeInfo->getCount());
+                $sections = array_slice($sections, $count * ($page - 1), $count);
+                $results = new VirtualArrayIterator($sections, $totalResults, $page, $count);
 
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign('results', $results);
@@ -89,42 +104,55 @@ class BrowseHandler extends Handler {
 
     /**
      * Show list of journal sections identify types.
+     * @param array $args
+     * @param PKPRequest $request
      */
-    public function identifyTypes($args = array(), $request) {
+    public function identifyTypes($args = [], $request) {
         $this->setupTemplate($request, true);
 
-        $router = $request->getRouter();
-        $journal = $router->getContext($request);
+        $journal = $request->getRouter()?->getContext($request);
+        if (!$journal) {
+            $request->redirect(null, 'index');
+            return;
+        }
 
         $browsePlugin = PluginRegistry::getPlugin('generic', BROWSE_PLUGIN_NAME);
-        $enableBrowseByIdentifyTypes = $browsePlugin->getSetting($journal->getId(), 'enableBrowseByIdentifyTypes');
+        if (!$browsePlugin) {
+            $request->redirect(null, 'index');
+            return;
+        }
+
+        $enableBrowseByIdentifyTypes = (bool) $browsePlugin->getSetting($journal->getId(), 'enableBrowseByIdentifyTypes');
         
         if ($enableBrowseByIdentifyTypes) {
-            if (isset($args[0]) && $args[0] == 'view') {
-                // [SECURITY FIX] Trim input
-                $identifyType = trim($request->getUserVar('identifyType'));
+            if (isset($args[0]) && $args[0] === 'view') {
+                $identifyType = trim((string) ($request->getUserVar('identifyType') ?? ''));
                 
                 $sectionDao = DAORegistry::getDAO('SectionDAO');
                 $sectionsIterator = $sectionDao->getJournalSections($journal->getId());
-                $sections = array();
+                $sections = [];
                 
-                while (($section = $sectionsIterator->next())) {
-                    if ($section->getLocalizedIdentifyType() == $identifyType) {
+                while ($sectionsIterator && ($section = $sectionsIterator->next())) {
+                    if ($section->getLocalizedIdentifyType() === $identifyType) {
                         $sections[] = $section;
                     }
                 }
                 
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-                $publishedArticleIds = array();
+                $publishedArticleIds = [];
                 foreach ($sections as $section) {
-                    $publishedArticleIdsBySection = $publishedArticleDao->getPublishedArticleIdsBySection($section->getId());
+                    $publishedArticleIdsBySection = (array) ($publishedArticleDao->getPublishedArticleIdsBySection($section->getId()) ?? []);
                     $publishedArticleIds = array_merge($publishedArticleIds, $publishedArticleIdsBySection);
                 }
 
+                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
+                $page = (int) ($rangeInfo?->getPage() ?? 1);
+                $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
+
                 $totalResults = count($publishedArticleIds);
-                $publishedArticleIds = array_slice($publishedArticleIds, $rangeInfo->getCount() * ($rangeInfo->getPage()-1), $rangeInfo->getCount());
-                $results = new VirtualArrayIterator(ArticleSearch::formatResults($publishedArticleIds), $totalResults, $rangeInfo->getPage(), $rangeInfo->getCount());
+                $publishedArticleIds = array_slice($publishedArticleIds, $count * ($page - 1), $count);
+                $results = new VirtualArrayIterator(ArticleSearch::formatResults($publishedArticleIds), $totalResults, $page, $count);
 
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign('results', $results);
@@ -135,20 +163,24 @@ class BrowseHandler extends Handler {
                 $excludedIdentifyTypes = $browsePlugin->getSetting($journal->getId(), 'excludedIdentifyTypes');
                 $sectionDao = DAORegistry::getDAO('SectionDAO');
                 $sectionsIterator = $sectionDao->getJournalSections($journal->getId());
-                $sectionidentifyTypes = array();
+                $sectionidentifyTypes = [];
                 
-                while (($section = $sectionsIterator->next())) {
+                while ($sectionsIterator && ($section = $sectionsIterator->next())) {
                     $type = $section->getLocalizedIdentifyType();
-                    if ($type && !in_array($section->getId(), (array)$excludedIdentifyTypes) && !in_array($type, $sectionidentifyTypes)) {
+                    if ($type && !in_array($section->getId(), (array)$excludedIdentifyTypes, true) && !in_array($type, $sectionidentifyTypes, true)) {
                         $sectionidentifyTypes[] = $type;
                     }
                 }
                 sort($sectionidentifyTypes);
 
+                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
+                $page = (int) ($rangeInfo?->getPage() ?? 1);
+                $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
+
                 $totalResults = count($sectionidentifyTypes);
-                $sectionidentifyTypes = array_slice($sectionidentifyTypes, $rangeInfo->getCount() * ($rangeInfo->getPage()-1), $rangeInfo->getCount());
-                $results = new VirtualArrayIterator($sectionidentifyTypes, $totalResults, $rangeInfo->getPage(), $rangeInfo->getCount());
+                $sectionidentifyTypes = array_slice($sectionidentifyTypes, $count * ($page - 1), $count);
+                $results = new VirtualArrayIterator($sectionidentifyTypes, $totalResults, $page, $count);
 
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign('results', $results);
@@ -162,44 +194,46 @@ class BrowseHandler extends Handler {
 
     /**
      * Ensure that we have a journal and the plugin is enabled.
-     * [MODERNISASI] Hapus referensi & pada signature
+     * @param PKPRequest $request
+     * @param array $args
+     * @param array $roleAssignments
+     * @return boolean
      */
     public function authorize($request, $args, $roleAssignments) {
-        $router = $request->getRouter();
-        $journal = $router->getContext($request);
+        $journal = $request->getRouter()?->getContext($request);
         if (!isset($journal)) return false;
         
         $browsePlugin = PluginRegistry::getPlugin('generic', BROWSE_PLUGIN_NAME);
-        if (!isset($browsePlugin)) return false;
-        if (!$browsePlugin->getEnabled()) return false;
+        if (!isset($browsePlugin) || !$browsePlugin->getEnabled()) return false;
         
         return parent::authorize($request, $args, $roleAssignments);
     }
 
     /**
      * Setup common template variables.
-     * @param $subclass boolean set to true if caller is below this handler in the hierarchy
+     * @param PKPRequest $request
+     * @param boolean $subclass
+     * @param string $op
      */
     public function setupTemplate($request = null, $subclass = false, $op = 'index') {
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('helpTopicId', 'user.searchAndBrowse');
 
-        $opMap = array(
+        $opMap = [
             'index' => 'navigation.search',
             'categories' => 'navigation.categories'
-        );
+        ];
 
-        $templateMgr->assign('pageHierarchy',
-            $subclass ? array(array($request->url(null, 'search', $op), $opMap[$op]))
-                : array()
-        );
+        if ($request) {
+            $templateMgr->assign('pageHierarchy',
+                $subclass ? [[$request->url(null, 'search', $op), $opMap[$op] ?? 'navigation.search']] : []
+            );
 
-        $router = $request->getRouter();
-        $journal = $router->getContext($request);
-        if (!$journal || !$journal->getSetting('restrictSiteAccess')) {
-            $templateMgr->setCacheability(CACHEABILITY_PUBLIC);
+            $journal = $request->getRouter()?->getContext($request);
+            if (!$journal || !$journal->getSetting('restrictSiteAccess')) {
+                $templateMgr->setCacheability(CACHEABILITY_PUBLIC);
+            }
         }
     }
 }
-
 ?>

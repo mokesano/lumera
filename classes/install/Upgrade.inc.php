@@ -14,8 +14,6 @@ declare(strict_types=1);
  * @brief Perform system upgrade.
  *
  * @see Installer
- *
- * [WIZDAM FORK v3.4] - PHP 8.4+ Strict Mode
  */
 
 import('lib.pkp.classes.install.Installer');
@@ -61,9 +59,9 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function designateReviewVersions(): bool {
-        $journalDao = DAORegistry::getDAO('JournalDAO');
-        $articleDao = DAORegistry::getDAO('ArticleDAO');
-        $authorSubmissionDao = DAORegistry::getDAO('AuthorSubmissionDAO');
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO'); /** @var ArticleDAO $articleDao */
+        $authorSubmissionDao = DAORegistry::getDAO('AuthorSubmissionDAO'); /** @var AuthorSubmissionDAO $authorSubmissionDao */
         import('classes.submission.author.AuthorAction');
 
         $journals = $journalDao->getJournals();
@@ -87,11 +85,9 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function migrateRtSettings(): bool {
-        $rtDao = DAORegistry::getDAO('RTDAO');
-        $journalDao = DAORegistry::getDAO('JournalDAO');
-
-        // Bring in the comments constants.
-        $commentDao = DAORegistry::getDAO('CommentDAO');
+        $rtDao = DAORegistry::getDAO('RTDAO'); /** @var RTDAO $rtDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
+        $commentDao = DAORegistry::getDAO('CommentDAO'); /** @var CommentDAO $commentDao */
 
         $result = $rtDao->retrieve('SELECT * FROM rt_settings');
         while (!$result->EOF) {
@@ -129,11 +125,12 @@ class Upgrade extends Installer {
     }
 
     /**
-     * For upgrade to OJS 2.2.0: Migrate the currency settings so the
+     * For upgrade to 2.2.0: Migrate the currency settings so the
      * currencies table can be dropped in favour of XML.
      * @return bool
      */
     public function correctCurrencies(): bool {
+        /** @var CurrencyDAO $currencyDao */
         $currencyDao = DAORegistry::getDAO('CurrencyDAO');
         $result = $currencyDao->retrieve('SELECT st.type_id AS type_id, c.code_alpha AS code_alpha FROM subscription_types st LEFT JOIN currencies c ON (c.currency_id = st.currency_id)');
         while (!$result->EOF) {
@@ -153,6 +150,7 @@ class Upgrade extends Installer {
      */
     public function migrateIssueLabelAndSettings(): bool {
         // First, migrate label_format values in issues table.
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $issueDao->update('UPDATE issues SET show_volume=0, show_number=0, show_year=0, show_title=1 WHERE label_format=4'); // ISSUE_LABEL_TITLE
         $issueDao->update('UPDATE issues SET show_volume=0, show_number=0, show_year=1, show_title=0 WHERE label_format=3'); // ISSUE_LABEL_YEAR
@@ -163,8 +161,8 @@ class Upgrade extends Installer {
         $issueDao->update('ALTER TABLE issues DROP COLUMN label_format');
 
         // Migrate old publicationFormat journal setting to new journal settings.
-        $journalDao = DAORegistry::getDAO('JournalDAO');
-        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
+        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO'); /** @var JournalSettingsDAO $journalSettingsDao */
         $result = $journalDao->retrieve('SELECT j.journal_id AS journal_id, js.setting_value FROM journals j LEFT JOIN journal_settings js ON (js.journal_id = j.journal_id AND js.setting_name = ?)', 'publicationFormat');
         while (!$result->EOF) {
             $row = $result->GetRowAssoc(false);
@@ -213,8 +211,8 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function setJournalPrimaryLocales(): bool {
-        $journalDao = DAORegistry::getDAO('JournalDAO');
-        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
+        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO'); /** @var JournalSettingsDAO $journalSettingsDao */
 
         $result = $journalSettingsDao->retrieve('SELECT journal_id, setting_value FROM journal_settings WHERE setting_name = ?', array('primaryLocale'));
         while (!$result->EOF) {
@@ -232,8 +230,8 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function installBlockPlugins(): bool {
-        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
-        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO'); /** @var PluginSettingsDAO $pluginSettingsDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
         $journals = $journalDao->getJournals();
 
         // Get journal IDs for insertion, including 0 for site-level
@@ -283,8 +281,8 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function localizeJournalSettings(): bool {
-        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
-        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO'); /** @var JournalSettingsDAO $journalSettingsDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
 
         $settingNames = array(
             // Setup page 1
@@ -366,8 +364,8 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function localizeMoreJournalSettings(): bool {
-        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
-        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO'); /** @var JournalSettingsDAO $journalSettingsDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
 
         $settingNames = array(
             // Setup page 1
@@ -483,14 +481,18 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function dropAllIndexes(): bool {
+        /** @var SiteDAO $siteDao */
         $siteDao = DAORegistry::getDAO('SiteDAO');
-        $dict = NewDataDictionary($siteDao->getDataSource());
-        $dropIndexSql = array();
+        
+        // [WIZDAM] FIX: Simpan ke variabel dulu sebelum dilewatkan sebagai reference
+        $dbConn = $siteDao->getDataSource();
+        
+        /** @var \ADOdb_DataDict $dict */
+        $dict = NewDataDictionary($dbConn);
 
-        // This is a list of tables that were used in 2.1.1 (i.e.
-        // before the way indexes were used was changed). All indexes
-        // from these tables will be dropped.
-        $tables = array(
+        $dropIndexSql = [];
+
+        $tables = [
             'versions', 'site', 'site_settings', 'scheduled_tasks',
             'sessions', 'journal_settings',
             'plugin_settings', 'roles',
@@ -504,9 +506,8 @@ class Upgrade extends Installer {
             'oai_resumption_tokens', 'subscription_type_settings',
             'announcement_type_settings', 'announcement_settings',
             'group_settings', 'group_memberships'
-        );
+        ];
 
-        // Assemble a list of indexes to be dropped
         foreach ($tables as $tableName) {
             $indexes = $dict->MetaIndexes($tableName);
             if (is_array($indexes)) {
@@ -516,13 +517,11 @@ class Upgrade extends Installer {
             }
         }
 
-        // Execute the DROP INDEX statements.
+        // [WIZDAM] Eksekusi melalui SiteDAO yang memiliki method update()
         foreach ($dropIndexSql as $sql) {
             $siteDao->update($sql);
         }
 
-        // Second run: Only return primary indexes. This is necessary
-        // so that primary indexes can be dropped by MySQL.
         foreach ($tables as $tableName) {
             $indexes = $dict->MetaIndexes($tableName, true);
             if (!empty($indexes)) {
@@ -535,7 +534,6 @@ class Upgrade extends Installer {
             }
         }
 
-
         return true;
     }
 
@@ -545,8 +543,8 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function ensureSupportedLocales(): bool {
-        $journalDao = DAORegistry::getDAO('JournalDAO');
-        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
+        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO'); /** @var JournalSettingsDAO $journalSettingsDao */
         $result = $journalDao->retrieve(
             'SELECT    j.journal_id,
                 j.primary_locale
@@ -576,8 +574,8 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function renamePayPerViewSettings(): bool {
-        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
-        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO'); /** @var JournalSettingsDAO $journalSettingsDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
 
         $settingNames = array(
             'payPerViewFeeEnabled' => 'purchaseArticleFeeEnabled',
@@ -600,7 +598,7 @@ class Upgrade extends Installer {
      */
     public function separateSubscriptions(): bool {
         import('classes.subscription.InstitutionalSubscription');
-        $subscriptionDao = DAORegistry::getDAO('SubscriptionDAO');
+        $subscriptionDao = DAORegistry::getDAO('SubscriptionDAO'); /** @var SubscriptionDAO $subscriptionDao */
 
         // Retrieve all subscriptions from pre-2.3 subscriptions table
         $result = $subscriptionDao->retrieve('SELECT so.*, st.institutional FROM subscriptions_old so LEFT JOIN subscription_types st ON (so.type_id = st.type_id)');
@@ -690,7 +688,7 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function cleanTitles(): bool {
-        $articleDao = DAORegistry::getDAO('ArticleDAO');
+        $articleDao = DAORegistry::getDAO('ArticleDAO'); /** @var ArticleDAO $articleDao */
         $punctuation = array ("\"", "\'", ",", ".", "!", "?", "-", "$", "(", ")");
 
         $result = $articleDao->retrieve('SELECT article_id, locale, setting_value FROM article_settings WHERE setting_name = ?', "title");
@@ -720,7 +718,7 @@ class Upgrade extends Installer {
             'pageHeaderTitleImage' => 'pageHeaderTitleImageAltText',
             'pageHeaderLogoImage' => 'pageHeaderLogoImageAltText'
         );
-        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
         $journals = $journalDao->getJournals();
         while ($journal = $journals->next()) {
             foreach ($imageSettings as $imageSettingName => $newSettingName) {
@@ -747,8 +745,8 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function migrateReviewingInterests(): bool {
-        $userDao = DAORegistry::getDAO('UserDAO');
-        $controlledVocabDao = DAORegistry::getDAO('ControlledVocabDAO');
+        $userDao = DAORegistry::getDAO('UserDAO'); /** @var UserDAO $userDao */
+        $controlledVocabDao = DAORegistry::getDAO('ControlledVocabDAO'); /** @var ControlledVocabDAO $controlledVocabDao */
 
         $result = $userDao->retrieve('SELECT setting_value as interests, user_id FROM user_settings WHERE setting_name = ?', 'interests');
         while (!$result->EOF) {
@@ -802,7 +800,7 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function migrateNotifications(): bool {
-        $notificationDao = DAORegistry::getDAO('NotificationDAO');
+        $notificationDao = DAORegistry::getDAO('NotificationDAO'); /** @var NotificationDAO $notificationDao */
 
         // Retrieve all notifications from pre-2.4 notifications table
         $result = $notificationDao->retrieve('SELECT * FROM notifications_old');
@@ -843,7 +841,7 @@ class Upgrade extends Installer {
                     break;
                 case NOTIFICATION_TYPE_USER_COMMENT:
                     // Remove the last two elements of the array.  They refer to the
-                    //  galley and parent, which we no longer use
+                    // galley and parent, which we no longer use
                     $matches = array_slice($matches[0], -3);
                     $id = array_shift($matches);
                     $notification->setAssocType(ASSOC_TYPE_ARTICLE);
@@ -886,7 +884,6 @@ class Upgrade extends Installer {
         $result->Close();
         unset($result);
 
-
         // Retrieve all settings from pre-2.4 notification_settings table
         $result = $notificationDao->retrieve('SELECT * FROM notification_settings_old');
         while (!$result->EOF) {
@@ -922,7 +919,7 @@ class Upgrade extends Installer {
                     $settingId = (int) $row['setting_id'];
 
                     // Get the token from the access_keys table
-                    $accessKeyDao = DAORegistry::getDAO('AccessKeyDAO'); /* @var $accessKeyDao AccessKeyDAO */
+                    $accessKeyDao = DAORegistry::getDAO('AccessKeyDAO'); /** @var AccessKeyDAO $accessKeyDao */
                     $accessKey = $accessKeyDao->getAccessKeyByUserId('MailListContext', $settingId);
                     if (!$accessKey) {
                         continue 2;
@@ -956,14 +953,13 @@ class Upgrade extends Installer {
         return true;
     }
 
-
     /**
      * For 2.3.7 Upgrade -- Remove author revised file upload IDs erroneously added to copyedit signoff
      * @return bool
      */
     public function removeAuthorRevisedFilesFromSignoffs(): bool {
         import('classes.article.Article');
-        $signoffDao = DAORegistry::getDAO('SignoffDAO'); /* @var $signoffDao SignoffDAO */
+        $signoffDao = DAORegistry::getDAO('SignoffDAO'); /** @var SignoffDAO $signoffDao */
 
         $result = $signoffDao->retrieve(
             'SELECT DISTINCT s.signoff_id
@@ -977,7 +973,7 @@ class Upgrade extends Installer {
         while (!$result->EOF) {
             $row = $result->GetRowAssoc(false);
 
-            $signoff = $signoffDao->getById($row['signoff_id']); /* @var $signoff Signoff */
+            $signoff = $signoffDao->getById($row['signoff_id']); /** @var Signoff $signoff */
             $signoff->setFileId(null);
             $signoff->setFileRevision(null);
             $signoffDao->updateObject($signoff);
@@ -993,8 +989,8 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function migrateReviewingInterests2(): bool {
-        $interestDao = DAORegistry::getDAO('InterestDAO'); /* @var $interestDao InterestDAO */
-        $interestEntryDao = DAORegistry::getDAO('InterestEntryDAO'); /* @var $interestEntryDao InterestEntryDAO */
+        $interestDao = DAORegistry::getDAO('InterestDAO'); /** @var InterestDAO $interestDao */
+        $interestEntryDao = DAORegistry::getDAO('InterestEntryDAO'); /** @var InterestEntryDAO $interestEntryDao */
 
         // Check if this upgrade method has already been run to prevent data corruption on subsequent upgrade attempts
         $idempotenceCheck = $interestDao->retrieve('SELECT * FROM controlled_vocabs cv WHERE symbolic = ?', array('interest'));
@@ -1076,7 +1072,7 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function migrateCounterPluginUsageStatistics(): bool {
-        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /* @var $metricsDao MetricsDAO */
+        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /** @var MetricsDAO $metricsDao */
         $result = $metricsDao->retrieve('SELECT * FROM counter_monthly_log');
         if ($result->EOF) {
             return true;
@@ -1126,7 +1122,7 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function migrateTimedViewsUsageStatistics(): bool {
-        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /* @var $metricsDao MetricsDAO */
+        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /** @var MetricsDAO $metricsDao */
         $result = $metricsDao->retrieve('SELECT * FROM timed_views_log');
         if ($result->EOF) {
             return true;
@@ -1143,7 +1139,7 @@ class Upgrade extends Installer {
         import('plugins.generic.usageStats.GeoLocationTool');
         $geoLocationTool = new GeoLocationTool();
 
-        $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /* @var $articleGalleyDao ArticleGalleyDAO */
+        $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /** @var ArticleGalleyDAO $articleGalleyDao */
 
         while (!$result->EOF) {
             $row = $result->GetRowAssoc(false);
@@ -1288,7 +1284,7 @@ class Upgrade extends Installer {
                 WHERE pa.views > 0 AND i.issue_id is not null;', $params, false);
 
         // Set the site default metric type.
-        $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO'); /* @var $siteSettingsDao SiteSettingsDAO */
+        $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO'); /** @var SiteSettingsDAO $siteSettingsDao */
         $siteSettingsDao->updateSetting('defaultMetricType', OJS_METRIC_TYPE_COUNTER);
 
         return true;
@@ -1300,8 +1296,8 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function localizeCustomBlockSettings(): bool {
-        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
-        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO'); /** @var PluginSettingsDAO $pluginSettingsDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
         $journals = $journalDao->getJournals();
 
         while ($journal = $journals->next()) {
@@ -1330,8 +1326,8 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function removeCustomIdentifierSuffixOption(): bool {
-        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
-        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO'); /** @var PluginSettingsDAO $pluginSettingsDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
         $journals = $journalDao->getJournals();
         while ($journal = $journals->next()) {
             $journalId = $journal->getId();
@@ -1379,7 +1375,7 @@ class Upgrade extends Installer {
      * @return bool
      */
     public function deleteOrphanedCompletedPayments(): bool {
-        $paymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
+        $paymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO'); /** @var OJSCompletedPaymentDAO $paymentDao */
         $result = $paymentDao->retrieve('SELECT DISTINCT cp.user_id FROM completed_payments AS cp LEFT JOIN users AS u ON cp.user_id = u.user_id WHERE u.user_id IS NULL');
 
         while (!$result->EOF) {
@@ -1397,7 +1393,7 @@ class Upgrade extends Installer {
      * Migrasi ganda untuk Queued Payments dan Completed Payments
      */
     public function migrateLegacyInvoicesToFrontedge($upgrade, $params) {
-        $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
+        $invoiceDao = DAORegistry::getDAO('InvoiceDAO'); /** @var InvoiceDAO $invoiceDao */
         $chunkSize = 100;
         
         error_log("[WIZDAM FRONTEDGE] Memulai Tahap 1: Ekstraksi Queued Payments...");
@@ -1422,7 +1418,7 @@ class Upgrade extends Installer {
 
         error_log("[WIZDAM FRONTEDGE] Migrasi Invoices Selesai Total. Sistem Siap.");
 
-        return true; // Sinyal ke OJS Installer bahwa rantai migrasi sukses
+        return true; // Sinyal ke APP Installer bahwa rantai migrasi sukses
     }
     
     /**
@@ -1439,7 +1435,7 @@ class Upgrade extends Installer {
         if (function_exists('flush')) flush();
 
         // 1. Ambil instance dari ArticleDAO
-        $articleDao = DAORegistry::getDAO('ArticleDAO');
+        $articleDao = DAORegistry::getDAO('ArticleDAO'); /** @var ArticleDAO $articleDao */
 
         // 2. Ambil hanya ID artikel via low-level query (sangat ringan di RAM)
         $result = $articleDao->retrieve("SELECT article_id FROM articles");

@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup manager_form
  *
  * @brief Form for creating and modifying journal sections.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
@@ -56,7 +54,6 @@ class SectionForm extends Form {
         $this->addCheck(new FormValidatorLocale($this, 'title', 'required', 'manager.sections.form.titleRequired'));
         $this->addCheck(new FormValidatorLocale($this, 'abbrev', 'required', 'manager.sections.form.abbrevRequired'));
         $this->addCheck(new FormValidatorPost($this));
-        
         $this->addCheck(new FormValidatorCustom(
             $this, 
             'reviewFormId', 
@@ -146,7 +143,6 @@ class SectionForm extends Form {
         while ($reviewForm = $reviewForms->next()) {
             $reviewFormOptions[$reviewForm->getId()] = $reviewForm->getLocalizedTitle();
         }
-        // [WIZDAM FIX] Removed assign_by_ref
         $templateMgr->assign('reviewFormOptions', $reviewFormOptions);
 
         parent::display($request, $template);
@@ -306,5 +302,4 @@ class SectionForm extends Form {
         }
     }
 }
-
 ?>

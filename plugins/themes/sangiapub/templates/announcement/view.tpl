@@ -9,12 +9,14 @@
  *
  *}
 {strip}
-{assign var="pageTitleTranslated" value=$announcementTitle}
-{assign var="pageId" value="announcement.view"}
-{include file="common/header.tpl"}
+    {assign var="pageTitleTranslated" value=$announcementTitle}
+    {assign var="pageId" value="announcement.view"}
+    {include file="common/header.tpl"}
 {/strip}
+
 <article class="announcement">
-    <div id="announcementDescription" itemprop="description" class="c-card__description u-mb-24">{$announcement->getLocalizedDescription()|nl2br}
+    <div id="announcementDescription" itemprop="description" class="c-card__description u-mb-24">
+        {$announcement->getLocalizedDescription()|nl2br}
     </div>
     <div class="details">
     	<time class="published posted">{translate key="announcement.posted"}: {$announcement->getDatePosted()|date_format:"%e %B %Y"}</time>
@@ -23,4 +25,3 @@
 </article>
 
 {include file="common/footer.tpl"}
-

@@ -13,8 +13,7 @@ declare(strict_types=1);
  *
  * @brief Form to edit user profile.
  *
- * WIZDAM MODERNIZATION:
- * - PHP 7.4/8.x Compatibility (Constructor, Ref removal, Visibility, Destructuring Guard)
+ * LUMERA MODERNIZATION:
  * - Session Safety Guard
  * - Image Processing Safety & UX Auto-Compression (GD Library)
  * - Secure Obfuscated Profile Image Naming
@@ -54,8 +53,7 @@ class ProfileForm extends Form {
         
         // PHP 8: Use array callback properly
         $this->addCheck(new FormValidatorCustom($this, 'email', 'required', 'user.register.form.emailExists', array(DAORegistry::getDAO('UserDAO'), 'userExistsByEmail'), array($user->getId(), true), true));
-        
-        // [WIZDAM SECURITY] Gunakan Validator CSRF yang kita buat sebelumnya!
+
         import('lib.pkp.classes.form.validation.FormValidatorCSRF');
         $this->addCheck(new FormValidatorCSRF($this));
         
@@ -94,7 +92,7 @@ class ProfileForm extends Form {
 
     /**
      * Uploads a profile image.
-     * [WIZDAM EDITION] Auto-Compression & Secure Unique Numeric Filename
+     * [LUMERA] Auto-Compression & Secure Unique Numeric Filename
      * @return boolean
      */
     public function uploadProfileImage() {

@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @class PKPHandler
  *
  * Base request handler abstract class.
- * [WIZDAM EDITION] Transition Mode: Loose Signatures, Modern Internals.
+ * [LUMERA] Transition Mode: Loose Signatures, Modern Internals.
  */
 
 // FIXME: remove these import statements - handler validators are deprecated.
@@ -248,7 +248,6 @@ class PKPHandler {
 
     /**
      * Authorize this request.
-     * [WIZDAM FIX] Removed type hints to match legacy children signatures
      * @param PKPRequest $request
      * @param array $args
      * @param array $roleAssignments
@@ -272,7 +271,9 @@ class PKPHandler {
         }
 
         if (!is_object($this->_authorizationDecisionManager)) {
-             return true; // Fail open or closed depending on legacy logic? Usually fail open in old OJS for backwards compat if auth not set up.
+            // Fail open or closed depending on legacy logic?
+            // Usually fail open in old OJS for backwards compat if auth not set up.
+             return true;
         }
 
         $router = $request->getRouter();
@@ -297,24 +298,19 @@ class PKPHandler {
             $request = $this->getRequest();
         }
 
-        // [WIZDAM EDITION - ULTIMATE HYBRID SECURITY] Global CSRF Validation
+        // [LUMERA] Global CSRF Validation
         $requestMethod = strtolower($request->getRequestMethod());
         $protectedMethods = ['post', 'put', 'patch', 'delete'];
 
         if (in_array($requestMethod, $protectedMethods)) {
-            $op = $request->getRouter()->getRequestedOp($request);
+            $op = $request->getUserVar('op');
             $exemptedOps = ['callback', 'webhook']; 
 
             if (!in_array($op, $exemptedOps)) {
                 import('lib.pkp.classes.validation.ValidatorCSRF'); 
-                
                 $clientToken = $request->getUserVar(ValidatorCSRF::FIELD_NAME);
                 
-                /**
-                 * PERUBAHAN KRUSIAL WIZDAM:
-                 * Argumen 2: 'global' (Cocok dengan yang di-generate TemplateManager)
-                 * Argumen 4: false (Mencegah token hangus prematur pada gagal validasi form)
-                 */
+                /** LUMERA: CSRF global */
                 if (!ValidatorCSRF::checkSignedToken($clientToken, 'global', [], false)) {
                     $session = $request->getSession();
                     
@@ -357,12 +353,12 @@ class PKPHandler {
 
     /**
      * Subclasses can override this method to configure the handler.
-     * [WIZDAM FIX] Removed type hints to match legacy children signatures: initialize($request, $args)
+     * [FIX] Removed type hints to match legacy children signatures: initialize($request, $args)
      * @param PKPRequest|null $request
      * @param array|null $args
      */
     public function initialize($request, $args = null) {
-        // [WIZDAM] Eksekusi Smart Locale Auto-Loader
+        // [LUMERA] Eksekusi Smart Locale Auto-Loader
         AppLocale::requireComponentsForRequest($request);
         
         $router = $request->getRouter();
@@ -379,14 +375,14 @@ class PKPHandler {
 
     /**
      * Return the DBResultRange structure.
-     * [WIZDAM FIX] Loose signature
+     * [LUMERA] Loose signature
      * @param string $rangeName
      * @param array|null $contextData
      * @return DBResultRange
      */
     public static function getRangeInfo($rangeName, $contextData = null) {
         $request = Application::get()->getRequest();
-        $context = $request->getContext();
+        $context = $request->getRouter()->getContext($request);
         $pageNum = (int) $request->getUserVar($rangeName . 'Page');
         
         if (empty($pageNum)) {
@@ -449,12 +445,22 @@ class PKPHandler {
      */
     public static function hashPageContext($contextData = []) {
         $request = Application::get()->getRequest();
-        $path = $request->getRequestedContextPath();
-        $page = $request->getRequestedPage() ?? '';
-        $op = $request->getRequestedOp() ?? '';
-        
+        $router  = $request->getRouter();
+
+        $path = $router->getRequestedContextPaths($request);
+
+        $op = '';
+        if ($router instanceof PKPPageRouter || $router instanceof PKPComponentRouter) {
+            $op = $router->getRequestedOp($request) ?? '';
+        }
+
+        $page = '';
+        if ($router instanceof PKPPageRouter) {
+            $page = $router->getRequestedPage($request) ?? '';
+        }
+
         return md5(
-            implode(',', (array)$path) . ',' .
+            implode(',', $path) . ',' .
             $page . ',' .
             $op . ',' .
             serialize($contextData)
@@ -477,5 +483,6 @@ class PKPHandler {
     public function requireSSL() {
         return true;
     }
+
 }
 ?>

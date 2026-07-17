@@ -35,70 +35,70 @@
                 {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
                 {call_hook name="Templates::Article::Article::ArticleCoverImage"}
                 {if $showCoverPage}
-                <div class="u-mt-16 u-mb-16">
-                    <div class="u-container">
-                        <p class="c-meta u-ma-0">Top headline image: {$article->getLocalizedCoverPageAltText()|escape:'html'|regex_replace:'/&lt;(\/?i)&gt;/':'<$1>' nofilter}</p>
+                    <div class="u-mt-16 u-mb-16">
+                        <div class="u-container">
+                            <p class="c-meta u-ma-0">Top headline image: {$article->getLocalizedCoverPageAltText()|escape:'html'|regex_replace:'/&lt;(\/?i)&gt;/':'<$1>' nofilter}</p>
+                        </div>
                     </div>
-                </div>
                 {elseif $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && !$issue->getHideCoverPageArchives($locale)}
-                <div class="u-mt-16 u-mb-16">
-                    <div class="u-container">
-                        <p class="c-meta u-ma-0">Top headline image: {if $issue->getCoverPageAltText($locale) != ''}{$issue->getCoverPageAltText($locale)|escape:'html'|regex_replace:'/&lt;(\/?i)&gt;/':'<$1>' nofilter}{else}{translate key="issue.coverPage.altText"}{/if}</p>
+                    <div class="u-mt-16 u-mb-16">
+                        <div class="u-container">
+                            <p class="c-meta u-ma-0">Top headline image: {if $issue->getCoverPageAltText($locale) != ''}{$issue->getCoverPageAltText($locale)|escape:'html'|regex_replace:'/&lt;(\/?i)&gt;/':'<$1>' nofilter}{else}{translate key="issue.coverPage.altText"}{/if}</p>
+                        </div>
                     </div>
-                </div>
                 {elseif $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}
-                <div class="u-mt-16 u-mb-16">
-                    <div class="u-container">
-                        <p class="c-meta u-ma-0">Top headline image: {if $displayPageHeaderTitleAltText != ''}{$displayPageHeaderTitleAltText|escape}{else}{translate key="common.pageHeader.altText"}{/if}</p>
+                    <div class="u-mt-16 u-mb-16">
+                        <div class="u-container">
+                            <p class="c-meta u-ma-0">Top headline image: {if $displayPageHeaderTitleAltText != ''}{$displayPageHeaderTitleAltText|escape}{else}{translate key="common.pageHeader.altText"}{/if}</p>
+                        </div>
                     </div>
-                </div>
                 {elseif $homepageImage && !$setupStep}
-                <div class="u-mt-16 u-mb-16">
-                    <div class="u-container">
-                        <p class="c-meta u-ma-0">Top headline image: Cover image: {if $homepageImageAltText != ''}{$homepageImageAltText|escape}{else}{translate key="common.journalHomepageImage.altText"}{/if}</p>
+                    <div class="u-mt-16 u-mb-16">
+                        <div class="u-container">
+                            <p class="c-meta u-ma-0">Top headline image: Cover image: {if $homepageImageAltText != ''}{$homepageImageAltText|escape}{else}{translate key="common.journalHomepageImage.altText"}{/if}</p>
+                        </div>
                     </div>
-                </div>
                 {/if}
             {/if}
         {/if}
         <div class="u-mt-16 u-mb-16">
             <div class="u-container">
                 <div class="u-display-flex u-flex-wrap u-justify-content-space-between">
-                {if $currentJournal}
-                    {if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE}
-                        {if $homepageImage && !$setupStep}
-                        <p class="c-meta u-ma-0 u-mr-24 u-flex-shrink">Issue cover: {if $issue->getLocalizedCoverPageDescription()}{$issue->getLocalizedCoverPageDescription()|strip_unsafe_html|nl2br}{else}SRM Publishing/Sangia Publishing{/if}</p>
+                    {if $currentJournal}
+                        {if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE}
+                            {if $homepageImage && !$setupStep}
+                                <p class="c-meta u-ma-0 u-mr-24 u-flex-shrink">Issue cover: {if $issue->getLocalizedCoverPageDescription()}{$issue->getLocalizedCoverPageDescription()|strip_unsafe_html|nl2br}{else}SRM Publishing/Sangia Publishing{/if}</p>
+                            {/if}
                         {/if}
+                        <p class="c-meta u-ma-0 u-flex-shrink">
+                            <span class="c-meta__item">{if $currentJournal->getLocalizedTitle()}{$currentJournal->getLocalizedTitle()|strip_tags|escape}{/if} {if $currentJournal->getSetting('abbreviation')}(<i>{$currentJournal->getSetting('abbreviation', $currentJournal->getPrimaryLocale())}</i>){/if}</span>
+                            
+                            {strip}
+                            {if $currentJournal && $currentJournal->getSetting('onlineIssn')}
+                                {assign var=issn value=$currentJournal->getSetting('onlineIssn')}
+                            {elseif $currentJournal && $currentJournal->getSetting('printIssn')}
+                                {assign var=issn value=$currentJournal->getSetting('printIssn')}
+                            {/if}
+                            {if $displayCreativeCommons}
+                                {translate key="common.ccLicense"}
+                            {/if}
+                            {/strip}
+                            {if $printIssn} {else if $onlineIssn}
+                            {if $currentJournal->getSetting('printIssn')}
+                                <span class="c-meta__item">
+                                    <abbr title="International Standard Serial Number">ISSN</abbr> <span itemprop="onlineIssn">{$currentJournal->getSetting('printIssn')}</span> (print)</span>{/if}
+                                <span class="c-meta__item">
+                                    <abbr title="International Standard Serial Number">ISSN</abbr> {if $currentJournal->getSetting('onlineIssn')}<span itemprop="printIssn">{$currentJournal->getSetting('onlineIssn')}</span>{else} <i>on proccess</i>{/if} (online)</span>
+                            {/if}
+                        </p>
+                    {else}
+                        <p class="c-meta u-ma-0 u-flex-shrink">
+                            <span class="c-meta__item">{$siteTitle}</span>
+                        </p>
+                        <p class="c-meta u-ma-0 u-flex-shrink">
+                            <span class="c-meta__item">Sangia.org</span>
+                        </p>
                     {/if}
-                    <p class="c-meta u-ma-0 u-flex-shrink">
-                        <span class="c-meta__item">{if $currentJournal->getLocalizedTitle()}{$currentJournal->getLocalizedTitle()|strip_tags|escape}{/if} {if $currentJournal->getSetting('abbreviation')}(<i>{$currentJournal->getSetting('abbreviation', $currentJournal->getPrimaryLocale())}</i>){/if}</span>
-                        
-                        {strip}
-                        {if $currentJournal && $currentJournal->getSetting('onlineIssn')}
-                            {assign var=issn value=$currentJournal->getSetting('onlineIssn')}
-                        {elseif $currentJournal && $currentJournal->getSetting('printIssn')}
-                            {assign var=issn value=$currentJournal->getSetting('printIssn')}
-                        {/if}
-                        {if $displayCreativeCommons}
-                            {translate key="common.ccLicense"}
-                        {/if}
-                        {/strip}
-                        {if $printIssn} {else if $onlineIssn}
-                        {if $currentJournal->getSetting('printIssn')}
-                        <span class="c-meta__item">
-                            <abbr title="International Standard Serial Number">ISSN</abbr> <span itemprop="onlineIssn">{$currentJournal->getSetting('printIssn')}</span> (print)</span>{/if}
-                        <span class="c-meta__item">
-                            <abbr title="International Standard Serial Number">ISSN</abbr> {if $currentJournal->getSetting('onlineIssn')}<span itemprop="printIssn">{$currentJournal->getSetting('onlineIssn')}</span>{else} <i>on proccess</i>{/if} (online)</span>
-                        {/if}
-                    </p>
-                {else}
-                    <p class="c-meta u-ma-0 u-flex-shrink">
-                        <span class="c-meta__item">{$siteTitle}</span>
-                    </p>
-                    <p class="c-meta u-ma-0 u-flex-shrink">
-                        <span class="c-meta__item">Sangia.org</span>
-                    </p>
-                {/if}
                 </div>
             </div>
         </div>
@@ -117,8 +117,8 @@
                         <div class="c-footer__header">
                             <div class="c-footer__logo">
                                 <picture loading="lazy" class="publisher-brand">
-                                    <source loading="lazy" srcset="//assets.sangia.org/img/sangia-future-branded-v2.svg" alt="Sangia Publishing" width="200" height="31">
-                                    <img loading="lazy" alt="Sangia Publishing" src="//assets.sangia.org/img/sangia-future-branded-v2.svg" width="200" height="31">                                    
+                                    <source loading="lazy" srcset="{$baseUrl}/assets/img/sangia-future-branded-v2.svg" alt="Sangia Publishing" width="200" height="31">
+                                    <img loading="lazy" alt="Sangia Publishing" src="{$baseUrl}/assets/img/sangia-future-branded-v2.svg" width="200" height="31">                                    
                                 </picture>
                             </div>
                             <ul class="c-menu c-menu--inherit u-mr-32">
@@ -165,63 +165,61 @@
                                 </li>
                             </ul>
                         </div>
-            {if $currentJournal}
-            <div id="footer-nav-misc" class="text-xs section-footer c-footer__grid">
-                <div class="c-footer__group" role="navigation">
-                    <h6 class="c-footer__heading">Explore content</h6>
-                    <ul class="c-footer__list">
-                        <li class="c-footer__item"><a href="//blogs.sangia.org/">Read more on blogs</a></li>
-                        <li class="c-footer__item"><a href="/ISLE/pages/view/Authorship%20Guidelines">Guide for Author</a></li>
-                        <li class="c-footer__item"><a title="Browse Journals" href="{$baseUrl}" target="_blank">View Journals</a></li>
-                        <li class="c-footer__item"><a title="View Journal Subject" href="{$baseUrl}/index/search/categories">Journals Subjects</a></li>
-                        <li class="c-footer__item"><a title="View All Articles" href="{$baseUrl}/index/search/titles">All Articles</a></li>
-                        <li class="c-footer__item"><a href="{url page="browseSearch" op="sections"}" title="Browse Section">Browse Section</a></li>
-                        <li class="u-hide c-footer__item"><a href="{url page="browseSearch" op="identifyTypes"}" title="Browse Article Type">Browse Article Type</a></li>
-                        <li class="c-footer__item"><a title="View Authors Index" href="{$baseUrl}/index/search/authors" target="_blank">Authors Index</a></li>
-                    </ul>
-                </div>            
-             
-                <div class="c-footer__group" role="navigation">
-                    <h6 class="c-footer__heading">Advertising & partnerships</h6>
-                    <ul class="c-footer__list">
-                        <li class="c-footer__item"><a href="{url page="about" op="aboutThisPublishingSystem"}">{translate key="about.aboutThisPublishingSystem"}</a></li>
-                        <li class="c-footer__item"><a href="/ISLE/pages/view/Guide%20for%20Registration">Registration Guide</a></li>
-                        <li class="c-footer__item"><a href="{url page="information" op="authors"}">{translate key="navigation.infoForAuthors.long"}</a></li>
-                        {if $donationEnabled}<li ><a href="{url page="donations"}">{translate key="payment.type.donation"}</a></li>{/if}
-                        <li class="c-footer__item"><a href="{url page="about" op="siteMap"}">{translate key="about.siteMap"}</a></li> 
-                        <li class="c-footer__item"><a href="{url page="about" op="contact"}" target="_blank">{translate key="about.contact"}</a></li>
-                        <li class="c-footer__item"><a href="//www.support.sangia.org/support/faq" target="_blank">FAQ</a></li>                    
-                    </ul>
-                </div>
-    
-                <div class="c-footer__group" role="navigation">
-                    <h6 class="c-footer__heading">Other sites and content</h6>
-                    <ul class="c-footer__list">
-                        <li class="c-footer__item"><a href="//archive.sangia.org" target="_blank">Sangia Sciences</a></li>
-                        <li class="c-footer__item"><a href="//support.sangia.org" target="_blank">Affiliation Support</a></li>
-                        <li class="c-footer__item"><a href="/" target="_blank">Other site Publishing</a></li>
-                        <li class="c-footer__item"><a href="{url page="gateway" op="lockss"}" target="_blank">LOCKSS Publisher Manifest</a></li>                    
-                    </ul>
-                </div>
-    
-                <div class="c-footer__group" role="navigation">
-                    <h6 class="c-footer__heading">Legal & Privacy</h6>
-                    <ul class="c-footer__list">
-                        <li class="c-footer__item"><a href="javascript:void(0)">Privacy Policy</a></li>
-                        <li class="c-footer__item"><a href="javascript:void(0)">Use of cookies</a></li>
-                        <li class="c-footer__item"><a href="javascript:void(0)">Manage cookies/Do not sell my data</a></li>
-                        <li class="c-footer__item"><a href="javascript:void(0)">Legal notice</a></li>
-                        <li class="c-footer__item"><a href="javascript:void(0)">Accessibility statement</a></li>
-                        <li class="c-footer__item"><a href="javascript:void(0)">Terms & Conditions</a></li>
-                        <li class="c-footer__item"><a href="javascript:void(0)">California Privacy Statement</a></li>
-                        {if $currentJournal && $currentJournal->getLocalizedSetting('privacyStatement') != ''}
-                        <li class="c-footer__item"><a href="{url page="about" op="submissions" anchor="privacyStatement"}">{translate key="about.privacyStatement"}</a></li>{/if}
-                    </ul>
-                </div>
-    
-                </div>
-            {else}
-            {/if}
+                        {if $currentJournal}
+                            <div id="footer-nav-misc" class="text-xs section-footer c-footer__grid">
+                                <div class="c-footer__group" role="navigation">
+                                    <h6 class="c-footer__heading">Explore content</h6>
+                                    <ul class="c-footer__list">
+                                        <li class="c-footer__item"><a href="//blogs.sangia.org/">Read more on News and blogs</a></li>
+                                        <li class="c-footer__item"><a href="/ISLE/pages/view/Authorship%20Guidelines">Guide for Author</a></li>
+                                        <li class="c-footer__item"><a title="Browse Journals" href="{$baseUrl}" target="_blank">View Journals</a></li>
+                                        <li class="c-footer__item"><a title="View Journal Subject" href="{$baseUrl}/search/categories">Journals Subjects</a></li>
+                                        <li class="c-footer__item"><a title="View All Articles" href="{$baseUrl}/search/titles">All Articles</a></li>
+                                        <li class="c-footer__item"><a href="{url page="browseSearch" op="sections"}" title="Browse Section">Browse Section</a></li>
+                                        <li class="u-hide c-footer__item"><a href="{url page="browseSearch" op="identifyTypes"}" title="Browse Article Type">Browse Article Type</a></li>
+                                        <li class="c-footer__item"><a title="View Authors Index" href="{$baseUrl}/search/authors" target="_blank">Authors Index</a></li>
+                                    </ul>
+                                </div>            
+                            
+                                <div class="c-footer__group" role="navigation">
+                                    <h6 class="c-footer__heading">Advertising & partnerships</h6>
+                                    <ul class="c-footer__list">
+                                        <li class="c-footer__item"><a href="{url page="about" op="insights"}">{translate key="about.aboutThisPublishingSystem"}</a></li>
+                                        <li class="c-footer__item"><a href="/ISLE/pages/view/Guide%20for%20Registration">Registration Guide</a></li>
+                                        <li class="c-footer__item"><a href="{url page="information" op="authors"}">{translate key="navigation.infoForAuthors.long"}</a></li>
+                                        {if $donationEnabled}<li ><a href="{url page="donations"}">{translate key="payment.type.donation"}</a></li>{/if}
+                                        <li class="c-footer__item"><a href="{url page="about" op="siteMap"}">{translate key="about.siteMap"}</a></li> 
+                                        <li class="c-footer__item"><a href="{url page="about" op="contact"}" target="_blank">{translate key="about.contact"}</a></li>
+                                        <li class="c-footer__item"><a href="//www.support.sangia.org/support/faq" target="_blank">FAQ</a></li>                    
+                                    </ul>
+                                </div>
+                    
+                                <div class="c-footer__group" role="navigation">
+                                    <h6 class="c-footer__heading">Other sites and content</h6>
+                                    <ul class="c-footer__list">
+                                        <li class="c-footer__item"><a href="//archive.sangia.org" target="_blank">Sangia Sciences</a></li>
+                                        <li class="c-footer__item"><a href="//support.sangia.org" target="_blank">Affiliation Support</a></li>
+                                        <li class="c-footer__item"><a href="/" target="_blank">Other site Publishing</a></li>
+                                        <li class="c-footer__item"><a href="{url page="gateway" op="lockss"}" target="_blank">LOCKSS Publisher Manifest</a></li>                    
+                                    </ul>
+                                </div>
+                    
+                                <div class="c-footer__group" role="navigation">
+                                    <h6 class="c-footer__heading">Legal & Privacy</h6>
+                                    <ul class="c-footer__list">
+                                        <li class="c-footer__item"><a href="javascript:void(0)">Privacy Policy</a></li>
+                                        <li class="c-footer__item"><a href="javascript:void(0)">Use of cookies</a></li>
+                                        <li class="c-footer__item"><a href="javascript:void(0)">Manage cookies/Do not sell my data</a></li>
+                                        <li class="c-footer__item"><a href="javascript:void(0)">Legal notice</a></li>
+                                        <li class="c-footer__item"><a href="javascript:void(0)">Accessibility statement</a></li>
+                                        <li class="c-footer__item"><a href="javascript:void(0)">Terms & Conditions</a></li>
+                                        <li class="c-footer__item"><a href="javascript:void(0)">California Privacy Statement</a></li>
+                                        {if $currentJournal && $currentJournal->getLocalizedSetting('privacyStatement') != ''}
+                                        <li class="c-footer__item"><a href="{url page="about" op="submissions" anchor="privacyStatement"}">{translate key="about.privacyStatement"}</a></li>{/if}
+                                    </ul>
+                                </div>
+                            </div>
+                        {/if}
                     </div>
                 </div>
             </div>
@@ -238,21 +236,27 @@
                     </div>
                     <div id="standardFooter" class="sangia-footer-content u-margin-l-right-from-lg u-margin-m-right-from-md">
                         <div  class="u-hide u-remove-if-print"><div class="legal" role="contentinfo">Sangia Research Media & Publishing</div></div>
-                        <p class="sangia-ads">We use cookies to enhance our service and ads. By using this website, you agree to our <a class="anchor" href="/ISLE/pages/view/Terms%20and%20Conditions"><span class="anchor-text">Terms and Conditions</span></a>{if $currentJournal}, <a class="anchor" href="{url page="about" anchor="privacyStatement"}"><span class="anchor-text">{translate key="about.privacyStatement"}</span></a>{/if} and <a class="anchor" href="/ISLE/pages/view/Cookies"><span class="anchor-text">Cookies</span></a> policy.</p>
+                        <p class="sangia-policy">We use cookies to enhance our service and ads. By using this website, you agree to our <a class="anchor" href="/ISLE/pages/view/Terms%20and%20Conditions"><span class="anchor-text">Terms and Conditions</span></a>{if $currentJournal}, <a class="anchor" href="{url page="about" anchor="privacyStatement"}"><span class="anchor-text">{translate key="about.privacyStatement"}</span></a>{/if} and <a class="anchor" href="/ISLE/pages/view/Cookies"><span class="anchor-text">Cookies</span></a> policy.</p>
                         {if $currentJournal && $currentJournal->getSetting('onlineIssn')}
                         	{assign var=issn value=$currentJournal->getSetting('onlineIssn')}
                         {elseif $currentJournal && $currentJournal->getSetting('printIssn')}
                         	{assign var=issn value=$currentJournal->getSetting('printIssn')}
                         {/if}
                         <p class="sangia-lisensing u-hide" style="margin-bottom:0">
-                            {if $currentJournal}
-                                {$currentJournal->getLocalizedTitle()|strip_tags|escape} {if $printIssn}{else if $onlineIssn}{if $currentJournal->getSetting('printIssn')}ISSN: <a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('printIssn')}" target="_blank"><span class="anchor-text">{$currentJournal->getSetting('printIssn')}</span></a> (Print) {/if}ISSN: {if $currentJournal->getSetting('onlineIssn')}<a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('onlineIssn')}" target="_blank"><span class="anchor-text">{$currentJournal->getSetting('onlineIssn')}</span></a> (Online){else}on proccess (Online){/if}. {/if}
-                            {else}
-                                {$siteTitle}
-                            {/if}
-                        {translate|assign:"applicationName" key="common.openJournalSystems"}
-                        {assign var="applicationName" value="ScholarWizdam: Editorial Management System"}
-                        <span class="sangia-lisensing">Powered by <a class="anchor" href="//pkp.sfu.ca/software/ojs/download/archive/" target="_blank"><span class="anchor-text">{$applicationName}</span></a> and <a class="anchor" href="//github.com/masonpublishing/OJS-Theme" target="_blank"><span class="anchor-text">Mason Publishing</span></a> theme.</span></p>
+                            <span>
+                                {if $currentJournal}
+                                    {$currentJournal->getLocalizedTitle()|strip_tags|escape} {if $printIssn}{else if $onlineIssn}{if $currentJournal->getSetting('printIssn')}ISSN: <a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('printIssn')}" target="_blank"><span class="anchor-text">{$currentJournal->getSetting('printIssn')}</span></a> (Print) {/if}ISSN: {if $currentJournal->getSetting('onlineIssn')}<a class="anchor" href="//portal.issn.org/resource/ISSN/{$currentJournal->getSetting('onlineIssn')}" target="_blank"><span class="anchor-text">{$currentJournal->getSetting('onlineIssn')}</span></a> (Online){else}on proccess (Online){/if}. {/if}
+                                {else}
+                                    {$siteTitle}
+                                {/if}
+                            </span>
+                            {translate|assign:"applicationName" key="common.openJournalSystems"}
+                            {assign var="applicationName" value="Sangia Lumera"}
+                            <span class="sangia-licensing">Powered by <a class="anchor" href="https://github.com/codelumera" target="_blank">
+                                <span class="anchor-text">{$applicationName}</span></a> and <a class="anchor" href="https://github.com/masonpublishing/OJS-Theme" target="_blank">
+                                <span class="anchor-text">Mason Publishing</span></a>
+                            </span>
+                        </p>
                         <p class="sangia-footer-copyright u-mb-0" style="margin-bottom:0">Copyright © 2017-{$smarty.now|date_format:"%Y"} <a class="anchor" href="//www.sangia.org/publishing" target="_blank"><span class="anchor-text">Sangia Publishing</span></a> unless otherwise stated. Part of <a class="anchor" href="//www.insw.go.id/nib" target="_blank"><span class="anchor-text">Sangia Research Media and Publishing</span></a> | NIB: 1111220205313.</p>
                         <p class="sangia-footer-legal">Dirjen AHU No. <span class="anchor"><span class="anchor-text">AHU-050003.AH.01.30.Tahun 2022</span></span>. Certificate No. <span class="anchor"><span class="anchor-text">11112202053130002</span></span>.</p>
                         <p class="footer-section anchor">{$pageFooter}</p>       
@@ -266,12 +270,8 @@
                 </div>
             </div>
         </div>
-      
-            {call_hook name="Templates::Common::Footer::PageFooter"}
-    
+        {call_hook name="Templates::Common::Footer::PageFooter"}
     </footer>
-    
-    </div>
         
     <button class="StickySideButton StickySideButton--feedback lazyload" onclick="FreshWidget.show();">
         <span class="u-mr-8">Support</span>

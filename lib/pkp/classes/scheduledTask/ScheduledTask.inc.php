@@ -14,7 +14,6 @@ declare(strict_types=1);
  *
  * @brief Base class for executing scheduled tasks.
  * All scheduled task classes must extend this class and implement execute().
- * [WIZDAM EDITION] Modernized for PHP 7.4/8.x
  */
 
 import('lib.pkp.classes.scheduledTask.ScheduledTaskHelper');
@@ -36,7 +35,6 @@ class ScheduledTask {
 
     /**
      * Constructor.
-     * [MODERNISASI] Native Constructor
      * @param $args array
      */
     public function __construct($args = array()) {
@@ -58,7 +56,7 @@ class ScheduledTask {
             $success = $fileMgr->mkdirtree($scheduledTaskFilesPath);
             if (!$success) {
                 // files directory wrong configuration?
-                // [WIZDAM] Fatal Error yang lebih informatif daripada assert(false)
+                // [LUMERA] Fatal Error yang lebih informatif daripada assert(false)
                 fatalError("Scheduled Task Log Directory is missing and cannot be created: $scheduledTaskFilesPath");
                 $this->_executionLogFile = null;
             }
@@ -70,9 +68,8 @@ class ScheduledTask {
      */
     public function ScheduledTask($args = array()) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Smart Error Log: Menunjuk class anak (misal: UsageStatsLoader) sebagai pelaku
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::ScheduledTask(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -83,6 +80,7 @@ class ScheduledTask {
     //
     // Protected methods.
     //
+
     /**
      * Get this process id.
      * @return int
@@ -101,8 +99,7 @@ class ScheduledTask {
     }
 
     /**
-     * Get the scheduled task name. Override to
-     * define a custom task name.
+     * Get the scheduled task name. Override to define a custom task name.
      * @return string
      */
     public function getName() {
@@ -111,9 +108,8 @@ class ScheduledTask {
 
     /**
      * Add an entry into the execution log.
-     * @param $message string A translated message.
-     * @param $type string (optional) One of the ScheduledTaskHelper
-     * SCHEDULED_TASK_MESSAGE_TYPE... constants.
+     * @param string $message string
+     * @param $type string (optional)
      */
     public function addExecutionLogEntry($message, $type = null) {
         $logFile = $this->_executionLogFile;
@@ -126,12 +122,12 @@ class ScheduledTask {
             $log = $message;
         }
 
-        // [WIZDAM] Modern File Write
+        // [LUMERA] Modern File Write
         // Menggunakan file_put_contents dengan LOCK_EX (Exclusive Lock) untuk thread safety.
         // FILE_APPEND agar log tidak menimpa data sebelumnya.
         if (file_put_contents($logFile, $log . PHP_EOL, FILE_APPEND | LOCK_EX) === false) {
              // Jika gagal (misal disk penuh), log ke error log server sebagai cadangan
-             error_log("Wizdam ScheduledTask Error: Could not write to log file: $logFile");
+             error_log("Lumera ScheduledTask Error: Could not write to log file: $logFile");
         }
     }
 
@@ -139,27 +135,24 @@ class ScheduledTask {
     //
     // Protected abstract methods.
     //
+
     /**
      * Implement this method to execute the task actions.
+     * @return bool
      */
     public function executeActions() {
         // In case task does not implement it.
-        fatalError("ScheduledTask does not implement executeActions()!\n");
+        fatalError('ScheduledTask does not implement executeActions()!');
     }
 
 
     //
     // Public methods.
     //
+    
     /**
      * Make sure the execution process follow the required steps.
-     * This is not the method one should extend to implement the
-     * task actions, for this see ScheduledTask::executeActions().
-     * @param boolean $notifyAdmin optional Whether or not the task
-     * will notify the site administrator about errors, warnings or
-     * completed process.
-     * @return boolean Whether or not the task was succesfully
-     * executed.
+     * @return boolean
      */
     public function execute() {
         $this->addExecutionLogEntry(Config::getVar('general', 'base_url'));
@@ -174,5 +167,6 @@ class ScheduledTask {
 
         return $result;
     }
+    
 }
 ?>

@@ -9,9 +9,10 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="manager.reviewFormElements"}
-{include file="common/header-EDITOR017.tpl"}
+	{assign var="pageTitle" value="manager.reviewFormElements"}
+	{include file="common/header-EDITOR017.tpl"}
 {/strip}
+
 <script type="text/javascript">
 {literal}
 $(document).ready(function() { setupTableDND("#reviewFormElementsTable",
@@ -47,51 +48,51 @@ function toggleChecked() {
 
 <div id="reviewFormElements">
 <form id="reviewFormElements" action="{url op="copyReviewFormElement"}" method="post">
-    <input type="hidden" name="csrfToken" value="{$csrfToken|escape}"/>
+    <input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
     
-<table width="100%" class="listing" id="reviewFormElementsTable">
-	<tr class="heading" valign="bottom">
-		<td width="3%">&nbsp;</td>
-		<td width="73%">{translate key="manager.reviewFormElements.question"}</td>
-		<td width="24%">{translate key="common.action"}</td>
-	</tr>
-	<tr>
-		<td class="headseparator" colspan="3">&nbsp;</td>
-	</tr>
-{iterate from=reviewFormElements item=reviewFormElement name=reviewFormElements}
-{assign var=reviewFormElementExists value=1}
-	<tr valign="top" id="formelt-{$reviewFormElement->getId()}" class="data">
-		<td><input type="checkbox" name="copy[]" value="{$reviewFormElement->getId()|escape}"/></td>
-		<td class="drag">{$reviewFormElement->getLocalizedQuestion()|truncate:200:"..."}</td>
-		<td class="nowrap">
-			<a href="{url op="editReviewFormElement" path=$reviewFormElement->getReviewFormId()|to_array:$reviewFormElement->getId()}" class="action">{translate key="common.edit"}</a><a href="{url op="deleteReviewFormElement" path=$reviewFormElement->getReviewFormId()|to_array:$reviewFormElement->getId()}" onclick="return confirm('{translate|escape:"jsparam" key="manager.reviewFormElements.confirmDelete"}')" class="action">{translate key="common.delete"}</a>
-			<a href="{url op="moveReviewFormElement" d=u id=$reviewFormElement->getId()}" class="action">&uarr;</a>&nbsp;<a href="{url op="moveReviewFormElement" d=d id=$reviewFormElement->getId()}" class="action">&darr;</a>
-		</td>
-	</tr>
-  {if $reviewFormElements->eof()}
+	<table width="100%" class="listing" id="reviewFormElementsTable">
+		<tr class="heading" valign="bottom">
+			<td width="3%">&nbsp;</td>
+			<td width="73%">{translate key="manager.reviewFormElements.question"}</td>
+			<td width="24%">{translate key="common.action"}</td>
+		</tr>
+		<tr>
+			<td class="headseparator" colspan="3">&nbsp;</td>
+		</tr>
+	{iterate from=reviewFormElements item=reviewFormElement name=reviewFormElements}
+	{assign var=reviewFormElementExists value=1}
+		<tr valign="top" id="formelt-{$reviewFormElement->getId()}" class="data">
+			<td><input type="checkbox" name="copy[]" value="{$reviewFormElement->getId()|escape}"/></td>
+			<td class="drag">{$reviewFormElement->getLocalizedQuestion()|truncate:200:"..."}</td>
+			<td class="nowrap">
+				<a href="{url op="editReviewFormElement" path=$reviewFormElement->getReviewFormId()|to_array:$reviewFormElement->getId()}" class="action">{translate key="common.edit"}</a><a href="{url op="deleteReviewFormElement" path=$reviewFormElement->getReviewFormId()|to_array:$reviewFormElement->getId()}" onclick="return confirm('{translate|escape:"jsparam" key="manager.reviewFormElements.confirmDelete"}')" class="action">{translate key="common.delete"}</a>
+				<a href="{url op="moveReviewFormElement" d=u id=$reviewFormElement->getId()}" class="action">&uarr;</a>&nbsp;<a href="{url op="moveReviewFormElement" d=d id=$reviewFormElement->getId()}" class="action">&darr;</a>
+			</td>
+		</tr>
+	{if $reviewFormElements->eof()}
 
-  {/if}
-{/iterate}
+	{/if}
+	{/iterate}
 
-{if $reviewFormElements->wasEmpty()}
-	<tr>
-		<td colspan="3" class="nodata">{translate key="manager.reviewFormElements.noneCreated"}</td>
-	</tr>
-	<tr>
-		<td colspan="3" class="endseparator">&nbsp;</td>
-	</tr>
-{else}
-	<tr>
-		<td colspan="2" align="left">{page_info iterator=$reviewFormElements}</td>
-		<td align="right">{page_links anchor="reviewFormElements" name="reviewFormElements" iterator=$reviewFormElements}</td>
-	</tr>
-{/if}
+	{if $reviewFormElements->wasEmpty()}
+		<tr>
+			<td colspan="3" class="nodata">{translate key="manager.reviewFormElements.noneCreated"}</td>
+		</tr>
+		<tr>
+			<td colspan="3" class="endseparator">&nbsp;</td>
+		</tr>
+	{else}
+		<tr>
+			<td colspan="2" align="left">{page_info iterator=$reviewFormElements}</td>
+			<td align="right">{page_links anchor="reviewFormElements" name="reviewFormElements" iterator=$reviewFormElements}</td>
+		</tr>
+	{/if}
 
-</table>
+	</table>
 
-{if $reviewFormElementExists}
-	<p>{translate key="manager.reviewFormElements.copyTo"}&nbsp;<select name="targetReviewForm" class="selectMenu" size="1">{html_options options=$unusedReviewFormTitles}</select>&nbsp;<input type="submit" value="{translate key="common.copy"}" class="button defaultButton"/>&nbsp;<input type="button" value="{translate key="common.selectAll"}" class="button" onclick="toggleChecked()" /></p>
-{/if}
+	{if $reviewFormElementExists}
+		<p>{translate key="manager.reviewFormElements.copyTo"}&nbsp;<select name="targetReviewForm" class="selectMenu" size="1">{html_options options=$unusedReviewFormTitles}</select>&nbsp;<input type="submit" value="{translate key="common.copy"}" class="button defaultButton"/>&nbsp;<input type="button" value="{translate key="common.selectAll"}" class="button" onclick="toggleChecked()" /></p>
+	{/if}
 </form>
 
 <br />

@@ -12,9 +12,7 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Form for Step 1 of author article submission.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
-
 
 import('classes.author.form.submit.AuthorSubmitForm');
 
@@ -27,7 +25,6 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
      * @param PKPRequest $request
      */
     public function __construct($article, $journal, $request) {
-        // [WIZDAM] Removed reference & on params
         parent::__construct($article, 1, $journal, $request);
 
         // Validation checks for this form
@@ -41,6 +38,9 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param Article|null $article
+     * @param Journal $journal
+     * @param PKPRequest $request
      */
     public function AuthorSubmitStep1Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -60,7 +60,6 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
     public function display($request = null, $template = null) {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
-        // Ensure internal request property matches
         if (!$this->request) $this->request = $request;
 
         $journal = $this->request->getJournal();
@@ -68,13 +67,9 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
 
         $templateMgr = TemplateManager::getManager($request);
 
-        // Get sections for this journal
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
-
-        // If this user is a section editor or an editor, they are
-        // allowed to submit to sections flagged as "editor-only" for
-        // submissions. Otherwise, display only sections they are
-        // allowed to submit to.
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $isEditor = $roleDao->userHasRole($journal->getId(), $user->getId(), ROLE_ID_EDITOR) || $roleDao->userHasRole($journal->getId(), $user->getId(), ROLE_ID_SECTION_EDITOR);
         $templateMgr->assign('sectionOptions', ['0' => __('author.submit.selectSection')] + $sectionDao->getSectionTitles($journal->getId(), !$isEditor));
@@ -84,16 +79,15 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
         $paymentManager = new OJSPaymentManager($this->request);
         if ($paymentManager->submissionEnabled() || $paymentManager->fastTrackEnabled() || $paymentManager->publicationEnabled()) {
             $templateMgr->assign('authorFees', true);
+            /** @var OJSCompletedPaymentDAO $completedPaymentDao */
             $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
             $articleId = $this->articleId;
 
             if ($paymentManager->submissionEnabled()) {
-                // [WIZDAM] Use assign instead of assign_by_ref
                 $templateMgr->assign('submissionPayment', $completedPaymentDao->getSubmissionCompletedPayment ($journal->getId(), $articleId));
             }
 
             if ($paymentManager->fastTrackEnabled()) {
-                // [WIZDAM] Use assign instead of assign_by_ref
                 $templateMgr->assign('fastTrackPayment', $completedPaymentDao->getFastTrackCompletedPayment ($journal->getId(), $articleId));
             }
         }
@@ -127,7 +121,7 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
         } else {
             // [WIZDAM] Singleton Fallback
             $request = Application::get()->getRequest();
-            $journal = $request->getJournal();
+            $journal = $request->getJournal(); /** DEPRECATED */
             $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
             // Try these locales in order until we find one that's
             // supported to use as a default.
@@ -162,6 +156,7 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
      * @return int the article ID
      */
     public function execute($object = null) {
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
 
         if (isset($this->article)) {
@@ -195,7 +190,7 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
             $this->articleId = $this->article->getId();
 
             // Set user to initial author
-            $authorDao = DAORegistry::getDAO('AuthorDAO'); /* @var $authorDao AuthorDAO */
+            $authorDao = DAORegistry::getDAO('AuthorDAO'); /** @var AuthorDAO $authorDao */
             $user = $request->getUser();
             $author = new Author();
             $author->setSubmissionId($this->articleId);
@@ -216,5 +211,4 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
     }
 
 }
-
 ?>

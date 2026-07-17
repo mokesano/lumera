@@ -9,19 +9,20 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="admin.categories"}
-{assign var="pageId" value="admin.categories"}
-{assign var="pageDisplayed" value="site"}
-{include file="common/header.tpl"}
+	{assign var="pageTitle" value="admin.categories"}
+	{assign var="pageId" value="admin.categories"}
+	{assign var="pageDisplayed" value="site"}
+	{include file="common/header.tpl"}
 {/strip}
 
 <script type="text/javascript">
-{literal}
-$(document).ready(function() { setupTableDND("#dragTable", "moveCategory"); });
-{/literal}
+	{literal}
+		$(document).ready(function() { setupTableDND("#dragTable", "moveCategory"); });
+	{/literal}
 </script>
 
 <form action="{url op="setCategoriesEnabled"}" method="post">
+	<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
 	<p class="alert-text">{translate key="admin.categories.enable.description"}</p>
 	<input type="radio" id="categoriesEnabledOff" {if !$categoriesEnabled}checked="checked" {/if}name="categoriesEnabled" value="0"/>&nbsp;<label for="categoriesEnabledOff">{translate key="admin.categories.disableCategories"}</label><br/>
 	<input type="radio" id="categoriesEnabledOn" {if $categoriesEnabled}checked="checked" {/if}name="categoriesEnabled" value="1"/>&nbsp;<label for="categoriesEnabledOn">{translate key="admin.categories.enableCategories"}</label><br/>
@@ -83,12 +84,10 @@ $(document).ready(function() { setupTableDND("#dragTable", "moveCategory"); });
         </section>
         {if $categories->getPageCount() > 1}
 	    <section class="u-display-flex u-justify-content-center">
-	        <div class="c-pagination">{page_links anchor="categories" name="categories" iterator=$categories}
-	       </div>
+	        <div class="c-pagination">{page_links anchor="categories" name="categories" iterator=$categories}</div>
 	    </section>
 	    {/if}
 	</div>
 {/if}
 
 {include file="common/footer.tpl"}
-

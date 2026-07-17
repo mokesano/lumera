@@ -13,10 +13,6 @@ declare(strict_types=1);
  * @see ArticleFileDAO
  *
  * @brief Article file class.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructors, Visibility)
- * - Null Safety on File Paths
  */
 
 import('lib.pkp.classes.submission.SubmissionFile');
@@ -60,10 +56,10 @@ class ArticleFile extends SubmissionFile {
      * @return string|null
      */
     public function getFilePath() {
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $articleDao->getArticle($this->getArticleId());
         
-        // PHP 8 Safety: Prevent calling method on null if article missing
         if (!$article) return null;
 
         $journalId = $article->getJournalId();
@@ -100,6 +96,7 @@ class ArticleFile extends SubmissionFile {
      * @return boolean
      */
     public function isInlineable() {
+        /** @var ArticleFileDAO $articleFileDao */
         $articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
         return $articleFileDao->isInlineable($this);
     }
@@ -118,7 +115,7 @@ class ArticleFile extends SubmissionFile {
         }
 
         // Retrieve the article.
-        $articleDao = DAORegistry::getDAO('ArticleDAO'); /* @var $articleDao ArticleDAO */
+        $articleDao = DAORegistry::getDAO('ArticleDAO'); /** @var ArticleDAO $articleDao */
         $article = $articleDao->getArticle($this->getArticleId(), null, true);
         
         if (!$article) return null;
@@ -158,5 +155,4 @@ class ArticleFile extends SubmissionFile {
         return $this->setData('pub-id::'.$pubIdType, $pubId);
     }
 }
-
 ?>

@@ -1,25 +1,24 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * header.tpl
+ * header-ROLE.tpl
  *
  * Copyright (c) 2013-2015 Simon Fraser University Library
  * Copyright (c) 2000-2015 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * Common site header.
+ * Common ROLE header.
  *}
 {strip}
-{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
-{if $pageCrumbTitle}
-	{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-	{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
+	{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
+	{if $pageCrumbTitle}
+		{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+	{elseif !$pageCrumbTitleTranslated}
+		{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+	{/if}
 {/strip}
 <head>
-    <title>{$pageTitleTranslated} | Wizdam Editorial System</title>
-        
+    <title>{$pageTitleTranslated} | Lumera Editorial</title>
     <meta name="description" content="{$metaSearchDescription|escape}" />
     <meta name="keywords" content="{$metaSearchKeywords|escape}" />
     <meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
@@ -27,7 +26,7 @@
 	{$metaCustomHeaders}
 	
 	{if $displayFavicon}
-	<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
+		<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
 	{/if}
 
 	{include file="common/jqueryScripts.tpl"}
@@ -113,47 +112,49 @@
 </head>
 
 <body id="sangia">
-<a id="skip-to-content" href="#main">Skip to Main Content</a>
-<a class="buttontop" href="#sangia.org"><!-- Back to top button --></a>
+	<a id="skip-to-content" href="#main">Skip to Main Content</a>
+	<a class="buttontop" href="#sangia"><!-- Back to top button --></a>
 
-{include file="common/banner.tpl"}
-<header class="c-header" style="border-color:#000">
-    {include file="common/navbar.tpl"}
-    {include file="common/navmenu.tpl"}
-    <div class="c-journal-header__identity c-journal-header__identity--default"></div> 
-</header>
+	{include file="common/banner.tpl"}
+	<header class="c-header" style="border-color:#000">
+		{include file="common/navbar.tpl"}
+		{include file="common/navmenu.tpl"}
+		<div class="c-journal-header__identity c-journal-header__identity--default"></div> 
+	</header>
 
-<div class="journal-page">
-    {include file="common/breadcrumbs.tpl"}
+	<div class="journal-page">
+		{include file="common/breadcrumbs.tpl"}
 
-<div id="body" class="journal-content sangia u-mt-48" role="main">
-<div class="live-area-wrapper">
-	<div class="row">
+		<div id="body" class="journal-content sangia u-mt-48" role="main">
+			<div class="live-area-wrapper">
+				<div class="u-row row">
 
-	{if $leftSidebarCode || $rightSidebarCode}	
-	<div class="sidebar">
-		<section class="column u-js-hide"></section>
-		<section class="column medium-3">
-			{if $leftSidebarCode}
-				{$leftSidebarCode}
-			{/if}
-			{if !$currentJournal}
-    		    {if $rightSidebarCode}
-    				{$rightSidebarCode}
-    			{/if}
-    		{/if}
-		</section>
-	</div>
-	{/if}
+					{**
+					{if $leftSidebarCode || $rightSidebarCode}	
+					<div class="sidebar">
+						<section class="column u-js-hide"></section>
+						<section class="column medium-3">
+							{if $leftSidebarCode}
+								{$leftSidebarCode}
+							{/if}
+							{if !$currentJournal}
+								{if $rightSidebarCode}
+									{$rightSidebarCode}
+								{/if}
+							{/if}
+						</section>
+					</div>
+					{/if}
+					**}
 
-    <div class="column medium-9" role="main">
-    
-        <h2 class="main-heading">{$pageTitleTranslated}</h2>
-        
-        {if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
-        {if $pageSubtitleTranslated}
-        	<h3 class="sub-heading">{$pageSubtitleTranslated}</h3>
-        {/if}
-        
-        <div id="content" class="sangia-content">
+					<div class="column medium-12" role="main">
+					
+						<h2 class="main-heading">{$pageTitleTranslated}</h2>
+						
+						{if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
+						{if $pageSubtitleTranslated}
+							<h3 class="sub-heading">{$pageSubtitleTranslated}</h3>
+						{/if}
+						
+						<div id="content" class="sangia-content">
 

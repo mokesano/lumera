@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup author_form_submit
  *
  * @brief Form for Step 3 of author article submission.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('classes.author.form.submit.AuthorSubmitForm');
@@ -29,7 +28,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         parent::__construct($article, 3, $journal, $request);
 
         // Validation checks for this form
-        // [WIZDAM] Replaced create_function with Closure
         $this->addCheck(new FormValidatorCustom(
             $this, 'authors', 'required', 'author.submit.form.authorRequired',
             function($authors) { return count($authors) > 0; }
@@ -37,7 +35,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
         $this->addCheck(new FormValidatorArray($this, 'authors', 'required', 'author.submit.form.authorRequiredFields', ['firstName', 'lastName']));
 
-        // [WIZDAM] Replaced create_function with Closure for Email Validation
         $this->addCheck(new FormValidatorArrayCustom(
             $this, 'authors', 'required', 'author.submit.form.authorRequiredFields',
             function($email, $regExp) { return PKPString::regexp_match($regExp, $email); },
@@ -47,7 +44,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         ));
         
         // URL validation
-        // [WIZDAM] Replaced create_function with Closure
         $this->addCheck(new FormValidatorArrayCustom(
             $this, 'authors', 'required', 'user.profile.form.urlInvalid',
             function($url, $regExp) { return empty($url) ? true : PKPString::regexp_match($regExp, $url); },
@@ -58,7 +54,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
         // Add ORCiD validation
         import('lib.pkp.classes.validation.ValidatorORCID');
-        // [WIZDAM] Replaced create_function with Closure
         $this->addCheck(new FormValidatorArrayCustom(
             $this, 'authors', 'required', 'user.profile.form.orcidInvalid',
             function($orcid) {
@@ -72,12 +67,12 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
         $this->addCheck(new FormValidatorLocale($this, 'title', 'required', 'author.submit.form.titleRequired', $this->getRequiredLocale()));
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $section = $sectionDao->getSection($article->getSectionId());
         $abstractWordCount = $section->getAbstractWordCount();
 
         if (isset($abstractWordCount) && $abstractWordCount > 0) {
-            // [WIZDAM] Replaced create_function with Closure for Word Count
             $this->addCheck(new FormValidatorCustom(
                 $this, 'abstract', 'required', 'author.submit.form.wordCountAlert',
                 function($abstract, $wordCount) {
@@ -93,6 +88,9 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param Article $article
+     * @param Journal $journal
+     * @param PKPRequest $request
      */
     public function AuthorSubmitStep3Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -106,7 +104,6 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
     /**
      * Get the article associated with this object.
-     *
      * @return Article The article instance.
      * @throws Exception If the article cannot be retrieved.
      */
@@ -118,41 +115,64 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
      * Initialize form data from current article.
      */
     public function initData() {
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
+        $formLocales = $this->getSubmissionLocales();
 
         if (isset($this->article)) {
             $article = $this->article;
             $this->_data = [
                 'authors' => [],
-                'title' => $article->getTitle(null), // Localized
-                'abstract' => $article->getAbstract(null), // Localized
-                'discipline' => $article->getDiscipline(null), // Localized
-                'subjectClass' => $article->getSubjectClass(null), // Localized
-                'subject' => $article->getSubject(null), // Localized
-                'coverageGeo' => $article->getCoverageGeo(null), // Localized
-                'coverageChron' => $article->getCoverageChron(null), // Localized
-                'coverageSample' => $article->getCoverageSample(null), // Localized
-                'type' => $article->getType(null), // Localized
+                'title' => $article->getTitle(null),
+                'abstract' => $article->getAbstract(null),
+                'discipline' => $article->getDiscipline(null),
+                'subjectClass' => $article->getSubjectClass(null),
+                'subject' => $article->getSubject(null),
+                'coverageGeo' => $article->getCoverageGeo(null),
+                'coverageChron' => $article->getCoverageChron(null),
+                'coverageSample' => $article->getCoverageSample(null),
+                'type' => $article->getType(null),
                 'language' => $article->getLanguage(),
-                'sponsor' => $article->getSponsor(null), // Localized
+                'sponsor' => $article->getSponsor(null),
                 'section' => $sectionDao->getSection($article->getSectionId()),
                 'citations' => $article->getCitations()
             ];
 
+            if (!is_array($this->_data['title'])) $this->_data['title'] = [];
+            if (!is_array($this->_data['abstract'])) $this->_data['abstract'] = [];
+            foreach ($formLocales as $locale) {
+                if (!isset($this->_data['title'][$locale])) $this->_data['title'][$locale] = '';
+                if (!isset($this->_data['abstract'][$locale])) $this->_data['abstract'][$locale] = '';
+            }
+
             $authors = $article->getAuthors();
             for ($i=0, $count=count($authors); $i < $count; $i++) {
+                $affiliationArray = $authors[$i]->getAffiliation(null);
+                $competingInterestsArray = $authors[$i]->getCompetingInterests(null);
+                $biographyArray = $authors[$i]->getBiography(null);
+
+                $affiliationArray = is_array($affiliationArray) ? $affiliationArray : [];
+                $competingInterestsArray = is_array($competingInterestsArray) ? $competingInterestsArray : [];
+                $biographyArray = is_array($biographyArray) ? $biographyArray : [];
+
+                foreach ($formLocales as $locale) {
+                    if (!isset($affiliationArray[$locale])) $affiliationArray[$locale] = '';
+                    if (!isset($competingInterestsArray[$locale])) $competingInterestsArray[$locale] = '';
+                    if (!isset($biographyArray[$locale])) $biographyArray[$locale] = '';
+                }
+
                 $this->_data['authors'][] = [
                     'authorId' => $authors[$i]->getId(),
                     'firstName' => $authors[$i]->getFirstName(),
                     'middleName' => $authors[$i]->getMiddleName(),
                     'lastName' => $authors[$i]->getLastName(),
-                    'affiliation' => $authors[$i]->getAffiliation(null),
+                    'affiliation' => $affiliationArray,
                     'country' => $authors[$i]->getCountry(),
                     'email' => $authors[$i]->getEmail(),
                     'orcid' => $authors[$i]->getData('orcid'),
                     'url' => $authors[$i]->getUrl(),
-                    'competingInterests' => $authors[$i]->getCompetingInterests(null),
-                    'biography' => $authors[$i]->getBiography(null)
+                    'competingInterests' => $competingInterestsArray,
+                    'biography' => $biographyArray
                 ];
                 if ($authors[$i]->getPrimaryContact()) {
                     $this->setData('primaryContact', $i);
@@ -184,8 +204,45 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
             'citations'
         ]);
 
-        // Load the section. This is used in the step 3 form to
-        // determine whether or not to display indexing options.
+        $formLocales = $this->getSubmissionLocales();
+
+        if (!is_array($this->_data['title'])) $this->_data['title'] = [];
+        if (!is_array($this->_data['abstract'])) $this->_data['abstract'] = [];
+        foreach ($formLocales as $formLocale) {
+            if (!isset($this->_data['title'][$formLocale])) $this->_data['title'][$formLocale] = '';
+            if (!isset($this->_data['abstract'][$formLocale])) $this->_data['abstract'][$formLocale] = '';
+        }
+
+        if (is_array($this->_data['authors'])) {
+            foreach ($this->_data['authors'] as $i => $author) {
+                if (!isset($author['affiliation']) || !is_array($author['affiliation'])) {
+                    $this->_data['authors'][$i]['affiliation'] = [];
+                }
+                if (!isset($author['competingInterests']) || !is_array($author['competingInterests'])) {
+                    $this->_data['authors'][$i]['competingInterests'] = [];
+                }
+                if (!isset($author['biography']) || !is_array($author['biography'])) {
+                    $this->_data['authors'][$i]['biography'] = [];
+                }
+
+                foreach ($formLocales as $formLocale) {
+                    if (!isset($this->_data['authors'][$i]['affiliation'][$formLocale])) {
+                        $this->_data['authors'][$i]['affiliation'][$formLocale] = '';
+                    }
+                    if (!isset($this->_data['authors'][$i]['competingInterests'][$formLocale])) {
+                        $this->_data['authors'][$i]['competingInterests'][$formLocale] = '';
+                    }
+                    if (!isset($this->_data['authors'][$i]['biography'][$formLocale])) {
+                        $this->_data['authors'][$i]['biography'][$formLocale] = '';
+                    }
+                }
+            }
+        } else {
+            $this->_data['authors'] = [];
+        }
+
+        // Load the section.
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $this->_data['section'] = $sectionDao->getSection($this->article->getSectionId());
 
@@ -218,9 +275,9 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
         $templateMgr = TemplateManager::getManager($request);
 
+        /** @var CountryDAO $countryDao  */
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
-        // [WIZDAM] Use assign instead of assign_by_ref
         $templateMgr->assign('countries', $countries);
 
         if ($this->request->getUserVar('addAuthor') || $this->request->getUserVar('delAuthor')  || $this->request->getUserVar('moveAuthor')) {
@@ -236,7 +293,9 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
      * @return int the article ID
      */
     public function execute($object = null) {
+        /** @var ArticleDAO $articleDao  */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
+        /** @var AuthorDAO $authorDao  */
         $authorDao = DAORegistry::getDAO('AuthorDAO');
         $article = $this->article;
 
@@ -292,7 +351,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
                 $author->setPrimaryContact($this->getData('primaryContact') == $i ? 1 : 0);
                 $author->setSequence($authors[$i]['seq']);
 
-                // [WIZDAM] HookRegistry call using array construction for references
+                // [LUMERA] HookRegistry dispatch using array construction for references
                 HookRegistry::dispatch('Author::Form::Submit::AuthorSubmitStep3Form::Execute', [&$author, &$authors[$i]]);
 
                 if ($isExistingAuthor) {
@@ -316,16 +375,17 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         $articleDao->updateArticle($article);
 
         // Update references list if it changed.
+        /** @var CitationDAO $citationDao  */
         $citationDao = DAORegistry::getDAO('CitationDAO');
         $rawCitationList = $article->getCitations();
         if ($previousRawCitationList != $rawCitationList) {
-            // [WIZDAM] Ensure request is available
+            // [LUMERA] Ensure request is available
             $request = $this->request ? $this->request : Application::get()->getRequest();
             $citationDao->importCitations($request, ASSOC_TYPE_ARTICLE, $article->getId(), $rawCitationList);
         }
 
         return $this->articleId;
     }
-}
 
+}
 ?>

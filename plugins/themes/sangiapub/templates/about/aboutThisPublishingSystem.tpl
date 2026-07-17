@@ -11,22 +11,20 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="about.aboutThisPublishingSystem"}
-{include file="common/header.tpl"}
+	{assign var="pageTitle" value="about.aboutThisPublishingSystem"}
+	{include file="common/header.tpl"}
 {/strip}
 
 <p id="aboutThisPublishingSystem">
-{if $currentJournal}
-	{translate key="about.aboutOJSJournal" ojsVersion=$ojsVersion}
-{else}
-	{translate key="about.aboutOJSSite" ojsVersion=$ojsVersion}
-{/if}
+	{if $currentJournal}
+		{translate key="about.aboutOJSJournal" ojsVersion=$ojsVersion}
+	{else}
+		{translate key="about.aboutOJSSite" ojsVersion=$ojsVersion}
+	{/if}
 </p>
 
 <p align="center">
 	<img class="lazyload" src="{$baseUrl}/{$edProcessFile}" style="border: 0;" alt="{translate key="about.aboutThisPublishingSystem.altText"}" />
 </p>
-
-<br />
 
 {include file="common/footer.tpl"}

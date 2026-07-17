@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * @defgroup subscription_form
@@ -15,12 +16,12 @@
  * @ingroup subscription_form
  *
  * @brief Form class for user purchase of individual subscription.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('lib.pkp.classes.form.Form');
 
 class UserIndividualSubscriptionForm extends Form {
+
     /** @var $request PKPRequest */
     public $request;
 
@@ -63,7 +64,6 @@ class UserIndividualSubscriptionForm extends Form {
         $this->subscriptionTypes = $subscriptionTypes->toArray();
 
         // Ensure subscription type is valid
-        // [WIZDAM FIX] Replaced create_function with Closure and use()
         $this->addCheck(new FormValidatorCustom($this, 'typeId', 'required', 'user.subscriptions.form.typeIdValid', function($typeId) use ($journalId) {
             $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
             return ($subscriptionTypeDao->subscriptionTypeExistsByTypeId($typeId, $journalId) && 
@@ -75,7 +75,6 @@ class UserIndividualSubscriptionForm extends Form {
         if (!isset($subscriptionId)) {
             $this->addCheck(new FormValidatorCustom($this, 'userId', 'required', 'user.subscriptions.form.subscriptionExists', array(DAORegistry::getDAO('IndividualSubscriptionDAO'), 'subscriptionExistsByUserForJournal'), array($journalId), true));
         } else {
-            // [WIZDAM FIX] Replaced create_function with Closure and use()
             $this->addCheck(new FormValidatorCustom($this, 'userId', 'required', 'user.subscriptions.form.subscriptionExists', function($userId) use ($journalId, $subscriptionId) {
                 $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
                 $checkId = $subscriptionDao->getSubscriptionIdByUser($userId, $journalId);
@@ -199,5 +198,4 @@ class UserIndividualSubscriptionForm extends Form {
         $paymentManager->displayPaymentForm($queuedPaymentId, $queuedPayment);
     }
 }
-
 ?>

@@ -17,10 +17,6 @@ declare(strict_types=1);
  * @see AnnouncementDAO
  *
  * @brief Basic class describing a announcement.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor)
- * - Strict SHIM
  */
 
 import('lib.pkp.classes.announcement.PKPAnnouncement');
@@ -39,10 +35,13 @@ class Announcement extends PKPAnnouncement {
      */
     public function Announcement() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class Announcement uses deprecated constructor parent::Announcement(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
+                E_USER_DEPRECATED
+            );
         }
         self::__construct();
     }
+    
 }
-
 ?>

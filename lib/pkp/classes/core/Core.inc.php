@@ -27,6 +27,7 @@ class Core {
 
     /**
      * Get the path to the base installation directory.
+     * 
      * @return string
      */
     public static function getBaseDir() {
@@ -43,7 +44,8 @@ class Core {
     /**
      * Sanitize a variable.
      * Removes leading and trailing whitespace, normalizes all characters to UTF-8.
-     * @param $var string
+     * 
+     * @param mixed $var string
      * @return string
      */
     public static function cleanVar($var) {
@@ -71,7 +73,8 @@ class Core {
     /**
      * Sanitize a value to be used in a file path.
      * Removes any characters except alphanumeric characters, underscores, and dashes.
-     * @param $var string
+     * 
+     * @param mixed $var string
      * @return string
      */
     public static function cleanFileVar($var) {
@@ -80,7 +83,8 @@ class Core {
 
     /**
      * Return the current date in ISO (YYYY-MM-DD HH:MM:SS) format.
-     * @param $ts int optional, use specified timestamp instead of current time
+     * 
+     * @param $ts int optional
      * @return string
      */
     public static function getCurrentDate($ts = null) {
@@ -89,6 +93,7 @@ class Core {
 
     /**
      * Return *nix timestamp with microseconds (in units of seconds).
+     * 
      * @return float
      */
     public static function microtime() {
@@ -98,6 +103,7 @@ class Core {
 
     /**
      * Get the operating system of the server.
+     * 
      * @return string
      */
     public static function serverPHPOS() {
@@ -106,6 +112,7 @@ class Core {
 
     /**
      * Get the version of PHP running on the server.
+     * 
      * @return string
      */
     public static function serverPHPVersion() {
@@ -114,6 +121,7 @@ class Core {
 
     /**
      * Check if the server platform is Windows.
+     * 
      * @return boolean
      */
     public static function isWindows() {
@@ -122,18 +130,18 @@ class Core {
 
     /**
      * Check the passed user agent for a bot.
-     * @param $userAgent string
-     * @param $botRegexpsFile string An alternative file with regular
-     * expressions to find bots inside user agent strings.
+     * 
+     * @param mixed $userAgent string
+     * @param mixed $botRegexpsFile string
      * @return boolean
      */
     public static function isUserAgentBot($userAgent, $botRegexpsFile = USER_AGENTS_FILE) {
-        // [MODERNISASI] Akses static property dengan self::
         Registry::set('currentUserAgentsFile', $botRegexpsFile);
 
         if (!isset(self::$botRegexps[$botRegexpsFile])) {
             $botFileCacheId = md5($botRegexpsFile);
             $cacheManager = CacheManager::getManager();
+            /** @var \FileCache $cache */
             $cache = $cacheManager->getCache('core', $botFileCacheId, array('Core', '_botFileListCacheMiss'), CACHE_TYPE_FILE);
             self::$botRegexps[$botRegexpsFile] = $cache->getContents();
         }
@@ -148,15 +156,13 @@ class Core {
     }
 
     /**
-     * Get context paths present into the passed
-     * url information.
-     * @param $urlInfo string Full url or just path info.
-     * @param $isPathInfo boolean Whether the
-     * passed url info string is a path info or not.
+     * Get context paths present into the passed url information.
+     * 
+     * @param mixed $urlInfo string
+     * @param mixed $isPathInfo boolean
      * @param $contextList array (optional)
      * @param $contextDepth int (optional)
-     * @param $userVars array (optional) Pass GET variables
-     * if needed (for testing only).
+     * @param $userVars array (optional)
      * @return array
      */
     public static function getContextPaths($urlInfo, $isPathInfo, $contextList = null, $contextDepth = null, $userVars = array()) {
@@ -200,14 +206,12 @@ class Core {
     }
 
     /**
-     * Get the page present into
-     * the passed url information. It expects that urls
-     * were built using the system.
-     * @param $urlInfo string Full url or just path info.
-     * @param $isPathInfo boolean Tell if the
-     * passed url info string is a path info or not.
-     * @param $userVars array (optional) Pass GET variables
-     * if needed (for testing only).
+     * Get the page present into the passed url information. 
+     * It expects that urls were built using the system.
+     * 
+     * @param mixed $urlInfo string
+     * @param mixed $isPathInfo boolean
+     * @param $userVars array (optional)
      * @return string
      */
     public static function getPage($urlInfo, $isPathInfo, $userVars = array()) {
@@ -216,14 +220,12 @@ class Core {
     }
 
     /**
-     * Get the operation present into
-     * the passed url information. It expects that urls
-     * were built using the system.
-     * @param $urlInfo string Full url or just path info.
-     * @param $isPathInfo boolean Tell if the
-     * passed url info string is a path info or not.
-     * @param $userVars array (optional) Pass GET variables
-     * if needed (for testing only).
+     * Get the operation present into the passed url information. 
+     * It expects that urls were built using the system.
+     * 
+     * @param mixed $urlInfo string
+     * @param mixed $isPathInfo boolean
+     * @param $userVars array (optional)
      * @return string
      */
     public static function getOp($urlInfo, $isPathInfo, $userVars = array()) {
@@ -232,15 +234,12 @@ class Core {
     }
 
     /**
-     * Get the arguments present into
-     * the passed url information (not GET/POST arguments,
-     * only arguments appended to the URL separated by "/").
-     * It expects that urls were built using the system.
-     * @param $urlInfo string Full url or just path info.
-     * @param $isPathInfo boolean Tell if the
-     * passed url info string is a path info or not.
-     * @param $userVars array (optional) Pass GET variables
-     * if needed (for testing only).
+     * Get the arguments present into the passed url information (not GET/POST arguments, 
+     * only arguments appended to the URL separated by "/"). It expects that urls were built using the system.
+     * 
+     * @param mixed $urlInfo string
+     * @param mixed $isPathInfo boolean 
+     * @param $userVars array (optional) 
      * @return array
      */
     public static function getArgs($urlInfo, $isPathInfo, $userVars = array()) {
@@ -248,12 +247,11 @@ class Core {
     }
 
     /**
-     * Remove base url from the passed url, if any.
-     * Also, if true, checks for the context path in
-     * url and if it's missing, tries to add it.
-     * @param $url string
-     * @return mixed string The url without base url,
-     * false if it was not possible to remove it.
+     * Remove base url from the passed url, if any. Also, if true, checks for
+     * the context path in url and if it's missing, tries to add it.
+     * 
+     * @param mixed $url string
+     * @return mixed string/boolean
      */
     public static function removeBaseUrl($url) {
         list($baseUrl, $contextPath) = Core::_getBaseUrlAndPath($url);
@@ -302,12 +300,10 @@ class Core {
     }
 
     /**
-     * Try to get the base url and, if configuration
-     * is set to use base url override, context
-     * path for the passed url.
-     * @param $url string
-     * @return array Base url and context path strings,
-     * false if not found or not the case.
+     * Try to get the base url and, if configuration is set to use base url override, context path for the passed url.
+     * 
+     * @param mixed $url string
+     * @return array ($baseUrl, $contextPath)
      */
     public static function _getBaseUrlAndPath($url) {
         $baseUrl = false;
@@ -357,20 +353,15 @@ class Core {
     }
 
     /**
-     * Check if the passed base url is part of
-     * the passed url, based on the context base url
-     * configuration. Both parameters can represent
-     * full url (host plus path) or just the path,
-     * but they have to be consistent.
-     * @param $baseUrl string Full base url
-     * or just it's path info.
-     * @param $url string Full url or just it's
-     * path info.
+     * Check if the passed base url is part of the passed url, based on the context base url configuration. 
+     * Both parameters can represent full url (host plus path) or just the path, but they have to be consistent.
+     * 
+     * @param mixed $baseUrl string
+     * @param mixed $url string
      * @return boolean
      */
     public static function _checkBaseUrl($baseUrl, $url) {
-        // Check if both base url and url have host
-        // component or not.
+        // Check if both base url and url have host component or not.
         $baseUrlHasHost = (boolean) parse_url($baseUrl, PHP_URL_HOST);
         $urlHasHost = (boolean) parse_url($url, PHP_URL_HOST);
         if ($baseUrlHasHost !== $urlHasHost) return false;
@@ -406,8 +397,7 @@ class Core {
 
     /**
      * Bot list file cache miss fallback.
-     * [MODERNISASI] Removed & reference, logic fix
-     * @param $cache FileCache
+     * @param mixed $cache FileCache
      * @return array:
      */
     public static function _botFileListCacheMiss($cache) {
@@ -418,7 +408,6 @@ class Core {
         
         // Loop through each line
         foreach ($lines as $regexp) {
-            // [MODERNISASI] Kirim by value, terima return value
             $filteredRegexp = Core::_filterBotRegexps($regexp);
             if ($filteredRegexp !== false) {
                 $botRegexps[] = $filteredRegexp;
@@ -430,10 +419,9 @@ class Core {
     }
 
     /**
-     * Filter the regular expressions to find bots, adding
-     * delimiters if necessary.
-     * [MODERNISASI] Removed & reference, returns modified string or false
-     * @param $regexp string
+     * Filter the regular expressions to find bots, adding delimiters if necessary.
+     * 
+     * @param mixed $regexp string
      * @return string|false
      */
     public static function _filterBotRegexps($regexp) {
@@ -441,8 +429,7 @@ class Core {
         $regexp = trim($regexp);
         if (!empty($regexp) && $regexp[0] != '#') {
             if(strpos($regexp, $delimiter) !== 0) {
-                // Make sure delimiters are in place
-                // DAN TAMBAHKAN MODIFIER 'i' (case-insensitive)
+                // Make sure delimiters are in place, Add MODIFIER 'i' (case-insensitive)
                 $regexp = $delimiter . $regexp . $delimiter . 'i';
             }
             return $regexp;
@@ -453,8 +440,9 @@ class Core {
 
     /**
      * Get passed variable value inside the passed url.
-     * @param $url string
-     * @param $varName string
+     * 
+     * @param mixed $url string
+     * @param mixed $varName string
      * @param $userVars array
      * @return string|null
      */
@@ -474,14 +462,13 @@ class Core {
     }
 
     /**
-     * Get url components (page, operation and args)
-     * based on the passed offset.
-     * @param $urlInfo string
-     * @param $isPathInfo string
-     * @param $offset int
+     * Get url components (page, operation and args) based on the passed offset.
+     * 
+     * @param mixed $urlInfo string
+     * @param mixed $isPathInfo string
+     * @param mixed $offset int
      * @param $varName string
-     * @param $userVars array (optional) GET variables
-     * (only for testing).
+     * @param $userVars array (optional) GET variables (only for testing).
      * @return mixed array|string|null
      */
     public static function _getUrlComponents($urlInfo, $isPathInfo, $offset, $varName = '', $userVars = array()) {
@@ -500,7 +487,6 @@ class Core {
                 if ($isArrayComponent) {
                     $component = array_slice($vars, $contextDepth + $offset);
                     for ($i=0, $count=count($component); $i<$count; $i++) {
-                        // [MODERNISASI] Hapus get_magic_quotes_gpc (deprecated/removed in PHP 8)
                         $component[$i] = Core::cleanVar($component[$i]);
                     }
                 } else {
@@ -518,6 +504,6 @@ class Core {
 
         return $component;
     }
-}
 
+}
 ?>

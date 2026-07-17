@@ -17,13 +17,12 @@ declare(strict_types=1);
  * @see ArticleGalley
  *
  * @brief Article galley editing form.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
 
 class ArticleGalleyForm extends Form {
+
     /** @var int|null the ID of the article */
     public $articleId = null;
 
@@ -57,8 +56,7 @@ class ArticleGalleyForm extends Form {
 
         // Validation checks for this form
         $this->addCheck(new FormValidator($this, 'label', 'required', 'submission.layout.galleyLabelRequired'));
-        
-        // [WIZDAM] Replaced deprecated create_function with anonymous function
+
         $availableLocales = array_keys($journal->getSupportedSubmissionLocaleNames());
         $this->addCheck(new FormValidator($this, 'galleyLocale', 'required', 'submission.layout.galleyLocaleRequired', 
             function($galleyLocale) use ($availableLocales) {
@@ -327,7 +325,6 @@ class ArticleGalleyForm extends Form {
             // Update file search index
             import('classes.search.ArticleSearchIndex');
             $articleSearchIndex = new ArticleSearchIndex();
-            // [WIZDAM] Pastikan baris 331 juga menggunakan casting integer
             $articleSearchIndex->articleFileChanged((int)$this->articleId, (int)ARTICLE_SEARCH_GALLEY_FILE, (int)$galley->getFileId());
             $articleSearchIndex->articleChangesFinished();
         }

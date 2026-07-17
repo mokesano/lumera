@@ -19,35 +19,44 @@ import('lib.pkp.classes.core.ItemIterator');
 
 class DBRowIterator extends ItemIterator {
     
-    /** @var object The ADORecordSet to be wrapped around */
+    /** @var \ADORecordSet|null The ADORecordSet to be wrapped around */
     public $records;
 
-    /**
-     * @var array an array of primary key field names that uniquely
-     * identify a result row in the records array.
-     */
+    /** @var array An array of primary key field names that uniquely identify a result row */
     public $idFields;
 
     /** @var bool True iff the resultset was always empty */
     public $wasEmpty;
 
+    /** @var bool */
     public $isFirst;
+
+    /** @var bool */
     public $isLast;
+
+    /** @var int */
     public $page;
+
+    /** @var int */
     public $count;
+
+    /** @var int */
     public $pageCount;
 
     /**
      * Constructor.
      * Initialize the DBRowIterator
-     * @param $records object ADO record set
-     * @param $idFields array an array of primary key field names
+     * 
+     * @param \ADORecordSet|null $records ADO record set
+     * @param array $idFields An array of primary key field names
      */
-    public function __construct($records, $idFields = array()) {
+    public function __construct($records, $idFields = []) {
         $this->idFields = $idFields;
 
-        if (!$records || $records->EOF) {
-            if ($records) $records->Close();
+        if ($records === null || $records->EOF) {
+            if ($records !== null) {
+                $records->Close();
+            }
             $this->records = null;
             $this->wasEmpty = true;
             $this->page = 1;
@@ -55,8 +64,7 @@ class DBRowIterator extends ItemIterator {
             $this->isLast = true;
             $this->count = 0;
             $this->pageCount = 1;
-        }
-        else {
+        } else {
             $this->records = $records;
             $this->wasEmpty = false;
             $this->page = $records->AbsolutePage();
@@ -69,10 +77,13 @@ class DBRowIterator extends ItemIterator {
 
     /**
      * [SHIM] Backward Compatibility
+     * 
+     * @param \ADORecordSet|null $records
+     * @param array $idFields
      */
-    public function DBRowIterator($records, $idFields = array()) {
+    public function DBRowIterator($records, $idFields = []) {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::DBRowIterator(). Please refactor to use parent::__construct().",
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
         self::__construct($records, $idFields);
@@ -80,13 +91,19 @@ class DBRowIterator extends ItemIterator {
 
     /**
      * Return the object representing the next row.
-     * @return array
+     * 
+     * @return array|null
      */
     public function next() {
-        if ($this->records == null) return $this->records;
+        if ($this->records === null) {
+            return null;
+        }
+        
         if (!$this->records->EOF) {
             $row = $this->records->getRowAssoc(false);
-            if (!$this->records->MoveNext()) $this->_cleanup();
+            if (!$this->records->MoveNext()) {
+                $this->_cleanup();
+            }
             return $row;
         } else {
             $this->_cleanup();
@@ -96,28 +113,37 @@ class DBRowIterator extends ItemIterator {
 
     /**
      * Return the next row, with key.
-     * @return array ($key, $value)
+     * 
+     * @return array [$key, $value]
      */
     public function nextWithKey() {
         $result = $this->next();
+        
+        // Internal coercion / null safety: prevent fatal error if $result is null
+        if ($result === null) {
+            return [null, null];
+        }
+
         if (empty($this->idFields)) {
             $key = null;
         } else {
-            assert(is_array($result) && is_array($this->idFields));
             $key = '';
-            foreach($this->idFields as $idField) {
-                assert(isset($result[$idField]));
-                if (!empty($key)) $key .= '-';
-                $key .= (string)$result[$idField];
+            foreach ($this->idFields as $idField) {
+                $fieldValue = $result[$idField] ?? '';
+                if ($key !== '') {
+                    $key .= '-';
+                }
+                $key .= (string) $fieldValue;
             }
         }
-        $returner = array($key, $result);
-        return $returner;
+        
+        return [$key, $result];
     }
 
     /**
      * Determine whether this iterator represents the first page of a set.
-     * @return boolean
+     * 
+     * @return bool
      */
     public function atFirstPage() {
         return $this->isFirst;
@@ -125,7 +151,8 @@ class DBRowIterator extends ItemIterator {
 
     /**
      * Determine whether this iterator represents the last page of a set.
-     * @return boolean
+     * 
+     * @return bool
      */
     public function atLastPage() {
         return $this->isLast;
@@ -133,6 +160,7 @@ class DBRowIterator extends ItemIterator {
 
     /**
      * Get the page number of a set that this iterator represents.
+     * 
      * @return int
      */
     public function getPage() {
@@ -141,6 +169,7 @@ class DBRowIterator extends ItemIterator {
 
     /**
      * Get the total number of items in the set.
+     * 
      * @return int
      */
     public function getCount() {
@@ -149,6 +178,7 @@ class DBRowIterator extends ItemIterator {
 
     /**
      * Get the total number of pages in the set.
+     * 
      * @return int
      */
     public function getPageCount() {
@@ -157,10 +187,13 @@ class DBRowIterator extends ItemIterator {
 
     /**
      * Return a boolean indicating whether or not we've reached the end of results
-     * @return boolean
+     * 
+     * @return bool
      */
     public function eof() {
-        if ($this->records == null) return true;
+        if ($this->records === null) {
+            return true;
+        }
         if ($this->records->EOF) {
             $this->_cleanup();
             return true;
@@ -170,19 +203,20 @@ class DBRowIterator extends ItemIterator {
 
     /**
      * Return a boolean indicating whether or not this resultset was empty from the beginning
-     * @return boolean
+     * 
+     * @return bool
      */
     public function wasEmpty() {
         return $this->wasEmpty;
     }
 
     /**
-     * PRIVATE function used internally to clean up the record set.
-     * This is called aggressively because it can free resources.
+     * Clean up the record set to free resources.
+     * This is called internally when the iterator reaches EOF.
      */
-    public function _cleanup() {
-        if ($this->records) {
-            $this->records->close();
+    protected function _cleanup() {
+        if ($this->records !== null) {
+            $this->records->Close();
             unset($this->records);
             $this->records = null;
         }
@@ -190,15 +224,16 @@ class DBRowIterator extends ItemIterator {
 
     /**
      * Convert this iterator to an array.
+     * 
      * @return array
      */
     public function toArray() {
-        $returner = array();
+        $returner = [];
         while (!$this->eof()) {
             $returner[] = $this->next();
         }
         return $returner;
     }
-}
 
+}
 ?>

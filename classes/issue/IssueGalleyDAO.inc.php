@@ -27,7 +27,7 @@ class IssueGalleyDAO extends DAO {
     }
 
     /**
-     * Legacy Constructor Shim.
+     * [SHIM] Backward Compatibility.
      */
     public function IssueGalleyDAO() {
         trigger_error(
@@ -426,7 +426,8 @@ class IssueGalleyDAO extends DAO {
             'SELECT MAX(seq) + 1 FROM issue_galleys WHERE issue_id = ?',
             (int) $issueId
         );
-        $returner = floor($result->fields[0]);
+        $value = $result->fields[0] ?? null;
+        $returner = (int) floor($value !== null ? (float) $value : 1);
 
         $result->Close();
         unset($result);
@@ -442,5 +443,4 @@ class IssueGalleyDAO extends DAO {
         return $this->getInsertId('issue_galleys', 'galley_id');
     }
 }
-
 ?>

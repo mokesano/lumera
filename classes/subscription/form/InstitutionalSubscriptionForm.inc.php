@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * @defgroup subscription_form
@@ -15,12 +16,12 @@
  * @ingroup subscription_form
  *
  * @brief Form class for institutional subscription create/edits.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('classes.subscription.form.SubscriptionForm');
 
 class InstitutionalSubscriptionForm extends SubscriptionForm {
+
     /**
      * Constructor
      * @param subscriptionId int leave as default for new subscription
@@ -52,7 +53,6 @@ class InstitutionalSubscriptionForm extends SubscriptionForm {
         }
 
         // Ensure subscription type is valid
-        // [WIZDAM FIX] Replaced create_function with Closure and use()
         $this->addCheck(new FormValidatorCustom($this, 'typeId', 'required', 'manager.subscriptions.form.typeIdValid', function($typeId) use ($journalId) {
             $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
             return ($subscriptionTypeDao->subscriptionTypeExistsByTypeId($typeId, $journalId) && $subscriptionTypeDao->getSubscriptionTypeInstitutional($typeId) == 1);
@@ -124,15 +124,13 @@ class InstitutionalSubscriptionForm extends SubscriptionForm {
 
         // If online or print + online, domain or at least one IP range has been provided
         if ($subscriptionType->getFormat() != SUBSCRIPTION_TYPE_FORMAT_PRINT) {
-            // [WIZDAM FIX] Replaced create_function with Closure and use()
             $this->addCheck(new FormValidatorCustom($this, 'domain', 'required', 'manager.subscriptions.form.domainIPRangeRequired', function($domain) use ($ipRangeProvided) {
                 return ($domain != '' || $ipRangeProvided) ? true : false;
             }));
         }
 
         // If provided ensure IP ranges have IP address format; IP addresses may contain wildcards
-        if ($ipRangeProvided) {    
-            // [WIZDAM FIX] Replaced create_function with Closure
+        if ($ipRangeProvided) {
             $this->addCheck(new FormValidatorArrayCustom($this, 'ipRanges', 'required', 'manager.subscriptions.form.ipRangeValid', function($ipRange, $regExp) {
                 return PKPString::regexp_match($regExp, $ipRange);
             },
@@ -152,7 +150,7 @@ class InstitutionalSubscriptionForm extends SubscriptionForm {
     /**
      * Save institutional subscription. 
      */
-    public function execute() {
+    public function execute($object = NULL) {
         $insert = false;
         if (!isset($this->subscription)) {
             import('classes.subscription.InstitutionalSubscription');
@@ -186,5 +184,4 @@ class InstitutionalSubscriptionForm extends SubscriptionForm {
         } 
     }
 }
-
 ?>

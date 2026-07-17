@@ -36,6 +36,9 @@ $WAF_BLOCKING_THRESHOLD = 10;
 // HELPER FUNCTIONS
 // ============================================
 
+/**
+ * @param mixed $message
+ */
 function waf_log_v27($message, $critical = false) {
     global $AF_ATTEMPT_LOG_FILE;
     $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'UNKNOWN';
@@ -47,6 +50,9 @@ function waf_log_v27($message, $critical = false) {
     }
 }
 
+/**
+ * @param mixed $reason
+ */
 function waf_block_v27($reason, $details = '') {
     global $AF_BLOCK_LIST_FILE;
     $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'UNKNOWN';
@@ -206,6 +212,10 @@ if (in_array($REQUEST_METHOD, ['TRACE', 'TRACK', 'DEBUG'])) {
 // LAYER 3: DEEP CONTENT INSPECTION - htaccess
 // ============================================
 
+/**
+ * @param mixed $data
+ * @param mixed $source
+ */
 function waf_scan_htaccess_v27($data, $source) {
     if (!is_string($data) || strlen($data) < 10) return;
     
@@ -299,7 +309,10 @@ $WAF_RULES = [
     ['pattern' => '/javascript\s*:\s*(alert|eval|prompt)\s*\(/i', 'score' => 40, 'cat' => 'XSS'],
 ];
 
-function waf_scan_recursive_v27(&$data, $depth = 0) {
+/**
+ * @param mixed $data
+ */
+function waf_scan_recursive_v27($data, $depth = 0) {
     global $WAF_RULES, $WAF_SCORE, $WAF_DETAILS, $WAF_BLOCKING_THRESHOLD;
     
     if ($depth > 10 || $WAF_SCORE >= $WAF_BLOCKING_THRESHOLD) return;

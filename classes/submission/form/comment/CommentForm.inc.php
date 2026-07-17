@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see Comment, ArticleCommentDAO
  *
  * @brief Comment form.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
