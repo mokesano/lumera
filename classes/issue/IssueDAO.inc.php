@@ -803,9 +803,9 @@ class IssueDAO extends DAO {
      * Move a custom issue ordering up or down, resequencing as necessary.
      * @param int|string $journalId
      * @param int|string $issueId
-     * @param int $newPos The new position (0-based) of this section
+     * @param float $newPos The new position (fractional allowed)
      */
-    public function moveCustomIssueOrder(int|string $journalId, int|string $issueId, int $newPos): void {
+    public function moveCustomIssueOrder(int|string $journalId, int|string $issueId, float $newPos): void {
         $journalIdInt = (int) $journalId;
         $issueIdInt = (int) $issueId;
         
@@ -820,7 +820,7 @@ class IssueDAO extends DAO {
                 [$newPos, $journalIdInt, $issueIdInt]
             );
         } else {
-            $this->insertCustomIssueOrder($journalIdInt, $issueIdInt, $newPos);
+            $this->insertCustomIssueOrder($journalIdInt, $issueIdInt, (int) floor($newPos));
         }
         $result->Close();
         
