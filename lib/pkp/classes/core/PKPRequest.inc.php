@@ -53,8 +53,7 @@ class PKPRequest {
      * Constructor.
      */
     public function __construct() {
-        // [SEO & DOI PROTECTION]
-        // Pelindung URL cerdas, aman untuk DOI, dan sinkron dengan restful_urls
+        // [SEO & DOI]: Pelindung URL, DOI, dan sinkron restful_urls
         $this->_enforceSmartRestfulUrl();
     }
 
@@ -72,8 +71,8 @@ class PKPRequest {
     /**
      * [WIZDAM SEO] Logika Cerdas Pengalihan index.php
      * 1. HANYA aktif jika restful_urls = On di config.inc.php.
-     * 2. HANYA me-redirect request GET/HEAD (melindungi payload POST dari formulir lama).
-     * 3. Mempertahankan struktur path (DOI endpoint) dan query string secara absolut.
+     * 2. HANYA me-redirect request GET/HEAD (Lindungi payload POST dari formulir).
+     * 3. Pertahankan path DOI endpoint dan query string secara absolut.
      * 
      * @return void
      */
@@ -95,7 +94,6 @@ class PKPRequest {
             // Cek: Apakah request membawa /index.php secara eksplisit?
             if (str_contains($path, '/index.php')) {
                 // PROTEKSI 2: Hapus index.php dan pertahankan sisa path
-                // Contoh: /index.php/ISLE/article/view/10 -> /ISLE/article/view/10
                 $cleanPath = str_replace('/index.php', '', $path);
                 
                 // Jika URL root, pastikan tidak menjadi string kosong
@@ -118,7 +116,6 @@ class PKPRequest {
                 $redirectUrl = $protocol . '://' . $host . $cleanPath . $query;
                 
                 // SEO: Permanent Redirect (301)
-                // Sinyal Google untuk update URL Endpoint mereka.
                 if (!headers_sent()) {
                     header('HTTP/1.1 301 Moved Permanently');
                     header('Location: ' . $redirectUrl);
