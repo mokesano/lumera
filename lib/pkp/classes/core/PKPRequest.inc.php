@@ -940,6 +940,17 @@ class PKPRequest {
         $returner = call_user_func_array($callable, $parameters);
         return $returner;
     }
+
+    /**
+     * Redirect user to the unified publisher dashboard (Site level).
+     * [LUMERA FUTURISTIC DESIGN]: Breaks the journal silo and routes to the main publisher portal.
+     * 
+     * @return never
+     */
+    public function redirectHome(): never {
+        $this->redirect('index', 'user');
+        exit();
+    }
     
     /**
      * Check whether a path component is valid (not an external URL or malicious path).

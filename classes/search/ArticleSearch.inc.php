@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see ArticleSearchDAO
  *
  * @brief Class for retrieving article search results.
- * [WIZDAM EDITION] PHP 7.4+ Compatible & Optimized
  */
 
 // Search types
@@ -32,38 +31,53 @@ define('ARTICLE_SEARCH_INDEX_TERMS',        0x00000078);
 define('ARTICLE_SEARCH_DEFAULT_RESULT_LIMIT', 20);
 
 import('classes.search.ArticleSearchIndex');
+import('lib.pkp.classes.core.VirtualArrayIterator');
 
 class ArticleSearch {
 
     /**
      * Parses a search query string.
      * Supports +/-, AND/OR, parens
-     * [MODERNISASI] Made static
-     * @param $query
+     * @param mixed $query
      * @return array
      */
     public static function _parseQuery($query) {
-        $count = preg_match_all('/(\+|\-|)("[^"]+"|\(|\)|[^\s\)]+)/', $query, $matches);
+        $queryString = (string) $query;
+        $count = preg_match_all('/(\+|\-|)("[^"]+"|\(|\)|[^\s\)]+)/', $queryString, $matches);
+        
+        if ($count === false) {
+            $count = 0;
+            $matches = [[], []];
+        }
+        
         $pos = 0;
-        $keywords = ArticleSearch::_parseQueryInternal($matches[1], $matches[2], $pos, $count);
+        $keywords = self::_parseQueryInternal($matches[1], $matches[2], $pos, (int) $count);
         return $keywords;
     }
 
     /**
      * Query parsing helper routine.
-     * [MODERNISASI] Made static
+     * @param array $signTokens
+     * @param array $tokens
+     * @param int $pos
+     * @param int $total
+     * @return array
      */
     public static function _parseQueryInternal($signTokens, $tokens, &$pos, $total) {
-        $return = array('+' => array(), '' => array(), '-' => array());
-        $postBool = $preBool = '';
+        $return = ['+' => [], '' => [], '-' => []];
+        $postBool = '';
+        $preBool = '';
+        $sign = '+';
 
         $notOperator = PKPString::strtolower(__('search.operator.not'));
         $andOperator = PKPString::strtolower(__('search.operator.and'));
         $orOperator = PKPString::strtolower(__('search.operator.or'));
         
-        while ($pos < $total) {
-            if (!empty($signTokens[$pos])) $sign = $signTokens[$pos];
-            else if (empty($sign)) $sign = '+';
+        $totalInt = (int) $total;
+        while ($pos < $totalInt) {
+            if (!empty($signTokens[$pos])) {
+                $sign = $signTokens[$pos];
+            }
             
             $token = PKPString::strtolower($tokens[$pos++]);
             
@@ -74,22 +88,25 @@ class ArticleSearch {
                 case ')':
                     return $return;
                 case '(':
-                    $token = ArticleSearch::_parseQueryInternal($signTokens, $tokens, $pos, $total);
+                    $token = self::_parseQueryInternal($signTokens, $tokens, $pos, $totalInt);
+                    // fall-through intended
                 default:
                     $postBool = '';
-                    if ($pos < $total) {
+                    if ($pos < $totalInt) {
                         $peek = PKPString::strtolower($tokens[$pos]);
-                        if ($peek == $orOperator) {
+                        if ($peek === $orOperator) {
                             $postBool = 'or';
                             $pos++;
-                        } else if ($peek == $andOperator) {
+                        } elseif ($peek === $andOperator) {
                             $postBool = 'and';
                             $pos++;
                         }
                     }
                     $bool = empty($postBool) ? $preBool : $postBool;
                     $preBool = $postBool;
-                    if ($bool == 'or') $sign = '';
+                    if ($bool === 'or') {
+                        $sign = '';
+                    }
                     
                     if (is_array($token)) {
                         $k = $token;
@@ -97,7 +114,9 @@ class ArticleSearch {
                         $articleSearchIndex = new ArticleSearchIndex();
                         $k = $articleSearchIndex->filterKeywords($token, true);
                     }
-                    if (!empty($k)) $return[$sign][] = $k;
+                    if (!empty($k)) {
+                        $return[$sign][] = $k;
+                    }
                     $sign = '';
                     break;
             }
@@ -107,43 +126,57 @@ class ArticleSearch {
 
     /**
      * Helper to merge keyword results.
-     * [MODERNISASI] Made static, removed & reference
+     * @param mixed $journal
+     * @param array $keywords
+     * @param mixed $publishedFrom
+     * @param mixed $publishedTo
+     * @return array
      */
     public static function _getMergedArray($journal, $keywords, $publishedFrom, $publishedTo) {
         $resultsPerKeyword = Config::getVar('search', 'results_per_keyword');
         $resultCacheHours = Config::getVar('search', 'result_cache_hours');
-        if (!is_numeric($resultsPerKeyword)) $resultsPerKeyword = 100;
-        if (!is_numeric($resultCacheHours)) $resultCacheHours = 24;
+        $resultsPerKeyword = is_numeric($resultsPerKeyword) ? (int) $resultsPerKeyword : 100;
+        $resultCacheHours = is_numeric($resultCacheHours) ? (int) $resultCacheHours : 24;
 
-        $mergedKeywords = array('+' => array(), '' => array(), '-' => array());
+        $mergedKeywords = ['+' => [], '' => [], '-' => []];
         foreach ($keywords as $type => $keyword) {
-            if (!empty($keyword['+']))
-                $mergedKeywords['+'][] = array('type' => $type, '+' => $keyword['+'], '' => array(), '-' => array());
-            if (!empty($keyword['']))
-                $mergedKeywords[''][] = array('type' => $type, '+' => array(), '' => $keyword[''], '-' => array());
-            if (!empty($keyword['-']))
-                $mergedKeywords['-'][] = array('type' => $type, '+' => array(), '' => $keyword['-'], '-' => array());
+            if (!empty($keyword['+'])) {
+                $mergedKeywords['+'][] = ['type' => $type, '+' => $keyword['+'], '' => [], '-' => []];
+            }
+            if (!empty($keyword[''])) {
+                $mergedKeywords[''][] = ['type' => $type, '+' => [], '' => $keyword[''], '-' => []];
+            }
+            if (!empty($keyword['-'])) {
+                $mergedKeywords['-'][] = ['type' => $type, '+' => [], '' => $keyword['-'], '-' => []];
+            }
         }
         
-        $mergedResults = ArticleSearch::_getMergedKeywordResults($journal, $mergedKeywords, null, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours);
+        $mergedResults = self::_getMergedKeywordResults($journal, $mergedKeywords, null, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours);
 
         return $mergedResults;
     }
 
     /**
      * Recursive helper for _getMergedArray.
-     * [MODERNISASI] Made static, removed & reference
+     * @param mixed $journal
+     * @param array $keyword
+     * @param mixed $type
+     * @param mixed $publishedFrom
+     * @param mixed $publishedTo
+     * @param int $resultsPerKeyword
+     * @param int $resultCacheHours
+     * @return array
      */
     public static function _getMergedKeywordResults($journal, $keyword, $type, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours) {
-        $mergedResults = null;
+        $mergedResults = [];
 
         if (isset($keyword['type'])) {
             $type = $keyword['type'];
         }
 
         foreach ($keyword['+'] as $phrase) {
-            $results = ArticleSearch::_getMergedPhraseResults($journal, $phrase, $type, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours);
-            if ($mergedResults === null) {
+            $results = self::_getMergedPhraseResults($journal, $phrase, $type, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours);
+            if (empty($mergedResults)) {
                 $mergedResults = $results;
             } else {
                 foreach ($mergedResults as $articleId => $count) {
@@ -156,24 +189,20 @@ class ArticleSearch {
             }
         }
 
-        if ($mergedResults == null) {
-            $mergedResults = array();
-        }
-
         if (!empty($mergedResults) || empty($keyword['+'])) {
             foreach ($keyword[''] as $phrase) {
-                $results = ArticleSearch::_getMergedPhraseResults($journal, $phrase, $type, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours);
+                $results = self::_getMergedPhraseResults($journal, $phrase, $type, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours);
                 foreach ($results as $articleId => $count) {
                     if (isset($mergedResults[$articleId])) {
                         $mergedResults[$articleId] += $count;
-                    } else if (empty($keyword['+'])) {
+                    } elseif (empty($keyword['+'])) {
                         $mergedResults[$articleId] = $count;
                     }
                 }
             }
 
             foreach ($keyword['-'] as $phrase) {
-                $results = ArticleSearch::_getMergedPhraseResults($journal, $phrase, $type, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours);
+                $results = self::_getMergedPhraseResults($journal, $phrase, $type, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours);
                 foreach ($results as $articleId => $count) {
                     if (isset($mergedResults[$articleId])) {
                         unset($mergedResults[$articleId]);
@@ -187,14 +216,22 @@ class ArticleSearch {
 
     /**
      * Recursive helper for _getMergedArray.
-     * [MODERNISASI] Made static, removed & reference
+     * @param mixed $journal
+     * @param array $phrase
+     * @param mixed $type
+     * @param mixed $publishedFrom
+     * @param mixed $publishedTo
+     * @param int $resultsPerKeyword
+     * @param int $resultCacheHours
+     * @return array
      */
     public static function _getMergedPhraseResults($journal, $phrase, $type, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours) {
         if (isset($phrase['+'])) {
-            return ArticleSearch::_getMergedKeywordResults($journal, $phrase, $type, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours);
+            return self::_getMergedKeywordResults($journal, $phrase, $type, $publishedFrom, $publishedTo, $resultsPerKeyword, $resultCacheHours);
         }
 
-        $mergedResults = array();
+        $mergedResults = [];
+        /** @var ArticleSearchDAO $articleSearchDao */
         $articleSearchDao = DAORegistry::getDAO('ArticleSearchDAO');
         $results = $articleSearchDao->getPhraseResults(
             $journal,
@@ -206,13 +243,16 @@ class ArticleSearch {
             $resultCacheHours
         );
         
-        while (!$results->eof()) {
-            $result = $results->next();
-            $articleId = $result['article_id'];
-            if (!isset($mergedResults[$articleId])) {
-                $mergedResults[$articleId] = $result['count'];
-            } else {
-                $mergedResults[$articleId] += $result['count'];
+        if ($results && is_object($results)) {
+            while (!$results->eof()) {
+                $result = $results->next();
+                $articleId = (int) $result['article_id'];
+                $count = (int) $result['count'];
+                if (!isset($mergedResults[$articleId])) {
+                    $mergedResults[$articleId] = $count;
+                } else {
+                    $mergedResults[$articleId] += $count;
+                }
             }
         }
         return $mergedResults;
@@ -220,15 +260,23 @@ class ArticleSearch {
 
     /**
      * Sparse array helper.
-     * [MODERNISASI] Made static, removed & reference
+     * @param mixed $mergedResults
+     * @return array
      */
     public static function _getSparseArray($mergedResults) {
+        if (!is_array($mergedResults)) {
+            return [];
+        }
+
         $resultCount = count($mergedResults);
-        $results = array();
+        $results = [];
         $i = 0;
         foreach ($mergedResults as $articleId => $count) {
-            $frequencyIndicator = ($resultCount * $count) + $i++;
-            $results[$frequencyIndicator] = $articleId;
+            $articleIdInt = (int) $articleId;
+            $countInt = (int) $count;
+            
+            $frequencyIndicator = ($resultCount * $countInt) + $i++;
+            $results[$frequencyIndicator] = $articleIdInt;
         }
         krsort($results);
         return $results;
@@ -236,11 +284,11 @@ class ArticleSearch {
 
     /**
      * Retrieve the search filters from the request.
-	 * @param $request Request
-	 * @return array All search filters (empty and active)
-	 */
+     * @param mixed $request
+     * @return array All search filters (empty and active)
+     */
     public static function getSearchFilters($request) {
-        $searchFilters = array(
+        $searchFilters = [
             'query' => $request->getUserVar('query'),
             'searchJournal' => $request->getUserVar('searchJournal'),
             'abstract' => $request->getUserVar('abstract'),
@@ -253,7 +301,7 @@ class ArticleSearch {
             'type' => $request->getUserVar('type'),
             'coverage' => $request->getUserVar('coverage'),
             'indexTerms' => $request->getUserVar('indexTerms')
-        );
+        ];
 
         $simpleQuery = $request->getUserVar('simpleQuery');
         if (!empty($simpleQuery)) {
@@ -264,22 +312,26 @@ class ArticleSearch {
         }
 
         $fromDate = $request->getUserDateVar('dateFrom', 1, 1);
-        $searchFilters['fromDate'] = (is_null($fromDate) ? null : date('Y-m-d H:i:s', $fromDate));
+        $searchFilters['fromDate'] = ($fromDate === null || $fromDate === false) ? null : date('Y-m-d H:i:s', (int) $fromDate);
+        
         $toDate = $request->getUserDateVar('dateTo', 32, 12, null, 23, 59, 59);
-        $searchFilters['toDate'] = (is_null($toDate) ? null : date('Y-m-d H:i:s', $toDate));
+        $searchFilters['toDate'] = ($toDate === null || $toDate === false) ? null : date('Y-m-d H:i:s', (int) $toDate);
 
         $journal = $request->getJournal();
-        $siteSearch = !((boolean)$journal);
+        $siteSearch = !((bool) $journal);
+        
         if ($siteSearch) {
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             if (!empty($searchFilters['searchJournal'])) {
-                $journal = $journalDao->getById($searchFilters['searchJournal']);
+                // [CASTING DI BODY] Casting ke int sebelum dilempar ke DAO
+                $journal = $journalDao->getById((int) $searchFilters['searchJournal']);
             } elseif (array_key_exists('journalTitle', $request->getUserVars())) {
                 $journals = $journalDao->getJournals(
-                    false, null, JOURNAL_FIELD_TITLE,
-                    JOURNAL_FIELD_TITLE, 'is', $request->getUserVar('journalTitle')
+                    false, null, 'title',
+                    'title', 'is', $request->getUserVar('journalTitle')
                 );
-                if ($journals->getCount() == 1) {
+                if ($journals && is_object($journals) && $journals->getCount() === 1) {
                     $journal = $journals->next();
                 }
             }
@@ -292,20 +344,23 @@ class ArticleSearch {
 
     /**
      * Load the keywords array from a given search filter.
-     * [MODERNISASI] Made static
-     * 
-	 * @param $searchFilters array Search filters as returned from
-	 *  ArticleSearch::getSearchFilters()
-	 * @return array Keyword array as required by ArticleSearch::retrieveResults()
-	 */
+     * @param array $searchFilters
+     * @return array required by ArticleSearch::retrieveResults()
+     */
     public static function getKeywordsFromSearchFilters($searchFilters) {
-        $indexFieldMap = ArticleSearch::getIndexFieldMap();
-        $indexFieldMap[ARTICLE_SEARCH_INDEX_TERMS] = 'indexTerms';
-        $keywords = array();
-        if (isset($searchFilters['query'])) {
-            $keywords[null] = $searchFilters['query'];
+        if (!is_array($searchFilters)) {
+            return [];
         }
-        foreach($indexFieldMap as $bitmap => $searchField) {
+
+        $indexFieldMap = self::getIndexFieldMap();
+        $indexFieldMap[ARTICLE_SEARCH_INDEX_TERMS] = 'indexTerms';
+        $keywords = [];
+        
+        if (isset($searchFilters['query']) && !empty($searchFilters['query'])) {
+            $keywords[''] = $searchFilters['query'];
+        }
+        
+        foreach ($indexFieldMap as $bitmap => $searchField) {
             if (isset($searchFilters[$searchField]) && !empty($searchFilters[$searchField])) {
                 $keywords[$bitmap] = $searchFilters[$searchField];
             }
@@ -315,68 +370,75 @@ class ArticleSearch {
 
     /**
      * Format results.
-     * [MODERNISASI] Made static, removed & reference
-	 *
-	 * Note that this function is also called externally to fetch
-	 * results for the title index, and possibly elsewhere.
-	 *
-	 * @return array An array with the articles, published articles,
-	 *  issue, journal, section and the issue availability.
-	 */
+     * @param mixed $results
+     * @return array
+     */
     public static function formatResults($results) {
+        if (!is_array($results) || empty($results)) {
+            return [];
+        }
+
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
 
-        $publishedArticleCache = array();
-        $articleCache = array();
-        $issueCache = array();
-        $issueAvailabilityCache = array();
-        $journalCache = array();
-        $sectionCache = array();
+        $publishedArticleCache = [];
+        $articleCache = [];
+        $issueCache = [];
+        $issueAvailabilityCache = [];
+        $journalCache = [];
+        $sectionCache = [];
 
-        $returner = array();
+        $returner = [];
         foreach ($results as $articleId) {
-            if (!isset($articleCache[$articleId])) {
-                $publishedArticleCache[$articleId] = $publishedArticleDao->getPublishedArticleByArticleId($articleId);
-                $articleCache[$articleId] = $articleDao->getArticle($articleId);
+            $articleIdInt = (int) $articleId;
+            if (!isset($articleCache[$articleIdInt])) {
+                $publishedArticleCache[$articleIdInt] = $publishedArticleDao->getPublishedArticleByArticleId($articleIdInt);
+                $articleCache[$articleIdInt] = $articleDao->getArticle($articleIdInt);
             }
             
-            $article = $articleCache[$articleId];
-            $publishedArticle = $publishedArticleCache[$articleId];
-
+            $article = $articleCache[$articleIdInt];
+            $publishedArticle = $publishedArticleCache[$articleIdInt];
             if ($publishedArticle && $article) {
-                $sectionId = $article->getSectionId();
+                $sectionId = (int) $article->getSectionId();
                 if (!isset($sectionCache[$sectionId])) {
                     $sectionCache[$sectionId] = $sectionDao->getSection($sectionId);
                 }
 
-                $journalId = $article->getJournalId();
+                $journalId = (int) $article->getJournalId();
                 if (!isset($journalCache[$journalId])) {
                     $journalCache[$journalId] = $journalDao->getById($journalId);
                 }
 
-                $issueId = $publishedArticle->getIssueId();
+                $issueId = (int) $publishedArticle->getIssueId();
                 if (!isset($issueCache[$issueId])) {
                     $issue = $issueDao->getIssueById($issueId);
                     $issueCache[$issueId] = $issue;
                     import('classes.issue.IssueAction');
-                    $issueAvailabilityCache[$issueId] = !IssueAction::subscriptionRequired($issue) || IssueAction::subscribedUser($journalCache[$journalId], $issueId, $articleId) || IssueAction::subscribedDomain($journalCache[$journalId], $issueId, $articleId);
+                    $issueAvailabilityCache[$issueId] = !IssueAction::subscriptionRequired($issue) || 
+                        IssueAction::subscribedUser($journalCache[$journalId], $issueId, $articleIdInt) || 
+                        IssueAction::subscribedDomain($journalCache[$journalId], $issueId, $articleIdInt);
                 }
 
-                if (!$issueCache[$issueId]->getPublished()) continue;
+                if (!$issueCache[$issueId]->getPublished()) {
+                    continue;
+                }
 
-                // [MODERNISASI] Removed & reference
-                $returner[] = array(
+                $returner[] = [
                     'article' => $article,
-                    'publishedArticle' => $publishedArticleCache[$articleId],
+                    'publishedArticle' => $publishedArticleCache[$articleIdInt],
                     'issue' => $issueCache[$issueId],
                     'journal' => $journalCache[$journalId],
                     'issueAvailable' => $issueAvailabilityCache[$issueId],
                     'section' => $sectionCache[$sectionId]
-                );
+                ];
             }
         }
         return $returner;
@@ -384,75 +446,69 @@ class ArticleSearch {
 
     /**
      * Return an array of search results matching the supplied keyword IDs.
-     * [MODERNISASI] Removed & reference
-     * 
-	 * keyword IDs in decreasing order of match quality.
-	 * Keywords are supplied in an array of the following format:
-	 * $keywords[ARTICLE_SEARCH_AUTHOR] = array('John', 'Doe');
-	 * $keywords[ARTICLE_SEARCH_...] = array(...);
-	 * $keywords[null] = array('Matches', 'All', 'Fields');
-	 * @param $journal object The journal to search
-	 * @param $keywords array List of keywords
-	 * @param $error string a reference to a variable that will
-	 *  contain an error message if the search service produces
-	 *  an error.
-	 * @param $publishedFrom object Search-from date
-	 * @param $publishedTo object Search-to date
-	 * @param $rangeInfo Information on the range of results to return
-	 * @return VirtualArrayIterator An iterator with one entry per retrieved
-	 *  article containing the article, published article, issue, journal, etc.
-	 */
+     * @param mixed $journal
+     * @param mixed $keywords
+     * @param mixed $error
+     * @param mixed $publishedFrom
+     * @param mixed $publishedTo
+     * @param mixed $rangeInfo
+     * @return VirtualArrayIterator
+     */
     public static function retrieveResults($journal, $keywords, $error, $publishedFrom = null, $publishedTo = null, $rangeInfo = null) {
-        if ($rangeInfo && $rangeInfo->isValid()) {
-            $page = $rangeInfo->getPage();
-            $itemsPerPage = $rangeInfo->getCount();
+        if ($rangeInfo && is_object($rangeInfo) && method_exists($rangeInfo, 'isValid') && $rangeInfo->isValid()) {
+            $page = (int) $rangeInfo->getPage();
+            $itemsPerPage = (int) $rangeInfo->getCount();
         } else {
             $page = 1;
             $itemsPerPage = ARTICLE_SEARCH_DEFAULT_RESULT_LIMIT;
         }
 
-        $totalResults = null;
-        // [MODERNISASI] HookRegistry call updated (removed &)
+        $totalResults = 0;
         $results = HookRegistry::dispatch(
             'ArticleSearch::retrieveResults',
-            array($journal, $keywords, $publishedFrom, $publishedTo, $page, $itemsPerPage, &$totalResults, &$error)
+            [$journal, $keywords, $publishedFrom, $publishedTo, $page, $itemsPerPage, &$totalResults, &$error]
         );
 
         if ($results === false) {
-            foreach($keywords as $searchType => $query) {
-                $keywords[$searchType] = ArticleSearch::_parseQuery($query);
+            if (!is_array($keywords)) {
+                $keywords = [];
+            }
+            
+            foreach ($keywords as $searchType => $query) {
+                $keywords[$searchType] = self::_parseQuery((string) $query);
             }
 
-            $mergedResults = ArticleSearch::_getMergedArray($journal, $keywords, $publishedFrom, $publishedTo);
-            $results = ArticleSearch::_getSparseArray($mergedResults);
+            $mergedResults = self::_getMergedArray($journal, $keywords, $publishedFrom, $publishedTo);
+            $results = self::_getSparseArray($mergedResults);
+            
+            if (!is_array($results)) {
+                $results = [];
+            }
+            
             $totalResults = count($results);
 
-            $offset = $itemsPerPage * ($page-1);
+            $offset = $itemsPerPage * ($page - 1);
             $length = max($totalResults - $offset, 0);
             $length = min($itemsPerPage, $length);
-            if ($length == 0) {
-                $results = array();
+            
+            if ($length === 0) {
+                $results = [];
             } else {
-                $results = array_slice(
-                    $results,
-                    $offset,
-                    $length
-                );
+                $results = array_slice($results, $offset, $length);
             }
         }
 
-        $results = ArticleSearch::formatResults($results);
+        $formattedResults = self::formatResults($results);
 
-        import('lib.pkp.classes.core.VirtualArrayIterator');
-        $returner = new VirtualArrayIterator($results, $totalResults, $page, $itemsPerPage);
-        return $returner;
+        return new VirtualArrayIterator($formattedResults, $totalResults, $page, $itemsPerPage);
     }
 
     /**
-     * [MODERNISASI] Made static
+     * Get index field map.
+     * @return array
      */
     public static function getIndexFieldMap() {
-        return array(
+        return [
             ARTICLE_SEARCH_AUTHOR => 'authors',
             ARTICLE_SEARCH_TITLE => 'title',
             ARTICLE_SEARCH_ABSTRACT => 'abstract',
@@ -463,8 +519,8 @@ class ArticleSearch {
             ARTICLE_SEARCH_SUBJECT => 'subject',
             ARTICLE_SEARCH_TYPE => 'type',
             ARTICLE_SEARCH_COVERAGE => 'coverage'
-        );
+        ];
     }
-}
 
+}
 ?>

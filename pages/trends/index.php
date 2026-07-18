@@ -4,10 +4,16 @@ declare(strict_types=1);
 /**
  * @file pages/trends/index.php
  *
- * [WIZDAM] - Native Route Registry for 'trends' pages.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Wizdam Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * 
+ * @ingroup pages_trends
+ * @brief Native Route Registry for 'trends' pages.
  * Menangani URL: /{context}/trends/{op}
  */
 
+/** @var string $op */
 switch ($op) {
     case 'index':
     case '':
@@ -33,4 +39,5 @@ switch ($op) {
         import('pages.trends.MostCitedHandler');
         break;
 }
+
 ?>
