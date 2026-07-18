@@ -177,9 +177,6 @@ class PKPLoginHandler extends Handler {
         } else {
             // 4. [LUMERA] Login Gagal, Tambah counter
             $this->_incrementLoginAttempts($request);
-            // [WIZDAM FIX] PRG Pattern — hindari ERR_CACHE_MISS saat reload
-            // Render langsung dari POST endpoint menyebabkan browser menyimpan
-            // POST state — reload meminta konfirmasi resubmit.
             $sessionManager = SessionManager::getManager();
             $session = $sessionManager->getUserSession();
             $session->setSessionVar('loginError', $reason === null
@@ -233,7 +230,7 @@ class PKPLoginHandler extends Handler {
         $this->validate();
         if (!$request) $request = Application::get()->getRequest();
     
-        // 1. Jika sudah login (sesi OJS aktif), langsung redirect
+        // 1. Jika sudah login (sesi aktif), langsung redirect
         if (Validation::isLoggedIn()) {
             $request->redirect(null, 'user');
         }
@@ -275,20 +272,20 @@ class PKPLoginHandler extends Handler {
         $session = $sessionManager->getUserSession();
         $session->setSessionVar('username', $user->getUsername());
         $session->setUserId($user->getId());
-        // $session->setUser($user);
     
         $request->redirect(null, 'user');
     }
 
     /**
-     * Helper: Get login URL (considering SSL settings)
+     * Helper: Get login URL (considering SSL settings).
+     * Delegates to PKPRequest::redirectHome() which routes to PKPPageRouter.
      * @param PKPRequest $request
-     * @return string Login URL
+     * @return never
      */
     public function _redirectAfterLogin($request) {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
-        $request->redirectHome();
+        Request::redirectHome();
     }
 
     /**
@@ -299,7 +296,7 @@ class PKPLoginHandler extends Handler {
     public function signOut($args = [], $request = null) {
         $this->validate();
         $this->setupTemplate($request);
-        
+        // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
         if (Validation::isLoggedIn()) {
@@ -316,19 +313,12 @@ class PKPLoginHandler extends Handler {
 
         // 3. LOGIKA PENGALIHAN
         if (!empty($source)) {
-            // Jika ada sumber yang valid, ikuti sumber tersebut
             $request->redirectUrl($request->getProtocol() . '://' . $request->getServerHost() . $source);
         } else {
-            // PERBAIKAN DI SINI:
-            // Jika tidak ada 'source', jangan gunakan getRequestedPage() karena itu adalah 'login'.
-            // Kita paksa arahkan ke beranda jurnal/site saat ini.
-            
             $journal = $request->getJournal();
             if ($journal) {
-                // Redirect ke URL bersih jurnal (tanpa /index)
                 $request->redirectUrl($request->url($journal->getPath()));
             } else {
-                // Redirect ke home site jika di luar konteks jurnal
                 $request->redirect(null, 'index');
             }
         }
@@ -363,9 +353,11 @@ class PKPLoginHandler extends Handler {
         $templateMgr = TemplateManager::getManager();
 
         // Validasi keamanan sebelum kirim email reset
-        if (!$this->_validateSecurityTokens($request, 'login')) {
+        $errorKey = $this->_validateSecurityTokens($request, 'login');
+        if ($errorKey !== null) {
             $this->_assignSecurityVariables($templateMgr, 'login');
-            $templateMgr->assign('error', 'common.captchaField.badCaptcha');
+            $templateMgr->assign('email', $request->getUserVar('email'));
+            $templateMgr->assign('error', $errorKey);
             return $templateMgr->display('user/lostPassword.tpl');
         }
 
@@ -428,11 +420,9 @@ class PKPLoginHandler extends Handler {
             $templateMgr->assign('backLinkLabel',  'user.login.resetPassword');
             $templateMgr->display('common/error.tpl');
         } elseif (!$oneStepReset) {
-            // Logika reset password otomatis...
-            // Reset password
+            // Reset password: Logika reset password otomatis...
             $newPassword = Validation::generatePassword();
             $auth = null;
-
             if ($user->getAuthId()) {
                 /** @var AuthSourceDAO $authDao */
                 $authDao = DAORegistry::getDAO('AuthSourceDAO');
