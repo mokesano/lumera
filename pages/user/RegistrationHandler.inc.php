@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 
 import('pages.user.UserHandler');
+import('lib.wizdam.security.WizdamSecurity');
 
 class RegistrationHandler extends UserHandler {
     
@@ -86,6 +87,7 @@ class RegistrationHandler extends UserHandler {
             $regForm->display();
 
         } else {
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journals = $journalDao->getJournals(true);
             $templateMgr = TemplateManager::getManager();
@@ -108,6 +110,16 @@ class RegistrationHandler extends UserHandler {
         // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
+        if (WizdamSecurity::isRateLimited($request, 'register')) {
+            $this->setupTemplate($request, true);
+            $templateMgr = TemplateManager::getManager();
+            $templateMgr->assign('pageTitle', 'user.register');
+            $templateMgr->assign('errorMsg', 'user.register.rateLimitExceeded');
+            $templateMgr->assign('backLink', $request->url(null, 'login'));
+            $templateMgr->assign('backLinkLabel', 'user.login');
+            return $templateMgr->display('common/error.tpl');
+        }
+
         $this->validate(null, $request);
         $this->setupTemplate($request, true);
 
@@ -120,6 +132,8 @@ class RegistrationHandler extends UserHandler {
 
         if ($regForm->validate()) {
             $regForm->execute();
+
+            WizdamSecurity::resetAttempts($request, 'register');
 
             $reason = null;
 
@@ -173,6 +187,7 @@ class RegistrationHandler extends UserHandler {
             }
 
         } else {
+            WizdamSecurity::incrementAttempts($request, 'register');
             $regForm->display();
         }
     }
@@ -216,6 +231,7 @@ class RegistrationHandler extends UserHandler {
         $accessKeyCode = array_shift($args);
 
         $journal = $request->getJournal();
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $user = $userDao->getByUsername($username);
         if (!$user) $request->redirect(null, 'login');
@@ -270,6 +286,7 @@ class RegistrationHandler extends UserHandler {
         // Cek settingan Jurnal
         $journal = $request->getJournal();
         if ($journal != null) {
+            /** @var JournalSettingsDAO $journalSettingsDao */
             $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
             
             // Debugging: Uncomment untuk cek setting database
@@ -284,5 +301,6 @@ class RegistrationHandler extends UserHandler {
         
         return true;
     }
+
 }
 ?>

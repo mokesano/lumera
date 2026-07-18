@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_admin
  *
  * @brief Handle requests for site administrative/maintenance functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.site.Version');
@@ -51,13 +49,14 @@ class AdminFunctionsHandler extends AdminHandler {
      */
     public function systemInfo($args, $request) {
         $this->validate($request);
-        $this->setupTemplate($request, true);
+        $this->setupTemplate($request);
 
         $configData = Config::getData();
 
         $dbconn = DBConnection::getConn();
         $dbServerInfo = $dbconn->ServerInfo();
 
+        /** @var VersionDAO $versionDao */
         $versionDao = DAORegistry::getDAO('VersionDAO');
         $currentVersion = $versionDao->getCurrentVersion();
         $versionHistory = $versionDao->getVersionHistory();
@@ -71,7 +70,6 @@ class AdminFunctionsHandler extends AdminHandler {
         ];
 
         $templateMgr = TemplateManager::getManager();
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('currentVersion', $currentVersion);
         $templateMgr->assign('versionHistory', $versionHistory);
         $templateMgr->assign('configData', $configData);
@@ -99,6 +97,7 @@ class AdminFunctionsHandler extends AdminHandler {
      */
     public function expireSessions() {
         $this->validate();
+        /** @var SessionDAO $sessionDao */
         $sessionDao = DAORegistry::getDAO('SessionDAO');
         $sessionDao->deleteAllSessions();
         Application::get()->getRequest()->redirect(null, 'admin');
@@ -126,6 +125,7 @@ class AdminFunctionsHandler extends AdminHandler {
         $cacheManager->flush(null, CACHE_TYPE_OBJECT);
 
         // Clear ADODB's cache
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO'); // As good as any
         $userDao->flushCache();
 
@@ -140,11 +140,11 @@ class AdminFunctionsHandler extends AdminHandler {
         $application = Application::getApplication();
         $request = $application->getRequest();
 
-        // [SECURITY FIX] Sanitasi nama file untuk mencegah directory traversal
         $file = basename(trim((string) $request->getUserVar('file')));
         
         import('lib.pkp.classes.scheduledTask.ScheduledTaskHelper');
-        ScheduledTaskHelper::downloadExecutionLog($file);
+        $scheduledTaskHelper = new ScheduledTaskHelper();
+        $scheduledTaskHelper->downloadExecutionLog($file);
     }
     
     /**
@@ -157,5 +157,6 @@ class AdminFunctionsHandler extends AdminHandler {
 
         Application::get()->getRequest()->redirect(null, 'admin');
     }
+    
 }
 ?>

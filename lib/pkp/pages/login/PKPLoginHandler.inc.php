@@ -120,7 +120,7 @@ class PKPLoginHandler extends Handler {
         if (!$request) $request = Application::get()->getRequest();
 
         // 1. [LUMERA] Cek Rate Limit IP menggunakan WizdamSecurity
-        if (WizdamSecurity::isRateLimited($request, 'login_rate_limiter', 5)) {
+        if (WizdamSecurity::isRateLimited($request, 'login')) {
             $templateMgr = TemplateManager::getManager();
             $this->_assignSecurityVariables($templateMgr, 'login');
             $templateMgr->assign('error', 'user.login.rateLimitExceeded');
@@ -155,7 +155,7 @@ class PKPLoginHandler extends Handler {
 
         if ($user !== false) {
             // 3. [LUMERA] Login Sukses, Reset counter
-            WizdamSecurity::resetAttempts($request, 'login_rate_limiter');
+            WizdamSecurity::resetAttempts($request, 'login');
             
             if ($user->getMustChangePassword()) {
                 // User must change their password in order to log in
@@ -178,7 +178,7 @@ class PKPLoginHandler extends Handler {
             }
         } else {
             // 4. [LUMERA] Login Gagal, Tambah counter
-            WizdamSecurity::incrementAttempts($request, 'login_rate_limiter');
+            WizdamSecurity::incrementAttempts($request, 'login');
             
             $sessionManager = SessionManager::getManager();
             $session = $sessionManager->getUserSession();
