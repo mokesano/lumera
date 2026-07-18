@@ -32,7 +32,10 @@ class PKPUserHandler extends Handler {
      */
     public function PKPUserHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Deprecated constructor called. Use __construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                E_USER_DEPRECATED
+            );
         }
         self::__construct();
     }
@@ -76,7 +79,7 @@ class PKPUserHandler extends Handler {
 
         if ($user) {
             $user->setInlineHelp($user->getInlineHelp() ? 0 : 1);
-
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $userDao->updateObject($user);
         }
@@ -87,5 +90,6 @@ class PKPUserHandler extends Handler {
         header('Content-Type: application/json');
         return $json->getString();
     }
+
 }
 ?>

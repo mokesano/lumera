@@ -56,36 +56,43 @@ class UserHandler extends Handler {
             $isValid["SubscriptionManager"][$journalId] = true;
         }
         if (Validation::isAuthor($journalId)) {
+            /** @var AuthorSubmissionDAO $authorSubmissionDao */
             $authorSubmissionDao = DAORegistry::getDAO('AuthorSubmissionDAO');
             $submissionsCount["Author"][$journalId] = $authorSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid["Author"][$journalId] = true;
         }
         if (Validation::isCopyeditor($journalId)) {
+            /** @var CopyeditorSubmissionDAO $copyeditorSubmissionDao */
             $copyeditorSubmissionDao = DAORegistry::getDAO('CopyeditorSubmissionDAO');
             $submissionsCount["Copyeditor"][$journalId] = $copyeditorSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid["Copyeditor"][$journalId] = true;
         }
         if (Validation::isLayoutEditor($journalId)) {
+            /** @var LayoutEditorSubmissionDAO $layoutEditorSubmissionDao */
             $layoutEditorSubmissionDao = DAORegistry::getDAO('LayoutEditorSubmissionDAO');
             $submissionsCount["LayoutEditor"][$journalId] = $layoutEditorSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid["LayoutEditor"][$journalId] = true;
         }
         if (Validation::isEditor($journalId)) {
+            /** @var EditorSubmissionDAO $editorSubmissionDao */
             $editorSubmissionDao = DAORegistry::getDAO('EditorSubmissionDAO');
             $submissionsCount["Editor"][$journalId] = $editorSubmissionDao->getEditorSubmissionsCount($journalId);
             $isValid["Editor"][$journalId] = true;
         }
         if (Validation::isSectionEditor($journalId)) {
+            /** @var SectionEditorSubmissionDAO $sectionEditorSubmissionDao */
             $sectionEditorSubmissionDao = DAORegistry::getDAO('SectionEditorSubmissionDAO');
             $submissionsCount["SectionEditor"][$journalId] = $sectionEditorSubmissionDao->getSectionEditorSubmissionsCount($userId, $journalId);
             $isValid["SectionEditor"][$journalId] = true;
         }
         if (Validation::isProofreader($journalId)) {
+            /** @var ProofreaderSubmissionDAO $proofreaderSubmissionDao */
             $proofreaderSubmissionDao = DAORegistry::getDAO('ProofreaderSubmissionDAO');
             $submissionsCount["Proofreader"][$journalId] = $proofreaderSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid["Proofreader"][$journalId] = true;
         }
         if (Validation::isReviewer($journalId)) {
+            /** @var ReviewerSubmissionDAO $reviewerSubmissionDao */
             $reviewerSubmissionDao = DAORegistry::getDAO('ReviewerSubmissionDAO');
             $submissionsCount["Reviewer"][$journalId] = $reviewerSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid["Reviewer"][$journalId] = true;
@@ -112,6 +119,18 @@ class UserHandler extends Handler {
     public function setLocale($args, $request = null) {
         // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+
+        // [LUMERA SECURITY] STRICT CSRF
+        import('lib.pkp.classes.validation.ValidatorCSRF'); 
+        $clientToken = $request->getUserVar(ValidatorCSRF::FIELD_NAME);
+        // [CEK VALID]: Tolak jika token kosong ATAU token tidak valid
+        if (empty($clientToken) || !ValidatorCSRF::checkSignedToken($clientToken, 'global', [], false)) {
+            error_log('[LUMERA SECURITY] setLocale() blocked: Missing or invalid ValidatorCSRF token via direct URL.');
+            
+            // Lemparkan 404 agar peretas mengira endpoint ini mati/tidak eksis
+            $this->getDispatcher()->handle404($request);
+            return;
+        }
 
         $setLocale = array_shift($args);
         $site = $request->getSite();
@@ -140,9 +159,9 @@ class UserHandler extends Handler {
 
         $source = trim((string) $request->getUserVar('source'));
         if (isset($source) && !empty($source)) {
-            // [SECURITY] Prevent Open Redirect
+            // [SECURITY] Prevent Open Redirect. Delegasikan validasi lanjutan path relatif ke PKPRequest::redirectUrl()
             if (preg_match('#^($|/|index\.php)#', $source)) {
-                $request->redirectUrl($request->getProtocol() . '://' . $request->getServerHost() . $source, false);
+                $request->redirectUrl($source);
             }
         }
 
@@ -194,6 +213,7 @@ class UserHandler extends Handler {
             $role->setRoleId($roleId);
             $role->setUserId($user->getId());
 
+            /** @var RoleDAO $roleDao */
             $roleDao = DAORegistry::getDAO('RoleDAO');
             $roleDao->insertRole($role);
             $source = trim((string) $request->getUserVar('source'));
@@ -297,6 +317,7 @@ class UserHandler extends Handler {
         import('lib.pkp.classes.captcha.CaptchaManager');
         $captchaManager = new CaptchaManager();
         if ($captchaManager->isEnabled()) {
+            /** @var CaptchaDAO $captchaDao */
             $captchaDao = DAORegistry::getDAO('CaptchaDAO');
             $captcha = $captchaDao->getCaptcha($captchaId);
             if ($captcha) {
@@ -306,5 +327,6 @@ class UserHandler extends Handler {
         }
         $request->redirect(null, 'user');
     }
+
 }
 ?>
