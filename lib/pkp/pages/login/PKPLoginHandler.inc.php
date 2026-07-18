@@ -16,6 +16,7 @@ declare(strict_types=1);
  */
 
 import('classes.handler.Handler');
+import('lib.wizdam.security.WizdamSecurity');
 
 class PKPLoginHandler extends Handler {
 
@@ -118,8 +119,8 @@ class PKPLoginHandler extends Handler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
-        // 1. [LUMERA] Cek Rate Limit IP
-        if ($this->_isRateLimited($request)) {
+        // 1. [LUMERA] Cek Rate Limit IP menggunakan WizdamSecurity
+        if (WizdamSecurity::isRateLimited($request, 'login_rate_limiter', 5)) {
             $templateMgr = TemplateManager::getManager();
             $this->_assignSecurityVariables($templateMgr, 'login');
             $templateMgr->assign('error', 'user.login.rateLimitExceeded');
@@ -154,7 +155,8 @@ class PKPLoginHandler extends Handler {
 
         if ($user !== false) {
             // 3. [LUMERA] Login Sukses, Reset counter
-            $this->_resetLoginAttempts($request);
+            WizdamSecurity::resetAttempts($request, 'login_rate_limiter');
+            
             if ($user->getMustChangePassword()) {
                 // User must change their password in order to log in
                 Validation::logout();
@@ -176,7 +178,8 @@ class PKPLoginHandler extends Handler {
             }
         } else {
             // 4. [LUMERA] Login Gagal, Tambah counter
-            $this->_incrementLoginAttempts($request);
+            WizdamSecurity::incrementAttempts($request, 'login_rate_limiter');
+            
             $sessionManager = SessionManager::getManager();
             $session = $sessionManager->getUserSession();
             $session->setSessionVar('loginError', $reason === null
@@ -527,46 +530,6 @@ class PKPLoginHandler extends Handler {
     public function _setMailFrom($request, $mail, $site) {
         $mail->setReplyTo($site->getLocalizedContactEmail(), $site->getLocalizedContactName());
         return true;
-    }
-
-    /**
-     * Cek apakah IP saat ini terkena limit (Rate Limiting)
-     * @param PKPRequest $request
-     * @return bool
-     */
-    private function _isRateLimited(PKPRequest $request): bool {
-        $ip = $request->getRemoteAddr();
-        $cacheManager = CacheManager::getManager();
-        
-        // Gunakan object cache (APCu jika aktif, file jika tidak)
-        $cache = $cacheManager->getObjectCache('login_rate_limiter', $ip, function($ip) { return 0; });
-        
-        $attempts = (int) $cache->getCache($ip);
-        return ($attempts >= 5); // Threshold: 5 kali gagal
-    }
-
-    /**
-     * Tambah counter percobaan gagal
-     * @param PKPRequest $request
-     */
-    private function _incrementLoginAttempts(PKPRequest $request): void {
-        $ip = $request->getRemoteAddr();
-        $cacheManager = CacheManager::getManager();
-        $cache = $cacheManager->getObjectCache('login_rate_limiter', $ip, function($ip) { return 0; });
-        
-        $attempts = (int) $cache->getCache($ip);
-        $cache->setCache($ip, $attempts + 1);
-    }
-
-    /**
-     * Reset counter setelah login sukses
-     * @param PKPRequest $request
-     */
-    private function _resetLoginAttempts(PKPRequest $request): void {
-        $ip = $request->getRemoteAddr();
-        $cacheManager = CacheManager::getManager();
-        $cache = $cacheManager->getObjectCache('login_rate_limiter', $ip, function($ip) { return 0; });
-        $cache->setCache($ip, 0);
     }
     
 }
