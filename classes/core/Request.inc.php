@@ -127,9 +127,8 @@ class Request extends PKPRequest {
      * @see PageRouter::redirectHome()
      * @deprecated
      */
-    public static function redirectHome() {
-        $instance = PKPRequest::_checkThis();
-        return $instance->_delegateToRouter('redirectHome');
+    public static function redirectHome(): never {
+        parent::redirectHome();
     }
     
 }

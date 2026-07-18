@@ -20,6 +20,7 @@ declare(strict_types=1);
  */
 
 import('lib.pkp.classes.core.PKPPageRouter');
+import('classes.journal.Journal');
 
 class PageRouter extends PKPPageRouter {
 
@@ -283,13 +284,14 @@ class PageRouter extends PKPPageRouter {
     /**
      * Redirect to user home page.
      * @param PKPRequest $request
+     * 
      */
     public function redirectHome($request) {
         $user = $request->getUser();
 
         if (!$user) {
             $request->redirect('index', 'user');
-            return;
+            // 'return;' dihapus karena redirect() sudah melakukan exit
         }
 
         /** @var RoleDAO $roleDao */
@@ -299,9 +301,10 @@ class PageRouter extends PKPPageRouter {
 
         if ($journal instanceof Journal) {
             $roles = $roleDao->getRolesByUserId($userId, $journal->getId());
+            $rolesArray = is_object($roles) && method_exists($roles, 'toArray') ? $roles->toArray() : (array) $roles;
 
-            if (count($roles) == 1) {
-                $role = array_shift($roles);
+            if (count($rolesArray) == 1) {
+                $role = array_shift($rolesArray);
                 if ($role->getRoleId() == ROLE_ID_READER) {
                     $request->redirect(null, 'user');
                 } else {
@@ -314,14 +317,14 @@ class PageRouter extends PKPPageRouter {
             /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $roles      = $roleDao->getRolesByUserId($userId);
+            $rolesArray = is_object($roles) && method_exists($roles, 'toArray') ? $roles->toArray() : (array) $roles;
 
-            if (count($roles) == 1) {
-                $role    = array_shift($roles);
+            if (count($rolesArray) == 1) {
+                $role    = array_shift($rolesArray);
                 $journal = $journalDao->getById($role->getJournalId());
 
                 if (!$journal) {
                     $request->redirect('index', 'user');
-                    return;
                 }
 
                 if ($role->getRoleId() == ROLE_ID_READER) {
@@ -334,5 +337,6 @@ class PageRouter extends PKPPageRouter {
             }
         }
     }
+
 }
 ?>
