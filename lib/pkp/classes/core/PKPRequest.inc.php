@@ -943,12 +943,12 @@ class PKPRequest {
 
     /**
      * Redirect user to the unified publisher dashboard (Site level).
-     * [LUMERA FUTURISTIC DESIGN]: Breaks the journal silo and routes to the main publisher portal.
-     * 
+     * [LUMERA DESIGN]: Breaks the journal silo and routes to the main publisher portal.
      * @return never
      */
-    public function redirectHome(): never {
-        $this->redirect('index', 'user');
+    public static function redirectHome(): never {
+        $instance = self::_checkThis();
+        $instance->_delegateToRouter('redirectHome');
         exit();
     }
     
