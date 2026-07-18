@@ -337,6 +337,10 @@ use_html_purifier = On
 ; See pages/login/LoginHandler.inc.php for usage.
 ; implicit_auth_wayf_url = "/Shibboleth.sso/wayf"
 
+; Treshold Limit percobaan gagal sebelum IP diblokir oleh sistem cache. 
+; Isi dengan 0 untuk mematikan fitur rate limit pada aksi tersebut.
+rate_limit = 5
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; WIZDAM DIGITAL SIGNATURE    ;
