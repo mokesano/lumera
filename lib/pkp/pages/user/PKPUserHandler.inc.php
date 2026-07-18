@@ -52,8 +52,6 @@ class PKPUserHandler extends Handler {
 
         // Get the input text used to filter on
         $filter = (string) $request->getUserVar('term');
-        
-        // [SECURITY FIX] Sanitasi string (Fix variabel undefined $term -> $filter)
         $filter = trim($filter);
 
         import('lib.pkp.classes.user.InterestManager');

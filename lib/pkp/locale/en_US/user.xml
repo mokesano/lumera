@@ -86,6 +86,7 @@
 	<message key="user.login.forgotPassword">Forgot your password?</message>
 	<message key="user.login.loginError">Invalid username or password. Please try again.</message>
 	<message key="user.login">Login</message>
+	<message key="user.logIn">Log In</message>
 	<message key="user.login.lostPassword.confirmationSent">A confirmation has been sent to your email address. Please follow the instructions in the email to reset your password.</message>
 	<message key="user.login.lostPassword.invalidHash">Sorry, the link you clicked on has expired or is not valid. Please try resetting your password again.</message>
 	<message key="user.login.lostPassword.invalidUser">No user exists with the specified email address.</message>
@@ -96,6 +97,7 @@
 	<message key="user.login.implicitAuth">Shibboleth Login</message>
 	<message key="user.login.implicitAuthLogin">Login via Shibboleth</message>
 	<message key="user.login.localAuth">Local Account Login</message>
+	<message key="user.login.rateLimitExceeded">Too many login attempts, please wait a moment.</message>
 	<message key="user.logOut">Logout</message>
 	
 	<message key="user.hello">Hello, </message>
@@ -155,6 +157,8 @@
 	<message key="user.register.form.emailsDoNotMatch">The email address fields do not match.</message>
 	<message key="user.register.form.usernameAlphaNumeric">The username can contain only alphanumeric characters, underscores, and hyphens, and must begin and end with an alphanumeric character.</message>
 	<message key="user.register.form.usernameExists">The selected username is already in use by another user.</message>
+	<message key="user.register.form.turnstileError">Cloudflare Turnstile validation failed. Please try again.</message>
+	<message key="user.register.form.recaptchaError">Google reCAPTCHA validation failed. Please try again.</message>
 	<message key="user.register.registerAs">Register as</message>
 	<message key="user.register">Register</message>
 	<message key="user.register.usernameRestriction">The username may contain only lowercase letters, numbers, hyphens, and underscores.</message>

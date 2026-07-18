@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_login
  *
  * @brief Handle login/logout requests.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  * - Added ORCID SSO Integration
  * - Added Google SSO Integration
  */
@@ -35,7 +33,7 @@ class LoginHandler extends PKPLoginHandler {
     public function LoginHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor. Please refactor to use __construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -46,6 +44,8 @@ class LoginHandler extends PKPLoginHandler {
     /**
      * Magic method to handle dynamic SSO method calls (kebab-case -> camelCase)
      * Example: 'orcid-callback' -> 'orcidCallback'
+     * @param mixed $name
+     * @param mixed $params
      */
     public function __call($name, $params) {
         $callableOp = lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $name))));
@@ -57,12 +57,12 @@ class LoginHandler extends PKPLoginHandler {
         trigger_error("Call to undefined method " . get_class($this) . "::{$name}()", E_USER_ERROR);
     }
 
-    // =========================================================================
+    // 
     // PRIVATE HELPERS
-    // =========================================================================
+    // 
 
     /**
-     * [WIZDAM HELPER] Set session directly for SSO login.
+     * [LUMERA HELPER] Set session directly for SSO login.
      * @param object $user    User object from UserDAO
      * @param object $session Session from SessionManager
      */
@@ -82,17 +82,19 @@ class LoginHandler extends PKPLoginHandler {
     
         // 4. Update tabel 'sessions' secara eksplisit sebagai pengaman ekstra
         // agar tidak ditimpa oleh session_write_close() bawaan PHP
+        /** @var SessionDAO $sessionDao */
         $sessionDao = DAORegistry::getDAO('SessionDAO');
         $sessionDao->updateObject($session);
 
         // 5. Update data terakhir login user
         $user->setDateLastLogin(Core::getCurrentDate());
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $userDao->updateObject($user);
     }
 
     /**
-     * [WIZDAM HELPER] Build OAuth redirect URI at site level, never journal context.
+     * [LUMERA HELPER] Build OAuth redirect URI at site level, never journal context.
      *
      * The redirect URI registered in Google/ORCID Console is always site-level:
      *   https://journals.sangia.org/login/google-callback
@@ -109,9 +111,9 @@ class LoginHandler extends PKPLoginHandler {
     }
 
     /**
-     * [WIZDAM HELPER] Resolve the pre-login return URL, discarding login pages.
+     * [LUMERA HELPER] Resolve the pre-login return URL, discarding login pages.
      *
-     * OJS passes 'source' when redirecting to login. loginReturnUrl in session may
+     * APP passes 'source' when redirecting to login. loginReturnUrl in session may
      * also hold the login page itself if the user navigated directly to it.
      * Both cases must be discarded so the user is not looped back to login after SSO.
      *
@@ -147,6 +149,7 @@ class LoginHandler extends PKPLoginHandler {
      * @return object|null User object or null if not found
      */
     private function _getUserByOrcidUrl(string $orcidUrl): ?object {
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         return $userDao->getUserByOrcid($orcidUrl);
     }
@@ -170,9 +173,9 @@ class LoginHandler extends PKPLoginHandler {
         return 'google_email_0';
     }
 
-    // =========================================================================
-    // WIZDAM SSO: ORCID INTEGRATION
-    // =========================================================================
+    // 
+    // LUMERA SSO: ORCID INTEGRATION
+    // 
 
     /**
      * Initiate ORCID authentication flow.
@@ -228,7 +231,7 @@ class LoginHandler extends PKPLoginHandler {
         $sessionManager = SessionManager::getManager();
         $session        = $sessionManager->getUserSession();
 
-        // --- Validate State & Nonce ---
+        // Validate State & Nonce ---
         // state = contextPath|nonceKey|nonce|returnUrl
         $stateParts       = explode('|', (string) $request->getUserVar('state'), 4);
         $rawContext       = $stateParts[0] ?? '';
@@ -291,11 +294,12 @@ class LoginHandler extends PKPLoginHandler {
         $orcidId  = $data->orcid;
         $orcidUrl = 'https://orcid.org/' . $orcidId;
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
-        // =====================================================================
+        // 
         // LINK ACCOUNT
-        // =====================================================================
+        // 
         if (Validation::isLoggedIn()) {
             $currentUser  = $request->getUser();
             $existingUser = $this->_getUserByOrcidUrl($orcidUrl);
@@ -313,9 +317,9 @@ class LoginHandler extends PKPLoginHandler {
             return;
         }
 
-        // =====================================================================
-        // LOGIN
-        // =====================================================================
+        // 
+        // LOGIN Callback
+        // 
         $user = $this->_getUserByOrcidUrl($orcidUrl);
 
         if ($user) {
@@ -373,6 +377,7 @@ class LoginHandler extends PKPLoginHandler {
             return;
         }
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $user->setData('orcid', null);
@@ -384,9 +389,9 @@ class LoginHandler extends PKPLoginHandler {
         $request->redirect(null, 'user', 'linked-accounts', null, ['success' => 'orcid_unlinked']);
     }
 
-    // =========================================================================
-    // WIZDAM SSO: GOOGLE INTEGRATION
-    // =========================================================================
+    //
+    // LUMERA SSO: GOOGLE INTEGRATION
+    //
 
     /**
      * Initiate Google authentication flow.
@@ -441,7 +446,7 @@ class LoginHandler extends PKPLoginHandler {
         $sessionManager = SessionManager::getManager();
         $session        = $sessionManager->getUserSession();
 
-        // --- Validate State & Nonce ---
+        // Validate State & Nonce ---
         // state = contextPath|nonceKey|nonce|returnUrl
         $stateParts       = explode('|', (string) $request->getUserVar('state'), 4);
         $rawContext       = $stateParts[0] ?? '';
@@ -510,12 +515,14 @@ class LoginHandler extends PKPLoginHandler {
         $firstName   = $userInfo['given_name']  ?? '';
         $lastName    = $userInfo['family_name'] ?? ' ';
 
+        /** @var UserSettingsDAO $userSettingsDao */
         $userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
+        /** @var UserDAO $userDao */
         $userDao         = DAORegistry::getDAO('UserDAO');
 
-        // =====================================================================
+        // 
         // LINK ACCOUNT
-        // =====================================================================
+        // 
         if (Validation::isLoggedIn()) {
             $currentUser   = $request->getUser();
             $usersIterator = $userSettingsDao->getUsersBySetting('google_id', $googleId);
@@ -533,7 +540,7 @@ class LoginHandler extends PKPLoginHandler {
             } else {
                 $userSettingsDao->updateSetting($currentUser->getId(), 'google_id', $googleId, 'string');
 
-                // [FIX-MULTI-EMAIL] Store Google email in its own field, never overwrites
+                // [MULTI-EMAIL] Store Google email in its own field, never overwrites
                 // the primary App email. User may link a different Google account email.
                 if (!empty($googleEmail)) {
                     $emailKey = $this->_findOrCreateEmailKey((int) $currentUser->getId(), $googleEmail, $userSettingsDao);
@@ -545,9 +552,9 @@ class LoginHandler extends PKPLoginHandler {
             return;
         }
 
-        // =====================================================================
+        // 
         // LOGIN
-        // =====================================================================
+        // 
         $usersIterator = $userSettingsDao->getUsersBySetting('google_id', $googleId);
         $user          = null;
 
@@ -555,7 +562,7 @@ class LoginHandler extends PKPLoginHandler {
             $user = $usersIterator->next();
         }
 
-        // [FIX GOOGLE] Fallback Auto-Discovery berdasarkan Email Utama
+        // [GOOGLE] Fallback Auto-Discovery berdasarkan Email Utama
         if (!$user && !empty($googleEmail)) {
             $user = $userDao->getUserByEmail($googleEmail);
             
@@ -606,7 +613,9 @@ class LoginHandler extends PKPLoginHandler {
             return;
         }
 
+        /** @var UserDAO $userDao */
         $userDao         = DAORegistry::getDAO('UserDAO');
+        /** @var UserSettingsDAO $userSettingsDao */
         $userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
 
         $userSettingsDao->deleteSetting($user->getId(), 'google_id');
@@ -622,9 +631,9 @@ class LoginHandler extends PKPLoginHandler {
         $request->redirect(null, 'user', 'linked-accounts', null, ['success' => 'google_unlinked']);
     }
 
-    // =========================================================================
+    // 
     // STANDARD METHODS
-    // =========================================================================
+    // 
 
     /**
      * Override validate to ensure proper access control for SSO actions.
@@ -661,6 +670,7 @@ class LoginHandler extends PKPLoginHandler {
                 return $templateMgr->display('common/error.tpl');
             }
 
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $newUser = $userDao->getById($userId);
             $session = $request->getSession();
@@ -692,6 +702,7 @@ class LoginHandler extends PKPLoginHandler {
 
         if (isset($signedInAs) && !empty($signedInAs)) {
             $signedInAs = (int) $signedInAs;
+            /** @var UserDAO $userDao */
             $userDao    = DAORegistry::getDAO('UserDAO');
             $oldUser    = $userDao->getById($signedInAs);
             $session->unsetSessionVar('signedInAs');
@@ -740,5 +751,6 @@ class LoginHandler extends PKPLoginHandler {
         AppLocale::requireComponents(LOCALE_COMPONENT_APP_MANAGER, LOCALE_COMPONENT_CORE_MANAGER);
         parent::setupTemplate($request);
     }
+
 }
 ?>
