@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_login
  *
  * @brief Handle login/logout requests.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  * - Integrated Modular Security: Turnstile & reCAPTCHA v2/v3
  */
 
@@ -59,7 +57,7 @@ class PKPLoginHandler extends Handler {
             $templateMgr->assign('loginMessage', htmlspecialchars((string) $loginMessage, ENT_QUOTES, 'UTF-8'));
         }
 
-        // [WIZDAM FIX] Baca error dari session hasil PRG dari signIn()
+        // [WIZDAM] Baca error dari session hasil PRG dari signIn()
         $loginError = $session->getSessionVar('loginError');
         if ($loginError) {
             $templateMgr->assign('error',    $loginError);
@@ -101,6 +99,15 @@ class PKPLoginHandler extends Handler {
     }
 
     /**
+     * Helper: Get login URL
+     * @param PKPRequest $request
+     * @return string
+     */
+    private function _getLoginUrl(PKPRequest $request): string {
+        return $request->url(null, 'login', 'signIn');
+    }
+
+    /**
      * Validate user's credentials and log the user in.
      * @param array $args
      * @param PKPRequest $request
@@ -111,16 +118,25 @@ class PKPLoginHandler extends Handler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        // 1. [LUMERA] Cek Rate Limit IP
+        if ($this->_isRateLimited($request)) {
+            $templateMgr = TemplateManager::getManager();
+            $this->_assignSecurityVariables($templateMgr, 'login');
+            $templateMgr->assign('error', 'user.login.rateLimitExceeded');
+            return $templateMgr->display('user/login.tpl');
+        }
+
         if (Validation::isLoggedIn()) {
             $request->redirect(null, 'user');
         }
 
-        // [WIZDAM SECURITY] Validasi Token Keamanan Sebelum Login
-        if (!$this->_validateSecurityTokens($request, 'login')) {
+        // 2. [LUMERA] Validasi Token Keamanan Sebelum Login
+        $errorKey = $this->_validateSecurityTokens($request, 'login');
+        if ($errorKey !== null) {
             $templateMgr = TemplateManager::getManager();
             $this->_assignSecurityVariables($templateMgr, 'login');
             $templateMgr->assign('username', $request->getUserVar('username'));
-            $templateMgr->assign('error', 'common.captchaField.badCaptcha');
+            $templateMgr->assign('error', $errorKey);
             return $templateMgr->display('user/login.tpl');
         }
 
@@ -137,6 +153,8 @@ class PKPLoginHandler extends Handler {
         $user = Validation::login($username, $password, $reason, $remember == 1);
 
         if ($user !== false) {
+            // 3. [LUMERA] Login Sukses, Reset counter
+            $this->_resetLoginAttempts($request);
             if ($user->getMustChangePassword()) {
                 // User must change their password in order to log in
                 Validation::logout();
@@ -157,6 +175,8 @@ class PKPLoginHandler extends Handler {
                 }
             }
         } else {
+            // 4. [LUMERA] Login Gagal, Tambah counter
+            $this->_incrementLoginAttempts($request);
             // [WIZDAM FIX] PRG Pattern — hindari ERR_CACHE_MISS saat reload
             // Render langsung dari POST endpoint menyebabkan browser menyimpan
             // POST state — reload meminta konfirmasi resubmit.
@@ -239,11 +259,12 @@ class PKPLoginHandler extends Handler {
         }
     
         // 4. Cari user di database berdasarkan identitas dari IdP
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $user = $userDao->getUserByUsername($implicitUsername)
               ?? $userDao->getUserByEmail($implicitUsername); // Beberapa IdP kirim email
     
-        // 5. Jika user tidak ditemukan di OJS, tolak
+        // 5. Jika user tidak ditemukan, tolak
         if (!$user) {
             $request->redirect(null, 'login');
             return;
@@ -254,7 +275,7 @@ class PKPLoginHandler extends Handler {
         $session = $sessionManager->getUserSession();
         $session->setSessionVar('username', $user->getUsername());
         $session->setUserId($user->getId());
-        $session->setUser($user);
+        // $session->setUser($user);
     
         $request->redirect(null, 'user');
     }
@@ -296,7 +317,7 @@ class PKPLoginHandler extends Handler {
         // 3. LOGIKA PENGALIHAN
         if (!empty($source)) {
             // Jika ada sumber yang valid, ikuti sumber tersebut
-            $request->redirectUrl($request->getProtocol() . '://' . $request->getServerHost() . $source, false);
+            $request->redirectUrl($request->getProtocol() . '://' . $request->getServerHost() . $source);
         } else {
             // PERBAIKAN DI SINI:
             // Jika tidak ada 'source', jangan gunakan getRequestedPage() karena itu adalah 'login'.
@@ -349,6 +370,7 @@ class PKPLoginHandler extends Handler {
         }
 
         $email = trim((string) $request->getUserVar('email'));
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $user = $userDao->getUserByEmail($email);
 
@@ -390,11 +412,13 @@ class PKPLoginHandler extends Handler {
         $oneStepReset = $site->getSetting('oneStepReset') ? true : false;
 
         $username = isset($args[0]) ? $args[0] : null;
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $confirmHash = trim((string) $request->getUserVar('confirm'));
 
         if ($username == null || ($user = $userDao->getByUsername($username)) == null) {
             $request->redirect(null, null, 'lostPassword');
+            return;
         }
 
         $templateMgr = TemplateManager::getManager();
@@ -410,6 +434,7 @@ class PKPLoginHandler extends Handler {
             $auth = null;
 
             if ($user->getAuthId()) {
+                /** @var AuthSourceDAO $authDao */
                 $authDao = DAORegistry::getDAO('AuthSourceDAO');
                 $auth = $authDao->getPlugin($user->getAuthId());
             }
@@ -513,5 +538,46 @@ class PKPLoginHandler extends Handler {
         $mail->setReplyTo($site->getLocalizedContactEmail(), $site->getLocalizedContactName());
         return true;
     }
+
+    /**
+     * Cek apakah IP saat ini terkena limit (Rate Limiting)
+     * @param PKPRequest $request
+     * @return bool
+     */
+    private function _isRateLimited(PKPRequest $request): bool {
+        $ip = $request->getRemoteAddr();
+        $cacheManager = CacheManager::getManager();
+        
+        // Gunakan object cache (APCu jika aktif, file jika tidak)
+        $cache = $cacheManager->getObjectCache('login_rate_limiter', $ip, function($ip) { return 0; });
+        
+        $attempts = (int) $cache->getCache($ip);
+        return ($attempts >= 5); // Threshold: 5 kali gagal
+    }
+
+    /**
+     * Tambah counter percobaan gagal
+     * @param PKPRequest $request
+     */
+    private function _incrementLoginAttempts(PKPRequest $request): void {
+        $ip = $request->getRemoteAddr();
+        $cacheManager = CacheManager::getManager();
+        $cache = $cacheManager->getObjectCache('login_rate_limiter', $ip, function($ip) { return 0; });
+        
+        $attempts = (int) $cache->getCache($ip);
+        $cache->setCache($ip, $attempts + 1);
+    }
+
+    /**
+     * Reset counter setelah login sukses
+     * @param PKPRequest $request
+     */
+    private function _resetLoginAttempts(PKPRequest $request): void {
+        $ip = $request->getRemoteAddr();
+        $cacheManager = CacheManager::getManager();
+        $cache = $cacheManager->getObjectCache('login_rate_limiter', $ip, function($ip) { return 0; });
+        $cache->setCache($ip, 0);
+    }
+    
 }
 ?>

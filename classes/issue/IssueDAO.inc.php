@@ -975,7 +975,44 @@ class IssueDAO extends DAO {
     
         return [$prevVolumeId, $nextVolumeId];
     }
-    
+
+    /**
+     * Get the nearest previous and next years that have published issues.
+     * @param int $journalId
+     * @param int $currentYear
+     * @return array [int|null $prevYear, int|null $nextYear]
+     */
+    public function getSurroundingYears(int $journalId, int $currentYear): array {
+        $prevYear = null;
+        $nextYear = null;
+
+        $result = $this->retrieve(
+            'SELECT 
+                MAX(CASE WHEN year < ? THEN year END) AS prev_year,
+                MIN(CASE WHEN year > ? THEN year END) AS next_year
+             FROM issues 
+             WHERE journal_id = ? AND published = 1',
+            [$currentYear, $currentYear, $journalId]
+        );
+
+        if (!$result->EOF) {
+            $row = $result->getRowAssoc(false);
+            
+            // Internal coercion & Null safety
+            if (isset($row['prev_year']) && $row['prev_year'] !== null) {
+                $prevYear = (int) $row['prev_year'];
+            }
+            if (isset($row['next_year']) && $row['next_year'] !== null) {
+                $nextYear = (int) $row['next_year'];
+            }
+        }
+        
+        $result->Close();
+        unset($result);
+
+        return [$prevYear, $nextYear];
+    }
+
     /**
      * Mengambil satu issue berdasarkan Journal ID, Volume, dan Nomor.
      * @param int|string $journalId
