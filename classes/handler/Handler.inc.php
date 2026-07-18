@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * @file classes/core/Handler.inc.php
+ * @file classes/handler/Handler.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
  * Copyright (c) 2003-2019 John Willinsky
@@ -105,20 +105,19 @@ class Handler extends PKPHandler {
      * Helper: Validasi Token Paralel & Fallback Legacy
      * @param PKPRequest $request
      * @param string $context
-     * @return bool
+     * @return string|null Mengembalikan null jika sukses, atau pesan error jika gagal
      */
-    protected function _validateSecurityTokens($request, string $context = ''): bool {
+    protected function _validateSecurityTokens($request, string $context = ''): ?string {
         $turnstileEnabled = (bool) Config::getVar('turnstile', 'turnstile');
         $reCaptchaEnabled = (bool) Config::getVar('recaptcha', 'recaptcha');
 
-        // --- LAYER 1: VALIDASI MODERN (Paralel) ---
-        // Jika salah satu atau keduanya aktif, Captcha bawaan diabaikan total
+        // --- LAYER 1: VALIDASI MODERN ---
         if ($turnstileEnabled || $reCaptchaEnabled) {
             
-            // 1A. Validasi Turnstile (jika diaktifkan)
+            // 1A. Validasi Turnstile
             if ($turnstileEnabled) {
                 $turnstileResponse = $request->getUserVar('cf-turnstile-response');
-                if (empty($turnstileResponse)) return false;
+                if (empty($turnstileResponse)) return 'user.register.form.turnstileError';
 
                 $ch = curl_init("https://challenges.cloudflare.com/turnstile/v0/siteverify");
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -130,17 +129,16 @@ class Handler extends PKPHandler {
                 $result = json_decode(curl_exec($ch));
                 curl_close($ch);
                 
-                // Jika Turnstile gagal, langsung tolak login
-                if (!$result || !$result->success) return false; 
+                if (!$result || !$result->success) return 'user.register.form.turnstileError'; 
             }
 
-            // 1B. Validasi reCAPTCHA (jika diaktifkan)
+            // 1B. Validasi reCAPTCHA
             if ($reCaptchaEnabled) {
                 $reCaptchaVersion = (int) Config::getVar('recaptcha', 'recaptcha_version');
                 
                 if ($reCaptchaVersion === 2 || $reCaptchaVersion === 3) {
                     $response = $request->getUserVar('g-recaptcha-response');
-                    if (empty($response)) return false;
+                    if (empty($response)) return 'user.register.form.recaptchaError';
 
                     $ch = curl_init("https://www.google.com/recaptcha/api/siteverify");
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -152,8 +150,8 @@ class Handler extends PKPHandler {
                     $result = json_decode(curl_exec($ch));
                     curl_close($ch);
 
-                    if (!$result || !$result->success) return false;
-                    if ($reCaptchaVersion === 3 && isset($result->score) && $result->score < 0.5) return false;
+                    if (!$result || !$result->success) return 'user.register.form.recaptchaError';
+                    if ($reCaptchaVersion === 3 && isset($result->score) && $result->score < 0.5) return 'user.register.form.recaptchaError';
                     
                 } elseif ($reCaptchaVersion === 0) {
                     require_once('lib/recaptcha/recaptchalib.php');
@@ -165,17 +163,14 @@ class Handler extends PKPHandler {
                         $request->getUserVar('recaptcha_response_field')
                     );
                     
-                    if (!$resp || !$resp->is_valid) return false;
+                    if (!$resp || !$resp->is_valid) return 'user.register.form.recaptchaError';
                 }
             }
 
-            // Jika eksekusi mencapai titik ini, 
-            // berarti semua modul modern yang aktif berhasil divalidasi
-            return true;
+            return null; // Sukses di layer modern
         }
 
         // --- LAYER 2: FALLBACK DEFAULT CAPTCHA ---
-        // Dieksekusi HANYA JIKA Turnstile OFF dan reCAPTCHA OFF
         import('lib.pkp.classes.captcha.CaptchaManager');
         $captchaManager = new CaptchaManager();
         $captchaEnabled = $captchaManager->isEnabledForContext($context);
@@ -184,24 +179,21 @@ class Handler extends PKPHandler {
             $captchaId = $request->getUserVar('captchaId');
             $captchaValue = $request->getUserVar('captcha');
             
-            if (!$captchaId) return false;
+            if (!$captchaId) return 'common.captchaField.badCaptcha';
             
             /** @var CaptchaDAO $captchaDao */
             $captchaDao = DAORegistry::getDAO('CaptchaDAO');
             $captcha = $captchaDao->getCaptcha($captchaId);
             
             if (!$captcha || $captcha->getValue() !== $captchaValue) {
-                return false;
+                return 'common.captchaField.badCaptcha';
             }
             
-            // Hapus dari DB agar tidak bisa di-replay
             $captchaDao->deleteCaptcha($captcha);
-            return true; 
+            return null; // Sukses di layer default
         }
 
-        // --- LAYER 3: BYPASS ---
-        // Jika ketiga fitur keamanan tidak ada yang aktif di config.inc.php
-        return true; 
+        return null; // Bypass (tidak ada keamanan aktif)
     }
     
     /**
@@ -228,5 +220,6 @@ class Handler extends PKPHandler {
             $templateMgr->assign('reCaptchaPublicKey', Config::getVar('recaptcha', 'recaptcha_public_key'));
         }
     }
+    
 }
 ?>

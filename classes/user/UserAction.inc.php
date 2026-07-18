@@ -13,11 +13,7 @@ declare(strict_types=1);
  * @see User
  *
  * @brief UserAction class.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor, Ref removal)
- * - Hook Dispatch
- * - Strict Typing
+ * 
  */
 
 class UserAction {
@@ -34,7 +30,10 @@ class UserAction {
      */
     public function UserAction() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class " . get_class($this) . " uses deprecated constructor parent::UserAction(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class " . get_class($this) . " uses deprecated constructor parent::UserAction(). Please refactor to parent::__construct().",
+                E_USER_DEPRECATED
+            );
         }
         self::__construct();
     }
@@ -57,6 +56,7 @@ class UserAction {
 
         HookRegistry::dispatch('UserAction::mergeUsers', array(&$oldUserId, &$newUserId));
 
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         foreach ($articleDao->getArticlesByUserId($oldUserId) as $article) {
             $article->setUserId($newUserId);
@@ -64,7 +64,9 @@ class UserAction {
             unset($article);
         }
 
+        /** @var CommentDAO $commentDao */
         $commentDao = DAORegistry::getDAO('CommentDAO');
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $newUser = $userDao->getUser($newUserId);
         foreach ($commentDao->getByUserId($oldUserId) as $comment) {
@@ -73,6 +75,7 @@ class UserAction {
             unset($comment);
         }
 
+        /** @var NoteDAO $noteDao */
         $noteDao = DAORegistry::getDAO('NoteDAO');
         $notes = $noteDao->getByUserId($oldUserId);
         while ($note = $notes->next()) {
@@ -81,6 +84,7 @@ class UserAction {
             unset($note);
         }
 
+        /** @var EditAssignmentDAO $editAssignmentDao */
         $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
         $editAssignments = $editAssignmentDao->getEditAssignmentsByUserId($oldUserId);
         while ($editAssignment = $editAssignments->next()) {
@@ -89,9 +93,11 @@ class UserAction {
             unset($editAssignment);
         }
 
+        /** @var EditorSubmissionDAO $editorSubmissionDao */
         $editorSubmissionDao = DAORegistry::getDAO('EditorSubmissionDAO');
         $editorSubmissionDao->transferEditorDecisions($oldUserId, $newUserId);
 
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
         foreach ($reviewAssignmentDao->getByUserId($oldUserId) as $reviewAssignment) {
             $reviewAssignment->setReviewerId($newUserId);
@@ -100,14 +106,18 @@ class UserAction {
         }
 
         // Transfer signoffs (e.g. copyediting, layout editing)
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
         $signoffDao->transferSignoffs($oldUserId, $newUserId);
 
+        /** @var ArticleEmailLogDAO $articleEmailLogDao */
         $articleEmailLogDao = DAORegistry::getDAO('ArticleEmailLogDAO');
         $articleEmailLogDao->changeUser($oldUserId, $newUserId);
+        /** @var ArticleEventLogDAO $articleEventLogDao */
         $articleEventLogDao = DAORegistry::getDAO('ArticleEventLogDAO');
         $articleEventLogDao->changeUser($oldUserId, $newUserId);
 
+        /** @var ArticleCommentDAO $articleCommentDao */
         $articleCommentDao = DAORegistry::getDAO('ArticleCommentDAO');
         foreach ($articleCommentDao->getArticleCommentsByUserId($oldUserId) as $articleComment) {
             $articleComment->setAuthorId($newUserId);
@@ -115,11 +125,13 @@ class UserAction {
             unset($articleComment);
         }
 
+        /** @var AccessKeyDAO $accessKeyDao */
         $accessKeyDao = DAORegistry::getDAO('AccessKeyDAO');
         $accessKeyDao->transferAccessKeys($oldUserId, $newUserId);
 
         // Transfer old user's individual subscriptions for each journal if new user
         // does not have a valid individual subscription for a given journal.
+        /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
         $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
         $oldUserSubscriptions = $individualSubscriptionDao->getSubscriptionsByUser($oldUserId);
 
@@ -148,15 +160,16 @@ class UserAction {
 
         // Transfer all old user's institutional subscriptions for each journal to
         // new user. New user now becomes the contact person for these.
+        /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
         $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
         $oldUserSubscriptions = $institutionalSubscriptionDao->getSubscriptionsByUser($oldUserId);
-
         while ($oldUserSubscription = $oldUserSubscriptions->next()) {
             $oldUserSubscription->setUserId($newUserId);
             $institutionalSubscriptionDao->updateSubscription($oldUserSubscription);
         }
 
         // Transfer old user's gifts to new user
+        /** @var GiftDAO $giftDao */
         $giftDao = DAORegistry::getDAO('GiftDAO');
         $gifts = $giftDao->getAllGiftsByRecipient(ASSOC_TYPE_JOURNAL, $oldUserId);
         while ($gift = $gifts->next()) {
@@ -166,6 +179,7 @@ class UserAction {
         }
 
         // Transfer completed payments.
+        /** @var OJSCompletedPaymentDAO $paymentDao */
         $paymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
         $paymentFactory = $paymentDao->getByUserId($oldUserId);
         while ($payment = $paymentFactory->next()) {
@@ -175,20 +189,25 @@ class UserAction {
         }
 
         // Delete the old user and associated info.
+        /** @var SessionDAO $sessionDao */
         $sessionDao = DAORegistry::getDAO('SessionDAO');
         $sessionDao->deleteSessionsByUserId($oldUserId);
+        /** @var TemporaryFileDAO $temporaryFileDao */
         $temporaryFileDao = DAORegistry::getDAO('TemporaryFileDAO');
         $temporaryFileDao->deleteTemporaryFilesByUserId($oldUserId);
+        /** @var UserSettingsDAO $userSettingsDao */
         $userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
         $userSettingsDao->deleteSettings($oldUserId);
+        /** @var GroupMembershipDAO $groupMembershipDao */
         $groupMembershipDao = DAORegistry::getDAO('GroupMembershipDAO');
         $groupMembershipDao->deleteMembershipByUserId($oldUserId);
+        /** @var SectionEditorsDAO $sectionEditorsDao */
         $sectionEditorsDao = DAORegistry::getDAO('SectionEditorsDAO');
         $sectionEditorsDao->deleteEditorsByUserId($oldUserId);
 
         // Transfer old user's roles
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
-
         $roles = $roleDao->getRolesByUserId($oldUserId);
         foreach ($roles as $role) {
             if (!$roleDao->userHasRole($role->getJournalId(), $newUserId, $role->getRoleId())) {
@@ -202,6 +221,6 @@ class UserAction {
 
         return true;
     }
+    
 }
-
 ?>

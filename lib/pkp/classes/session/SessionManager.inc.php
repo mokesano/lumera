@@ -28,6 +28,8 @@ class SessionManager {
 
     /**
      * Constructor.
+     * @param mixed $sessionDao
+     * @param mixed $request
      */
     public function __construct($sessionDao, $request) {
         if (session_status() === PHP_SESSION_ACTIVE) {
@@ -36,11 +38,10 @@ class SessionManager {
 
         $this->sessionDao = $sessionDao;
 
-        // --- PERBAIKAN V12: PROXY SSL ---
+        // PROXY SSL ---
         // JANGAN percaya $request->getProtocol(). Percayai config.inc.php
         // Ini adalah satu-satunya cara untuk menangani proxy/load balancer.
         $isSecure = (strtolower(substr(Config::getVar('general', 'base_url'), 0, 5)) == 'https');
-        // --- AKHIR PERBAIKAN V12 ---
 
         // (Kode dari v10/v11 yang sudah benar, membaca config atau menebak)
         $cookiePath = Config::getVar('general', 'session_cookie_path');
@@ -67,7 +68,6 @@ class SessionManager {
             'httponly' => true,
             'samesite' => 'Lax'
         ];
-        // --- Akhir v10/v11 ---
 
         session_set_cookie_params($this->cookieParams);
 
@@ -162,10 +162,15 @@ class SessionManager {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $sessionDao
+     * @param mixed $request
      */
     public function SessionManager($sessionDao, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::SessionManager(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                'Class ' . get_class($this) . ' uses deprecated constructor parent::' . get_class($this) . '(). Please refactor to parent::__construct().',
+                E_USER_DEPRECATED
+            );
         }
         self::__construct($sessionDao, $request);
     }
@@ -187,6 +192,7 @@ class SessionManager {
             }
 
             // Implicitly set session manager by ref in the registry
+            /** @var SessionDAO $sessionDao */
             $instance = new SessionManager(DAORegistry::getDAO('SessionDAO'), $request);
             Registry::set('sessionManager', $instance);
         }
@@ -222,12 +228,11 @@ class SessionManager {
 
     /**
      * Read session data from database.
-     * @param $sessionId string
+     * @param string $sessionId string
      * @return string
      */
     public function read($sessionId) {
         if (!isset($this->userSession)) {
-            // Hapus '&'
             $this->userSession = $this->sessionDao->getSession($sessionId);
             if (isset($this->userSession)) {
                 $data = $this->userSession->getSessionData();
@@ -238,8 +243,8 @@ class SessionManager {
 
     /**
      * Save session data to database.
-     * @param $sessionId string
-     * @param $data array
+     * @param string $sessionId string
+     * @param mixed $data array
      * @return boolean
      */
     public function write($sessionId, $data) {
@@ -253,7 +258,7 @@ class SessionManager {
 
     /**
      * Destroy (delete) a session.
-     * @param $sessionId string
+     * @param string $sessionId string
      * @return boolean
      */
     public function destroy($sessionId) {
@@ -355,9 +360,9 @@ class SessionManager {
     /**
      * Memperbarui sesi pengguna saat login (Regenerasi ID, Set Data, dan Simpan ke DB).
      * Metode ini menjamin data sesi tersimpan atomic sebelum redirect.
-     * * @param $userId int
-     * @param $username string
-     * @param $remember boolean
+     * @param int $userId int
+     * @param string $username string
+     * @param bool $remember boolean
      */
     public function renewUserSession($userId, $username, $remember) {
         // 1. Regenerasi ID Sesi (Standar Keamanan)
@@ -376,6 +381,6 @@ class SessionManager {
         // Manager bertanggung jawab menyimpan state yang dia kelola.
         $this->sessionDao->updateObject($this->userSession);
     }
-}
 
+}
 ?>

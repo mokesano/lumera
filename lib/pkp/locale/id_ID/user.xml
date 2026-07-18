@@ -43,8 +43,8 @@
 	<message key="user.gossip">Catatan Tambahan</message>
 	<message key="user.lastName">Nama Belakang</message>
 	<message key="user.profile.form.profileImageInvalid">Format gambar profil invalid atau gambar terlalu besar. Format yang diterima adalah .gif, .jpg, atau .png, dan gambar tidak boleh melebih 150x150 pixel.</message>
-	<message key="user.login.accountDisabledWithReason">Akun Anda tidak bisa karena alasan berikut ini: {$reason}</message>
-	<message key="user.login.accountDisabled">Akun Anda tidak bisa. Hubungi administrator untuk informasi lebih lanjut.</message>
+	<message key="user.login.accountDisabledWithReason">Akun Anda tidak bisa digunakan karena alasan berikut: {$reason}</message>
+	<message key="user.login.accountDisabled">Akun Anda tidak bisa digunakan. Hubungi administrator untuk informasi lebih lanjut.</message>
 	<message key="user.login.accountNotValidated">Alamat email Anda belum divalidasi. Cek email Anda dan ikuti instruksi yang tersedia. Jika Anda belum menerima email. Anda mungkin perlu menghubungi administrator situs untuk bantuan.</message>
 	<message key="user.login.activate">Aktivasi akun</message>
 	<message key="user.login.activated">Terima kasih untuk mengaktifkan akun Anda. Anda sekarang mungkin login dengan menggunakan credential yang Anda berikan saat membuat Akun ini.</message>
@@ -52,7 +52,7 @@
 	<message key="user.login.forgotPassword">Lupa kata sandi Anda?</message>
 	<message key="user.login.loginError">Nama Pengguna atau kata sandi tidak valid. Coba lagi.</message>
 	<message key="user.login">Login</message>
-	<message key="user.logIn">Login</message>
+	<message key="user.logIn">Log In</message>
 	<message key="user.login.lostPassword.confirmationSent">Konfirmasi telah dikirim ke alamat email Anda. Ikuti instruksi di email untuk mengatur ulang kata sandi Anda.</message>
 	<message key="user.login.lostPassword.invalidHash">Maaf, tautan yang Anda klik telah berakhir atau tidak valid. Coba mengatur ulang kata sandi lagi.</message>
 	<message key="user.login.lostPassword.invalidUser">Tidak ada pengguna dengan alamat email yang spesifik.</message>
@@ -60,6 +60,7 @@
 	<message key="user.login.registeredEmail">Email pengguna yang sudah terdaftar</message>
 	<message key="user.login.rememberUsernameAndPassword">Ingat saya</message>
 	<message key="user.login.resetPassword">Atur ulang kata sandi</message>
+	<message key="user.login.rateLimitExceeded">Percobaan login terlalu sering, silakan tunggu beberapa saat.</message>
 	<message key="user.logOut">Log Out</message>
 	<message key="user.mailingAddress">Alamat Surat Menyurat</message>
 	<message key="user.masculine">L</message>
@@ -95,6 +96,8 @@
 	<message key="user.register.form.emailsDoNotMatch">Bidang alamat email tidak cocok.</message>
 	<message key="user.register.form.usernameAlphaNumeric">Nama pengguna bisa berisi hanya karakter alfanumerik, garis bawah, dan tanda penghubung, dan harus mulai dan berakhir dengan karakter alfanumerik.</message>
 	<message key="user.register.form.usernameExists">Nama pengguna yang dipilih sudah digunakan oleh pengguna lain.</message>
+	<message key="user.register.form.turnstileError">Validasi Cloudflare Turnstile gagal. Silakan coba lagi.</message>
+	<message key="user.register.form.recaptchaError">Validasi Google reCAPTCHA gagal. Silakan coba lagi.</message>
 	<message key="user.register.passwordLengthRestriction">Kata sandi minimal {$length} karakter.</message>
 	<message key="user.register.registerAs">Daftar sebagai</message>
 	<message key="user.register">Daftar</message>

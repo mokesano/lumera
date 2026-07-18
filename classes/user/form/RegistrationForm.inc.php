@@ -23,8 +23,13 @@ import('lib.pkp.classes.form.Form');
 
 class RegistrationForm extends Form {
 
+    /** @var int $existingUser */
     public $existingUser;
+
+    /** @var mixed $defaultAuth */
     public $defaultAuth;
+
+    /** @var string $implicitAuth */
     public $implicitAuth;
 
     // Tiga pilar keamanan berdiri sendiri (Decoupled Flags)
@@ -221,6 +226,7 @@ class RegistrationForm extends Form {
                     }
                 }
 
+                /** @var AuthSourceDAO $authDao */
                 $authDao = DAORegistry::getDAO('AuthSourceDAO');
                 $this->defaultAuth = $authDao->getDefaultPlugin();
                 if (isset($this->defaultAuth)) {
@@ -242,7 +248,10 @@ class RegistrationForm extends Form {
      */
     public function RegistrationForm() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class " . get_class($this) . " uses deprecated constructor parent::RegistrationForm(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class " . get_class($this) . " uses deprecated constructor parent::RegistrationForm(). Please refactor to parent::__construct().",
+                E_USER_DEPRECATED
+            );
         }
         self::__construct();
     }
@@ -292,9 +301,12 @@ class RegistrationForm extends Form {
             $templateMgr->assign('turnstilePublicKey', Config::getVar('turnstile', 'turnstile_public_key'));
         }
 
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
-        $templateMgr->assign_by_ref('countries', $countries);
+        $templateMgr->assign('countries', $countries);
+
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $templateMgr->assign('genderOptions', $userDao->getGenderOptions());
         if ($journal) {
@@ -463,8 +475,8 @@ class RegistrationForm extends Form {
         $requireValidation = Config::getVar('email', 'require_validation');
 
         if ($this->existingUser) { 
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
-
             if ($this->implicitAuth) { 
                 $sessionManager = SessionManager::getManager();
                 $session = $sessionManager->getUserSession();
@@ -525,13 +537,13 @@ class RegistrationForm extends Form {
                 $user->setAuthId($this->defaultAuth->authId);
             }
             $user->setPassword(Validation::encryptCredentials($this->getData('username'), $this->getData('password')));
-
             if ($requireValidation) {
                 $user->setDisabled(true);
                 $user->setDisabledReason(__('user.login.accountNotValidated'));
             }
 
             parent::execute($user);
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $userDao->insertUser($user);
             $userId = $user->getId();
@@ -548,9 +560,11 @@ class RegistrationForm extends Form {
         }
 
         $journal = Request::getJournal();
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $allowedRoles = array('reader' => 'registerAsReader', 'author' => 'registerAsAuthor', 'reviewer' => 'registerAsReviewer');
 
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         if (!$journalSettingsDao->getSetting($journal->getId(), 'allowRegReader')) { unset($allowedRoles['reader']); }
         if (!$journalSettingsDao->getSetting($journal->getId(), 'allowRegAuthor')) { unset($allowedRoles['author']); }
@@ -577,7 +591,7 @@ class RegistrationForm extends Form {
                 $mail = new MailTemplate('USER_VALIDATE');
                 $mail->setFrom($journal->getSetting('contactEmail'), $journal->getSetting('contactName'));
                 
-                // --- KODE UNTUK ROLE DINAMIS ---
+                // UNTUK ROLE DINAMIS ---
                 $rolesSelected = [];
                 if ($this->getData('readerRole')) {
                     $rolesSelected[] = __('user.role.reader');
@@ -590,19 +604,14 @@ class RegistrationForm extends Form {
                 }
                 
                 $userRole = !empty($rolesSelected) ? implode(', ', $rolesSelected) : 'Registered User';
-                // ------------------------------------
                 
                 $mail->assignParams(array(
                     'userFullName'   => $user->getFullName(),
                     'activateUrl'    => Request::url($journal->getPath(), 'user', 'activateUser', array($this->getData('username'), $accessKey)),
-                    
-                    // --- VARIABEL USER ---
                     'userEmail'      => $user->getEmail(),
                     'username'       => $this->getData('username'),
-                    'dateRegistered' => date('d-m-Y', strtotime($user->getDateRegistered())), // Format tanggal yang lebih rapi
+                    'dateRegistered' => date('d-m-Y', strtotime((string) $user->getDateRegistered())), // Format tanggal yang lebih rapi
                     'userRole'       => $userRole,
-                    
-                    // --- VARIABEL JURNAL (TAMBAHAN BARU) ---
                     'journalContactEmail'     => $journal->getSetting('contactEmail'),
                     'journalContactSignature' => $journal->getSetting('contactName') . '<br />' . $journal->getLocalizedTitle()
                 ));
@@ -626,11 +635,13 @@ class RegistrationForm extends Form {
         }
 
         if (isset($allowedRoles['reader']) && $this->getData('openAccessNotification')) {
+            /** @var UserSettingsDAO $userSettingsDao */
             $userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
             $userSettingsDao->updateSetting($userId, 'openAccessNotification', true, 'bool', $journal->getId());
         }
         
         return true;
     }
+
 }
 ?>

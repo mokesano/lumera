@@ -11,8 +11,8 @@ declare(strict_types=1);
  * @ingroup cache
  * @see GenericCache
  *
- * @brief Provides cache management functions.
- * [WIZDAM EDITION] Optimized for PHP 7.4/8.x, APCu support, and .wiz Binary Cache
+ * @brief Provides cache management functions with APCu support, and .wiz Binary Cache.
+ * 
  */
 
 import('lib.pkp.classes.cache.FileCache');
@@ -24,7 +24,6 @@ class CacheManager {
     
     /**
      * Get the static instance of the cache manager.
-     * [MODERNISASI] Singleton Pattern Modern
      * @return CacheManager
      */
     public static function getManager() {
@@ -38,9 +37,9 @@ class CacheManager {
 
     /**
      * Get a file cache.
-     * @param $context string
-     * @param $cacheId string
-     * @param $fallback callback
+     * @param string $context string
+     * @param string $cacheId string
+     * @param mixed $fallback callback
      * @return FileCache
      */
     public function getFileCache($context, $cacheId, $fallback) {
@@ -52,9 +51,9 @@ class CacheManager {
 
     /**
      * Get object cache.
-     * @param $context string
-     * @param $cacheId string
-     * @param $fallback callback
+     * @param string $context string
+     * @param string $cacheId string
+     * @param mixed $fallback callback
      * @return GenericCache
      */
     public function getObjectCache($context, $cacheId, $fallback) {
@@ -63,7 +62,7 @@ class CacheManager {
 
     /**
      * Get cache implementation type.
-     * @param $type string Type of cache: CACHE_TYPE_...
+     * @param string $type string Type of cache: CACHE_TYPE_...
      * @return string|null
      */
     public function getCacheImplementation($type) {
@@ -76,10 +75,10 @@ class CacheManager {
 
     /**
      * Get a cache.
-     * @param $context string
-     * @param $cacheId string
-     * @param $fallback callback
-     * @param $type string Type of cache: CACHE_TYPE_...
+     * @param string $context string
+     * @param string $cacheId string
+     * @param mixed $fallback callback
+     * @param string $type string Type of cache: CACHE_TYPE_...
      * @return GenericCache
      */
     public function getCache($context, $cacheId, $fallback, $type = CACHE_TYPE_FILE) {
@@ -118,7 +117,7 @@ class CacheManager {
                 break;
                 
             default:
-                // [WIZDAM] Safe Fallback if config has typo
+                // [LUMERA] Safe Fallback if config has typo
                 $cache = new GenericCache($context, $cacheId, $fallback);
                 break;
         }
@@ -135,9 +134,9 @@ class CacheManager {
 
     /**
      * Flush an entire context, if specified, or the whole cache.
-     * [WIZDAM] Updated flush logic to clean .wiz files and handle APCu
+     * [LUMERA] Updated flush logic to clean .wiz files and handle APCu
      * @param $context string The context to flush, if only one is to be flushed
-     * @param $type string The type of cache to flush
+     * @param string $type string The type of cache to flush
      */
     public function flush($context = null, $type = CACHE_TYPE_FILE) {
         $cacheImplementation = $this->getCacheImplementation($type);
@@ -182,11 +181,12 @@ class CacheManager {
                 break;
         }
         
-        // [WIZDAM] Bersihkan juga Smarty compiled & cache saat full flush
+        // [LUMERA] Bersihkan juga Smarty compiled & cache saat full flush
         if ($context === null) {
             $templateMgr = TemplateManager::getManager();
             $templateMgr->clearTemplateCache(); // clear t_compile & t_cache
         }
     }
+
 }
 ?>

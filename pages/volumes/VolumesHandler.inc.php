@@ -4,31 +4,23 @@ declare(strict_types=1);
 /**
  * @file pages/volumes/VolumesHandler.inc.php
  *
- * Copyright (c) 2025 Wizdam Team
- * Copyright (c) 2025 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Wizdam Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @class VolumesHandler
  * @ingroup pages_volumes
  *
  * @brief Handle requests for custom volume functions.
- *
- * [WIZDAM EDITION] Custom Handler - Refactored for PHP 8.1+ Strict Compliance
- * [WIZDAM v3] view() mendeteksi issue null dan merender konten artikel langsung
- *             sebagai pengganti sejati detail issue (bukan sekadar daftar issue).
- *
  * LOGIKA UTAMA view():
- *
  *   Kondisi A — Semua issue di volume memiliki number kosong/NULL:
  *       Volume IS the issue. Render konten artikel langsung via viewPage.tpl.
  *       Navigasi menggunakan Prev/Next VOLUME (bukan issue).
  *       $prevIssue / $nextIssue = null agar header.tpl tidak render nav issue
  *       yang akan menghasilkan link loop ke /volumes/{vol} lagi.
- *
  *   Kondisi B — Ada issue dengan number valid ("0", "1", "Supplement", dst):
  *       Tampilkan daftar issue dalam volume via viewVolume.tpl.
  *       User dapat klik issue individual → IssueHandler::view().
- *
  *   Kondisi C — Volume tidak punya issue sama sekali:
  *       Redirect ke halaman arsip (/volumes/).
  *
@@ -64,9 +56,9 @@ class VolumesHandler extends Handler {
         call_user_func_array([$this, '__construct'], $args);
     }
 
-    // =================================================================
+    // 
     // PUBLIC ACTIONS
-    // =================================================================
+    // 
 
     /**
      * Tampilkan halaman arsip (daftar semua volume/issue).
@@ -86,6 +78,7 @@ class VolumesHandler extends Handler {
             return;
         }
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $issues   = $issueDao->getPublishedIssues($journal->getId(), null);
 
@@ -121,6 +114,7 @@ class VolumesHandler extends Handler {
             return;
         }
 
+        /** @var IssueDAO $issueDao */
         $issueDao    = DAORegistry::getDAO('IssueDAO');
         $templateMgr = TemplateManager::getManager($request);
 
@@ -239,21 +233,24 @@ class VolumesHandler extends Handler {
      * @param PKPRequest|null $request
      */
     public function year($args, $request = null) {
+        // Internal coercion untuk request
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
-        $year    = isset($args[0]) ? (int) $args[0] : 0;
         $journal = $request->getJournal();
+
+        // Modern null coalescing untuk tahun
+        $year = (int) ($args[0] ?? 0);
 
         $this->setupTemplate($request);
 
+        // Validasi awal
         if (!$journal || $year < 1000 || $year > 9999) {
             $request->redirect(null, 'volumes');
             return;
         }
 
-        $issueDao    = DAORegistry::getDAO('IssueDAO');
-        $templateMgr = TemplateManager::getManager($request);
-
-        // Cari issue berdasarkan kolom year
+        /** @var IssueDAO $issueDao */
+        $issueDao = DAORegistry::getDAO('IssueDAO');
+        // 1. Cari issue berdasarkan kolom year
         $issuesFactory = $issueDao->getPublishedIssuesByNumber(
             $journal->getId(),
             null,   // volume: tidak difilter
@@ -262,7 +259,7 @@ class VolumesHandler extends Handler {
         );
         $issuesArray = $issuesFactory->toArray();
 
-        // Fallback: jika kolom year tidak terisi, cari dari date_published
+        // 2. Fallback: jika kolom year tidak terisi, cari dari date_published
         if (empty($issuesArray)) {
             $allIssues = $issueDao->getPublishedIssues($journal->getId());
             while ($iss = $allIssues->next()) {
@@ -275,49 +272,53 @@ class VolumesHandler extends Handler {
             }
         }
 
+        // 3. Redirect jika tetap tidak ada data
         if (empty($issuesArray)) {
             $request->redirect(null, 'volumes');
             return;
         }
 
+        // 4. Siapkan komponen pendukung
         import('lib.pkp.classes.core.ArrayItemIterator');
         $issuesTemplateIterator = new ArrayItemIterator($issuesArray);
 
         import('classes.file.PublicFileManager');
         $publicFileManager = new PublicFileManager();
-        $coverPagePath = $request->getBaseUrl() . '/'
-            . $publicFileManager->getJournalFilesPath($journal->getId()) . '/';
+        $coverPagePath = $request->getBaseUrl() . '/' . $publicFileManager->getJournalFilesPath($journal->getId()) . '/';
 
-        // Judul: gunakan angka tahun saja jika key locale tidak ada
+        // 5. Judul: gunakan angka tahun saja jika key locale tidak ada
         $yearTitleString = AppLocale::translate('issue.year') . ' ' . $year;
         if ($yearTitleString === 'issue.year ' . $year) {
             $yearTitleString = (string) $year;
         }
 
-        list($prevYear, $nextYear) = $this->_getSurroundingYears(
-            $journal->getId(), $year, $issueDao
-        );
+        // 6. [WIZDAM] FIX: Panggil langsung dari IssueDAO, bukan dari method private Handler
+        [$prevYear, $nextYear] = $issueDao->getSurroundingYears($journal->getId(), $year);
 
-        $templateMgr->assign('coverPagePath',            $coverPagePath);
-        $templateMgr->assign('locale',                   AppLocale::getLocale());
-        $templateMgr->assign('pageTitleTranslated',       $yearTitleString);
-        $templateMgr->assign('pageCrumbTitleTranslated',  $yearTitleString);
-        $templateMgr->assign('pageHierarchy', [
-            [$request->url(null, 'volumes'), 'archive.archives']
+        // 7. [WIZDAM] Modernisasi: Micro-payload untuk TemplateManager
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign([
+            'coverPagePath'           => $coverPagePath,
+            'locale'                  => AppLocale::getLocale(),
+            'pageTitleTranslated'     => $yearTitleString,
+            'pageCrumbTitleTranslated'=> $yearTitleString,
+            'pageHierarchy'           => [
+                [$request->url(null, 'volumes'), 'archive.archives']
+            ],
+            'prevYear'                => $prevYear,
+            'nextYear'                => $nextYear,
+            'journal'                 => $journal,
+            'yearId'                  => $year,
+            'issues'                  => $issuesTemplateIterator,
+            'isYearView'              => true,
         ]);
-        $templateMgr->assign('prevYear',  $prevYear);
-        $templateMgr->assign('nextYear',  $nextYear);
-        $templateMgr->assign('journal',   $journal);
-        $templateMgr->assign('yearId',    $year);
-        $templateMgr->assign('issues',    $issuesTemplateIterator);
-        $templateMgr->assign('isYearView', true);
 
         $templateMgr->display('issue/viewYear.tpl');
     }
 
-    // =================================================================
+    // 
     // PRIVATE HELPERS
-    // =================================================================
+    // 
 
     /**
      * Setup variabel template untuk konten issue (artikel, galley, subscription).
@@ -372,10 +373,12 @@ class VolumesHandler extends Handler {
             $showToc = false;
         } else {
             // Tidak ada cover → langsung TOC
+            /** @var IssueGalleyDAO $issueGalleyDao */
             $issueGalleyDao = DAORegistry::getDAO('IssueGalleyDAO');
             $issueGalleys   = $issueGalleyDao->getGalleysByIssue($issue->getId());
             $templateMgr->assign('issueGalleys', $issueGalleys);
 
+            /** @var PublishedArticleDAO $publishedArticleDao */
             $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
             $publishedArticles   = $publishedArticleDao->getPublishedArticlesInSections(
                 $issue->getId(), true
@@ -409,6 +412,7 @@ class VolumesHandler extends Handler {
             if (!$partial) IssueAction::subscribedDomain($journal, $issue->getId());
             $templateMgr->assign('issueExpiryPartial', $partial);
 
+            /** @var PublishedArticleDAO $publishedArticleDao */
             $publishedArticleDao   = DAORegistry::getDAO('PublishedArticleDAO');
             $publishedArticlesTemp = $publishedArticleDao->getPublishedArticles($issue->getId());
             $articleExpiryPartial  = [];
@@ -448,7 +452,7 @@ class VolumesHandler extends Handler {
 
         $templateMgr->assign(
             'issueHeadingTitle',
-            $issue->getIssueIdentification(false, true)
+            $issue->getIssueIdentification()
         );
         $templateMgr->assign('helpTopicId', 'user.currentAndArchives');
 
@@ -456,39 +460,5 @@ class VolumesHandler extends Handler {
         $templateMgr->assign('pubIdPlugins', $pubIdPlugins);
     }
 
-    /**
-     * Cari tahun terdekat sebelum dan sesudah yang memiliki issue terbit.
-     *
-     * @param int      $journalId
-     * @param int      $currentYear
-     * @param IssueDAO $issueDao
-     * @return array   [int|null $prevYear, int|null $nextYear]
-     */
-    private function _getSurroundingYears($journalId, $currentYear, $issueDao) {
-        $prevYear = null;
-        $nextYear = null;
-
-        $resultNext = $issueDao->retrieve(
-            'SELECT MIN(year) FROM issues
-             WHERE journal_id = ? AND published = 1 AND year > ?',
-            array((int) $journalId, (int) $currentYear)
-        );
-        if (isset($resultNext->fields[0]) && $resultNext->fields[0] !== null) {
-            $nextYear = (int) $resultNext->fields[0];
-        }
-        $resultNext->Close();
-
-        $resultPrev = $issueDao->retrieve(
-            'SELECT MAX(year) FROM issues
-             WHERE journal_id = ? AND published = 1 AND year < ?',
-            array((int) $journalId, (int) $currentYear)
-        );
-        if (isset($resultPrev->fields[0]) && $resultPrev->fields[0] !== null) {
-            $prevYear = (int) $resultPrev->fields[0];
-        }
-        $resultPrev->Close();
-
-        return array($prevYear, $nextYear);
-    }
 }
 ?>

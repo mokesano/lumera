@@ -3,9 +3,9 @@ declare(strict_types=1);
 /**
  * @file pages/volumes/index.php
  *
- * Copyright (c) 2025 Wizdam Team
- * Copyright (c) 2025 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Wizdam Team
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @class VolumesHandler
  * @ingroup pages_volumes
@@ -19,6 +19,8 @@ declare(strict_types=1);
  *                     /volumes/{vol}/issue/      (Rule 1b PageRouter)
  *   year            → /year/{year}               (Rule 4 PageRouter – Level 3 Degradasi)
  */
+
+/** @var string $op */
 switch ($op) {
     case 'displayArchive':
     case 'view':
@@ -27,4 +29,5 @@ switch ($op) {
         import('pages.volumes.VolumesHandler');
         break;
 }
+
 ?>
