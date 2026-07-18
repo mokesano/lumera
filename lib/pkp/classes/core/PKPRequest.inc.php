@@ -959,8 +959,12 @@ class PKPRequest {
         }
     
         // Cek #2: Karakter berbahaya dan Directory Traversal
-        // Menambahkan pengecekan null byte (\0) yang lebih ketat
         if (preg_match('/[\\\\\x00-\x1F\x7F]|\.\.\/?|\.\//', $path)) {
+            return false;
+        }
+        
+        // Cek #3: Cegah Protocol-Relative URL (contoh: //evil.com)
+        if (str_starts_with($path, '//')) {
             return false;
         }
         
