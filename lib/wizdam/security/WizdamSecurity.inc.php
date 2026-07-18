@@ -19,18 +19,16 @@ class WizdamSecurity {
     /**
      * Cek apakah IP terkena Rate Limit
      * @param PKPRequest $request
-     * @param string $cacheName Nama cache untuk pengelompokan (ex: 'login', 'search')
+     * @param string $cacheName Nama cache untuk pengelompokan (ex: 'login_rate_limiter')
      * @param int $threshold Batas percobaan sebelum diblokir
      * @return bool
      */
-    public static function isRateLimited($request, $cacheName = 'wizdam_rate_limit', $threshold = 5) {
+    public static function isRateLimited($request, $cacheName = 'wizdam_rate_limit', $threshold = 5): bool {
         $ip = $request->getRemoteAddr();
         $cacheManager = CacheManager::getManager();
+        $cache = $cacheManager->getObjectCache($cacheName, $ip, function($cache, $id) { return 0; });
+        $attempts = (int) $cache->get($ip);
         
-        // Menggunakan closure sebagai callback default jika cache belum ada
-        $cache = $cacheManager->getObjectCache($cacheName, $ip, function($ip) { return 0; });
-        
-        $attempts = (int) $cache->getCache($ip);
         return ($attempts >= $threshold);
     }
 
@@ -39,12 +37,11 @@ class WizdamSecurity {
      * @param PKPRequest $request
      * @param string $cacheName
      */
-    public static function incrementAttempts($request, $cacheName = 'wizdam_rate_limit') {
+    public static function incrementAttempts($request, $cacheName = 'wizdam_rate_limit'): void {
         $ip = $request->getRemoteAddr();
         $cacheManager = CacheManager::getManager();
-        $cache = $cacheManager->getObjectCache($cacheName, $ip, function($ip) { return 0; });
-        
-        $attempts = (int) $cache->getCache($ip);
+        $cache = $cacheManager->getObjectCache($cacheName, $ip, function($cache, $id) { return 0; });
+        $attempts = (int) $cache->get($ip);
         $cache->setCache($ip, $attempts + 1);
     }
 
@@ -53,24 +50,24 @@ class WizdamSecurity {
      * @param PKPRequest $request
      * @param string $cacheName
      */
-    public static function resetAttempts($request, $cacheName = 'wizdam_rate_limit') {
+    public static function resetAttempts($request, $cacheName = 'wizdam_rate_limit'): void {
         $ip = $request->getRemoteAddr();
         $cacheManager = CacheManager::getManager();
-        $cache = $cacheManager->getObjectCache($cacheName, $ip, function($ip) { return 0; });
+        $cache = $cacheManager->getObjectCache($cacheName, $ip, function($cache, $id) { return 0; });
         $cache->setCache($ip, 0);
     }
 
     /**
      * Sanitasi data objek (Metadata Filter)
      * Hapus properti sensitif dari data yang akan dikirim ke template
-     * @param array $data Data yang akan dibersihkan
+     * @param array $data
      * @return array
      */
-    public static function sanitizeObjectData($data) {
+    public static function sanitizeObjectData($data): array {
         $sensitive = array('user_id', 'password', 'path_abs', 'db_internal_id', 'auth_id');
         
         foreach ($data as $key => $value) {
-            // Jika elemen adalah objek OJS (DataObjects), bersihkan propertinya
+            // Jika elemen adalah objek (DataObjects), bersihkan propertinya
             if (is_object($value) && method_exists($value, 'setData')) {
                 foreach ($sensitive as $s) {
                     $value->setData($s, null);

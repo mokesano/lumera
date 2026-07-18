@@ -33584,14 +33584,14 @@ h6.sub-title {
 
 /** Notification */
 .notification-icon {
-    min-width:22px;
+    min-width:25px;
     position:absolute;
     top:8px;
     right:30px;
     background-color:#d54449;
     color:white;
     border-radius:50%;
-    border-radius:11px;
+    border-radius:12px;
     padding:4px;
     font-size:10px;
     font-weight:bold;
