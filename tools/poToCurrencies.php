@@ -13,12 +13,12 @@ declare(strict_types=1);
  *
  * @brief CLI tool to convert a .PO file for ISO4217 into the currencies.xml format
  * supported by the PKP suite.
- * [WIZDAM EDITION] Modernized Currency Localization Tool.
+ * [LUMERA] Modernized Currency Localization Tool.
  */
 
 require(__DIR__ . '/bootstrap.inc.php');
 
-// [WIZDAM] Ensure the binary exists, otherwise this tool is unusable.
+// [LUMERA] Ensure the binary exists, otherwise this tool is unusable.
 define('PO_TO_CSV_TOOL', '/usr/bin/po2csv');
 if (!is_executable(PO_TO_CSV_TOOL)) {
     fwrite(STDERR, "Error: Required binary " . PO_TO_CSV_TOOL . " not found or not executable.\n");
@@ -26,6 +26,7 @@ if (!is_executable(PO_TO_CSV_TOOL)) {
 }
 
 class poToCurrencies extends CommandLineTool {
+
     /** @var string The target locale (e.g., 'id_ID') */
     protected string $locale = '';
 
@@ -106,7 +107,6 @@ class poToCurrencies extends CommandLineTool {
         foreach ($currencies as $currency) {
             /** @var Currency $currency */
             $english = $currency->getName();
-
             if (!isset($translationMap[$english])) {
                 echo "WARNING: Unknown currency \"$english\"! Using English as default.\n";
             } else {
@@ -130,7 +130,7 @@ class poToCurrencies extends CommandLineTool {
             exit(1);
         }
 
-        // [WIZDAM] Using HEREDOC for clean XML output
+        // [LUMERA] Using HEREDOC for clean XML output
         $xmlHeader = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -152,7 +152,7 @@ XML;
 
         foreach ($outputMap as $currency) {
             /** @var Currency $currency */
-            // [WIZDAM] Ensure name is safe for XML attribute
+            // [LUMERA] Ensure name is safe for XML attribute
             $safeName = htmlspecialchars($currency->getName(), ENT_XML1, 'UTF-8');
             
             fwrite($oh, "    <currency name=\"$safeName\" code_alpha=\"{$currency->getCodeAlpha()}\" code_numeric=\"{$currency->getCodeNumeric()}\" />\n");
@@ -165,7 +165,7 @@ XML;
     }
 }
 
-// [WIZDAM] Safe instantiation
+// [LUMERA] Safe instantiation
 $tool = new poToCurrencies($argv ?? []);
 $tool->execute();
 
