@@ -41,8 +41,7 @@ class UserGroupAssignmentDAO extends DAO {
     }
 
     /**
-     * Create a new UserGroupAssignment object
-     * (allows extensibility)
+     * Create a new UserGroupAssignment object (allows extensibility)
      * @return UserGroupAssignment
      */
     public function newDataObject() {
@@ -52,11 +51,10 @@ class UserGroupAssignmentDAO extends DAO {
 
     /**
      * Internal function to return a UserGroupAssignment object from a row.
-     * @param $row array
+     * @param mixed $row array
      * @return UserGroupAssignment
      */
     public function _returnFromRow($row) {
-        // Removed & from newDataObject
         $userGroupAssignment = $this->newDataObject();
         $userGroupAssignment->setUserGroupId($row['user_group_id']);
         $userGroupAssignment->setUserId($row['user_id']);
@@ -70,7 +68,7 @@ class UserGroupAssignmentDAO extends DAO {
      * @param $userGroupId int optional
      */
     public function deleteByUserId($userId, $userGroupId = null) {
-        $params = array((int) $userId);
+        $params = [(int) $userId];
         if ($userGroupId) $params[] = (int) $userGroupId;
 
         return $this->update(
@@ -86,9 +84,11 @@ class UserGroupAssignmentDAO extends DAO {
      * @param int $userGroupId
      */
     public function deleteAssignmentsByUserGroupId($userGroupId) {
-        return $this->update('DELETE FROM user_user_groups
-                            WHERE user_group_id = ?',
-                        (int) $userGroupId);
+        return $this->update(
+            'DELETE FROM user_user_groups
+            WHERE user_group_id = ?',
+            (int) $userGroupId
+        );
     }
 
     /**
@@ -97,8 +97,8 @@ class UserGroupAssignmentDAO extends DAO {
      * @param int $userId
      */
     public function deleteAssignmentsByContextId($contextId, $userId = null) {
-        $params = array($contextId);
-        if ($userId) $params[] = $userId;
+        $params = [(int) $contextId];
+        if ($userId) $params[] = (int) $userId;
         $result = $this->retrieve(
             'SELECT    uug.user_group_id, uug.user_id
             FROM    user_groups ug
@@ -109,7 +109,6 @@ class UserGroupAssignmentDAO extends DAO {
         );
 
         $assignments = new DAOResultFactory($result, $this, '_returnFromRow');
-        // Removed & from next()
         while ($assignment = $assignments->next()) {
             $this->deleteByUserId($assignment->getUserId(), $assignment->getUserGroupId());
             unset($assignment);
@@ -117,18 +116,17 @@ class UserGroupAssignmentDAO extends DAO {
         return $assignments;
     }
 
-
     /**
      * Retrieve user group assignments for a user
-     * @param $userId int
-     * @param $contextId int
-     * @param $roleId int
+     * @param int|null $userId int
+     * @param int|null $contextId int
+     * @param int|null $roleId int
      * @return DAOResultFactory UserGroupAssignment
      */
     public function getByUserId($userId, $contextId = null, $roleId = null) {
-        $params = array($userId);
-        if ($contextId) $params[] = $contextId;
-        if ($roleId) $params[] = $roleId;
+        $params = [(int) $userId];
+        if ($contextId) $params[] = (int) $contextId;
+        if ($roleId) $params[] = (int) $roleId;
 
         $result = $this->retrieve(
             'SELECT uug.user_group_id, uug.user_id
@@ -141,34 +139,31 @@ class UserGroupAssignmentDAO extends DAO {
         return $returner;
     }
 
-
     /**
      * Insert an assignment
-     * @param $userGroupAssignment UserGroupAssignment
+     * @param mixed $userGroupAssignment UserGroupAssignment
      */
     public function insertAssignment($userGroupAssignment) {
-        // Removed & from update return
         $returner = $this->update(
             'INSERT INTO user_user_groups SET user_id = ?, user_group_id = ?',
-            array($userGroupAssignment->getUserId(), $userGroupAssignment->getUserGroupId())
-            );
+            [$userGroupAssignment->getUserId(), $userGroupAssignment->getUserGroupId()]
+        );
 
         return $returner;
     }
 
     /**
      * Remove an assignment
-     * @param $userGroupAssignment UserGroupAssignment
+     * @param mixed $userGroupAssignment UserGroupAssignment
      */
     public function deleteAssignment($userGroupAssignment) {
-        // Removed & from update return
         $returner = $this->update(
             'DELETE FROM user_user_groups WHERE user_id = ? AND user_group_id = ?',
-            array($userGroupAssignment->getUserId(), $userGroupAssignment->getUserGroupId()));
+            [$userGroupAssignment->getUserId(), $userGroupAssignment->getUserGroupId()]
+        );
 
         return $returner;
     }
 
 }
-
 ?>
