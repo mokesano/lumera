@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @ingroup tools
  *
  * @brief CLI tool to execute a set of scheduled tasks.
- * [WIZDAM EDITION] Scheduled Task Runner Implementation.
+ * [LUMERA] Scheduled Task Runner Implementation.
  */
 
 require(__DIR__ . '/bootstrap.inc.php');
@@ -20,14 +20,13 @@ require(__DIR__ . '/bootstrap.inc.php');
 import('lib.pkp.classes.cliTool.ScheduledTaskTool');
 
 class runScheduledTasks extends ScheduledTaskTool {
+
     /**
      * Constructor.
      * @param array $argv command-line arguments
-     * If specified, the first parameter should be the path to
-     * a tasks XML descriptor file (other than the default)
      */
     public function __construct(array $argv = []) {
-        // [WIZDAM FIX] Call parent::__construct which handles argument parsing and file validation.
+        // [LUMERA] Call parent::__construct which handles argument parsing and file validation.
         parent::__construct($argv);
     }
 
@@ -46,7 +45,7 @@ class runScheduledTasks extends ScheduledTaskTool {
     }
 }
 
-// [WIZDAM] Safe instantiation
+// [LUMERA] Safe instantiation
 $tool = new runScheduledTasks($argv ?? []);
 $tool->execute();
 ?>
