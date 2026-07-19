@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @ingroup tools
  *
  * @brief CLI tool for upgrading Lumera.
- * [EDITION] Lumera Upgrade Tool Implementation.
+ * [LUMERA] Upgrade Tool Implementation.
  */
 
 require(__DIR__ . '/bootstrap.inc.php');
@@ -47,4 +47,3 @@ class OJSUpgradeTool extends UpgradeTool {
 // [LUMERA] Safe instantiation
 $tool = new OJSUpgradeTool($argv ?? []);
 $tool->execute();
-?>
