@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see Session
  *
  * @brief Operations for retrieving and modifying Session objects.
- * [WIZDAM EDITION] PHP 7.4+ Compatible & Hardened
  */
 
 import('lib.pkp.classes.session.Session');
@@ -35,7 +34,7 @@ class SessionDAO extends DAO {
             "Class '" . get_class($this) . "' uses deprecated constructor parent::SessionDAO(). Please refactor to parent::__construct().", 
             E_USER_DEPRECATED
         );
-        self::__construct();
+        $this->__construct();
     }
 
     /**
@@ -47,17 +46,18 @@ class SessionDAO extends DAO {
 
     /**
      * Retrieve a session by ID.
-     * @param $sessionId string
-     * @return Session
+     * @param string $sessionId string
+     * @return Session|null
      */
     public function getSession($sessionId) {
         $result = $this->retrieve(
             'SELECT * FROM sessions WHERE session_id = ?',
-            array($sessionId)
+            [$sessionId]
         );
 
         $session = null;
-        if ($result->RecordCount() != 0) {
+
+        if (!$result->EOF) {
             $row = $result->GetRowAssoc(false);
 
             $session = $this->newDataObject();
@@ -78,12 +78,12 @@ class SessionDAO extends DAO {
 
     /**
      * Insert a new session.
-     * @param $session Session
+     * @param mixed $session Session
      */
     public function insertSession($session) {
         $userAgent = $session->getUserAgent();
 
-        // [WIZDAM EDITION] 1. VAKSINASI ANTI-BOT DINAMIS DARI REGISTRY
+        // [LUMERA] 1. VAKSINASI ANTI-BOT DINAMIS DARI REGISTRY
         static $botRegex = null;
         
         // Baca file botAgents.txt hanya SATU KALI per request menggunakan static
@@ -92,13 +92,13 @@ class SessionDAO extends DAO {
             
             if (file_exists($botFile)) {
                 $lines = file($botFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-                $patterns = array();
+                $patterns = [];
                 foreach ($lines as $line) {
                     $line = trim($line);
                     // Abaikan baris kosong dan baris komentar yang berawalan '#'
                     if ($line !== '' && strpos($line, '#') !== 0) {
-                        // Escape karakter '/' agar tidak merusak delimiter regex PHP
-                        $patterns[] = str_replace('/', '\/', $line);
+                        // [LUMERA FIX 2] Use preg_quote for 100% safe regex escaping of ALL metacharacters
+                        $patterns[] = preg_quote($line, '/');
                     }
                 }
                 // Rangkai menjadi satu regex besar: /(bot1|bot2|bot3)/i
@@ -114,7 +114,7 @@ class SessionDAO extends DAO {
             return true; 
         }
 
-        // [WIZDAM EDITION] 2. OPERASI UPSERT TINGKAT DATABASE
+        // [LUMERA] 2. OPERASI UPSERT TINGKAT DATABASE
         return $this->update(
             'INSERT INTO sessions
                 (session_id, ip_address, user_agent, created, last_used, remember, data, domain)
@@ -124,7 +124,7 @@ class SessionDAO extends DAO {
                 user_agent = VALUES(user_agent),
                 last_used = VALUES(last_used),
                 data = VALUES(data)',
-            array(
+            [
                 $session->getId(),
                 $session->getIpAddress(),
                 substr($userAgent, 0, 255),
@@ -133,19 +133,18 @@ class SessionDAO extends DAO {
                 $session->getRemember() ? 1 : 0,
                 $session->getSessionData(),
                 $session->getDomain()
-            )
+            ]
         );
     }
 
     /**
      * Update an existing session.
-     * @param $session Session
+     * @param mixed $session Session
      */
     public function updateObject($session) {
         $userId = $session->getUserId();
 
         // Normalisasi User ID untuk kompatibilitas Database Strict Mode
-        // (Mencegah insert string kosong ke kolom integer)
         if (empty($userId)) {
             $userId = null; 
         } else {
@@ -164,7 +163,7 @@ class SessionDAO extends DAO {
                     data = ?,
                     domain = ?
                 WHERE session_id = ?',
-            array(
+            [
                 $userId,
                 $session->getIpAddress(),
                 substr($session->getUserAgent(), 0, 255),
@@ -174,7 +173,7 @@ class SessionDAO extends DAO {
                 $session->getSessionData(),
                 $session->getDomain(),
                 $session->getId()
-            )
+            ]
         );
     }
 
@@ -182,7 +181,7 @@ class SessionDAO extends DAO {
      * Update an existing session.
      * @deprecated since OJS 2.x. Please use updateObject() instead.
      * @see SessionDAO::updateObject()
-     * @param $session Session
+     * @param mixed $session Session
      * @return boolean
      */
     public function updateSession($session) {
@@ -195,7 +194,7 @@ class SessionDAO extends DAO {
     /**
      * Delete a session object.
      * Standard DAO method for object deletion.
-     * @param $session Session
+     * @param mixed $session Session
      * @return boolean
      */
     public function deleteObject($session) {
@@ -206,7 +205,7 @@ class SessionDAO extends DAO {
      * Delete a session.
      * @deprecated since OJS 2.x. Please use deleteObject() instead.
      * @see SessionDAO::deleteObject()
-     * @param $session Session
+     * @param mixed $session Session
      * @return boolean
      */
     public function deleteSession($session) {
@@ -218,39 +217,41 @@ class SessionDAO extends DAO {
 
     /**
      * Delete a session by ID.
-     * @param $sessionId string
+     * @param int|string $sessionId
      */
     public function deleteSessionById($sessionId) {
         return $this->update(
             'DELETE FROM sessions WHERE session_id = ?',
-            array($sessionId)
+            [(string) $sessionId] // [LUMERA] Added cast for strict safety
         );
     }
 
     /**
      * Delete sessions by user ID.
-     * @param $userId string
+     * @param int $userId
      */
     public function deleteSessionsByUserId($userId) {
         return $this->update(
             'DELETE FROM sessions WHERE user_id = ?',
-            array((int) $userId)
+            [(int) $userId]
         );
     }
 
     /**
      * Delete all sessions older than the specified time.
+     * @param mixed $lastUsed
+     * @param int $lastUsedRemember
      */
     public function deleteSessionByLastUsed($lastUsed, $lastUsedRemember = 0) {
         if ($lastUsedRemember == 0) {
             return $this->update(
                 'DELETE FROM sessions WHERE (last_used < ? AND remember = 0)',
-                array((int) $lastUsed)
+                [(int) $lastUsed]
             );
         } else {
             return $this->update(
                 'DELETE FROM sessions WHERE (last_used < ? AND remember = 0) OR (last_used < ? AND remember = 1)',
-                array((int) $lastUsed, (int) $lastUsedRemember)
+                [(int) $lastUsed, (int) $lastUsedRemember]
             );
         }
     }
@@ -264,18 +265,25 @@ class SessionDAO extends DAO {
 
     /**
      * Check if a session exists with the specified ID.
-     * @param $sessionId string
+     * @param int|string $sessionId
      * @return boolean
      */
     public function sessionExistsById($sessionId) {
         $result = $this->retrieve(
-            'SELECT COUNT(*) FROM sessions WHERE session_id = ?',
-            array($sessionId)
+            'SELECT COUNT(*) AS count FROM sessions WHERE session_id = ?',
+            [(string) $sessionId]
         );
-        $returner = isset($result->fields[0]) && $result->fields[0] == 1 ? true : false;
+
+        $returner = false;
+
+        if (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = isset($row['count']) && ((int) $row['count']) === 1;
+        }
 
         $result->Close();
         return $returner;
     }
+
 }
 ?>

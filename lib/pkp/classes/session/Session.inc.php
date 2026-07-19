@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see SessionDAO
  *
  * @brief Maintains user state information from one request to the next.
- * [WIZDAM EDITION] PHP 7.4+ Compatible
  */
 
 class Session extends DataObject {
@@ -41,8 +40,7 @@ class Session extends DataObject {
 
     /**
      * Get a session variable's value.
-     * [MODERNISASI] Use Null Coalescing Operator
-     * @param $key string
+     * @param string $key string
      * @return mixed
      */
     public function getSessionVar($key) {
@@ -51,8 +49,8 @@ class Session extends DataObject {
 
     /**
      * Get a session variable's value.
-     * @param $key string
-     * @param $value mixed
+     * @param string $key string
+     * @param mixed $value mixed
      * @return mixed
      */
     public function setSessionVar($key, $value) {
@@ -62,7 +60,7 @@ class Session extends DataObject {
 
     /**
      * Unset (delete) a session variable.
-     * @param $key string
+     * @param string $key string
      */
     public function unsetSessionVar($key) {
         if (isset($_SESSION[$key])) {
@@ -84,8 +82,7 @@ class Session extends DataObject {
 
     /**
      * Set user ID.
-     * [MODERNISASI] Hapus '&' saat mengambil User object
-     * @param $userId int
+     * @param int $userId int
      */
     public function setUserId($userId) {
         if (!isset($userId) || empty($userId)) {
@@ -93,8 +90,8 @@ class Session extends DataObject {
             $userId = null;
 
         } else if ($userId != $this->getData('userId')) {
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
-            // [MODERNISASI] Removed & reference assignment
             $this->user = $userDao->getById($userId);
             if (!isset($this->user)) {
                 $userId = null;
@@ -113,7 +110,7 @@ class Session extends DataObject {
 
     /**
      * Set IP address.
-     * @param $ipAddress string
+     * @param string $ipAddress string
      */
     public function setIpAddress($ipAddress) {
         return $this->setData('ipAddress', $ipAddress);
@@ -129,7 +126,7 @@ class Session extends DataObject {
 
     /**
      * Set user agent.
-     * @param $userAgent string
+     * @param string $userAgent string
      */
     public function setUserAgent($userAgent) {
         return $this->setData('userAgent', $userAgent);
@@ -145,7 +142,7 @@ class Session extends DataObject {
 
     /**
      * Set time (in seconds) since session was created.
-     * @param $created int
+     * @param int $created int
      */
     public function setSecondsCreated($created) {
         return $this->setData('created', $created);
@@ -161,7 +158,7 @@ class Session extends DataObject {
 
     /**
      * Set time (in seconds) since session was last used.
-     * @param $lastUsed int
+     * @param int $lastUsed int
      */
     public function setSecondsLastUsed($lastUsed) {
         return $this->setData('lastUsed', $lastUsed);
@@ -177,7 +174,7 @@ class Session extends DataObject {
 
     /**
      * Set whether session is to be saved across browser sessions.
-     * @param $remember boolean
+     * @param bool $remember boolean
      */
     public function setRemember($remember) {
         return $this->setData('remember', $remember);
@@ -193,7 +190,7 @@ class Session extends DataObject {
 
     /**
      * Set session parameters.
-     * @param $data array
+     * @param mixed $data array
      */
     public function setSessionData($data) {
         return $this->setData('data', $data);
@@ -209,7 +206,7 @@ class Session extends DataObject {
 
     /**
      * Set the domain with which the session is registered
-     * @param $data array
+     * @param mixed $data array
      */
     public function setDomain($data) {
         return $this->setData('domain', $data);
@@ -217,12 +214,11 @@ class Session extends DataObject {
 
     /**
      * Get user associated with this session (null if anonymous user).
-     * [MODERNISASI] Removed & reference
      * @return User
      */
     public function getUser() {
         return $this->user;
     }
-}
 
+}
 ?>
