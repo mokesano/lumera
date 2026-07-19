@@ -18,6 +18,7 @@ declare(strict_types=1);
 import('classes.search.ArticleSearch');
 import('classes.file.PublicFileManager');
 import('lib.pkp.classes.template.PKPTemplateManager');
+import('classes.plugins.ThemePlugin');
 
 class TemplateManager extends PKPTemplateManager {
     
