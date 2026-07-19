@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @ingroup tools
  *
  * @brief CLI tool to output the SQL statements corresponding to an XML database schema.
- * [WIZDAM EDITION] Modernized CLI Tool.
+ * [LUMERA] Modernized CLI Tool.
  */
 
 require(__DIR__ . '/bootstrap.inc.php');
@@ -23,10 +23,10 @@ import('lib.pkp.classes.cliTool.XmlToSqlTool');
 define('DATABASE_XML_FILE', 'dbscripts/xml/ojs_schema.xml');
 
 class dbXMLtoSQL extends XmlToSqlTool {
+
     /**
      * Constructor.
      * @param array $argv command-line arguments
-     * If specified, the first argument should be the file to parse
      */
     public function __construct(array $argv = []) {
         parent::__construct($argv);
@@ -47,8 +47,6 @@ class dbXMLtoSQL extends XmlToSqlTool {
     }
 }
 
-// [WIZDAM] Safe instantiation using Null Coalescing Operator
+// [LUMERA] Safe instantiation using Null Coalescing Operator
 $tool = new dbXMLtoSQL($argv ?? []);
 $tool->execute();
-
-?>
