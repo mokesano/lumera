@@ -22,7 +22,7 @@ class MigrateInvoices extends CommandLineTool {
      * Usage tool
      */
     public function usage(): void {
-        echo "Script to migrate legacy payments to Frontedge Invoices\n"
+        echo "Script to migrate legacy payments to Lumera Invoices\n"
            . "Usage: {$this->scriptName}\n";
     }
 
@@ -35,11 +35,11 @@ class MigrateInvoices extends CommandLineTool {
         $chunkSize = 100;
         
         echo "====================================================\n";
-        echo "WIZDAM INVOICES MIGRATOR: DUAL-STAGE CLI WORKER\n";
+        echo "LUMERA INVOICES MIGRATOR: DUAL-STAGE CLI WORKER\n";
         echo "====================================================\n\n";
 
-        // --- TAHAP 1: QUEUED PAYMENTS ---
-        echo "[TAHAP 1] Mengekstrak Queued Payments (Tertunda)...\n";
+        // STAGE 1: QUEUED PAYMENTS ---
+        echo "[STAGE 1] Mengekstrak Queued Payments (Tertunda)...\n";
         $offset = 0;
         $totalQueued = 0;
         do {
@@ -49,10 +49,10 @@ class MigrateInvoices extends CommandLineTool {
             $offset += $chunkSize;
             if (!$result['is_done']) usleep(100000); // 0.1 detik
         } while (!$result['is_done']);
-        echo ">> TAHAP 1 SELESAI. Total diproses: {$totalQueued} baris.\n\n";
+        echo ">> STAGE 1 SELESAI. Total diproses: {$totalQueued} baris.\n\n";
 
-        // --- TAHAP 2: COMPLETED PAYMENTS ---
-        echo "[TAHAP 2] Mengekstrak Completed Payments (Lunas/PAID)...\n";
+        // STAGE 2: COMPLETED PAYMENTS ---
+        echo "[STAGE 2] Mengekstrak Completed Payments (Lunas/PAID)...\n";
         $offset = 0;
         $totalCompleted = 0;
         do {
@@ -62,7 +62,7 @@ class MigrateInvoices extends CommandLineTool {
             $offset += $chunkSize;
             if (!$result['is_done']) usleep(100000); // 0.1 detik
         } while (!$result['is_done']);
-        echo ">> TAHAP 2 SELESAI. Total diproses: {$totalCompleted} baris.\n\n";
+        echo ">> STAGE 2 SELESAI. Total diproses: {$totalCompleted} baris.\n\n";
 
         $grandTotal = $totalQueued + $totalCompleted;
         echo "====================================================\n";
@@ -85,4 +85,3 @@ class MigrateInvoices extends CommandLineTool {
 
 $tool = new MigrateInvoices($argv ?? []);
 $tool->execute();
-?>
