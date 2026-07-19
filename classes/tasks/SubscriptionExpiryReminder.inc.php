@@ -32,12 +32,16 @@ class SubscriptionExpiryReminder extends ScheduledTask {
      */
     public function SubscriptionExpiryReminder() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::SubscriptionExpiryReminder(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                'Class ' . get_class($this) . ' uses deprecated constructor parent::' . get_class($this) . '(). Please refactor to parent::__construct().',
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $this->__construct();
     }
 
     /**
+     * Get ScheduleTask name
      * @see ScheduledTask::getName()
      * @return string
      */
@@ -47,13 +51,14 @@ class SubscriptionExpiryReminder extends ScheduledTask {
 
     /**
      * Send reminder to subscriber.
-     * @param $subscription Subscription
-     * @param $journal Journal
-     * @param $emailKey string
+     * @param object $subscription Subscription
+     * @param object $journal Journal
+     * @param string $emailKey string
      */
     public function sendReminder ($subscription, $journal, $emailKey) {
-
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
+        /** @var SubscriptionTypeDAO $subscriptionTypeDao */
         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
 
         $journalName = $journal->getLocalizedTitle();
@@ -85,31 +90,30 @@ class SubscriptionExpiryReminder extends ScheduledTask {
 
         $subscriptionContactSignature .= "\n" . AppLocale::Translate('user.email') . ': ' . $subscriptionEmail;
 
-        $paramArray = array(
+        $paramArray = [
             'subscriberName' => $user->getFullName(),
             'journalName' => $journalName,
             'subscriptionType' => $subscriptionType->getSummaryString(),
             'expiryDate' => $subscription->getDateEnd(),
             'username' => $user->getUsername(),
             'subscriptionContactSignature' => $subscriptionContactSignature
-        );
+        ];
 
         import('classes.mail.MailTemplate');
         $mail = new MailTemplate($emailKey, $journal->getPrimaryLocale(), false, $journal, false, true);
         $mail->setFrom($subscriptionEmail, $subscriptionName);
         $mail->addRecipient($user->getEmail(), $user->getFullName());
-        $mail->setSubject($mail->getSubject($journal->getPrimaryLocale()));
-        $mail->setBody($mail->getBody($journal->getPrimaryLocale()));
+        $mail->setSubject($mail->getSubject());
+        $mail->setBody($mail->getBody());
         $mail->assignParams($paramArray);
         $mail->send();
     }
 
     /**
      * Send reminders for a specific journal.
-     * @param $journal Journal
+     * @param object $journal Journal
      */
     public function sendJournalReminders ($journal) {
-
         // Only send reminders if subscriptions are enabled
         if ($journal->getSetting('publishingMode') == PUBLISHING_MODE_SUBSCRIPTION) {
 
@@ -118,9 +122,9 @@ class SubscriptionExpiryReminder extends ScheduledTask {
                 $beforeWeeks = $journal->getSetting('numWeeksBeforeSubscriptionExpiryReminder');
                 $expiryTime = time() + (SECONDS_PER_WEEK * $beforeWeeks);
 
-
-                // Retrieve all subscriptions that match expiry date
+                /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
                 $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
+                /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
                 $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
                 $individualSubscriptions = $individualSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journal->getId(), SUBSCRIPTION_REMINDER_FIELD_BEFORE_EXPIRY);
                 $institutionalSubscriptions = $institutionalSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journal->getId(), SUBSCRIPTION_REMINDER_FIELD_BEFORE_EXPIRY);
@@ -144,8 +148,9 @@ class SubscriptionExpiryReminder extends ScheduledTask {
             if ($journal->getSetting('enableSubscriptionExpiryReminderAfterWeeks')) {
                 $afterWeeks = $journal->getSetting('numWeeksAfterSubscriptionExpiryReminder');
                 $expiryTime = time() - (SECONDS_PER_WEEK * $afterWeeks);
-                // Retrieve all subscriptions that match expiry date
+                /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
                 $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
+                /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
                 $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
                 $individualSubscriptions = $individualSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journal->getId(), SUBSCRIPTION_REMINDER_FIELD_AFTER_EXPIRY);
                 $institutionalSubscriptions = $institutionalSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journal->getId(), SUBSCRIPTION_REMINDER_FIELD_AFTER_EXPIRY);
@@ -168,10 +173,12 @@ class SubscriptionExpiryReminder extends ScheduledTask {
     }
 
     /**
+     * Execute actions scheduled task.
      * @see ScheduledTask::executeActions()
      * @return boolean
      */
     public function executeActions() {
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journals = $journalDao->getJournals(true);
 
@@ -185,5 +192,6 @@ class SubscriptionExpiryReminder extends ScheduledTask {
 
         return true;
     }
+
 }
 ?>
