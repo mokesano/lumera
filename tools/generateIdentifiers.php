@@ -18,15 +18,24 @@ require(__DIR__ . '/bootstrap.inc.php');
 
 class GenerateIdentifiers extends CommandLineTool {
 
+    /**
+     * Constructor
+     */
     public function __construct(array $argv = []) {
         parent::__construct($argv);
     }
 
+    /**
+     * Generate eLocator for article.
+     */
     public function usage(): void {
         echo "Script to generate eLocator and PII for published articles sequentially\n"
            . "Usage: {$this->scriptName}\n";
     }
 
+    /**
+     * Execute to generate eLocator for article.
+     */
     public function execute(): void {
         /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');

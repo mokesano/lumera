@@ -1037,5 +1037,6 @@ class Article extends Submission {
             return false;
         }
     }
+    
 }
 ?>
