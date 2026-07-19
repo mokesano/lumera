@@ -106,7 +106,7 @@ class Install extends PKPInstall {
             return false;
         }
 
-        // [WIZDAM] Corrected getDao -> getDAO case sensitivity standard
+        // [LUMERA] Corrected getDao -> getDAO case sensitivity standard
         $roleDao = DAORegistry::getDAO('RoleDAO', $this->dbconn); /** @var RoleDAO $roleDao */
         $role = new Role();
         $role->setJournalId(0);
@@ -127,5 +127,6 @@ class Install extends PKPInstall {
 
         return true;
     }
+    
 }
 ?>
