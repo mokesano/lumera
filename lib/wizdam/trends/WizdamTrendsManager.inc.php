@@ -42,12 +42,12 @@ class WizdamTrendsManager {
             $templateMgr->assign('isSiteLevel', true);
         }
 
-        // [WIZDAM] - Urutkan global berdasarkan views
+        // [LUMERA] - Urutkan global berdasarkan views
         usort($articlesPayload, function($a, $b) {
             return $b['total_views'] <=> $a['total_views'];
         });
 
-        // [WIZDAM] - Smarty Payload Injection (100% Data Restored)
+        // [LUMERA] - Smarty Payload Injection (100% Data Restored)
         $templateMgr->assign([
             'topArticle'           => array_slice($articlesPayload, 0, 1),
             'secondTierArticles'   => array_slice($articlesPayload, 1, 4),
@@ -57,6 +57,26 @@ class WizdamTrendsManager {
             'lastUpdateDate'       => date('Y-m-d H:i:s'),
             'cacheInfo'            => ['enabled' => true, 'hit' => false]
         ]);
+    }
+
+    /**
+     * Assign data Most Popular Artciles to Smarty.
+     * @param TemplateManager $templateMgr
+     * @param Journal|null $journal
+     * @param PKPRequest $request
+     */
+    public static function assignMostDownloadedPayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request): void {
+
+    }
+
+    /**
+     * Assign data Most Popular Artciles to Smarty.
+     * @param TemplateManager $templateMgr
+     * @param Journal|null $journal
+     * @param PKPRequest $request
+     */
+    public static function assignMostCitedPayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request): void {
+
     }
 
     /**
@@ -264,5 +284,6 @@ class WizdamTrendsManager {
 
         return false;
     }
+
 }
 ?>
