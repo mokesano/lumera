@@ -70,4 +70,3 @@ class GenerateIdentifiers extends CommandLineTool {
 
 $tool = new GenerateIdentifiers($argv ?? []);
 $tool->execute();
-?>
