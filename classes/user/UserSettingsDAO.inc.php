@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see User
  *
  * @brief Operations for retrieving and modifying user settings.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('lib.pkp.classes.user.PKPUserSettingsDAO');
@@ -29,11 +28,7 @@ class UserSettingsDAO extends PKPUserSettingsDAO {
      * @return mixed
      */
     public function getSetting($userId, $name, $assocType = null, $assocId = null) {
-        // [WIZDAM FIX] Logic adjustment for OJS 2.x/3.x legacy compatibility.
-        // If $assocId is null, it means the caller is likely using the old signature:
-        // getSetting($userId, $name, $journalId).
-        // In this case, $assocType holds the $journalId (or null), and we must
-        // force the internal ASSOC_TYPE_JOURNAL to match the original class behavior.
+        // [FIX] Logic adjustment for legacy compatibility.
         if ($assocId === null) {
             $journalId = $assocType; 
             $assocType = ASSOC_TYPE_JOURNAL;
@@ -53,8 +48,6 @@ class UserSettingsDAO extends PKPUserSettingsDAO {
      * @return DAOResultFactory matching Users
      */
     public function getUsersBySetting($name, $value, $type = null, $assocType = null, $assocId = null) {
-        // [WIZDAM FIX] Logic adjustment for legacy signature:
-        // getUsersBySetting($name, $value, $type, $journalId)
         if ($assocId === null) {
             $journalId = $assocType;
             $assocType = ASSOC_TYPE_JOURNAL;
@@ -84,8 +77,6 @@ class UserSettingsDAO extends PKPUserSettingsDAO {
      * @param int|null $assocId
      */
     public function updateSetting($userId, $name, $value, $type = null, $assocType = null, $assocId = null) {
-        // [WIZDAM FIX] Logic adjustment for legacy signature:
-        // updateSetting($userId, $name, $value, $type, $journalId)
         if ($assocId === null) {
             $journalId = $assocType;
             $assocType = ASSOC_TYPE_JOURNAL;
@@ -103,8 +94,6 @@ class UserSettingsDAO extends PKPUserSettingsDAO {
      * @param int|null $assocId
      */
     public function deleteSetting($userId, $name, $assocType = null, $assocId = null) {
-        // [WIZDAM FIX] Logic adjustment for legacy signature:
-        // deleteSetting($userId, $name, $journalId)
         if ($assocId === null) {
             $journalId = $assocType;
             $assocType = ASSOC_TYPE_JOURNAL;
@@ -113,6 +102,6 @@ class UserSettingsDAO extends PKPUserSettingsDAO {
 
         return parent::deleteSetting((int) $userId, $name, (int) $assocType, (int) $assocId);
     }
-}
 
+}
 ?>
