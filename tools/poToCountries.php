@@ -11,14 +11,14 @@ declare(strict_types=1);
  * @class poToCountries
  * @ingroup tools
  *
- * @brief CLI tool to convert a .PO file for ISO3166 into the countries.xml format
- * supported by the PKP suite.
+ * @brief CLI tool to convert a .PO file for ISO3166 into the countries.xml 
+ * format supported by the PKP suite.
  * [LUMERA] Modernized Localization Tool.
  */
 
 require(__DIR__ . '/bootstrap.inc.php');
 
-// [WIZDAM] Ensure the binary exists, otherwise this tool is unusable.
+// [LUMERA] Ensure the binary exists, otherwise this tool is unusable.
 define('PO_TO_CSV_TOOL', '/usr/bin/po2csv');
 if (!is_executable(PO_TO_CSV_TOOL)) {
     fwrite(STDERR, "Error: Required binary " . PO_TO_CSV_TOOL . " not found or not executable.\n");
