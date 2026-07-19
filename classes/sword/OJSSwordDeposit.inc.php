@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class OJSSwordDeposit
  * @ingroup sword
  *
- * @brief Class providing a SWORD deposit wrapper for OJS articles
- * * MODERNIZED FOR WIZDAM FORK
+ * @brief Class providing a SWORD deposit wrapper for articles.
  */
 
 require_once('./lib/pkp/lib/swordappv2/swordappclient.php');
@@ -20,7 +19,8 @@ require_once('./lib/pkp/lib/swordappv2/swordappentry.php');
 require_once('./lib/pkp/lib/swordappv2/packager_mets_swap.php');
 
 class OJSSwordDeposit {
-    /** @var SWORD deposit METS package */
+
+    /** @var \PackagerMetsSwap $package deposit METS package */
     public $package;
 
     /** @var string Complete path and directory name to use for package creation files */
@@ -40,14 +40,11 @@ class OJSSwordDeposit {
 
     /**
      * Constructor.
-     * Create a SWORD deposit object for an OJS article.
-     * @param $article Article|PublishedArticle
+     * @param object $article Article|PublishedArticle
      */
     public function __construct($article) {
-        // Create a directory for deposit contents
         $this->outPath = tempnam('/tmp', 'sword');
-        
-        // [WIZDAM FIX] Safety check untuk tempnam
+
         if (file_exists($this->outPath)) {
             unlink($this->outPath);
         }
@@ -63,30 +60,37 @@ class OJSSwordDeposit {
             'deposit.zip'
         );
 
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $this->journal = $journalDao->getById($article->getJournalId());
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $this->section = $sectionDao->getSection($article->getSectionId());
 
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($article->getId());
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
-        if ($publishedArticle) $this->issue = $issueDao->getIssueById($publishedArticle->getIssueId());
+        if ($publishedArticle) {
+            $this->issue = $issueDao->getIssueById($publishedArticle->getIssueId());
+        }
 
         $this->article = $article;
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param object $article Article|PublishedArticle
      */
     public function OJSSwordDeposit($article) {
         trigger_error(
             "Class '" . get_class($this) . "' uses deprecated constructor OJSSwordDeposit(). Please refactor to use __construct().",
             E_USER_DEPRECATED
         );
-        self::__construct($article);
+        $this->__construct($article);
     }
 
     /**
@@ -101,25 +105,35 @@ class OJSSwordDeposit {
         // The article can be published or not. Support either.
         if ($this->article instanceof PublishedArticle) {
             $doi = $this->article->getPubId('doi');
-            if ($doi !== null) $this->package->setIdentifier($doi);
+            if ($doi !== null) {
+                $this->package->setIdentifier($doi);
+            }
         }
 
         foreach ($this->article->getAuthors() as $author) {
             $creator = $author->getFullName(true);
             $affiliation = $author->getAffiliation($this->journal->getPrimaryLocale());
-            if (!empty($affiliation)) $creator .= "; $affiliation";
+            if (!empty($affiliation)) {
+                $creator .= "; $affiliation";
+            }
             $this->package->addCreator($creator);
         }
 
         // The article can be published or not. Support either.
         if ($this->article instanceof PublishedArticle) {
             $plugin = PluginRegistry::loadPlugin('citationFormats', 'bibtex');
-            $this->package->setCitation(html_entity_decode(strip_tags($plugin->fetchCitation($this->article, $this->issue, $this->journal)), ENT_QUOTES, 'UTF-8'));
+            if ($plugin && method_exists($plugin, 'fetchCitation')) {
+                $citationText = $plugin->fetchCitation($this->article, $this->issue, $this->journal);
+                if ($citationText) {
+                    $this->package->setCitation(html_entity_decode(strip_tags($citationText), ENT_QUOTES, 'UTF-8'));
+                }
+            }
         }
     }
 
     /**
      * Add a file to a package. Used internally.
+     * @param mixed $file
      */
     protected function _addFile($file) {
         $targetFilename = $this->outPath . '/files/' . $file->getFilename();
@@ -141,17 +155,15 @@ class OJSSwordDeposit {
      * @return boolean true iff a file was successfully added to the package
      */
     public function addEditorial() {
-        // Move through signoffs in reverse order and try to use them.
-        foreach (array('SIGNOFF_LAYOUT', 'SIGNOFF_COPYEDITING_FINAL', 'SIGNOFF_COPYEDITING_AUTHOR', 'SIGNOFF_COPYEDITING_INITIAL') as $signoffName) {
+        foreach (['SIGNOFF_LAYOUT', 'SIGNOFF_COPYEDITING_FINAL', 'SIGNOFF_COPYEDITING_AUTHOR', 'SIGNOFF_COPYEDITING_INITIAL'] as $signoffName) {
             $file = $this->article->getFileBySignoffType($signoffName);
             if ($file) {
                 $this->_addFile($file);
                 return true;
             }
-            unset($file);
         }
 
-        // If that didn't work, try the Editor Version.
+        /** @var SectionEditorSubmissionDAO $sectionEditorSubmissionDao */
         $sectionEditorSubmissionDao = DAORegistry::getDAO('SectionEditorSubmissionDAO');
         $sectionEditorSubmission = $sectionEditorSubmissionDao->getSectionEditorSubmission($this->article->getId());
         $file = $sectionEditorSubmission->getEditorFile();
@@ -159,7 +171,6 @@ class OJSSwordDeposit {
             $this->_addFile($file);
             return true;
         }
-        unset($file);
 
         // Try the Review Version.
         $file = $sectionEditorSubmission->getReviewFile();
@@ -167,10 +178,7 @@ class OJSSwordDeposit {
             $this->_addFile($file);
             return true;
         }
-        unset($file);
 
-        // Otherwise, don't add anything (best not to go back to the
-        // author version, as it may not be vetted)
         return false;
     }
 
@@ -183,9 +191,9 @@ class OJSSwordDeposit {
 
     /**
      * Deposit the package.
-     * @param $url string SWORD deposit URL
-     * @param $username string SWORD deposit username
-     * @param $password string SWORD deposit password
+     * @param string $url string SWORD deposit URL
+     * @param string $username string SWORD deposit username
+     * @param string $password string SWORD deposit password
      */
     public function deposit($url, $username, $password) {
         $client = new SWORDAPPClient();
@@ -194,7 +202,7 @@ class OJSSwordDeposit {
             '',
             $this->outPath . '/deposit.zip',
             'http://purl.org/net/sword/package/METSDSpaceSIP',
-            'application/zip', false, true
+            'application/zip', false
         );
         return $response;
     }
@@ -208,6 +216,6 @@ class OJSSwordDeposit {
 
         $fileManager->rmtree($this->outPath);
     }
-}
 
+}
 ?>
