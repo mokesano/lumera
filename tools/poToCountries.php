@@ -13,7 +13,7 @@ declare(strict_types=1);
  *
  * @brief CLI tool to convert a .PO file for ISO3166 into the countries.xml format
  * supported by the PKP suite.
- * [WIZDAM EDITION] Modernized Localization Tool.
+ * [LUMERA] Modernized Localization Tool.
  */
 
 require(__DIR__ . '/bootstrap.inc.php');
@@ -26,6 +26,7 @@ if (!is_executable(PO_TO_CSV_TOOL)) {
 }
 
 class poToCountries extends CommandLineTool {
+    
     /** @var string */
     protected string $locale = '';
 
@@ -91,7 +92,7 @@ class poToCountries extends CommandLineTool {
         $translationMap = [];
         while (($row = fgetcsv($ih)) !== false) {
             if (count($row) != 3) continue;
-            // list($comment, $english, $translation) = $row; // PHP 7.1+ array destructuring
+            // list($comment, $english, $translation) = $row;
             $english = $row[1];
             $translation = $row[2];
             $translationMap[$english] = $translation;
@@ -119,7 +120,7 @@ class poToCountries extends CommandLineTool {
         // Use the map to convert the country list to the new locale
         $ofn = 'registry/locale/' . $this->locale . '/countries.xml';
         
-        // [WIZDAM SAFETY] Ensure directory exists and open file
+        // [SAFETY] Ensure directory exists and open file
         $dir = dirname($ofn);
         if (!is_dir($dir) && !mkdir($dir, 0777, true)) {
             fwrite(STDERR, "Error: Unable to create directory for $ofn.\n");
@@ -132,7 +133,7 @@ class poToCountries extends CommandLineTool {
             exit(1);
         }
         
-        // [WIZDAM] Using HEREDOC for clean XML output
+        // [LUMERA] Using HEREDOC for clean XML output
         $xmlHeader = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -150,7 +151,7 @@ XML;
         fwrite($oh, $xmlHeader);
 
         foreach ($outputMap as $code => $translation) {
-            // [WIZDAM] Ensure translation is safe for XML attribute
+            // [LUMERA] Ensure translation is safe for XML attribute
             $safeTranslation = htmlspecialchars($translation, ENT_XML1, 'UTF-8');
             fwrite($oh, "    <country name=\"$safeTranslation\" code=\"$code\"/>\n");
         }
@@ -162,7 +163,7 @@ XML;
     }
 }
 
-// [WIZDAM] Safe instantiation
+// [LUMERA] Safe instantiation
 $tool = new poToCountries($argv ?? []);
 $tool->execute();
 
