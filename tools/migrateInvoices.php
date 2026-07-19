@@ -3,6 +3,14 @@ declare(strict_types=1);
 
 /**
  * @file tools/migrateInvoices.php
+ *
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * 
+ * @class MigrateInvoices
+ * @ingroup tools
+ *
  * @brief CLI tool untuk migrasi Queued & Completed Payments secara sekuensial.
  */
 
@@ -10,12 +18,19 @@ require(__DIR__ . '/bootstrap.inc.php');
 
 class MigrateInvoices extends CommandLineTool {
 
+    /**
+     * Usage tool
+     */
     public function usage(): void {
         echo "Script to migrate legacy payments to Frontedge Invoices\n"
            . "Usage: {$this->scriptName}\n";
     }
 
+    /**
+     * Execute migration invoices
+     */
     public function execute(): void {
+        /** @var InvoiceDAO $invoiceDao */
         $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
         $chunkSize = 100;
         
@@ -55,6 +70,10 @@ class MigrateInvoices extends CommandLineTool {
         echo "====================================================\n";
     }
 
+    /**
+     * Print log migrate
+     * @param array $logs
+     */
     private function printLogs(array $logs): void {
         foreach ($logs as $log) {
             if ($log['type'] === 'success') echo "[OK] " . $log['msg'] . "\n";

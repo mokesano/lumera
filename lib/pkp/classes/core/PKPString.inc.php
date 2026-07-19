@@ -416,6 +416,11 @@ class PKPString {
      * @return string|array|null
      */
     public static function regexp_replace($pattern, $replacement, $subject, int $limit = -1) {
+        // [MODUL] Konversi $replacement menjadi string jika bukan array
+        if (!is_array($replacement)) {
+            $replacement = (string) $replacement;
+        }
+
         // Handle string subject validation
         if (is_string($subject) && defined('PCRE_UTF8') && PCRE_UTF8 && !self::utf8_compliant($subject)) {
             $subject = self::utf8_bad_strip($subject);
@@ -501,9 +506,12 @@ class PKPString {
         if (!$result) {
             $f = escapeshellarg($filename);
             // Suppress error output
-            $result = trim(`file --brief --mime $f`);
+            // [COMPATIBILITY] Mengganti backtick (`) dengan shell_exec()
+            $output = shell_exec('file --brief --mime ' . $f);
+            // Pastikan shell_exec tidak mengembalikan null sebelum memanggil trim()
+            $result = $output !== null ? trim($output) : '';
             // Make sure we just return the mime type.
-            if (($i = strpos($result, ';')) !== false) {
+            if ($result !== '' && ($i = strpos($result, ';')) !== false) {
                 $result = trim(substr($result, 0, $i));
             }
         }
@@ -936,7 +944,6 @@ class PKPString {
      * @return int|false
      */
     public static function fputcsv($handle, array $fields = [], string $delimiter = ',', string $enclosure = '"') {
-        // [WIZDAM] Removed reference & on $handle as resources are identifiers
         if (function_exists('fputcsv')) {
             return fputcsv($handle, $fields, $delimiter, $enclosure);
         }
