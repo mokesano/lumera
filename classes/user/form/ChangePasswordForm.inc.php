@@ -25,15 +25,10 @@ class ChangePasswordForm extends Form {
         parent::__construct('user/changePassword.tpl');
         
         $user = Request::getUser();
-        
-        // --- PERBAIKAN WIZDAM: Guard Clause ---
         if (!$user) {
-            // Jika sesi pengguna habis, paksa login ulang
             Validation::redirectLogin();
-            return; // Hentikan eksekusi konstruktor agar tidak crash di bawah
+            return;
         }
-        // --------------------------------------
-        
         $site = Request::getSite();
 
         // Validation checks for this form
@@ -68,7 +63,7 @@ class ChangePasswordForm extends Form {
      */
     public function ChangePasswordForm() {
         trigger_error(
-            "Class " . get_class($this) . " uses deprecated constructor parent::ChangePasswordForm(). Please refactor to parent::__construct().", 
+            "Class " . get_class($this) . " uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to parent::__construct().", 
             E_USER_DEPRECATED
         );
         self::__construct();
@@ -82,7 +77,7 @@ class ChangePasswordForm extends Form {
     public function display($request = null, $template = null) {
         $user = Request::getUser();
         
-        // PHP 8 Safety: Ensure user exists before rendering
+        // Safety: Ensure user exists before rendering
         if (!$user) {
             Validation::redirectLogin();
             return;
@@ -113,20 +108,22 @@ class ChangePasswordForm extends Form {
         $auth = null;
 
         if ($user->getAuthId()) {
+            /** @var AuthSourceDAO $authDao */
             $authDao = DAORegistry::getDAO('AuthSourceDAO');
             $auth = $authDao->getPlugin($user->getAuthId());
         }
 
         if (isset($auth)) {
             $auth->doSetUserPassword($user->getUsername(), $this->getData('password'));
-            // Used for PW reset hash only
             $user->setPassword(Validation::encryptCredentials($user->getId(), Validation::generatePassword())); 
         } else {
             $user->setPassword(Validation::encryptCredentials($user->getUsername(), $this->getData('password')));
         }
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $userDao->updateObject($user);
     }
+    
 }
 ?>
