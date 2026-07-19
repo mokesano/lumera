@@ -30,7 +30,7 @@ class MostPopularHandler extends Handler {
     public function authorize($request, $args, $roleAssignments) {
         import('lib.pkp.classes.security.authorization.ContextRequiredPolicy');
         // Set context required false, agar bisa diakses di site level maupun journal level
-        $this->addPolicy(new ContextRequiredPolicy($request, 'user.authorization.noContext', false));
+        $this->addPolicy(new ContextRequiredPolicy($request, 'user.authorization.noContext'));
         return parent::authorize($request, $args, $roleAssignments);
     }
 
@@ -57,5 +57,6 @@ class MostPopularHandler extends Handler {
         // Path ke template yang menyatukan header/footer WIZDAM dan most_popular.tpl
         return $templateMgr->display('trends/most_popular.tpl');
     }
+    
 }
 ?>

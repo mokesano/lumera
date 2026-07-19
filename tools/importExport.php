@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @ingroup tools
  *
  * @brief CLI tool to perform import/export tasks
- * [WIZDAM EDITION] Modernized CLI Dispatcher.
+ * [LUMERA] Modernized CLI Dispatcher.
  */
 
 require(__DIR__ . '/bootstrap.inc.php');
@@ -31,7 +31,6 @@ class importExport extends CommandLineTool {
      */
     public function __construct(array $argv = []) {
         parent::__construct($argv);
-        // [WIZDAM] Safe array_shift with null coalescing
         $this->command = array_shift($this->argv) ?? '';
         $this->parameters = $this->argv;
     }
@@ -95,7 +94,6 @@ class importExport extends CommandLineTool {
 
 }
 
-// [WIZDAM] Safe instantiation
+// [LUMERA] Safe instantiation
 $tool = new importExport($argv ?? []);
 $tool->execute();
-?>
