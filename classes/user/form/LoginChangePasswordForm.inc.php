@@ -43,6 +43,7 @@ class LoginChangePasswordForm extends Form {
                 }
             ));
         } else {
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $this->addCheck(new FormValidatorCustom(
                 $this, 
@@ -77,7 +78,10 @@ class LoginChangePasswordForm extends Form {
      */
     public function LoginChangePasswordForm($confirmHash = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class " . get_class($this) . " uses deprecated constructor parent::LoginChangePasswordForm(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class " . get_class($this) . " uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to parent::__construct().",
+                E_USER_DEPRECATED
+            );
         }
         self::__construct($confirmHash);
     }
@@ -90,11 +94,9 @@ class LoginChangePasswordForm extends Form {
     public function display($request = null, $template = null) {
         $templateMgr = TemplateManager::getManager();
         $site = Request::getSite();
-        
         if ($this->_confirmHash) {
             $templateMgr->assign('confirmHash', $this->_confirmHash);
         }
-        
         $templateMgr->assign('minPasswordLength', $site->getMinPasswordLength());
         
         parent::display($request, $template);
@@ -112,12 +114,14 @@ class LoginChangePasswordForm extends Form {
      * @return boolean success
      */
     public function execute($object = null) {
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $user = $userDao->getByUsername($this->getData('username'), false);
         $auth = null;
 
         if ($user != null) {
             if ($user->getAuthId()) {
+                /** @var AuthSourceDAO $authDao */
                 $authDao = DAORegistry::getDAO('AuthSourceDAO');
                 $auth = $authDao->getPlugin($user->getAuthId());
             }
@@ -138,5 +142,6 @@ class LoginChangePasswordForm extends Form {
             return false;
         }
     }
+    
 }
 ?>
