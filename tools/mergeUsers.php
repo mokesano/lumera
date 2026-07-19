@@ -59,7 +59,7 @@ class mergeUsers extends CommandLineTool {
      * Print command usage information.
      */
     public function usage(): void {
-        echo "Wizdam User Merge Tool\n"
+        echo "Lumera User Merge Tool\n"
             . "Use this tool to merge two user accounts.\n\n"
             . "Usage: {$this->scriptName} [username1] [username2]\n"
             . "username1      The target user to keep (NEW USER).\n"
