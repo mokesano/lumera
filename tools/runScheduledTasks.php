@@ -48,4 +48,3 @@ class runScheduledTasks extends ScheduledTaskTool {
 // [LUMERA] Safe instantiation
 $tool = new runScheduledTasks($argv ?? []);
 $tool->execute();
-?>
