@@ -13,7 +13,7 @@ declare(strict_types=1);
  *
  * @brief CLI tool to copy apache log files while filtering entries
  * related only to the current instalation.
- * [WIZDAM EDITION] Modernized CLI Tool.
+ * [LUMERA] Modernized CLI Tool.
  */
 
 require(dirname(__DIR__) . '/tools/bootstrap.inc.php');
