@@ -31,7 +31,7 @@ class User extends PKPUser {
      */
     public function User() {
         trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::User(). Please refactor to parent::__construct().", 
+            "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to parent::__construct().", 
             E_USER_DEPRECATED
         );
         self::__construct();
@@ -39,10 +39,11 @@ class User extends PKPUser {
     
     /**
 	 * Retrieve array of user settings.
-	 * @param journalId int
+	 * @param $journalId int
 	 * @return array
 	 */
 	public function getSettings($journalId = null) {
+		/** @var UserSettingsDAO $userSettingsDao */
 		$userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
 		$settings = $userSettingsDao->getSettingsByJournal($this->getId(), $journalId);
 		return $settings;
@@ -50,11 +51,12 @@ class User extends PKPUser {
 
 	/**
 	 * Retrieve a user setting value.
-	 * @param $name
-	 * @param $journalId int
+	 * @param string $name string
+	 * @param int $journalId int
 	 * @return mixed
 	 */
 	public function getSetting($name, $journalId = null) {
+		/** @var UserSettingsDAO $userSettingsDao */
 		$userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
 		$setting = $userSettingsDao->getSetting($this->getId(), $name, $journalId);
 		return $setting;
@@ -62,13 +64,15 @@ class User extends PKPUser {
 
 	/**
 	 * Set a user setting value.
-	 * @param $name string
-	 * @param $value mixed
+	 * @param string $name string
+	 * @param mixed $value mixed
 	 * @param $type string optional
 	 */
 	public function updateSetting($name, $value, $type = null, $journalId = null) {
+		/** @var UserSettingsDAO $userSettingsDao */
 		$userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
 		return $userSettingsDao->updateSetting($this->getId(), $name, $value, $type, $journalId);
 	}
+
 }
 ?>
