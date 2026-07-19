@@ -20,7 +20,7 @@ declare(strict_types=1);
  */
 
 // Default installation data
-define('INSTALLER_DEFAULT_SITE_TITLE', 'common.wizdamEditorialSystems');
+define('INSTALLER_DEFAULT_SITE_TITLE', 'common.scholarWizdam');
 define('INSTALLER_DEFAULT_MIN_PASSWORD_LENGTH', 12);
 
 import('lib.pkp.classes.install.PKPInstall');
@@ -127,6 +127,6 @@ class Install extends PKPInstall {
 
         return true;
     }
-    
+
 }
 ?>
