@@ -50,13 +50,11 @@ class ProfileForm extends Form {
         $this->addCheck(new FormValidatorUrl($this, 'userUrl', 'optional', 'user.profile.form.urlInvalid'));
         $this->addCheck(new FormValidatorEmail($this, 'email', 'required', 'user.profile.form.emailRequired'));
         $this->addCheck(new FormValidatorORCID($this, 'orcid', 'optional', 'user.profile.form.orcidInvalid'));
-        
-        // PHP 8: Use array callback properly
         $this->addCheck(new FormValidatorCustom($this, 'email', 'required', 'user.register.form.emailExists', array(DAORegistry::getDAO('UserDAO'), 'userExistsByEmail'), array($user->getId(), true), true));
 
         import('lib.pkp.classes.form.validation.FormValidatorCSRF');
         $this->addCheck(new FormValidatorCSRF($this));
-        
+
         $this->addCheck(new FormValidatorPost($this));
     }
 
@@ -65,7 +63,10 @@ class ProfileForm extends Form {
      */
     public function ProfileForm() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class " . get_class($this) . " uses deprecated constructor parent::ProfileForm(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error("
+            Class " . get_class($this) . " uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to parent::__construct().",
+            E_USER_DEPRECATED
+        );
         }
         self::__construct();
     }
@@ -106,16 +107,14 @@ class ProfileForm extends Form {
         $extension = $fileManager->getImageExtension($type);
         if (!$extension) return false;
 
-        // =================================================================
         // 1. KEAMANAN: GENERATE NAMA FILE (MURNI ANGKA & LAST NAME)
-        // =================================================================
         // Ambil lastName, bersihkan dari karakter aneh, ubah ke huruf kecil.
         $lastName = $user->getLastName();
         $cleanLastName = !empty($lastName) ? preg_replace('/[^a-zA-Z0-9]/', '', strtolower($lastName)) : 'usr';
         
         $userId = (int) $user->getId();
         
-        // [WIZDAM MAGIC] Mengaburkan User ID menjadi angka murni
+        // [LUMERA MAGIC] Mengaburkan User ID menjadi angka murni
         // Rumus: (ID * 83) + 10024. Jika ID = 42, hasilnya = 13510
         $obfuscatedId = ($userId * 83) + 10024; 
         
@@ -140,7 +139,7 @@ class ProfileForm extends Form {
         $filePath = $fileManager->getSiteFilesPath();
         $fullFilePath = $filePath . '/' . $uploadName;
         
-        // PHP 7.4/8.x Strict Safety: Pastikan file benar-benar ada sebelum diproses
+        // Strict Safety: Pastikan file benar-benar ada sebelum diproses
         if (!file_exists($fullFilePath)) return false;
         
         $imageSize = @getimagesize($fullFilePath);
@@ -154,15 +153,13 @@ class ProfileForm extends Form {
         list($width, $height) = $imageSize;
         $mime = $imageSize['mime'];
 
-        // =================================================================
         // 2. UX: AUTO-KOMPRESI GAMBAR (DENGAN SAFE GUARD GD LIBRARY)
-        // =================================================================
         $maxFileSize = 1048576; // 1 MB (dalam bytes)
         $actualFileSize = filesize($fullFilePath);
 
         if ($actualFileSize > $maxFileSize) {
             
-            // [WIZDAM SAFETY CHECK] Periksa apakah GD Library tersedia di server
+            // [SAFETY CHECK] Periksa apakah GD Library tersedia di server
             $gdInstalled = extension_loaded('gd') && function_exists('imagecreatetruecolor');
 
             if ($gdInstalled) {
@@ -275,9 +272,13 @@ class ProfileForm extends Form {
         $site = Request::getSite();
         $templateMgr->assign('availableLocales', $site->getSupportedLocaleNames());
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
+        /** @var UserSettingsDAO $userSettingsDao */
         $userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $journals = $journalDao->getJournals(true);
@@ -293,6 +294,7 @@ class ProfileForm extends Form {
 
         $templateMgr->assign('genderOptions', $userDao->getGenderOptions());
 
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
 
@@ -311,7 +313,6 @@ class ProfileForm extends Form {
             $templateMgr->assign('allowRegReader', $journal->getSetting('allowRegReader'));
             $templateMgr->assign('roles', $roleNames);
         }
-
         $templateMgr->assign('profileImage', $user->getSetting('profileImage'));
 
         parent::display();
@@ -472,10 +473,13 @@ class ProfileForm extends Form {
 
         parent::execute($user);
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $userDao->updateObject($user);
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
 
         // Roles
@@ -506,6 +510,7 @@ class ProfileForm extends Form {
 
         $openAccessNotify = Request::getUserVar('openAccessNotify');
 
+        /** @var UserSettingsDAO $userSettingsDao */
         $userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
         $journals = $journalDao->getJournals(true);
         $journals = $journals->toArray();
@@ -523,6 +528,7 @@ class ProfileForm extends Form {
 
         $auth = null;
         if ($user->getAuthId()) {
+            /** @var AuthSourceDAO $authDao */
             $authDao = DAORegistry::getDAO('AuthSourceDAO');
             $auth = $authDao->getPlugin($user->getAuthId());
         }
@@ -531,5 +537,6 @@ class ProfileForm extends Form {
             $auth->doSetUserInfo($user);
         }
     }
+
 }
 ?>
