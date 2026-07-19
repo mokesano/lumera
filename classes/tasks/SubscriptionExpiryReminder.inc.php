@@ -11,12 +11,12 @@ declare(strict_types=1);
  * @class SubscriptionExpiryReminder
  * @ingroup tasks
  *
- * @brief Class to perform automated reminders for reviewers.
+ * @brief Class to perform automated reminders for subscription expiry.
  */
 
 import('lib.pkp.classes.scheduledTask.ScheduledTask');
 
-define('SECONDS_PER_WEEK', 7 * 24 * 60 * 60);
+const SECONDS_PER_WEEK = 7 * 24 * 60 * 60;
 
 class SubscriptionExpiryReminder extends ScheduledTask {
 
@@ -55,45 +55,46 @@ class SubscriptionExpiryReminder extends ScheduledTask {
      * @param object $journal Journal
      * @param string $emailKey string
      */
-    public function sendReminder ($subscription, $journal, $emailKey) {
+    public function sendReminder($subscription, $journal, $emailKey) {
         /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         /** @var SubscriptionTypeDAO $subscriptionTypeDao */
         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
 
         $journalName = $journal->getLocalizedTitle();
-        $journalId = $journal->getId();
         $user = $userDao->getById($subscription->getUserId());
-        if (!isset($user)) return false;
+        if ($user === null) {
+            return false;
+        }
 
         $subscriptionType = $subscriptionTypeDao->getSubscriptionType($subscription->getTypeId());
 
-        $subscriptionName = $journal->getSetting('subscriptionName');
-        $subscriptionEmail = $journal->getSetting('subscriptionEmail');
-        $subscriptionPhone = $journal->getSetting('subscriptionPhone');
-        $subscriptionFax = $journal->getSetting('subscriptionFax');
-        $subscriptionMailingAddress = $journal->getSetting('subscriptionMailingAddress');
+        $subscriptionName = (string) $journal->getSetting('subscriptionName');
+        $subscriptionEmail = (string) $journal->getSetting('subscriptionEmail');
+        $subscriptionPhone = (string) $journal->getSetting('subscriptionPhone');
+        $subscriptionFax = (string) $journal->getSetting('subscriptionFax');
+        $subscriptionMailingAddress = (string) $journal->getSetting('subscriptionMailingAddress');
 
         $subscriptionContactSignature = $subscriptionName;
 
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_USER, LOCALE_COMPONENT_APPLICATION_COMMON);
 
-        if ($subscriptionMailingAddress != '') {
+        if ($subscriptionMailingAddress !== '') {
             $subscriptionContactSignature .= "\n" . $subscriptionMailingAddress;
         }
-        if ($subscriptionPhone != '') {
-            $subscriptionContactSignature .= "\n" . AppLocale::Translate('user.phone') . ': ' . $subscriptionPhone;
+        if ($subscriptionPhone !== '') {
+            $subscriptionContactSignature .= "\n" . __('user.phone') . ': ' . $subscriptionPhone;
         }
-        if ($subscriptionFax != '') {
-            $subscriptionContactSignature .= "\n" . AppLocale::Translate('user.fax') . ': ' . $subscriptionFax;
+        if ($subscriptionFax !== '') {
+            $subscriptionContactSignature .= "\n" . __('user.fax') . ': ' . $subscriptionFax;
         }
 
-        $subscriptionContactSignature .= "\n" . AppLocale::Translate('user.email') . ': ' . $subscriptionEmail;
+        $subscriptionContactSignature .= "\n" . __('user.email') . ': ' . $subscriptionEmail;
 
         $paramArray = [
             'subscriberName' => $user->getFullName(),
             'journalName' => $journalName,
-            'subscriptionType' => $subscriptionType->getSummaryString(),
+            'subscriptionType' => $subscriptionType ? $subscriptionType->getSummaryString() : __('common.unknown'),
             'expiryDate' => $subscription->getDateEnd(),
             'username' => $user->getUsername(),
             'subscriptionContactSignature' => $subscriptionContactSignature
@@ -103,70 +104,64 @@ class SubscriptionExpiryReminder extends ScheduledTask {
         $mail = new MailTemplate($emailKey, $journal->getPrimaryLocale(), false, $journal, false, true);
         $mail->setFrom($subscriptionEmail, $subscriptionName);
         $mail->addRecipient($user->getEmail(), $user->getFullName());
-        $mail->setSubject($mail->getSubject());
-        $mail->setBody($mail->getBody());
         $mail->assignParams($paramArray);
         $mail->send();
+        
+        return true;
     }
 
     /**
      * Send reminders for a specific journal.
      * @param object $journal Journal
      */
-    public function sendJournalReminders ($journal) {
-        // Only send reminders if subscriptions are enabled
-        if ($journal->getSetting('publishingMode') == PUBLISHING_MODE_SUBSCRIPTION) {
+    public function sendJournalReminders($journal) {
+        if ((int) $journal->getSetting('publishingMode') === PUBLISHING_MODE_SUBSCRIPTION) {
+            /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
+            $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
+            /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
+            $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
+            $journalId = (int) $journal->getId();
 
             // Check if expiry notification before weeks is enabled
             if ($journal->getSetting('enableSubscriptionExpiryReminderBeforeWeeks')) {
-                $beforeWeeks = $journal->getSetting('numWeeksBeforeSubscriptionExpiryReminder');
+                $beforeWeeks = (int) $journal->getSetting('numWeeksBeforeSubscriptionExpiryReminder');
                 $expiryTime = time() + (SECONDS_PER_WEEK * $beforeWeeks);
 
-                /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
-                $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
-                /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
-                $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
-                $individualSubscriptions = $individualSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journal->getId(), SUBSCRIPTION_REMINDER_FIELD_BEFORE_EXPIRY);
-                $institutionalSubscriptions = $institutionalSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journal->getId(), SUBSCRIPTION_REMINDER_FIELD_BEFORE_EXPIRY);
+                $individualSubscriptions = $individualSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journalId, SUBSCRIPTION_REMINDER_FIELD_BEFORE_EXPIRY);
+                $institutionalSubscriptions = $institutionalSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journalId, SUBSCRIPTION_REMINDER_FIELD_BEFORE_EXPIRY);
 
                 while (!$individualSubscriptions->eof()) {
                     $subscription = $individualSubscriptions->next();
                     $this->sendReminder($subscription, $journal, 'SUBSCRIPTION_BEFORE_EXPIRY');
                     $individualSubscriptionDao->flagReminded($subscription->getId(), SUBSCRIPTION_REMINDER_FIELD_BEFORE_EXPIRY);
-                    unset($subscription);
                 }
 
                 while (!$institutionalSubscriptions->eof()) {
                     $subscription = $institutionalSubscriptions->next();
                     $this->sendReminder($subscription, $journal, 'SUBSCRIPTION_BEFORE_EXPIRY');
                     $institutionalSubscriptionDao->flagReminded($subscription->getId(), SUBSCRIPTION_REMINDER_FIELD_BEFORE_EXPIRY);
-                    unset($subscription);
                 }
             }
 
             // Check if expiry notification after weeks is enabled
             if ($journal->getSetting('enableSubscriptionExpiryReminderAfterWeeks')) {
-                $afterWeeks = $journal->getSetting('numWeeksAfterSubscriptionExpiryReminder');
+                $afterWeeks = (int) $journal->getSetting('numWeeksAfterSubscriptionExpiryReminder');
                 $expiryTime = time() - (SECONDS_PER_WEEK * $afterWeeks);
-                /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
-                $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
-                /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
-                $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
-                $individualSubscriptions = $individualSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journal->getId(), SUBSCRIPTION_REMINDER_FIELD_AFTER_EXPIRY);
-                $institutionalSubscriptions = $institutionalSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journal->getId(), SUBSCRIPTION_REMINDER_FIELD_AFTER_EXPIRY);
+
+                // Reusing the DAOs initialized above
+                $individualSubscriptions = $individualSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journalId, SUBSCRIPTION_REMINDER_FIELD_AFTER_EXPIRY);
+                $institutionalSubscriptions = $institutionalSubscriptionDao->getSubscriptionsToRemind($expiryTime, $journalId, SUBSCRIPTION_REMINDER_FIELD_AFTER_EXPIRY);
 
                 while (!$individualSubscriptions->eof()) {
                     $subscription = $individualSubscriptions->next();
                     $this->sendReminder($subscription, $journal, 'SUBSCRIPTION_AFTER_EXPIRY');
                     $individualSubscriptionDao->flagReminded($subscription->getId(), SUBSCRIPTION_REMINDER_FIELD_AFTER_EXPIRY);
-                    unset($subscription);
                 }
 
                 while (!$institutionalSubscriptions->eof()) {
                     $subscription = $institutionalSubscriptions->next();
                     $this->sendReminder($subscription, $journal, 'SUBSCRIPTION_AFTER_EXPIRY');
                     $institutionalSubscriptionDao->flagReminded($subscription->getId(), SUBSCRIPTION_REMINDER_FIELD_AFTER_EXPIRY);
-                    unset($subscription);
                 }
             }
         }
@@ -184,10 +179,7 @@ class SubscriptionExpiryReminder extends ScheduledTask {
 
         while (!$journals->eof()) {
             $journal = $journals->next();
-
-            // Send reminders based on current date
             $this->sendJournalReminders($journal);
-            unset($journal);
         }
 
         return true;
