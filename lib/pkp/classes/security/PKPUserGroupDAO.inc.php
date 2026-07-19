@@ -12,15 +12,13 @@ declare(strict_types=1);
  * @ingroup security
  * @see UserGroup
  *
- * @brief Operations for retrieving and modifying User Groups and user group assignments
- * FIXME: Some of the context-specific features of this class will have
- * to be changed for zero- or double-context applications when user groups
- * are ported over to them.
+ * @brief Operations for retrieving and modifying User Groups and user group assignments.
  */
 
 import('lib.pkp.classes.security.UserGroup');
 
 class PKPUserGroupDAO extends DAO {
+
     /** @var UserDAO a shortcut to get the UserDAO **/
     public $userDao;
 
@@ -32,7 +30,6 @@ class PKPUserGroupDAO extends DAO {
      */
     public function __construct() {
         parent::__construct();
-        // Removed & from references
         $this->userDao = DAORegistry::getDAO('UserDAO');
         $this->userGroupAssignmentDao = DAORegistry::getDAO('UserGroupAssignmentDAO');
     }
@@ -45,7 +42,8 @@ class PKPUserGroupDAO extends DAO {
             "Class '" . get_class($this) . "' uses deprecated constructor parent::PKPUserGroupDAO(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
-        self::__construct();
+        
+        $this->__construct();
     }
 
     /**
@@ -54,13 +52,12 @@ class PKPUserGroupDAO extends DAO {
      * @return UserGroup
      */
     public function newDataObject() {
-        $dataObject = new UserGroup();
-        return $dataObject;
+        return new UserGroup();
     }
 
     /**
      * Internal function to return a UserGroup object from a row.
-     * @param $row array
+     * @param array $row
      * @return UserGroup
      */
     public function _returnFromRow($row) {
@@ -73,28 +70,26 @@ class PKPUserGroupDAO extends DAO {
 
         $this->getDataObjectSettings('user_group_settings', 'user_group_id', $row['user_group_id'], $userGroup);
 
-        HookRegistry::dispatch('PKPUserGroupDAO::_returnFromRow', array(&$userGroup, &$row));
+        // [LUMERA FIX] Modern array syntax, removed legacy reference &
+        HookRegistry::dispatch('PKPUserGroupDAO::_returnFromRow', [$userGroup, $row]);
 
         return $userGroup;
     }
 
     /**
      * Insert a user group.
-     * @param $userGroup UserGroup
+     * @param UserGroup $userGroup
      * @return int Inserted ID
      */
     public function insertUserGroup($userGroup) {
         $this->update(
-            'INSERT INTO user_groups
-                (role_id, path, context_id, is_default)
-                VALUES
-                (?, ?, ?, ?)',
-            array(
+            'INSERT INTO user_groups (role_id, path, context_id, is_default) VALUES (?, ?, ?, ?)',
+            [
                 (int) $userGroup->getRoleId(),
                 $userGroup->getPath(),
                 (int) $userGroup->getContextId(),
-                ($userGroup->getDefault()?1:0)
-            )
+                (int) $userGroup->getDefault()
+            ]
         );
 
         $userGroup->setId($this->getInsertUserGroupId());
@@ -105,14 +100,14 @@ class PKPUserGroupDAO extends DAO {
     /**
      * Delete a user group by its id
      * will also delete related settings and all the assignments to this group
-     * @param $contextId int
-     * @param $userGroupId int
+     * @param int $contextId
+     * @param int $userGroupId
      * @return boolean
      */
     public function deleteById($contextId, $userGroupId) {
         $ret1 = $this->userGroupAssignmentDao->deleteAssignmentsByUserGroupId($userGroupId);
-        $ret2 = $this->update('DELETE FROM user_group_settings WHERE user_group_id = ?', (int) $userGroupId);
-        $ret3 = $this->update('DELETE FROM user_groups WHERE user_group_id = ?', (int) $userGroupId);
+        $ret2 = $this->update('DELETE FROM user_group_settings WHERE user_group_id = ?', [(int) $userGroupId]);
+        $ret3 = $this->update('DELETE FROM user_groups WHERE user_group_id = ?', [(int) $userGroupId]);
         $ret4 = $this->removeAllStagesFromGroup($contextId, $userGroupId);
         return $ret1 && $ret2 && $ret3 && $ret4;
     }
@@ -120,31 +115,32 @@ class PKPUserGroupDAO extends DAO {
     /**
      * Delete a user group.
      * will also delete related settings and all the assignments to this group
-     * @param $userGroup UserGroup
+     * @param UserGroup $userGroup
      * @return boolean
      */
     public function deleteUserGroup($userGroup) {
         return $this->deleteById($userGroup->getContextId(), $userGroup->getId());
     }
 
-
     /**
      * Delete a user group by its context id
-     * @param $contextId int
+     * @param int $contextId
      * @return boolean
      */
     public function deleteByContextId($contextId) {
-        $result = $this->retrieve('SELECT user_group_id FROM user_groups WHERE context_id = ?', (int) $contextId);
+        $result = $this->retrieve('SELECT user_group_id FROM user_groups WHERE context_id = ?', [(int) $contextId]);
 
         $returner = true;
-        foreach ($result as $row) {
-            $userGroupId = $row->user_group_id;
+        while (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $userGroupId = (int) $row['user_group_id'];
 
-            $ret1 = $this->update('DELETE FROM user_group_stage WHERE user_group_id = ?', (int) $userGroupId);
-            $ret2 = $this->update('DELETE FROM user_group_settings WHERE user_group_id = ?', (int) $userGroupId);
-            $ret3 = $this->update('DELETE FROM user_groups WHERE user_group_id = ?', (int) $userGroupId);
+            $ret1 = $this->update('DELETE FROM user_group_stage WHERE user_group_id = ?', [$userGroupId]);
+            $ret2 = $this->update('DELETE FROM user_group_settings WHERE user_group_id = ?', [$userGroupId]);
+            $ret3 = $this->update('DELETE FROM user_groups WHERE user_group_id = ?', [$userGroupId]);
 
             $returner = $returner && $ret1 && $ret2 && $ret3;
+            $result->MoveNext();
         }
         $result->Close();
 
@@ -164,37 +160,38 @@ class PKPUserGroupDAO extends DAO {
      * @return array
      */
     public function getLocaleFieldNames() {
-        return array_merge(parent::getLocaleFieldNames(), array('name', 'abbrev'));
+        return array_merge(parent::getLocaleFieldNames(), ['name', 'abbrev']);
     }
 
     /**
      * Update the localized data for this object
-     * @param $userGroup UserGroup
+     * @param UserGroup $userGroup
      */
     public function updateLocaleFields(&$userGroup) {
-        $this->updateDataObjectSettings('user_group_settings', $userGroup, array(
+        $this->updateDataObjectSettings('user_group_settings', $userGroup, [
             'user_group_id' => (int) $userGroup->getId()
-        ));
+        ]);
     }
 
     /**
      * Get an individual user group
-     * @param $userGroupId int
-     * @param $contextId int
-     * @return UserGroup
+     * @param int $userGroupId
+     * @param int|null $contextId
+     * @return UserGroup|null
      */
     public function getById($userGroupId, $contextId = null) {
-        $params = array((int) $userGroupId);
-        if ($contextId !== null) $params[] = (int) $contextId;
+        $params = [(int) $userGroupId];
+        if ($contextId !== null) {
+            $params[] = (int) $contextId;
+        }
+        
         $result = $this->retrieve(
-            'SELECT    user_group_id, context_id, role_id, path, is_default
-            FROM    user_groups
-            WHERE    user_group_id = ?' . ($contextId !== null?' AND context_id = ?':''),
+            'SELECT user_group_id, context_id, role_id, path, is_default FROM user_groups WHERE user_group_id = ?' . ($contextId !== null ? ' AND context_id = ?' : ''),
             $params
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if (!$result->EOF) {
             $returner = $this->_returnFromRow($result->GetRowAssoc(false));
         }
         $result->Close();
@@ -203,8 +200,8 @@ class PKPUserGroupDAO extends DAO {
 
     /**
      * Get a single default user group with a particular roleId
-     * @param $contextId int
-     * @param $roleId int
+     * @param int $contextId
+     * @param int $roleId
      * @return UserGroup|null
      */
     public function getDefaultByRoleId($contextId, $roleId) {
@@ -218,35 +215,34 @@ class PKPUserGroupDAO extends DAO {
 
     /**
      * Get all user groups belonging to a role
-     * @param $contextId int
-     * @param $roleId int
-     * @param $default boolean
+     * @param int $contextId
+     * @param int $roleId
+     * @param boolean $default
      * @return DAOResultFactory
      */
     public function getByRoleId($contextId, $roleId, $default = false) {
-        $params = array((int) $contextId, (int) $roleId);
-        if ($default) $params[] = 1; // true
+        $params = [(int) $contextId, (int) $roleId];
+        if ($default) {
+            $params[] = 1;
+        }
+        
         $result = $this->retrieve(
-            'SELECT    *
-            FROM    user_groups
-            WHERE    context_id = ? AND
-                role_id = ?' . ($default?' AND is_default = ?':''),
+            'SELECT * FROM user_groups WHERE context_id = ? AND role_id = ?' . ($default ? ' AND is_default = ?' : ''),
             $params
         );
 
-        $returner = new DAOResultFactory($result, $this, '_returnFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnFromRow');
     }
 
     /**
      * Get an array of user group ids belonging to a given role
-     * @param $roleId int
-     * @param $contextId int
+     * @param int $roleId
+     * @param int|null $contextId
      * @return array
      */
     public function getUserGroupIdsByRoleId($roleId, $contextId = null) {
         $sql = 'SELECT user_group_id FROM user_groups WHERE role_id = ?';
-        $params = array((int) $roleId);
+        $params = [(int) $roleId];
 
         if ($contextId) {
             $sql .= ' AND context_id = ?';
@@ -255,34 +251,34 @@ class PKPUserGroupDAO extends DAO {
 
         $result = $this->retrieve($sql, $params);
 
-        $userGroupIds = array();
-        foreach ($result as $row) {
-            $userGroupIds[] = (int) $row->user_group_id;
+        $userGroupIds = [];
+        while (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $userGroupIds[] = (int) $row['user_group_id'];
+            $result->MoveNext();
         }
-
         $result->Close();
+        
         return $userGroupIds;
     }
 
     /**
      * Check if a user is in a particular user group
-     * @param $userId int
-     * @param $userGroupId int
+     * @param int $userId
+     * @param int $userGroupId
      * @return boolean
      */
     public function userInGroup($userId, $userGroupId) {
         $result = $this->retrieve(
-            'SELECT    count(*)
-            FROM    user_groups ug
-                JOIN user_user_groups uug ON ug.user_group_id = uug.user_group_id
-            WHERE
-                uug.user_id = ? AND
-                ug.user_group_id = ?',
-            array((int) $userId, (int) $userGroupId)
+            'SELECT COUNT(*) AS count FROM user_groups ug JOIN user_user_groups uug ON ug.user_group_id = uug.user_group_id WHERE uug.user_id = ? AND ug.user_group_id = ?',
+            [(int) $userId, (int) $userGroupId]
         );
 
-        // > 0 because user could belong to more than one user group with this role
-        $returner = isset($result->fields[0]) && $result->fields[0] > 0 ? true : false;
+        $returner = false;
+        if (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = isset($row['count']) && ((int) $row['count']) > 0;
+        }
 
         $result->Close();
         return $returner;
@@ -290,23 +286,26 @@ class PKPUserGroupDAO extends DAO {
 
     /**
      * Check if a user is in any user group
-     * @param $userId int
-     * @param $contextId int optional
+     * @param int $userId
+     * @param int|null $contextId
      * @return boolean
      */
     public function userInAnyGroup($userId, $contextId = null) {
-        $params = array((int) $userId);
-        if ($contextId) $params[] = (int) $contextId;
+        $params = [(int) $userId];
+        if ($contextId) {
+            $params[] = (int) $contextId;
+        }
 
         $result = $this->retrieve(
-            'SELECT    count(*)
-            FROM    user_groups ug
-                JOIN user_user_groups uug ON ug.user_group_id = uug.user_group_id
-            WHERE    uug.user_id = ?' . ($contextId?' AND ug.context_id = ?':''),
+            'SELECT COUNT(*) AS count FROM user_groups ug JOIN user_user_groups uug ON ug.user_group_id = uug.user_group_id WHERE uug.user_id = ?' . ($contextId ? ' AND ug.context_id = ?' : ''),
             $params
         );
 
-        $returner = isset($result->fields[0]) && $result->fields[0] > 0 ? true : false;
+        $returner = false;
+        if (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = isset($row['count']) && ((int) $row['count']) > 0;
+        }
 
         $result->Close();
         return $returner;
@@ -314,46 +313,41 @@ class PKPUserGroupDAO extends DAO {
 
     /**
      * Retrieve user groups to which a user is assigned.
-     * @param $userId int
-     * @param $contextId int
+     * @param int $userId
+     * @param int|null $contextId
      * @return DAOResultFactory
      */
-    public function getByUserId($userId, $contextId = null){
-        $params = array((int) $userId);
+    public function getByUserId($userId, $contextId = null) {
+        $params = [(int) $userId];
         if ($contextId) {
             $params[] = (int) $contextId;
         }
+        
         $result = $this->retrieve(
-            'SELECT    ug.*
-            FROM    user_groups ug
-                JOIN user_user_groups uug ON ug.user_group_id = uug.user_group_id
-                WHERE uug.user_id = ?' . ($contextId?' AND ug.context_id = ?':''),
+            'SELECT ug.* FROM user_groups ug JOIN user_user_groups uug ON ug.user_group_id = uug.user_group_id WHERE uug.user_id = ?' . ($contextId ? ' AND ug.context_id = ?' : ''),
             $params
         );
 
-        $returner = new DAOResultFactory($result, $this, '_returnFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnFromRow');
     }
 
     /**
      * Validation check to see if user group exists for a given context
-     * @param $contextId int
-     * @param $userGroupId int
+     * @param int $contextId
+     * @param int $userGroupId
      * @return bool
      */
     public function contextHasGroup($contextId, $userGroupId) {
         $result = $this->retrieve(
-            'SELECT count(*)
-                FROM user_groups ug
-                WHERE ug.user_group_id = ?
-                AND ug.context_id = ?',
-            array (
-                (int) $userGroupId,
-                (int) $contextId
-            )
+            'SELECT COUNT(*) AS count FROM user_groups ug WHERE ug.user_group_id = ? AND ug.context_id = ?',
+            [(int) $userGroupId, (int) $contextId]
         );
 
-        $returner = isset($result->fields[0]) && $result->fields[0] == 0 ? false : true;
+        $returner = false;
+        if (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = isset($row['count']) && ((int) $row['count']) > 0;
+        }
 
         $result->Close();
         return $returner;
@@ -361,42 +355,49 @@ class PKPUserGroupDAO extends DAO {
 
     /**
      * Retrieve user groups for a given context (all contexts if null)
-     * @param $contextId int
+     * @param int|null $contextId
      * @return DAOResultFactory
      */
     public function getByContextId($contextId = null) {
-        $params = array();
-        if ($contextId) $params[] = (int) $contextId;
+        $params = [];
+        if ($contextId) {
+            $params[] = (int) $contextId;
+        }
+        
         $result = $this->retrieve(
-            'SELECT ug.*
-            FROM    user_groups ug' .
-                ($contextId?' WHERE ug.context_id = ?':''),
-            $params);
+            'SELECT ug.* FROM user_groups ug' . ($contextId ? ' WHERE ug.context_id = ?' : ''),
+            $params
+        );
 
-        $returner = new DAOResultFactory($result, $this, '_returnFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnFromRow');
     }
 
     /**
      * Retrieve the number of users associated with the specified context.
-     * @param $contextId int
-     * @param $userGroupId int
-     * @param $roleId int
+     * @param int $contextId
+     * @param int|null $userGroupId
+     * @param int|null $roleId
      * @return int
      */
     public function getContextUsersCount($contextId, $userGroupId = null, $roleId = null) {
-        $params = array((int) $contextId);
-        if ($userGroupId) $params[] = (int) $userGroupId;
-        if ($roleId) $params[] = (int) $roleId;
+        $params = [(int) $contextId];
+        if ($userGroupId) {
+            $params[] = (int) $userGroupId;
+        }
+        if ($roleId) {
+            $params[] = (int) $roleId;
+        }
+
         $result = $this->retrieve(
-            'SELECT    COUNT(DISTINCT(uug.user_id))
-            FROM    user_groups ug
-                JOIN user_user_groups uug ON ug.user_group_id = uug.user_group_id
-            WHERE    context_id = ?' . ($userGroupId?' AND ug.user_group_id = ?':'') . ($roleId?' AND ug.role_id = ?':''),
+            'SELECT COUNT(DISTINCT(uug.user_id)) AS user_count FROM user_groups ug JOIN user_user_groups uug ON ug.user_group_id = uug.user_group_id WHERE context_id = ?' . ($userGroupId ? ' AND ug.user_group_id = ?' : '') . ($roleId ? ' AND ug.role_id = ?' : ''),
             $params
         );
 
-        $returner = $result->fields[0];
+        $returner = 0;
+        if (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = (int) $row['user_count'];
+        }
 
         $result->Close();
         return $returner;
@@ -404,12 +405,12 @@ class PKPUserGroupDAO extends DAO {
 
     /**
      * return an Iterator of User objects given the search parameters
-     * @param int $contextId
-     * @param string $searchType
-     * @param string $search
-     * @param string $searchMatch
-     * @param DBResultRange $dbResultRange
-     * @return DAOResultFactory
+     * @param int|null $contextId
+     * @param string|null $searchType
+     * @param string|null $search
+     * @param string|null $searchMatch
+     * @param DBResultRange|null $dbResultRange
+     * @return DAOResultFactory|null
      */
     public function getUsersByContextId($contextId = null, $searchType = null, $search = null, $searchMatch = null, $dbResultRange = null) {
         return $this->getUsersById(null, $contextId, $searchType, $search, $searchMatch, $dbResultRange);
@@ -417,50 +418,54 @@ class PKPUserGroupDAO extends DAO {
 
     /**
      * Find users that don't have a given role
-     * @param $roleId int
-     * @param $contextId int optional
-     * @param $search string
+     * @param int $roleId
+     * @param int|null $contextId
+     * @param string|null $search
      * @return DAOResultFactory
      */
     public function getUsersNotInRole($roleId, $contextId = null, $search = null) {
-        $params = array((int) $roleId);
-        if ($contextId) $params[] = (int) $contextId;
-        if(isset($search)) $params = array_merge($params, array_pad(array(), 5, '%' . $search . '%'));
+        $params = [(int) $roleId];
+        if ($contextId) {
+            $params[] = (int) $contextId;
+        }
+        if (isset($search)) {
+            // [LUMERA FIX] Modern array syntax
+            $params = array_merge($params, array_pad([], 5, '%' . $search . '%'));
+        }
 
         $result = $this->retrieve(
-            'SELECT DISTINCT u.*
-            FROM    users u, user_groups ug, user_user_groups uug
-            WHERE    ug.user_group_id = uug.user_group_id AND
-                u.user_id = uug.user_id AND
-                ug.role_id <> ?' .
-                ($contextId?' AND ug.context_id = ?':'') .
-                (isset($search) ? ' AND (u.first_name LIKE ? OR u.middle_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ? OR u.username LIKE ?)':''),
+            'SELECT DISTINCT u.* FROM users u, user_groups ug, user_user_groups uug WHERE ug.user_group_id = uug.user_group_id AND u.user_id = uug.user_id AND ug.role_id <> ?' .
+            ($contextId ? ' AND ug.context_id = ?' : '') .
+            (isset($search) ? ' AND (u.first_name LIKE ? OR u.middle_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ? OR u.username LIKE ?)' : ''),
             $params
         );
 
-        $returner = new DAOResultFactory($result, $this->userDao, '_returnUserFromRowWithData');
-        return $returner;
+        return new DAOResultFactory($result, $this->userDao, '_returnUserFromRowWithData');
     }
 
     /**
      * return an Iterator of User objects given the search parameters
-     * @param int $userGroupId
-     * @param int $contextId
-     * @param string $searchType
-     * @param string $search
-     * @param string $searchMatch
-     * @param DBResultRange $dbResultRange
-     * @return DAOResultFactory
+     * @param int|null $userGroupId
+     * @param int|null $contextId
+     * @param string|null $searchType
+     * @param string|null $search
+     * @param string|null $searchMatch
+     * @param DBResultRange|null $dbResultRange
+     * @return DAOResultFactory|null
      */
     public function getUsersById($userGroupId = null, $contextId = null, $searchType = null, $search = null, $searchMatch = null, $dbResultRange = null) {
-        $paramArray = array();
+        $paramArray = [];
 
-        if (isset($userGroupId)) $paramArray[] = (int) $userGroupId;
-        if (isset($contextId)) $paramArray[] = (int) $contextId;
+        if (isset($userGroupId)) {
+            $paramArray[] = (int) $userGroupId;
+        }
+        if (isset($contextId)) {
+            $paramArray[] = (int) $contextId;
+        }
 
-        // For security / resource usage reasons, a user group or context ID
-        // must be specified. Don't allow calls supplying neither.
-        if ($contextId === null && $userGroupId === null) return null;
+        if ($contextId === null && $userGroupId === null) {
+            return null;
+        }
 
         $searchSql = $this->_getSearchSql($searchType, $search, $searchMatch, $paramArray);
 
@@ -472,29 +477,22 @@ class PKPUserGroupDAO extends DAO {
             LEFT JOIN user_user_groups uug ON (uug.user_id = u.user_id)
             LEFT JOIN user_groups ug ON (ug.user_group_id = uug.user_group_id) WHERE';
 
-
         $sql .= (isset($userGroupId) ? ' ug.user_group_id = ? ' . (isset($contextId) ? 'AND ' : '') : ' ');
         $sql .= (isset($contextId) ? ' ug.context_id = ? ' : ' ') . $searchSql;
 
-        $result = $this->retrieveRange(
-            $sql,
-            $paramArray,
-            $dbResultRange
-        );
+        $result = $this->retrieveRange($sql, $paramArray, $dbResultRange);
 
-        $returner = new DAOResultFactory($result, $this->userDao, '_returnUserFromRowWithData');
-        return $returner;
+        return new DAOResultFactory($result, $this->userDao, '_returnUserFromRowWithData');
     }
 
     /**
      * Retrieve those users with no group assignments in any press.
-     * @param array $filter an array of search critera
+     * @param array|null $filter
      * @param boolean $allowDisabled
-     * @param DBResultRange $dbResultRange
+     * @param DBResultRange|null $dbResultRange
      * @return DAOResultFactory
      */
     public function getUsersWithNoUserGroupAssignments($filter = null, $allowDisabled = true, $dbResultRange = null) {
-
         $sql = 'SELECT DISTINCT u.*
             FROM users AS u
             LEFT JOIN user_settings us ON (us.user_id = u.user_id AND us.setting_name = "affiliation")
@@ -502,23 +500,22 @@ class PKPUserGroupDAO extends DAO {
             LEFT JOIN controlled_vocab_entry_settings cves ON (ui.controlled_vocab_entry_id = cves.controlled_vocab_entry_id)
             LEFT JOIN user_user_groups uug ON u.user_id=uug.user_id WHERE uug.user_group_id IS NULL ';
 
-        $sql .= ($allowDisabled?'':' AND u.disabled = 0');
+        $sql .= ($allowDisabled ? '' : ' AND u.disabled = 0');
 
         $searchSql = '';
-        $paramArray = array();
+        $paramArray = [];
 
         if (isset($filter)) {
-            $searchType = isset($filter['searchType']) ? $filter['searchType'] : null;
-            $search = isset($filter['search']) ? $filter['search'] : null;
-            $searchMatch = isset($filter['searchMatch']) ? $filter['searchMatch'] : null;
+            $searchType = $filter['searchType'] ?? null;
+            $search = $filter['search'] ?? null;
+            $searchMatch = $filter['searchMatch'] ?? null;
 
             $searchSql = $this->_getSearchSql($searchType, $search, $searchMatch, $paramArray);
             $sql .= $searchSql;
         }
 
         $result = $this->retrieveRange($sql, $paramArray, $dbResultRange);
-        $returner = new DAOResultFactory($result, $this->userDao, '_returnUserFromRowWithData');
-        return $returner;
+        return new DAOResultFactory($result, $this->userDao, '_returnUserFromRowWithData');
     }
 
     //
@@ -527,7 +524,7 @@ class PKPUserGroupDAO extends DAO {
     /**
      * Delete all user group assignments for a given userId
      * @param int $userId
-     * @param int $userGroupId
+     * @param int|null $userGroupId
      */
     public function deleteAssignmentsByUserId($userId, $userGroupId = null) {
         $this->userGroupAssignmentDao->deleteByUserId($userId, $userGroupId);
@@ -544,7 +541,7 @@ class PKPUserGroupDAO extends DAO {
     /**
      * Remove all user group assignments for a given user in a context
      * @param int $contextId
-     * @param int $userId
+     * @param int|null $userId
      */
     public function deleteAssignmentsByContextId($contextId, $userId = null) {
         $this->userGroupAssignmentDao->deleteAssignmentsByContextId($contextId, $userId);
@@ -557,7 +554,6 @@ class PKPUserGroupDAO extends DAO {
      * @return int|bool
      */
     public function assignUserToGroup($userId, $groupId) {
-        // Removed & from newDataObject
         $assignment = $this->userGroupAssignmentDao->newDataObject();
         $assignment->setUserId($userId);
         $assignment->setUserGroupId($groupId);
@@ -566,109 +562,117 @@ class PKPUserGroupDAO extends DAO {
 
     /**
      * remove a given user from a given user group
-     * @param $userId int
-     * @param $groupId int
-     * @param $contextId int
+     * @param int $userId
+     * @param int $groupId
+     * @param int $contextId
      */
     public function removeUserFromGroup($userId, $groupId, $contextId) {
         $assignments = $this->userGroupAssignmentDao->getByUserId($userId, $contextId);
-        // Removed & from next()
         while ($assignment = $assignments->next()) {
             if ($assignment->getUserGroupId() == $groupId) {
                 $this->userGroupAssignmentDao->deleteAssignment($assignment);
             }
-            unset($assignment);
+            // [LUMERA] Removed unset($assignment). PHP 8 GC handles this efficiently.
         }
     }
 
     /**
      * Delete all stage assignments in a user group.
-     * @param $contextId int
-     * @param $userGroupId int
+     * @param int $contextId
+     * @param int $userGroupId
+     * @return bool Returns true on success or if stage features are not supported in this version.
      */
     public function removeAllStagesFromGroup($contextId, $userGroupId) {
-        // Note: getAssignedStagesByUserGroupId method is not defined in this class, assuming it exists in parent or imported
-        // If it's missing, it should be implemented. Assuming valid call for now.
-        if (method_exists($this, 'getAssignedStagesByUserGroupId')) {
-             $assignedStages = $this->getAssignedStagesByUserGroupId($contextId, $userGroupId);
-             foreach($assignedStages as $stageId => $stageLocaleKey) {
-                 $this->removeGroupFromStage($contextId, $userGroupId, $stageId);
-             }
+        if (!method_exists($this, 'getAssignedStagesByUserGroupId')) {
+            return true; 
         }
-    }
+        $assignedStages = $this->getAssignedStagesByUserGroupId($contextId, $userGroupId);
+        if (!empty($assignedStages)) {
+            foreach ($assignedStages as $stageId => $stageLocaleKey) {
+                if (method_exists($this, 'removeGroupFromStage')) {
+                    $this->removeGroupFromStage($contextId, $userGroupId, $stageId);
+                } else {
+                    // Opsional: Catat untuk melacak fitur yang hilang
+                    error_log("[LUMERA WARNING] removeGroupFromStage not found for stage: $stageId");
+                }
+            }
+        }
 
+        return true;
+    }
 
     //
     // Extra settings (not handled by rest of Dao)
     //
     /**
-     * Method for updatea userGroup setting
-     * @param $userGroupId int
-     * @param $name string
-     * @param $value mixed
-     * @param $type string data type of the setting. If omitted, type will be guessed
-     * @param $isLocalized boolean
+     * Method for update a userGroup setting
+     * @param int $userGroupId
+     * @param string $name
+     * @param mixed $value
+     * @param string|null $type data type of the setting. If omitted, type will be guessed
+     * @param boolean $isLocalized
      */
     public function updateSetting($userGroupId, $name, $value, $type = null, $isLocalized = false) {
-        $keyFields = array('setting_name', 'locale', 'user_group_id');
+        $keyFields = ['setting_name', 'locale', 'user_group_id'];
 
         if (!$isLocalized) {
             $value = $this->convertToDB($value, $type);
             $this->replace('user_group_settings',
-                array(
+                [
                     'user_group_id' => (int) $userGroupId,
                     'setting_name' => $name,
                     'setting_value' => $value,
                     'setting_type' => $type,
                     'locale' => ''
-                ),
+                ],
                 $keyFields
             );
         } else {
-            if (is_array($value)) foreach ($value as $locale => $localeValue) {
-                $this->update('DELETE FROM user_group_settings WHERE user_group_id = ? AND setting_name = ? AND locale = ?', array((int) $userGroupId, $name, $locale));
-                if (empty($localeValue)) continue;
-                $type = null;
-                $this->update('INSERT INTO user_group_settings
-                    (user_group_id, setting_name, setting_value, setting_type, locale)
-                    VALUES (?, ?, ?, ?, ?)',
-                    array(
-                        $userGroupId, $name, $this->convertToDB($localeValue, $type), $type, $locale
-                    )
-                );
+            if (is_array($value)) {
+                foreach ($value as $locale => $localeValue) {
+                    $this->update('DELETE FROM user_group_settings WHERE user_group_id = ? AND setting_name = ? AND locale = ?', [(int) $userGroupId, $name, $locale]);
+                    if (empty($localeValue)) {
+                        continue;
+                    }
+                    $type = null;
+                    $this->update('INSERT INTO user_group_settings (user_group_id, setting_name, setting_value, setting_type, locale) VALUES (?, ?, ?, ?, ?)',
+                        [
+                            (int) $userGroupId, $name, $this->convertToDB($localeValue, $type), $type, $locale
+                        ]
+                    );
+                }
             }
         }
     }
 
-
     /**
      * Retrieve a context setting value.
-     * @param $userGroupId int
-     * @param $name string
-     * @param $locale string optional
+     * @param int $userGroupId
+     * @param string $name
+     * @param string|null $locale
      * @return mixed
      */
     public function getSetting($userGroupId, $name, $locale = null) {
-        $params = array((int) $userGroupId, $name);
-        if ($locale) $params[] = $locale;
+        $params = [(int) $userGroupId, $name];
+        if ($locale) {
+            $params[] = $locale;
+        }
+        
         $result = $this->retrieve(
-            'SELECT    setting_name, setting_value, setting_type, locale
-            FROM    user_group_settings
-            WHERE    user_group_id = ? AND
-                setting_name = ?' .
-                ($locale?' AND locale = ?':''),
+            'SELECT setting_name, setting_value, setting_type, locale FROM user_group_settings WHERE user_group_id = ? AND setting_name = ?' . ($locale ? ' AND locale = ?' : ''),
             $params
         );
 
         $recordCount = $result->RecordCount();
         $returner = false;
+        
         if ($recordCount == 1) {
-            $row = $result->getRowAssoc(false);
+            $row = $result->GetRowAssoc(false);
             $returner = $this->convertFromDB($row['setting_value'], $row['setting_type']);
         } elseif ($recordCount > 1) {
-            $returner = array();
+            $returner = [];
             while (!$result->EOF) {
-                $row = $result->getRowAssoc(false);
+                $row = $result->GetRowAssoc(false);
                 $returner[$row['locale']] = $this->convertFromDB($row['setting_value'], $row['setting_type']);
                 $result->MoveNext();
             }
@@ -680,14 +684,14 @@ class PKPUserGroupDAO extends DAO {
     //
     // Install/Defaults with settings
     //
-
     /**
      * Load the XML file and move the settings to the DB
-     * @param $contextId int
-     * @param $filename string
+     * @param int $contextId
+     * @param string $filename
+     * @return bool
      */
     public function installSettings($contextId, $filename) {
-        $xmlParser = new XMLParser();
+        $xmlParser = new PKPXMLParser();
         $tree = $xmlParser->parse($filename);
 
         if (!$tree) {
@@ -695,80 +699,73 @@ class PKPUserGroupDAO extends DAO {
             return false;
         }
 
+        // [LUMERA FIX 3] Define fallback constants if this is a 3.x backport running on 2.4.x
+        // This prevents Fatal Error: Undefined constant
+        $stageProduction = defined('WORKFLOW_STAGE_ID_PRODUCTION') ? WORKFLOW_STAGE_ID_PRODUCTION : 4;
+        $stageSubmission = defined('WORKFLOW_STAGE_ID_SUBMISSION') ? WORKFLOW_STAGE_ID_SUBMISSION : 1;
+
         foreach ($tree->getChildren() as $setting) {
             $roleId = hexdec($setting->getAttribute('roleId'));
             $nameKey = $setting->getAttribute('name');
             $abbrevKey = $setting->getAttribute('abbrev');
-            $defaultStages = explode(",", $setting->getAttribute('stages'));
+            $defaultStages = explode(',', $setting->getAttribute('stages'));
             
-            // Removed &
             $userGroup = $this->newDataObject();
-
-            // create a role associated with this user group
-            $role = new Role($roleId);
-            $userGroup = $this->newDataObject();
+            $role = new Role();
             $userGroup->setRoleId($roleId);
-            $userGroup->setPath($role->getPath());
+            
+            $path = method_exists($role, 'getPath') ? $role->getPath() : 'default';
+            $userGroup->setPath($path);
+            
             $userGroup->setContextId($contextId);
             $userGroup->setDefault(true);
 
-            // insert the group into the DB
             $userGroupId = $this->insertUserGroup($userGroup);
 
-            // Install default groups for each stage
             foreach ($defaultStages as $stageId) {
-                if (!empty($stageId) && $stageId <= WORKFLOW_STAGE_ID_PRODUCTION && $stageId >= WORKFLOW_STAGE_ID_SUBMISSION) {
-                    $this->assignGroupToStage($contextId, $userGroupId, $stageId);
+                $stageId = (int) trim($stageId);
+                if (!empty($stageId) && $stageId <= $stageProduction && $stageId >= $stageSubmission) {
+                    if (method_exists($this, 'assignGroupToStage')) {
+                        $this->assignGroupToStage($contextId, $userGroupId, $stageId);
+                    }
                 }
             }
 
-            // add the i18n keys to the settings table so that they
-            // can be used when a new locale is added/reloaded
             $this->updateSetting($userGroup->getId(), 'nameLocaleKey', $nameKey);
             $this->updateSetting($userGroup->getId(), 'abbrevLocaleKey', $abbrevKey);
-
-            // install the settings in the current locale for this context
-            $this->installLocale(AppLocale::getLocale(), $contextId);
         }
+
+        $this->installLocale(AppLocale::getLocale(), $contextId);
+
+        // Good practice: free XML parser resources after processing
+        $xmlParser->destroy();
+        
+        return true;
     }
 
     /**
      * use the locale keys stored in the settings table to install the locale settings
-     * @param $locale string
-     * @param $contextId int
+     * @param string $locale
+     * @param int|null $contextId
      */
     public function installLocale($locale, $contextId = null) {
         $userGroups = $this->getByContextId($contextId);
         while (!$userGroups->eof()) {
             $userGroup = $userGroups->next();
             $nameKey = $this->getSetting($userGroup->getId(), 'nameLocaleKey');
-            $this->updateSetting($userGroup->getId(),
-                'name',
-                array($locale => __($nameKey, null, $locale)),
-                'string',
-                $locale,
-                true
-            );
+            $this->updateSetting($userGroup->getId(), 'name', [$locale => __($nameKey, null, $locale)], 'string', $locale);
 
             $abbrevKey = $this->getSetting($userGroup->getId(), 'abbrevLocaleKey');
-            $this->updateSetting($userGroup->getId(),
-                'abbrev',
-                array($locale => __($abbrevKey, null, $locale)),
-                'string',
-                $locale,
-                true
-            );
-            unset($userGroup);
+            $this->updateSetting($userGroup->getId(), 'abbrev', [$locale => __($abbrevKey, null, $locale)], 'string', $locale);
         }
     }
 
     /**
      * Remove all settings associated with a locale
-     * @param $locale string
+     * @param string $locale
      */
     public function deleteSettingsByLocale($locale) {
-        $result = $this->update('DELETE FROM user_group_settings WHERE locale = ?', $locale);
-        return $result;
+        return $this->update('DELETE FROM user_group_settings WHERE locale = ?', [$locale]);
     }
 
     /**
@@ -779,31 +776,28 @@ class PKPUserGroupDAO extends DAO {
      * @param array $paramArray SQL parameter array reference
      */
     public function _getSearchSql($searchType, $search, $searchMatch, &$paramArray) {
-
-        $searchTypeMap = array(
-                USER_FIELD_FIRSTNAME => 'u.first_name',
-                USER_FIELD_LASTNAME => 'u.last_name',
-                USER_FIELD_USERNAME => 'u.username',
-                USER_FIELD_EMAIL => 'u.email',
-                USER_FIELD_AFFILIATION => 'us.setting_value'
-        );
+        $searchTypeMap = [
+            USER_FIELD_FIRSTNAME => 'u.first_name',
+            USER_FIELD_LASTNAME => 'u.last_name',
+            USER_FIELD_USERNAME => 'u.username',
+            USER_FIELD_EMAIL => 'u.email',
+            USER_FIELD_AFFILIATION => 'us.setting_value'
+        ];
 
         $searchSql = '';
 
         if (!empty($search)) {
-
             if (!isset($searchTypeMap[$searchType])) {
                 $concatFields = ' ( LOWER(CONCAT(' . join(', ', $searchTypeMap) . ')) LIKE ? OR LOWER(cves.setting_value) LIKE ? ) ';
-
                 $search = strtolower($search);
-
                 $words = preg_split('{\s+}', $search);
-                $searchFieldMap = array();
+                $searchFieldMap = [];
 
                 foreach ($words as $word) {
                     $searchFieldMap[] = $concatFields;
                     $term = '%' . $word . '%';
-                    array_push($paramArray, $term, $term);
+                    $paramArray[] = $term;
+                    $paramArray[] = $term;
                 }
 
                 $searchSql .= ' AND (  ' . join(' AND ', $searchFieldMap) . '  ) ';
@@ -835,10 +829,10 @@ class PKPUserGroupDAO extends DAO {
             }
         }
 
-        $searchSql .= ' ORDER BY u.last_name, u.first_name'; // FIXME Add "sort field" parameter?
+        $searchSql .= ' ORDER BY u.last_name, u.first_name';
 
         return $searchSql;
     }
+    
 }
-
 ?>
