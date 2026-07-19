@@ -16,7 +16,7 @@ declare(strict_types=1);
  * @ingroup tools
  *
  * @brief Initialization code for command-line scripts.
- * [WIZDAM EDITION] CLI Base Class. Strict Types & SAPI Security.
+ * [LUMERA] CLI Base Class. Strict Types & SAPI Security.
  */
 
 /** Initialization code */
@@ -35,7 +35,7 @@ if (!defined('STDIN')) {
 define('SESSION_DISABLE_INIT', 1);
 
 // Load Core Bootstrap
-// [WIZDAM] Standardized bootstrap loading
+// [LUMERA] Standardized bootstrap loading
 require('./lib/pkp/includes/bootstrap.inc.php');
 
 class CommandLineTool {
@@ -51,18 +51,18 @@ class CommandLineTool {
      * @param array $argv
      */
     public function __construct(array $argv = []) {
-        // [WIZDAM SECURITY] SAPI Check
+        // [LUMERA] SAPI Check
         // Ensure this is truly running via CLI to prevent web-based invocation attacks.
         if (php_sapi_name() !== 'cli') {
             die('Access Denied: This script can only be executed from the command-line.');
         }
 
         // Initialize the request object
-        // [WIZDAM] Modern Singleton Access
+        // [LUMERA] Modern Singleton Access
         $application = Application::get();
         $request = $application->getRequest();
 
-        // [WIZDAM LEGACY SUPPORT]
+        // [LUMERA LEGACY SUPPORT]
         // Ideally we should use a CLIRouter, but legacy plugins expect a PageRouter context.
         // We maintain this for compatibility with the existing ecosystem.
         import('classes.core.PageRouter');

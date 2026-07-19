@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @ingroup tools
  *
  * @brief CLI tool for merging two OJS 2 user accounts.
- * [WIZDAM EDITION] Modernized CLI User Merge Tool.
+ * [LUMERA] Modernized CLI User Merge Tool.
  */
 
 require(__DIR__ . '/bootstrap.inc.php');
@@ -100,8 +100,8 @@ class mergeUsers extends CommandLineTool {
 
         // Both user IDs are valid. Merge the accounts.
         import('classes.user.UserAction');
-        // [WIZDAM] Casting IDs to int for strict safety, although DAO should handle it.
-        UserAction::mergeUsers((int)$oldUserId, (int)$newUserId);
+        $userAction = new UserAction();
+        $userAction->mergeUsers((int)$oldUserId, (int)$newUserId);
 
         printf("Merge completed: '%s' (ID %d) merged into '%s' (ID %d).\n",
             $this->username2,
@@ -112,6 +112,6 @@ class mergeUsers extends CommandLineTool {
     }
 }
 
-// [WIZDAM] Safe instantiation
+// [LUMERA] Safe instantiation
 $tool = new mergeUsers($argv ?? []);
 $tool->execute();

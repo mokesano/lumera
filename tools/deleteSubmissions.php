@@ -8,18 +8,23 @@ declare(strict_types=1);
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @class deleteSubmissions
+ * @class SubmissionDeletionTool
  * @ingroup tools
  *
  * @brief CLI tool to delete submissions
- * [WIZDAM EDITION] Modernized CLI Tool.
+ * [LUMERA] Modernized CLI Tool with explicit property declaration.
  */
 
 require(__DIR__ . '/bootstrap.inc.php');
-
 import('classes.file.ArticleFileManager');
 
 class SubmissionDeletionTool extends CommandLineTool {
+
+    /**
+     * Explicit property declaration.
+     * @var array
+     */
+    private array $parameters;
 
     /**
      * Constructor.
@@ -54,7 +59,7 @@ class SubmissionDeletionTool extends CommandLineTool {
      * Print command usage information.
      */
     public function usage(): void {
-        echo "Permanently removes submission(s) and associated information.  USE WITH CARE.\n"
+        echo "Permanently removes submission(s) and associated information. USE WITH CARE.\n"
             . "Usage: {$this->scriptName} submission_id [...]\n";
     }
 
@@ -65,34 +70,35 @@ class SubmissionDeletionTool extends CommandLineTool {
         /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
 
-        foreach($this->parameters as $articleId) {
-            // [WIZDAM FIX] Removed legacy reference (&)
-            $article = $articleDao->getArticle($articleId);
+        // Menggunakan $this->parameters yang sekarang aman, terdefinisi, dan semantik
+        foreach ($this->parameters as $articleId) {
+            // [LUMERA] Strict type casting untuk keamanan data
+            $id = (int) $articleId;
+            $article = $articleDao->getArticle($id);
 
             if ($article) {
-                // remove files first, to prevent orphans
-                $articleFileManager = new ArticleFileManager($articleId);
+                $articleFileManager = new ArticleFileManager($id);
 
-                // Note: Accessing public property filesDir directly (Legacy behavior preserved)
                 if (!file_exists($articleFileManager->filesDir)) {
-                    printf("Warning: no files found for submission %s.\n", $articleId);
+                    printf("Warning: no files found for submission %d.\n", $id);
                 } else {
                     if (!is_writable($articleFileManager->filesDir)) {
-                        printf("Error: Skipping submission %s. Can't delete files in %s\n", $articleId, $articleFileManager->filesDir);
+                        printf("Error: Skipping submission %d. Can't delete files in %s\n", $id, $articleFileManager->filesDir);
                         continue;
                     } else {
                         $articleFileManager->deleteArticleTree();
                     }
                 }
 
-                $articleDao->deleteArticleById($articleId);
+                $articleDao->deleteArticleById($id);
+                printf("Success: Submission %d and its files deleted.\n", $id);
                 continue;
             }
-            printf("Error: Skipping %s. Unknown submission.\n", $articleId);
+            printf("Error: Skipping %d. Unknown submission.\n", $id);
         }
     }
 }
 
-// [WIZDAM] Safe instantiation
+// [LUMERA] Safe instantiation
 $tool = new SubmissionDeletionTool($argv ?? []);
 $tool->execute();
