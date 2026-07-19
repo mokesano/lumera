@@ -1453,10 +1453,8 @@ class Upgrade extends Installer {
         }
         
         $result->Close();
-        
-        // Wajib return true agar proses upgrade (php tools/upgrade.php)
-        // menyatakan langkah ini "Sukses" dan lanjut ke tahap berikutnya.
         return true; 
     }
+
 }
 ?>

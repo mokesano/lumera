@@ -653,25 +653,24 @@ class ArticleDAO extends DAO {
         } else {
             $values = ['' => $value];
         }
-        unset($value);
 
         $keyFields = ['setting_name', 'locale', 'article_id'];
-        foreach ($values as $locale => $value) {
+        foreach ($values as $locale => $settingValue) {
             if ($isLocalized) {
                 $this->update(
                     'DELETE FROM article_settings WHERE article_id = ? AND setting_name = ? AND locale = ?',
                     [(int) $articleId, $name, $locale]
                 );
-                if (empty($value)) continue;
+                if (empty($settingValue)) continue;
             }
 
-            $value = $this->convertToDB($value, $type);
+            $dbValue = $this->convertToDB($settingValue, $type);
 
             $this->replace('article_settings',
                 [
                     'article_id' => (int) $articleId,
                     'setting_name' => $name,
-                    'setting_value' => $value,
+                    'setting_value' => $dbValue,
                     'setting_type' => $type,
                     'locale' => $locale
                 ],
@@ -712,8 +711,7 @@ class ArticleDAO extends DAO {
                 (int) $journalId
             ]
         );
-        
-        // [WIZDAM] FIX: Type narrowing + logika > 0
+
         /** @var array|bool $fields */
         $fields = $result->fields;
         $returner = isset($fields[0]) && (int) $fields[0] > 0;
@@ -823,8 +821,7 @@ class ArticleDAO extends DAO {
             'revisionDate' => null,
             'acceptedDate' => null
         ];
-        
-        // [WIZDAM] FIX: Parameter dibungkus array
+
         $result = $this->retrieve(
             "SELECT decision, date_decided 
              FROM edit_decisions 
@@ -859,8 +856,6 @@ class ArticleDAO extends DAO {
 
         $currentELocator = $this->getSettingValue($articleId, 'eLocator');
         $currentPii = $this->getSettingValue($articleId, 'pii');
-
-        // WIZDAM SELF-HEALING: Audit kelayakan PII lama
         if ($currentPii !== '') {
             if (!$this->auditExistingPii($currentPii)) {
                 $this->update("DELETE FROM article_settings WHERE article_id = ? AND setting_name = 'pii'", [$articleId]);
@@ -872,10 +867,12 @@ class ArticleDAO extends DAO {
             return ['eLocator' => $currentELocator, 'pii' => $currentPii];
         }
 
+        // Generate eLocator jika kosong
         if ($currentELocator === '') {
             $currentELocator = $this->generateELocator($articleId);
         }
 
+        // Generate PII jika kosong
         if ($currentPii === '') {
             $currentPii = $this->generatePii($articleId, $journalId, $datePublished, $currentELocator);
         }
@@ -929,11 +926,13 @@ class ArticleDAO extends DAO {
 
     /**
      * [WORKER] Audit existing PII using strict mathematical check digit
+     * TIDAK MEMBANDINGKAN dengan ISSN jurnal saat ini untuk menjaga integritas historis.
      * @param string $pii
      * @return bool
      */
     private function auditExistingPii(string $pii): bool {
-        if (strlen($pii) !== 18 || substr($pii, 0, 1) !== 'P') {
+        // Cek panjang dan prefix (Misal: 'P' ganti ke 'R' jika diperlukan)
+        if (strlen($pii) !== 18 || substr($pii, 0, 1) !== 'P') { 
             return false;
         }
 
@@ -942,7 +941,7 @@ class ArticleDAO extends DAO {
 
         import('lib.pkp.classes.validation.ValidatorISSN');
         $validator = new ValidatorISSN();
-        
+
         return $validator->isValid($reconstructedIssn);
     }
 
@@ -954,13 +953,16 @@ class ArticleDAO extends DAO {
     private function generateELocator(int $articleId): string {
         $secretSalt = Config::getVar('security', 'salt');
         if (empty($secretSalt)) {
-            $secretSalt = 'WizdamSafe_' . Config::getVar('general', 'base_url');
+            $secretSalt = 'KhayraSalsabilaRakhaIbrahim_' . Config::getVar('general', 'base_url');
         }
 
         $hashHex = substr(md5($articleId . microtime(true) . $secretSalt), 0, 8);
         $hashInt = hexdec($hashHex);
         $numeric7 = str_pad((string)($hashInt % 10000000), 7, '0', STR_PAD_LEFT);
-        $generatedELocator = 'f' . $numeric7;
+
+        $prefix = 'd'; // [PREFIX]: Ubah 'd' menjadi 's' (jika diperlukan)
+        
+        $generatedELocator = $prefix . $numeric7;
         
         $this->updateSetting($articleId, 'eLocator', $generatedELocator, 'string');
         return $generatedELocator;
@@ -968,6 +970,7 @@ class ArticleDAO extends DAO {
 
     /**
      * [WORKER] Generate and save PII strictly relying on ValidatorISSN
+     * Menghapus fallback date('ym'). PII harus mencerminkan tanggal terbit asli.
      * @param int $articleId
      * @param int $journalId
      * @param string|null $datePublished
@@ -986,12 +989,18 @@ class ArticleDAO extends DAO {
 
         if ($validator->isValid($rawIssn)) {
             $issnClean = str_replace('-', '', strtoupper($rawIssn));
-            
-            $yymm = $datePublished ? date('ym', strtotime($datePublished)) : date('ym');
+
+            if (empty($datePublished)) {
+                return ''; 
+            }
+            $yymm = date('ym', strtotime($datePublished));
+
             $numeric7 = substr($eLocator, 1);
             $piiSuffix = substr($numeric7, 0, 5);
+                        
+            $prefix = 'P'; // [PREFIX]: Ubah 'P' menjadi 'R' (jika diperlukan) 
             
-            $generatedPii = 'P' . $issnClean . $yymm . $piiSuffix;
+            $generatedPii = $prefix . $issnClean . $yymm . $piiSuffix;
             
             $this->updateSetting($articleId, 'pii', $generatedPii, 'string');
             return $generatedPii;
@@ -999,5 +1008,6 @@ class ArticleDAO extends DAO {
 
         return '';
     }
+
 }
 ?>

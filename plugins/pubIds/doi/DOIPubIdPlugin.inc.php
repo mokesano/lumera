@@ -21,8 +21,15 @@ class DOIPubIdPlugin extends PubIdPlugin {
     //
     // Implement template methods from PKPPlugin.
     //
+    
     /**
+     * Register the plugin.
+     * 
      * @see PubIdPlugin::register()
+     * @param string $category The category of the plugin.
+     * @param string $path The path to the plugin.
+     * @param int|null $mainContextId The context ID (optional).
+     * @return bool True on successful registration.
      */
     public function register(string $category, string $path, $mainContextId = null): bool {
         $success = parent::register($category, $path, $mainContextId);
@@ -31,16 +38,20 @@ class DOIPubIdPlugin extends PubIdPlugin {
     }
 
     /**
-     * Get a name of the plugin.
+     * Get the symbolic name of the plugin.
+     * 
      * @see PKPPlugin::getName()
+     * @return string Plugin name.
      */
     public function getName(): string {
         return 'DOIPubIdPlugin';
     }
 
     /**
-     * Get a Display Name of the plugin.
+     * Get the display name of the plugin.
+     * 
      * @see PKPPlugin::getDisplayName()
+     * @return string Plugin display name.
      */
     public function getDisplayName(): string {
         return __('plugins.pubIds.doi.displayName');
@@ -48,25 +59,36 @@ class DOIPubIdPlugin extends PubIdPlugin {
 
     /**
      * Get a description of the plugin.
+     * 
      * @see PKPPlugin::getDescription()
+     * @return string Plugin description.
      */
     public function getDescription(): string {
         return __('plugins.pubIds.doi.description');
     }
 
     /**
-     * Get a template of the plugin.
+     * Get the template path for the plugin.
+     * 
      * @see PKPPlugin::getTemplatePath()
+     * @param bool $inCore True if core template path.
+     * @return string Template path.
      */
     public function getTemplatePath($inCore = false): string {
-        return parent::getTemplatePath($inCore) . 'templates/';
+        return parent::getTemplatePath() . 'templates/';
     }
 
     //
     // Implement template methods from PubIdPlugin.
     //
+    
     /**
+     * Get the PubId for a given publishing object.
+     * 
      * @see PubIdPlugin::getPubId()
+     * @param object $pubObject The publishing object (Issue, Article, Galley, or SuppFile).
+     * @param bool $preview Whether it's a preview or not.
+     * @return string|null The generated DOI, or null if not applicable.
      */
     public function getPubId($pubObject, $preview = false) {
         $doi = null;
@@ -86,7 +108,7 @@ class DOIPubIdPlugin extends PubIdPlugin {
             } else {
                 // Retrieve the published article.
                 assert($pubObject instanceof ArticleFile);
-                $articleDao = DAORegistry::getDAO('PublishedArticleDAO'); /* @var $articleDao PublishedArticleDAO */
+                $articleDao = DAORegistry::getDAO('PublishedArticleDAO'); /** @var PublishedArticleDAO $articleDao */
                 $article = $articleDao->getPublishedArticleByArticleId($pubObject->getArticleId(), null, true);
                 if (!$article) return null;
 
@@ -109,8 +131,8 @@ class DOIPubIdPlugin extends PubIdPlugin {
             // Retrieve the issue.
             if (!($pubObject instanceof Issue)) {
                 assert($article !== null);
-                $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
-                $issue = $issueDao->getIssueByArticleId($article->getId(), $journal->getId(), true);
+                $issueDao = DAORegistry::getDAO('IssueDAO'); /** @var IssueDAO $issueDao */
+                $issue = $issueDao->getIssueByArticleId($article->getId(), $journal->getId());
             }
             if ($issue && $journalId != $issue->getJournalId()) return null;
 
@@ -161,31 +183,31 @@ class DOIPubIdPlugin extends PubIdPlugin {
 
                     // %x - custom identifier
                     if ($pubObject->getStoredPubId('publisher-id')) {
-                        $doiSuffix = PKPString::regexp_replace('/%x/', $pubObject->getStoredPubId('publisher-id'), $doiSuffix);
+                        $doiSuffix = PKPString::regexp_replace('/%x/', (string) $pubObject->getStoredPubId('publisher-id'), $doiSuffix);
                     }
                     if ($issue) {
-                        // %v - volume number
-                        $doiSuffix = PKPString::regexp_replace('/%v/', $issue->getVolume(), $doiSuffix);
-                        // %i - issue number
-                        $doiSuffix = PKPString::regexp_replace('/%i/', $issue->getNumber(), $doiSuffix);
-                        // %Y - year
-                        $doiSuffix = PKPString::regexp_replace('/%Y/', $issue->getYear(), $doiSuffix);
+                        // %v - volume number (Dikonversi ke string untuk PHP 8)
+                        $doiSuffix = PKPString::regexp_replace('/%v/', (string) $issue->getVolume(), $doiSuffix);
+                        // %i - issue number (Dikonversi ke string untuk PHP 8)
+                        $doiSuffix = PKPString::regexp_replace('/%i/', (string) $issue->getNumber(), $doiSuffix);
+                        // %Y - year (Dikonversi ke string untuk PHP 8)
+                        $doiSuffix = PKPString::regexp_replace('/%Y/', (string) $issue->getYear(), $doiSuffix);
                     }
                     if ($article) {
-                        // %a - article id
-                        $doiSuffix = PKPString::regexp_replace('/%a/', $article->getId(), $doiSuffix);
-                        // %p - page number
+                        // %a - article id (Dikonversi ke string untuk PHP 8)
+                        $doiSuffix = PKPString::regexp_replace('/%a/', (string) $article->getId(), $doiSuffix);
+                        // %p - page number (Dikonversi ke string untuk PHP 8)
                         if ($article->getPages()) {
-                            $doiSuffix = PKPString::regexp_replace('/%p/', $article->getPages(), $doiSuffix);
+                            $doiSuffix = PKPString::regexp_replace('/%p/', (string) $article->getPages(), $doiSuffix);
                         }
                     }
                     if ($galley) {
-                        // %g - galley id
-                        $doiSuffix = PKPString::regexp_replace('/%g/', $galley->getId(), $doiSuffix);
+                        // %g - galley id (Dikonversi ke string untuk PHP 8)
+                        $doiSuffix = PKPString::regexp_replace('/%g/', (string) $galley->getId(), $doiSuffix);
                     }
                     if ($suppFile) {
-                        // %s - supp file id
-                        $doiSuffix = PKPString::regexp_replace('/%s/', $suppFile->getId(), $doiSuffix);
+                        // %s - supp file id (Dikonversi ke string untuk PHP 8)
+                        $doiSuffix = PKPString::regexp_replace('/%s/', (string) $suppFile->getId(), $doiSuffix);
                     }
                     break;
 
@@ -224,77 +246,119 @@ class DOIPubIdPlugin extends PubIdPlugin {
     }
 
     /**
+     * Get the PubId type.
+     * 
      * @see PubIdPlugin::getPubIdType()
+     * @return string The PubId type (e.g. 'doi').
      */
     public function getPubIdType() {
         return 'doi';
     }
 
     /**
+     * Get the display type of the PubId.
+     * 
      * @see PubIdPlugin::getPubIdDisplayType()
+     * @return string The display type.
      */
     public function getPubIdDisplayType() {
         return 'DOI';
     }
 
     /**
+     * Get the full name of the PubId type.
+     * 
      * @see PubIdPlugin::getPubIdFullName()
+     * @return string The full name.
      */
     public function getPubIdFullName() {
         return 'Digital Object Identifier';
     }
 
     /**
+     * Get the resolving URL for the DOI.
+     * 
      * @see PubIdPlugin::getResolvingURL()
+     * @param int $journalId The journal ID.
+     * @param string $pubId The DOI string.
+     * @return string The resolvable URL.
      */
     public function getResolvingURL($journalId, $pubId) {
         return 'https://doi.org/' . $this->_doiURLEncode($pubId);
     }
 
     /**
+     * Get the form field names for the plugin.
+     * 
      * @see PubIdPlugin::getFormFieldNames()
+     * @return array Array of form field names.
      */
     public function getFormFieldNames() {
         return ['doiSuffix', 'excludeDoi'];
     }
 
     /**
+     * Get the exclude form field name.
+     * 
      * @see PubIdPlugin::getExcludeFormFieldName()
+     * @return string The exclude form field name.
      */
     public function getExcludeFormFieldName() {
         return 'excludeDoi';
     }
 
     /**
+     * Check if the DOI plugin is enabled for a specific object type and journal.
+     * 
      * @see PubIdPlugin::isEnabled()
+     * @param string $pubObjectType The type of publishing object.
+     * @param int $journalId The journal ID.
+     * @return bool True if enabled, false otherwise.
      */
     public function isEnabled($pubObjectType, $journalId) {
         return $this->getSetting($journalId, "enable{$pubObjectType}Doi") == '1';
     }
 
     /**
+     * Get the DAO field names.
+     * 
      * @see PubIdPlugin::getDAOFieldNames()
+     * @return array Array of DAO field names.
      */
     public function getDAOFieldNames() {
         return ['pub-id::doi'];
     }
 
     /**
+     * Get the metadata template file path.
+     * 
      * @see PubIdPlugin::getPubIdMetadataFile()
+     * @return string Path to the metadata template file.
      */
     public function getPubIdMetadataFile() {
         return $this->getTemplatePath() . 'doiSuffixEdit.tpl';
     }
 
     /**
+     * Get the name of the settings form class.
+     * 
      * @see PubIdPlugin::getSettingsFormName()
+     * @return string Settings form class name.
      */
     public function getSettingsFormName() {
         return 'classes.form.DOISettingsForm';
     }
 
     /**
+     * Verify data inputted via a form.
+     * 
      * @see PubIdPlugin::verifyData()
+     * @param string $fieldName The name of the field to verify.
+     * @param string $fieldValue The value of the field.
+     * @param object $pubObject The publishing object.
+     * @param int $journalId The journal ID.
+     * @param string &$errorMsg Reference to the error message string.
+     * @return bool True if verification passes, false otherwise.
      */
     public function verifyData($fieldName, $fieldValue, $pubObject, $journalId, &$errorMsg) {
         // Verify DOI uniqueness.
@@ -317,7 +381,11 @@ class DOIPubIdPlugin extends PubIdPlugin {
     }
 
     /**
+     * Validate the syntax of a given DOI string.
+     * 
      * @see PubIdPlugin::validatePubId()
+     * @param string $pubId The DOI string to validate.
+     * @return bool True if valid, false otherwise.
      */
     public function validatePubId($pubId) {
         return (bool) preg_match('/^\d+(.\d+)+\//', $pubId);
@@ -329,8 +397,9 @@ class DOIPubIdPlugin extends PubIdPlugin {
 
     /**
      * Encode DOI according to ANSI/NISO Z39.84-2005, Appendix E.
-     * @param $pubId string
-     * @return string
+     * 
+     * @param string $pubId The DOI string to encode.
+     * @return string The encoded DOI string.
      */
     private function _doiURLEncode($pubId) {
         $search = ['%', '"', '#', ' ', '<', '>', '{'];
@@ -338,5 +407,6 @@ class DOIPubIdPlugin extends PubIdPlugin {
         $pubId = str_replace($search, $replace, $pubId);
         return $pubId;
     }
+
 }
 ?>
