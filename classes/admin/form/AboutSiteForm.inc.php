@@ -5,12 +5,10 @@ declare(strict_types=1);
  * @file classes/admin/form/AboutSiteForm.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
- * Copyright (c) 2017-2026 Rochmady
  * Distributed under the GNU GPL v3.
  *
  * @class AboutSiteForm
  * @ingroup admin_form
- * 
  * @brief Form to manage static "About Site" settings (Mission, History, Leadership, Awards).
  */
 
@@ -32,7 +30,7 @@ class AboutSiteForm extends Form {
     public function AboutSiteForm() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor. Please refactor to __construct().", 
                 E_USER_DEPRECATED
             );
         }
@@ -47,10 +45,11 @@ class AboutSiteForm extends Form {
         $site = $request->getSite();
         
         if ($site) {
-            $this->setData('publisherMission', $site->getSetting('publisherMission'));
-            $this->setData('publisherHistory', $site->getSetting('publisherHistory'));
-            $this->setData('publisherLeaderships', $site->getSetting('publisherLeaderships'));
-            $this->setData('publisherAwards', $site->getSetting('publisherAwards'));
+            // [FIX] Gunakan ?? [] agar default selalu array, mencegah error "null" di PHP 8
+            $this->setData('publisherMission', $site->getSetting('publisherMission') ?? []);
+            $this->setData('publisherHistory', $site->getSetting('publisherHistory') ?? []);
+            $this->setData('publisherLeaderships', $site->getSetting('publisherLeaderships') ?? []);
+            $this->setData('publisherAwards', $site->getSetting('publisherAwards') ?? []);
         }
     }
 
@@ -78,23 +77,24 @@ class AboutSiteForm extends Form {
 
     /**
      * Save settings.
+     * [FIX] Ubah parameter tipe dari 'string' menjadi null untuk field multibahasa (array)
      * 
-     * @param mixed $object
+     * @param mixed $functionArgs
      * @return bool
      */
-    public function execute($object = null) {
+    public function execute(...$functionArgs) {
         /** @var SiteSettingsDAO $siteSettingsDao */
         $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO');
         
-        // [WIZDAM] Null-safety check
         if (!$siteSettingsDao) {
             return false;
         }
 
-        $siteSettingsDao->updateSetting('publisherMission', $this->getData('publisherMission'), 'string', true);
-        $siteSettingsDao->updateSetting('publisherHistory', $this->getData('publisherHistory'), 'string', true);
-        $siteSettingsDao->updateSetting('publisherLeaderships', $this->getData('publisherLeaderships'), 'string', true);
-        $siteSettingsDao->updateSetting('publisherAwards', $this->getData('publisherAwards'), 'string', true);
+        // [FIX] Parameter ke-3 harus 'null' (bukan 'string') agar DAO menangani array multibahasa dengan benar
+        $siteSettingsDao->updateSetting('publisherMission', $this->getData('publisherMission'), null, true);
+        $siteSettingsDao->updateSetting('publisherHistory', $this->getData('publisherHistory'), null, true);
+        $siteSettingsDao->updateSetting('publisherLeaderships', $this->getData('publisherLeaderships'), null, true);
+        $siteSettingsDao->updateSetting('publisherAwards', $this->getData('publisherAwards'), null, true);
         
         return true;
     }
@@ -106,11 +106,9 @@ class AboutSiteForm extends Form {
      * @param string|null $template
      */
     public function display($request = null, $template = null) {
-        // [WIZDAM] Singleton Fallback dengan strict type check
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
         
-        // [WIZDAM] Micro-Payload
         $templateMgr->assign([
             'pageTitle' => 'admin.aboutSiteSettings',
             'publisherMissionKey' => 'admin.siteSettings.publisherMission',
@@ -118,11 +116,11 @@ class AboutSiteForm extends Form {
             'publisherLeadershipsKey' => 'admin.siteSettings.publisherLeaderships',
             'publisherAwardsKey' => 'admin.siteSettings.publisherAwards',
             
-            // Data untuk template (berupa array untuk field multibahasa)
-            'publisherMission' => $this->getData('publisherMission'),
-            'publisherHistory' => $this->getData('publisherHistory'),
-            'publisherLeaderships' => $this->getData('publisherLeaderships'),
-            'publisherAwards' => $this->getData('publisherAwards'),
+            // [FIX] Pastikan data yang dikirim ke template selalu array, tidak pernah null
+            'publisherMission' => $this->getData('publisherMission') ?? [],
+            'publisherHistory' => $this->getData('publisherHistory') ?? [],
+            'publisherLeaderships' => $this->getData('publisherLeaderships') ?? [],
+            'publisherAwards' => $this->getData('publisherAwards') ?? [],
         ]);
         
         parent::display($request, $template);

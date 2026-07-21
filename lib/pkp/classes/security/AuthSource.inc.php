@@ -34,7 +34,7 @@ class AuthSource extends DataObject {
             "Class '" . get_class($this) . "' uses deprecated constructor parent::AuthSource(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
-        self::__construct();
+        $this->__construct();
     }
 
     //
@@ -46,15 +46,16 @@ class AuthSource extends DataObject {
      * @return int
      */
     public function getAuthId() {
-        return $this->getData('authId');
+        $data = $this->getData('authId');
+        return $data !== null ? (int) $data : 0;
     }
 
     /**
      * Set ID of this source.
-     * @param $authId int
+     * @param mixed $authId
      */
     public function setAuthId($authId) {
-        return $this->setData('authId', $authId);
+        $this->setData('authId', $authId !== null ? (int) $authId : 0);
     }
 
     /**
@@ -62,15 +63,16 @@ class AuthSource extends DataObject {
      * @return string
      */
     public function getTitle() {
-        return $this->getData('title');
+        $data = $this->getData('title');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set user-specified title of this source.
-     * @param $title string
+     * @param mixed $title
      */
     public function setTitle($title) {
-        return $this->setData('title', $title);
+        $this->setData('title', $title !== null ? (string) $title : '');
     }
 
     /**
@@ -78,15 +80,16 @@ class AuthSource extends DataObject {
      * @return string
      */
     public function getPlugin() {
-        return $this->getData('plugin');
+        $data = $this->getData('plugin');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set the authentication plugin associated with this source.
-     * @param $plugin string
+     * @param mixed $plugin
      */
     public function setPlugin($plugin) {
-        return $this->setData('plugin', $plugin);
+        $this->setData('plugin', $plugin !== null ? (string) $plugin : '');
     }
 
     /**
@@ -94,15 +97,16 @@ class AuthSource extends DataObject {
      * @return boolean
      */
     public function getDefault() {
-        return $this->getData('authDefault');
+        $data = $this->getData('authDefault');
+        return (bool) $data;
     }
 
     /**
      * Set flag indicating this is the default authentication source.
-     * @param $authDefault boolean
+     * @param mixed $authDefault
      */
     public function setDefault($authDefault) {
-        return $this->setData('authDefault', $authDefault);
+        $this->setData('authDefault', (bool) $authDefault);
     }
 
     /**
@@ -110,33 +114,33 @@ class AuthSource extends DataObject {
      * @return array
      */
     public function getSettings() {
-        return $this->getData('settings');
+        $data = $this->getData('settings');
+        return is_array($data) ? $data : [];
     }
 
     /**
      * Set array of plugin-specific settings for this source.
-     * @param $settings array
+     * @param mixed $settings
      */
     public function setSettings($settings) {
-        return $this->setData('settings', $settings);
+        $this->setData('settings', is_array($settings) ? $settings : []);
     }
 
     /**
      * Get the authentication plugin object associated with this source.
-     * @return AuthPlugin
+     * @return AuthPlugin|null
      */
     public function getPluginClass() {
-        // Removed & reference
         return $this->getData('authPlugin');
     }
 
     /**
      * Set authentication plugin object associated with this source.
-     * @param $authPlugin AuthPlugin
+     * @param mixed $authPlugin
      */
     public function setPluginClass($authPlugin) {
-        return $this->setData('authPlugin', $authPlugin);
+        $this->setData('authPlugin', $authPlugin);
     }
-}
 
+}
 ?>

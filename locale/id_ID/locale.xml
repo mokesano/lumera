@@ -976,10 +976,12 @@ Validasi mungkin gagal dalam pencarian URL memerlukan form data yang diposting.]
 	
 	
 	
-	<!-- Notification Types -->
+	<!-- Common Notification -->
+	<message key="notification.csrfInvalid">Terdapat kendala keamanan (Token CSRF tidak valid). Form tidak dapat diproses. Silakan muat ulang halaman dan coba lagi.</message>
 	<message key="notification.mailListDescription">Masukkan alamat email Anda untuk menerima notifikasi langsung tentang konten baru yang penting dan ditambahkan ke jurnal.</message>
 	<message key="notification.notificationsPublicDescription">Halaman ini menunjukkan update penting yang berkaitan dengan jurnal ini seperti terbitan baru atau pengumuman. Anda bisa berlangganan ke notifikasi ini melalui RSS Feed (dengan meng-klik di gambar sebelah kanan), atau <![CDATA[  <a href="{$emailUrl}">melalui email.</a>]]></message>
 
+	<!-- Notification Types -->
 	<message key="notification.type.articleSubmitted">Artikel baru, "{$title}", telah diserahkan.</message>
 	<message key="notification.type.copyeditComment">Copy editor telah meninggalkan komentar di "{$title}".</message>
 	<message key="notification.type.editing">Event Pengeditan</message>

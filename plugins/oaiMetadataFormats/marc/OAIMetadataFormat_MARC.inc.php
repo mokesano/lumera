@@ -13,13 +13,15 @@ declare(strict_types=1);
  * @see OAI
  *
  * @brief OAI metadata format class -- MARC.
- * * REFACTORED: Wizdam Edition (Pure PHP Rendering - Fixed Locale)
  */
 
 class OAIMetadataFormat_MARC extends OAIMetadataFormat {
     
     /**
      * Constructor
+     * @param mixed $prefix
+     * @param mixed $schema
+     * @param mixed $namespace
      */
     public function __construct($prefix, $schema, $namespace) {
         parent::__construct($prefix, $schema, $namespace);
@@ -27,6 +29,9 @@ class OAIMetadataFormat_MARC extends OAIMetadataFormat {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $prefix
+     * @param mixed $schema
+     * @param mixed $namespace
      */
     public function OAIMetadataFormat_MARC($prefix, $schema, $namespace) {
         trigger_error(
@@ -39,7 +44,7 @@ class OAIMetadataFormat_MARC extends OAIMetadataFormat {
     /**
      * Convert the record to the MARC XML format.
      * @see OAIMetadataFormat#toXml
-     * @param $record OAIRecord
+     * @param mixed $record OAIRecord
      * @param $format string
      * @return string XML data
      */
@@ -172,7 +177,6 @@ class OAIMetadataFormat_MARC extends OAIMetadataFormat {
         }
 
         // 17. Field 540: Copyright
-        // WIZDAM FIX: Replaced Locale::translate with global helper __()
         $copyrightKey = "submission.copyrightStatement";
         $copyright = __($copyrightKey, array(
             'copyrightYear' => $article->getCopyrightYear(),
@@ -190,11 +194,11 @@ class OAIMetadataFormat_MARC extends OAIMetadataFormat {
     /**
      * Helper to create a simple varfield with one subfield
      * @return string XML fragment
-     * @param $id string
-     * @param $i1 string
-     * @param $i2 string
-     * @param $subfieldLabel string
-     * @param $value string
+     * @param string $id string
+     * @param string $i1 string
+     * @param string $i2 string
+     * @param string $subfieldLabel string
+     * @param string $value string
      */
     public function formatVarField($id, $i1, $i2, $subfieldLabel, $value) {
         // Sanitize
@@ -207,12 +211,11 @@ class OAIMetadataFormat_MARC extends OAIMetadataFormat {
 
     /**
      * Helper to create a varfield with multiple subfields
-     * @param $subfields array Associative array of label=>value pairs
+     * @param array $subfields array Associative array of label=>value pairs
      * @return string XML fragment
-     * @param $id string
-     * @param $i1 string
-     * @param $i2 string
-     * @param $subfields array
+     * @param string $id string
+     * @param string $i1 string
+     * @param string $i2 string
      */
     public function formatVarFieldComplex($id, $i1, $i2, $subfields) {
         $out = "\t<varfield id=\"$id\" i1=\"$i1\" i2=\"$i2\">\n";
@@ -226,5 +229,6 @@ class OAIMetadataFormat_MARC extends OAIMetadataFormat {
         $out .= "\t</varfield>\n";
         return $out;
     }
+
 }
 ?>

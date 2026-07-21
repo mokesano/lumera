@@ -64,7 +64,6 @@ class LazyLoadPlugin extends Plugin {
      * @return bool
      */
     public function getEnabled($request = null): bool {
-        // Cegah fatal error: 
         // Jika Aplikasi belum diinisialisasi (null) saat tugas latar belakang, tidak mungkin ada konteks. 
         // Kembalikan false secara aman tanpa mengakses PKPPlugin.
         if (!PKPApplication::getApplication()) {

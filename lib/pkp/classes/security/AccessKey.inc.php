@@ -2,10 +2,6 @@
 declare(strict_types=1);
 
 /**
- * @defgroup security
- */
-
-/**
  * @file classes/security/AccessKey.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
@@ -36,7 +32,7 @@ class AccessKey extends DataObject {
             "Class '" . get_class($this) . "' uses deprecated constructor parent::AccessKey(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
-        self::__construct();
+        $this->__construct();
     }
 
     //
@@ -48,17 +44,22 @@ class AccessKey extends DataObject {
      * @return int
      */
     public function getAccessKeyId() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->getId();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        $id = $this->getId();
+        return $id !== null ? (int) $id : 0;
     }
 
     /**
      * Set the ID of the access key.
-     * @param $accessKeyId int
+     * @param mixed $accessKeyId
      */
     public function setAccessKeyId($accessKeyId) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->setId($accessKeyId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        $this->setId($accessKeyId !== null ? (int) $accessKeyId : 0);
     }
 
     /**
@@ -66,15 +67,16 @@ class AccessKey extends DataObject {
      * @return string
      */
     public function getContext() {
-        return $this->getData('context');
+        $data = $this->getData('context');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set context.
-     * @param $context string
+     * @param mixed $context
      */
     public function setContext($context) {
-        return $this->setData('context', $context);
+        $this->setData('context', $context !== null ? (string) $context : '');
     }
 
     /**
@@ -82,15 +84,16 @@ class AccessKey extends DataObject {
      * @return string
      */
     public function getKeyHash() {
-        return $this->getData('keyHash');
+        $data = $this->getData('keyHash');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set key hash.
-     * @param $keyHash string
+     * @param mixed $keyHash
      */
     public function setKeyHash($keyHash) {
-        return $this->setData('keyHash', $keyHash);
+        $this->setData('keyHash', $keyHash !== null ? (string) $keyHash : '');
     }
 
     /**
@@ -98,15 +101,16 @@ class AccessKey extends DataObject {
      * @return int
      */
     public function getUserId() {
-        return $this->getData('userId');
+        $data = $this->getData('userId');
+        return $data !== null ? (int) $data : 0;
     }
 
     /**
      * Set user ID.
-     * @param $userId int
+     * @param mixed $userId
      */
     public function setUserId($userId) {
-        return $this->setData('userId', $userId);
+        $this->setData('userId', $userId !== null ? (int) $userId : 0);
     }
 
     /**
@@ -114,15 +118,16 @@ class AccessKey extends DataObject {
      * @return int
      */
     public function getAssocId() {
-        return $this->getData('assocId');
+        $data = $this->getData('assocId');
+        return $data !== null ? (int) $data : 0;
     }
 
     /**
      * Set associated ID.
-     * @param $assocId int
+     * @param mixed $assocId
      */
     public function setAssocId($assocId) {
-        return $this->setData('assocId', $assocId);
+        $this->setData('assocId', $assocId !== null ? (int) $assocId : 0);
     }
 
     /**
@@ -130,16 +135,17 @@ class AccessKey extends DataObject {
      * @return string
      */
     public function getExpiryDate() {
-        return $this->getData('expiryDate');
+        $data = $this->getData('expiryDate');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set expiry date.
-     * @param $expiryDate string
+     * @param mixed $expiryDate
      */
     public function setExpiryDate($expiryDate) {
-        return $this->setData('expiryDate', $expiryDate);
+        $this->setData('expiryDate', $expiryDate !== null ? (string) $expiryDate : '');
     }
+    
 }
-
 ?>

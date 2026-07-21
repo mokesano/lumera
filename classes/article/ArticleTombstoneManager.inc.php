@@ -67,5 +67,6 @@ class ArticleTombstoneManager {
         // Hook Dispatch: Objects passed by value (handle)
         if (HookRegistry::dispatch('ArticleTombstoneManager::insertArticleTombstone', array($articleTombstone, $article, $journal))) return;
     }
+    
 }
 ?>

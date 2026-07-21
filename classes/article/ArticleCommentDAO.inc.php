@@ -283,5 +283,6 @@ class ArticleCommentDAO extends DAO {
             ]
         );
     }
+    
 }
 ?>

@@ -11,19 +11,18 @@ declare(strict_types=1);
  * @class MultipleListsListbuilderHandler
  * @ingroup controllers_listbuilder
  *
- * @brief Class defining basic operations for handling multiple lists listbuilder UI elements
- * [WIZDAM EDITION] Refactored for PHP 8.x
+ * @brief Class defining basic operations for handling multiple lists listbuilder UI elements.
  */
 
 import('lib.pkp.classes.controllers.listbuilder.ListbuilderHandler');
 import('lib.pkp.classes.controllers.listbuilder.ListbuilderList');
 
-define_exposed('LISTBUILDER_SOURCE_TYPE_NONE', 3);
+define('LISTBUILDER_SOURCE_TYPE_NONE', 3);
 
 class MultipleListsListbuilderHandler extends ListbuilderHandler {
 
     /** @var array Set of ListbuilderList objects that this listbuilder will handle **/
-    protected array $_lists = [];
+    protected $_lists = [];
 
     /**
      * Constructor.
@@ -38,11 +37,11 @@ class MultipleListsListbuilderHandler extends ListbuilderHandler {
     public function MultipleListsListbuilderHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'. Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
                 E_USER_DEPRECATED
             );
         }
-        self::__construct();
+        $this->__construct();
     }
 
 
@@ -51,14 +50,15 @@ class MultipleListsListbuilderHandler extends ListbuilderHandler {
     //
     
     /**
+     * Get template
      * @see ListbuilderHandler::getTemplate()
+     * @return string
      */
-    public function getTemplate() {
-        if ($this->_template === null) {
+    public function getTemplate(): string {
+        if ($this->template === null) {
             $this->setTemplate('controllers/listbuilder/multipleListsListbuilder.tpl');
         }
-
-        return $this->_template;
+        return (string) $this->template;
     }
 
     /**
@@ -66,7 +66,7 @@ class MultipleListsListbuilderHandler extends ListbuilderHandler {
      * @return array of ListbuilderList objects.
      */
     public function getLists(): array {
-        return $this->_lists;
+        return is_array($this->_lists) ? $this->_lists : [];
     }
 
 
@@ -76,15 +76,15 @@ class MultipleListsListbuilderHandler extends ListbuilderHandler {
 
     /**
      * Add a list to listbuilder.
-     * @param ListbuilderList $list
+     * @param mixed $list
      */
-    public function addList($list) {
-        if (!($list instanceof ListbuilderList)) {
-            fatalError('Invalid ListbuilderList object passed to addList.');
+    public function addList($list): void {
+        if (!$list instanceof ListbuilderList) {
+            throw new \InvalidArgumentException('Invalid ListbuilderList object passed to addList.');
         }
 
         $currentLists = $this->getLists();
-        $currentLists[$list->getId()] = $list;
+        $currentLists[(string) $list->getId()] = $list;
         $this->_setLists($currentLists);
     }
 
@@ -93,96 +93,111 @@ class MultipleListsListbuilderHandler extends ListbuilderHandler {
      * You should not extend or override this method.
      * All the data loading for this component is done
      * using ListbuilderList objects.
-     * [WIZDAM] Removed reference on $request
+     * @param mixed $request
+     * @param mixed $filter
+     * @return array
      */
-    public function loadData($request, $filter) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+    public function loadData($request, $filter): array {
+        if (!$request) {
+            $app = Application::get();
+            $request = $app ? $app->getRequest() : null;
+        }
 
-        // Give a chance to subclasses set data
-        // on their lists.
         $this->setListsData($request, $filter);
 
         $data = [];
         $lists = $this->getLists();
 
-        foreach ($lists as $list) {
-            $data[$list->getId()] = $list->getData();
+        if (is_array($lists)) {
+            foreach ($lists as $list) {
+                $listId = (string) $list->getId();
+                $listData = $list->getData();
+                $data[$listId] = is_array($listData) ? $listData : [];
+            }
         }
 
         return $data;
     }
 
     /**
+     * Initialize
      * @see ListbuilderHandler::initialize()
-     * [WIZDAM] Removed reference on $request
+     * @param mixed $request
+     * @param bool $addItemLink
      */
-    public function initialize($request, $args = null) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+    public function initialize($request, $addItemLink = true): void {
+        if (!$request) {
+            $app = Application::get();
+            $request = $app ? $app->getRequest() : null;
+        }
 
-        // Basic configuration.
-        // Currently this component only works with
-        // these configurations, but, if needed, it's
-        // easy to adapt this class to work with the other
-        // listbuilders configuration.
         parent::initialize($request, false);
         $this->setSourceType(LISTBUILDER_SOURCE_TYPE_NONE);
         $this->setSaveType(LISTBUILDER_SAVE_TYPE_EXTERNAL);
     }
 
     /**
+     * Init features
      * @see GridHandler::initFeatures()
-     * [WIZDAM] Removed reference on $request
+     * @param mixed $request
+     * @param mixed $args
+     * @return array
      */
-    public function initFeatures($request, $args) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+    public function initFeatures($request, $args): array {
+        if (!$request) {
+            $app = Application::get();
+            $request = $app ? $app->getRequest() : null;
+        }
 
-        // Multiple lists listbuilder always have orderable rows.
-        // We don't have any other requirement for it.
         import('lib.pkp.classes.controllers.grid.feature.OrderMultipleListsItemsFeature');
         return [new OrderMultipleListsItemsFeature()];
     }
 
     /**
+     * Get row instance
      * @see ListbuilderHandler::getRowInstance()
-     * [WIZDAM] Removed reference return
+     * @return ListbuilderGridRow
      */
-    protected function getRowInstance() {
+    public function getRowInstance() {
         $row = parent::getRowInstance();
 
-        // Currently we can't/don't need to delete a row inside multiple
-        // lists listbuilder. If we need, we have to adapt this class
-        // and its js handler.
-        $row->setHasDeleteItemLink(false);
+        if ($row) {
+            $row->setHasDeleteItemLink(false);
+        }
         return $row;
     }
 
     /**
+     * Helper render grid body parts internally
      * @see GridHandler::_renderGridBodyPartsInternally()
-     * [WIZDAM] Removed reference on $request
+     * @param mixed $request
+     * @return array
      */
-    protected function _renderGridBodyPartsInternally($request) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+    public function _renderGridBodyPartsInternally($request): array {
+        if (!$request) {
+            $app = Application::get();
+            $request = $app ? $app->getRequest() : null;
+        }
 
-        // Render the rows.
         $listsRows = [];
         $gridData = $this->getGridDataElements($request);
+        
         if (is_array($gridData)) {
             foreach ($gridData as $listId => $elements) {
-                $listsRows[$listId] = $this->_renderRowsInternally($request, $elements);
+                $safeListId = (string) $listId;
+                if (is_array($elements)) {
+                    $listsRows[$safeListId] = $this->_renderRowsInternally($request, $elements);
+                } else {
+                    $listsRows[$safeListId] = [];
+                }
             }
         }
 
         $templateMgr = TemplateManager::getManager($request);
-        // [WIZDAM] Use assign instead of assign_by_ref for objects
         $templateMgr->assign('grid', $this);
         $templateMgr->assign('listsRows', $listsRows);
 
-        // In listbuilders we don't use the grid body.
-        return false;
+        return [];
     }
 
 
@@ -194,14 +209,16 @@ class MultipleListsListbuilderHandler extends ListbuilderHandler {
      * Implement to set data on each list. This
      * will be used by the loadData method to retrieve
      * the listbuilder data.
-     * @param PKPRequest $request
+     * @param mixed $request
      * @param mixed $filter
      */
-    protected function setListsData($request, $filter) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+    protected function setListsData($request, $filter): void {
+        if (!$request) {
+            $app = Application::get();
+            $request = $app ? $app->getRequest() : null;
+        }
 
-        fatalError('ABSTRACT METHOD');
+        throw new \BadMethodCallException('Subclasses of MultipleListsListbuilderHandler must implement setListsData().');
     }
 
 
@@ -212,14 +229,15 @@ class MultipleListsListbuilderHandler extends ListbuilderHandler {
     /**
      * Fetch the listbuilder.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function fetch($args, $request) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $app = Application::get();
+            $request = $app ? $app->getRequest() : null;
+        }
 
         $templateMgr = TemplateManager::getManager($request);
-        // [WIZDAM] Use assign instead of assign_by_ref
         $templateMgr->assign('lists', $this->getLists());
 
         return parent::fetch($args, $request);
@@ -234,9 +252,9 @@ class MultipleListsListbuilderHandler extends ListbuilderHandler {
      * Set the array with all listbuilder lists.
      * @param array $lists Array of ListbuilderList objects.
      */
-    private function _setLists(array $lists) {
+    private function _setLists(array $lists): void {
         $this->_lists = $lists;
     }
-}
 
+}
 ?>

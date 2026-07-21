@@ -2,10 +2,6 @@
 declare(strict_types=1);
 
 /**
- * @defgroup file_wrapper
- */
-
-/**
  * @file classes/file/FileWrapper.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
@@ -17,10 +13,6 @@ declare(strict_types=1);
  *
  * @brief Class abstracting operations for reading remote files using various protocols.
  * (for when allow_url_fopen is disabled).
- *
- * TODO:
- * - Other protocols?
- * - Write mode (where possible)
  */
 
 class FileWrapper {
@@ -32,26 +24,29 @@ class FileWrapper {
     public $info;
 
     /** @var resource|null the file descriptor */
-    public $fp;
+    public $fp = null;
 
     /**
      * Constructor.
-     * @param $url string
-     * @param $info array
+     * @param mixed $url
+     * @param mixed $info
      */
     public function __construct($url, $info) {
-        $this->url = $url;
-        $this->info = $info;
+        $this->url = (string) $url;
+        $this->info = is_array($info) ? $info : [];
+        $this->fp = null;
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $url
+     * @param mixed $info
      */
     public function FileWrapper($url, $info) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::FileWrapper(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
         }
-        self::__construct($url, $info);
+        $this->__construct($url, $info);
     }
 
     /**
@@ -60,12 +55,15 @@ class FileWrapper {
      */
     public function contents() {
         $contents = '';
-        if ($retval = $this->open()) {
-            if (is_object($retval)) { // It may be a redirect
+        $retval = $this->open();
+        
+        if ($retval) {
+            if (is_object($retval)) {
                 return $retval->contents();
             }
-            while (!$this->eof())
+            while (!$this->eof()) {
                 $contents .= $this->read();
+            }
             $this->close();
         }
         return $contents;
@@ -73,19 +71,17 @@ class FileWrapper {
 
     /**
      * Open the file.
-     * @param $mode string only 'r' (read-only) is currently supported
+     * @param string $mode only 'r' (read-only) is currently supported
      * @return boolean|object
      */
     public function open($mode = 'r') {
         $this->fp = null;
         
-        // Tambah pengecekan: Jika URL kosong/null, langsung kembalikan false.
-        // fopen() tidak akan dieksekusi dan terhindar dari Fatal Error.
         if (empty($this->url)) {
             return false;
         }
 
-        $this->fp = @fopen($this->url, $mode); // Tambahkan simbol @ opsional untuk meredam warning bawaan PHP
+        $this->fp = @fopen($this->url, (string) $mode);
         return ($this->fp !== false);
     }
 
@@ -93,21 +89,22 @@ class FileWrapper {
      * Close the file.
      */
     public function close() {
-        // Cek dulu apakah $this->fp adalah resource (file yang sukses dibuka)
         if (is_resource($this->fp)) {
             fclose($this->fp);
         }
-        
-        unset($this->fp);
+        $this->fp = null;
     }
 
     /**
      * Read from the file.
-     * @param $len int
+     * @param int $len
      * @return string
      */
     public function read($len = 8192) {
-        return fread($this->fp, $len);
+        if (!is_resource($this->fp)) {
+            return '';
+        }
+        return (string) fread($this->fp, (int) $len);
     }
 
     /**
@@ -115,9 +112,11 @@ class FileWrapper {
      * @return boolean
      */
     public function eof() {
-        return feof($this->fp);
+        if (!is_resource($this->fp)) {
+            return true;
+        }
+        return (bool) feof($this->fp);
     }
-
 
     //
     // Static
@@ -125,29 +124,30 @@ class FileWrapper {
 
     /**
      * Return instance of a class for reading the specified URL.
-     * @param $source mixed; URL, filename, or resources
+     * @param mixed $source
      * @return FileWrapper
      */
     public static function wrapper($source) {
+        $wrapper = null;
+
         if (ini_get('allow_url_fopen') && Config::getVar('general', 'allow_url_fopen') && is_string($source)) {
             $info = parse_url($source);
-            $wrapper = new FileWrapper($source, $info);
+            $wrapper = new FileWrapper($source, is_array($info) ? $info : []);
+            
         } elseif (is_resource($source)) {
-            // $source is an already-opened file descriptor.
             import('lib.pkp.classes.file.wrappers.ResourceWrapper');
             $wrapper = new ResourceWrapper($source);
+            
         } else {
-            // $source should be a URL.
-            $info = parse_url((string) $source);
-            if (isset($info['scheme'])) {
+            $sourceString = (string) $source;
+            $info = parse_url($sourceString);
+
+            if (is_array($info) && isset($info['scheme'])) {
                 $scheme = $info['scheme'];
             } else {
                 $scheme = null;
             }
 
-            // [WIZDAM FIX] Application bisa null saat FileWrapper dipanggil 
-            // prematur misalnya saat locale plugin di-load sebelum Application selesai diregistrasi.
-            // Fallback ke user agent generik agar tidak crash.
             $application = Application::getApplication();
             if ($application === null) {
                 $userAgent = 'ScholarWizdam/?';
@@ -155,30 +155,38 @@ class FileWrapper {
                 $userAgent = $application->getName() . '/?';
             } else {
                 $currentVersion = $application->getCurrentVersion();
-                $userAgent = $application->getName() . '/' . $currentVersion->getVersionString();
+                $versionString = $currentVersion ? (string) $currentVersion->getVersionString() : '?';
+                $userAgent = $application->getName() . '/' . $versionString;
             }
+
+            $safeInfo = is_array($info) ? $info : [];
 
             switch ($scheme) {
                 case 'http':
                     import('lib.pkp.classes.file.wrappers.HTTPFileWrapper');
-                    $wrapper = new HTTPFileWrapper($source, $info);
+                    $wrapper = new HTTPFileWrapper($sourceString, $safeInfo);
                     $wrapper->addHeader('User-Agent', $userAgent);
                     break;
                 case 'https':
                     import('lib.pkp.classes.file.wrappers.HTTPSFileWrapper');
-                    $wrapper = new HTTPSFileWrapper($source, $info);
+                    $wrapper = new HTTPSFileWrapper($sourceString, $safeInfo);
                     $wrapper->addHeader('User-Agent', $userAgent);
                     break;
                 case 'ftp':
                     import('lib.pkp.classes.file.wrappers.FTPFileWrapper');
-                    $wrapper = new FTPFileWrapper($source, $info);
+                    $wrapper = new FTPFileWrapper($sourceString, $safeInfo);
                     break;
                 default:
-                    $wrapper = new FileWrapper($source, $info);
+                    $wrapper = new FileWrapper($sourceString, $safeInfo);
             }
+        }
+
+        if ($wrapper === null) {
+            $wrapper = new FileWrapper((string) $source, []);
         }
 
         return $wrapper;
     }
+
 }
 ?>

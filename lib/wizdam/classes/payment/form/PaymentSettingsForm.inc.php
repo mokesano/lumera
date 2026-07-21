@@ -10,6 +10,7 @@ declare(strict_types=1);
  *
  * [WIZDAM EDITION]
  * @class PaymentSettingsForm
+ * 
  * @brief Form untuk mengatur Payment Gateway Keys di level Admin.
  */
 
@@ -25,11 +26,6 @@ class PaymentSettingsForm extends Form {
         parent::__construct('admin/paymentSettings.tpl');
         
         $this->settingsService = new PaymentSettingsService();
-
-        // [WIZDAM SECURITY] Gunakan Validator CSRF yang kita buat sebelumnya!
-        import('lib.pkp.classes.form.validation.FormValidatorCSRF');
-        $this->addCheck(new FormValidatorCSRF($this));
-        
         $this->addCheck(new FormValidatorPost($this));
     }
 

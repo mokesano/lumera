@@ -31,7 +31,7 @@ class PKPFile extends DataObject {
             "Class '" . get_class($this) . "' uses deprecated constructor parent::PKPFile(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
-        self::__construct();
+        $this->__construct();
     }
 
     //
@@ -43,17 +43,21 @@ class PKPFile extends DataObject {
      * @return int
      */
     public function getFileId() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->getId();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        return (int) $this->getId();
     }
 
     /**
      * Set ID of file.
-     * @param $fileId int
+     * @param int $fileId int
      */
     public function setFileId($fileId) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->setId($fileId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        $this->setId((int) $fileId);
     }
 
     /**
@@ -61,15 +65,16 @@ class PKPFile extends DataObject {
      * @return string
      */
     public function getFileName() {
-        return $this->getData('fileName');
+        $data = $this->getData('fileName');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set file name of the file.
-     * @param $fileName string
+     * @param string $fileName string
      */
     public function setFileName($fileName) {
-        return $this->setData('fileName', $fileName);
+        $this->setData('fileName', (string) $fileName);
     }
 
     /**
@@ -77,15 +82,16 @@ class PKPFile extends DataObject {
      * @return string
      */
     public function getOriginalFileName() {
-        return $this->getData('originalFileName');
+        $data = $this->getData('originalFileName');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set original uploaded file name of the file.
-     * @param $originalFileName string
+     * @param string $originalFileName string
      */
     public function setOriginalFileName($originalFileName) {
-        return $this->setData('originalFileName', $originalFileName);
+        $this->setData('originalFileName', (string) $originalFileName);
     }
 
     /**
@@ -93,31 +99,33 @@ class PKPFile extends DataObject {
      * @return string
      */
     public function getFileType() {
-        return $this->getData('filetype');
+        $data = $this->getData('filetype');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set type of the file.
-     * @param $fileType string
+     * @param string $fileType string
      */
     public function setFileType($fileType) {
-        return $this->setData('filetype', $fileType);
+        $this->setData('filetype', (string) $fileType);
     }
 
     /**
      * Get uploaded date of file.
-     * @return date
+     * @return string
      */
     public function getDateUploaded() {
-        return $this->getData('dateUploaded');
+        $data = $this->getData('dateUploaded');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set uploaded date of file.
-     * @param $dateUploaded date
+     * @param string $dateUploaded date
      */
     public function setDateUploaded($dateUploaded) {
-        return $this->setData('dateUploaded', $dateUploaded);
+        $this->setData('dateUploaded', (string) $dateUploaded);
     }
 
     /**
@@ -125,15 +133,16 @@ class PKPFile extends DataObject {
      * @return int
      */
     public function getFileSize() {
-        return $this->getData('fileSize');
+        $data = $this->getData('fileSize');
+        return $data !== null ? (int) $data : 0;
     }
 
     /**
      * Set file size of file.
-     * @param $fileSize int
+     * @param int $fileSize int
      */
     public function setFileSize($fileSize) {
-        return $this->setData('fileSize', $fileSize);
+        $this->setData('fileSize', (int) $fileSize);
     }
 
     /**
@@ -142,7 +151,7 @@ class PKPFile extends DataObject {
      * @return string
      */
     public function getNiceFileSize() {
-        $size = (float) $this->getData('fileSize');
+        $size = (float) ($this->getData('fileSize') ?? 0);
 
         $kb = 1024;
         $mb = 1024 * $kb;
@@ -169,13 +178,14 @@ class PKPFile extends DataObject {
     //
     // Abstract template methods to be implemented by subclasses.
     //
+
     /**
      * Return absolute path to the file on the host filesystem.
      * @return string
      */
     public function getFilePath() {
-        assert(false);
+        throw new \BadMethodCallException('Subclasses of PKPFile must implement the getFilePath() method.');
     }
+    
 }
-
 ?>

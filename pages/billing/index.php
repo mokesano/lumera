@@ -13,6 +13,7 @@ declare(strict_types=1);
  * Menangani URL: /billing/...
  */
 
+/** @var string $op */
 switch ($op) {
     // 
     // B2B & Personal Financial Control Center
@@ -37,4 +38,5 @@ switch ($op) {
         import('pages.billing.WebhookHandler'); 
         break;
 }
+
 ?>

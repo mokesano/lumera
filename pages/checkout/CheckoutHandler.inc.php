@@ -6,8 +6,7 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance
+ * 
  * @class CheckoutHandler
  * @brief Controller antarmuka untuk 3-Tahap Checkout (Cart -> Billing -> Payment/Finalize).
  */
@@ -279,6 +278,7 @@ class CheckoutHandler extends Handler {
 
         // GET: Pure view
         $summary = $this->checkoutService->calculateCartSummary($queuedPaymentId);
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries() ?: [];
 
@@ -387,5 +387,6 @@ class CheckoutHandler extends Handler {
             $request->redirect(null, 'checkout', 'cart');
         }
     }
+    
 }
 ?>

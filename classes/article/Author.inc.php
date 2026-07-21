@@ -96,5 +96,6 @@ class Author extends PKPAuthor {
     public function setCompetingInterests($competingInterests, $locale) {
         return $this->setData('competingInterests', $competingInterests, $locale);
     }
+    
 }
 ?>

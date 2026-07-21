@@ -144,5 +144,6 @@ class ArticleNoteDAO extends NoteDAO {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function', E_USER_DEPRECATED);
         return $this->deleteByAssoc(ASSOC_TYPE_ARTICLE, (int) $articleId);
     }
+    
 }
 ?>

@@ -38,10 +38,14 @@ define('ASSOC_TYPE_GALLEY',         0x0000104);
 define('ASSOC_TYPE_ISSUE_GALLEY',   0x0000105);
 define('ASSOC_TYPE_SUPP_FILE',      0x0000106);
 
-// [FITUR BARU] Research Topic (Publisher Level)
+// [LUMERA NEW FUTURE] Research Topic (Publisher Level)
 define('ASSOC_TYPE_RESEARCH_TOPIC', 0x0000108);
 
 define('CONTEXT_JOURNAL', 1);
+
+// [LUMERA] Global Article Identifier Prefixes
+define('ELOCATOR_PREFIX', 'd');
+define('PII_PREFIX', 'P');
 
 class Application extends PKPApplication {
     
@@ -441,5 +445,6 @@ class Application extends PKPApplication {
         
         return new OJSPaymentManager($journal);
     }
+    
 }
 ?>

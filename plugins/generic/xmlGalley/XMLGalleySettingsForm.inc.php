@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class XMLGalleySettingsForm
  * @ingroup plugins_generic_xmlGalley
  *
- * @brief Form for journal managers to modify Article XML Galley plugin settings
- * MODERNIZED FOR SCHOLARWIZDAM FORK
+ * @brief Form for journal managers to modify Article XML Galley plugin settings.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -27,8 +26,8 @@ class XMLGalleySettingsForm extends Form {
 
     /**
      * Constructor
-     * @param $plugin object
-     * @param $journalId int
+     * @param object $plugin object
+     * @param int $journalId int
      */
     public function __construct($plugin, $journalId) {
         $this->journalId = (int) $journalId;
@@ -40,6 +39,8 @@ class XMLGalleySettingsForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param object $plugin object
+     * @param int $journalId int
      */
     public function XMLGalleySettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -137,5 +138,6 @@ class XMLGalleySettingsForm extends Form {
         $plugin->updateSetting($journalId, 'externalXSLT', $this->getData('externalXSLT'));
         $plugin->updateSetting($journalId, 'customXSL', $this->getData('customXSL'));
     }
+    
 }
 ?>

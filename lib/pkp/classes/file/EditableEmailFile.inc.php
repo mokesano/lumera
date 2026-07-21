@@ -12,36 +12,39 @@ declare(strict_types=1);
  * @ingroup file
  *
  * @brief This class supports updating for email XML files.
- *
  */
 
 import('lib.pkp.classes.file.EditableFile');
 
 class EditableEmailFile {
+
     /** @var string Locale code */
-    public $locale;
+    public $locale = '';
     
     /** @var EditableFile */
     public $editableFile;
 
     /**
      * Constructor.
-     * @param $locale string
-     * @param $filename string
+     * @param mixed $locale
+     * @param mixed $filename
      */
     public function __construct($locale, $filename) {
-        $this->locale = $locale;
-        $this->editableFile = new EditableFile($filename);
+        // [LUMERA FIX] Casting di dalam body
+        $this->locale = (string) $locale;
+        $this->editableFile = new EditableFile((string) $filename);
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $locale
+     * @param mixed $filename
      */
     public function EditableEmailFile($locale, $filename) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::EditableEmailFile(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
         }
-        self::__construct($locale, $filename);
+        $this->__construct($locale, $filename);
     }
 
     /**
@@ -64,101 +67,135 @@ class EditableEmailFile {
      * @return string
      */
     public function getContents() {
-        return $this->editableFile->getContents();
+        return (string) $this->editableFile->getContents();
     }
 
     /**
      * Set file contents.
-     * @param $contents string
+     * @param mixed $contents
      */
     public function setContents($contents) {
-        $this->editableFile->setContents($contents);
+        $this->editableFile->setContents((string) $contents);
     }
 
     /**
      * Update an email key.
-     * @param $key string
-     * @param $subject string
-     * @param $body string
-     * @param $description string
+     * @param mixed $key
+     * @param mixed $subject
+     * @param mixed $body
+     * @param mixed $description
      * @return boolean
      */
     public function update($key, $subject, $body, $description) {
+        $key = (string) $key;
+        $subject = (string) $subject;
+        $body = (string) $body;
+        $description = (string) $description;
+
+        $contents = $this->getContents();
+
         $matches = null;
         $quotedKey = PKPString::regexp_quote($key);
-        preg_match(
+        $pregResult = preg_match(
             "/<email_text[\W]+key=\"$quotedKey\">/",
-            $this->getContents(),
+            $contents,
             $matches,
             PREG_OFFSET_CAPTURE
         );
-        if (!isset($matches[0])) return false;
 
-        $offset = $matches[0][1];
-        $closeOffset = strpos($this->getContents(), '</email_text>', $offset);
-        if ($closeOffset === FALSE) return false;
+        if ($pregResult === false || !isset($matches[0]) || !isset($matches[0][1])) {
+            return false;
+        }
 
-        $newContents = substr($this->getContents(), 0, $offset);
+        $offset = (int) $matches[0][1];
+        $closeOffset = strpos($contents, '</email_text>', $offset);
+        if ($closeOffset === false) {
+            return false;
+        }
+
+        $newContents = substr($contents, 0, $offset);
         $newContents .= '<email_text key="' . $this->editableFile->xmlEscape($key) . '">
         <subject>' . $this->editableFile->xmlEscape($subject) . '</subject>
         <body>' . $this->editableFile->xmlEscape($body) . '</body>
         <description>' . $this->editableFile->xmlEscape($description) . '</description>
     ';
-        $newContents .= substr($this->getContents(), $closeOffset);
+        $newContents .= substr($contents, $closeOffset);
         $this->setContents($newContents);
+        
         return true;
     }
 
     /**
      * Delete an email key.
-     * @param $key string
+     * @param mixed $key
      * @return boolean
      */
     public function delete($key) {
+        $key = (string) $key;
+
+        $contents = $this->getContents();
+
         $matches = null;
         $quotedKey = PKPString::regexp_quote($key);
-        preg_match(
+        $pregResult = preg_match(
             "/<email_text[\W]+key=\"$quotedKey\">/",
-            $this->getContents(),
+            $contents,
             $matches,
             PREG_OFFSET_CAPTURE
         );
-        if (!isset($matches[0])) return false;
-        $offset = $matches[0][1];
 
-        preg_match("/<\/email_text>[ \t]*[\r]?\n/", $this->getContents(), $matches, PREG_OFFSET_CAPTURE, $offset);
-        if (!isset($matches[0])) return false;
-        $closeOffset = $matches[0][1] + strlen($matches[0][0]);
+        if ($pregResult === false || !isset($matches[0]) || !isset($matches[0][1])) {
+            return false;
+        }
+        $offset = (int) $matches[0][1];
 
-        $newContents = substr($this->getContents(), 0, $offset);
-        $newContents .= substr($this->getContents(), $closeOffset);
+        $pregResult2 = preg_match("/<\/email_text>[ \t]*[\r]?\n/", $contents, $matches, PREG_OFFSET_CAPTURE, $offset);
+        if ($pregResult2 === false || !isset($matches[0]) || !isset($matches[0][1]) || !isset($matches[0][0])) {
+            return false;
+        }
+        
+        $closeOffset = (int) $matches[0][1] + strlen((string) $matches[0][0]);
+
+        $newContents = substr($contents, 0, $offset);
+        $newContents .= substr($contents, $closeOffset);
         $this->setContents($newContents);
+
         return true;
     }
 
     /**
      * Insert a new email key.
-     * @param $key string
-     * @param $subject string
-     * @param $body string
-     * @param $description string
+     * @param mixed $key
+     * @param mixed $subject
+     * @param mixed $body
+     * @param mixed $description
      * @return boolean
      */
     public function insert($key, $subject, $body, $description) {
-        $offset = strrpos($this->getContents(), '</email_texts>');
-        if ($offset === false) return false;
+        $key = (string) $key;
+        $subject = (string) $subject;
+        $body = (string) $body;
+        $description = (string) $description;
+
+        $contents = $this->getContents();
+
+        $offset = strrpos($contents, '</email_texts>');
+        if ($offset === false) {
+            return false;
+        }
         
-        $newContents = substr($this->getContents(), 0, $offset);
+        $newContents = substr($contents, 0, $offset);
         $newContents .= '    <email_text key="' . $this->editableFile->xmlEscape($key) . '">
         <subject>' . $this->editableFile->xmlEscape($subject) . '</subject>
         <body>' . $this->editableFile->xmlEscape($body) . '</body>
         <description>' . $this->editableFile->xmlEscape($description) . '</description>
     </email_text>
 ';
-        $newContents .= substr($this->getContents(), $offset);
+        $newContents .= substr($contents, $offset);
         $this->setContents($newContents);
+        
         return true;
     }
+    
 }
-
 ?>

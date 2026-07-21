@@ -16,7 +16,6 @@ declare(strict_types=1);
  * @ingroup form_validation
  *
  * @brief Class to represent a form validation check.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 // The two allowed states for the type field
@@ -56,7 +55,6 @@ class FormValidator {
         $this->_message = $message;
         $this->_validator = $validator;
 
-        // Initialize cssValidation array if not present
         if (!isset($form->cssValidation[$field])) {
             $form->cssValidation[$field] = [];
         }
@@ -68,6 +66,10 @@ class FormValidator {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $form
+     * @param mixed $field
+     * @param mixed $type
+     * @param mixed $message
      */
     public function FormValidator($form, $field, $type, $message, $validator = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -147,21 +149,17 @@ class FormValidator {
             return is_scalar($fieldValue) ? (string) $fieldValue !== '' : $fieldValue !== [];
         } else {
             $fieldValue = $this->getFieldValue();
-            
-            // [WIZDAM FIX] Pastikan Closure maupun Objek Validator dieksekusi
+
             if ($validator instanceof Closure) {
-                // Gunakan try-catch sederhana untuk mencegah crash saat validasi dinamis
                 try {
                     return $validator($fieldValue); 
                 } catch (Exception $e) {
                     return false;
                 }
             } elseif (is_object($validator) && method_exists($validator, 'isValid')) {
-                // EKSEKUSI PENTING: Jalankan validator standar OJS
                 return $validator->isValid($fieldValue);
             }
-            
-            // Jika ada validator tapi tidak dikenali jenisnya, anggap tidak valid demi keamanan
+
             return false; 
         }
     }
@@ -176,8 +174,7 @@ class FormValidator {
     public function getFieldValue() {
         $form = $this->getForm();
         $fieldValue = $form->getData($this->getField());
-        
-        // [WIZDAM] PHP 8 Safety: explicit cast to string handles null correctly before trim
+
         if (is_null($fieldValue) || is_scalar($fieldValue)) {
             $fieldValue = trim((string)$fieldValue);
         }
@@ -199,6 +196,6 @@ class FormValidator {
             return empty($fieldValue);
         }
     }
-}
 
+}
 ?>

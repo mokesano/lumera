@@ -37,7 +37,7 @@ class PublicFileManager extends PKPPublicFileManager {
 
     /**
      * Get the path to a journal's public files directory.
-     * @param $journalId int
+     * @param int $journalId int
      * @return string
      */
     public function getJournalFilesPath($journalId) {
@@ -47,9 +47,9 @@ class PublicFileManager extends PKPPublicFileManager {
     /**
      * Upload a file to a journals's public directory.
      * Uses strict security checks from FileManager::uploadFile
-     * @param $journalId int
-     * @param $fileName string the name of the file in the upload form
-     * @param $destFileName string the destination file name
+     * @param int $journalId int
+     * @param string $fileName string
+     * @param string $destFileName string
      * @return boolean
      */
     public function uploadJournalFile($journalId, $fileName, $destFileName) {
@@ -58,21 +58,20 @@ class PublicFileManager extends PKPPublicFileManager {
 
     /**
      * Write a file to a journals's public directory.
-     * @param $journalId int
-     * @param $destFileName string the destination file name
-     * @param $contents string the contents to write to the file
+     * @param int $journalId int
+     * @param string $destFileName string
+     * @param string $contents string
      * @return boolean
      */
     public function writeJournalFile($journalId, $destFileName, $contents) {
-        // Hapus '&' pada parameter $contents (PHP Modern Copy-on-Write)
         return $this->writeFile($this->getJournalFilesPath($journalId) . '/' . $destFileName, $contents);
     }
 
     /**
      * Copy a file to a journals's public directory.
-     * @param $journalId int
-     * @param $sourceFile string the source of the file to copy
-     * @param $destFileName string the destination file name
+     * @param int $journalId int
+     * @param string $sourceFile string
+     * @param string $destFileName string
      * @return boolean
      */
     public function copyJournalFile($journalId, $sourceFile, $destFileName) {
@@ -81,13 +80,13 @@ class PublicFileManager extends PKPPublicFileManager {
 
     /**
      * Delete a file from a journal's public directory.
-     * @param $journalId int
-     * @param $fileName string the target file name
+     * @param int $journalId int
+     * @param string $fileName string
      * @return boolean
      */
     public function removeJournalFile($journalId, $fileName) {
         return $this->deleteFile($this->getJournalFilesPath($journalId) . '/' . $fileName);
     }
-}
 
+}
 ?>

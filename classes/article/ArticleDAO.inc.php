@@ -16,18 +16,19 @@ declare(strict_types=1);
  */
 
 import('classes.article.Article');
+import('lib.pkp.classes.cache.GenericCache');
 
 class ArticleDAO extends DAO {
 
     /** @var AuthorDAO */
     public $authorDao;
     
-    /** @var ObjectCache */
+    /** @var GenericCache */
     public $cache;
 
     /**
      * Internal function to return an Article object from a cache miss.
-     * @param ObjectCache $cache
+     * @param GenericCache $cache
      * @param int $id
      * @return Article
      */
@@ -39,7 +40,7 @@ class ArticleDAO extends DAO {
 
     /**
      * Get the cache for this DAO.
-     * @return ObjectCache
+     * @return GenericCache
      */
     public function _getCache() {
         if (!isset($this->cache)) {
@@ -925,14 +926,12 @@ class ArticleDAO extends DAO {
     }
 
     /**
-     * [WORKER] Audit existing PII using strict mathematical check digit
-     * TIDAK MEMBANDINGKAN dengan ISSN jurnal saat ini untuk menjaga integritas historis.
+     * [WORKER] Audit existing PII using strict mathematical check digit.
      * @param string $pii
      * @return bool
      */
     private function auditExistingPii(string $pii): bool {
-        // Cek panjang dan prefix (Misal: 'P' ganti ke 'R' jika diperlukan)
-        if (strlen($pii) !== 18 || substr($pii, 0, 1) !== 'P') { 
+        if (strlen($pii) !== 18 || substr($pii, 0, 1) !== PII_PREFIX) { 
             return false;
         }
 
@@ -960,9 +959,7 @@ class ArticleDAO extends DAO {
         $hashInt = hexdec($hashHex);
         $numeric7 = str_pad((string)($hashInt % 10000000), 7, '0', STR_PAD_LEFT);
 
-        $prefix = 'd'; // [PREFIX]: Ubah 'd' menjadi 's' (jika diperlukan)
-        
-        $generatedELocator = $prefix . $numeric7;
+        $generatedELocator = ELOCATOR_PREFIX . $numeric7;
         
         $this->updateSetting($articleId, 'eLocator', $generatedELocator, 'string');
         return $generatedELocator;
@@ -970,7 +967,6 @@ class ArticleDAO extends DAO {
 
     /**
      * [WORKER] Generate and save PII strictly relying on ValidatorISSN
-     * Menghapus fallback date('ym'). PII harus mencerminkan tanggal terbit asli.
      * @param int $articleId
      * @param int $journalId
      * @param string|null $datePublished
@@ -997,10 +993,8 @@ class ArticleDAO extends DAO {
 
             $numeric7 = substr($eLocator, 1);
             $piiSuffix = substr($numeric7, 0, 5);
-                        
-            $prefix = 'P'; // [PREFIX]: Ubah 'P' menjadi 'R' (jika diperlukan) 
-            
-            $generatedPii = $prefix . $issnClean . $yymm . $piiSuffix;
+
+            $generatedPii = PII_PREFIX . $issnClean . $yymm . $piiSuffix;
             
             $this->updateSetting($articleId, 'pii', $generatedPii, 'string');
             return $generatedPii;

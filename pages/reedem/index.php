@@ -4,10 +4,19 @@ declare(strict_types=1);
 /**
  * @file pages/redeem/index.php
  *
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance, DDD, and i18n
+ * @class RedeemHandler
+ * @ingroup pages_redeem
+ *
  * [WIZDAM EDITION]
  * @brief Route dispatcher utama untuk Domain Loyalti / Dompet Virtual.
  */
 
+/** @var string $op */
 switch ($op) {
     case 'index':    // Dasbor dompet virtual
     case 'exchange': // Proses penukaran poin
@@ -15,4 +24,5 @@ switch ($op) {
         import('pages.redeem.RedeemHandler');
         break;
 }
+
 ?>
