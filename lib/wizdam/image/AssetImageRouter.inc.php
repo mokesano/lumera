@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * @file lib/wizdam/image/ImageRouter.inc.php
+ * @file lib/wizdam/image/AssetImageRouter.inc.php
  * 
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
@@ -15,7 +15,7 @@ declare(strict_types=1);
 import('lib.wizdam.image.ImageProcessor');
 import('classes.file.PublicFileManager');
 
-class ImageRouter {
+class AssetImageRouter {
     
     /**
      * Membedah URI dan mengarahkan rute
