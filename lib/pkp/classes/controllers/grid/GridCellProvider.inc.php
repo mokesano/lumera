@@ -63,8 +63,6 @@ class GridCellProvider {
         }
 
         $templateMgr->assign('id', $cellId);
-        
-        // [WIZDAM] Changed assign_by_ref to assign (Objects are handled correctly in PHP 8/Smarty)
         $templateMgr->assign('column', $column);
         $templateMgr->assign('actions', $this->getCellActions($request, $row, $column));
         $templateMgr->assign('flags', $column->getFlags());
@@ -110,5 +108,6 @@ class GridCellProvider {
         // [WIZDAM] Clean delegation without reference
         return $column->getCellActions($request, $row, $position);
     }
+    
 }
 ?>
