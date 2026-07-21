@@ -13,8 +13,6 @@ declare(strict_types=1);
  *
  * @brief Abstract base class for filters that create a references
  * list for a submission.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.filter.TemplateBasedFilter');
@@ -112,7 +110,7 @@ class TemplateBasedReferencesListFilter extends TemplateBasedFilter {
         $assocId = (int) $submission->getId();
         $assocType = (int) $submission->getAssocType();
 
-        // Retrieve approved citations for this assoc object.
+        /** @var CitationDAO $citationDao */
         $citationDao = DAORegistry::getDAO('CitationDAO');
         $citationResults = $citationDao->getObjectsByAssocId($assocType, $assocId, CITATION_APPROVED);
         $citations = $citationResults->toAssociativeArray('seq');
@@ -130,10 +128,9 @@ class TemplateBasedReferencesListFilter extends TemplateBasedFilter {
         }
 
         // Add citation mark-up and submission to template.
-        // [WIZDAM FIX] Changed assign_by_ref to assign for better compatibility
         $templateMgr->assign('citationsOutput', $citationsOutput);
         $templateMgr->assign('submission', $submission);
     }
-}
 
+}
 ?>
