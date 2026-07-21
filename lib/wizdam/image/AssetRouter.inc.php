@@ -2,11 +2,26 @@
 declare(strict_types=1);
 
 /**
- * @class AssetRouter
+ * @class lib/wizdam/image/AssetRouter.inc.php
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ *
+ * @class ImageRouter
+ * @brief Menangani Semantic URL: /assets/images/[MODIFIER]/[TYPE]/[ID]?as=[FORMAT]
+ *        Contoh: /assets/images/w735h400/issue/59?as=webp
+ * 
  * @brief Menangani URL: /assets/images/[TYPE]/[ID]/[DIMENSION]?as=[FORMAT]
  */
+
+import('lib.wizdam.image.ImageProcessor');
+import('classes.file.PublicFileManager');
+
 class AssetRouter {
     
+    /**
+     * @param mixed $requestUri
+     */
     function route($requestUri) {
         $path = parse_url($requestUri, PHP_URL_PATH);
         if (strpos($path, '/assets/images/') === false) return false;
@@ -42,30 +57,39 @@ class AssetRouter {
         return true;
     }
 
+    /**
+     * @param mixed $type
+     * @param mixed $id
+     * @param mixed $width
+     * @param mixed $height
+     * @param mixed $format
+     */
     function serve($type, $id, $width, $height, $format) {
-        // ... (LOGIKA DATABASE SAMA SEPERTI SEBELUMNYA) ...
+        // (LOGIKA DATABASE SAMA SEPERTI SEBELUMNYA) ...
         $fileName = null; $journalId = 0; $subFolder = '';
         switch ($type) {
             case 'issue':
+                /** @var IssueDAO $dao */
                 $dao = DAORegistry::getDAO('IssueDAO');
                 $obj = $dao->getIssueById($id);
                 if ($obj) {
                     $journalId = $obj->getJournalId();
-                    $fileName = $obj->getFileName(AppLocale::getLocale()) ?: $obj->getFileName($obj->getLocale());
+                    $fileName = $obj->getFileName(AppLocale::getLocale());
                     $subFolder = 'cover_issue';
                 }
                 break;
             case 'article':
+                /** @var PublishedArticleDAO $dao */
                 $dao = DAORegistry::getDAO('PublishedArticleDAO');
                 $obj = $dao->getPublishedArticleById($id);
                 if ($obj) {
                     $journalId = $obj->getJournalId();
-                    $fileName = $obj->getCoverPageFileName(AppLocale::getLocale()) ?: $obj->getCoverPageFileName($obj->getLocale());
+                    $fileName = $obj->getLocalizedHideCoverPageAbstract();
                     $subFolder = 'cover_article';
                 }
                 break;
              case 'header':
-                // ... (Logika Header sama) ...
+                /** @var JournalDAO $dao */
                 $dao = DAORegistry::getDAO('JournalDAO');
                 $obj = $dao->getJournal($id);
                 if ($obj) {
@@ -103,27 +127,40 @@ class AssetRouter {
             $this->outputFile($targetPath);
         } elseif (file_exists($sourcePath)) {
             if (!file_exists($targetDir)) @mkdir($targetDir, 0777, true);
-            import('lib.pkp.classes.file.FileManager');
-            $fm = new FileManager();
+
+            $processor = new ImageProcessor();
+            $processSuccess = false;
+
+            if ($width === 0) {
+                // Modifikasi 'original': Salin langsung (atau konversi jika target format diubah ke webp)
+                if ($format === 'webp' || $format !== 'original') {
+                    $processSuccess = $processor->resizeAndOptimize($sourcePath, $targetPath, 0, 85);
+                } else {
+                    $processSuccess = copy($sourcePath, $targetPath);
+                }
+            } else {
+                // Mendelegasikan ke Crop atau Resize berdasarkan parameter Height
+                if ($height > 0) {
+                    $processSuccess = $processor->cropAndResize($sourcePath, $targetPath, $width, $height, 85);
+                } else {
+                    $processSuccess = $processor->resizeAndOptimize($sourcePath, $targetPath, $width, 85);
+                }
+            }
             
-            // Jika width 0 (original), lakukan copy saja
-            if ($width == 0) {
-                copy($sourcePath, $targetPath);
+            if ($processSuccess && file_exists($targetPath)) {
                 $this->outputFile($targetPath);
             } else {
-                // Crop atau Resize
-                $ok = ($height > 0) 
-                    ? $fm->cropAndResizeImage($sourcePath, $targetPath, $width, $height, 85) 
-                    : $fm->resizeAndOptimizeImage($sourcePath, $targetPath, $width, 85);
-                
-                if ($ok) $this->outputFile($targetPath);
-                else { header('HTTP/1.0 500 Error'); exit; }
+                // Fallback aman: jika proses GD gagal (memori habis/korup), sajikan file asli
+                $this->outputFile($sourcePath);
             }
         } else {
             header('HTTP/1.0 404 Not Found'); exit;
         }
     }
 
+    /**
+     * @param mixed $path
+     */
     function outputFile($path) {
         $mime = 'image/jpeg';
         $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
@@ -135,5 +172,6 @@ class AssetRouter {
         readfile($path);
         exit;
     }
+
 }
 ?>
