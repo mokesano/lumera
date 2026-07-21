@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_sectionEditor
  *
  * @brief Handle requests for section editor functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 // Filter section
@@ -23,6 +21,7 @@ import('classes.submission.sectionEditor.SectionEditorAction');
 import('classes.handler.Handler');
 
 class SectionEditorHandler extends Handler {
+
     /** @var object|null submission associated with the request */
     public $submission = null;
 
@@ -105,6 +104,7 @@ class SectionEditorHandler extends Handler {
         $toDate = $request->getUserDateVar('dateTo', 32, 12, null, 23, 59, 59);
         if ($toDate !== null) $toDate = date('Y-m-d H:i:s', $toDate);
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $sectionEditorSubmissionDao = DAORegistry::getDAO('SectionEditorSubmissionDAO');
 
@@ -284,10 +284,6 @@ class SectionEditorHandler extends Handler {
      * Validate that the user is the assigned section editor for
      * the article, or is a managing editor.
      * Redirects to sectionEditor index page if validation fails.
-     * [WIZDAM] Signature Polyfill: 
-     * Original OJS 2.x Signature: validate($articleId, $access)
-     * Parent Signature: validate($requiredContexts, $request)
-     * We support both via type checking.
      * @param mixed $requiredContexts (Could be articleId (int) or contexts)
      * @param mixed $request (Could be access (int/string) or Request object)
      */
@@ -313,6 +309,7 @@ class SectionEditorHandler extends Handler {
         
         $isValid = true;
 
+        /** @var SectionEditorSubmissionDAO $sectionEditorSubmissionDao */
         $sectionEditorSubmissionDao = DAORegistry::getDAO('SectionEditorSubmissionDAO');
         $journal = $realRequest->getJournal();
         $user = $realRequest->getUser();
@@ -373,6 +370,7 @@ class SectionEditorHandler extends Handler {
             }
 
             // If necessary, note the current date and time as the "underway" date/time
+            /** @var EditAssignmentDAO $editAssignmentDao */
             $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
             $editAssignments = $sectionEditorSubmission->getEditAssignments();
             foreach ($editAssignments as $editAssignment) {
@@ -386,5 +384,6 @@ class SectionEditorHandler extends Handler {
             return true;
         }
     }
+
 }
 ?>

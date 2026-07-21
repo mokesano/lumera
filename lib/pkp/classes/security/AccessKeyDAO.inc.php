@@ -34,12 +34,12 @@ class AccessKeyDAO extends DAO {
             "Class '" . get_class($this) . "' uses deprecated constructor parent::AccessKeyDAO(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
-        self::__construct();
+        $this->__construct();
     }
 
     /**
      * Retrieve an accessKey by ID.
-     * @param $accessKeyId int
+     * @param mixed $accessKeyId
      * @return AccessKey|null
      */
     public function getAccessKey($accessKeyId) {
@@ -48,22 +48,27 @@ class AccessKeyDAO extends DAO {
                 'SELECT * FROM access_keys WHERE access_key_id = ? AND expiry_date > %s',
                 $this->datetimeToDB(Core::getCurrentDate())
             ),
-            array((int) $accessKeyId)
+            [(int) $accessKeyId]
         );
 
         $accessKey = null;
-        if ($result->RecordCount() != 0) {
+        
+        // [LUMERA FIX] Modern ADODB check: safer than RecordCount()
+        if ($result && !$result->EOF) {
             $accessKey = $this->_returnAccessKeyFromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
-        unset($result);
+        
+        if ($result) {
+            $result->Close();
+        }
+        
         return $accessKey;
     }
 
     /**
      * Retrieve a accessKey object user ID.
-     * @param $context string
-     * @param $userId int
+     * @param mixed $context
+     * @param mixed $userId
      * @return AccessKey|null
      */
     public function getAccessKeyByUserId($context, $userId) {
@@ -72,43 +77,56 @@ class AccessKeyDAO extends DAO {
                 'SELECT * FROM access_keys WHERE context = ? AND user_id = ? AND expiry_date > %s',
                 $this->datetimeToDB(Core::getCurrentDate())
             ),
-            array($context, $userId)
+            [(string) $context, (int) $userId]
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        
+        // [LUMERA FIX] Modern ADODB check
+        if ($result && !$result->EOF) {
             $returner = $this->_returnAccessKeyFromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
-        unset($result);
+        
+        if ($result) {
+            $result->Close();
+        }
+        
         return $returner;
     }
 
     /**
      * Retrieve a accessKey object by key.
-     * @param $context string
-     * @param $userId int
-     * @param $keyHash string
-     * @param $assocId int
+     * @param mixed $context
+     * @param mixed $userId
+     * @param mixed $keyHash
+     * @param mixed $assocId
      * @return AccessKey|null
      */
     public function getAccessKeyByKeyHash($context, $userId, $keyHash, $assocId = null) {
-        $paramArray = array($context, $keyHash, (int) $userId);
-        if (isset($assocId)) $paramArray[] = (int) $assocId;
+        $paramArray = [(string) $context, (string) $keyHash, (int) $userId];
+        if ($assocId !== null) {
+            $paramArray[] = (int) $assocId;
+        }
+        
         $result = $this->retrieve(
             sprintf(
-                'SELECT * FROM access_keys WHERE context = ? AND key_hash = ? AND user_id = ? AND expiry_date > %s' . (isset($assocId)?' AND assoc_id = ?':''),
+                'SELECT * FROM access_keys WHERE context = ? AND key_hash = ? AND user_id = ? AND expiry_date > %s' . ($assocId !== null ? ' AND assoc_id = ?' : ''),
                 $this->datetimeToDB(Core::getCurrentDate())
             ),
             $paramArray
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        
+        // [LUMERA FIX] Modern ADODB check
+        if ($result && !$result->EOF) {
             $returner = $this->_returnAccessKeyFromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
-        unset($result);
+        
+        if ($result) {
+            $result->Close();
+        }
+        
         return $returner;
     }
 
@@ -122,52 +140,59 @@ class AccessKeyDAO extends DAO {
 
     /**
      * Internal function to return an AccessKey object from a row.
-     * @param $row array
+     * @param mixed $row
      * @return AccessKey
      */
     public function _returnAccessKeyFromRow($row) {
         $accessKey = $this->newDataObject();
-        $accessKey->setId($row['access_key_id']);
-        $accessKey->setKeyHash($row['key_hash']);
-        $accessKey->setExpiryDate($this->datetimeFromDB($row['expiry_date']));
-        $accessKey->setContext($row['context']);
-        $accessKey->setAssocId($row['assoc_id']);
-        $accessKey->setUserId($row['user_id']);
 
-        HookRegistry::dispatch('AccessKeyDAO::_returnAccessKeyFromRow', array(&$accessKey, &$row));
+        $accessKey->setId((int) ($row['access_key_id'] ?? 0));
+        $accessKey->setKeyHash((string) ($row['key_hash'] ?? ''));
+        $accessKey->setExpiryDate($this->datetimeFromDB($row['expiry_date'] ?? null));
+        $accessKey->setContext((string) ($row['context'] ?? ''));
+        $accessKey->setAssocId(isset($row['assoc_id']) && $row['assoc_id'] !== '' ? (int) $row['assoc_id'] : null);
+        $accessKey->setUserId((int) ($row['user_id'] ?? 0));
+
+        HookRegistry::dispatch('AccessKeyDAO::_returnAccessKeyFromRow', [$accessKey, &$row]);
 
         return $accessKey;
     }
 
     /**
      * Insert a new accessKey.
-     * @param $accessKey AccessKey
+     * @param mixed $accessKey AccessKey
      * @return int
      */
     public function insertAccessKey($accessKey) {
+        $assocId = $accessKey->getAssocId();
+        $safeAssocId = ($assocId === '' || $assocId === null) ? null : (int) $assocId;
+
         $this->update(
             sprintf('INSERT INTO access_keys
                 (key_hash, expiry_date, context, assoc_id, user_id)
                 VALUES
                 (?, %s, ?, ?, ?)',
                 $this->datetimeToDB($accessKey->getExpiryDate())),
-            array(
-                $accessKey->getKeyHash(),
-                $accessKey->getContext(),
-                $accessKey->getAssocId()==''?null:(int) $accessKey->getAssocId(),
+            [
+                (string) $accessKey->getKeyHash(),
+                (string) $accessKey->getContext(),
+                $safeAssocId,
                 (int) $accessKey->getUserId()
-            )
+            ]
         );
 
-        $accessKey->setId($this->getInsertAccessKeyId());
+        $accessKey->setId((int) $this->getInsertAccessKeyId());
         return $accessKey->getId();
     }
 
     /**
      * Update an existing accessKey.
-     * @param $accessKey AccessKey
+     * @param mixed $accessKey AccessKey
      */
     public function updateObject($accessKey) {
+        $assocId = $accessKey->getAssocId();
+        $safeAssocId = ($assocId === '' || $assocId === null) ? null : (int) $assocId;
+
         return $this->update(
             sprintf('UPDATE access_keys
                 SET
@@ -178,62 +203,67 @@ class AccessKeyDAO extends DAO {
                     user_id = ?
                 WHERE access_key_id = ?',
                 $this->datetimeToDB($accessKey->getExpiryDate())),
-            array(
-                $accessKey->getKeyHash(),
-                $accessKey->getContext(),
-                $accessKey->getAssocId()==''?null:(int) $accessKey->getAssocId(),
+            [
+                (string) $accessKey->getKeyHash(),
+                (string) $accessKey->getContext(),
+                $safeAssocId,
                 (int) $accessKey->getUserId(),
                 (int) $accessKey->getId()
-            )
+            ]
         );
     }
 
     /**
      * [DEPRECATED] Update an existing accessKey.
-     * @param $accessKey AccessKey
+     * @param mixed $accessKey AccessKey
      */
     public function updateAccessKey($accessKey) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->updateObject($accessKey);
     }
 
     /**
      * Delete an accessKey.
-     * @param $accessKey AccessKey
+     * @param mixed $accessKey AccessKey
      */
     public function deleteObject($accessKey) {
-        return $this->deleteAccessKeyById($accessKey->getId());
+        $id = is_object($accessKey) ? (int) $accessKey->getId() : (int) $accessKey;
+        return $this->deleteAccessKeyById($id);
     }
 
     /**
      * [DEPRECATED] Delete an accessKey.
-     * @param $accessKey AccessKey
+     * @param mixed $accessKey AccessKey
      */
     public function deleteAccessKey($accessKey) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->deleteObject($accessKey);
     }
 
     /**
      * Delete an accessKey by ID.
-     * @param $accessKeyId int
+     * @param mixed $accessKeyId
      */
     public function deleteAccessKeyById($accessKeyId) {
         return $this->update(
             'DELETE FROM access_keys WHERE access_key_id = ?',
-            array((int) $accessKeyId)
+            [(int) $accessKeyId]
         );
     }
 
     /**
      * Transfer access keys to another user ID.
-     * @param $oldUserId int
-     * @param $newUserId int
+     * @param mixed $oldUserId
+     * @param mixed $newUserId
      */
     public function transferAccessKeys($oldUserId, $newUserId) {
         return $this->update(
             'UPDATE access_keys SET user_id = ? WHERE user_id = ?',
-            array((int) $newUserId, (int) $oldUserId)
+            [(int) $newUserId, (int) $oldUserId]
         );
     }
 
@@ -254,7 +284,8 @@ class AccessKeyDAO extends DAO {
      * @return int
      */
     public function getInsertAccessKeyId() {
-        return $this->getInsertId('access_keys', 'access_key_id');
+        return (int) $this->getInsertId('access_keys', 'access_key_id');
     }
+
 }
 ?>

@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class XMLGalleyPlugin
  * @ingroup plugins_generic_xmlGalley
  *
- * @brief XML Galley Plugin
- * MODERNIZED FOR PHP 7.4+ & SCHOLARWIZDAM FORK
+ * @brief XML Galley Plugin.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -101,8 +100,8 @@ class XMLGalleyPlugin extends GenericPlugin {
 
     /**
      * Return XML-derived galley object.
-     * @param $hookName string
-     * @param $args array
+     * @param string $hookName string
+     * @param array $args array
      * @return boolean
      */
     public function getXMLGalley($hookName, $args) {
@@ -126,8 +125,8 @@ class XMLGalleyPlugin extends GenericPlugin {
 
     /**
      * Return XML-derived galley as a file; basically this is a FO-rendered PDF file
-     * @param $hookName string
-     * @param $args array
+     * @param string $hookName string
+     * @param array $args array
      * @return boolean
      */
     public function viewXMLGalleyFile($hookName, $args) {
@@ -147,8 +146,8 @@ class XMLGalleyPlugin extends GenericPlugin {
     /**
      * Append some special attributes to a galley identified as XML, and
      * Return an ArticleXMLGalley object as appropriate
-     * @param $hookName string
-     * @param $args array
+     * @param string $hookName string
+     * @param array $args array
      * @return boolean
      */
     public function returnXMLGalley($hookName, $args) {
@@ -167,7 +166,7 @@ class XMLGalleyPlugin extends GenericPlugin {
 
     /**
      * Internal function to return an ArticleXMLGalley object from an ArticleGalley object
-     * @param $galley ArticleGalley
+     * @param object $galley ArticleGalley
      * @return ArticleXMLGalley
      */
     public function _returnXMLGalleyFromArticleGalley($galley) {
@@ -230,7 +229,6 @@ class XMLGalleyPlugin extends GenericPlugin {
         }
         return false;
     }
-
 
     /**
      * Display verbs for the management interface.
@@ -376,5 +374,6 @@ class XMLGalleyPlugin extends GenericPlugin {
                 return false;
         }
     }
+
 }
 ?>

@@ -43,10 +43,9 @@ class PKPPlugin {
      */
     /**
      * Load and initialize the plug-in and register plugin hooks.
-     * @param $category String Name of category plugin was registered to
-     * @param $path String The path the plugin was found in
-     * @return boolean True iff plugin registered successfully; if false,
-     * the plugin will not be executed.
+     * @param $category String
+     * @param $path String
+     * @return boolean
      */
     public function register(string $category, string $path): bool {
         $this->pluginPath = $path;
@@ -144,8 +143,7 @@ class PKPPlugin {
      * @param $message string
      * @param $messageParams array additional notification settings
      * @param $request Request
-     * @return boolean will redirect to the plugin category page if false, otherwise
-     * will remain on the same page
+     * @return boolean
      */
     public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
         return false;

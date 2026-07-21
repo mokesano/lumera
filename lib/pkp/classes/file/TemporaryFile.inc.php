@@ -31,7 +31,10 @@ class TemporaryFile extends PKPFile {
      */
     public function TemporaryFile() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::TemporaryFile(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                'Class ' . get_class($this) . ' uses deprecated constructor parent::TemporaryFile(). Please refactor to parent::__construct().',
+                E_USER_DEPRECATED
+            );
         }
         self::__construct();
     }
@@ -60,11 +63,11 @@ class TemporaryFile extends PKPFile {
 
     /**
      * Set ID of associated user.
-     * @param $userId int
+     * @param int $userId int
      */
     public function setUserId($userId) {
-        return $this->setData('userId', $userId);
+        return $this->setData('userId', (int) $userId);
     }
-}
 
+}
 ?>

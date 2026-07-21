@@ -36,64 +36,73 @@ class AccessKeyManager {
             "Class '" . get_class($this) . "' uses deprecated constructor parent::AccessKeyManager(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
-        self::__construct();
+        $this->__construct();
     }
 
     /**
      * Generate a key hash from a key.
-     * @param $key string
+     * @param mixed $key
      * @return string
      */
     public function generateKeyHash($key) {
-        return md5($key);
+        return md5((string) $key);
     }
 
     /**
      * Validate an access key based on the supplied credentials.
      * If $assocId is specified, it must match the associated ID of the
      * key exactly.
-     * @param $context string The context of the access key
-     * @param $userId int The user ID associated with the key
-     * @param $keyHash string The hashed access key
-     * @param $assocId string optional assoc ID to check against the keys in the database
+     * @param mixed $context
+     * @param mixed $userId
+     * @param mixed $keyHash
+     * @param mixed $assocId
      * @return AccessKey|null
      */
     public function validateKey($context, $userId, $keyHash, $assocId = null) {
-        $accessKey = $this->accessKeyDao->getAccessKeyByKeyHash($context, $userId, $keyHash, $assocId);
+        $safeContext = (string) $context;
+        $safeUserId = (int) $userId;
+        $safeKeyHash = (string) $keyHash;
+        $safeAssocId = $assocId !== null ? (int) $assocId : null;
+
+        $accessKey = $this->accessKeyDao->getAccessKeyByKeyHash($safeContext, $safeUserId, $safeKeyHash, $safeAssocId);
         return $accessKey;
     }
 
     /**
      * Create an access key with the given information.
-     * @param $context string The context of the access key
-     * @param $userId int The ID of the effective user for this access key
-     * @param $assocId int The associated ID of the key
-     * @param $expiryDays int The number of days before this key expires
-     * @return string The generated passkey
+     * @param mixed $context
+     * @param mixed $userId
+     * @param mixed $assocId
+     * @param mixed $expiryDays
+     * @return string
      */
     public function createKey($context, $userId, $assocId, $expiryDays) {
         $accessKey = new AccessKey();
-        $accessKey->setContext($context);
-        $accessKey->setUserId($userId);
-        $accessKey->setAssocId($assocId);
-        $accessKey->setExpiryDate(Core::getCurrentDate(time() + (60 * 60 * 24 * $expiryDays)));
+        $accessKey->setContext((string) $context);
+        $accessKey->setUserId((int) $userId);
+        $accessKey->setAssocId((int) $assocId);
+
+        $expiryTimestamp = time() + (60 * 60 * 24 * (int) $expiryDays);
+        $accessKey->setExpiryDate(Core::getCurrentDate($expiryTimestamp));
 
         $key = Validation::generatePassword();
-        $accessKey->setKeyHash($this->generateKeyHash($key));
+        $accessKey->setKeyHash($this->generateKeyHash((string) $key));
 
         $this->accessKeyDao->insertAccessKey($accessKey);
 
-        return $key;
+        return (string) $key;
     }
 
     /**
      * Periodically clean up expired keys.
      */
     public function _performPeriodicCleanup() {
-        if (time() % 100 == 0) {
+        if (time() % 100 === 0) {
+            /** @var AccessKeyDAO $accessKeyDao */
             $accessKeyDao = DAORegistry::getDAO('AccessKeyDAO');
             $accessKeyDao->deleteExpiredKeys();
         }
     }
+    
 }
 ?>

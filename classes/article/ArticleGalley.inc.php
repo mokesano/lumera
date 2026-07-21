@@ -212,5 +212,6 @@ class ArticleGalley extends ArticleFile {
     public function getRemoteURL() {
         return $this->getData('remoteURL');
     }
+    
 }
 ?>

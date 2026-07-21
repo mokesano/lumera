@@ -32,7 +32,7 @@ class PKPPublicFileManager extends FileManager {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::PKPPublicFileManager(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
         }
-        self::__construct();
+        $this->__construct();
     }
 
     /**
@@ -46,22 +46,22 @@ class PKPPublicFileManager extends FileManager {
     /**
      * Upload a file to the site's public directory.
      * Note: This uses the secured FileManager::uploadFile() which enforces extension whitelists.
-     * @param $fileName string the name of the file in the upload form
-     * @param $destFileName string the destination file name
+     * @param string $fileName string
+     * @param string $destFileName string
      * @return boolean
      */
     public function uploadSiteFile($fileName, $destFileName) {
-        return $this->uploadFile($fileName, $this->getSiteFilesPath() . '/' . $destFileName);
+        return $this->uploadFile((string) $fileName, $this->getSiteFilesPath() . '/' . (string) $destFileName);
     }
 
     /**
      * Delete a file from the site's public directory.
-     * @param $fileName string the target file name
+     * @param string $fileName string
      * @return boolean
      */
     public function removeSiteFile($fileName) {
-        return $this->deleteFile($this->getSiteFilesPath() . '/' . $fileName);
+        return $this->deleteFile($this->getSiteFilesPath() . '/' . (string) $fileName);
     }
-}
 
+}
 ?>

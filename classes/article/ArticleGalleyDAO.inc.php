@@ -694,5 +694,6 @@ class ArticleGalleyDAO extends DAO {
         $cache->flush();
         unset($cache);
     }
+    
 }
 ?>

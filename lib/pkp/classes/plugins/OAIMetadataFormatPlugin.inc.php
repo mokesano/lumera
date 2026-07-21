@@ -105,7 +105,7 @@ class OAIMetadataFormatPlugin extends Plugin {
 	 * Callback invoked from OAI::metadataFormats hook.
 	 * @see HookRegistry::register()
 	 * @param $hookName string
-	 * @param $args array
+	 * @param array $args array
 	 * @return boolean false to allow further hooks
 	 */
 	public function callback_formatRequest($hookName, $args) {
@@ -133,6 +133,6 @@ class OAIMetadataFormatPlugin extends Plugin {
 		$args[2] = $formats;
 		return false;
 	}
+	
 }
-
 ?>

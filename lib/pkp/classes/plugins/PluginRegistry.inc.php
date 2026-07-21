@@ -13,16 +13,12 @@ declare(strict_types=1);
  * @see Plugin
  *
  * @brief Registry class for managing plugins.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Static methods, Ref removal)
- * - Strict Typing
- * - Security hardening
  */
 
 define('PLUGINS_PREFIX', 'plugins/');
 
 class PluginRegistry {
+
     //
     // Public methods
     //
@@ -69,10 +65,10 @@ class PluginRegistry {
 
     /**
      * Register a plugin with the registry in the given category.
-     * @param string $category the name of the category to extend
-     * @param Plugin $plugin The instantiated plugin to add (Object passed by handle in PHP 5+)
-     * @param string $path The path the plugin was found in
-     * @return boolean True IFF the plugin was registered successfully
+     * @param string $category
+     * @param Plugin $plugin
+     * @param string $path
+     * @return boolean
      */
     public static function register($category, $plugin, $path) {
         // Normalize plugin name to lower case
@@ -114,15 +110,15 @@ class PluginRegistry {
 
     /**
      * Load all plugins for a given category.
-     * @param string $category The name of the category to load
-     * @param boolean $enabledOnly if true load only enabled plug-ins
+     * @param string $category
+     * @param boolean $enabledOnly
      * @param int|null $mainContextId
      * @return array
      */
     public static function loadCategory($category, $enabledOnly = false, $mainContextId = null) {
         $plugins = array();
         
-        // [WIZDAM GUARD] Pastikan kategori bukan null sebelum membentuk path
+        // [GUARD] Pastikan kategori bukan null sebelum membentuk path
         if (is_null($category) || $category === '') {
             return $plugins;
         }
@@ -243,10 +239,9 @@ class PluginRegistry {
      * @return Plugin|null
      */
     private static function _instantiatePlugin($category, $categoryDir, $file, $classToCheck = null) {
-        // Wizdam Security: Strict alphanumeric check prevents LFI
+        // Security: Strict alphanumeric check prevents LFI
         if (!preg_match('/^[a-zA-Z0-9_]+$/', (string) $file) || !preg_match('/^[a-zA-Z0-9_]+$/', (string) $category)) {
-            // Tetap menggunakan fatalError sesuai standar keamanan ScholarWizdam Anda
-            fatalError('Wizdam Security Violation: Invalid plugin naming detected for file "' . $file . '" in category "' . $category . '"');
+            fatalError('Lumera Security Violation: Invalid plugin naming detected for file "' . $file . '" in category "' . $category . '"');
         }
 
         $pluginPath = "$categoryDir/$file";
@@ -270,7 +265,7 @@ class PluginRegistry {
                 // Try to instantiate the plug-in class.
                 $pluginPackage = 'plugins.'.$category.'.'.$file;
                 
-                // Wizdam: Direct instantiation handling
+                // Lumera: Direct instantiation handling
                 // Assuming 'instantiate' helper function handles the class loading via ADODB or import
                 $plugin = instantiate($pluginPackage.'.'.$pluginClassName, $pluginClassName, $pluginPackage, 'register');
             }
@@ -279,7 +274,7 @@ class PluginRegistry {
         // Make sure that the plug-in inherits from the right class.
         if (is_object($plugin)) {
             if (!is_a($plugin, 'Plugin')) {
-                // Wizdam: Strict Type Check
+                // Lumera: Strict Type Check
                 return null;
             }
         } else {
@@ -288,6 +283,6 @@ class PluginRegistry {
 
         return $plugin;
     }
-}
 
+}
 ?>

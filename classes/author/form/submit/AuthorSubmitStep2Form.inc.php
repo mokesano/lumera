@@ -26,8 +26,6 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
      */
     public function __construct($article, $journal, $request) {
         parent::__construct($article, 2, $journal, $request);
-
-        // Validation checks for this form
     }
 
     /**
@@ -39,11 +37,11 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
     public function AuthorSubmitStep2Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'. Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($article, $journal, $request);
+        $this->__construct($article, $journal, $request);
     }
 
     /**
@@ -51,7 +49,6 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
      */
     public function initData() {
         if (isset($this->article)) {
-            $article = $this->article;
             $this->_data = [];
         }
     }
@@ -65,12 +62,11 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
 
     /**
      * Display the form.
-     * @param PKPRequest|null $request
-     * @param string|null $template
      */
     public function display($request = null, $template = null) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $templateMgr = TemplateManager::getManager($request);
 
@@ -89,22 +85,46 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
      */
     public function uploadSubmissionFile($fileName) {
         import('classes.file.ArticleFileManager');
+        import('classes.notification.NotificationManager');
 
         $articleFileManager = new ArticleFileManager($this->articleId);
         /** @var ArticleDAO $articleDao  */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
+        $notificationManager = new NotificationManager();
+        $userId = $this->request->getUser()->getId();
 
         $submissionFileId = null;
+        $errorMsg = null;
 
         if ($articleFileManager->uploadedFileExists($fileName)) {
-            // upload new submission file, overwriting previous if necessary
-            $submissionFileId = $articleFileManager->uploadSubmissionFile($fileName, $this->article->getSubmissionFileId(), true);
+            $submissionFileId = $articleFileManager->uploadSubmissionFile(
+                $fileName,
+                $this->article->getSubmissionFileId(),
+                true,
+                $errorMsg
+            );
+        } else {
+            $errorMsg = __('common.uploadFailed');
         }
 
         if (!empty($submissionFileId)) {
             $this->article->setSubmissionFileId($submissionFileId);
-            return (bool) $articleDao->updateArticle($this->article);
+            $updated = (bool) $articleDao->updateArticle($this->article);
+            $notificationManager->createTrivialNotification(
+                $userId,
+                NOTIFICATION_TYPE_SUCCESS,
+                ['contents' => __('common.uploadedFile')]
+            );
+            return $updated;
         } else {
+            $this->addError('submissionFile', $errorMsg ?: __('common.uploadFailed'));
+            $this->errorFields['submissionFile'] = 1;
+            
+            $notificationManager->createTrivialNotification(
+                $userId,
+                NOTIFICATION_TYPE_ERROR,
+                ['contents' => $errorMsg ?: __('common.uploadFailed')]
+            );
             return false;
         }
     }
@@ -115,7 +135,13 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
      * @return int the article ID
      */
     public function execute($object = null) {
-        // Update article
+        if (isset($_FILES['submissionFile']) && !empty($_FILES['submissionFile']['name'])) {
+            $uploadSuccess = $this->uploadSubmissionFile('submissionFile');
+            if (!$uploadSuccess) {
+                return $this->articleId;
+            }
+        }
+
         /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $this->article;

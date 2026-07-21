@@ -12,6 +12,7 @@ declare(strict_types=1);
  * @ingroup controllers_grid
  *
  * @brief Class defining basic operations for handling HTML grids with categories.
+ * [LUMERA] Modernized for PHP 8.x: strict body casting, defensive array access, replaced asserts with exceptions, and removed legacy unset.
  */
 
 // import grid classes
@@ -24,13 +25,14 @@ define('GRID_CATEGORY_NONE', 'NONE');
 class CategoryGridHandler extends GridHandler {
 
     /** @var string empty category row locale key */
-    protected string $emptyCategoryRowText = 'grid.noItems';
+    protected $emptyCategoryRowText = 'grid.noItems';
 
     /** @var string|null The category id that this grid is currently rendering. */
-    protected ?string $currentCategoryId = null;
+    protected $currentCategoryId = null;
 
     /**
      * Constructor.
+     * @param mixed $dataProvider
      */
     public function __construct($dataProvider = null) {
         parent::__construct($dataProvider);
@@ -48,15 +50,17 @@ class CategoryGridHandler extends GridHandler {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $dataProvider
      */
     public function CategoryGridHandler($dataProvider = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'. Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($dataProvider);
+        // [LUMERA FIX] Gunakan $this alih-alih self untuk memanggil konstruktor non-statis
+        $this->__construct($dataProvider);
     }
 
 
@@ -67,16 +71,18 @@ class CategoryGridHandler extends GridHandler {
      * Get the empty rows text for a category.
      * @return string
      */
-    public function getEmptyCategoryRowText(): string {
-        return $this->emptyCategoryRowText;
+    public function getEmptyCategoryRowText() {
+        // [LUMERA FIX] Casting di dalam body, signature tetap bersih
+        return (string) $this->emptyCategoryRowText;
     }
 
     /**
      * Set the empty rows text for a category.
-     * @param string $translationKey
+     * @param mixed $translationKey
      */
     public function setEmptyCategoryRowText($translationKey) {
-        $this->emptyCategoryRowText = $translationKey;
+        // [LUMERA FIX] Casting di dalam body
+        $this->emptyCategoryRowText = (string) $translationKey;
     }
 
 
@@ -89,14 +95,15 @@ class CategoryGridHandler extends GridHandler {
      * @param Request $request
      * @return string the serialized row JSON message or a flag
      */
-    public function fetchCategory($args, $request): string {
+    public function fetchCategory($args, $request) {
         // Instantiate the requested row (includes a validity check on the row id).
         $row = $this->getRequestedCategoryRow($request, $args);
 
         $json = new JSONMessage(true);
         if ($row === null) {
-            // Inform the client that the category no longer exists.
-            $json->setAdditionalAttributes(['elementNotFound' => (int)$args['rowId']]);
+            // [LUMERA FIX] Casting eksplisit untuk array access
+            $rowId = isset($args['rowId']) ? (int) $args['rowId'] : 0;
+            $json->setAdditionalAttributes(['elementNotFound' => $rowId]);
         } else {
             // Render the requested category
             $this->setFirstDataColumn();
@@ -115,14 +122,15 @@ class CategoryGridHandler extends GridHandler {
      * Initialize the grid handler.
      * @see GridHandler::initialize($request)
      * @param Request $request
-     * @param array $args
+     * @param array|null $args
      */
     public function initialize($request, $args = null) {
         parent::initialize($request, $args);
 
         $rowCategoryId = $request->getUserVar('rowCategoryId');
+        // [LUMERA FIX] Defensive null check sebelum casting
         if ($rowCategoryId !== null) {
-            $this->currentCategoryId = (string) trim((string)$rowCategoryId);
+            $this->currentCategoryId = trim((string) $rowCategoryId);
         }
     }
 
@@ -134,12 +142,10 @@ class CategoryGridHandler extends GridHandler {
     public function getRequestArgs(): array {
         $args = parent::getRequestArgs();
 
-        // If grid is rendering grid rows inside category,
-        // add current category id value so rows will also know
-        // their parent category.
         if ($this->currentCategoryId !== null) {
-            if ($this->getCategoryRowIdParameterName()) {
-                $args[$this->getCategoryRowIdParameterName()] = $this->currentCategoryId;
+            $paramName = $this->getCategoryRowIdParameterName();
+            if ($paramName !== null) {
+                $args[$paramName] = $this->currentCategoryId;
             }
         }
 
@@ -159,11 +165,14 @@ class CategoryGridHandler extends GridHandler {
      * Set the URLs for the grid.
      * @see GridHandler::setUrls()
      * @param Request $request
+     * @param array $extraUrls
      */
-    public function setUrls($request) {
+    public function setUrls($request, $extraUrls = []) {
         $router = $request->getRouter();
-        $url = ['fetchCategoryUrl' => $router->url($request, null, null, 'fetchCategory', null, $this->getRequestArgs())];
-        parent::setUrls($request, $url);
+        $categoryUrl = ['fetchCategoryUrl' => $router->url($request, null, null, 'fetchCategory', null, $this->getRequestArgs())];
+        $mergedUrls = array_merge($categoryUrl, $extraUrls);
+        
+        parent::setUrls($request, $mergedUrls);
     }
 
     /**
@@ -174,9 +183,7 @@ class CategoryGridHandler extends GridHandler {
      * @param TemplateManager $templateMgr
      */
     public function doSpecificFetchGridActions($args, $request, $templateMgr) {
-        // Render the body elements (category groupings + rows inside a <tbody>)
         $gridBodyParts = $this->_renderCategoriesInternally($request);
-        // [WIZDAM] Changed assign_by_ref to assign (Objects are by ref anyway in PHP 8)
         $templateMgr->assign('gridBodyParts', $gridBodyParts);
     }
 
@@ -187,31 +194,32 @@ class CategoryGridHandler extends GridHandler {
      * @param string $rowId
      * @return mixed|null
      */
-    protected function getRowDataElement($request, $rowId) {
+    public function getRowDataElement($request, $rowId) {
         $rowData = parent::getRowDataElement($request, $rowId);
         
         $rowCategoryId = $request->getUserVar('rowCategoryId');
-        $rowCategoryId = $rowCategoryId !== null ? trim((string)$rowCategoryId) : null;
+        $rowCategoryId = $rowCategoryId !== null ? trim((string) $rowCategoryId) : null;
 
         if ($rowData === null && $rowCategoryId !== null) {
-            // Try to get row data inside category.
             $categoryRowData = parent::getRowDataElement($request, $rowCategoryId);
             if ($categoryRowData !== null) {
                 $categoryElements = $this->getCategoryData($categoryRowData, null);
 
-                assert(is_array($categoryElements));
-                if (!isset($categoryElements[$rowId])) return null;
+                if (!is_array($categoryElements)) {
+                    return null;
+                }
 
-                // Let grid (and also rows) knowing the current category id.
-                // This value will be published by the getRequestArgs method.
+                if (!isset($categoryElements[$rowId])) {
+                    return null;
+                }
+
                 $this->currentCategoryId = $rowCategoryId;
 
                 return $categoryElements[$rowId];
             }
-        } else {
-            return $rowData;
         }
-        return null; // Fallback
+        
+        return $rowData;
     }
 
     /**
@@ -221,10 +229,13 @@ class CategoryGridHandler extends GridHandler {
      */
     public function setFirstDataColumn() {
         $columns = $this->getColumns();
+        
+        if (!is_array($columns)) {
+            return;
+        }
+        
         reset($columns);
-        // Category grids will always have indent column firstly,
-        // so we need to consider the first column the second one.
-        $secondColumn = next($columns); /* @var GridColumn $secondColumn */
+        $secondColumn = next($columns);
         if ($secondColumn) {
             $secondColumn->addFlag('firstColumn', true);
         }
@@ -236,10 +247,9 @@ class CategoryGridHandler extends GridHandler {
     //
     /**
      * Get a new instance of a category grid row.
-     * @return CategoryGridRow
+     * @return GridCategoryRow
      */
     protected function getCategoryRowInstance() {
-        // provide a sensible default category row definition
         return new GridCategoryRow();
     }
 
@@ -248,7 +258,6 @@ class CategoryGridHandler extends GridHandler {
      * @return string|null
      */
     public function getCategoryRowIdParameterName() {
-        // Must be implemented by subclasses.
         return null;
     }
 
@@ -258,14 +267,13 @@ class CategoryGridHandler extends GridHandler {
      * @param array|null $filter
      * @return array
      */
-    public function getCategoryData($categoryDataElement, $filter = null): array {
+    public function getCategoryData($categoryDataElement, $filter = null) {
         $gridData = [];
         $dataProvider = $this->getDataProvider();
         if ($dataProvider instanceof CategoryGridDataProvider) {
-            // Populate the grid with data from the data provider.
             $gridData = $dataProvider->getCategoryData($categoryDataElement, $filter);
         }
-        return $gridData;
+        return is_array($gridData) ? $gridData : [];
     }
 
     /**
@@ -275,22 +283,17 @@ class CategoryGridHandler extends GridHandler {
      * @return GridRow|null
      */
     public function getRequestedCategoryRow($request, $args) {
-        if (isset($args['rowId'])) {
-            // A row ID was specified. Fetch it
-            $elementId = $args['rowId'];
+        $elementId = $args['rowId'] ?? null;
 
-            // Retrieve row data
+        if ($elementId !== null) {
             $dataElement = $this->getRowDataElement($request, $elementId);
             if ($dataElement === null) {
                 return null;
             }
         } else {
-             // If no rowId, we might be creating a new row, so elementId is null
-             $elementId = null;
              $dataElement = null; 
         }
 
-        // Instantiate a new row
         return $this->_getInitializedCategoryRowInstance($request, $elementId, $dataElement);
     }
 
@@ -300,8 +303,7 @@ class CategoryGridHandler extends GridHandler {
      * @return int
      */
     public function getCategoryDataElementSequence($gridDataElement) {
-        assert(false);
-        return 0;
+        throw new \BadMethodCallException('Subclasses of CategoryGridHandler must implement getCategoryDataElementSequence().');
     }
 
     /**
@@ -310,18 +312,19 @@ class CategoryGridHandler extends GridHandler {
      * @param int $newSequence
      */
     public function saveCategoryDataElementSequence($gridDataElement, $newSequence) {
-        assert(false);
+        throw new \BadMethodCallException('Subclasses of CategoryGridHandler must implement saveCategoryDataElementSequence().');
     }
 
     /**
      * Operation to save the row data element new sequence.
      * @see GridHandler::saveRowDataElementSequence()
+     * @param Request $request
+     * @param string $rowId
      * @param mixed $gridDataElement
-     * @param string $categoryId
      * @param int $newSequence
      */
-    public function saveRowDataElementSequence($gridDataElement, $categoryId, $newSequence) {
-        assert(false);
+    public function saveRowDataElementSequence($request, $rowId, $gridDataElement, $newSequence) {
+        throw new \BadMethodCallException('Subclasses of CategoryGridHandler must implement saveRowDataElementSequence().');
     }
 
     /**
@@ -332,10 +335,14 @@ class CategoryGridHandler extends GridHandler {
      * @return string HTML
      */
     public function renderRowInternally($request, $row) {
-        if ($this->getCategoryRowIdParameterName()) {
-            $param = $this->getRequestArg($this->getCategoryRowIdParameterName());
-            $templateMgr = TemplateManager::getManager();
-            $templateMgr->assign('categoryId', $param);
+        $paramName = $this->getCategoryRowIdParameterName();
+        if ($paramName !== null) {
+            $args = $this->getRequestArgs();
+            $param = $args[$paramName] ?? null;
+            if ($param !== null) {
+                $templateMgr = TemplateManager::getManager();
+                $templateMgr->assign('categoryId', (string) $param);
+            }
         }
 
         return parent::renderRowInternally($request, $row);
@@ -353,14 +360,16 @@ class CategoryGridHandler extends GridHandler {
      * @return GridRow
      */
     private function _getInitializedCategoryRowInstance($request, $elementId, $element) {
-        // Instantiate a new row
         $row = $this->getCategoryRowInstance();
         $row->setGridId($this->getId());
-        if ($elementId) $row->setId($elementId);
+
+        if ($elementId !== null) {
+            $row->setId((string) $elementId);
+        }
+        
         $row->setData($element);
         $row->setRequestArgs($this->getRequestArgs());
 
-        // Initialize the row before we render it
         $row->initialize($request);
         $this->callFeaturesHook('getInitializedCategoryRowInstance', [
             'request' => $request,
@@ -375,18 +384,15 @@ class CategoryGridHandler extends GridHandler {
      * @param Request $request
      * @return array
      */
-    private function _renderCategoriesInternally($request): array {
+    private function _renderCategoriesInternally($request) {
         $renderedCategories = [];
 
         $elements = $this->getGridDataElements($request);
-        if (is_iterable($elements)) {
-            foreach($elements as $key => $element) {
-                // Instantiate a new row
-                $categoryRow = $this->_getInitializedCategoryRowInstance($request, $key, $element);
 
-                // Render the row
+        if (is_array($elements)) {
+            foreach ($elements as $key => $element) {
+                $categoryRow = $this->_getInitializedCategoryRowInstance($request, (string) $key, $element);
                 $renderedCategories[] = $this->_renderCategoryInternally($request, $categoryRow);
-                unset($element);
             }
         }
 
@@ -399,34 +405,31 @@ class CategoryGridHandler extends GridHandler {
      * @param GridCategoryRow $categoryRow
      * @return string HTML
      */
-    private function _renderCategoryInternally($request, $categoryRow): string {
-        // Prepare the template to render the category.
+    private function _renderCategoryInternally($request, $categoryRow) {
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('grid', $this);
         
         $columns = $this->getColumns();
-        $templateMgr->assign('columns', $columns);
+        $templateMgr->assign('columns', is_array($columns) ? $columns : []);
 
         $categoryDataElement = $categoryRow->getData();
         $filter = $this->getFilterSelectionData($request);
         $rowData = $this->getCategoryData($categoryDataElement, $filter);
 
-        // Render the data rows
         $templateMgr->assign('categoryRow', $categoryRow);
 
-        // Let grid (and also rows) knowing the current category id.
-        $this->currentCategoryId = $categoryRow->getId();
+        $this->currentCategoryId = $categoryRow->getId() !== null ? (string) $categoryRow->getId() : null;
 
         $renderedRows = $this->_renderRowsInternally($request, $rowData);
-        $templateMgr->assign('rows', $renderedRows);
+        $templateMgr->assign('rows', is_array($renderedRows) ? $renderedRows : []);
 
         $renderedCategoryRow = $this->renderRowInternally($request, $categoryRow);
 
-        // Finished working with this category, erase the current id value.
         $this->currentCategoryId = null;
 
         $templateMgr->assign('renderedCategoryRow', $renderedCategoryRow);
         return $templateMgr->fetch('controllers/grid/gridBodyPartWithCategory.tpl');
     }
+    
 }
 ?>

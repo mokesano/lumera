@@ -12,12 +12,19 @@ use Config;
 class MetadataBuilder {
 
     protected int $articleId;
+    /** @var \DAO $articleDAO */
     protected $articleDAO;
+    /** @var \DAO $authorDAO */
     protected $authorDAO;
+    /** @var \DAO $journalDAO */
     protected $journalDAO;
+    /** @var \DAO $issueDAO */
     protected $issueDAO;
+    /** @var \DAO $sectionDAO */
     protected $sectionDAO;
+    /** @var \DAO $publishedArticleDAO */
     protected $publishedArticleDAO;
+    /** @var \DAO $sectionEditorSubmissionDAO */
     protected $sectionEditorSubmissionDAO;
 
     public function __construct(int $articleId) {
@@ -64,9 +71,9 @@ class MetadataBuilder {
             // SOLUSI CRASH: Gunakan AppLocale, bukan Locale
             if (class_exists('AppLocale')) {
                 $locale = \AppLocale::getLocale();
-            } elseif (class_exists('Locale') && method_exists('Locale', 'getLocale')) {
+            } elseif (class_exists('AppLocale') && method_exists('AppLocale', 'getLocale')) {
                 // Fallback legacy OJS lama sekali (jarang terjadi jika PHP modern)
-                $locale = \Locale::getLocale();
+                $locale = \AppLocale::getLocale();
             }
 
             // Jika locale ditemukan dan datanya ada, kembalikan

@@ -51,7 +51,7 @@ class SubmissionFile extends PKPFile {
 
     /**
      * Set ID of file.
-     * @param $fileId int
+     * @param int $fileId int
      */
     public function setFileId($fileId) {
         // WARNING: Do not modernize getter/setters without considering
@@ -69,7 +69,7 @@ class SubmissionFile extends PKPFile {
 
     /**
      * Set source file ID of this file.
-     * @param $sourceFileId int
+     * @param int $sourceFileId int
      */
     public function setSourceFileId($sourceFileId) {
         return $this->setData('sourceFileId', $sourceFileId);
@@ -85,7 +85,7 @@ class SubmissionFile extends PKPFile {
 
     /**
      * Set source revision of this file.
-     * @param $sourceRevision int
+     * @param int $sourceRevision int
      */
     public function setSourceRevision($sourceRevision) {
         return $this->setData('sourceRevision', $sourceRevision);
@@ -101,7 +101,7 @@ class SubmissionFile extends PKPFile {
 
     /**
      * Set associated ID of file. (Used, e.g., for email log attachments.)
-     * @param $assocId int
+     * @param int $assocId int
      */
     public function setAssocId($assocId) {
         return $this->setData('assocId', $assocId);
@@ -132,7 +132,7 @@ class SubmissionFile extends PKPFile {
 
     /**
      * Set revision number.
-     * @param $revision int
+     * @param int $revision int
      */
     public function setRevision($revision) {
         return $this->setData('revision', $revision);
@@ -148,7 +148,7 @@ class SubmissionFile extends PKPFile {
 
     /**
      * Set ID of submission.
-     * @param $submissionId int
+     * @param int $submissionId int
      */
     public function setSubmissionId($submissionId) {
         return $this->setData('submissionId', $submissionId);
@@ -165,7 +165,7 @@ class SubmissionFile extends PKPFile {
 
     /**
      * Set type of the file.
-     * @param $type int
+     * @param mixed $type int
      */
     public function setType($type) {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.', E_USER_DEPRECATED);
@@ -182,7 +182,7 @@ class SubmissionFile extends PKPFile {
 
     /**
      * Set file stage of the file.
-     * @param $fileStage int
+     * @param int $fileStage int
      */
     public function setFileStage($fileStage) {
         return $this->setData('fileStage', $fileStage);
@@ -198,7 +198,7 @@ class SubmissionFile extends PKPFile {
 
     /**
      * Set modified date of file.
-     * @param $dateModified string
+     * @param string $dateModified string
      */
     public function setDateModified($dateModified) {
         return $this->SetData('dateModified', $dateModified);
@@ -214,7 +214,7 @@ class SubmissionFile extends PKPFile {
 
     /**
      * Set round.
-     * @param $round int
+     * @param int $round int
      */
     public function setRound($round) {
         return $this->SetData('round', $round);
@@ -228,10 +228,9 @@ class SubmissionFile extends PKPFile {
         return $this->getData('viewable');
     }
 
-
     /**
      * Set viewable.
-     * @param $viewable boolean
+     * @param bool $viewable boolean
      */
     public function setViewable($viewable) {
         return $this->SetData('viewable', $viewable);
@@ -248,11 +247,10 @@ class SubmissionFile extends PKPFile {
      * @return boolean
      */
     public function isInlineable() {
-        // Hapus '&'
-        $submissionFileDao = DAORegistry::getDAO('SubmissionFileDAO'); /* @var $submissionFileDao SubmissionFileDAO */
+        /** @var SubmissionFileDAO $submissionFileDao */
+        $submissionFileDao = DAORegistry::getDAO('SubmissionFileDAO');
         return $submissionFileDao->isInlineable($this);
     }
 
 }
-
 ?>

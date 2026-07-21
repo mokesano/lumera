@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup controllers_grid_feature
  *
  * @brief Transform default grid categories in accordions.
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards.
  */
 
 import('lib.pkp.classes.controllers.grid.feature.GridFeature');
@@ -41,6 +40,7 @@ class GridCategoryAccordionFeature extends GridFeature {
     }
 
     /**
+     * Get javascript class
      * @see GridFeature::getJSClass()
      * @return string
      */
@@ -54,6 +54,7 @@ class GridCategoryAccordionFeature extends GridFeature {
     //
     
     /**
+     * Grid initialize
      * @see GridFeature::gridInitialize()
      * @param array $args
      */
@@ -84,6 +85,7 @@ class GridCategoryAccordionFeature extends GridFeature {
     }
 
     /**
+     * Get initialized category row instance
      * @see GridFeature::getInitializedCategoryRowInstance()
      * @param array $args
      */
@@ -121,6 +123,6 @@ class GridCategoryAccordionFeature extends GridFeature {
             ), GRID_ACTION_POSITION_ROW_LEFT
         );
     }
-}
 
+}
 ?>

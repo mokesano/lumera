@@ -129,7 +129,6 @@ class PKPNotificationManager {
 
         switch ($type) {
             case NOTIFICATION_TYPE_SUCCESS:
-            case NOTIFICATION_TYPE_ERROR:
             case NOTIFICATION_TYPE_WARNING:
                 if ($this->getNotificationSettings($notification->getId()) !== null) {
                     $notificationSettings = $this->getNotificationSettings($notification->getId());
@@ -200,7 +199,7 @@ class PKPNotificationManager {
     /**
      * Return notification settings.
      * @param mixed $notificationId int
-     * @return Array|null
+     * @return array|null
      */
     public function getNotificationSettings($notificationId) {
         /** @var NotificationSettingsDAO $notificationSettingsDao */
@@ -541,5 +540,6 @@ class PKPNotificationManager {
         $mail->addRecipient($email);
         $mail->send();
     }
+
 }
 ?>

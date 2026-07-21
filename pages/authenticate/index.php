@@ -13,6 +13,7 @@ declare(strict_types=1);
  * URL ini akan di-generate dalam bentuk QR Code oleh QrCodeService WIZDAM.
  */
 
+/** @var string $op */
 switch ($op) {
     //
     // Endpoint utama verifikasi
@@ -28,4 +29,5 @@ switch ($op) {
         import('pages.authenticate.AuthenticateHandler');
         break;
 }
+
 ?>

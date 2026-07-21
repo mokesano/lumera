@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_manager
  *
  * @brief Handle requests for people management functions.
- *
- * [WIZDAM EDITION] FULL REFACTOR: PHP 8.1+ Strict Types, Security Hardening, Smarty Modernization
  */
 
 import('pages.manager.ManagerHandler');
@@ -37,7 +35,7 @@ class PeopleHandler extends ManagerHandler {
                 E_USER_DEPRECATED
             );
         }
-        self::__construct();
+        $this->__construct();
     }
 
     /**
@@ -48,34 +46,37 @@ class PeopleHandler extends ManagerHandler {
         $this->validate();
         $this->setupTemplate(true);
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
 
-        // FIX: Input dibersihkan dengan trim() untuk menghilangkan whitespace berbahaya.
         $roleSymbolicInput = trim((string) Request::getUserVar('roleSymbolic'));
         if ($roleSymbolicInput != '') {
             $roleSymbolic = $roleSymbolicInput;
         } else {
-            // Input dari $args[0] juga harus dibersihkan.
             $roleSymbolic = isset($args[0]) ? trim((string)$args[0]) : 'all';
         }
 
-        // FIX: Input dibersihkan dengan trim().
         $sort = trim((string) Request::getUserVar('sort'));
         $sort = $sort != '' ? $sort : 'name';
         
-        // FIX: Input di-Whitelisting terhadap nilai yang valid dan di-uppercase.
         $sortDirection = strtoupper(trim((string) Request::getUserVar('sortDirection')));
         $sortDirection = in_array($sortDirection, [SORT_DIRECTION_ASC, SORT_DIRECTION_DESC]) ? $sortDirection : SORT_DIRECTION_ASC;
 
         $roleId = 0;
         $roleName = 'manager.people.allUsers';
-
+        $matches = [];
         if ($roleSymbolic != 'all' && PKPString::regexp_match_get('/^(\w+)s$/', $roleSymbolic, $matches)) {
-            // Logika ini secara implisit memvalidasi $roleSymbolic (Whitelisting).
-            $checkRoleId = $roleDao->getRoleIdFromPath($matches[1]);
+            $path = (string) ($matches[1] ?? '');
+            if ($path === '') {
+                Request::redirect(null, null, null, 'all');
+            }
+
+            $checkRoleId = $roleDao->getRoleIdFromPath($path);
+            
             if ($checkRoleId == null) {
                 Request::redirect(null, null, null, 'all');
             }
+            
             $roleId = $checkRoleId;
             $roleName = $roleDao->getRoleName($roleId, true);
         }
@@ -85,40 +86,31 @@ class PeopleHandler extends ManagerHandler {
 
         $searchType = null;
         $searchMatch = null;
-        
-        // [FIX 1] Sanitize 'search' input
         $search = trim((string) Request::getUserVar('search'));
-
-        // [FIX 2] Sanitize 'searchInitial' input
         $searchInitial = trim((string) Request::getUserVar('searchInitial'));
+        
         if (!preg_match('/^[A-Z0-9]$/i', $searchInitial)) { 
             $searchInitial = '';
         }
         
         if (!empty($search)) {
-            // Definisi Whitelist untuk searchField
             $validSearchFields = [
                 USER_FIELD_FIRSTNAME, USER_FIELD_LASTNAME, USER_FIELD_USERNAME,
                 USER_FIELD_EMAIL, USER_FIELD_INTERESTS, USER_FIELD_AFFILIATION
             ];
             
-            // [FIX 3] Sanitize 'searchField' (searchType): Whitelisting
             $searchType = (string) Request::getUserVar('searchField');
             if (!in_array($searchType, $validSearchFields)) {
                 $searchType = null; 
             }
             
-            // Definisi Whitelist untuk searchMatch
             $validSearchMatches = ['is', 'contains', 'startsWith'];
-            
-            // [FIX 4] Sanitize 'searchMatch': Whitelisting
             $searchMatch = trim((string) Request::getUserVar('searchMatch'));
             if (!in_array($searchMatch, $validSearchMatches)) {
                 $searchMatch = 'contains'; 
             }
         
         } elseif (!empty($searchInitial)) {
-            // Jika menggunakan searchInitial, input sudah disanitasi di atas.
             $searchInitial = PKPString::strtoupper($searchInitial);
             $searchType = USER_FIELD_INITIAL;
             $search = $searchInitial;
@@ -179,10 +171,13 @@ class PeopleHandler extends ManagerHandler {
         $templateMgr->assign('searchMatch', $searchMatch);
         $templateMgr->assign('search', $search);
         $templateMgr->assign('searchInitial', htmlspecialchars(trim((string)Request::getUserVar('searchInitial')), ENT_QUOTES, 'UTF-8'));
+        $templateMgr->assign('statistics', []);
 
-        $templateMgr->assign('roleSettings', $this->retrieveRoleAssignmentPreferences($journal->getId()));
+        $roleSettings = $this->retrieveRoleAssignmentPreferences($journal->getId());
+        $templateMgr->assign('roleSettings', is_array($roleSettings) ? $roleSettings : []);
 
         if ($roleId == ROLE_ID_REVIEWER) {
+            /** @var ReviewAssignmentDAO $reviewAssignmentDao */
             $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
             $templateMgr->assign('rateReviewerOnQuality', $journal->getSetting('rateReviewerOnQuality'));
             $templateMgr->assign('qualityRatings', $journal->getSetting('rateReviewerOnQuality') ? $reviewAssignmentDao->getAverageQualityRatings($journal->getId()) : null);
@@ -217,8 +212,11 @@ class PeopleHandler extends ManagerHandler {
     public function enrollSearch($args) {
         $this->validate();
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $roleId = (int) (isset($args[0]) ? trim($args[0]) : trim((string)Request::getUserVar('roleId')));
@@ -227,22 +225,17 @@ class PeopleHandler extends ManagerHandler {
         $sort = trim((string)Request::getUserVar('sort'));
         $sort = $sort != '' ? $sort : 'name';
         
-        // FIX: Input di-Whitelisting
         $sortDirection = strtoupper(trim((string)Request::getUserVar('sortDirection')));
         $sortDirection = in_array($sortDirection, [SORT_DIRECTION_ASC, SORT_DIRECTION_DESC]) ? $sortDirection : SORT_DIRECTION_ASC;
 
         $templateMgr = TemplateManager::getManager();
-
         $this->setupTemplate(true);
 
         $searchType = null;
         $searchMatch = null;
-        
-        // FIX: Sanitasi input search
         $search = trim((string)Request::getUserVar('search'));
-        
-        // FIX: Sanitasi input searchInitial
         $searchInitial = trim((string)Request::getUserVar('searchInitial'));
+        
         if (!preg_match('/^[A-Z0-9]$/i', $searchInitial)) { 
             $searchInitial = '';
         }
@@ -253,15 +246,12 @@ class PeopleHandler extends ManagerHandler {
                 USER_FIELD_EMAIL, USER_FIELD_INTERESTS, USER_FIELD_AFFILIATION
             ];
             
-            // FIX: Whitelisting searchField
             $searchType = (string) Request::getUserVar('searchField');
             if (!in_array($searchType, $validSearchFields)) {
                 $searchType = null; 
             }
             
             $validSearchMatches = ['is', 'contains', 'startsWith'];
-            
-            // FIX: Whitelisting searchMatch
             $searchMatch = trim((string) Request::getUserVar('searchMatch'));
             if (!in_array($searchMatch, $validSearchMatches)) {
                 $searchMatch = 'contains'; 
@@ -274,16 +264,16 @@ class PeopleHandler extends ManagerHandler {
         }
 
         $rangeInfo = $this->getRangeInfo('users');
-
         $users = $userDao->getUsersByField($searchType, $searchMatch, $search, true, $rangeInfo, $sort);
 
         $templateMgr->assign('searchField', $searchType);
         $templateMgr->assign('searchMatch', $searchMatch);
         $templateMgr->assign('search', $search);
-        // [SECURITY FIX] Sanitasi input untuk display/template dengan htmlspecialchars()
         $templateMgr->assign('searchInitial', htmlspecialchars(trim((string)Request::getUserVar('searchInitial')), ENT_QUOTES, 'UTF-8'));
+        $templateMgr->assign('statistics', []);
 
-        $templateMgr->assign('roleSettings', $this->retrieveRoleAssignmentPreferences($journal->getId()));
+        $roleSettings = $this->retrieveRoleAssignmentPreferences($journal->getId());
+        $templateMgr->assign('roleSettings', is_array($roleSettings) ? $roleSettings : []);
 
         $templateMgr->assign('roleId', $roleId);
         $templateMgr->assign('roleName', $roleDao->getRoleName($roleId));
@@ -315,43 +305,66 @@ class PeopleHandler extends ManagerHandler {
      */
     public function showNoRole() {
         $this->validate();
+        $this->setupTemplate(true);
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
+        $journal = Request::getJournal();
+        $journalId = $journal ? $journal->getId() : 0;
 
         $templateMgr = TemplateManager::getManager();
-
-        parent::setupTemplate(true);
-
         $rangeInfo = $this->getRangeInfo('users');
-
         $users = $userDao->getUsersWithNoRole(true, $rangeInfo);
+
+        $roleId = 0; 
+        $templateMgr->assign('roleId', $roleId);
 
         $templateMgr->assign('omitSearch', true);
         $templateMgr->assign('users', $users);
         $templateMgr->assign('thisUser', Request::getUser());
         $templateMgr->assign('helpTopicId', 'journal.users.index');
+        $templateMgr->assign('statistics', []);
+        $templateMgr->assign('roleId', 0);
+
+        $roleSettings = $this->retrieveRoleAssignmentPreferences($journal ? $journal->getId() : 0);
+        $templateMgr->assign('roleSettings', is_array($roleSettings) ? $roleSettings : []);
+        
+        $templateMgr->assign('fieldOptions', [
+            USER_FIELD_FIRSTNAME => 'user.firstName',
+            USER_FIELD_LASTNAME => 'user.lastName',
+            USER_FIELD_USERNAME => 'user.username',
+            USER_FIELD_EMAIL => 'user.email'
+        ]);
+        
+        $templateMgr->assign('alphaList', explode(' ', __('common.alphaList')));
+        $templateMgr->assign('search', '');
+        $templateMgr->assign('searchInitial', '');
+        $templateMgr->assign('searchField', null);
+        $templateMgr->assign('searchMatch', 'contains');
+        $templateMgr->assign('sort', 'name');
+        $templateMgr->assign('sortDirection', SORT_DIRECTION_ASC);
+
         $templateMgr->display('manager/people/searchUsers.tpl');
     }
 
     /**
      * Enroll a user in a role.
+     * @param mixed $args
      */
     public function enroll($args) {
         $this->validate();
         $roleId = (int)(isset($args[0]) ? $args[0] : Request::getUserVar('roleId'));
-
-        // [SECURITY FIX] Ambil dan sanitasi 'userId' sebagai integer terlebih dahulu.
         $userId = (int) Request::getUserVar('userId');
-        
-        // [SECURITY FIX] Ambil dan sanitasi 'users' sebagai array yang berisi integer.
         $users = array_map('intval', (array) Request::getUserVar('users'));
         
         if (empty($users) && $userId != 0) {
             $users = [$userId];
         }
 
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getJournalByPath(Request::getRequestedJournalPath());
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $rolePath = $roleDao->getRolePath($roleId);
 
@@ -374,6 +387,7 @@ class PeopleHandler extends ManagerHandler {
 
     /**
      * Unenroll a user from a role.
+     * @param mixed $args
      */
     public function unEnroll($args) {
         $roleId = (int) array_shift($args);
@@ -384,21 +398,24 @@ class PeopleHandler extends ManagerHandler {
 
         $journal = Request::getJournal();
         if ($roleId != ROLE_ID_SITE_ADMIN && (Validation::isSiteAdmin() || $journalId = $journal->getId())) {
+            /** @var RoleDAO $roleDao */
             $roleDao = DAORegistry::getDAO('RoleDAO');
             $roleDao->deleteRoleByUserId($userId, $journalId, $roleId);
         }
 
-        Request::redirect(null, null, 'people', $roleDao->getRolePath($roleId) . 's');
+        Request::redirect(null, null, 'people', RoleDao::getRolePath($roleId) . 's');
     }
 
     /**
      * Show form to synchronize user enrollment with another journal.
+     * @param mixed $args
      */
     public function enrollSyncSelect($args) {
         $this->validate();
         $this->setupTemplate(true);
 
         $rolePath = isset($args[0]) ? (string)$args[0] : '';
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $roleId = $roleDao->getRoleIdFromPath($rolePath);
         if ($roleId) {
@@ -408,6 +425,7 @@ class PeopleHandler extends ManagerHandler {
             $roleName = '';
         }
 
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journalTitles = $journalDao->getJournalTitles();
 
@@ -428,13 +446,11 @@ class PeopleHandler extends ManagerHandler {
         $this->validate();
 
         $journal = Request::getJournal();
-        // [SECURITY FIX] Amankan rolePath
         $rolePath = trim((string)Request::getUserVar('rolePath'));
-        
-        // [SECURITY FIX] Amankan syncJournal
         $syncJournalInput = Request::getUserVar('syncJournal');
         $syncJournal = $syncJournalInput === 'all' ? 'all' : (int)$syncJournalInput;
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $roleId = $roleDao->getRoleIdFromPath($rolePath);
 
@@ -468,13 +484,11 @@ class PeopleHandler extends ManagerHandler {
     public function suggestUsername() {
         $this->validate();
     
-        // [SECURITY FIX] Bersihkan input string dengan trim()
         $firstName = trim((string)Request::getUserVar('firstName'));
         $lastName = trim((string)Request::getUserVar('lastName'));
     
         $suggestion = Validation::suggestUsername($firstName, $lastName);
     
-        // [SECURITY FIX] Escape output untuk mencegah Reflected XSS
         echo htmlspecialchars($suggestion, ENT_QUOTES, 'UTF-8');
     }
 
@@ -505,42 +519,41 @@ class PeopleHandler extends ManagerHandler {
         import('classes.manager.form.UserManagementForm');
 
         $templateMgr->assign('roleSettings', $this->retrieveRoleAssignmentPreferences($journal->getId()));
-
         $templateMgr->assign('currentUrl', Request::url(null, null, 'people', 'all'));
         $userForm = new UserManagementForm($userId);
 
         if ($userForm->isLocaleResubmit()) {
             $userForm->readInputData();
         } else {
-            $userForm->initData($args, $request);
+            $userForm->initData();
         }
         $userForm->display();
     }
 
     /**
      * Allow the Journal Manager to merge user accounts.
+     * @param array $args
      */
     public function mergeUsers($args) {
         $this->validate();
         $this->setupTemplate(true);
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $journal = Request::getJournal();
         $journalId = $journal->getId();
         $templateMgr = TemplateManager::getManager();
-
-        // [SECURITY FIX] Amankan array oldUserIds
         $oldUserIds = array_map('intval', (array) Request::getUserVar('oldUserIds'));
-        
-        // [SECURITY FIX] Amankan newUserId
         $newUserId = (int) Request::getUserVar('newUserId');
 
-        // Ensure that we have administrative priveleges over the specified user(s).
         $canAdministerAll = true;
         foreach ($oldUserIds as $oldUserId) {
-            if (!Validation::canAdminister($journalId, $oldUserId)) $canAdministerAll = false;
+            if (!Validation::canAdminister($journalId, $oldUserId)) {
+                $canAdministerAll = false;
+            }
         }
 
         if (
@@ -556,13 +569,14 @@ class PeopleHandler extends ManagerHandler {
 
         if (!empty($oldUserIds) && !empty($newUserId)) {
             import('classes.user.UserAction');
+            $userAction = new UserAction();
+            
             foreach ($oldUserIds as $oldUserId) {
-                UserAction::mergeUsers($oldUserId, $newUserId);
+                $userAction->mergeUsers($oldUserId, $newUserId);
             }
             Request::redirect(null, 'manager');
         }
 
-        // [SECURITY FIX] Ambil dan trim input 'roleSymbolic'
         $roleSymbolicInput = trim((string)Request::getUserVar('roleSymbolic'));
         if (!empty($roleSymbolicInput)) {
             $roleSymbolic = $roleSymbolicInput;
@@ -573,8 +587,15 @@ class PeopleHandler extends ManagerHandler {
         $roleId = 0;
         $roleName = 'manager.people.allUsers';
 
+        $matches = [];
         if ($roleSymbolic != 'all' && PKPString::regexp_match_get('/^(\w+)s$/', $roleSymbolic, $matches)) {
-            $checkRoleId = $roleDao->getRoleIdFromPath($matches[1]);
+            $path = (string) ($matches[1] ?? '');
+            
+            if ($path === '') {
+                Request::redirect(null, null, null, 'all');
+            }
+            
+            $checkRoleId = $roleDao->getRoleIdFromPath($path);
             if ($checkRoleId == null) {
                 Request::redirect(null, null, null, 'all');
             }
@@ -582,21 +603,14 @@ class PeopleHandler extends ManagerHandler {
             $roleName = $roleDao->getRoleName($roleId, true);
         }
 
-        // [SECURITY FIX] Amankan 'sort'
         $sort = trim((string)Request::getUserVar('sort'));
         $sort = $sort != '' ? $sort : 'name';
-
-        // [SECURITY FIX] Whitelist 'sortDirection'
         $sortDirection = strtoupper(trim((string)Request::getUserVar('sortDirection')));
         $sortDirection = in_array($sortDirection, [SORT_DIRECTION_ASC, SORT_DIRECTION_DESC]) ? $sortDirection : SORT_DIRECTION_ASC;
 
         $searchType = null;
         $searchMatch = null;
-
-        // [SECURITY FIX] Amankan 'search'
         $search = trim((string)Request::getUserVar('search'));
-
-        // [SECURITY FIX] Amankan 'searchInitial'
         $searchInitial = trim((string)Request::getUserVar('searchInitial'));
         if (!preg_match('/^[A-Z0-9]$/i', $searchInitial)) {
             $searchInitial = '';
@@ -633,8 +647,6 @@ class PeopleHandler extends ManagerHandler {
             $users = $roleDao->getUsersByJournalId($journalId, $searchType, $search, $searchMatch, $rangeInfo, $sort);
         }
 
-        $templateMgr->assign('roleSettings', $this->retrieveRoleAssignmentPreferences($journal->getId()));
-
         $templateMgr->assign('currentUrl', Request::url(null, null, 'people', 'all'));
         $templateMgr->assign('helpTopicId', 'journal.managementPages.mergeUsers');
         $templateMgr->assign('roleName', $roleName);
@@ -645,14 +657,20 @@ class PeopleHandler extends ManagerHandler {
         $templateMgr->assign('searchField', $searchType);
         $templateMgr->assign('searchMatch', $searchMatch);
         $templateMgr->assign('search', $search);
-        // [SECURITY FIX] Amankan output 'searchInitial'
         $templateMgr->assign('searchInitial', htmlspecialchars(trim((string)Request::getUserVar('searchInitial')), ENT_QUOTES, 'UTF-8'));
 
         if ($roleId == ROLE_ID_REVIEWER) {
+            /** @var ReviewAssignmentDAO $reviewAssignmentDao */
             $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
             $templateMgr->assign('rateReviewerOnQuality', $journal->getSetting('rateReviewerOnQuality'));
             $templateMgr->assign('qualityRatings', $journal->getSetting('rateReviewerOnQuality') ? $reviewAssignmentDao->getAverageQualityRatings($journalId) : null);
         }
+
+        $templateMgr->assign('statistics', []);
+
+        $roleSettings = $this->retrieveRoleAssignmentPreferences($journal->getId());
+        $templateMgr->assign('roleSettings', is_array($roleSettings) ? $roleSettings : []);
+
         $templateMgr->assign('fieldOptions', [
             USER_FIELD_FIRSTNAME => 'user.firstName',
             USER_FIELD_LASTNAME => 'user.lastName',
@@ -666,6 +684,7 @@ class PeopleHandler extends ManagerHandler {
         $templateMgr->assign('roleSymbolic', $roleSymbolic);
         $templateMgr->assign('sort', $sort);
         $templateMgr->assign('sortDirection', $sortDirection);
+
         $templateMgr->display('manager/people/selectMergeUser.tpl');
     }
 
@@ -692,6 +711,7 @@ class PeopleHandler extends ManagerHandler {
                 $templateMgr->assign('backLinkLabel', 'manager.people.allUsers');
                 return $templateMgr->display('common/error.tpl');
             }
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $userTarget = $userDao->getById($userId);
             if ($userTarget) {
@@ -718,6 +738,7 @@ class PeopleHandler extends ManagerHandler {
         $user = Request::getUser();
 
         if ($userId != null && $userId != $user->getId()) {
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $userTarget = $userDao->getById($userId, true);
             if ($userTarget) {
@@ -742,6 +763,7 @@ class PeopleHandler extends ManagerHandler {
         $journal = Request::getJournal();
 
         if ($userId != null && $userId != $user->getId()) {
+            /** @var RoleDAO $roleDao */
             $roleDao = DAORegistry::getDAO('RoleDAO');
             $roleDao->deleteRoleByUserId($userId, $journal->getId());
         }
@@ -751,6 +773,8 @@ class PeopleHandler extends ManagerHandler {
 
     /**
      * Save changes to a user profile.
+     * @param mixed $args
+     * @param mixed $request
      */
     public function updateUser($args, $request) {
         $this->validate();
@@ -777,18 +801,16 @@ class PeopleHandler extends ManagerHandler {
         if ($userForm->validate()) {
             $userForm->execute();
 
-            // [SECURITY FIX] Amankan flag boolean 'createAnother'
             if ((int) $request->getUserVar('createAnother')) {
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign('currentUrl', $request->url(null, null, 'people', 'all'));
                 $templateMgr->assign('userCreated', true);
                 unset($userForm);
                 $userForm = new UserManagementForm();
-                $userForm->initData($args, $request);
+                $userForm->initData();
                 $userForm->display();
 
             } else {
-                // [SECURITY FIX] Amankan 'source' dari Open Redirect
                 $source = trim((string)$request->getUserVar('source'));
                 
                 if (!empty($source) && Request::isPathValid($source)) {
@@ -814,6 +836,7 @@ class PeopleHandler extends ManagerHandler {
         $templateMgr->assign('currentUrl', Request::url(null, null, 'people', 'all'));
         $templateMgr->assign('helpTopicId', 'journal.users.index');
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $userId = isset($args[0]) ? $args[0] : 0;
         if (is_numeric($userId)) {
@@ -836,28 +859,31 @@ class PeopleHandler extends ManagerHandler {
 
             $isSiteAdmin = Validation::isSiteAdmin();
             $templateMgr->assign('isSiteAdmin', $isSiteAdmin);
+            /** @var RoleDAO $roleDao */
             $roleDao = DAORegistry::getDAO('RoleDAO');
             $roles = $roleDao->getRolesByUserId($user->getId(), $isSiteAdmin ? null : $journal->getId());
             $templateMgr->assign('userRoles', $roles);
             if ($isSiteAdmin) {
+                /** @var JournalDAO $journalDao */
                 $journalDao = DAORegistry::getDAO('JournalDAO');
                 $journalTitles = $journalDao->getJournalTitles();
                 $templateMgr->assign('journalTitles', $journalTitles);
             }
 
+            /** @var CountryDAO $countryDao */
             $countryDao = DAORegistry::getDAO('CountryDAO');
             $country = null;
             if ($user->getCountry() != '') {
                 $country = $countryDao->getCountry($user->getCountry());
             }
+
             $templateMgr->assign('country', $country);
-
             $templateMgr->assign('userInterests', $user->getInterestString());
-
             $templateMgr->assign('user', $user);
             $templateMgr->assign('localeNames', AppLocale::getAllLocales());
             $templateMgr->display('manager/people/userProfile.tpl');
         }
     }
+
 }
 ?>

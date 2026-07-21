@@ -183,8 +183,10 @@ class SubmitHandler extends AuthorHandler {
                     // Send a notification to associated users
                     import('classes.notification.NotificationManager');
                     $notificationManager = new NotificationManager();
+                    /** @var ArticleDAO $articleDao */
                     $articleDao = DAORegistry::getDAO('ArticleDAO');
                     $article = $articleDao->getArticle($articleId);
+                    /** @var RoleDAO $roleDao */
                     $roleDao = DAORegistry::getDAO('RoleDAO');
                     $editors = $roleDao->getUsersByRoleId(ROLE_ID_EDITOR, $journal->getId());
                     while ($editor = $editors->next()) {
@@ -205,6 +207,7 @@ class SubmitHandler extends AuthorHandler {
                     }
                     $templateMgr->assign('articleId', $articleId);
                     $templateMgr->assign('helpTopicId','submission.index');
+                    
                     $templateMgr->display('author/submit/complete.tpl');
 
                 } else {
@@ -303,6 +306,7 @@ class SubmitHandler extends AuthorHandler {
         $article = $this->article;
         $this->setupTemplate($request, true);
 
+        /** @var SuppFileDAO $suppFileDao */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
         $suppFile = $suppFileDao->getSuppFile($suppFileId, $articleId);
         $suppFileDao->deleteSuppFileById($suppFileId, $articleId);
@@ -372,6 +376,7 @@ class SubmitHandler extends AuthorHandler {
         }
 
         // 3. Ambil data artikel jika ada ID
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = null;
 
@@ -402,5 +407,6 @@ class SubmitHandler extends AuthorHandler {
         $this->article = $article;
         return true;
     }
+
 }
 ?>

@@ -219,7 +219,8 @@ class DAO {
             $start = Core::microtime();
             $dataSource = $this->getDataSource();
             $result = $dataSource->PageExecute($sql, $dbResultRange->getCount(), $dbResultRange->getPage(), $params);
-            DBConnection::logQuery($sql, $start, $params);
+            $logParams = is_array($params) ? $params : [];
+            DBConnection::logQuery($sql, $start, $logParams);
             if ($dataSource->errorNo()) {
                 fatalError('DB Error: ' . (string) $dataSource->errorMsg());
             }
