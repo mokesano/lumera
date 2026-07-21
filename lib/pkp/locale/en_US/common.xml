@@ -207,9 +207,9 @@
 	<message key="common.true">True</message>
 	<message key="common.type">Type</message>
 	<message key="common.element">Element</message>
-	<message key="common.uninitiated">Uninitiated</message>
+	<message key="common.uninitiated">Not initialized</message>
 	<message key="common.unread">Unread</message>
-	<message key="common.untitled">Untitled</message>
+	<message key="common.untitled">This submission has no title</message>
 	<message key="common.updated">Updated</message>
 	<message key="common.uploadedFile">Uploaded file</message>
 	<message key="common.upload">Upload</message>
@@ -228,6 +228,8 @@
 	<message key="common.plugins">Plugins</message>
 	<message key="common.metric">Metric</message>
 	<message key="common.count">Count</message>
+	<message key="common.notification.uploadedFile">Successfully uploaded file {$filename}</message>
+	<message key="common.notification.uploadFailed">File {$filename} failed to upload. Please ensure the file format and size meet the requirements.</message>
 	<message key="common.csrf.validation.error">Action denied. The form has expired, is invalid, or has already been submitted. Please check your input and try again.</message>
 	
 	<!-- DEBUG Component -->
