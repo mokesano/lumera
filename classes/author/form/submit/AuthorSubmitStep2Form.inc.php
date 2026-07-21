@@ -62,19 +62,30 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
 
     /**
      * Display the form.
+     * @param PKPRequest|null $request
+     * @param string|null $template
      */
     public function display($request = null, $template = null) {
         if (!$request) {
             $request = Application::get()->getRequest();
         }
 
+        /** @var ArticleDAO $articleDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO');
+        $this->article = $articleDao->getArticle($this->articleId);
+
         $templateMgr = TemplateManager::getManager($request);
 
         /** @var ArticleFileDAO $articleFileDao  */
         $articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
-        if ($this->article->getSubmissionFileId() != null) {
-            $templateMgr->assign('submissionFile', $articleFileDao->getArticleFile($this->article->getSubmissionFileId()));
+        $submissionFileId = $this->article ? $this->article->getSubmissionFileId() : null;
+        if ($submissionFileId) {
+            $file = $articleFileDao->getArticleFile($submissionFileId);
+            if ($file) {
+                $templateMgr->assign('submissionFile', $file);
+            }
         }
+        
         parent::display($request, $template);
     }
 
@@ -109,17 +120,15 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
 
         if (!empty($submissionFileId)) {
             $this->article->setSubmissionFileId($submissionFileId);
-            $updated = (bool) $articleDao->updateArticle($this->article);
+            $articleDao->updateArticle($this->article);
             $notificationManager->createTrivialNotification(
                 $userId,
                 NOTIFICATION_TYPE_SUCCESS,
                 ['contents' => __('common.uploadedFile')]
             );
-            return $updated;
+            return true;
         } else {
             $this->addError('submissionFile', $errorMsg ?: __('common.uploadFailed'));
-            $this->errorFields['submissionFile'] = 1;
-            
             $notificationManager->createTrivialNotification(
                 $userId,
                 NOTIFICATION_TYPE_ERROR,
@@ -144,9 +153,9 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
 
         /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
-        $article = $this->article;
+        $article = $articleDao->getArticle($this->articleId);
 
-        if ($article->getSubmissionProgress() <= $this->step) {
+        if ($article && $article->getSubmissionProgress() <= $this->step) {
             $article->stampStatusModified();
             $article->setSubmissionProgress($this->step + 1);
             $articleDao->updateArticle($article);
