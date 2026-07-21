@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * @file classes/subscription/SubscriptionAction.inc.php
@@ -11,10 +12,10 @@
  * @ingroup subscriptions
  *
  * Common actions for subscription management functions. 
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 class SubscriptionAction {
+
     /**
      * Display subscriptions summary page for the current journal.
      */
@@ -22,35 +23,37 @@ class SubscriptionAction {
         $journal = Request::getJournal();
         $journalId = $journal->getId();
 
+        /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
         $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
         $statusOptions = $individualSubscriptionDao->getStatusOptions();
-        $individualStatus = array();
+        $individualStatus = [];
 
         foreach ($statusOptions as $status => $localeKey) {
             $statusCount = $individualSubscriptionDao->getStatusCount($journalId, $status);
-            $individualStatus[] = array(
+            $individualStatus[] = [
                                     "status" => $status,
                                     "count" => $statusCount,
                                     "localeKey" => $localeKey
-                                );        
+                                ];        
         }
 
+        /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
         $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
         $statusOptions = $institutionalSubscriptionDao->getStatusOptions();
-        $institutionalStatus = array();
+        $institutionalStatus = [];
 
         foreach ($statusOptions as $status => $localeKey) {
             $statusCount = $institutionalSubscriptionDao->getStatusCount($journalId, $status);
-            $institutionalStatus[] = array(
+            $institutionalStatus[] = [
                                     "status" => $status,
                                     "count" => $statusCount,
                                     "localeKey" => $localeKey
-                                );        
+                                ];
         }
 
         $templateMgr = TemplateManager::getManager();
-        $templateMgr->assign_by_ref('individualStatus', $individualStatus);
-        $templateMgr->assign_by_ref('institutionalStatus', $institutionalStatus);
+        $templateMgr->assign('individualStatus', $individualStatus);
+        $templateMgr->assign('institutionalStatus', $institutionalStatus);
         $templateMgr->assign('helpTopicId', 'journal.managementPages.subscriptions');
 
         $templateMgr->display('subscription/subscriptionsSummary.tpl');
@@ -58,16 +61,19 @@ class SubscriptionAction {
 
     /**
      * Display a list of subscriptions for the current journal.
+     * @param bool $institutional
      */
     public function subscriptions($institutional = false) {
         $journal = Request::getJournal();
         $rangeInfo = PKPHandler::getRangeInfo('subscriptions');
 
         if ($institutional) {
+            /** @var InstitutionalSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
             $templateFile = 'subscription/institutionalSubscriptions.tpl';
             $fieldOptions = SubscriptionAction::getInstitutionalSearchFieldOptions();
         } else {
+            /** @var IndividualSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
             $templateFile = 'subscription/individualSubscriptions.tpl';
             $fieldOptions = SubscriptionAction::getIndividualSearchFieldOptions();
@@ -91,7 +97,7 @@ class SubscriptionAction {
         $subscriptions = $subscriptionDao->getSubscriptionsByJournalId($journal->getId(), $filterStatus, $searchField, $searchMatch, $search, $dateSearchField, $fromDate, $toDate, $rangeInfo);
 
         $templateMgr = TemplateManager::getManager();
-        $templateMgr->assign_by_ref('subscriptions', $subscriptions);
+        $templateMgr->assign('subscriptions', $subscriptions);
         $templateMgr->assign('helpTopicId', 'journal.managementPages.subscriptions');
 
         // Set search parameters
@@ -101,7 +107,7 @@ class SubscriptionAction {
         $templateMgr->assign('dateFrom', $fromDate);
         $templateMgr->assign('dateTo', $toDate);
         $templateMgr->assign('filterStatus', Request::getUserVar('filterStatus'));
-        $templateMgr->assign('statusOptions', array(0 => 'manager.subscriptions.allStatus') + $statusOptions);
+        $templateMgr->assign('statusOptions', [0 => 'manager.subscriptions.allStatus'] + $statusOptions);
         $templateMgr->assign('fieldOptions', $fieldOptions);
         $templateMgr->assign('dateFieldOptions', SubscriptionAction::getDateFieldOptions());
 
@@ -115,12 +121,12 @@ class SubscriptionAction {
      * @return array
      */
     public function getSearchFormDuplicateParameters() {
-        return array(
+        return [
             'searchField', 'searchMatch', 'search',
             'dateFromMonth', 'dateFromDay', 'dateFromYear',
             'dateToMonth', 'dateToDay', 'dateToYear',
             'dateSearchField'
-        );
+        ];
     }
 
     /**
@@ -128,12 +134,12 @@ class SubscriptionAction {
      * @return array
      */
     public function getIndividualSearchFieldOptions() {
-        return array(
+        return [
             SUBSCRIPTION_USER => 'manager.subscriptions.user',
             SUBSCRIPTION_MEMBERSHIP => 'manager.subscriptions.membership',
             SUBSCRIPTION_REFERENCE_NUMBER => 'manager.subscriptions.referenceNumber',
             SUBSCRIPTION_NOTES => 'manager.subscriptions.notes'
-        );
+        ];
     }
 
     /**
@@ -141,7 +147,7 @@ class SubscriptionAction {
      * @return array
      */
     public function getInstitutionalSearchFieldOptions() {
-        return array(
+        return [
             SUBSCRIPTION_INSTITUTION_NAME => 'manager.subscriptions.institutionName',
             SUBSCRIPTION_USER => 'manager.subscriptions.contact',
             SUBSCRIPTION_DOMAIN => 'manager.subscriptions.domain',
@@ -149,7 +155,7 @@ class SubscriptionAction {
             SUBSCRIPTION_MEMBERSHIP => 'manager.subscriptions.membership',
             SUBSCRIPTION_REFERENCE_NUMBER => 'manager.subscriptions.referenceNumber',
             SUBSCRIPTION_NOTES => 'manager.subscriptions.notes'
-        );
+        ];
     }
 
     /**
@@ -157,23 +163,26 @@ class SubscriptionAction {
      * @return array
      */
     public function getDateFieldOptions() {
-        return array(
+        return [
             SUBSCRIPTION_DATE_START => 'manager.subscriptions.dateStartSearch',
             SUBSCRIPTION_DATE_END => 'manager.subscriptions.dateEndSearch'
-        );
+        ];
     }
 
     /**
      * Delete a subscription.
-     * @param $args array first parameter is the ID of the subscription to delete
+     * @param array $args array
+     * @param bool $institutional
      */
     public function deleteSubscription($args, $institutional = false) {
         $journal = Request::getJournal();
         $subscriptionId = empty($args[0]) ? null : (int) $args[0];
 
         if ($institutional) {
+            /** @var InstitutionalSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
         } else {
+            /** @var IndividualSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
         }
 
@@ -185,15 +194,18 @@ class SubscriptionAction {
 
     /**
      * Renew a subscription.
-     * @param $args array first parameter is the ID of the subscription to renew
+     * @param array $args array
+     * @param bool $institutional
      */
     public function renewSubscription($args, $institutional = false) {
         $journal = Request::getJournal();
         $subscriptionId = empty($args[0]) ? null : (int) $args[0];
 
         if ($institutional) {
+            /** @var InstitutionalSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
         } else {
+            /** @var IndividualSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
         }
 
@@ -206,7 +218,8 @@ class SubscriptionAction {
 
     /**
      * Display form to edit a subscription.
-     * @param $args array second parameter is the ID of the subscription to edit
+     * @param array $args array
+     * @param bool $institutional
      */
     public function editSubscription($args, $institutional = false) {
         $journal = Request::getJournal();
@@ -214,8 +227,10 @@ class SubscriptionAction {
         $subscriptionId = empty($args[0]) ? null : (int) $args[0];
 
         if ($institutional) {
+            /** @var InstitutionalSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
         } else {
+            /** @var IndividualSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
         }
 
@@ -252,6 +267,8 @@ class SubscriptionAction {
 
     /**
      * Display form to create new subscription.
+     * @param array $args array
+     * @param bool $institutional
      */
     public function createSubscription($args, $institutional = false) {
         SubscriptionAction::editSubscription($args, $institutional);
@@ -259,8 +276,10 @@ class SubscriptionAction {
 
     /**
      * Display a list of users from which to choose a subscriber/subscription contact.
+     * @param array $args
+     * @param bool $institutional
      */
-    public function selectSubscriber($args = array(), $institutional = false) {
+    public function selectSubscriber($args = [], $institutional = false) {
         $templateMgr = TemplateManager::getManager();
 
         if ($institutional) {
@@ -271,6 +290,7 @@ class SubscriptionAction {
             $redirect = 'individual';
         }
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $searchType = null;
@@ -299,31 +319,36 @@ class SubscriptionAction {
         import('classes.security.Validation');
         $templateMgr->assign('isJournalManager', Validation::isJournalManager());
 
-        $templateMgr->assign('fieldOptions', Array(
+        $templateMgr->assign('fieldOptions', [
             USER_FIELD_FIRSTNAME => 'user.firstName',
             USER_FIELD_LASTNAME => 'user.lastName',
             USER_FIELD_USERNAME => 'user.username',
             USER_FIELD_EMAIL => 'user.email'
-        ));
-        $templateMgr->assign_by_ref('users', $users);
+        ]);
+        $templateMgr->assign('users', $users);
         $templateMgr->assign('helpTopicId', 'journal.managementPages.subscriptions');
         $templateMgr->assign('subscriptionId', Request::getUserVar('subscriptionId'));
         $templateMgr->assign('pageTitle', $pageTitle);
         $templateMgr->assign('redirect', $redirect);
         $templateMgr->assign('alphaList', explode(' ', __('common.alphaList')));
+
         $templateMgr->display('subscription/users.tpl');
     }
 
     /**
      * Save changes to a subscription.
+     * @param array $args
+     * @param bool $institutional
      */
     public function updateSubscription($args, $institutional = false) {
         $journal = Request::getJournal();
         $subscriptionId = Request::getUserVar('subscriptionId') == null ? null : (int) Request::getUserVar('subscriptionId');
 
         if ($institutional) {
+            /** @var InstitutionalSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
         } else {
+            /** @var IndividualSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
         }
 
@@ -386,14 +411,18 @@ class SubscriptionAction {
 
     /**
      * Reset a subscription's reminded date.
+     * @param array $args array
+     * @param bool $institutional
      */
     public function resetDateReminded($args, $institutional = false) {
         $journal = Request::getJournal();
         $subscriptionId = (int) array_shift($args);
 
         if ($institutional) {
+            /** @var InstitutionalSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
         } else {
+            /** @var IndividualSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
         }
 
@@ -417,6 +446,8 @@ class SubscriptionAction {
     public function subscriptionTypes() {
         $journal = Request::getJournal();
         $rangeInfo = Handler::getRangeInfo('subscriptionTypes');
+
+        /** @var SubscriptionTypeDAO $subscriptionTypeDao */
         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
         $subscriptionTypes = $subscriptionTypeDao->getSubscriptionTypesByJournalId($journal->getId(), $rangeInfo);
 
@@ -429,11 +460,13 @@ class SubscriptionAction {
 
     /**
      * Rearrange the order of subscription types.
+     * @param array $args array
      */
     public function moveSubscriptionType($args) {
         $subscriptionTypeId = Request::getUserVar('id');
         $journal = Request::getJournal();
 
+        /** @var SubscriptionTypeDAO $subscriptionTypeDao */
         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
         $subscriptionType = $subscriptionTypeDao->getSubscriptionType($subscriptionTypeId);
 
@@ -465,12 +498,13 @@ class SubscriptionAction {
 
     /**
      * Delete a subscription type.
-     * @param $args array first parameter is the ID of the subscription type to delete
+     * @param array $args array
      */
     public function deleteSubscriptionType($args) {
         $subscriptionTypeId = isset($args[0])?$args[0]:0;
         $journal = Request::getJournal();
 
+        /** @var SubscriptionTypeDAO $subscriptionTypeDao */
         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
 
         // Ensure subscription type is for this journal
@@ -481,11 +515,13 @@ class SubscriptionAction {
 
     /**
      * Display form to edit a subscription type.
-     * @param $args array optional, first parameter is the ID of the subscription type to edit
+     * @param array $args array
      */
-    public function editSubscriptionType($args = array()) {
+    public function editSubscriptionType($args = []) {
         $journal = Request::getJournal();
         $subscriptionTypeId = !isset($args) || empty($args) ? null : (int) $args[0];
+
+        /** @var SubscriptionTypeDAO $subscriptionTypeDao */
         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
 
         // Ensure subscription type is valid and for this journal
@@ -531,8 +567,9 @@ class SubscriptionAction {
 
         $journal = Request::getJournal();
         $subscriptionTypeId = Request::getUserVar('typeId') == null ? null : (int) Request::getUserVar('typeId');
-        $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
 
+        /** @var SubscriptionTypeDAO $subscriptionTypeDao */
+        $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
         if (($subscriptionTypeId != null && $subscriptionTypeDao->getSubscriptionTypeJournalId($subscriptionTypeId) == $journal->getId()) || $subscriptionTypeId == null) {
 
             $subscriptionTypeForm = new SubscriptionTypeForm($subscriptionTypeId);
@@ -558,8 +595,8 @@ class SubscriptionAction {
 
     /**
      * Display subscription policies for the current journal.
-     * @param $args array
-     * @param $request PKPRequest
+     * @param mixed $args array
+     * @param mixed $request PKPRequest
      */
     public function subscriptionPolicies($args, $request) {
         import('classes.subscription.form.SubscriptionPolicyForm');
@@ -586,8 +623,8 @@ class SubscriptionAction {
 
     /**
      * Save subscription policies for the current journal.
-     * @param $args array
-     * @param $request PKPRequest
+     * @param mixed $args array
+     * @param mixed $request PKPRequest
      */
     public function saveSubscriptionPolicies($args, $request) {
         import('classes.subscription.form.SubscriptionPolicyForm');
@@ -617,14 +654,16 @@ class SubscriptionAction {
 
     /**
      * Send notification email to Subscription Manager when online payment is completed.
+     * @param mixed $subscription
+     * @param mixed $mailTemplateKey
      */
     public function sendOnlinePaymentNotificationEmail($subscription, $mailTemplateKey) {
-        $validKeys = array(
+        $validKeys = [
             'SUBSCRIPTION_PURCHASE_INDL',
             'SUBSCRIPTION_PURCHASE_INSTL',
             'SUBSCRIPTION_RENEW_INDL',
             'SUBSCRIPTION_RENEW_INSTL'
-        );
+        ];
 
         if (!in_array($mailTemplateKey, $validKeys)) return false;
 
@@ -640,12 +679,15 @@ class SubscriptionAction {
 
         if (empty($subscriptionContactEmail)) return false;
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $user = $userDao->getUser($subscription->getUserId());
 
+        /** @var SubscriptionTypeDAO $subscriptionTypeDao */
         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
         $subscriptionType = $subscriptionTypeDao->getSubscriptionType($subscription->getTypeId());
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         if ($roleDao->getJournalUsersRoleCount($journal->getId(), ROLE_ID_SUBSCRIPTION_MANAGER) > 0) {
             $rolePath = $roleDao->getRolePath(ROLE_ID_SUBSCRIPTION_MANAGER);
@@ -653,20 +695,20 @@ class SubscriptionAction {
             $rolePath = $roleDao->getRolePath(ROLE_ID_JOURNAL_MANAGER);
         }        
 
-        $paramArray = array(
+        $paramArray = [
             'subscriptionType' => $subscriptionType->getSummaryString(),
             'userDetails' => $user->getContactSignature(),
             'membership' => $subscription->getMembership()
-        );
+        ];
 
         switch($mailTemplateKey) {
             case 'SUBSCRIPTION_PURCHASE_INDL':
             case 'SUBSCRIPTION_RENEW_INDL':
-                $paramArray['subscriptionUrl'] = Request::url($journal->getPath(), $rolePath, 'editSubscription', 'individual', array($subscription->getId()));
+                $paramArray['subscriptionUrl'] = Request::url($journal->getPath(), $rolePath, 'editSubscription', 'individual', [$subscription->getId()]);
                 break;
             case 'SUBSCRIPTION_PURCHASE_INSTL':
             case 'SUBSCRIPTION_RENEW_INSTL':
-                $paramArray['subscriptionUrl'] = Request::url($journal->getPath(), $rolePath, 'editSubscription', 'institutional', array($subscription->getId()));
+                $paramArray['subscriptionUrl'] = Request::url($journal->getPath(), $rolePath, 'editSubscription', 'institutional', [$subscription->getId()]);
                 $paramArray['institutionName'] = $subscription->getInstitutionName();
                 $paramArray['institutionMailingAddress'] = $subscription->getInstitutionMailingAddress();
                 $paramArray['domain'] = $subscription->getDomain();
@@ -678,11 +720,11 @@ class SubscriptionAction {
         $mail = new MailTemplate($mailTemplateKey);
         $mail->setFrom($subscriptionContactEmail, $subscriptionContactName);
         $mail->addRecipient($subscriptionContactEmail, $subscriptionContactName);
-        $mail->setSubject($mail->getSubject($journal->getPrimaryLocale()));
-        $mail->setBody($mail->getBody($journal->getPrimaryLocale()));
+        $mail->setSubject($mail->getSubject());
+        $mail->setBody($mail->getBody());
         $mail->assignParams($paramArray);
         $mail->send();
     }
-}
 
+}
 ?>
