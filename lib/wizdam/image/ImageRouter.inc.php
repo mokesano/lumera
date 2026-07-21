@@ -72,7 +72,7 @@ class ImageRouter {
                 $obj = $issueDao->getIssueById($id);
                 if ($obj) {
                     $journalId = (int) $obj->getJournalId();
-                    $fileName = $obj->getFileName(AppLocale::getLocale()) ?: $obj->getFileName($obj->getLocale());
+                    $fileName = $obj->getLocalizedFileName();
                     $subFolder = 'cover_issue';
                 }
                 break;
@@ -83,7 +83,7 @@ class ImageRouter {
                 $obj = $articleDao->getPublishedArticleById($id);
                 if ($obj) {
                     $journalId = (int) $obj->getJournalId();
-                    $fileName = $obj->getCoverPageFileName(AppLocale::getLocale()) ?: $obj->getCoverPageFileName($obj->getLocale());
+                    $fileName = $obj->getLocalizedCoverPageFileName();
                     $subFolder = 'cover_article';
                 }
                 break;
