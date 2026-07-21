@@ -58,8 +58,6 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
      */
     public function readInputData() {
         $this->readUserVars([]);
-        // [LUMERA FIX] HAPUS logika upload dari sini. 
-        // Biarkan execute() yang menanganinya agar kita bisa menghentikan progres jika gagal.
     }
 
     /**
@@ -119,8 +117,7 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
             );
             return $updated;
         } else {
-            // [LUMERA FIX] Tambahkan error ke form agar UI menandainya, dan hentikan progres
-            $this->addError('submissionFile', $errorMsg ?: __('author.submit.form.submissionFileRequired'));
+            $this->addError('submissionFile', $errorMsg ?: __('common.uploadFailed'));
             $this->errorFields['submissionFile'] = 1;
             
             $notificationManager->createTrivialNotification(
@@ -138,16 +135,13 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
      * @return int the article ID
      */
     public function execute($object = null) {
-        // [LUMERA FIX] Tangani upload DI SINI. Jika gagal, kita hentikan eksekusi (fail-fast).
         if (isset($_FILES['submissionFile']) && !empty($_FILES['submissionFile']['name'])) {
             $uploadSuccess = $this->uploadSubmissionFile('submissionFile');
             if (!$uploadSuccess) {
-                // Upload gagal. JANGAN naikkan submission progress. Kembalikan user ke form ini.
                 return $this->articleId;
             }
         }
 
-        // Jika upload berhasil (atau tidak ada file baru), lanjutkan simpan progres
         /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $this->article;
