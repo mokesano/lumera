@@ -145,7 +145,7 @@ class PKPPlugin {
      * @param $request Request
      * @return boolean
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, string &$message, array &$messageParams, $request = NULL): bool {
         return false;
     }
 
