@@ -548,7 +548,6 @@ class ArticleFileManager extends FileManager {
             $articleFile->setDateModified(Core::getCurrentDate());
         }
 
-        // [LUMERA FIX] Set errorMsg jika file tidak ada
         if (!isset($_FILES[$fileName]) || !is_uploaded_file($_FILES[$fileName]['tmp_name'])) {
             if ($dummyFile) {
                 $articleFileDao->deleteArticleFileById($articleFile->getFileId());
@@ -566,22 +565,32 @@ class ArticleFileManager extends FileManager {
         }
 
         $newFileName = $this->generateFilename($articleFile, $fileStage, $this->getUploadedFileName($fileName));
+        $targetPath = $dir . $newFileName;
 
-        $errorMsg = null; // Reset sebelum dipanggil
-        if (!$this->uploadFile($fileName, $dir . $newFileName, $errorMsg)) {
+        $errorMsg = null;
+        if (!$this->uploadFile($fileName, $targetPath, $errorMsg)) {
             if ($dummyFile) {
                 $articleFileDao->deleteArticleFileById($articleFile->getFileId());
             }
-            if (empty($errorMsg)) {
-                $errorMsg = __('common.uploadFailed');
-            }
+            $errorMsg = $errorMsg ?: __('common.uploadFailed');
             return false;
         }
 
         if ($dummyFile) {
-            $articleFileDao->updateArticleFile($articleFile);
+            $dbResult = $articleFileDao->updateArticleFile($articleFile);
+            if (!$dbResult) {
+                error_log('[LUMERA DB FAIL] updateArticleFile failed for file ID: ' . $articleFile->getFileId());
+                $articleFileDao->deleteArticleFileById($articleFile->getFileId());
+                $errorMsg = 'Database failed to update file record.';
+                return false;
+            }
         } else {
-            $articleFileDao->insertArticleFile($articleFile);
+            $dbResult = $articleFileDao->insertArticleFile($articleFile);
+            if (!$dbResult || empty($articleFile->getFileId())) {
+                error_log('[LUMERA DB FAIL] insertArticleFile failed. Returned ID: ' . var_export($articleFile->getFileId(), true));
+                $errorMsg = 'Database failed to insert new file revision.';
+                return false;
+            }
         }
 
         if ($overwrite) {

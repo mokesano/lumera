@@ -66,32 +66,29 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
      * @param string|null $template
      */
     public function display($request = null, $template = null) {
-        if (!$request) {
-            $request = Application::get()->getRequest();
-        }
-
+        if (!$request) $request = Application::get()->getRequest();
+        
         /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $this->article = $articleDao->getArticle($this->articleId);
-
+        
         $templateMgr = TemplateManager::getManager($request);
-
-        /** @var ArticleFileDAO $articleFileDao  */
-        $articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
-        $submissionFileId = $this->article ? $this->article->getSubmissionFileId() : null;
-        if ($submissionFileId) {
-            $file = $articleFileDao->getArticleFile($submissionFileId);
+        $submissionFileId = $this->article ? (int) $this->article->getSubmissionFileId() : 0;
+        
+        if ($submissionFileId > 0) {
+            /** @var ArticleFileDAO $articleFileDao */
+            $articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
+            $file = $articleFileDao->getArticleFile($submissionFileId, null, $this->articleId);
             if ($file) {
                 $templateMgr->assign('submissionFile', $file);
             }
         }
-        
         parent::display($request, $template);
     }
 
     /**
      * Upload the submission file.
-     * @param string $fileName
+     * @param string $fileName (Nama field form, misal 'submissionFile')
      * @return bool
      */
     public function uploadSubmissionFile($fileName) {
@@ -99,15 +96,17 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
         import('classes.notification.NotificationManager');
 
         $articleFileManager = new ArticleFileManager($this->articleId);
-        /** @var ArticleDAO $articleDao  */
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $notificationManager = new NotificationManager();
         $userId = $this->request->getUser()->getId();
 
         $submissionFileId = null;
         $errorMsg = null;
+        $originalFileName = '';
 
         if ($articleFileManager->uploadedFileExists($fileName)) {
+            $originalFileName = (string) $articleFileManager->getUploadedFileName($fileName);
             $submissionFileId = $articleFileManager->uploadSubmissionFile(
                 $fileName,
                 $this->article->getSubmissionFileId(),
@@ -115,24 +114,25 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
                 $errorMsg
             );
         } else {
-            $errorMsg = __('common.uploadFailed');
+            $errorMsg = __('common.notification.uploadFailed');
         }
 
         if (!empty($submissionFileId)) {
-            $this->article->setSubmissionFileId($submissionFileId);
+            $this->article->setSubmissionFileId((int) $submissionFileId);
             $articleDao->updateArticle($this->article);
+            $safeFileName = htmlspecialchars($originalFileName, ENT_QUOTES, 'UTF-8');
             $notificationManager->createTrivialNotification(
                 $userId,
                 NOTIFICATION_TYPE_SUCCESS,
-                ['contents' => __('common.uploadedFile')]
+                ['contents' => __('common.notification.uploadedFile', ['filename' => $safeFileName])]
             );
             return true;
         } else {
-            $this->addError('submissionFile', $errorMsg ?: __('common.uploadFailed'));
+            $this->addError('submissionFile', $errorMsg ?: __('common.notification.uploadFailed'));
+            $this->errorFields['submissionFile'] = 1;
             $notificationManager->createTrivialNotification(
                 $userId,
-                NOTIFICATION_TYPE_ERROR,
-                ['contents' => $errorMsg ?: __('common.uploadFailed')]
+                NOTIFICATION_TYPE_ERROR
             );
             return false;
         }

@@ -29,7 +29,7 @@ class ArticleFileDAO extends PKPFileDAO {
      * @return ArticleFile|null
      */
     public function getArticleFile($fileId, $revision = null, $articleId = null) {
-        if ($fileId === null) {
+        if ($fileId === null || (int) $fileId === 0) {
             return null;
         }
 
@@ -54,15 +54,18 @@ class ArticleFileDAO extends PKPFileDAO {
         }
 
         $returner = null;
-        if ($result && $result->RecordCount() != 0) {
-            $returner = $this->_returnArticleFileFromRow($result->GetRowAssoc(false));
+
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            if (is_array($row)) {
+                $returner = $this->_returnArticleFileFromRow($row);
+            }
         }
 
         if ($result) {
             $result->Close();
         }
-        unset($result);
-
+        
         return $returner;
     }
 
@@ -91,13 +94,16 @@ class ArticleFileDAO extends PKPFileDAO {
         $result = $this->retrieve($sql, $params);
 
         $articleFiles = [];
-        while (!$result->EOF) {
-            $articleFiles[] = $this->_returnArticleFileFromRow($result->GetRowAssoc(false));
-            $result->moveNext();
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                if (is_array($row)) {
+                    $articleFiles[] = $this->_returnArticleFileFromRow($row);
+                }
+                $result->moveNext();
+            }
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $articleFiles;
     }
@@ -128,13 +134,16 @@ class ArticleFileDAO extends PKPFileDAO {
         $result = $this->retrieve($sql, $params);
 
         $articleFiles = [];
-        while (!$result->EOF) {
-            $articleFiles[] = $this->_returnArticleFileFromRow($result->GetRowAssoc(false));
-            $result->moveNext();
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                if (is_array($row)) {
+                    $articleFiles[] = $this->_returnArticleFileFromRow($row);
+                }
+                $result->moveNext();
+            }
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $articleFiles;
     }
@@ -156,16 +165,16 @@ class ArticleFileDAO extends PKPFileDAO {
         );
 
         $returner = null;
-        if ($result && $result->RecordCount() > 0) {
-            /** @var array|bool $row */
-            $row = $result->FetchRow();
-            $returner = isset($row['max_revision']) ? (int) $row['max_revision'] : null;
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            if (is_array($row) && isset($row['max_revision'])) {
+                $returner = (int) $row['max_revision'];
+            }
         }
 
         if ($result) {
             $result->Close();
         }
-        unset($result);
 
         return $returner;
     }
@@ -183,13 +192,16 @@ class ArticleFileDAO extends PKPFileDAO {
         );
 
         $articleFiles = [];
-        while (!$result->EOF) {
-            $articleFiles[] = $this->_returnArticleFileFromRow($result->GetRowAssoc(false));
-            $result->moveNext();
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                if (is_array($row)) {
+                    $articleFiles[] = $this->_returnArticleFileFromRow($row);
+                }
+                $result->moveNext();
+            }
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $articleFiles;
     }
@@ -210,13 +222,16 @@ class ArticleFileDAO extends PKPFileDAO {
         );
 
         $articleFiles = [];
-        while (!$result->EOF) {
-            $articleFiles[] = $this->_returnArticleFileFromRow($result->GetRowAssoc(false));
-            $result->moveNext();
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                if (is_array($row)) {
+                    $articleFiles[] = $this->_returnArticleFileFromRow($row);
+                }
+                $result->moveNext();
+            }
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $articleFiles;
     }
@@ -228,22 +243,26 @@ class ArticleFileDAO extends PKPFileDAO {
      * @return ArticleFile
      */
     public function _returnArticleFileFromRow($row) {
+        if (!is_array($row)) {
+            return null; // Safety check
+        }
+
         $articleFile = new ArticleFile();
-        $articleFile->setFileId($row['file_id']);
-        $articleFile->setSourceFileId($row['source_file_id']);
-        $articleFile->setSourceRevision($row['source_revision']);
-        $articleFile->setRevision($row['revision']);
-        $articleFile->setArticleId($row['article_id']);
-        $articleFile->setFileName($row['file_name']);
-        $articleFile->setFileType($row['file_type']);
-        $articleFile->setFileSize($row['file_size']);
-        $articleFile->setOriginalFileName($row['original_file_name']);
-        $articleFile->setFileStage($row['file_stage']);
-        $articleFile->setAssocId($row['assoc_id']);
-        $articleFile->setDateUploaded($this->datetimeFromDB($row['date_uploaded']));
-        $articleFile->setDateModified($this->datetimeFromDB($row['date_modified']));
-        $articleFile->setRound($row['round']);
-        $articleFile->setViewable($row['viewable']);
+        $articleFile->setFileId((int) ($row['file_id'] ?? 0));
+        $articleFile->setSourceFileId(isset($row['source_file_id']) ? (int) $row['source_file_id'] : null);
+        $articleFile->setSourceRevision(isset($row['source_revision']) ? (int) $row['source_revision'] : null);
+        $articleFile->setRevision((int) ($row['revision'] ?? 1));
+        $articleFile->setArticleId((int) ($row['article_id'] ?? 0));
+        $articleFile->setFileName((string) ($row['file_name'] ?? ''));
+        $articleFile->setFileType((string) ($row['file_type'] ?? ''));
+        $articleFile->setFileSize((int) ($row['file_size'] ?? 0));
+        $articleFile->setOriginalFileName((string) ($row['original_file_name'] ?? ''));
+        $articleFile->setFileStage((int) ($row['file_stage'] ?? 1));
+        $articleFile->setAssocId(isset($row['assoc_id']) ? (int) $row['assoc_id'] : null);
+        $articleFile->setDateUploaded($this->datetimeFromDB($row['date_uploaded'] ?? null));
+        $articleFile->setDateModified($this->datetimeFromDB($row['date_modified'] ?? null));
+        $articleFile->setRound(isset($row['round']) ? (int) $row['round'] : 1);
+        $articleFile->setViewable((bool) ($row['viewable'] ?? false));
         
         HookRegistry::dispatch('ArticleFileDAO::_returnArticleFileFromRow', [$articleFile, &$row]);
         
@@ -258,39 +277,53 @@ class ArticleFileDAO extends PKPFileDAO {
      */
     public function insertArticleFile($articleFile) {
         $fileId = $articleFile->getFileId();
-        
+        $revision = $articleFile->getRevision() !== null ? (int) $articleFile->getRevision() : 1;
+        $articleId = $articleFile->getArticleId() !== null ? (int) $articleFile->getArticleId() : 0;
+        $sourceFileId = $articleFile->getSourceFileId() ? (int) $articleFile->getSourceFileId() : null;
+        $sourceRevision = $articleFile->getSourceRevision() ? (int) $articleFile->getSourceRevision() : null;
+        $fileName = (string) $articleFile->getFileName();
+        $fileType = (string) $articleFile->getFileType();
+        $fileSize = (int) $articleFile->getFileSize();
+        $originalFileName = (string) $articleFile->getOriginalFileName();
+        $fileStage = (int) $articleFile->getFileStage();
+        $round = $articleFile->getRound() !== null ? (int) $articleFile->getRound() : 1;
+        $viewable = $articleFile->getViewable() ? 1 : 0;
+        $assocId = $articleFile->getAssocId() ? (int) $articleFile->getAssocId() : null;
+
         $params = [
-            $articleFile->getRevision() === null ? 1 : (int) $articleFile->getRevision(),
-            (int) $articleFile->getArticleId(),
-            $articleFile->getSourceFileId() ? (int) $articleFile->getSourceFileId() : null,
-            $articleFile->getSourceRevision() ? (int) $articleFile->getSourceRevision() : null,
-            $articleFile->getFileName(),
-            $articleFile->getFileType(),
-            (int) $articleFile->getFileSize(),
-            $articleFile->getOriginalFileName(),
-            (int) $articleFile->getFileStage(),
-            (int) $articleFile->getRound(),
-            $articleFile->getViewable(),
-            $articleFile->getAssocId() ? (int) $articleFile->getAssocId() : null
+            $revision,
+            $articleId,
+            $sourceFileId,
+            $sourceRevision,
+            $fileName,
+            $fileType,
+            $fileSize,
+            $originalFileName,
+            $fileStage,
+            $round,
+            $viewable,
+            $assocId
         ];
 
         if ($fileId) {
             array_unshift($params, (int) $fileId);
         }
 
+        $dateUploaded = $articleFile->getDateUploaded() ? $this->datetimeToDB($articleFile->getDateUploaded()) : null;
+        $dateModified = $articleFile->getDateModified() ? $this->datetimeToDB($articleFile->getDateModified()) : null;
+        
+        array_splice($params, 9, 0, [$dateUploaded, $dateModified]);
+
         $this->update(
             sprintf('INSERT INTO article_files
                 (' . ($fileId ? 'file_id, ' : '') . 'revision, article_id, source_file_id, source_revision, file_name, file_type, file_size, original_file_name, file_stage, date_uploaded, date_modified, round, viewable, assoc_id)
                 VALUES
-                (' . ($fileId ? '?, ' : '') . '?, ?, ?, ?, ?, ?, ?, ?, ?, %s, %s, ?, ?, ?)',
-                $this->datetimeToDB($articleFile->getDateUploaded()), 
-                $this->datetimeToDB($articleFile->getDateModified())
-            ),
+                (' . ($fileId ? '?, ' : '') . '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'),
             $params
         );
 
         if (!$fileId) {
-            $articleFile->setFileId($this->getInsertArticleFileId());
+            $articleFile->setFileId((int) $this->getInsertArticleFileId());
         }
 
         return $articleFile->getFileId();
@@ -303,8 +336,43 @@ class ArticleFileDAO extends PKPFileDAO {
      * @return int
      */
     public function updateArticleFile($articleFile) {
+        $articleId = $articleFile->getArticleId() !== null ? (int) $articleFile->getArticleId() : 0;
+        $sourceFileId = $articleFile->getSourceFileId() ? (int) $articleFile->getSourceFileId() : null;
+        $sourceRevision = $articleFile->getSourceRevision() ? (int) $articleFile->getSourceRevision() : null;
+        $fileName = (string) $articleFile->getFileName();
+        $fileType = (string) $articleFile->getFileType();
+        $fileSize = (int) $articleFile->getFileSize();
+        $originalFileName = (string) $articleFile->getOriginalFileName();
+        $fileStage = (int) $articleFile->getFileStage();
+        $round = $articleFile->getRound() !== null ? (int) $articleFile->getRound() : 1;
+        $viewable = $articleFile->getViewable() ? 1 : 0;
+        $assocId = $articleFile->getAssocId() ? (int) $articleFile->getAssocId() : null;
+        $fileId = (int) $articleFile->getFileId();
+        $revision = (int) $articleFile->getRevision();
+
+        $params = [
+            $articleId,
+            $sourceFileId,
+            $sourceRevision,
+            $fileName,
+            $fileType,
+            $fileSize,
+            $originalFileName,
+            $fileStage,
+            $round,
+            $viewable,
+            $assocId,
+            $fileId,
+            $revision
+        ];
+
+        $dateUploaded = $articleFile->getDateUploaded() ? $this->datetimeToDB($articleFile->getDateUploaded()) : null;
+        $dateModified = $articleFile->getDateModified() ? $this->datetimeToDB($articleFile->getDateModified()) : null;
+        
+        array_splice($params, 8, 0, [$dateUploaded, $dateModified]);
+
         $this->update(
-            sprintf('UPDATE article_files
+            'UPDATE article_files
                 SET
                     article_id = ?,
                     source_file_id = ?,
@@ -314,30 +382,13 @@ class ArticleFileDAO extends PKPFileDAO {
                     file_size = ?,
                     original_file_name = ?,
                     file_stage = ?,
-                    date_uploaded = %s,
-                    date_modified = %s,
+                    date_uploaded = ?,
+                    date_modified = ?,
                     round = ?,
                     viewable = ?,
                     assoc_id = ?
                 WHERE file_id = ? AND revision = ?',
-                $this->datetimeToDB($articleFile->getDateUploaded()), 
-                $this->datetimeToDB($articleFile->getDateModified())
-            ),
-            [
-                (int) $articleFile->getArticleId(),
-                $articleFile->getSourceFileId() ? (int) $articleFile->getSourceFileId() : null,
-                $articleFile->getSourceRevision() ? (int) $articleFile->getSourceRevision() : null,
-                $articleFile->getFileName(),
-                $articleFile->getFileType(),
-                (int) $articleFile->getFileSize(),
-                $articleFile->getOriginalFileName(),
-                (int) $articleFile->getFileStage(),
-                (int) $articleFile->getRound(),
-                $articleFile->getViewable(),
-                $articleFile->getAssocId() ? (int) $articleFile->getAssocId() : null,
-                (int) $articleFile->getFileId(),
-                (int) $articleFile->getRevision()
-            ]
+            $params
         );
 
         return $articleFile->getFileId();
@@ -391,7 +442,7 @@ class ArticleFileDAO extends PKPFileDAO {
      * @return int
      */
     public function getInsertArticleFileId() {
-        return $this->getInsertId('article_files', 'file_id');
+        return (int) $this->getInsertId('article_files', 'file_id');
     }
     
 }
