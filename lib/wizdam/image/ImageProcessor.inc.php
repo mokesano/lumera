@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * @file classes/image/ImageProcessor.inc.php
+ * @file lib/wizdam/image/ImageProcessor.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
