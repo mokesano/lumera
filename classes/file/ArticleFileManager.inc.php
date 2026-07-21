@@ -566,15 +566,27 @@ class ArticleFileManager extends FileManager {
         }
 
         $newFileName = $this->generateFilename($articleFile, $fileStage, $this->getUploadedFileName($fileName));
+        $targetPath = $dir . $newFileName;
 
-        $errorMsg = null; // Reset sebelum dipanggil
-        if (!$this->uploadFile($fileName, $dir . $newFileName, $errorMsg)) {
+        $errorMsg = null;
+        // [LUMERA DEBUG] Tambahkan logging eksplisit jika uploadFile gagal
+        if (!$this->uploadFile($fileName, $targetPath, $errorMsg)) {
+            error_log('[LUMERA CRITICAL] uploadFile failed for: ' . $targetPath . ' | Error Msg: ' . ($errorMsg ?: 'Unknown'));
+            
             if ($dummyFile) {
                 $articleFileDao->deleteArticleFileById($articleFile->getFileId());
             }
-            if (empty($errorMsg)) {
-                $errorMsg = __('common.uploadFailed');
+            $errorMsg = $errorMsg ?: __('common.uploadFailed');
+            return false;
+        }
+
+        // [LUMERA DEBUG] Verifikasi fisik: Apakah file benar-benar ada di disk setelah "sukses"?
+        if (!file_exists($targetPath)) {
+            error_log('[LUMERA CRITICAL] File reported as uploaded, but DOES NOT EXIST on disk: ' . $targetPath);
+            if ($dummyFile) {
+                $articleFileDao->deleteArticleFileById($articleFile->getFileId());
             }
+            $errorMsg = 'Server failed to save the file to disk. Check directory permissions.';
             return false;
         }
 
