@@ -10,6 +10,7 @@ declare(strict_types=1);
  *
  * [WIZDAM EDITION] - Enhanced
  * @class ValidatorCSRF
+ * 
  * @brief Menangani pembuatan dan validasi token pencegah Cross-Site Request Forgery (CSRF).
  */
 
@@ -35,8 +36,8 @@ class ValidatorCSRF {
 
     /**
      * Memadatkan string biner tanpa kehilangan data (Lossless).
-     * @param string $data String biner mentah.
-     * @return string Karakter Base64 yang aman untuk URL.
+     * @param string $data
+     * @return string
      */
     private static function base64url_encode(string $data): string {
         return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
@@ -44,8 +45,8 @@ class ValidatorCSRF {
 
     /**
      * Mengembalikan karakter URL-Safe kembali menjadi string biner murni.
-     * @param string $data Karakter Base64 dari UI.
-     * @return string String biner mentah asli.
+     * @param string $data
+     * @return string
      */
     private static function base64url_decode(string $data): string {
         return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT), true);
@@ -54,7 +55,7 @@ class ValidatorCSRF {
     /**
      * Mengambil atau membuat Master Token baru jika belum ada atau expired.
      * Master Token ini nyawa dari HMAC yang disimpan aman di dalam server.
-     * @return string Master Token biner (32 bytes).
+     * @return string
      */
     private static function getMasterSecret(): string {
         $request = Application::get()->getRequest();
@@ -78,8 +79,8 @@ class ValidatorCSRF {
 
     /**
      * Memeriksa apakah Nonce (Nomor Acak) dari klien sudah pernah digunakan.
-     * @param string $nonceBase64 Nonce dalam bentuk Base64.
-     * @return bool True jika sudah terpakai (bahaya), False jika masih segar.
+     * @param string $nonceBase64
+     * @return bool
      */
     private static function isNonceUsed(string $nonceBase64): bool {
         $blacklist = Application::get()->getRequest()->getSession()->getSessionVar(self::USED_NONCES_KEY);
@@ -89,7 +90,7 @@ class ValidatorCSRF {
     /**
      * Menambahkan Nonce yang baru saja dipakai ke dalam Blacklist.
      * Mencegah form di-submit dua kali (Replay Attack).
-     * @param string $nonceBase64 Nonce yang akan dihanguskan.
+     * @param string $nonceBase64
      */
     private static function blacklistNonce(string $nonceBase64): void {
         $session = Application::get()->getRequest()->getSession();
@@ -107,10 +108,10 @@ class ValidatorCSRF {
 
     /**
      * Menciptakan Digital Signature murni menggunakan HMAC-SHA256.
-     * @param string $nonceBin Nonce biner (16 bytes).
-     * @param string $context Konteks token (misal: 'global', 'LoginHandler', 'Article_123').
-     * @param array $immutableData Data tambahan tidak boleh diubah oleh klien.
-     * @return string Signature biner (32 bytes).
+     * @param string $nonceBin
+     * @param string $context
+     * @param array $immutableData
+     * @return string
      */
     private static function signPayloadBin(string $nonceBin, string $context, array $immutableData = []): string {
         $masterToken = self::getMasterSecret();
@@ -125,8 +126,8 @@ class ValidatorCSRF {
     /**
      * Membangkitkan CSRF Token.
      * Menggabungkan 16 bytes Nonce + 32 bytes Signature = 48 bytes.
-     * @param string $actionName Label untuk membatasi ruang lingkup token.
-     * @return string Token sepanjang 64 karakter (Lossless Base64URL).
+     * @param string $context
+     * @return string
      */
     public static function generateToken(string $context = 'global'): string {
         $nonceBin = random_bytes(16); 
@@ -138,9 +139,9 @@ class ValidatorCSRF {
     /**
      * Membangkitkan CSRF Token yang mengunci sekumpulan data statis.
      * Berguna jika ada parameter form yang haram diubah (misal: ID Artikel).
-     * @param string $actionName Label aksi form.
-     * @param array $immutableData Array key-value data yang diikat ke token.
-     * @return string Token sepanjang 64 karakter (Lossless Base64URL).
+     * @param string $context
+     * @param array $immutableData
+     * @return string
      */
     public static function generateSignedToken(string $context, array $immutableData): string {
         $nonceBin = random_bytes(16);
@@ -151,11 +152,11 @@ class ValidatorCSRF {
 
     /**
      * Membongkar dan memverifikasi token yang dikirim dari klien.
-     * @param string|null $clientToken Token mentah form input (64 karakter).
-     * @param string $actionName Label aksi yang diharapkan.
-     * @param array $immutableData Data statis yang diharapkan.
-     * @param bool $singleUse Jika True, token dihanguskan setelah tervalidasi.
-     * @return bool True jika token sah dan belum expired.
+     * @param string|null $clientToken
+     * @param string $context
+     * @param array $immutableData
+     * @param bool $singleUse
+     * @return bool
      */
     public static function checkToken(?string $clientToken, string $context = 'global', array $immutableData = [], bool $singleUse = false): bool {
         if (empty($clientToken) || strlen($clientToken) !== 64) {
@@ -192,6 +193,10 @@ class ValidatorCSRF {
 
     /**
      * Alias untuk checkToken agar terbaca saat memvalidasi token ber-payload.
+     * @param null|string $clientToken
+     * @param string $actionName
+     * @param array $immutableData
+     * @param bool $singleUse
      */
     public static function checkSignedToken(?string $clientToken, string $actionName, array $immutableData = [], bool $singleUse = false): bool {
         return self::checkToken($clientToken, $actionName, $immutableData, $singleUse);
@@ -206,5 +211,6 @@ class ValidatorCSRF {
         $session->unsetSessionVar(self::TIME_KEY);
         $session->unsetSessionVar(self::USED_NONCES_KEY);
     }
+
 }
 ?>

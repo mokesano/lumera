@@ -18,8 +18,9 @@ declare(strict_types=1);
 import('lib.pkp.classes.security.UserGroup');
 
 class UserGroupAssignment extends DataObject {
-    /** @var UserGroup the UserGroup object associated with this assignment **/
-    public $userGroup;
+
+    /** @var UserGroup|null the UserGroup object associated with this assignment **/
+    public $userGroup = null;
 
     /**
      * Constructor.
@@ -36,7 +37,7 @@ class UserGroupAssignment extends DataObject {
             "Class '" . get_class($this) . "' uses deprecated constructor parent::UserGroupAssignment(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
-        self::__construct();
+        $this->__construct();
     }
 
     //
@@ -44,43 +45,47 @@ class UserGroupAssignment extends DataObject {
     //
 
     /**
-     * Get user ID associated with a user group assignment.
-     * @return int
+     * Get user group ID associated with a user group assignment.
+     * @return int|null
      */
     public function getUserGroupId() {
-        return $this->getData('userGroupId');
+        $data = $this->getData('userGroupId');
+        return $data !== null ? (int) $data : null;
     }
 
     /**
-     * Set user ID associated with a user group assignment.
-     * also sets the $userGroup property
-     * @param $userGroupId int
+     * Set user group ID associated with a user group assignment.
+     * @param mixed $userGroupId
      * @return boolean
      */
     public function setUserGroupId($userGroupId) {
-        $this->setData('userGroupId', $userGroupId);
-        // Removed & reference
+        $this->setData('userGroupId', $userGroupId !== null ? (int) $userGroupId : null);
+        
+        /** @var UserGroupDAO $userGroupDao */
         $userGroupDao = DAORegistry::getDAO('UserGroupDAO');
-        $userGroup = $userGroupDao->getById($userGroupId);
+        $safeId = $userGroupId !== null ? (int) $userGroupId : 0;
+        $userGroup = $userGroupDao->getById($safeId);
         $this->userGroup = $userGroup;
-        return (boolean) $this->userGroup;
+        
+        return $this->userGroup !== null;
     }
 
     /**
      * Get user ID associated with role.
-     * @return int
+     * @return int|null
      */
     public function getUserId() {
-        return $this->getData('userId');
+        $data = $this->getData('userId');
+        return $data !== null ? (int) $data : null;
     }
 
     /**
      * Set user ID associated with role.
-     * @param $userId int
+     * @param mixed $userId
      */
     public function setUserId($userId) {
-        return $this->setData('userId', $userId);
+        $this->setData('userId', $userId !== null ? (int) $userId : null);
     }
-}
 
+}
 ?>

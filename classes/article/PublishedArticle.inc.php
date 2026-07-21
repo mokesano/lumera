@@ -270,5 +270,6 @@ class PublishedArticle extends Article {
     public function setSuppFiles($suppFiles) {
         return $this->setData('suppFiles', $suppFiles);
     }
+    
 }
 ?>

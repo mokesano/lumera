@@ -36,70 +36,37 @@ define('GRID_ACTION_POSITION_BELOW', 'below');
 
 class GridHandler extends PKPHandler {
 
-    /** 
-     * @var string grid title locale key 
-     * [WIZDAM] Renamed from $_title
-     */
+    /** @var string grid title locale key */
     public string $title = '';
 
-    /** 
-     * @var string empty row locale key 
-     * [WIZDAM] Renamed from $_emptyRowText
-     */
+    /** @var string empty row locale key */
     public string $emptyRowText = 'grid.noItems';
 
-    /** 
-     * @var GridDataProvider|null 
-     * [WIZDAM] Renamed from $_dataProvider
-     */
+    /** @var GridDataProvider|null */
     public ?GridDataProvider $dataProvider = null;
 
-    /**
-     * @var array Grid actions.
-     * [WIZDAM] Renamed from $_actions
-     */
+    /** @var array Grid actions */
     public array $actions = [GRID_ACTION_POSITION_DEFAULT => []];
 
-    /** 
-     * @var array The GridColumns of this grid. 
-     * [WIZDAM] Renamed from $_columns
-     */
+    /** @var array The GridColumns of this grid */
     public array $columns = [];
 
-    /** 
-     * @var array|null The grid's data source. 
-     * [WIZDAM] Renamed from $_data
-     */
+    /** @var array|null The grid's data source */
     public ?array $data = null;
 
-    /** 
-     * @var string|null The grid template. 
-     * [WIZDAM] Renamed from $_template
-     */
+    /** @var string|null The grid template */
     public ?string $template = null;
 
-    /** 
-     * @var array|null The urls that will be used in JS handler. 
-     * [WIZDAM] Renamed from $_urls
-     */
+    /** @var array|null The urls that will be used in JS handler */
     public ?array $urls = null;
 
-    /** 
-     * @var array The grid features. 
-     * [WIZDAM] Renamed from $_features
-     */
+    /** @var array The grid features */
     public array $features = [];
 
-    /** 
-     * @var string|null Grid instructions 
-     * [WIZDAM] Renamed from $_instructions
-     */
+    /** @var string|null Grid instructions */
     public ?string $instructions = null;
 
-    /** 
-     * @var string|null Grid footnote 
-     * [WIZDAM] Renamed from $_footNote
-     */
+    /** @var string|null Grid footnote */
     public ?string $footNote = null;
 
 
@@ -122,7 +89,7 @@ class GridHandler extends PKPHandler {
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($dataProvider);
+        $this->__construct($dataProvider);
     }
 
     //
@@ -317,13 +284,11 @@ class GridHandler extends PKPHandler {
      * @return array
      */
     public function getGridDataElements($request) {
-        // Try to load data if it has not yet been loaded.
         if ($this->data === null) {
             $filter = $this->getFilterSelectionData($request);
             $data = $this->loadData($request, $filter);
 
             if ($data === null) {
-                // Initialize data to an empty array.
                 $data = [];
             }
 
@@ -349,8 +314,6 @@ class GridHandler extends PKPHandler {
      * @param mixed $data an array or ItemIterator with element data
      */
     public function setGridDataElements($data) {
-        // FIXME: We go to arrays for all types of iterators because
-        // iterators cannot be re-used, see #6498.
         if (is_array($data)) {
             $this->data = $data;
         } elseif (is_a($data, 'DAOResultFactory')) {
@@ -435,21 +398,17 @@ class GridHandler extends PKPHandler {
     /**
      * Validate the grid handler.
      * @see PKPHandler::validate()
-     * [WIZDAM] Adapter: Mencegat parameter shifting dari PKPComponentRouter
      * Router lama mengirimkan ($request, $args), sedangkan PKPHandler meminta ($requiredContexts, $request).
      * @param array|null $requiredContexts
      * @param PKPRequest|null $request
      * @return bool
      */
     public function validate($requiredContexts = null, $request = null) {
-        
-        // Jika parameter pertama adalah objek PKPRequest, berarti ini adalah panggilan legacy dari Router
         if (is_object($requiredContexts) && is_a($requiredContexts, 'PKPRequest')) {
-            $request = $requiredContexts; // Pindahkan request ke tempat yang semestinya
-            $requiredContexts = null;     // Argumen ke-2 ($args) dari router diabaikan (dijadikan null)
+            $request = $requiredContexts;
+            $requiredContexts = null;
         }
 
-        // Teruskan pemanggilan ke base class (PKPHandler) dengan parameter yang sudah bersih dan sesuai
         parent::validate($requiredContexts, $request);
     }
     
@@ -484,13 +443,9 @@ class GridHandler extends PKPHandler {
     public function initialize($request, $args = null) {
         parent::initialize($request, $args);
 
-        // Load grid-specific translations
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_GRID, LOCALE_COMPONENT_APPLICATION_COMMON);
 
         $this->_addFeatures($this->initFeatures($request, $args));
-        // Note: passing $this by reference to hooks is deprecated in strict PHP 8,
-        // but hooks architecture often relies on it. 
-        // For internal method calls, we pass $this.
         $this->callFeaturesHook('gridInitialize', ['grid' => $this]);
     }
 
@@ -707,7 +662,7 @@ class GridHandler extends PKPHandler {
                 $form->readInputData();
                 $form->validate();
             }
-            $form->initData($filterData, $request);
+            $form->initData();
             $renderedForm = $form->fetch($request);
         } elseif (is_string($form)) {
             $templateMgr = TemplateManager::getManager();
@@ -739,7 +694,8 @@ class GridHandler extends PKPHandler {
      */
     public function saveSequence($args, $request) {
         $this->callFeaturesHook('saveSequence', ['request' => $request, 'grid' => $this]);
-        return DAO::getDataChangedEvent();
+        $dao = new DAO();
+        return $dao->getDataChangedEvent();
     }
 
     /**
@@ -939,8 +895,6 @@ class GridHandler extends PKPHandler {
         if ($width < 100 && $noSpecifiedWidthCount > 0) {
             foreach ($columns as $column) {
                 if (!$column->hasFlag('width')) {
-                    // [WIZDAM] Optimized: No need to re-fetch column via getColumn($id)
-                    // Objects are by reference naturally.
                     $column->addFlag('width', (int) round((100 - $width)/$noSpecifiedWidthCount));
                 }
             }
@@ -958,5 +912,6 @@ class GridHandler extends PKPHandler {
             $this->features[$feature->getId()] = $feature;
         }
     }
+
 }
 ?>

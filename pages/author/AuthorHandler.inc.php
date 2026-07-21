@@ -66,6 +66,7 @@ class AuthorHandler extends Handler {
         }
         
         $rangeInfo = $this->getRangeInfo('submissions');
+        /** @var AuthorSubmissionDAO $authorSubmissionDao */
         $authorSubmissionDao = DAORegistry::getDAO('AuthorSubmissionDAO');
 
         $page = array_shift($args);
@@ -193,6 +194,7 @@ class AuthorHandler extends Handler {
         $this->addCheck(new HandlerValidatorRoles($this, true, $reason, null, [ROLE_ID_AUTHOR]));
 
         if ($articleId !== null && $articleId != 0) {
+            /** @var AuthorSubmissionDAO $authorSubmissionDao */
             $authorSubmissionDao = DAORegistry::getDAO('AuthorSubmissionDAO');
             $journal = $request->getJournal();
             $user = $request->getUser();
@@ -266,5 +268,6 @@ class AuthorHandler extends Handler {
             $request->redirect(null, null, 'index');
         }
     }
+    
 }
 ?>

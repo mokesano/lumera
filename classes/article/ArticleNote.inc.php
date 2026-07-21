@@ -38,5 +38,6 @@ class ArticleNote extends Note {
         }
         self::__construct();
     }
+    
 }
 ?>

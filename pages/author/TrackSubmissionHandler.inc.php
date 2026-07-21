@@ -59,6 +59,7 @@ class TrackSubmissionHandler extends AuthorHandler {
             $articleFileManager = new ArticleFileManager($articleId);
             $articleFileManager->deleteArticleTree();
 
+            /** @var ArticleDAO $articleDao */
             $articleDao = DAORegistry::getDAO('ArticleDAO');
             $articleDao->deleteArticleById($articleId);
 
@@ -105,6 +106,7 @@ class TrackSubmissionHandler extends AuthorHandler {
         $submission = $this->submission;
         $this->setupTemplate($request, true, $articleId);
 
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $journalSettings = $journalSettingsDao->getJournalSettings($journal->getId());
 
@@ -114,6 +116,7 @@ class TrackSubmissionHandler extends AuthorHandler {
 
         $templateMgr = TemplateManager::getManager();
 
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($submission->getId());
         
@@ -121,11 +124,12 @@ class TrackSubmissionHandler extends AuthorHandler {
         $issue = null;
 
         if ($publishedArticle) {
+            /** @var IssueDAO $issueDao */
             $issueDao = DAORegistry::getDAO('IssueDAO');
             $issue = $issueDao->getIssueById($publishedArticle->getIssueId());
         }
 
-        // --- BULLETPROOF NULL OBJECT PATTERN ---
+        // BULLETPROOF NULL OBJECT PATTERN
         // 2. Menangkap semua anomali: 
         // Entah datanya hilang di tabel 'issues' atau hilang di 'published_articles', jika $issue masih null, kita paksa buat objek kosong.
         if (!$issue) {
@@ -137,6 +141,7 @@ class TrackSubmissionHandler extends AuthorHandler {
         $templateMgr->assign('issue', $issue);
         // ---------------------------------------
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $section = $sectionDao->getSection($submission->getSectionId());
         $templateMgr->assign('section', $section);
@@ -158,6 +163,7 @@ class TrackSubmissionHandler extends AuthorHandler {
         $paymentManager = new OJSPaymentManager($request);
         if ( $paymentManager->submissionEnabled() || $paymentManager->fastTrackEnabled() || $paymentManager->publicationEnabled()) {
             $templateMgr->assign('authorFees', true);
+            /** @var OJSCompletedPaymentDAO $completedPaymentDao */
             $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
 
             if ($paymentManager->submissionEnabled()) {
@@ -196,6 +202,7 @@ class TrackSubmissionHandler extends AuthorHandler {
         
         AppLocale::requireComponents(LOCALE_COMPONENT_APP_EDITOR); // editor.article.decision etc. FIXME?
 
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
         $reviewModifiedByRound = $reviewAssignmentDao->getLastModifiedByRound($articleId);
         $reviewEarliestNotificationByRound = $reviewAssignmentDao->getEarliestNotificationByRound($articleId);
@@ -208,7 +215,6 @@ class TrackSubmissionHandler extends AuthorHandler {
         $templateMgr = TemplateManager::getManager();
 
         $reviewAssignments = $authorSubmission->getReviewAssignments();
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('reviewAssignments', $reviewAssignments);
         $templateMgr->assign('submission', $authorSubmission);
         $templateMgr->assign('reviewFilesByRound', $reviewFilesByRound);
@@ -229,6 +235,7 @@ class TrackSubmissionHandler extends AuthorHandler {
         import('classes.submission.sectionEditor.SectionEditorSubmission');
         $templateMgr->assign('editorDecisionOptions', SectionEditorSubmission::getEditorDecisionOptions());
         $templateMgr->assign('helpTopicId', 'editorial.authorsRole.review');
+
         $templateMgr->display('author/submissionReview.tpl');
     }
 
@@ -304,6 +311,7 @@ class TrackSubmissionHandler extends AuthorHandler {
 
         if ($authorSubmission->getStatus() != STATUS_PUBLISHED && $authorSubmission->getStatus() != STATUS_ARCHIVED) {
             $suppFileId = (int) $request->getUserVar('fileId');
+            /** @var SuppFileDAO $suppFileDao */
             $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
             $suppFile = $suppFileDao->getSuppFile($suppFileId, $articleId);
 
@@ -365,7 +373,6 @@ class TrackSubmissionHandler extends AuthorHandler {
         ProofreaderAction::proofreadingUnderway($submission, 'SIGNOFF_PROOFREADING_AUTHOR');
 
         $templateMgr = TemplateManager::getManager();
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('submission', $submission);
         $templateMgr->assign('copyeditor', $submission->getUserBySignoffType('SIGNOFF_COPYEDITING_INITIAL'));
         $templateMgr->assign('submissionFile', $submission->getSubmissionFile());
@@ -377,6 +384,7 @@ class TrackSubmissionHandler extends AuthorHandler {
         $templateMgr->assign('useLayoutEditors', $journal->getSetting('useLayoutEditors'));
         $templateMgr->assign('useProofreaders', $journal->getSetting('useProofreaders'));
         $templateMgr->assign('helpTopicId', 'editorial.authorsRole.editing');
+
         $templateMgr->display('author/submissionEditing.tpl');
     }
 
@@ -426,6 +434,7 @@ class TrackSubmissionHandler extends AuthorHandler {
 
         // If the copy editor has completed copyediting, disallow
         // the author from changing the metadata.
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
         $initialSignoff = $signoffDao->build('SIGNOFF_COPYEDITING_INITIAL', ASSOC_TYPE_ARTICLE, $submission->getId());
         if ($initialSignoff->getDateCompleted() != null || AuthorAction::saveMetadata($submission, $request)) {
@@ -458,6 +467,7 @@ class TrackSubmissionHandler extends AuthorHandler {
         $submission->setWidth('', $formLocale);
         $submission->setHeight('', $formLocale);
 
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $articleDao->updateArticle($submission);
 
@@ -572,6 +582,7 @@ class TrackSubmissionHandler extends AuthorHandler {
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('articleId', $articleId);
         $templateMgr->assign('galleyId', $galleyId);
+
         $templateMgr->display('submission/layout/proofGalley.tpl');
     }
 
@@ -583,8 +594,11 @@ class TrackSubmissionHandler extends AuthorHandler {
     public function proofGalleyTop($args, $request) {
         $articleId = (int) array_shift($args);
         $galleyId = (int) array_shift($args);
+
         $this->validate(null, $request, $articleId);
         $submission = $this->submission;
+
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galley = $galleyDao->getGalley($galleyId, $articleId);
         $this->setupTemplate($request);
@@ -595,6 +609,7 @@ class TrackSubmissionHandler extends AuthorHandler {
         $templateMgr->assign('article', $submission);
         $templateMgr->assign('galley', $galley);
         $templateMgr->assign('backHandler', 'submissionEditing');
+
         $templateMgr->display('submission/layout/proofGalleyTop.tpl');
     }
 
@@ -608,25 +623,26 @@ class TrackSubmissionHandler extends AuthorHandler {
         $galleyId = (int) array_shift($args);
         $this->validate(null, $request, $articleId);
 
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galley = $galleyDao->getGalley($galleyId, $articleId);
 
-        import('classes.file.ArticleFileManager'); // FIXME
+        import('classes.file.ArticleFileManager');
 
         if (isset($galley)) {
             if ($galley->isHTMLGalley()) {
+                /** @var ArticleHTMLGalley $htmlGalley */
+                $htmlGalley = $galley;
                 $templateMgr = TemplateManager::getManager();
-                // [WIZDAM] Removed assign_by_ref
                 $templateMgr->assign('galley', $galley);
-                if ($galley->isHTMLGalley() && $styleFile = $galley->getStyleFile()) {
-                    $templateMgr->addStyleSheet($request->url(null, 'article', 'viewFile', [
+                if (method_exists($htmlGalley, 'getStyleFile') && $styleFile = $htmlGalley->getStyleFile()) {
+                    $templateMgr->addStyleSheet(Request::url(null, 'article', 'viewFile', [
                         $articleId, $galleyId, $styleFile->getFileId()
                     ]));
                 }
                 $templateMgr->display('submission/layout/proofGalleyHTML.tpl');
 
             } else {
-                // View non-HTML file inline
                 $this->viewFile([$articleId, $galley->getFileId()], $request);
             }
         }
@@ -721,5 +737,6 @@ class TrackSubmissionHandler extends AuthorHandler {
 
         $paymentManager->displayPaymentForm($queuedPaymentId, $queuedPayment);
     }
+
 }
 ?>

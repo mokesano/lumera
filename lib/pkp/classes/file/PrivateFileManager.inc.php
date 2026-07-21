@@ -32,7 +32,7 @@ class PrivateFileManager extends FileManager {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::PrivateFileManager(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
         }
-        self::__construct();
+        $this->__construct();
     }
 
     /**
@@ -42,6 +42,6 @@ class PrivateFileManager extends FileManager {
     public function getBasePath() {
         return Config::getVar('files', 'files_dir');
     }
-}
 
+}
 ?>

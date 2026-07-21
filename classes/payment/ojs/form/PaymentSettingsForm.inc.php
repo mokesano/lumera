@@ -24,7 +24,7 @@ class PaymentSettingsForm extends Form {
     /** @var array the setting names */
     public $settings;
 
-    /** $var string */
+    /** @var mixed string */
     public $errors;
 
     /**
@@ -96,6 +96,7 @@ class PaymentSettingsForm extends Form {
         ));
         
         // grab valid currencies and add Validator
+        /** @var CurrencyDAO $currencyDao */
         $currencyDao = DAORegistry::getDAO('CurrencyDAO');
         $currencies = $currencyDao->getCurrencies();
         $this->validCurrencies = [];
@@ -175,7 +176,7 @@ class PaymentSettingsForm extends Form {
 
     /**
      * [WIZDAM FIX] Callback khusus untuk memvalidasi instruksi Manual Payment.
-     * @param string $pluginName Nama plugin yang dipilih admin
+     * @param mixed $manualInstructions
      * @return bool
      */
     public function validateManualInstructions($manualInstructions) {
@@ -195,6 +196,7 @@ class PaymentSettingsForm extends Form {
      */
     public function save() {
         $journal = Request::getJournal();
+        /** @var JournalSettingsDAO $settingsDao */
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
 
         foreach ($this->_data as $name => $value) {
@@ -208,5 +210,6 @@ class PaymentSettingsForm extends Form {
             );
         }
     }
+    
 }
 ?>

@@ -31,31 +31,36 @@ class TemporaryFileDAO extends DAO {
      */
     public function TemporaryFileDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::TemporaryFileDAO(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                'Class ' . get_class($this) . ' uses deprecated constructor parent::TemporaryFileDAO(). Please refactor to parent::__construct().',
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $this->__construct();
     }
 
     /**
      * Retrieve a temporary file by ID.
-     * @param $fileId int
-     * @param $userId int
-     * @return TemporaryFile
+     * @param int $fileId
+     * @param int $userId
+     * @return TemporaryFile|null
      */
     public function getTemporaryFile($fileId, $userId) {
         $result = $this->retrieveLimit(
-            'SELECT t.* FROM temporary_files t WHERE t.file_id = ? and t.user_id = ?',
-            array((int) $fileId, (int) $userId),
+            'SELECT t.* FROM temporary_files t WHERE t.file_id = ? AND t.user_id = ?',
+            [(int) $fileId, (int) $userId],
             1
         );
 
         $returner = null;
-        if (isset($result) && $result->RecordCount() != 0) {
+
+        if ($result && !$result->EOF) {
             $returner = $this->_returnTemporaryFileFromRow($result->GetRowAssoc(false));
         }
 
-        $result->Close();
-        unset($result);
+        if ($result) {
+            $result->Close();
+        }
 
         return $returner;
     }
@@ -70,27 +75,27 @@ class TemporaryFileDAO extends DAO {
 
     /**
      * Internal function to return a TemporaryFile object from a row.
-     * @param $row array
+     * @param array $row
      * @return TemporaryFile
      */
     public function _returnTemporaryFileFromRow($row) {
         $temporaryFile = $this->newDataObject();
-        $temporaryFile->setId($row['file_id']);
-        $temporaryFile->setFileName($row['file_name']);
-        $temporaryFile->setFileType($row['file_type']);
-        $temporaryFile->setFileSize($row['file_size']);
-        $temporaryFile->setUserId($row['user_id']);
-        $temporaryFile->setOriginalFileName($row['original_file_name']);
+        $temporaryFile->setId((int) $row['file_id']);
+        $temporaryFile->setFileName((string) $row['file_name']);
+        $temporaryFile->setFileType((string) $row['file_type']);
+        $temporaryFile->setFileSize((int) $row['file_size']);
+        $temporaryFile->setUserId((int) $row['user_id']);
+        $temporaryFile->setOriginalFileName((string) $row['original_file_name']);
         $temporaryFile->setDateUploaded($this->datetimeFromDB($row['date_uploaded']));
 
-        HookRegistry::dispatch('TemporaryFileDAO::_returnTemporaryFileFromRow', array(&$temporaryFile, &$row));
+        HookRegistry::dispatch('TemporaryFileDAO::_returnTemporaryFileFromRow', [$temporaryFile, &$row]);
 
         return $temporaryFile;
     }
 
     /**
      * Insert a new TemporaryFile.
-     * @param $temporaryFile TemporaryFile
+     * @param TemporaryFile $temporaryFile
      * @return int
      */
     public function insertTemporaryFile($temporaryFile) {
@@ -100,13 +105,13 @@ class TemporaryFileDAO extends DAO {
                 VALUES
                 (?, ?, ?, ?, ?, %s)',
                 $this->datetimeToDB($temporaryFile->getDateUploaded())),
-            array(
+            [
                 (int) $temporaryFile->getUserId(),
-                $temporaryFile->getFileName(),
-                $temporaryFile->getFileType(),
+                (string) $temporaryFile->getFileName(),
+                (string) $temporaryFile->getFileType(),
                 (int) $temporaryFile->getFileSize(),
-                $temporaryFile->getOriginalFileName()
-            )
+                (string) $temporaryFile->getOriginalFileName()
+            ]
         );
 
         $temporaryFile->setId($this->getInsertTemporaryFileId());
@@ -115,7 +120,8 @@ class TemporaryFileDAO extends DAO {
 
     /**
      * Update an existing temporary file.
-     * @param $temporaryFile TemporaryFile
+     * @param TemporaryFile $temporaryFile
+     * @return int
      */
     public function updateObject($temporaryFile) {
         $this->update(
@@ -129,47 +135,53 @@ class TemporaryFileDAO extends DAO {
                     date_uploaded = %s
                 WHERE file_id = ?',
                 $this->datetimeToDB($temporaryFile->getDateUploaded())),
-            array(
-                $temporaryFile->getFileName(),
-                $temporaryFile->getFileType(),
+            [
+                (string) $temporaryFile->getFileName(),
+                (string) $temporaryFile->getFileType(),
                 (int) $temporaryFile->getFileSize(),
                 (int) $temporaryFile->getUserId(),
-                $temporaryFile->getOriginalFileName(),
+                (string) $temporaryFile->getOriginalFileName(),
                 (int) $temporaryFile->getId()
-            )
+            ]
         );
 
         return $temporaryFile->getId();
     }
 
     /**
+     * DEPRECATED: Update temporary file
      * @deprecated
+     * @param TemporaryFile $temporaryFile
      */
     public function updateTemporaryFile($temporaryFile) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->updateObject($temporaryFile);
     }
 
     /**
      * Delete a temporary file by ID.
-     * @param $fileId int
-     * @param $userId int
+     * @param int $fileId
+     * @param int $userId
+     * @return bool
      */
     public function deleteTemporaryFileById($fileId, $userId) {
         return $this->update(
             'DELETE FROM temporary_files WHERE file_id = ? AND user_id = ?',
-            array((int) $fileId, (int) $userId)
+            [(int) $fileId, (int) $userId]
         );
     }
 
     /**
      * Delete temporary files by user ID.
-     * @param $userId int
+     * @param int $userId
+     * @return bool
      */
     public function deleteTemporaryFilesByUserId($userId) {
         return $this->update(
             'DELETE FROM temporary_files WHERE user_id = ?',
-            array((int) $userId)
+            [(int) $userId]
         );
     }
 
@@ -181,19 +193,20 @@ class TemporaryFileDAO extends DAO {
         // Files older than one day can be cleaned up.
         $expiryThresholdTimestamp = time() - (60 * 60 * 24);
 
-        $temporaryFiles = array();
+        $temporaryFiles = [];
 
         $result = $this->retrieve(
-            'SELECT * FROM temporary_files WHERE date_uploaded < ' . $this->datetimeToDB($expiryThresholdTimestamp)
+            'SELECT * FROM temporary_files WHERE date_uploaded < ?',
+            [$this->datetimeToDB($expiryThresholdTimestamp)]
         );
 
-        while (!$result->EOF) {
-            $temporaryFiles[] = $this->_returnTemporaryFileFromRow($result->GetRowAssoc(false));
-            $result->MoveNext();
+        if ($result) {
+            while (!$result->EOF) {
+                $temporaryFiles[] = $this->_returnTemporaryFileFromRow($result->GetRowAssoc(false));
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $temporaryFiles;
     }
@@ -205,6 +218,6 @@ class TemporaryFileDAO extends DAO {
     public function getInsertTemporaryFileId() {
         return $this->getInsertId('temporary_files', 'file_id');
     }
-}
 
+}
 ?>

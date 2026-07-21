@@ -393,5 +393,6 @@ class ArticleFileDAO extends PKPFileDAO {
     public function getInsertArticleFileId() {
         return $this->getInsertId('article_files', 'file_id');
     }
+    
 }
 ?>

@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class AppLocale
  * @ingroup i18n
  *
- * @brief Provides methods for loading locale data and translating strings identified by unique keys
- * WIZDAM EDITION: PHP 8 Compatibility (Static Methods)
+ * @brief Provides methods for loading locale data and translating strings identified by unique keys.
  */
 
 import('lib.pkp.classes.i18n.PKPLocale');
@@ -24,7 +23,7 @@ define('LOCALE_COMPONENT_APP_MANAGER',        0x00000104);
 define('LOCALE_COMPONENT_APP_ADMIN',          0x00000105);
 define('LOCALE_COMPONENT_APP_DEFAULT',        0x00000106);
 
-// Konstanta OJS Baru (Hasil pecahan/refactoring dari locale.xml)
+// Konstanta Baru (Hasil refactoring dari locale.xml)
 define('LOCALE_COMPONENT_APP_PAYMENT',        0x00000107);
 define('LOCALE_COMPONENT_APP_AUTHORIZATION',  0x00000108);
 define('LOCALE_COMPONENT_APP_NOTIFICATION',   0x00000109);
@@ -51,7 +50,7 @@ class AppLocale extends PKPLocale {
             "Class '" . get_class($this) . "' uses deprecated constructor parent::AppLocale(). Please refactor to parent::__construct().", 
             E_USER_DEPRECATED
         );
-        self::__construct();
+        $this->__construct();
     }
 
     /**
@@ -168,7 +167,7 @@ class AppLocale extends PKPLocale {
     public static function getLocalePrecedence() {
         static $localePrecedence;
         if (!isset($localePrecedence)) {
-            $localePrecedence = array(AppLocale::getLocale());
+            $localePrecedence = [AppLocale::getLocale()];
 
             $journal = Request::getJournal();
             if ($journal && !in_array($journal->getPrimaryLocale(), $localePrecedence)) {
@@ -215,7 +214,7 @@ class AppLocale extends PKPLocale {
 
     /**
      * Make a map of components to their respective files.
-     * @param $locale string
+     * @param mixed $locale string
      * @return array
      */
     public static function makeComponentMap($locale) {
@@ -250,105 +249,108 @@ class AppLocale extends PKPLocale {
     public static function requireComponentsForRequest($request) {
         $router = $request->getRouter();
         
-        // Pastikan router tersedia (terkadang script CLI tidak memiliki router web)
-        if (!$router || !is_callable(array($router, 'getRequestedPage'))) {
-            // Fallback: Hanya muat yang paling umum
+        // Pastikan router tersedia
+        if (!$router) {
             self::requireComponents(LOCALE_COMPONENT_CORE_COMMON, LOCALE_COMPONENT_APPLICATION_COMMON);
             return;
         }
 
-        $page = $router->getRequestedPage($request);
-        $op = $router->getRequestedOp($request);
+        // Metode getRequestedPage/getRequestedOp spesifik untuk PKPPageRouter
+        if (is_a($router, 'PKPPageRouter')) {
+            $page = $router->getRequestedPage($request);
+            $op = $router->getRequestedOp($request);
+        } elseif (is_a($router, 'PKPComponentRouter')) {
+            $page = $router->getRequestedComponent($request);
+            $op = $router->getRequestedOp($request);
+        } else {
+            self::requireComponents(LOCALE_COMPONENT_CORE_COMMON, LOCALE_COMPONENT_APPLICATION_COMMON);
+            return;
+        }
 
-        // 1. KOMPONEN GLOBAL: Selalu dimuat di SETIAP halaman
-        $componentsToLoad = array(
+        // 1. KOMPONEN GLOBAL
+        $componentsToLoad = [
             LOCALE_COMPONENT_CORE_COMMON,
             LOCALE_COMPONENT_APPLICATION_COMMON,
             LOCALE_COMPONENT_APP_DEFAULT
-        );
+        ];
 
-        // 2. MAPPING DINAMIS: Tentukan komponen apa saja untuk halaman tertentu
-        // Format: 'nama_page_dari_url' => array(ID_KOMPONEN_1, ID_KOMPONEN_2)
-        $routeMap = array(
-            // Rancangan Locale untuk penyatuan semua role (Author, Editor, SectionEditor, CopyEditor, LayoutEditor, dan Proofread hanya menjadi workflow/mywizdam/myfrontedge/overview)
-            'submission' => array(
+        // 2. MAPPING DINAMIS
+        $routeMap = [
+            'submission' => [
                 LOCALE_COMPONENT_CORE_SUBMISSION, 
                 LOCALE_COMPONENT_APP_SUBMISSION, 
                 LOCALE_COMPONENT_APP_AUTHOR,
                 LOCALE_COMPONENT_CORE_GRID
-            ),
-            'workflow' => array(
+            ],
+            'workflow' => [
                 LOCALE_COMPONENT_CORE_SUBMISSION, 
                 LOCALE_COMPONENT_APP_SUBMISSION, 
                 LOCALE_COMPONENT_APP_EDITORIAL,
                 LOCALE_COMPONENT_CORE_GRID
-            ),
-            'author' => array(
+            ],
+            'author' => [
                 LOCALE_COMPONENT_CORE_SUBMISSION, 
                 LOCALE_COMPONENT_APP_SUBMISSION, 
                 LOCALE_COMPONENT_APP_AUTHOR
-            ),
-            'editor' => array(
+            ],
+            'editor' => [
                 LOCALE_COMPONENT_CORE_SUBMISSION, 
                 LOCALE_COMPONENT_APP_SUBMISSION, 
                 LOCALE_COMPONENT_APP_EDITOR,
                 LOCALE_COMPONENT_APP_EDITORIAL
-            ),
-            'sectionEditor' => array(
+            ],
+            'sectionEditor' => [
                 LOCALE_COMPONENT_CORE_SUBMISSION, 
                 LOCALE_COMPONENT_APP_SUBMISSION, 
                 LOCALE_COMPONENT_APP_EDITOR,
                 LOCALE_COMPONENT_APP_EDITORIAL
-            ),
-            'copyeditor' => array(
+            ],
+            'copyeditor' => [
                 LOCALE_COMPONENT_CORE_SUBMISSION,
                 LOCALE_COMPONENT_APP_EDITORIAL
-            ),
-            'layoutEditor' => array(
+            ],
+            'layoutEditor' => [
                 LOCALE_COMPONENT_CORE_SUBMISSION,
                 LOCALE_COMPONENT_APP_EDITORIAL
-            ),
-            'proofreader' => array(
+            ],
+            'proofreader' => [
                 LOCALE_COMPONENT_CORE_SUBMISSION,
                 LOCALE_COMPONENT_APP_EDITORIAL
-            ),
-            'manager' => array(
+            ],
+            'manager' => [
                 LOCALE_COMPONENT_CORE_MANAGER, 
                 LOCALE_COMPONENT_APP_MANAGER
-            ),
-            'admin' => array(
+            ],
+            'admin' => [
                 LOCALE_COMPONENT_CORE_ADMIN, 
                 LOCALE_COMPONENT_APP_ADMIN
-            ),
-            'user' => array(
+            ],
+            'user' => [
                 LOCALE_COMPONENT_CORE_USER, 
                 LOCALE_COMPONENT_APP_USER,
                 LOCALE_COMPONENT_APP_AUTHORIZATION
-            ),
-            'payment' => array(
+            ],
+            'payment' => [
                 LOCALE_COMPONENT_APP_PAYMENT
-            ),
-            'article' => array(
+            ],
+            'article' => [
                 LOCALE_COMPONENT_CORE_READER,
                 LOCALE_COMPONENT_APP_READING_TOOLS,
                 LOCALE_COMPONENT_APP_LOG
-            )
-        );
+            ]
+        ];
 
         // 3. INJEKSI KOMPONEN SPESIFIK
         if (isset($routeMap[$page])) {
             $componentsToLoad = array_merge($componentsToLoad, $routeMap[$page]);
         }
 
-        // Opsional: Bisa menambahkan filter spesifik berdasarkan $op (operasi)
         if ($page === 'user' && $op === 'authorization') {
             $componentsToLoad[] = LOCALE_COMPONENT_APP_AUTHORIZATION;
         }
 
-        // 4. EKSEKUSI PEMUATAN
-        // Menghilangkan duplikat jika komponen sama, lalu memuatnya sekaligus
         $componentsToLoad = array_unique($componentsToLoad);
-        call_user_func_array(array('AppLocale', 'requireComponents'), $componentsToLoad);
+        call_user_func_array(['AppLocale', 'requireComponents'], $componentsToLoad);
     }
     
     /**

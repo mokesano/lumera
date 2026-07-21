@@ -13,7 +13,9 @@ declare(strict_types=1);
  * @ingroup pages_billing
  *
  * @brief Pusat Kendali Finansial (B2B) untuk pengguna (Author/Reviewer). 
- * Handler bertanggung jawab menampilkan daftar tagihan, merender rincian tagihan (HTML/PDF) melalui Smart Router, serta menangani antarmuka pembayaran dan pembatalan dengan validasi keamanan SHA-256 yang disediakan oleh SecurityHashService.
+ * Handler bertanggung jawab menampilkan daftar tagihan, merender rincian tagihan (HTML/PDF)
+ * melalui Smart Router, serta menangani antarmuka pembayaran dan pembatalan
+ * dengan validasi keamanan SHA-256 yang disediakan oleh SecurityHashService.
  */
 
 import('classes.handler.Handler');
@@ -57,13 +59,13 @@ class BillingHandler extends Handler {
         // Pastikan komponen bahasa dimuat (sesuaikan LOCALE_COMPONENT 
         // Jika Wizdam Frontedge memiliki custom dictionary)
         AppLocale::requireComponents(
-            array(
+            [
                 LOCALE_COMPONENT_CORE_COMMON, 
                 LOCALE_COMPONENT_CORE_USER, 
                 LOCALE_COMPONENT_APPLICATION_COMMON,
                 LOCALE_COMPONENT_APP_MANAGER,
                 LOCALE_COMPONENT_APP_PAYMENT
-            )
+            ]
         );
     }
 
@@ -301,32 +303,33 @@ class BillingHandler extends Handler {
      * @param string $hash Hash keamanan asli milik invoice ini
      * @param Request $request Objek request App
      */
-private function _handleHtmlView(object $invoice, string $qrCodeBase64, string $hash, $request): void {
-    $viewData = $this->invoiceService->getInvoiceSummary($invoice);
-    
-    $invoiceId  = $invoice->getInvoiceId(); // FIXED: getId() -> getInvoiceId()
-    $securePath = "{$hash}-{$invoiceId}";   // BARU: dikirim ke template
-    $pdfUrl     = $request->url(null, 'billing', 'invoice', ["pdf-{$securePath}"]);
+    private function _handleHtmlView(object $invoice, string $qrCodeBase64, string $hash, $request): void {
+        $viewData = $this->invoiceService->getInvoiceSummary($invoice);
+        
+        $invoiceId  = $invoice->getInvoiceId(); // FIXED: getId() -> getInvoiceId()
+        $securePath = "{$hash}-{$invoiceId}";   // BARU: dikirim ke template
+        $pdfUrl     = $request->url(null, 'billing', 'invoice', ["pdf-{$securePath}"]);
 
-    $viewData['qrCodeImage']    = $qrCodeBase64;
-    $viewData['pdfDownloadUrl'] = $pdfUrl;
-    $viewData['securePath']     = $securePath; // BARU: untuk Cancel & Pay URL di template
-    $viewData['pageTitle']      = 'billing.invoiceDetail';
-    
-    $viewData['pageHierarchy'] = [
-        [$request->url(null, 'user'), 'navigation.user'],
-        [$request->url(null, 'billing', 'index'), 'billing.globalBilling']
-    ];
+        $viewData['qrCodeImage']    = $qrCodeBase64;
+        $viewData['pdfDownloadUrl'] = $pdfUrl;
+        $viewData['securePath']     = $securePath; // BARU: untuk Cancel & Pay URL di template
+        $viewData['pageTitle']      = 'billing.invoiceDetail';
+        
+        $viewData['pageHierarchy'] = [
+            [$request->url(null, 'user'), 'navigation.user'],
+            [$request->url(null, 'billing', 'index'), 'billing.globalBilling']
+        ];
 
-    $templateMgr = TemplateManager::getManager($request);
-    $templateMgr->assign($viewData);
-    $templateMgr->display('billing/invoice.tpl');
-}
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign($viewData);
+        $templateMgr->display('billing/invoice.tpl');
+    }
 
     /**
      * PRIVATE: Memerintahkan PdfService untuk men-generate dan mengunduh PDF.
      * @param object $invoice Entitas data Invoice
      * @param string $qrCodeBase64 Gambar Base64 dari QR Code
+     * @param mixed $request
      */
     private function _handlePdfDownload(object $invoice, string $qrCodeBase64, $request): void {
         $pdfService = new PdfService();
@@ -341,6 +344,8 @@ private function _handleHtmlView(object $invoice, string $qrCodeBase64, string $
 
     /**
      * HELPER: Melempar pengguna ke halaman Billing dengan notifikasi Error.
+     * @param mixed $request
+     * @param string $localeKey
      */
     private function _redirectWithError($request, string $localeKey): void {
         import('classes.notification.NotificationManager');
@@ -361,6 +366,10 @@ private function _handleHtmlView(object $invoice, string $qrCodeBase64, string $
 
     /**
      * HELPER: Standardisasi respons AJAX.
+     * @param mixed $request
+     * @param string $status
+     * @param string $message
+     * @param array $data
      */
     private function _sendJsonResponse($request, string $status, string $message, array $data = []): void {
         $isAjax = $request->getUserVar('ajax') == 1;
@@ -389,5 +398,6 @@ private function _handleHtmlView(object $invoice, string $qrCodeBase64, string $
             exit;
         }
     }
+
 }
 ?>

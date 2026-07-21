@@ -40,7 +40,7 @@ class PKPHandler {
     public $_authorizationDecisionManager = null;
 
     /** 
-     * [WIZDAM] New Property: Request Object Storage
+     * New Property: Request Object Storage
      * @var PKPRequest|null 
      */
     public $_request = null;

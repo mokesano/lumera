@@ -9,9 +9,9 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="user.profile.editProfile"}
-{url|assign:"url" op="profile"}
-{include file="common/header-parts/header-user.tpl"}
+    {assign var="pageTitle" value="user.profile.editProfile"}
+    {url|assign:"url" op="profile"}
+    {include file="common/header-parts/header-user.tpl"}
 {/strip}
 
 <div class="auth-container">
@@ -25,10 +25,7 @@
         </div>
 
         <form id="profile" method="post" action="{url op="saveProfile"}" enctype="multipart/form-data">
-            
-            {* WIZDAM SECURITY: Token CSRF Wajib Ada *}
-            <input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
-
+            <input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
             {include file="common/formErrors.tpl"}
 
             <div class="form-section-note">

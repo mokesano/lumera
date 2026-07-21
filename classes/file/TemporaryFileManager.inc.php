@@ -21,7 +21,6 @@ class TemporaryFileManager extends PKPTemporaryFileManager {
     
     /**
      * Constructor.
-     * Create a manager for handling temporary file uploads.
      */
     public function __construct() {
         parent::__construct();
@@ -32,15 +31,18 @@ class TemporaryFileManager extends PKPTemporaryFileManager {
      */
     public function TemporaryFileManager() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::TemporaryFileManager(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                'Class ' . get_class($this) . ' uses deprecated constructor parent::TemporaryFileManager(). Please refactor to parent::__construct().',
+                E_USER_DEPRECATED
+            );
         }
         self::__construct();
     }
 
     /**
      * Create a new temporary file from an article file.
-     * @param $articleFile ArticleFile
-     * @param $userId int
+     * @param object $articleFile ArticleFile
+     * @param int $userId int
      * @return TemporaryFile|boolean The new TemporaryFile or false on failure
      */
     public function articleToTemporaryFile($articleFile, $userId) {
@@ -56,6 +58,7 @@ class TemporaryFileManager extends PKPTemporaryFileManager {
         if (!$newFileName) return false;
 
         if (copy($articleFile->getFilePath(), $this->getBasePath() . $newFileName)) {
+            /** @var TemporaryFileDAO $temporaryFileDao */
             $temporaryFileDao = DAORegistry::getDAO('TemporaryFileDAO');
             $temporaryFile = $temporaryFileDao->newDataObject();
 
@@ -74,6 +77,6 @@ class TemporaryFileManager extends PKPTemporaryFileManager {
             return false;
         }
     }
-}
 
+}
 ?>

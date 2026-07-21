@@ -96,7 +96,7 @@ class ChangePasswordForm extends Form {
      * Assign form data to user-submitted data.
      */
     public function readInputData() {
-        $this->readUserVars(array('oldPassword', 'password', 'password2'));
+        $this->readUserVars(['oldPassword', 'password', 'password2']);
     }
 
     /**

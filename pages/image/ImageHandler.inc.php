@@ -189,5 +189,6 @@ class ImageHandler extends Handler {
         readfile($filePath);
         exit;
     }
+    
 }
 ?>

@@ -23,6 +23,9 @@ class RedeemHandler extends Handler {
     
     private RedeemService $redeemService;
 
+    /**
+     * Constructor
+     */
     public function __construct() {
         parent::__construct();
         
@@ -33,10 +36,13 @@ class RedeemHandler extends Handler {
         $this->redeemService = new RedeemService();
     }
 
+    /**
+     * Setup template
+     */
     public function setupTemplate($request = null): void {
         parent::setupTemplate($request);
         AppLocale::requireComponents(
-            LOCALE_COMPONENT_APP_COMMON, 
+            LOCALE_COMPONENT_APPLICATION_COMMON, 
             LOCALE_COMPONENT_CORE_USER
         );
     }
@@ -121,6 +127,7 @@ class RedeemHandler extends Handler {
 
     /**
      * HELPER: Mengalihkan pengguna kembali ke dasbor dompet dengan Notifikasi Error.
+     * @param mixed $request
      */
     private function _redirectWithError($request, string $localeKey): void {
         import('classes.notification.NotificationManager');
@@ -138,5 +145,6 @@ class RedeemHandler extends Handler {
         $request->redirect(null, 'redeem', 'index');
         exit;
     }
+
 }
 ?>

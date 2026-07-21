@@ -13,7 +13,6 @@ declare(strict_types=1);
  *
  * @brief Provide access to category grid data. Can optionally use a grid data
  * provider object that already provides access to data that the grid needs.
- * [WIZDAM EDITION] Refactored for PHP 8.x Strict Standards.
  */
 
 // Import base class.
@@ -21,11 +20,7 @@ import('lib.pkp.classes.controllers.grid.GridDataProvider');
 
 class CategoryGridDataProvider extends GridDataProvider {
 
-    /** * @var GridDataProvider|null A grid data provider that can be
-     * used by this category grid data provider to provide access
-     * to common data.
-     * [WIZDAM] Renamed from $_dataProvider and typed.
-     */
+    /** @var GridDataProvider|null */
     public ?GridDataProvider $dataProvider = null;
 
     /**
@@ -45,7 +40,7 @@ class CategoryGridDataProvider extends GridDataProvider {
                 E_USER_DEPRECATED
             );
         }
-        self::__construct();
+        $this->__construct();
     }
 
     //
@@ -54,7 +49,6 @@ class CategoryGridDataProvider extends GridDataProvider {
     
     /**
      * Get a grid data provider object.
-     * [WIZDAM] Removed reference return (&)
      * @return GridDataProvider|null
      */
     public function getDataProvider(): ?GridDataProvider {
@@ -63,7 +57,6 @@ class CategoryGridDataProvider extends GridDataProvider {
 
     /**
      * Set a grid data provider object.
-     * [WIZDAM] Removed reference (&) from parameter.
      * @param GridDataProvider $dataProvider
      */
     public function setDataProvider($dataProvider) {
@@ -83,8 +76,9 @@ class CategoryGridDataProvider extends GridDataProvider {
     //
     
     /**
+     * Set authorized context
      * @see GridDataProvider::setAuthorizedContext()
-     * [WIZDAM] Removed reference (&) from parameter
+     * @param array $authorizedContext
      */
     public function setAuthorizedContext($authorizedContext) {
         // We need to pass the authorized context object to
@@ -104,7 +98,6 @@ class CategoryGridDataProvider extends GridDataProvider {
     
     /**
      * Retrieve the category data to load into the grid.
-     * [WIZDAM] Removed reference return (&)
      * @param mixed $categoryDataElement
      * @param array|null $filter
      * @return mixed
@@ -113,6 +106,6 @@ class CategoryGridDataProvider extends GridDataProvider {
         assert(false);
         return [];
     }
-}
 
+}
 ?>

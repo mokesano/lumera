@@ -14,7 +14,6 @@ declare(strict_types=1);
  * @brief Class defining operations for private journal file management.
  */
 
-
 import('lib.pkp.classes.file.FileManager');
 
 class JournalFileManager extends FileManager {
@@ -30,11 +29,9 @@ class JournalFileManager extends FileManager {
 
     /**
      * Constructor.
-     * Create a manager for handling journal file uploads.
-     * @param $journal Journal
+     * @param object $journal Journal
      */
     public function __construct($journal) {
-        // Hapus '&' pada parameter objek
         $this->journalId = $journal->getId();
         $this->journal = $journal;
         $this->filesDir = Config::getVar('files', 'files_dir') . '/journals/' . $this->journalId . '/';
@@ -44,6 +41,7 @@ class JournalFileManager extends FileManager {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param object $journal Journal
      */
     public function JournalFileManager($journal) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -54,8 +52,8 @@ class JournalFileManager extends FileManager {
 
     /**
      * Upload a file to the journal's private directory.
-     * @param string $fileName The name of the file in the upload form
-     * @param string $destFileName The destination file name (relative to journal files dir)
+     * @param string $fileName
+     * @param string $destFileName
      * @param string|null $errorMsg
      * @return boolean
      */
@@ -67,10 +65,10 @@ class JournalFileManager extends FileManager {
 
     /**
      * Download a file from the journal's private directory.
-     * @param string $filePath Relative path/filename
+     * @param string $filePath
      * @param string|null $mediaType MIME type
      * @param boolean $inline
-     * @param string|null $fileName Download filename
+     * @param string|null $fileName
      * @return boolean
      */
     public function downloadFile($filePath, $mediaType = null, $inline = false, $fileName = null) {
@@ -87,6 +85,6 @@ class JournalFileManager extends FileManager {
     public function deleteFile($fileName) {
         return parent::deleteFile($this->filesDir . $fileName);
     }
+    
 }
-
 ?>

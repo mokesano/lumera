@@ -30,7 +30,7 @@ class HandlerValidator {
 
     /**
      * Constructor.
-     * @param $handler Handler the associated form
+     * @param mixed $handler Handler the associated form
      * @param $redirectToLogin boolean
      * @param $message string the error message for validation failures (i18n key)
      * @param $additionalArgs array
@@ -41,7 +41,6 @@ class HandlerValidator {
         // FIXME: Switch warning message on when handler validator re-factoring is complete:
         // if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
 
-        // Hapus '&' pada assignment
         $this->handler = $handler;
         $this->redirectToLogin = $redirectToLogin;
         $this->message = $message;
@@ -50,6 +49,7 @@ class HandlerValidator {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $handler
      */
     public function HandlerValidator($handler, $redirectToLogin = false, $message = null, $additionalArgs = array()) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -71,12 +71,11 @@ class HandlerValidator {
      * Set the handler associated with this check. Used only for PHP4
      * compatibility when instantiating without =& (which is deprecated).
      * SHOULD NOT BE USED otherwise.
-     * @param $handler Handler
+     * @param mixed $handler Handler
      */
     public function _setHandler($handler) {
-        // Hapus '&'
         $this->handler = $handler;
     }
-}
 
+}
 ?>

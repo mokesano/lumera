@@ -36,13 +36,11 @@ class ProfileForm extends Form {
         
         // Validasi: pastikan user sudah login (Guard Clause)
         if (!$user) {
-            // Redirect ke halaman login jika user belum login
             Request::redirect(null, 'login');
             return;
         }
         
         $this->user = $user;
-        $site = Request::getSite();
         
         // Validation checks for this form
         $this->addCheck(new FormValidator($this, 'firstName', 'required', 'user.profile.form.firstNameRequired'));
@@ -50,11 +48,7 @@ class ProfileForm extends Form {
         $this->addCheck(new FormValidatorUrl($this, 'userUrl', 'optional', 'user.profile.form.urlInvalid'));
         $this->addCheck(new FormValidatorEmail($this, 'email', 'required', 'user.profile.form.emailRequired'));
         $this->addCheck(new FormValidatorORCID($this, 'orcid', 'optional', 'user.profile.form.orcidInvalid'));
-        $this->addCheck(new FormValidatorCustom($this, 'email', 'required', 'user.register.form.emailExists', array(DAORegistry::getDAO('UserDAO'), 'userExistsByEmail'), array($user->getId(), true), true));
-
-        import('lib.pkp.classes.form.validation.FormValidatorCSRF');
-        $this->addCheck(new FormValidatorCSRF($this));
-
+        $this->addCheck(new FormValidatorCustom($this, 'email', 'required', 'user.register.form.emailExists', [DAORegistry::getDAO('UserDAO'), 'userExistsByEmail'], [$user->getId(), true], true));
         $this->addCheck(new FormValidatorPost($this));
     }
 
@@ -63,12 +57,9 @@ class ProfileForm extends Form {
      */
     public function ProfileForm() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("
-            Class " . get_class($this) . " uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to parent::__construct().",
-            E_USER_DEPRECATED
-        );
+            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", E_USER_DEPRECATED);
         }
-        self::__construct();
+        $this->__construct();
     }
 
     /**
@@ -80,15 +71,14 @@ class ProfileForm extends Form {
         if (!$user) return false;
 
         $profileImage = $user->getSetting('profileImage');
-        if (!$profileImage) return false;
+        if (!$profileImage || !isset($profileImage['uploadName'])) return false;
 
         import('classes.file.PublicFileManager');
         $fileManager = new PublicFileManager();
-        if ($fileManager->removeSiteFile($profileImage['uploadName'])) {
+        if ($fileManager->removeSiteFile((string) $profileImage['uploadName'])) {
             return $user->updateSetting('profileImage', null);
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
@@ -107,65 +97,49 @@ class ProfileForm extends Form {
         $extension = $fileManager->getImageExtension($type);
         if (!$extension) return false;
 
-        // 1. KEAMANAN: GENERATE NAMA FILE (MURNI ANGKA & LAST NAME)
-        // Ambil lastName, bersihkan dari karakter aneh, ubah ke huruf kecil.
-        $lastName = $user->getLastName();
+        // 1. KEAMANAN: GENERATE NAMA FILE
+        $lastName = (string) $user->getLastName();
         $cleanLastName = !empty($lastName) ? preg_replace('/[^a-zA-Z0-9]/', '', strtolower($lastName)) : 'usr';
         
         $userId = (int) $user->getId();
-        
-        // [LUMERA MAGIC] Mengaburkan User ID menjadi angka murni
-        // Rumus: (ID * 83) + 10024. Jika ID = 42, hasilnya = 13510
         $obfuscatedId = ($userId * 83) + 10024; 
-        
-        // Tambahkan angka acak dan detik saat ini agar file selalu unik (mencegah cache browser)
         $dynamicNumbers = mt_rand(100, 999) . date('is'); 
-        
-        // Gabungkan ID samar dengan angka dinamis
-        $numericHash = $obfuscatedId . $dynamicNumbers;
+        $numericHash = (string) $obfuscatedId . $dynamicNumbers;
 
-        // Susun format akhir: doe-profile-135104821530.jpg
-        $uploadName = sprintf('%s-profile-%s%s', $cleanLastName, $numericHash, $extension);
+        $uploadName = sprintf('%s-profile-%s%s', $cleanLastName, $numericHash, (string) $extension);
 
-        // [PENTING] Hapus foto lama di server agar tidak menumpuk menjadi file sampah
+        // Hapus foto lama
         $oldProfileImage = $user->getSetting('profileImage');
         if ($oldProfileImage && isset($oldProfileImage['uploadName'])) {
-            $fileManager->removeSiteFile($oldProfileImage['uploadName']);
+            $fileManager->removeSiteFile((string) $oldProfileImage['uploadName']);
         }
 
-        // Upload file asli secara sementara dengan nama baru
         if (!$fileManager->uploadSiteFile('profileImage', $uploadName)) return false;
 
         $filePath = $fileManager->getSiteFilesPath();
         $fullFilePath = $filePath . '/' . $uploadName;
         
-        // Strict Safety: Pastikan file benar-benar ada sebelum diproses
         if (!file_exists($fullFilePath)) return false;
         
         $imageSize = @getimagesize($fullFilePath);
-        
-        // Jika file bukan gambar valid (misal file .txt di-rename), getimagesize return false
         if ($imageSize === false) {
             $fileManager->removeSiteFile($uploadName);
             return false;
         }
 
-        list($width, $height) = $imageSize;
-        $mime = $imageSize['mime'];
+        $width = (int) $imageSize[0];
+        $height = (int) $imageSize[1];
+        $mime = $imageSize['mime'] ?? 'application/octet-stream';
 
-        // 2. UX: AUTO-KOMPRESI GAMBAR (DENGAN SAFE GUARD GD LIBRARY)
-        $maxFileSize = 1048576; // 1 MB (dalam bytes)
-        $actualFileSize = filesize($fullFilePath);
+        // 2. UX: AUTO-KOMPRESI GAMBAR
+        $maxFileSize = 1048576; // 1 MB
+        $actualFileSize = (int) filesize($fullFilePath);
 
         if ($actualFileSize > $maxFileSize) {
-            
-            // [SAFETY CHECK] Periksa apakah GD Library tersedia di server
             $gdInstalled = extension_loaded('gd') && function_exists('imagecreatetruecolor');
 
             if ($gdInstalled) {
-                // RENCANA A: Lakukan Kompresi Cerdas dengan GD Library
                 $image = null;
-                
                 switch ($mime) {
                     case 'image/jpeg':
                     case 'image/pjpeg':
@@ -194,7 +168,7 @@ class ProfileForm extends Form {
 
                     $newImage = imagecreatetruecolor($newWidth, $newHeight);
                     
-                    if ($mime == 'image/png' || $mime == 'image/gif') {
+                    if ($mime === 'image/png' || $mime === 'image/gif') {
                         imagecolortransparent($newImage, imagecolorallocatealpha($newImage, 0, 0, 0, 127));
                         imagealphablending($newImage, false);
                         imagesavealpha($newImage, true);
@@ -222,33 +196,29 @@ class ProfileForm extends Form {
                     $width = $newWidth;
                     $height = $newHeight;
                 } else {
-                    // Fallback jika file corrupt dan gagal dibaca GD
                     $fileManager->removeSiteFile($uploadName); 
                     return false;
                 }
-                
             } else {
-                // RENCANA B: Fallback jika server tidak memiliki GD Library
                 $user->updateSetting('profileImage', null);
                 $fileManager->removeSiteFile($uploadName); 
                 return false; 
             }
         }
 
-        // Keamanan akhir: pastikan dimensi masuk akal
         if ($width <= 0 || $height <= 0) {
             $user->updateSetting('profileImage', null);
             $fileManager->removeSiteFile($uploadName); 
             return false;
         }
 
-        $userSetting = array(
-            'name' => $fileManager->getUploadedFileName('profileImage'),
+        $userSetting = [
+            'name' => (string) $fileManager->getUploadedFileName('profileImage'),
             'uploadName' => $uploadName,
             'width' => $width,
             'height' => $height,
             'dateUploaded' => Core::getCurrentDate()
-        );
+        ];
 
         $user->updateSetting('profileImage', $userSetting);
         return true;
@@ -256,8 +226,8 @@ class ProfileForm extends Form {
 
     /**
      * Display the form.
-     * @param PKPRequest|null $request
-     * @param string|null $template
+     * @param mixed $request
+     * @param mixed $template
      */
     public function display($request = null, $template = null) {
         $user = Request::getUser();
@@ -276,15 +246,13 @@ class ProfileForm extends Form {
         $roleDao = DAORegistry::getDAO('RoleDAO');
         /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
-        /** @var UserSettingsDAO $userSettingsDao */
-        $userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
         /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $journals = $journalDao->getJournals(true);
-        $journals = $journals->toArray();
+        $journalsArray = is_object($journals) ? $journals->toArray() : [];
 
-        foreach ($journals as $thisJournal) {
+        foreach ($journalsArray as $thisJournal) {
             if ($thisJournal->getSetting('publishingMode') == PUBLISHING_MODE_SUBSCRIPTION && $thisJournal->getSetting('enableOpenAccessNotification')) {
                 $templateMgr->assign('displayOpenAccessNotification', true);
                 $templateMgr->assign('user', $user);
@@ -298,15 +266,19 @@ class ProfileForm extends Form {
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
 
-        $templateMgr->assign('journals', $journals);
+        $templateMgr->assign('journals', $journalsArray);
         $templateMgr->assign('countries', $countries);
         $templateMgr->assign('helpTopicId', 'user.registerAndProfile');
 
         $journal = Request::getJournal();
         if ($journal) {
             $roles = $roleDao->getRolesByUserId($user->getId(), $journal->getId());
-            $roleNames = array();
-            foreach ($roles as $role) $roleNames[$role->getRolePath()] = $role->getRoleName();
+            $roleNames = [];
+            if (is_array($roles)) {
+                foreach ($roles as $role) {
+                    $roleNames[(string) $role->getRolePath()] = (string) $role->getRoleName();
+                }
+            }
             
             $templateMgr->assign('allowRegReviewer', $journal->getSetting('allowRegReviewer'));
             $templateMgr->assign('allowRegAuthor', $journal->getSetting('allowRegAuthor'));
@@ -315,7 +287,7 @@ class ProfileForm extends Form {
         }
         $templateMgr->assign('profileImage', $user->getSetting('profileImage'));
 
-        parent::display();
+        parent::display($request, $template);
     }
 
     /**
@@ -330,16 +302,16 @@ class ProfileForm extends Form {
     /**
      * Initialize form data from current settings.
      * @param mixed $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function initData($args = null, $request = null) {
-        $user = $request->getUser();
-        if (!$user) return; // Safety
+        $user = $request ? $request->getUser() : Request::getUser();
+        if (!$user) return;
 
         import('lib.pkp.classes.user.InterestManager');
         $interestManager = new InterestManager();
 
-        $this->_data = array(
+        $this->_data = [
             'salutation' => $user->getSalutation(),
             'firstName' => $user->getFirstName(),
             'middleName' => $user->getMiddleName(),
@@ -347,8 +319,8 @@ class ProfileForm extends Form {
             'lastName' => $user->getLastName(),
             'suffix' => $user->getSuffix(),
             'gender' => $user->getGender(),
-            'affiliation' => $user->getAffiliation(null), // Localized
-            'signature' => $user->getSignature(null), // Localized
+            'affiliation' => $user->getAffiliation(null),
+            'signature' => $user->getSignature(null),
             'email' => $user->getEmail(),
             'orcid' => $user->getData('orcid'),
             'userUrl' => $user->getUrl(),
@@ -361,71 +333,50 @@ class ProfileForm extends Form {
             'fax' => $user->getFax(),
             'mailingAddress' => $user->getMailingAddress(),
             'country' => $user->getCountry(),
-            'biography' => $user->getBiography(null), // Localized
+            'biography' => $user->getBiography(null),
             'userLocales' => $user->getLocales(),
             'isAuthor' => Validation::isAuthor(),
             'isReader' => Validation::isReader(),
             'isReviewer' => Validation::isReviewer(),
             'interestsKeywords' => $interestManager->getInterestsForUser($user),
             'interestsTextOnly' => $interestManager->getInterestsString($user),
-        );
+            'gossip' => is_array($user->getSetting('gossip')) ? $user->getSetting('gossip') : [],
+        ];
 
-        return parent::initData();
+        return parent::initData($args, $request);
     }
 
     /**
      * Assign form data to user-submitted data.
      */
     public function readInputData() {
-        $this->readUserVars(array(
-            'salutation',
-            'firstName',
-            'middleName',
-            'lastName',
-            'suffix',
-            'gender',
-            'initials',
-            'affiliation',
-            'signature',
-            'email',
-            'orcid',
-            'userUrl',
-            'googleScholar',
-            'sintaId',
-            'scopusId',
-            'dimensionId',
-            'researcherId',
-            'phone',
-            'fax',
-            'mailingAddress',
-            'country',
-            'biography',
-            'keywords',
-            'interestsTextOnly',
-            'userLocales',
-            'readerRole',
-            'authorRole',
-            'reviewerRole'
-        ));
+        $this->readUserVars([
+            'salutation', 'firstName', 'middleName', 'lastName', 'suffix', 'gender',
+            'initials', 'affiliation', 'signature', 'email', 'orcid', 'userUrl',
+            'googleScholar', 'sintaId', 'scopusId', 'dimensionId', 'researcherId',
+            'phone', 'fax', 'mailingAddress', 'country', 'biography', 'keywords',
+            'interestsTextOnly', 'userLocales', 'readerRole', 'authorRole', 'reviewerRole',
+            'gossip'
+        ]);
 
-        if ($this->getData('userLocales') == null || !is_array($this->getData('userLocales'))) {
-            $this->setData('userLocales', array());
+        $userLocales = $this->getData('userLocales');
+        if ($userLocales === null || !is_array($userLocales)) {
+            $this->setData('userLocales', []);
         }
 
         $keywords = $this->getData('keywords');
-        if ($keywords != null && is_array($keywords) && isset($keywords['interests']) && is_array($keywords['interests'])) {
-            // The interests are coming in encoded -- Decode them for DB storage
+        if ($keywords !== null && is_array($keywords) && isset($keywords['interests']) && is_array($keywords['interests'])) {
             $this->setData('interestsKeywords', array_map('urldecode', $keywords['interests']));
         }
     }
 
     /**
      * Save profile settings.
-     * @param object|null $object
+     * @param mixed $object
      */
     public function execute($object = null) {
         $user = Request::getUser();
-        if (!$user) return; // Safety
+        if (!$user) return;
 
         $user->setSalutation($this->getData('salutation'));
         $user->setFirstName($this->getData('firstName'));
@@ -434,8 +385,8 @@ class ProfileForm extends Form {
         $user->setSuffix($this->getData('suffix'));
         $user->setGender($this->getData('gender'));
         $user->setInitials($this->getData('initials'));
-        $user->setAffiliation($this->getData('affiliation'), null); // Localized
-        $user->setSignature($this->getData('signature'), null); // Localized
+        $user->setAffiliation($this->getData('affiliation'), null);
+        $user->setSignature($this->getData('signature'), null);
         $user->setEmail($this->getData('email'));
         $user->setData('orcid', $this->getData('orcid'));
         $user->setUrl($this->getData('userUrl'));
@@ -448,10 +399,14 @@ class ProfileForm extends Form {
         $user->setFax($this->getData('fax'));
         $user->setMailingAddress($this->getData('mailingAddress'));
         $user->setCountry($this->getData('country'));
-        $user->setBiography($this->getData('biography'), null); // Localized
+        $user->setBiography($this->getData('biography'), null);
 
-        // Insert the user interests
-        $interests = $this->getData('interestsKeywords') ? $this->getData('interestsKeywords') : $this->getData('interestsTextOnly');
+        $gossip = $this->getData('gossip');
+        if (is_array($gossip)) {
+            $user->updateSetting('gossip', $gossip, 'object', true);
+        }
+
+        $interests = $this->getData('interestsKeywords') ?: $this->getData('interestsTextOnly');
         import('lib.pkp.classes.user.InterestManager');
         $interestManager = new InterestManager();
         $interestManager->setInterestsForUser($user, $interests);
@@ -459,13 +414,12 @@ class ProfileForm extends Form {
         $site = Request::getSite();
         $availableLocales = $site->getSupportedLocales();
 
-        $locales = array();
-        // PHP 8 Safety: Ensure iterable
+        $locales = [];
         $userLocales = $this->getData('userLocales');
         if (is_array($userLocales)) {
             foreach ($userLocales as $locale) {
-                if (AppLocale::isLocaleValid($locale) && in_array($locale, $availableLocales)) {
-                    array_push($locales, $locale);
+                if (AppLocale::isLocaleValid((string) $locale) && in_array($locale, $availableLocales)) {
+                    $locales[] = (string) $locale;
                 }
             }
         }
@@ -482,14 +436,12 @@ class ProfileForm extends Form {
         /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
 
-        // Roles
         $journal = Request::getJournal();
         if ($journal) {
             $role = new Role();
             $role->setUserId($user->getId());
             $role->setJournalId($journal->getId());
             
-            // Simplified logic for readability
             $roleChecks = [
                 'allowRegReviewer' => ['id' => ROLE_ID_REVIEWER, 'check' => Validation::isReviewer(), 'var' => 'reviewerRole'],
                 'allowRegAuthor' => ['id' => ROLE_ID_AUTHOR, 'check' => Validation::isAuthor(), 'var' => 'authorRole'],
@@ -499,8 +451,8 @@ class ProfileForm extends Form {
             foreach ($roleChecks as $setting => $data) {
                 if ($journal->getSetting($setting)) {
                     $role->setRoleId($data['id']);
-                    $hasRole = $data['check'];
-                    $wantsRole = Request::getUserVar($data['var']);
+                    $hasRole = (bool) $data['check'];
+                    $wantsRole = (bool) Request::getUserVar($data['var']);
                     
                     if ($hasRole && !$wantsRole) $roleDao->deleteRole($role);
                     if (!$hasRole && $wantsRole) $roleDao->insertRole($role);
@@ -513,28 +465,26 @@ class ProfileForm extends Form {
         /** @var UserSettingsDAO $userSettingsDao */
         $userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
         $journals = $journalDao->getJournals(true);
-        $journals = $journals->toArray();
+        $journalsArray = is_object($journals) ? $journals->toArray() : [];
 
-        foreach ($journals as $thisJournal) {
+        foreach ($journalsArray as $thisJournal) {
             if ($thisJournal->getSetting('publishingMode') == PUBLISHING_MODE_SUBSCRIPTION && $thisJournal->getSetting('enableOpenAccessNotification')) {
-                $currentlyReceives = $user->getSetting('openAccessNotification', $thisJournal->getJournalId());
-                $shouldReceive = !empty($openAccessNotify) && is_array($openAccessNotify) && in_array($thisJournal->getJournalId(), $openAccessNotify);
-                
-                if ($currentlyReceives != $shouldReceive) {
+                $currentlyReceives = (bool) $user->getSetting('openAccessNotification', $thisJournal->getJournalId());
+                $shouldReceive = is_array($openAccessNotify) && in_array($thisJournal->getJournalId(), $openAccessNotify);
+
+                if ($currentlyReceives !== $shouldReceive) {
                     $userSettingsDao->updateSetting($user->getId(), 'openAccessNotification', $shouldReceive, 'bool', $thisJournal->getJournalId());
                 }
             }
         }
 
-        $auth = null;
         if ($user->getAuthId()) {
             /** @var AuthSourceDAO $authDao */
             $authDao = DAORegistry::getDAO('AuthSourceDAO');
             $auth = $authDao->getPlugin($user->getAuthId());
-        }
-
-        if (isset($auth)) {
-            $auth->doSetUserInfo($user);
+            if ($auth) {
+                $auth->doSetUserInfo($user);
+            }
         }
     }
 

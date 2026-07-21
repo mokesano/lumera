@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_sectionEditor
  *
  * @brief Handle requests for submission comments.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.sectionEditor.SubmissionEditHandler');
@@ -188,7 +186,7 @@ class SubmissionCommentsHandler extends SectionEditorHandler {
         $this->validate($articleId);
         $this->setupTemplate(true);
 
-        SectionEditorAction::viewLayoutComments($this->submission, $request);
+        SectionEditorAction::viewLayoutComments($this->submission);
     }
 
     /**
@@ -380,6 +378,7 @@ class SubmissionCommentsHandler extends SectionEditorHandler {
         // Save the comment.
         SectionEditorAction::saveComment($this->submission, $comment, $emailComment, $request);
 
+        /** @var ArticleCommentDAO $articleCommentDao */
         $articleCommentDao = DAORegistry::getDAO('ArticleCommentDAO');
         $comment = $articleCommentDao->getArticleCommentById($commentId);
 
@@ -430,5 +429,6 @@ class SubmissionCommentsHandler extends SectionEditorHandler {
             $request->redirect(null, null, 'viewProofreadComments', $articleId);
         }
     }
+    
 }
 ?>

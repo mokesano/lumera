@@ -24,7 +24,6 @@ class PKPTemporaryFileManager extends PrivateFileManager {
      */
     public function __construct() {
         parent::__construct();
-
         $this->_performPeriodicCleanup();
     }
 
@@ -33,141 +32,149 @@ class PKPTemporaryFileManager extends PrivateFileManager {
      */
     public function PKPTemporaryFileManager() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::PKPTemporaryFileManager(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                'Class ' . get_class($this) . ' uses deprecated constructor parent::PKPTemporaryFileManager(). Please refactor to parent::__construct().',
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $this->__construct();
     }
 
     /**
      * Get the base path for temporary file storage.
      * @return string
      */
-    public function getBasePath() {
+    public function getBasePath(): string {
         return parent::getBasePath() . '/temp/';
     }
 
     /**
      * Retrieve file information by file ID.
-     * @param $fileId int
-     * @param $userId int
-     * @return TemporaryFile
+     * @param int $fileId
+     * @param int|null $userId
+     * @return TemporaryFile|null
      */
-    public function getFile($fileId, $userId) {
+    public function getFile($fileId, $userId = null) {
+        /** @var TemporaryFileDAO $temporaryFileDao */
         $temporaryFileDao = DAORegistry::getDAO('TemporaryFileDAO');
-        $temporaryFile = $temporaryFileDao->getTemporaryFile($fileId, $userId);
-        return $temporaryFile;
+
+        return $temporaryFileDao->getTemporaryFile((int) $fileId, $userId !== null ? (int) $userId : null);
     }
 
     /**
      * Read a file's contents.
-     * @param $fileId int
-     * @param $userId int
-     * @param $output boolean output the file's contents instead of returning a string
-     * @return boolean|string
+     * @param int $fileId
+     * @param int|null $userId
+     * @param bool $output
+     * @return bool|string
      */
     public function readFile($fileId, $userId = null, $output = false) {
-        $temporaryFile = $this->getFile($fileId, $userId);
+        $temporaryFile = $this->getFile((int) $fileId, $userId);
 
-        if (isset($temporaryFile)) {
+        if ($temporaryFile !== null) {
             $filePath = $this->getBasePath() . $temporaryFile->getFileName();
             return parent::readFile($filePath, $output);
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
      * Delete a file by ID.
-     * @param $fileId int
-     * @param $userId int
+     * @param int $fileId
+     * @param int|null $userId
      */
     public function deleteFile($fileId, $userId = null) {
-        $temporaryFile = $this->getFile($fileId, $userId);
+        $temporaryFile = $this->getFile((int) $fileId, $userId);
 
-        if (isset($temporaryFile)) {
+        if ($temporaryFile !== null) {
             parent::deleteFile($this->getBasePath() . $temporaryFile->getFileName());
 
+            /** @var TemporaryFileDAO $temporaryFileDao */
             $temporaryFileDao = DAORegistry::getDAO('TemporaryFileDAO');
-            $temporaryFileDao->deleteTemporaryFileById($fileId, $userId);
+            
+            $temporaryFileDao->deleteTemporaryFileById((int) $fileId, $userId !== null ? (int) $userId : null);
         }
     }
 
     /**
      * Download a file.
-     * Overrides parent::downloadFile but accepts different parameters logic internally.
-     * NOTE: Signature mismatch fixed to support both usage patterns or corrected based on intent.
-     * In OJS 2.x logic, usually downloadFile($fileId, $userId).
-     * However, parent expects ($filePath, $mediaType...).
-     * * @param $fileId int the file id of the file to download
-     * @param $userId int|null
-     * @param $inline boolean
-     * @return boolean
+     * @param int $fileId
+     * @param int|null $userId
+     * @param bool $inline
+     * @param string|null $fileName
+     * @return bool
      */
     public function downloadFile($fileId, $userId = null, $inline = false, $fileName = null) {
-        $temporaryFile = $this->getFile($fileId, $userId);
-        if (isset($temporaryFile)) {
+        $temporaryFile = $this->getFile((int) $fileId, $userId);
+        
+        if ($temporaryFile !== null) {
             $filePath = $this->getBasePath() . $temporaryFile->getFileName();
-            // Panggil parent dengan path fisik
             return parent::downloadFile($filePath, $temporaryFile->getFileType(), $inline, $temporaryFile->getOriginalFileName());
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
      * Upload the file and add it to the database.
-     * @param $fileName string index into the $_FILES array
-     * @param $userId int
-     * @return object The new TemporaryFile or false on failure
+     * @param string $fileName index into the $_FILES array
+     * @param int $userId
+     * @return TemporaryFile|bool
      */
     public function handleUpload($fileName, $userId) {
-        // Get the file extension, then rename the file.
-        $fileExtension = $this->parseFileExtension($this->getUploadedFileName($fileName));
-
-        if (!$this->fileExists($this->getBasePath(), 'dir')) {
-            // Try to create destination directory
-            $this->mkdirtree($this->getBasePath());
+        if (!isset($_FILES[$fileName]) || !is_uploaded_file($_FILES[$fileName]['tmp_name'])) {
+            return false;
         }
 
-        $newFileName = basename(tempnam($this->getBasePath(), $fileExtension));
-        if (!$newFileName) return false;
+        $fileExtension = $this->parseFileExtension($this->getUploadedFileName((string) $fileName));
+        $basePath = $this->getBasePath();
 
-        // Modernisasi: uploadFile sekarang strict, errorMsg optional
+        if (!$this->fileExists($basePath, 'dir')) {
+            $this->mkdirtree($basePath);
+        }
+
+        $newFileName = basename(tempnam($basePath, $fileExtension));
+        if (!$newFileName) {
+            return false;
+        }
+
         $errorMsg = null;
-        if ($this->uploadFile($fileName, $this->getBasePath() . $newFileName, $errorMsg)) {
+        if ($this->uploadFile($fileName, $basePath . $newFileName, $errorMsg)) {
+            /** @var TemporaryFileDAO $temporaryFileDao */
             $temporaryFileDao = DAORegistry::getDAO('TemporaryFileDAO');
             $temporaryFile = $temporaryFileDao->newDataObject();
 
-            $temporaryFile->setUserId($userId);
+            $temporaryFile->setUserId((int) $userId);
             $temporaryFile->setFileName($newFileName);
-            // Gunakan metode helper MIME detection yang lebih aman jika ada
-            $temporaryFile->setFileType($this->getUploadedFileType($fileName)); 
-            $temporaryFile->setFileSize($_FILES[$fileName]['size']);
-            $temporaryFile->setOriginalFileName($this->truncateFileName($_FILES[$fileName]['name'], 127));
+            $temporaryFile->setFileType((string) $this->getUploadedFileType($fileName));
+            $temporaryFile->setFileSize((int) $_FILES[$fileName]['size']);
+            $temporaryFile->setOriginalFileName($this->truncateFileName((string) $_FILES[$fileName]['name'], 127));
             $temporaryFile->setDateUploaded(Core::getCurrentDate());
 
             $temporaryFileDao->insertTemporaryFile($temporaryFile);
 
             return $temporaryFile;
-
-        } else {
-            return false;
         }
+        
+        return false;
     }
 
     /**
      * Perform periodic cleanup tasks. This is used to occasionally
      * remove expired temporary files.
      */
-    public function _performPeriodicCleanup() {
-        if (time() % 100 == 0) {
+    public function _performPeriodicCleanup(): void {
+        if (time() % 100 === 0) {
+            /** @var TemporaryFileDAO $temporaryFileDao */
             $temporaryFileDao = DAORegistry::getDAO('TemporaryFileDAO');
             $expiredFiles = $temporaryFileDao->getExpiredFiles();
-            foreach ($expiredFiles as $expiredFile) {
-                $this->deleteFile($expiredFile->getId(), $expiredFile->getUserId());
+
+            if (is_array($expiredFiles) || $expiredFiles instanceof \Traversable) {
+                foreach ($expiredFiles as $expiredFile) {
+                    $this->deleteFile($expiredFile->getId(), $expiredFile->getUserId());
+                }
             }
         }
     }
-}
 
+}
 ?>

@@ -265,5 +265,6 @@ class ArticleComment extends DataObject {
     public function setViewable($viewable) {
         return $this->setData('viewable', $viewable);
     }
+    
 }
 ?>

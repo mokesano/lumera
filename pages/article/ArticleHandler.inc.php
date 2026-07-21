@@ -498,8 +498,7 @@ class ArticleHandler extends Handler {
     public function downloadSuppFile($args, $request) {
         $articleId = isset($args[0]) ? (int) $args[0] : 0;
         $suppId = isset($args[1]) ? $args[1] : 0;
-        
-        // [WIZDAM] 2 args - $galleyId akan null di validate()
+
         $this->validate($request, $articleId);
         $journal = $this->journal;
         $article = $this->article;
@@ -820,5 +819,6 @@ class ArticleHandler extends Handler {
 
         $templateMgr->display('article/metrics.tpl');
     }
+
 }
 ?>

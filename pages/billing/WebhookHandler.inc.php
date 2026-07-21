@@ -120,5 +120,6 @@ class WebhookHandler extends Handler {
             exit('Internal Server Error');
         }
     }
+    
 }
 ?>

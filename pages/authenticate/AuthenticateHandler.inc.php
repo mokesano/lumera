@@ -222,5 +222,6 @@ class AuthenticateHandler extends Handler {
         ]);
         $templateMgr->display('common/message.tpl');
     }
+    
 }
 ?>

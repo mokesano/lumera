@@ -12,13 +12,12 @@ declare(strict_types=1);
  * @ingroup manager_form
  *
  * @brief Form for managers to create/edit announcements.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.form.Form');
 
 class PKPAnnouncementForm extends Form {
+
     /** @var int|null the ID of the announcement being edited */
     public $announcementId;
 
@@ -83,12 +82,17 @@ class PKPAnnouncementForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param int $contextId
+     * @param int|null $announcementId
      */
     public function PKPAnnouncementForm($contextId, $announcementId = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::PKPAnnouncementForm(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                'Class ' . get_class($this) . ' uses deprecated constructor parent::PKPAnnouncementForm(). Please refactor to parent::__construct().',
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct($contextId, $announcementId);
+        $this->__construct($contextId, $announcementId);
     }
 
 
@@ -127,9 +131,9 @@ class PKPAnnouncementForm extends Form {
         $templateMgr->assign('announcementId', $this->announcementId);
         $templateMgr->assign('yearOffsetFuture', ANNOUNCEMENT_EXPIRE_YEAR_OFFSET_FUTURE);
 
+        /** @var AnnouncementTypeDAO $announcementTypeDao */
         $announcementTypeDao = DAORegistry::getDAO('AnnouncementTypeDAO');
         list($assocType, $assocId) = $this->_getAnnouncementTypesAssocId();
-        // Hapus '&'
         $announcementTypes = $announcementTypeDao->getByAssoc($assocType, $assocId);
         $templateMgr->assign('announcementTypes', $announcementTypes);
         $templateMgr->assign('notificationToggle', $this->getData('notificationToggle'));
@@ -142,6 +146,7 @@ class PKPAnnouncementForm extends Form {
      */
     public function initData() {
         if (isset($this->announcementId)) {
+            /** @var AnnouncementDAO $announcementDao */
             $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
             $announcement = $announcementDao->getById($this->announcementId);
 
@@ -160,9 +165,9 @@ class PKPAnnouncementForm extends Form {
             } else {
                 $this->announcementId = null;
                 $this->_data = [
-                    'title' => [],            // [WIZDAM FIX] PHP 8 Safe Init
-                    'descriptionShort' => [], // [WIZDAM FIX] PHP 8 Safe Init
-                    'description' => [],      // [WIZDAM FIX] PHP 8 Safe Init
+                    'title' => [],
+                    'descriptionShort' => [],
+                    'description' => [],
                     'datePosted' => Core::getCurrentDate(),
                     'notificationToggle' => true,
                 ];
@@ -191,6 +196,7 @@ class PKPAnnouncementForm extends Form {
      * @return Announcement
      */
     public function execute($request = null) {
+        /** @var AnnouncementDAO $announcementDao */
         $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
 
         if (isset($this->announcementId)) {
@@ -252,7 +258,7 @@ class PKPAnnouncementForm extends Form {
     //
     /**
      * Get Assoc ID and Type
-     * [WIZDAM FIX] Visibility set to protected to match child class
+     * Visibility set to protected to match child class
      * @return array
      */
     protected function _getAnnouncementTypesAssocId() {
@@ -262,11 +268,12 @@ class PKPAnnouncementForm extends Form {
     
     /**
      * Set Assoc ID
-     * [WIZDAM FIX] Visibility set to protected to match child class
+     * Visibility set to protected to match child class
      */
     protected function _setAnnouncementAssocId($announcement) {
          // must be implemented by sub-classes
          assert(false);
     }
+
 }
 ?>

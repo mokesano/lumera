@@ -35,8 +35,8 @@ class HookRegistry {
 
     /**
      * Set the hooks table for the given hook name.
-     * @param $hookName string Name of hook to set
-     * @param $hooksToRegister array Array of callbacks for this hook
+     * @param string $hookName string
+     * @param array $hooksToRegister array
      */
     public static function setHooks($hookName, $hooksToRegister) {
         self::$hooks[$hookName] = $hooksToRegister;
@@ -44,7 +44,7 @@ class HookRegistry {
 
     /**
      * Clear hooks registered against the given name.
-     * @param $hookName string Name of hook
+     * @param string $hookName string
      */
     public static function clear($hookName) {
         if (isset(self::$hooks[$hookName])) {
@@ -54,8 +54,8 @@ class HookRegistry {
 
     /**
      * Register a hook against the given hook name.
-     * @param $hookName string Name of hook to register against
-     * @param $callback mixed Callback (object/array/string)
+     * @param string $hookName string
+     * @param mixed $callback mixed Callback (object/array/string)
      */
     public static function register($hookName, $callback) {
         if (!isset(self::$hooks[$hookName])) {
@@ -66,9 +66,8 @@ class HookRegistry {
 
     /**
 	 * Dispatch each callback registered against $hookName in sequence.
-     * MODERN REPLACEMENT FOR call().
-     * @param $hookName string The name of the hook
-     * @param $args mixed Hooks are called with this as the second param
+     * @param string $hookName string
+     * @param $args mixed
      * @return mixed
      */
     public static function dispatch($hookName, $args = null) {
@@ -82,28 +81,21 @@ class HookRegistry {
         if (!isset(self::$hooks[$hookName])) {
             return false;
         }
-        
-        // --- "MODERNISASI TUNTAS" (Memperbaiki "Perang" 404 vs Sidebar) ---
-        $result = false; // Inisialisasi
-       
-        // Periksa apakah ini Sidebar (mengubah perilaku sidebar)
+
+        $result = false;
         $isSidebarHook = ($hookName == 'Templates::Common::LeftSidebar' || $hookName == 'Templates::Common::RightSidebar');
 
         if ($isSidebarHook) {
-            // UNTUK SIDEBAR: JANGAN 'break;'. Panggil semua.
             foreach (self::$hooks[$hookName] as $hook) {
                $result = call_user_func($hook, $hookName, $args);
-               // TIDAK ADA 'break;'
             }
         } else {
-            // UNTUK HOOK LAIN (Termasuk 'LoadHandler' 404): GUNAKAN 'break;'
             foreach (self::$hooks[$hookName] as $hook) {
                 if ($result = call_user_func($hook, $hookName, $args)) {
-                    break; // <-- "SUMBATAN 404 TERPECAHKAN
+                    break;
                 }
             }
         }
-        // --- AKHIR "MODERNISASI TUNTAS" ---
         
         return $result;
     }
@@ -111,12 +103,11 @@ class HookRegistry {
     /**
      * LEGACY SHIM: Call each callback registered against $hookName in sequence.
      * Mengarahkan ke dispatch() untuk eksekusi logika.
-     * @param $hookName string The name of the hook
-     * @param $args mixed Hooks are called with this as the second param
+     * @param string $hookName string
+     * @param mixed $args mixed
      * @return mixed
      */
     public static function call($hookName, $args = null) {
-        // AUDIT CERDAS: Gunakan debug_backtrace untuk menemukan file pemanggil
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
         $callerInfo = isset($trace[0]['file']) 
             ? "Called from " . $trace[0]['file'] . " on line " . $trace[0]['line'] 
@@ -163,6 +154,6 @@ class HookRegistry {
     public static function getCalledHooks() {
         return self::$calledHooks;
     }
+    
 }
-
 ?>
