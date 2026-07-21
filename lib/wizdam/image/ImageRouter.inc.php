@@ -83,7 +83,7 @@ class ImageRouter {
                 $obj = $articleDao->getPublishedArticleById($id);
                 if ($obj) {
                     $journalId = (int) $obj->getJournalId();
-                    $fileName = $obj->getLocalizedCoverPageFileName();
+                    $fileName = $obj->getLocalizedHideCoverPageAbstract(); 
                     $subFolder = 'cover_article';
                 }
                 break;
