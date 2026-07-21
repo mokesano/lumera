@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class Plugin
  * @ingroup plugins
  *
- * @brief Abstract class for plugins
- * MODERNIZED FOR PHP 8.x+
+ * @brief Abstract class for plugins.
  */
 
 import('lib.pkp.classes.plugins.PKPPlugin');
@@ -30,13 +29,13 @@ class Plugin extends PKPPlugin {
      * Backwards compatible convenience version of
      * the generic getContextSpecificSetting() method.
      * @see PKPPlugin::getContextSpecificSetting()
-     * @param $journalId
-     * @param $name
+     * 
+     * @param int $journalId
+     * @param string $name
      */
     public function getSetting($journalId, $name) {
         if (defined('RUNNING_UPGRADE')) {
-            // Bug #2504: Make sure plugin_settings table is not
-            // used if it's not available.
+            /** @var VersionDAO $versionDao */
             $versionDao = DAORegistry::getDAO('VersionDAO');
             $version = $versionDao->getCurrentVersion();
             if ($version->compare('2.1.0') < 0) return null;
@@ -47,10 +46,11 @@ class Plugin extends PKPPlugin {
     /**
      * Backwards compatible convenience version of the generic method.
      * @see PKPPlugin::updateContextSpecificSetting()
-     * @param $journalId int
-     * @param $name string The name of the setting
-     * @param $value mixed
-     * @param $type string optional
+     * 
+     * @param int $journalId int
+     * @param string $name string
+     * @param mixed $value mixed
+     * @param string $type string
      */
     public function updateSetting($journalId, $name, $value, $type = null) {
         $this->updateContextSpecificSetting([$journalId], $name, $value, $type);
@@ -77,5 +77,6 @@ class Plugin extends PKPPlugin {
     public function getNewJournalPluginSettingsFile(): ?string {
         return null;
     }
+
 }
 ?>
