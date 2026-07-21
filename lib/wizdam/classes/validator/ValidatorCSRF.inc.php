@@ -10,7 +10,9 @@ declare(strict_types=1);
  *
  * [WIZDAM EDITION] - Enhanced
  * @class ValidatorCSRF
- * @brief Menangani pembuatan dan validasi token pencegah Cross-Site Request Forgery (CSRF).
+ * 
+ * @brief Menangani pembuatan dan validasi token 
+ * pencegah Cross-Site Request Forgery (CSRF).
  */
 
 class ValidatorCSRF {
@@ -27,7 +29,7 @@ class ValidatorCSRF {
 
     /**
      * Menghasilkan atau mengambil token CSRF dari sesi saat ini
-     * @return string Token CSRF yang valid
+     * @return string
      */
     public static function generateToken(): string {
         $request = Application::get()->getRequest();
@@ -61,8 +63,8 @@ class ValidatorCSRF {
 
     /**
      * Memvalidasi token yang dikirimkan oleh klien
-     * @param string|null $clientToken Token yang diterima dari input form
-     * @return bool True jika valid, False jika tidak valid atau kedaluwarsa
+     * @param string|null $clientToken
+     * @return bool
      */
     public static function checkToken(?string $clientToken): bool {
         if (empty($clientToken)) {
@@ -92,7 +94,7 @@ class ValidatorCSRF {
 
     /**
      * Helper untuk mencetak input hidden pada form HTML secara otomatis
-     * @return string HTML input hidden dengan nama FIELD_NAME
+     * @return string
      */
     public static function getHtmlInput(): string {
         $token = self::generateToken();
@@ -104,5 +106,6 @@ class ValidatorCSRF {
             htmlspecialchars($token, ENT_QUOTES, 'UTF-8')
         );
     }
+
 }
 ?>

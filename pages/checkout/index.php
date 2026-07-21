@@ -13,6 +13,7 @@ declare(strict_types=1);
  * Menghubungkan URL ke CheckoutHandler untuk menangani Cart, Billing, dan Payment.
  */
 
+/** @var string $op */
 switch ($op) {
     //
     // Cart Steps
@@ -28,4 +29,5 @@ switch ($op) {
 		import('pages.checkout.CheckoutHandler');
 		break;
 }
+
 ?>

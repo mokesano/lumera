@@ -16,32 +16,40 @@ declare(strict_types=1);
  */
 
 class EditableFile {
+
     /** @var string Content of the file */
-    public $contents;
+    public $contents = '';
     
     /** @var string Full path to the file */
-    public $filename;
+    public $filename = '';
 
     /**
      * Constructor.
-     * @param $filename string
+     * @param mixed $filename
      */
     public function __construct($filename) {
         import('lib.pkp.classes.file.FileWrapper');
-        $this->filename = $filename;
-        // Modernisasi: Hapus &
+
+        $this->filename = (string) $filename;
+        
         $wrapper = FileWrapper::wrapper($this->filename);
-        $this->setContents($wrapper->contents());
+
+        if (is_object($wrapper) && method_exists($wrapper, 'contents')) {
+            $this->setContents($wrapper->contents());
+        } else {
+            $this->setContents('');
+        }
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $filename
      */
     public function EditableFile($filename) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::EditableFile(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
         }
-        self::__construct($filename);
+        $this->__construct($filename);
     }
 
     /**
@@ -49,7 +57,7 @@ class EditableFile {
      * @return boolean
      */
     public function exists() {
-        return file_exists($this->filename);
+        return file_exists((string) $this->filename);
     }
 
     /**
@@ -57,16 +65,15 @@ class EditableFile {
      * @return string
      */
     public function getContents() {
-        return $this->contents;
+        return $this->contents !== null ? (string) $this->contents : '';
     }
 
     /**
      * Set file contents.
-     * @param $contents string
+     * @param mixed $contents
      */
     public function setContents($contents) {
-        // Modernisasi: Hapus & assignment (PHP 7+ COW handles string efficiency)
-        $this->contents = $contents;
+        $this->contents = (string) $contents;
     }
 
     /**
@@ -74,23 +81,36 @@ class EditableFile {
      * @return boolean
      */
     public function write() {
-        $fp = fopen($this->filename, 'w+');
-        if ($fp === false) return false;
-        fwrite($fp, $this->getContents());
+        $filePath = (string) $this->filename;
+
+        $fp = @fopen($filePath, 'w+');
+        if ($fp === false) {
+            return false;
+        }
+        
+        $contentsToWrite = $this->getContents();
+
+        $writeResult = fwrite($fp, $contentsToWrite);
         fclose($fp);
-        return true;
+        
+        return ($writeResult !== false);
     }
 
     /**
      * Escape XML characters.
-     * @param $value string
+     * @param mixed $value
      * @return string
      */
     public function xmlEscape($value) {
-        $escapedValue = XMLNode::xmlentities($value, ENT_NOQUOTES);
-        if ($value !== $escapedValue) return "<![CDATA[$value]]>";
-        return $value;
+        $stringValue = (string) $value;
+        
+        $escapedValue = XMLNode::xmlentities($stringValue, ENT_NOQUOTES);
+        if ($stringValue !== $escapedValue) {
+            return "<![CDATA[" . $stringValue . "]]>";
+        }
+        
+        return $stringValue;
     }
-}
 
+}
 ?>

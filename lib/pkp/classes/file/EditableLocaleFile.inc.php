@@ -12,33 +12,35 @@ declare(strict_types=1);
  * @ingroup file
  *
  * @brief This extension of LocaleFile.inc.php supports updating.
- *
  */
 
 import('lib.pkp.classes.file.EditableFile');
 
 class EditableLocaleFile extends LocaleFile {
+
     /** @var EditableFile */
     public $editableFile;
 
     /**
      * Constructor.
-     * @param $locale string
-     * @param $filename string
+     * @param mixed $locale
+     * @param mixed $filename
      */
     public function __construct($locale, $filename) {
-        parent::__construct($locale, $filename);
+        parent::__construct((string) $locale, (string) $filename);
         $this->editableFile = new EditableFile($this->filename);
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $locale
+     * @param mixed $filename
      */
     public function EditableLocaleFile($locale, $filename) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::EditableLocaleFile(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
         }
-        self::__construct($locale, $filename);
+        $this->__construct($locale, $filename);
     }
 
     /**
@@ -53,87 +55,124 @@ class EditableLocaleFile extends LocaleFile {
      * @return string
      */
     public function getContents() {
-        return $this->editableFile->getContents();
+        return (string) $this->editableFile->getContents();
     }
 
     /**
      * Set file contents.
-     * @param $contents string
+     * @param mixed $contents
      */
     public function setContents($contents) {
-        $this->editableFile->setContents($contents);
+        $this->editableFile->setContents((string) $contents);
     }
 
     /**
      * Update a key value in the locale file.
-     * @param $key string
-     * @param $value string
+     * @param mixed $key
+     * @param mixed $value
      * @return boolean
      */
     public function update($key, $value) {
+        $key = (string) $key;
+        $value = (string) $value;
+
+        $contents = $this->getContents();
+
         $matches = null;
         $quotedKey = PKPString::regexp_quote($key);
-        preg_match(
+        $pregResult = preg_match(
             "/<message[\W]+key=\"$quotedKey\">/",
-            $this->getContents(),
+            $contents,
             $matches,
             PREG_OFFSET_CAPTURE
         );
-        if (!isset($matches[0])) return false;
 
-        $offset = $matches[0][1];
-        $closeOffset = strpos($this->getContents(), '</message>', $offset);
-        if ($closeOffset === FALSE) return false;
+        if ($pregResult === false || !isset($matches[0]) || !isset($matches[0][1])) {
+            return false;
+        }
 
-        $newContents = substr($this->getContents(), 0, $offset);
+        $offset = (int) $matches[0][1];
+        $closeOffset = strpos($contents, '</message>', $offset);
+        if ($closeOffset === false) {
+            return false;
+        }
+
+        $newContents = substr($contents, 0, $offset);
         $newContents .= "<message key=\"$key\">" . $this->editableFile->xmlEscape($value);
-        $newContents .= substr($this->getContents(), $closeOffset);
+        $newContents .= substr($contents, $closeOffset);
         $this->setContents($newContents);
+        
         return true;
     }
 
     /**
      * Delete a key from the locale file.
-     * @param $key string
+     * @param mixed $key
      * @return boolean
      */
     public function delete($key) {
+        $key = (string) $key;
+
+        $contents = $this->getContents();
+
         $matches = null;
         $quotedKey = PKPString::regexp_quote($key);
-        preg_match(
+        $pregResult = preg_match(
             "/[ \t]*<message[\W]+key=\"$quotedKey\">/",
-            $this->getContents(),
+            $contents,
             $matches,
             PREG_OFFSET_CAPTURE
         );
-        if (!isset($matches[0])) return false;
-        $offset = $matches[0][1];
 
-        preg_match("/<\/message>[\W]*[\r]?\n/", $this->getContents(), $matches, PREG_OFFSET_CAPTURE, $offset);
-        if (!isset($matches[0])) return false;
-        $closeOffset = $matches[0][1] + strlen($matches[0][0]);
+        if ($pregResult === false || !isset($matches[0]) || !isset($matches[0][1])) {
+            return false;
+        }
+        $offset = (int) $matches[0][1];
 
-        $newContents = substr($this->getContents(), 0, $offset);
-        $newContents .= substr($this->getContents(), $closeOffset);
+        $pregResult2 = preg_match(
+            "/<\/message>[\W]*[\r]?\n/",
+            $contents,
+            $matches,
+            PREG_OFFSET_CAPTURE,
+            $offset
+        );
+
+        if ($pregResult2 === false || !isset($matches[0]) || !isset($matches[0][1]) || !isset($matches[0][0])) {
+            return false;
+        }
+        
+        $closeOffset = (int) $matches[0][1] + strlen((string) $matches[0][0]);
+
+        $newContents = substr($contents, 0, $offset);
+        $newContents .= substr($contents, $closeOffset);
         $this->setContents($newContents);
+        
         return true;
     }
 
     /**
      * Insert a new key into the locale file.
-     * @param $key string
-     * @param $value string
-     * @return boolean|void
+     * @param mixed $key
+     * @param mixed $value
+     * @return boolean
      */
     public function insert($key, $value) {
-        $offset = strrpos($this->getContents(), '</locale>');
-        if ($offset === false) return false;
-        
-        $newContents = substr($this->getContents(), 0, $offset);
-        $newContents .= "\t<message key=\"$key\">" . $this->editableFile->xmlEscape($value) . "</message>\n";
-        $newContents .= substr($this->getContents(), $offset);
-        $this->setContents($newContents);
-    }
-}
+        $key = (string) $key;
+        $value = (string) $value;
 
+        $contents = $this->getContents();
+        $offset = strrpos($contents, '</locale>');
+        if ($offset === false) {
+            return false;
+        }
+        
+        $newContents = substr($contents, 0, $offset);
+        $newContents .= "\t<message key=\"$key\">" . $this->editableFile->xmlEscape($value) . "</message>\n";
+        $newContents .= substr($contents, $offset);
+        $this->setContents($newContents);
+        
+        return true;
+    }
+
+}
 ?>

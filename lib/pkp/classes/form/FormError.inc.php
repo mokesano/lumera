@@ -12,17 +12,11 @@ declare(strict_types=1);
  * Copyright (c) 2000-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * [WIZDAM EDITION v3.4]
- * - Refactored for PHP 8.1+ Strict Mode
- * - Modern Property Definitions (Initialized)
- * - Constructor Shim for Backward Compatibility
- *
  * @class FormError
  * @ingroup form
  *
  * @brief Class to represent a form validation error.
  */
-
 
 class FormError {
 
@@ -44,8 +38,10 @@ class FormError {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param string $field the name of the field
+     * @param string $message the error message (i18n key)
      */
-    public function FormError() {
+    public function FormError($field, $message) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor parent::FormError(). Please refactor to parent::__construct().", 
@@ -70,6 +66,6 @@ class FormError {
     public function getMessage(): string {
         return $this->message;
     }
-}
 
+}
 ?>

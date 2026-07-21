@@ -154,5 +154,6 @@ class ArticleFile extends SubmissionFile {
     public function setStoredPubId($pubIdType, $pubId) {
         return $this->setData('pub-id::'.$pubIdType, $pubId);
     }
+    
 }
 ?>

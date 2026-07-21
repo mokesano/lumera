@@ -16,11 +16,6 @@ declare(strict_types=1);
  * @ingroup core
  *
  * @brief Class defining basic operations for handling HTML forms.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor, Ref removal, Visibility)
- * - Strict Hook Dispatch
- * - HTML Entity Handling
  */
 
 import('lib.pkp.classes.form.FormError');
@@ -52,75 +47,83 @@ import('lib.pkp.classes.form.validation.FormValidatorCSRF');
 
 class Form {
 
-    /** The template file containing the HTML form */
+    /** @var string|null $_template The template file containing the HTML form */
     public $_template;
 
-    /** Associative array containing form data */
+    /** @var array $_data Associative array containing form data */
     public $_data;
 
-    /** Validation checks for this form */
+    /** @var array $_checks Validation checks for this form */
     public $_checks;
 
-    /** Errors occurring in form validation */
+    /** @var array $_errors Errors occurring in form validation */
     public $_errors;
 
-    /** Array of field names where an error occurred and the associated error message */
+    /** @var array $errorsArray Array of field names where an error occurred and the associated error message */
     public $errorsArray;
 
-    /** Array of field names where an error occurred */
+    /** @var array $errorFields Array of field names where an error occurred */
     public $errorFields;
 
-    /** Array of errors for the form section currently being processed */
+    /** @var array $formSectionErrors Array of errors for the form section currently being processed */
     public $formSectionErrors;
 
-    /** Client-side validation rules **/
+    /** @var mixed $cssValidation Client-side validation rules **/
     public $cssValidation;
 
-    /** @var $requiredLocale string Symbolic name of required locale */
+    /** @var string $requiredLocale Symbolic name of required locale */
     public $requiredLocale;
 
-    /** @var $supportedLocales array Set of supported locales */
+    /** @var array $supportedLocales Set of supported locales */
     public $supportedLocales;
 
     /**
      * Constructor.
-     * @param string|null $template the path to the form template file
+     * @param mixed $template the path to the form template file
      * @param boolean $callHooks
-     * @param string|null $requiredLocale
-     * @param array|null $supportedLocales
+     * @param mixed $requiredLocale
+     * @param mixed $supportedLocales
      */
     public function __construct($template = null, $callHooks = true, $requiredLocale = null, $supportedLocales = null) {
 
-        if ($requiredLocale === null) $requiredLocale = AppLocale::getPrimaryLocale();
-        $this->requiredLocale = $requiredLocale;
-        if ($supportedLocales === null) $supportedLocales = AppLocale::getSupportedFormLocales();
-        $this->supportedLocales = $supportedLocales;
+        if ($requiredLocale === null) {
+            $requiredLocale = AppLocale::getPrimaryLocale();
+        }
+        $this->requiredLocale = (string) $requiredLocale;
+        
+        if ($supportedLocales === null) {
+            $supportedLocales = AppLocale::getSupportedFormLocales();
+        }
+        $this->supportedLocales = is_array($supportedLocales) ? $supportedLocales : [];
 
-        $this->_template = $template;
-        $this->_data = array();
-        $this->_checks = array();
-        $this->_errors = array();
-        $this->errorsArray = array();
-        $this->errorFields = array();
-        $this->formSectionErrors = array();
+        $this->_template = $template !== null ? (string) $template : null;
+        $this->_data = [];
+        $this->_checks = [];
+        $this->_errors = [];
+        $this->errorsArray = [];
+        $this->errorFields = [];
+        $this->formSectionErrors = [];
 
         if ($callHooks === true) {
-            // Hook Dispatch: Object ($this) by val, Template (string) by ref (if modification allowed)
-            HookRegistry::dispatch(strtolower_codesafe(get_class($this)) . '::Constructor', array($this, &$template));
+            HookRegistry::dispatch(strtolower_codesafe(get_class($this)) . '::Constructor', [$this, &$template]);
         }
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param mixed $template
+     * @param boolean $callHooks
+     * @param mixed $requiredLocale
+     * @param mixed $supportedLocales
      */
     public function Form($template = null, $callHooks = true, $requiredLocale = null, $supportedLocales = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::Form(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($template, $callHooks, $requiredLocale, $supportedLocales);
+        $this->__construct($template, $callHooks, $requiredLocale, $supportedLocales);
     }
 
 
@@ -129,15 +132,15 @@ class Form {
     //
     /**
      * Set the template
-     * @param string $template
+     * @param mixed $template
      */
     public function setTemplate($template) {
-        $this->_template = $template;
+        $this->_template = $template !== null ? (string) $template : null;
     }
 
     /**
      * Get the template
-     * @return string
+     * @return string|null
      */
     public function getTemplate() {
         return $this->_template;
@@ -148,7 +151,7 @@ class Form {
      * @return string
      */
     public function getRequiredLocale() {
-        return $this->requiredLocale;
+        return (string) $this->requiredLocale;
     }
 
     //
@@ -156,8 +159,8 @@ class Form {
     //
     /**
      * Display the form.
-     * @param PKPRequest $request
-     * @param string|null $template
+     * @param mixed $request
+     * @param mixed $template
      */
     public function display($request = null, $template = null) {
         $this->fetch($request, $template, true);
@@ -165,24 +168,25 @@ class Form {
 
     /**
      * Returns a string of the rendered form
-     * @param PKPRequest $request (No & needed)
-     * @param string|null $template
+     * @param mixed $request
+     * @param mixed $template
      * @param boolean $display
      * @return string the rendered form
      */
     public function fetch($request, $template = null, $display = false) {
         // Set custom template.
-        if (!is_null($template)) $this->_template = $template;
+        if ($template !== null) {
+            $this->_template = (string) $template;
+        }
 
         // Hook Dispatch
         $returner = null;
-        if (HookRegistry::dispatch(strtolower_codesafe(get_class($this)) . '::display', array($this, &$returner))) {
-            return $returner;
+        if (HookRegistry::dispatch(strtolower_codesafe(get_class($this)) . '::display', [$this, &$returner])) {
+            return (string) $returner;
         }
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->setCacheability(CACHEABILITY_NO_STORE);
-
 
         // Attach this form object to the Form Builder Vocabulary
         $fbv = $templateMgr->getFBV();
@@ -192,40 +196,38 @@ class Form {
         $templateMgr->assign('isError', !$this->isValid());
         $templateMgr->assign('errors', $this->getErrorsArray());
 
-        // PHP 8: Use array callback without &
-        $templateMgr->register_function('form_language_chooser', array($this, 'smartyFormLanguageChooser'));
+        $templateMgr->register_function('form_language_chooser', [$this, 'smartyFormLanguageChooser']);
         $templateMgr->assign('formLocales', $this->supportedLocales);
-
-        // Determine the current locale to display fields with
-        $formLocale = $this->getFormLocale();
         $templateMgr->assign('formLocale', $this->getFormLocale());
 
-        // N.B: We have to call $templateMgr->display instead of ->fetch($display)
-        $returner = $templateMgr->display($this->_template, null, null, $display);
+        $returner = $templateMgr->display($this->_template, null, null, (bool) $display);
 
         // Need to reset the FBV's form
-        $nullVar = null;
-        $fbv->setForm($nullVar);
+        $fbv->setForm(null);
 
-        return $returner;
+        return (string) $returner;
     }
 
     /**
      * Get the value of a form field.
-     * @param string $key
+     * @param mixed $key
      * @return mixed
      */
     public function getData($key) {
-        return isset($this->_data[$key]) ? $this->_data[$key] : null;
+        $key = (string) $key;
+        return $this->_data[$key] ?? null;
     }
 
     /**
      * Set the value of a form field.
-     * @param string $key
+     * @param mixed $key
      * @param mixed $value
      */
     public function setData($key, $value) {
-        if (is_string($value)) $value = Core::cleanVar($value);
+        $key = (string) $key;
+        if (is_string($value)) {
+            $value = Core::cleanVar($value);
+        }
         $this->_data[$key] = $value;
     }
 
@@ -233,7 +235,7 @@ class Form {
      * Initialize form data for a new form.
      */
     public function initData() {
-        HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::initData'), array($this));
+        HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::initData'), [$this]);
     }
 
     /**
@@ -249,47 +251,50 @@ class Form {
      * @return boolean
      */
     public function validate($callHooks = true) {
-        if (!isset($this->errorsArray)) {
+        if (!is_array($this->errorsArray)) {
             $this->getErrorsArray();
         }
 
         foreach ($this->_checks as $check) {
-            // PHP 8: Passing $this by value (handle) is fine
             $check->setForm($this);
+            $field = $check->getField();
 
-            if (!isset($this->errorsArray[$check->getField()]) && !$check->isValid()) {
+            if (!isset($this->errorsArray[$field]) && !$check->isValid()) {
                 if (method_exists($check, 'getErrorFields') && method_exists($check, 'isArray') && $check->isArray()) {
                     $errorFields = $check->getErrorFields();
-                    for ($i=0, $count=count($errorFields); $i < $count; $i++) {
-                        $this->addError($errorFields[$i], $check->getMessage());
-                        $this->errorFields[$errorFields[$i]] = 1;
+                    if (is_array($errorFields)) {
+                        foreach ($errorFields as $errorField) {
+                            $this->addError($errorField, $check->getMessage());
+                            $this->errorFields[$errorField] = 1;
+                        }
                     }
                 } else {
-                    $this->addError($check->getField(), $check->getMessage());
-                    $this->errorFields[$check->getField()] = 1;
+                    $this->addError($field, $check->getMessage());
+                    $this->errorFields[$field] = 1;
                 }
             }
         }
 
         if ($callHooks === true) {
             $value = null;
-            if (HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::validate'), array($this, &$value))) {
-                return $value;
+            if (HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::validate'), [$this, &$value])) {
+                return (bool) $value;
             }
         }
 
         if (!defined('SESSION_DISABLE_INIT')) {
             $application = PKPApplication::getApplication();
-            $request = $application->getRequest();
-            $user = $request->getUser();
+            if ($application) {
+                $request = $application->getRequest();
+                $user = $request ? $request->getUser() : null;
 
-            if (!$this->isValid() && $user) {
-                // Create a form error notification.
-                import('classes.notification.NotificationManager');
-                $notificationManager = new NotificationManager();
-                $notificationManager->createTrivialNotification(
-                    $user->getId(), NOTIFICATION_TYPE_FORM_ERROR, array('contents' => $this->getErrorsArray())
-                );
+                if (!$this->isValid() && $user) {
+                    import('classes.notification.NotificationManager');
+                    $notificationManager = new NotificationManager();
+                    $notificationManager->createTrivialNotification(
+                        $user->getId(), NOTIFICATION_TYPE_FORM_ERROR, ['contents' => $this->getErrorsArray()]
+                    );
+                }
             }
         }
 
@@ -298,11 +303,11 @@ class Form {
 
     /**
      * Execute the form's action.
-     * @param object|null $object
-     * @return object|null
+     * @param mixed $object
+     * @return mixed
      */
     public function execute($object = null) {
-        HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::execute'), array($this, &$object));
+        HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::execute'), [$this, &$object]);
         return $object;
     }
 
@@ -311,9 +316,9 @@ class Form {
      * @return array
      */
     public function getLocaleFieldNames() {
-        $returner = array();
-        HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::getLocaleFieldNames'), array($this, &$returner));
-        return $returner;
+        $returner = [];
+        HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::getLocaleFieldNames'), [$this, &$returner]);
+        return is_array($returner) ? $returner : [];
     }
 
     /**
@@ -322,7 +327,7 @@ class Form {
      */
     public function isLocaleResubmit() {
         $formLocale = Request::getUserVar('formLocale');
-        return (!empty($formLocale));
+        return !empty($formLocale);
     }
 
     /**
@@ -330,10 +335,11 @@ class Form {
      * @return string
      */
     public function getDefaultFormLocale() {
-        // PHP 8 Safety: Initialize $formLocale
         $formLocale = AppLocale::getLocale();
-        if (!isset($this->supportedLocales[$formLocale])) $formLocale = $this->requiredLocale;
-        return $formLocale;
+        if (!is_array($this->supportedLocales) || !isset($this->supportedLocales[$formLocale])) {
+            $formLocale = $this->requiredLocale;
+        }
+        return (string) $formLocale;
     }
 
     /**
@@ -342,37 +348,41 @@ class Form {
      */
     public function getFormLocale() {
         $formLocale = Request::getUserVar('formLocale');
-        if (!$formLocale || !isset($this->supportedLocales[$formLocale])) {
+        if (!$formLocale || !is_array($this->supportedLocales) || !isset($this->supportedLocales[$formLocale])) {
             $formLocale = $this->getDefaultFormLocale();
         }
-        return $formLocale;
+        return (string) $formLocale;
     }
 
     /**
      * Adds specified user variables to input data.
-     * @param array $vars the names of the variables to read
+     * @param mixed $vars the names of the variables to read
      */
     public function readUserVars($vars) {
-        HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::readUserVars'), array($this, &$vars));
-        foreach ($vars as $k) {
-            $this->setData($k, Request::getUserVar($k));
+        HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::readUserVars'), [$this, &$vars]);
+        if (is_array($vars)) {
+            foreach ($vars as $k) {
+                $this->setData($k, Request::getUserVar($k));
+            }
         }
     }
 
     /**
      * Adds specified user date variables to input data.
-     * @param array $vars the names of the date variables to read
+     * @param mixed $vars the names of the date variables to read
      */
     public function readUserDateVars($vars) {
-        HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::readUserDateVars'), array($this, &$vars));
-        foreach ($vars as $k) {
-            $this->setData($k, Request::getUserDateVar($k));
+        HookRegistry::dispatch(strtolower_codesafe(get_class($this) . '::readUserDateVars'), [$this, &$vars]);
+        if (is_array($vars)) {
+            foreach ($vars as $k) {
+                $this->setData($k, Request::getUserDateVar($k));
+            }
         }
     }
 
     /**
      * Add a validation check to the form.
-     * @param FormValidator $formValidator
+     * @param mixed $formValidator
      */
     public function addCheck($formValidator) {
         $this->_checks[] = $formValidator;
@@ -380,19 +390,19 @@ class Form {
 
     /**
      * Add an error to the form.
-     * @param string $field
-     * @param string $message
+     * @param mixed $field
+     * @param mixed $message
      */
     public function addError($field, $message) {
-        $this->_errors[] = new FormError($field, $message);
+        $this->_errors[] = new FormError((string) $field, (string) $message);
     }
 
     /**
      * Add an error field for highlighting on form
-     * @param string $field
+     * @param mixed $field
      */
     public function addErrorField($field) {
-        $this->errorFields[$field] = 1;
+        $this->errorFields[(string) $field] = 1;
     }
 
     /**
@@ -408,10 +418,13 @@ class Form {
      * @return array
      */
     public function getErrorsArray() {
-        $this->errorsArray = array();
-        foreach ($this->_errors as $error) {
-            if (!isset($this->errorsArray[$error->getField()])) {
-                $this->errorsArray[$error->getField()] = $error->getMessage();
+        $this->errorsArray = [];
+        if (is_array($this->_errors)) {
+            foreach ($this->_errors as $error) {
+                $field = $error->getField();
+                if (!isset($this->errorsArray[$field])) {
+                    $this->errorsArray[$field] = $error->getMessage();
+                }
             }
         }
         return $this->errorsArray;
@@ -419,29 +432,38 @@ class Form {
 
     /**
      * Add hidden form parameters for the localized fields for this form
-     * @param array $params
-     * @param object $smarty (No & needed)
+     * @param mixed $params
+     * @param mixed $smarty
      * @return string
      */
     public function smartyFormLanguageChooser($params, $smarty) {
         $returner = '';
 
         $formLocale = $this->getFormLocale();
-        foreach ($this->getLocaleFieldNames() as $field) {
-            $values = $this->getData($field);
-            if (!is_array($values)) continue;
-            foreach ($values as $locale => $value) {
-                if ($locale != $formLocale) $returner .= $this->_decomposeArray($field, $value, array($locale));
+        $localeFieldNames = $this->getLocaleFieldNames();
+        
+        if (is_array($localeFieldNames)) {
+            foreach ($localeFieldNames as $field) {
+                $values = $this->getData($field);
+                if (!is_array($values)) continue;
+                foreach ($values as $locale => $value) {
+                    if ($locale !== $formLocale) {
+                        $returner .= $this->_decomposeArray($field, $value, [$locale]);
+                    }
+                }
             }
         }
 
         $returner .= '<div id="languageSelector"><select size="1" name="formLocale" id="formLocale" class="selectMenu">';
-        foreach ($this->supportedLocales as $locale => $name) {
-            $returner .= '<option ' . ($locale == $formLocale?'selected="selected" ':'') . 'value="' . htmlentities($locale, ENT_COMPAT, LOCALE_ENCODING) . '">' . htmlentities($name, ENT_COMPAT, LOCALE_ENCODING) . '</option>';
+        if (is_array($this->supportedLocales)) {
+            foreach ($this->supportedLocales as $locale => $name) {
+                $selected = ($locale === $formLocale) ? 'selected="selected" ' : '';
+                $returner .= '<option ' . $selected . 'value="' . htmlentities((string)$locale, ENT_COMPAT, LOCALE_ENCODING) . '">' . htmlentities((string)$name, ENT_COMPAT, LOCALE_ENCODING) . '</option>';
+            }
         }
-        // PHP 8 Safety: Strict check for params
-        $formAction = isset($params['form']) ? htmlentities($params['form'], ENT_COMPAT, LOCALE_ENCODING) : '';
-        $formUrl = isset($params['url']) ? htmlentities($params['url'], ENT_QUOTES, LOCALE_ENCODING) : '';
+
+        $formAction = isset($params['form']) ? htmlentities((string)$params['form'], ENT_COMPAT, LOCALE_ENCODING) : '';
+        $formUrl = isset($params['url']) ? htmlentities((string)$params['url'], ENT_QUOTES, LOCALE_ENCODING) : '';
         
         $returner .= '</select><input type="submit" class="button" value="'. __('form.submit'). '" onclick="changeFormAction(\'' . $formAction . '\', \'' . $formUrl . '\'); return false" /></div>';
         return $returner;
@@ -453,16 +475,16 @@ class Form {
     
     /**
      * Convert PHP variable (literals or arrays) into HTML containing hidden input fields.
-     * @param string $name
+     * @param mixed $name
      * @param mixed $value
-     * @param array $stack
+     * @param mixed $stack
      * @return string
      */
     public function _decomposeArray($name, $value, $stack) {
         $returner = '';
         if (is_array($value)) {
             foreach ($value as $key => $subValue) {
-                $newStack = $stack;
+                $newStack = is_array($stack) ? $stack : [];
                 $newStack[] = $key;
                 $returner .= $this->_decomposeArray($name, $subValue, $newStack);
             }
@@ -470,13 +492,17 @@ class Form {
             $name = htmlentities((string)$name, ENT_COMPAT, LOCALE_ENCODING);
             $value = htmlentities((string)$value, ENT_COMPAT, LOCALE_ENCODING);
             $returner .= '<input type="hidden" name="' . $name;
-            while (($item = array_shift($stack)) !== null) {
-                $item = htmlentities((string)$item, ENT_COMPAT, LOCALE_ENCODING);
-                $returner .= '[' . $item . ']';
+
+            if (is_array($stack)) {
+                foreach ($stack as $item) {
+                    $item = htmlentities((string)$item, ENT_COMPAT, LOCALE_ENCODING);
+                    $returner .= '[' . $item . ']';
+                }
             }
             $returner .= '" value="' . $value . "\" />\n";
         }
         return $returner;
     }
+    
 }
 ?>

@@ -11,11 +11,11 @@ declare(strict_types=1);
  * @class ArticleXMLGalleyDAO
  * @ingroup plugins_generic_xmlGalley
  *
- * @brief Extended DAO methods for XML-derived galleys
- * * MODERNIZED & BUG #5152 RESOLVED FOR WIZDAM FORK
+ * @brief Extended DAO methods for XML-derived galleys.
  */
 
 import('classes.article.ArticleGalleyDAO');
+import('plugins.generic.xmlGalley.XMLGalleyPlugin');
 
 class ArticleXMLGalleyDAO extends ArticleGalleyDAO {
     
@@ -42,8 +42,7 @@ class ArticleXMLGalleyDAO extends ArticleGalleyDAO {
                 E_USER_DEPRECATED
             );
         }
-        $args = func_get_args();
-        call_user_func_array([$this, '__construct'], $args);
+        $this->__construct($parentPluginName);
     }
 
     /**
@@ -54,9 +53,10 @@ class ArticleXMLGalleyDAO extends ArticleGalleyDAO {
      */
     public function _getXMLGalleyFromId(int $xmlGalleyId, ?int $articleId = null): ?object {
         $params = [$xmlGalleyId];
-        if ($articleId !== null) $params[] = $articleId;
+        if ($articleId !== null) {
+            $params[] = $articleId;
+        }
 
-        // WIZDAM FIX: Query using x.xml_galley_id (Primary Key) instead of x.galley_id
         $result = $this->retrieve(
             'SELECT    x.*,
                 x.galley_type AS file_type,
@@ -83,17 +83,18 @@ class ArticleXMLGalleyDAO extends ArticleGalleyDAO {
 
         $xmlGalley = null;
 
-        if ($result) {
-            if ($result->RecordCount() != 0) {
-                $articleGalley = $this->_returnGalleyFromRow($result->GetRowAssoc(false));
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $articleGalley = $this->_returnGalleyFromRow($row);
 
-                $xmlGalleyPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
+            $xmlGalleyPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
+            if ($xmlGalleyPlugin instanceof XMLGalleyPlugin) {
                 $xmlGalley = $xmlGalleyPlugin->_returnXMLGalleyFromArticleGalley($articleGalley);
             }
+            
             $result->Close();
         }
-        unset($result);
-
+        
         return $xmlGalley;
     }
 
@@ -105,52 +106,44 @@ class ArticleXMLGalleyDAO extends ArticleGalleyDAO {
      */
     public function appendXMLGalleys(string $hookName, array $args): bool {
         $galleys =& $args[0]; 
-        $articleId = $args[1];
+        $articleId = (int) $args[1];
 
         $xmlGalleyPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
         $journal = Request::getJournal();
 
-        foreach ($galleys as $key => $galley) {
-            
-            // if the galley is an XML galley, append XML-derived galleys
-            if ($galley->getFileType() == "text/xml" || $galley->getFileType() == "application/xml") {
+        if (!$xmlGalleyPlugin instanceof XMLGalleyPlugin) {
+            return true; 
+        }
 
-                // WIZDAM FIX: Retrieve xml_galley_id as well to allow multiple formats
+        foreach ($galleys as $key => $galley) {
+            if ($galley->getFileType() === 'text/xml' || $galley->getFileType() === 'application/xml') {
+
                 $result = $this->retrieve(
                     'SELECT    xml_galley_id
                     FROM    article_xml_galleys x
                     WHERE    x.galley_id = ? AND
                         x.article_id = ?
                     ORDER BY xml_galley_id',
-                    [(int) $galley->getId(), (int) $articleId]
+                    [(int) $galley->getId(), $articleId]
                 );
 
                 if ($result) {
                     while (!$result->EOF) {
                         $row = $result->GetRowAssoc(false);
-                        
-                        // Load the virtual galley using its unique xml_galley_id
-                        $xmlGalley = $this->_getXMLGalleyFromId((int) $row['xml_galley_id'], (int) $articleId);
+                        $xmlGalley = $this->_getXMLGalleyFromId((int) $row['xml_galley_id'], $articleId);
 
-                        // WIZDAM FIX: Bug #5152 Resolved. Safe to assign unique ID.
                         if ($xmlGalley) {
                             $xmlGalley->setId((int) $row['xml_galley_id']);
 
-                            // Append PDF galleys if the correct plugin settings are set
-                            if ( ($xmlGalleyPlugin->getSetting($journal->getId(), 'nlmPDF') == 1 
-                                    && $xmlGalley->isPdfGalley()) || $xmlGalley->isHTMLGalley()) {
-                                array_push($galleys, $xmlGalley);
+                            if (($xmlGalleyPlugin->getSetting($journal->getId(), 'nlmPDF') == 1 && $xmlGalley->isPdfGalley()) || $xmlGalley->isHTMLGalley()) {
+                                $galleys[] = $xmlGalley;
                             }
                         }
-                        
                         $result->moveNext();
                     }
                     $result->Close();
                 }
-                unset($result);
-
-                // Optional: hide source XML galley
-                // if (isset($xmlGalley)) unset($galleys[$key]);
+                // [LUMERA FIX] Removed unset($result)
             }
         }
 
@@ -166,46 +159,35 @@ class ArticleXMLGalleyDAO extends ArticleGalleyDAO {
      */
     public function insertXMLGalleys(string $hookName, array $args): bool {
         $galley = $args[0];
-        $galleyId = $args[1];
+        $galleyId = (int) $args[1];
 
-        // If the galley is an XML file, then insert rows in the article_xml_galleys table
-        if ($galley->getLabel() == "XML") {
+        if ($galley->getLabel() === 'XML') {
 
-            // 1. Create an XHTML galley
             $this->update(
                 'INSERT INTO article_xml_galleys
                     (galley_id, article_id, label, galley_type)
                     VALUES
                     (?, ?, ?, ?)',
                 [
-                    (int) $galleyId,
+                    $galleyId,
                     (int) $galley->getArticleId(),
                     'XHTML',
                     'application/xhtml+xml'
                 ]
             );
 
-            // WIZDAM FIX: Bug #5152 Resolved. We can now safely generate PDF entries
-            // because they will get their own auto-incremented xml_galley_id in the DB.
             $journal = Request::getJournal();
             $xmlGalleyPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
 
-            if ($xmlGalleyPlugin->getSetting($journal->getId(), 'nlmPDF') == 1 && 
-                $xmlGalleyPlugin->getSetting($journal->getId(), 'XSLstylesheet') == 'NLM' ) {
+            if ($xmlGalleyPlugin instanceof XMLGalleyPlugin) {
+                if ($xmlGalleyPlugin->getSetting($journal->getId(), 'nlmPDF') == 1 && 
+                    $xmlGalleyPlugin->getSetting($journal->getId(), 'XSLstylesheet') === 'NLM') {
 
-                // 2. Create a PDF galley
-                $this->update(
-                    'INSERT INTO article_xml_galleys
-                        (galley_id, article_id, label, galley_type)
-                        VALUES
-                        (?, ?, ?, ?)',
-                    [
-                        (int) $galleyId,
-                        (int) $galley->getArticleId(),
-                        'PDF',
-                        'application/pdf'
-                    ]
-                );
+                    $this->update(
+                        'INSERT INTO article_xml_galleys (galley_id, article_id, label, galley_type) VALUES (?, ?, ?, ?)',
+                        [$galleyId, (int) $galley->getArticleId(), 'PDF', 'application/pdf']
+                    );
+                }
             }
             return true;
         }
@@ -219,19 +201,18 @@ class ArticleXMLGalleyDAO extends ArticleGalleyDAO {
      * @param array $args
      */
     public function deleteXMLGalleys(string $hookName, array $args): void {
-        $galleyId = $args[0]; // This is the Source XML Galley ID
-        $articleId = isset($args[1]) ? $args[1] : null;
+        $galleyId = (int) $args[0]; 
+        $articleId = isset($args[1]) ? (int) $args[1] : null;
 
-        // Cascade delete all derived formats attached to this source galley_id
         if ($articleId !== null) {
             $this->update(
                 'DELETE FROM article_xml_galleys WHERE galley_id = ? AND article_id = ?',
-                [(int) $galleyId, (int) $articleId]
+                [$galleyId, $articleId]
             );
         } else {
             $this->update(
                 'DELETE FROM article_xml_galleys WHERE galley_id = ?', 
-                (int) $galleyId
+                [$galleyId]
             );
         }
     }
@@ -243,13 +224,15 @@ class ArticleXMLGalleyDAO extends ArticleGalleyDAO {
      * @return boolean
      */
     public function incrementXMLViews(string $hookName, array $args): bool {
-        $xmlGalleyId = $args[0];
+        $xmlGalleyId = (int) $args[0];
 
-        // WIZDAM FIX: Increment based on the unique derived ID
-        return (bool) $this->update(
+        $result = $this->update(
             'UPDATE article_xml_galleys SET views = views + 1 WHERE xml_galley_id = ?',
-            (int) $xmlGalleyId
+            [$xmlGalleyId]
         );
+        
+        return (bool) $result;
     }
+    
 }
 ?>

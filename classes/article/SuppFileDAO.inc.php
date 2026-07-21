@@ -556,5 +556,6 @@ class SuppFileDAO extends DAO {
         );
         $this->flushCache();
     }
+    
 }
 ?>

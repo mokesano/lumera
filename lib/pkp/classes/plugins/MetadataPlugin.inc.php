@@ -39,9 +39,9 @@ class MetadataPlugin extends Plugin {
 	/**
 	 * This implementation adds the plugin's locale data to the application.
 	 * @see PKPPlugin::register()
-	 * @param $category String The category of plugin (e.g. 'metadata')
-	 * @param $path String The path to the plugin's main directory
-	 * @return boolean True iff the plugin was registered successfully
+	 * @param $category String
+	 * @param $path String
+	 * @return boolean
 	 */
 	public function register(string $category, string $path): bool {
 		$success = parent::register($category, $path);
@@ -83,9 +83,9 @@ class MetadataPlugin extends Plugin {
 	/**
 	 * This implementation marks the vocabulary data as installed.
 	 * @see PKPPlugin::installData()
-	 * @param $hookName string The name of the hook being registered
-	 * @param $args array The arguments passed by the hook
-	 * @return boolean True iff the data was installed successfully
+	 * @param string $hookName string
+	 * @param array $args array
+	 * @return boolean
 	 */
 	public function installData($hookName, $args): bool {
 		parent::installData($hookName, $args);
@@ -93,12 +93,12 @@ class MetadataPlugin extends Plugin {
 
 		if ($success) {
 			// Mark the controlled vocab as installed.
-			$pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO'); /* @var $pluginSettingsDao PluginSettingsDAO */
+			$pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO'); /** @var PluginSettingsDAO $pluginSettingsDao */
 			$success = $pluginSettingsDao->updateSetting(0, $this->getName(), METADATA_PLUGIN_VOCAB_INSTALLED_SETTING, true, 'bool');
 		}
 
 		return false;
 	}
-}
 
+}
 ?>

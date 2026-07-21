@@ -12,15 +12,16 @@ declare(strict_types=1);
  * @ingroup pages_author
  *
  * @brief Handle requests for submission comments.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.author.TrackSubmissionHandler');
 
 class SubmissionCommentsHandler extends AuthorHandler {
-    /** @var Comment|null comment associated with the request */
-    public $comment;
+    
+    /** 
+     * @var ArticleComment|null comment associated with the request 
+     */
+    public $comment = null;
 
     /**
      * Constructor
@@ -35,18 +36,17 @@ class SubmissionCommentsHandler extends AuthorHandler {
     public function SubmissionCommentsHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::SubmissionCommentsHandler(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        $args = func_get_args();
-        call_user_func_array([$this, '__construct'], $args);
+        $this->__construct();
     }
 
     /**
      * View editor decision comments.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function viewEditorDecisionComments($args, $request) {
         $articleId = (int) array_shift($args);
@@ -58,7 +58,7 @@ class SubmissionCommentsHandler extends AuthorHandler {
     /**
      * View copyedit comments.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function viewCopyeditComments($args, $request) {
         $articleId = (int) array_shift($args);
@@ -70,15 +70,14 @@ class SubmissionCommentsHandler extends AuthorHandler {
     /**
      * Post copyedit comment.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function postCopyeditComment($args, $request) {
         $articleId = (int) $request->getUserVar('articleId');
         $this->validate(null, $request, $articleId);
         $this->setupTemplate($request, true);
 
-        // If the user pressed the "Save and email" button, then email the comment.
-        $emailComment = (int) $request->getUserVar('saveAndEmail') === 1;
+        $emailComment = ((int) $request->getUserVar('saveAndEmail')) === 1;
 
         if (AuthorAction::postCopyeditComment($this->submission, $emailComment, $request)) {
             AuthorAction::viewCopyeditComments($this->submission);
@@ -88,7 +87,7 @@ class SubmissionCommentsHandler extends AuthorHandler {
     /**
      * View proofread comments.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function viewProofreadComments($args, $request) {
         $articleId = (int) array_shift($args);
@@ -100,15 +99,14 @@ class SubmissionCommentsHandler extends AuthorHandler {
     /**
      * Post proofread comment.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function postProofreadComment($args, $request) {
         $articleId = (int) $request->getUserVar('articleId');
         $this->validate(null, $request, $articleId);
         $this->setupTemplate($request, true);
 
-        // If the user pressed the "Save and email" button, then email the comment.
-        $emailComment = (int) $request->getUserVar('saveAndEmail') === 1;
+        $emailComment = ((int) $request->getUserVar('saveAndEmail')) === 1;
 
         if (AuthorAction::postProofreadComment($this->submission, $emailComment, $request)) {
             AuthorAction::viewProofreadComments($this->submission);
@@ -118,7 +116,7 @@ class SubmissionCommentsHandler extends AuthorHandler {
     /**
      * View layout comments.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function viewLayoutComments($args, $request) {
         $articleId = (int) array_shift($args);
@@ -130,15 +128,14 @@ class SubmissionCommentsHandler extends AuthorHandler {
     /**
      * Post layout comment.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function postLayoutComment($args, $request) {
         $articleId = (int) $request->getUserVar('articleId');
         $this->validate(null, $request, $articleId);
         $this->setupTemplate($request, true);
 
-        // If the user pressed the "Save and email" button, then email the comment.
-        $emailComment = (int) $request->getUserVar('saveAndEmail') === 1;
+        $emailComment = ((int) $request->getUserVar('saveAndEmail')) === 1;
 
         if (AuthorAction::postLayoutComment($this->submission, $emailComment, $request)) {
             AuthorAction::viewLayoutComments($this->submission);
@@ -148,17 +145,13 @@ class SubmissionCommentsHandler extends AuthorHandler {
     /**
      * Email an editor decision comment.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function emailEditorDecisionComment($args, $request) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
-
-        // Amankan articleId seperti standar Wizdam
         $articleId = (int) trim((string) $request->getUserVar('articleId'));
         
-        $this->setupTemplate($request, true);
         $this->validate(null, $request, $articleId);
+        $this->setupTemplate($request, true);
 
         $sendFlag = $request->isPost() && $request->getUserVar('send') !== null;
 
@@ -170,26 +163,27 @@ class SubmissionCommentsHandler extends AuthorHandler {
     /**
      * Edit comment.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function editComment($args, $request) {
         $articleId = (int) array_shift($args);
-        $commentId = array_shift($args);
+        $commentId = (int) array_shift($args);
 
         $this->addCheck(new HandlerValidatorSubmissionComment($this, $commentId));
         $this->validate(null, $request, $articleId);
         $this->setupTemplate($request, true);
-        if ($this->comment->getCommentType() == COMMENT_TYPE_EDITOR_DECISION) {
-            // Cannot edit an editor decision comment.
+
+        if ($this->comment !== null && $this->comment->getCommentType() === COMMENT_TYPE_EDITOR_DECISION) {
             $request->redirect(null, $request->getRequestedPage());
         }
+        
         AuthorAction::editComment($this->submission, $this->comment);
     }
 
     /**
      * Save comment.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function saveComment($args, $request) {
         $articleId = (int) $request->getUserVar('articleId');
@@ -199,36 +193,36 @@ class SubmissionCommentsHandler extends AuthorHandler {
         $this->validate(null, $request, $articleId);
         $this->setupTemplate($request, true);
 
-        // If the user pressed the "Save and email" button, then email the comment.
-        $emailComment = (int) $request->getUserVar('saveAndEmail') === 1;
+        $emailComment = ((int) $request->getUserVar('saveAndEmail')) === 1;
 
-        if ($this->comment->getCommentType() == COMMENT_TYPE_EDITOR_DECISION) {
-            // Cannot edit an editor decision comment.
+        if ($this->comment !== null && $this->comment->getCommentType() === COMMENT_TYPE_EDITOR_DECISION) {
             $request->redirect(null, $request->getRequestedPage());
         }
 
         AuthorAction::saveComment($this->submission, $this->comment, $emailComment, $request);
 
-        // refresh the comment
+        /** @var ArticleCommentDAO $articleCommentDao */
         $articleCommentDao = DAORegistry::getDAO('ArticleCommentDAO');
         $comment = $articleCommentDao->getArticleCommentById($commentId);
 
-        // Redirect back to initial comments page
-        if ($this->comment->getCommentType() == COMMENT_TYPE_EDITOR_DECISION) {
-            $request->redirect(null, null, 'viewEditorDecisionComments', $articleId);
-        } elseif ($this->comment->getCommentType() == COMMENT_TYPE_COPYEDIT) {
-            $request->redirect(null, null, 'viewCopyeditComments', $articleId);
-        } elseif ($this->comment->getCommentType() == COMMENT_TYPE_LAYOUT) {
-            $request->redirect(null, null, 'viewLayoutComments', $articleId);
-        } elseif ($this->comment->getCommentType() == COMMENT_TYPE_PROOFREAD) {
-            $request->redirect(null, null, 'viewProofreadComments', $articleId);
+        if ($this->comment !== null) {
+            $commentType = $this->comment->getCommentType();
+            if ($commentType === COMMENT_TYPE_EDITOR_DECISION) {
+                $request->redirect(null, null, 'viewEditorDecisionComments', $articleId);
+            } elseif ($commentType === COMMENT_TYPE_COPYEDIT) {
+                $request->redirect(null, null, 'viewCopyeditComments', $articleId);
+            } elseif ($commentType === COMMENT_TYPE_LAYOUT) {
+                $request->redirect(null, null, 'viewLayoutComments', $articleId);
+            } elseif ($commentType === COMMENT_TYPE_PROOFREAD) {
+                $request->redirect(null, null, 'viewProofreadComments', $articleId);
+            }
         }
     }
 
     /**
      * Delete comment.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function deleteComment($args, $request) {
         $articleId = (int) array_shift($args);
@@ -240,16 +234,19 @@ class SubmissionCommentsHandler extends AuthorHandler {
 
         AuthorAction::deleteComment($commentId);
 
-        // Redirect back to initial comments page
-        if ($this->comment->getCommentType() == COMMENT_TYPE_EDITOR_DECISION) {
-            $request->redirect(null, null, 'viewEditorDecisionComments', $articleId);
-        } elseif ($this->comment->getCommentType() == COMMENT_TYPE_COPYEDIT) {
-            $request->redirect(null, null, 'viewCopyeditComments', $articleId);
-        } elseif ($this->comment->getCommentType() == COMMENT_TYPE_LAYOUT) {
-            $request->redirect(null, null, 'viewLayoutComments', $articleId);
-        } elseif ($this->comment->getCommentType() == COMMENT_TYPE_PROOFREAD) {
-            $request->redirect(null, null, 'viewProofreadComments', $articleId);
+        if ($this->comment !== null) {
+            $commentType = $this->comment->getCommentType();
+            if ($commentType === COMMENT_TYPE_EDITOR_DECISION) {
+                $request->redirect(null, null, 'viewEditorDecisionComments', $articleId);
+            } elseif ($commentType === COMMENT_TYPE_COPYEDIT) {
+                $request->redirect(null, null, 'viewCopyeditComments', $articleId);
+            } elseif ($commentType === COMMENT_TYPE_LAYOUT) {
+                $request->redirect(null, null, 'viewLayoutComments', $articleId);
+            } elseif ($commentType === COMMENT_TYPE_PROOFREAD) {
+                $request->redirect(null, null, 'viewProofreadComments', $articleId);
+            }
         }
     }
+    
 }
 ?>

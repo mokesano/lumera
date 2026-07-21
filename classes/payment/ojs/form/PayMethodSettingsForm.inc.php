@@ -116,5 +116,6 @@ class PayMethodSettingsForm extends Form {
             }
         }
     }
+    
 }
 ?>

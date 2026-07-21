@@ -47,7 +47,7 @@ define ('PERMISSIONS_FIELD_COPYRIGHT_HOLDER', 2);
 define ('PERMISSIONS_FIELD_COPYRIGHT_YEAR', 3);
 
 // Access status
-// [WIZDAM FIX] Article Access Constants
+// [LUMERA] Article Access Constants
 define ('ARTICLE_ACCESS_ISSUE_DEFAULT', 0);
 define ('ARTICLE_ACCESS_OPEN', 1);
 define ('ARTICLE_ACCESS_SUBSCRIPTION', 2);
@@ -85,8 +85,10 @@ class Article extends Submission {
         return ASSOC_TYPE_ARTICLE;
     }
 
-    // --- WIZDAM EXTENSION START (Article Type & Scope) ---
 
+    //
+    // LUMERA EXTENSION START (Article Type & Scope) ---
+    //
     /**
      * Get the article genre/type (e.g. Research, Review)
      * @return string
@@ -118,9 +120,11 @@ class Article extends Submission {
     public function setPubScope($scope) {
         return $this->setData('pubScope', $scope);
     }
-    
-    // [WIZDAM VALIDATION] - Milestones Genesis Editorial
 
+
+    //
+    // [WIZDAM] - Milestones Genesis Editorial
+    //
     /**
      * Get the revision date of the article, if available.
      * @return string|null
@@ -143,7 +147,7 @@ class Article extends Submission {
      */
     function getDatePublished() {
         if (method_exists($this, 'getPublishedArticleDatePublished')) {
-            return $this->getPublishedArticleDatePublished(); // Jika di PublishedArticle
+            return $this->getPublishedArticleDatePublished();
         }
         return $this->getData('datePublished');
     }
@@ -155,7 +159,6 @@ class Article extends Submission {
     function getDateStatusModified() {
         return $this->getData('dateStatusModified');
     }
-    // --- WIZDAM EXTENSION END ---
 
     /**
      * Get "localized" article title (if applicable). 
@@ -524,7 +527,7 @@ class Article extends Submission {
 
     /**
      * Return the localized discipline.
-     * DEPRICATED in favour of getLocalizedDiscipline
+     * DEPRECATED in favour of getLocalizedDiscipline
 	 * @return string
 	 */
     public function getArticleDiscipline() {
@@ -534,7 +537,7 @@ class Article extends Submission {
 
     /**
      * Return the localized subject classification.
-     * DEPRICATED in favour of getLocalizedSubjectClass
+     * DEPRECATED in favour of getLocalizedSubjectClass
 	 * @return string
 	 */
     public function getArticleSubjectClass() {
@@ -544,7 +547,7 @@ class Article extends Submission {
 
     /**
      * Return the localized subject.
-     * DEPRICATED in favour of getLocalizedSubject
+     * DEPRECATED in favour of getLocalizedSubject
 	 * @return string
 	 */
     public function getArticleSubject() {
@@ -587,7 +590,8 @@ class Article extends Submission {
 	 * DEPRECATED in favour of getLocalizedType.
 	 * @return string
 	 */
-    public function getArticleTypeLegacy() { // Renamed slightly to avoid conflict with wizdam property if needed, but here kept as getArticleType wrapper
+    public function getArticleTypeLegacy() {
+        // Renamed slightly to avoid conflict with wizdam property if needed, but here kept as getArticleType wrapper
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedType();
     }
@@ -713,7 +717,7 @@ class Article extends Submission {
     }
 
 	/**
-	 * get expedited
+	 * Get expedited
 	 * @return boolean
 	 */
     public function getFastTracked() {
@@ -721,7 +725,7 @@ class Article extends Submission {
     }
 
 	/**
-	 * set fastTracked
+	 * Set fastTracked
 	 * @param bool $fastTracked boolean
 	 */
     public function setFastTracked($fastTracked) {
@@ -930,8 +934,9 @@ class Article extends Submission {
     }
 
 
-    // --- WIZDAM EXTENSION: eLocator & PII ---
-
+    //
+    // LUMERA EXTENSION: eLocator & PII ---
+    //
     /**
      * Get the electronic locator (e-locator) of the article.
      * @return string
@@ -985,8 +990,9 @@ class Article extends Submission {
     public function getStartingPage() {
         $pagesStr = $this->getPages(); 
         
-        // Deteksi jika ini adalah eLocator Frontedge (dimulai dengan 'f' dan diikuti angka)
-        if (preg_match('/^f\d+$/i', $pagesStr)) {
+        $pattern = '/^' . preg_quote(ELOCATOR_PREFIX, '/') . '\d+$/i';
+        
+        if (preg_match($pattern, $pagesStr)) {
             return $pagesStr;
         }
 
@@ -1003,8 +1009,10 @@ class Article extends Submission {
     public function getEndingPage() {
         $pagesStr = $this->getPages();
         
-        if (preg_match('/^f\d+$/i', $pagesStr)) {
-            return ''; // Kosongkan ending page agar tidak tercetak ganda
+        $pattern = '/^' . preg_quote(ELOCATOR_PREFIX, '/') . '\d+$/i';
+        
+        if (preg_match($pattern, $pagesStr)) {
+            return ''; 
         }
 
         if ($pagesStr !== '' && preg_match('/^[^\d]*(\d+)\D*(.*)$/', $pagesStr, $pages)) {

@@ -12,22 +12,21 @@ declare(strict_types=1);
  * @ingroup controllers_grid_feature
  *
  * @brief Implements category grid ordering functionality.
- * [WIZDAM EDITION] Refactored for PHP 8.x
  */
 
 import('lib.pkp.classes.controllers.grid.feature.OrderItemsFeature');
 
 // Constants used for defining scope of ordering
-define_exposed('ORDER_CATEGORY_GRID_CATEGORIES_ONLY', 0x01);
-define_exposed('ORDER_CATEGORY_GRID_CATEGORIES_ROWS_ONLY', 0x02);
-define_exposed('ORDER_CATEGORY_GRID_CATEGORIES_AND_ROWS', 0x03);
+define('ORDER_CATEGORY_GRID_CATEGORIES_ONLY', 0x01);
+define('ORDER_CATEGORY_GRID_CATEGORIES_ROWS_ONLY', 0x02);
+define('ORDER_CATEGORY_GRID_CATEGORIES_AND_ROWS', 0x03);
 
 class OrderCategoryGridItemsFeature extends OrderItemsFeature {
 
     /**
      * Constructor.
-     * @param int $typeOption Defines which grid elements will be orderable (categories and/or rows).
-     * @param bool $overrideRowTemplate This feature uses row actions and it will force the usage of the gridRow.tpl.
+     * @param int $typeOption
+     * @param bool $overrideRowTemplate
      */
     public function __construct(int $typeOption = ORDER_CATEGORY_GRID_CATEGORIES_AND_ROWS, bool $overrideRowTemplate = true) {
         parent::__construct($overrideRowTemplate);
@@ -36,15 +35,17 @@ class OrderCategoryGridItemsFeature extends OrderItemsFeature {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param int $typeOption
+     * @param bool $overrideRowTemplate
      */
     public function OrderCategoryGridItemsFeature(int $typeOption = ORDER_CATEGORY_GRID_CATEGORIES_AND_ROWS, bool $overrideRowTemplate = true) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'. Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($typeOption, $overrideRowTemplate);
+        $this->__construct($typeOption, $overrideRowTemplate);
     }
 
     //
@@ -56,40 +57,42 @@ class OrderCategoryGridItemsFeature extends OrderItemsFeature {
      */
     public function getType(): int {
         $options = $this->getOptions();
-        return (int) $options['type'];
+        return (int) ($options['type'] ?? ORDER_CATEGORY_GRID_CATEGORIES_AND_ROWS);
     }
-
 
     //
     // Extended methods from GridFeature.
     //
     /**
+     * Get javascript class
      * @see GridFeature::getJSClass()
      */
     public function getJSClass(): string {
         return '$.pkp.classes.features.OrderCategoryGridItemsFeature';
     }
 
-
     //
     // Hooks implementation.
     //
     /**
+     * Get initialized row instance
      * @see OrderItemsFeature::getInitializedRowInstance()
+     * @param array $args
      */
     public function getInitializedRowInstance($args) {
-        if ($this->getType() != ORDER_CATEGORY_GRID_CATEGORIES_ONLY) {
+        if ($this->getType() !== ORDER_CATEGORY_GRID_CATEGORIES_ONLY) {
             parent::getInitializedRowInstance($args);
         }
     }
 
     /**
+     * Get initialized category row instance
      * @see GridFeature::getInitializedCategoryRowInstance()
+     * @param array $args
      */
     public function getInitializedCategoryRowInstance($args) {
-        if ($this->getType() != ORDER_CATEGORY_GRID_CATEGORIES_ROWS_ONLY) {
-            $row = $args['row'];
-            // Ensure $row is valid before adding action
+        if ($this->getType() !== ORDER_CATEGORY_GRID_CATEGORIES_ROWS_ONLY) {
+            $row = $args['row'] ?? null;
             if ($row) {
                 $this->addRowOrderAction($row);
             }
@@ -97,95 +100,117 @@ class OrderCategoryGridItemsFeature extends OrderItemsFeature {
     }
 
     /**
+     * Save sequences
+     * 
      * @see GridFeature::saveSequence()
+     * @param array $args
      */
     public function saveSequence($args) {
-        $request = $args['request'];
-        $grid = $args['grid'];
+        $request = $args['request'] ?? null;
+        $grid = $args['grid'] ?? null;
+        
+        if (!$request || !$grid) {
+            return;
+        }
 
         import('lib.pkp.classes.core.JSONManager');
         $jsonManager = new JSONManager();
-        $data = $jsonManager->decode($request->getUserVar('data'));
+
+        $data = $jsonManager->decode((string) $request->getUserVar('data'));
         
-        // Ensure data is array/iterable before proceeding
         if (!is_array($data)) {
             return;
         }
 
         $gridCategoryElements = $grid->getGridDataElements($request);
 
-        if ($this->getType() != ORDER_CATEGORY_GRID_CATEGORIES_ROWS_ONLY) {
+        if ($this->getType() !== ORDER_CATEGORY_GRID_CATEGORIES_ROWS_ONLY) {
             $categoriesData = [];
-            foreach($data as $categoryData) {
-                $categoriesData[] = $categoryData->categoryId;
+            foreach ($data as $categoryData) {
+                $catObj = is_object($categoryData) ? $categoryData : (object) $categoryData;
+                if (isset($catObj->categoryId)) {
+                    $categoriesData[] = (string) $catObj->categoryId;
+                }
             }
 
-            // Save categories sequence.
-            // Reset expects a reference, gridCategoryElements is a variable here, so it is safe.
             if (!empty($gridCategoryElements)) {
                 $firstElement = reset($gridCategoryElements);
-                $firstSeqValue = $grid->getCategoryDataElementSequence($firstElement);
-                
-                foreach ($gridCategoryElements as $rowId => $element) {
-                    $rowPosition = array_search($rowId, $categoriesData);
-                    if ($rowPosition !== false) {
-                        $newSequence = $firstSeqValue + $rowPosition;
-                        $currentSequence = $grid->getCategoryDataElementSequence($element);
-                        if ($newSequence != $currentSequence) {
-                            $grid->saveCategoryDataElementSequence($element, $newSequence);
+                if ($firstElement) {
+                    $firstSeqValue = $grid->getCategoryDataElementSequence($firstElement);
+                    
+                    foreach ($gridCategoryElements as $rowId => $element) {
+                        $rowPosition = array_search((string) $rowId, $categoriesData);
+                        if ($rowPosition !== false) {
+                            $newSequence = $firstSeqValue + $rowPosition;
+                            $currentSequence = $grid->getCategoryDataElementSequence($element);
+                            if ($newSequence !== $currentSequence) {
+                                $grid->saveCategoryDataElementSequence($element, $newSequence);
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Save rows sequence, if this grid has also orderable rows inside each category.
-        $this->_saveRowsInCategoriesSequence($grid, $gridCategoryElements, $data);
+        $this->_saveRowsInCategoriesSequence($grid, $gridCategoryElements, $data, $request);
     }
-
 
     //
     // Private helper methods.
     //
     /**
      * Save row elements sequence inside categories.
-     * @param GridHandler $grid
+     * 
+     * @param CategoryGridHandler $grid
      * @param array $gridCategoryElements
      * @param array $data
+     * @param PKPRequest $request
      */
-    private function _saveRowsInCategoriesSequence($grid, array $gridCategoryElements, array $data): void {
-        if ($this->getType() != ORDER_CATEGORY_GRID_CATEGORIES_ONLY) {
-            foreach($gridCategoryElements as $categoryId => $element) {
-                $gridRowElements = $grid->getCategoryData($element);
-                if (empty($gridRowElements)) continue;
+    private function _saveRowsInCategoriesSequence(CategoryGridHandler $grid, array $gridCategoryElements, array $data, $request): void {
+        if (!$grid instanceof CategoryGridHandler) {
+            return;
+        }
 
-                // Get the correct rows sequence data.
+        if ($this->getType() !== ORDER_CATEGORY_GRID_CATEGORIES_ONLY) {
+            foreach ($gridCategoryElements as $categoryId => $element) {
+                $gridRowElements = $grid->getCategoryData($element);
+                
+                if (empty($gridRowElements)) {
+                    continue;
+                }
+
                 $rowsData = null;
                 foreach ($data as $categoryData) {
-                    if ($categoryData->categoryId == $categoryId) {
-                        $rowsData = $categoryData->rowsId;
+                    $catObj = is_object($categoryData) ? $categoryData : (object) $categoryData;
+                    if (isset($catObj->categoryId) && (string) $catObj->categoryId === (string) $categoryId) {
+                        $rowsData = $catObj->rowsId ?? null;
                         break;
                     }
                 }
 
-                if ($rowsData === null) continue;
+                if ($rowsData === null || !is_array($rowsData)) {
+                    continue;
+                }
 
                 $firstRowElement = reset($gridRowElements);
-                $firstSeqValue = $grid->getRowDataElementSequence($firstRowElement);
-                
-                foreach ($gridRowElements as $rowId => $element) {
-                    $rowPosition = array_search($rowId, $rowsData);
-                    if ($rowPosition !== false) {
-                        $newSequence = $firstSeqValue + $rowPosition;
-                        $currentSequence = $grid->getRowDataElementSequence($element);
-                        if ($newSequence != $currentSequence) {
-                            $grid->saveRowDataElementSequence($element, $categoryId, $newSequence);
+                if ($firstRowElement) {
+                    $firstSeqValue = $grid->getRowDataElementSequence($firstRowElement);
+
+                    foreach ($gridRowElements as $rowId => $rowElement) { 
+                        $rowPosition = array_search((string) $rowId, $rowsData);
+                        if ($rowPosition !== false) {
+                            $newSequence = $firstSeqValue + $rowPosition;
+                            $currentSequence = $grid->getRowDataElementSequence($rowElement);
+                            
+                            if ($newSequence !== $currentSequence) {
+                                $grid->saveRowDataElementSequence($request, $categoryId, $rowElement, $newSequence);
+                            }
                         }
                     }
                 }
             }
         }
     }
+    
 }
-
 ?>

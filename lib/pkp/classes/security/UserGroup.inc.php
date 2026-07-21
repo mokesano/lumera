@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @ingroup security
  * @see UserGroupDAO
  *
- * @brief Describes user groups
+ * @brief Describes user groups.
  */
 
 // Bring in role constants.
@@ -35,7 +35,7 @@ class UserGroup extends DataObject {
             "Class '" . get_class($this) . "' uses deprecated constructor parent::UserGroup(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
-        self::__construct();
+        $this->__construct();
     }
 
     /**
@@ -43,15 +43,16 @@ class UserGroup extends DataObject {
      * @return int
      */
     public function getRoleId() {
-        return $this->getData('roleId');
+        $data = $this->getData('roleId');
+        return $data !== null ? (int) $data : 0;
     }
 
     /**
      * Set role ID.
-     * @param $roleId int
+     * @param mixed $roleId
      */
     public function setRoleId($roleId) {
-        $this->setData('roleId', $roleId);
+        $this->setData('roleId', $roleId !== null ? (int) $roleId : 0);
     }
 
     /**
@@ -59,15 +60,16 @@ class UserGroup extends DataObject {
      * @return string
      */
     public function getPath() {
-        return $this->getData('path');
+        $data = $this->getData('path');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set path.
-     * @param $path string
+     * @param mixed $path
      */
     public function setPath($path) {
-        $this->setData('path', $path);
+        $this->setData('path', $path !== null ? (string) $path : '');
     }
 
     /**
@@ -75,15 +77,16 @@ class UserGroup extends DataObject {
      * @return int
      */
     public function getContextId() {
-        return $this->getData('contextId');
+        $data = $this->getData('contextId');
+        return $data !== null ? (int) $data : 0;
     }
 
     /**
      * Set context ID.
-     * @param $contextId int
+     * @param mixed $contextId
      */
     public function setContextId($contextId) {
-        $this->setData('contextId', $contextId);
+        $this->setData('contextId', $contextId !== null ? (int) $contextId : 0);
     }
 
     /**
@@ -91,15 +94,16 @@ class UserGroup extends DataObject {
      * @return boolean
      */
     public function getDefault() {
-        return $this->getData('isDefault');
+        $data = $this->getData('isDefault');
+        return (bool) $data;
     }
 
     /**
      * Set default flag.
-     * @param $isDefault boolean
+     * @param mixed $isDefault
      */
     public function setDefault($isDefault) {
-        $this->setData('isDefault', $isDefault);
+        $this->setData('isDefault', (bool) $isDefault);
     }
 
     /**
@@ -107,25 +111,27 @@ class UserGroup extends DataObject {
      * @return string
      */
     public function getLocalizedName() {
-        return $this->getLocalizedData('name');
+        $data = $this->getLocalizedData('name');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Get user group name
-     * @param $locale string
+     * @param mixed $locale
      * @return string
      */
     public function getName($locale) {
-        return $this->getData('name', $locale);
+        $data = $this->getData('name', $locale);
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set user group name
-     * @param $name string
-     * @param $locale string
+     * @param mixed $name
+     * @param mixed $locale
      */
     public function setName($name, $locale) {
-        return $this->setData('name', $name, $locale);
+        $this->setData('name', $name !== null ? (string) $name : '', $locale);
     }
 
     /**
@@ -133,26 +139,28 @@ class UserGroup extends DataObject {
      * @return string
      */
     public function getLocalizedAbbrev() {
-        return $this->getLocalizedData('abbrev');
+        $data = $this->getLocalizedData('abbrev');
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Get user group abbrev
-     * @param $locale string
+     * @param mixed $locale
      * @return string
      */
     public function getAbbrev($locale) {
-        return $this->getData('abbrev', $locale);
+        $data = $this->getData('abbrev', $locale);
+        return $data !== null ? (string) $data : '';
     }
 
     /**
      * Set user group abbrev
-     * @param $abbrev string
-     * @param $locale string
+     * @param mixed $abbrev
+     * @param mixed $locale
      */
     public function setAbbrev($abbrev, $locale) {
-        return $this->setData('abbrev', $abbrev, $locale);
+        $this->setData('abbrev', $abbrev !== null ? (string) $abbrev : '', $locale);
     }
+    
 }
-
 ?>

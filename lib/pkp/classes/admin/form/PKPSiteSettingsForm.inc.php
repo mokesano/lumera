@@ -47,8 +47,8 @@ class PKPSiteSettingsForm extends Form {
             'minPasswordLength', 
             'required', 
             'admin.settings.form.minPasswordLengthRequired', 
-            function(int $l): bool {
-                return $l >= SITE_MIN_PASSWORD_LENGTH;
+            function($l) {
+                return (int) $l >= SITE_MIN_PASSWORD_LENGTH;
             }
         ));
         

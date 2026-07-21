@@ -18,15 +18,15 @@ declare(strict_types=1);
 import('lib.pkp.classes.security.AuthSource');
 
 class AuthSourceDAO extends DAO {
+
     /** @var array List of loaded authentication plugins */
-    public $plugins;
+    public $plugins = [];
 
     /**
      * Constructor.
      */
     public function __construct() {
         parent::__construct();
-        // Removed & from reference
         $this->plugins = PluginRegistry::loadCategory(AUTH_PLUGIN_CATEGORY);
     }
 
@@ -38,23 +38,22 @@ class AuthSourceDAO extends DAO {
             "Class '" . get_class($this) . "' uses deprecated constructor parent::AuthSourceDAO(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
         );
-        self::__construct();
+        $this->__construct();
     }
 
     /**
      * Get plugin instance corresponding to the ID.
-     * @param $authId int
+     * @param mixed $authId
      * @return AuthPlugin|null
      */
     public function getPlugin($authId) {
         $plugin = null;
-        // Removed & reference
-        $auth = $this->getSource($authId);
-        if ($auth != null) {
+        $auth = $this->getSource((int) $authId);
+        
+        if ($auth !== null) {
             $plugin = $auth->getPluginClass();
-            if ($plugin != null) {
-                // Removed & reference
-                $plugin = $plugin->getInstance($auth->getSettings(), $auth->getAuthId());
+            if ($plugin !== null) {
+                $plugin = $plugin->getInstance($auth->getSettings(), (int) $auth->getAuthId());
             }
         }
         return $plugin;
@@ -66,12 +65,12 @@ class AuthSourceDAO extends DAO {
      */
     public function getDefaultPlugin() {
         $plugin = null;
-        // Removed & reference
         $auth = $this->getDefaultSource();
-        if ($auth != null) {
+        
+        if ($auth !== null) {
             $plugin = $auth->getPluginClass();
-            if ($plugin != null) {
-                $plugin = $plugin->getInstance($auth->getSettings(), $auth->getAuthId());
+            if ($plugin !== null) {
+                $plugin = $plugin->getInstance($auth->getSettings(), (int) $auth->getAuthId());
             }
         }
         return $plugin;
@@ -79,22 +78,24 @@ class AuthSourceDAO extends DAO {
 
     /**
      * Retrieve a source.
-     * @param $authId int
+     * @param mixed $authId
      * @return AuthSource|null
      */
     public function getSource($authId) {
         $result = $this->retrieve(
             'SELECT * FROM auth_sources WHERE auth_id = ?',
-            array((int) $authId)
+            [(int) $authId]
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+
+        if ($result && !$result->EOF) {
             $returner = $this->_returnAuthSourceFromRow($result->GetRowAssoc(false));
         }
 
-        $result->Close();
-        unset($result);
+        if ($result) {
+            $result->Close();
+        }
 
         return $returner;
     }
@@ -109,12 +110,14 @@ class AuthSourceDAO extends DAO {
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+
+        if ($result && !$result->EOF) {
             $returner = $this->_returnAuthSourceFromRow($result->GetRowAssoc(false));
         }
 
-        $result->Close();
-        unset($result);
+        if ($result) {
+            $result->Close();
+        }
 
         return $returner;
     }
@@ -129,116 +132,142 @@ class AuthSourceDAO extends DAO {
 
     /**
      * Internal function to return an AuthSource object from a row.
-     * @param $row array
+     * @param mixed $row
      * @return AuthSource
      */
     public function _returnAuthSourceFromRow($row) {
         $auth = $this->newDataObject();
-        $auth->setAuthId($row['auth_id']);
-        $auth->setTitle($row['title']);
-        $auth->setPlugin($row['plugin']);
-        $auth->setPluginClass(@$this->plugins[$row['plugin']]);
-        $auth->setDefault($row['auth_default']);
-        $auth->setSettings(unserialize($row['settings']));
+
+        $auth->setAuthId((int) $row['auth_id']);
+        $auth->setTitle((string) ($row['title'] ?? ''));
+        
+        $pluginName = (string) ($row['plugin'] ?? '');
+        $auth->setPlugin($pluginName);
+
+        $auth->setPluginClass($this->plugins[$pluginName] ?? null);
+        
+        $auth->setDefault((bool) ($row['auth_default'] ?? false));
+
+        $settingsRaw = $row['settings'] ?? '';
+        $settings = is_string($settingsRaw) && !empty($settingsRaw) ? @unserialize($settingsRaw) : [];
+        $auth->setSettings(is_array($settings) ? $settings : []);
+        
         return $auth;
     }
 
     /**
      * Insert a new source.
-     * @param $auth AuthSource
+     * @param mixed $auth AuthSource
      * @return int|bool Auth ID on success, false on failure
      */
     public function insertSource($auth) {
-        if (!isset($this->plugins[$auth->getPlugin()])) return false;
-        if (!$auth->getTitle()) $auth->setTitle($this->plugins[$auth->getPlugin()]->getDisplayName());
+        $pluginName = (string) $auth->getPlugin();
         
+        if (!isset($this->plugins[$pluginName])) {
+            return false;
+        }
+        
+        if (!$auth->getTitle()) {
+            $auth->setTitle((string) $this->plugins[$pluginName]->getDisplayName());
+        }
+        
+        $settings = $auth->getSettings();
+        $settingsArray = is_array($settings) ? $settings : [];
+
         $this->update(
-            'INSERT INTO auth_sources
-                (title, plugin, settings)
-                VALUES
-                (?, ?, ?)',
-            array(
-                $auth->getTitle(),
-                $auth->getPlugin(),
-                serialize($auth->getSettings() ? $auth->getSettings() : array())
-            )
+            'INSERT INTO auth_sources (title, plugin, settings) VALUES (?, ?, ?)',
+            [
+                (string) $auth->getTitle(),
+                $pluginName,
+                serialize($settingsArray)
+            ]
         );
 
-        $auth->setAuthId($this->getInsertId('auth_sources', 'auth_id'));
+        $auth->setAuthId((int) $this->getInsertId('auth_sources', 'auth_id'));
         return $auth->getAuthId();
     }
 
     /**
      * Update a source.
-     * @param $auth AuthSource
+     * @param mixed $auth AuthSource
      */
     public function updateObject($auth) {
+        $settings = $auth->getSettings();
+        $settingsArray = is_array($settings) ? $settings : [];
+
         return $this->update(
-            'UPDATE auth_sources SET
-                title = ?,
-                settings = ?
-            WHERE    auth_id = ?',
-            array(
-                $auth->getTitle(),
-                serialize($auth->getSettings() ? $auth->getSettings() : array()),
+            'UPDATE auth_sources SET title = ?, settings = ? WHERE auth_id = ?',
+            [
+                (string) $auth->getTitle(),
+                serialize($settingsArray),
                 (int) $auth->getAuthId()
-            )
+            ]
         );
     }
 
+    /**
+     * DEPRECATED
+     * @param mixed $auth
+     */
     public function updateSource($auth) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->updateObject($auth);
     }
 
     /**
      * Delete a source.
-     * @param $authId int|AuthSource
+     * @param mixed $authId int|AuthSource
      */
     public function deleteObject($authId) {
-        // Handle if object passed instead of ID (polymorphism support)
         if (is_object($authId)) {
-             $authId = $authId->getAuthId();
+            $authId = (int) $authId->getAuthId();
         }
-        
+
         return $this->update(
-            'DELETE FROM auth_sources WHERE auth_id = ?', (int)$authId
+            'DELETE FROM auth_sources WHERE auth_id = ?', 
+            [(int) $authId]
         );
     }
 
+    /**
+     * DEPRECATED
+     * @param mixed $auth
+     */
     public function deleteSource($auth) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->deleteObject($auth);
     }
 
     /**
      * Set the default authentication source.
-     * @param $authId int
+     * @param mixed $authId
      */
     public function setDefault($authId) {
-        $this->update(
-            'UPDATE auth_sources SET auth_default = 0'
-        );
+        $this->update('UPDATE auth_sources SET auth_default = 0');
         $this->update(
             'UPDATE auth_sources SET auth_default = 1 WHERE auth_id = ?',
-            array((int) $authId)
+            [(int) $authId]
         );
     }
 
     /**
      * Retrieve a list of all auth sources for the site.
-     * @return DAOResultFactory AuthSource
+     * @param mixed $rangeInfo
+     * @return DAOResultFactory
      */
     public function getSources($rangeInfo = null) {
         $result = $this->retrieveRange(
             'SELECT * FROM auth_sources ORDER BY auth_id',
-            array(), // Corrected: retrieveRange expects params array as second arg, not boolean
+            [], 
             $rangeInfo
         );
 
-        $returner = new DAOResultFactory($result, $this, '_returnAuthSourceFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnAuthSourceFromRow');
     }
-}
 
+}
 ?>

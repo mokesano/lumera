@@ -14,8 +14,8 @@ declare(strict_types=1);
  * @brief Abstract class for block plugins
  */
 
-define('BLOCK_CONTEXT_LEFT_SIDEBAR',		0x00000001);
-define('BLOCK_CONTEXT_RIGHT_SIDEBAR',		0x00000002);
+define('BLOCK_CONTEXT_LEFT_SIDEBAR',	0x00000001);
+define('BLOCK_CONTEXT_RIGHT_SIDEBAR',	0x00000002);
 define('BLOCK_CONTEXT_HOMEPAGE',		0x00000003);
 
 import('lib.pkp.classes.plugins.LazyLoadPlugin');
@@ -26,7 +26,7 @@ class BlockPlugin extends LazyLoadPlugin {
 	 * Constructor
 	 */
 	public function __construct() {
-        parent::__construct(); // Panggil parent construct modern
+        parent::__construct();
     }
 
 	/*
@@ -38,7 +38,7 @@ class BlockPlugin extends LazyLoadPlugin {
 	 * @see PKPPlugin::register()
 	 * @param $category string
 	 * @param $path string
-	 * @return bool True if registration succeeded, false if it failed.
+	 * @return bool
 	 */
 	function register(string $category, string $path): bool {
 		$success = parent::register($category, $path);
@@ -47,7 +47,7 @@ class BlockPlugin extends LazyLoadPlugin {
 			$blockContext = $this->getBlockContext();
 			if (isset($contextMap[$blockContext])) {
 				$hookName = $contextMap[$blockContext];
-				HookRegistry::register($hookName, array(&$this, 'callback'));
+				HookRegistry::register($hookName, [&$this, 'callback']);
 			}
 		}
 		return $success;
@@ -75,7 +75,7 @@ class BlockPlugin extends LazyLoadPlugin {
 	 * Set the sequence information for this plugin.
 	 * NB: In the case of block plugins, higher numbers move
 	 * plugins down the page compared to other blocks.
-	 * @param $seq int
+	 * @param int $seq int
 	 */
 	function setSeq($seq) {
 		return $this->updateContextSpecificSetting($this->getSettingMainContext(), 'seq', $seq, 'int');
@@ -91,7 +91,7 @@ class BlockPlugin extends LazyLoadPlugin {
 
 	/**
 	 * Set the block context (e.g. BLOCK_CONTEXT_...) for this block.
-	 * @param $context int
+	 * @param int $context int
 	 */
 	function setBlockContext($context) {
 		return $this->updateContextSpecificSetting($this->getSettingMainContext(), 'context', $context, 'int');
@@ -105,7 +105,7 @@ class BlockPlugin extends LazyLoadPlugin {
 	function getSupportedContexts() {
 		// Will return left and right process as this is the
 		// most frequent use case.
-		return array(BLOCK_CONTEXT_LEFT_SIDEBAR, BLOCK_CONTEXT_RIGHT_SIDEBAR);
+		return [BLOCK_CONTEXT_LEFT_SIDEBAR, BLOCK_CONTEXT_RIGHT_SIDEBAR];
 	}
 
 	/**
@@ -113,15 +113,15 @@ class BlockPlugin extends LazyLoadPlugin {
 	 * @return array
 	 */
 	function &getContextMap() {
-		static $contextMap = array(
+		static $contextMap = [
 			BLOCK_CONTEXT_LEFT_SIDEBAR => 'Templates::Common::LeftSidebar',
 			BLOCK_CONTEXT_RIGHT_SIDEBAR => 'Templates::Common::RightSidebar',
-		);
+		];
 
 		$homepageHook = $this->_getContextSpecificHomepageHook();
 		if ($homepageHook) $contextMap[BLOCK_CONTEXT_HOMEPAGE] = $homepageHook;
 
-		HookRegistry::dispatch('BlockPlugin::getContextMap', array(&$this, &$contextMap));
+		HookRegistry::dispatch('BlockPlugin::getContextMap', [&$this, &$contextMap]);
 		return $contextMap;
 	}
 
@@ -148,15 +148,14 @@ class BlockPlugin extends LazyLoadPlugin {
 
 	/**
 	 * Callback that renders the block.
-	 * @param $hookName string
-	 * @param $args array
+	 * @param string $hookName string
+	 * @param array $args array
 	 * @return string
 	 */
     function callback($hookName, $args) {
         $params = $args[0];
         $templateMgr = $args[1];
 
-        // PERBAIKAN FATAL ERROR: Dapatkan $request dari Registry
         $request = Registry::get('request');
 
         if (!$this->getEnabled($request)) {
@@ -166,15 +165,12 @@ class BlockPlugin extends LazyLoadPlugin {
         $templateMgr->assign('blockTemplate', $this->getBlockTemplateFilename($request));
         $templateMgr->assign('blockPlugin', $this);
 
-        // Panggil 'getContents' DENGAN $request
         $template = $this->getContents($templateMgr, $request);
 
-        // WAJIB: 'echo' agar ditangkap oleh ob_start() Smarty
         if (!empty($template)) {
             echo $template;
         }
 
-        // WAJIB: 'return false' agar HookRegistry TIDAK 'break'
         return false;
     }
 
@@ -194,5 +190,6 @@ class BlockPlugin extends LazyLoadPlugin {
 		$contextList = $application->getContextList();
 		return 'Templates::Index::'.array_shift($contextList);
 	}
+
 }
 ?>

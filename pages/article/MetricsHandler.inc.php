@@ -190,5 +190,6 @@ class MetricsHandler extends ArticleHandler {
         }
         return $citations;
     }
+    
 }
 ?>

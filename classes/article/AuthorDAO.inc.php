@@ -433,5 +433,6 @@ class AuthorDAO extends PKPAuthorDAO {
 
         return $data;
     }
+    
 }
 ?>

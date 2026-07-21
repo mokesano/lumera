@@ -10,7 +10,7 @@
  *
  *}
 {strip}
-{include file="common/header.tpl"}
+    {include file="common/header.tpl"}
 {/strip}
 
 <div class="errorText">
@@ -18,9 +18,9 @@
 </div>
 
 {if $backLink}
-<div class="actions-button">
-    <input type="button" value="{translate key="$backLinkLabel"}" class="button" onclick="document.location.href='{$backLink}'" />
-</div>
+    <div class="actions-button">
+        <input type="button" value="{translate key="$backLinkLabel"}" class="button" onclick="document.location.href='{$backLink}'" />
+    </div>
 {/if}
 
 {include file="common/footer.tpl"}

@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_user
  *
  * @brief Handle requests for user comments.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.rt.ojs.RTDAO');
@@ -65,11 +63,13 @@ class CommentHandler extends Handler {
         $user = $request->getUser();
         $userId = isset($user) ? $user->getId() : null;
 
+        /** @var CommentDAO $commentDao */
         $commentDao = DAORegistry::getDAO('CommentDAO');
         $comment = $commentDao->getById($commentId, $articleId, 2);
 
         $journal = $request->getJournal();
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $isManager = $roleDao->userHasRole($journal->getId(), $userId, ROLE_ID_JOURNAL_MANAGER);
 
@@ -86,7 +86,6 @@ class CommentHandler extends Handler {
             $templateMgr->setCacheability(CACHEABILITY_NO_CACHE);
         }
         if ($comment) {
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('comment', $comment);
             $templateMgr->assign('parent', $commentDao->getById($comment->getParentCommentId(), $articleId));
         }
@@ -108,9 +107,12 @@ class CommentHandler extends Handler {
         $articleId = isset($args[0]) ? (int) $args[0] : 0;
         $galleyId = isset($args[1]) ? (int) $args[1] : 0;
         $parentId = isset($args[2]) ? (int) $args[2] : 0;
-        $journal = $request->getJournal();
-        $commentDao = DAORegistry::getDAO('CommentDAO');
 
+        $journal = $request->getJournal();
+        
+        /** @var CommentDAO $commentDao */
+        $commentDao = DAORegistry::getDAO('CommentDAO');
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($articleId);
 
@@ -151,6 +153,8 @@ class CommentHandler extends Handler {
                 // Send a notification to associated users
                 import('classes.notification.NotificationManager');
                 $notificationManager = new NotificationManager();
+
+                /** @var ArticleDAO $articleDao */
                 $articleDao = DAORegistry::getDAO('ArticleDAO');
                 $article = $articleDao->getArticle($articleId);
                 $notificationUsers = $article->getAssociatedUserIds();
@@ -183,8 +187,9 @@ class CommentHandler extends Handler {
         $user = $request->getUser();
         $userId = isset($user) ? $user->getId() : null;
 
+        /** @var CommentDAO $commentDao */
         $commentDao = DAORegistry::getDAO('CommentDAO');
-
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         if (!$roleDao->userHasRole($journal->getId(), $userId, ROLE_ID_JOURNAL_MANAGER)) {
             $request->redirect(null, 'index');
@@ -198,35 +203,56 @@ class CommentHandler extends Handler {
 
     /**
      * Validation
-     * @param PKPRequest $request
-     * @param int $articleId
+     * @param array|null $requiredContexts
+     * @param PKPRequest|int|null $request
      * @return bool
      */
-    public function validate($request, $articleId) {
-        parent::validate();
+    public function validate($requiredContexts = null, $request = null) {
+        // [LUMERA FIX] Adapter untuk pemanggilan legacy: $this->validate($request, $articleId)
+        $actualRequest = null;
+        $articleId = 0;
 
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (is_object($requiredContexts) && is_a($requiredContexts, 'PKPRequest') && is_numeric($request)) {
+            $actualRequest = $requiredContexts;
+            $articleId = (int) $request;
+        } else {
+            // Dipanggil sebagai: parent::validate($requiredContexts, $request)
+            $actualRequest = $request ?: $this->getRequest();
+            $args = $actualRequest->getRequestedArgs();
+            $articleId = isset($args[0]) ? (int) $args[0] : 0;
+        }
 
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
+        parent::validate($requiredContexts, $request);
+
+        if (!$actualRequest) {
+            $actualRequest = Application::get()->getRequest();
+        }
+
+        $journal = $actualRequest->getJournal();
+        $journalId = $journal ? $journal->getId() : 0;
+        
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
-
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $article = $publishedArticleDao->getPublishedArticleByArticleId($articleId);
 
-        // Bring in comment constants
+        /** @var CommentDAO $commentDao */
         $commentDao = DAORegistry::getDAO('CommentDAO');
 
-        $enableComments = $journal->getSetting('enableComments');
+        $enableComments = $journal ? $journal->getSetting('enableComments') : COMMENTS_UNAUTHENTICATED;
 
-        if ((!Validation::isLoggedIn() && $journalSettingsDao->getSetting($journalId,'restrictArticleAccess')) || ($article && !$article->getEnableComments()) || ($enableComments != COMMENTS_ANONYMOUS && $enableComments != COMMENTS_AUTHENTICATED && $enableComments != COMMENTS_UNAUTHENTICATED)) {
+        if (
+            (!Validation::isLoggedIn() && $journalSettingsDao->getSetting($journalId, 'restrictArticleAccess')) || 
+            ($article && !$article->getEnableComments()) || 
+            ($enableComments != COMMENTS_ANONYMOUS && $enableComments != COMMENTS_AUTHENTICATED && $enableComments != COMMENTS_UNAUTHENTICATED)
+        ) {
             Validation::redirectLogin();
         }
 
-        // Subscription Access
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
-        $issue = $issueDao->getIssueByArticleId($articleId);
+        $issue = $article ? $issueDao->getIssueByArticleId($articleId) : null;
 
         if (isset($issue) && isset($article)) {
             import('classes.issue.IssueAction');
@@ -234,10 +260,10 @@ class CommentHandler extends Handler {
             $subscribedUser = IssueAction::subscribedUser($journal, $issue->getId(), $articleId);
 
             if (!(!$subscriptionRequired || $article->getAccessStatus() == ARTICLE_ACCESS_OPEN || $subscribedUser)) {
-                $request->redirect(null, 'index');
+                $actualRequest->redirect(null, 'index');
             }
         } else {
-            $request->redirect(null, 'index');
+            $actualRequest->redirect(null, 'index');
         }
 
         $this->issue = $issue;
@@ -247,16 +273,24 @@ class CommentHandler extends Handler {
 
     /**
      * Set up the comment template.
-     * @param PKPRequest $request
-     * @param Article $article
-     * @param int $galleyId
+     * @param PKPRequest|null $request
+     * @param Article|null $article
+     * @param int|null $galleyId
      * @param Comment|null $comment
      */
-    public function setupTemplate($request, $article, $galleyId, $comment = null) {
+    public function setupTemplate($request = null, $article = null, $galleyId = null, $comment = null) {
         parent::setupTemplate();
+
+        $actualRequest = $request ?: $this->getRequest();
+        $actualArticle = $article ?: $this->article;
+
+        if (!$actualRequest || !$actualArticle) {
+            return;
+        }
+
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_READER);
         $templateMgr = TemplateManager::getManager();
-        $journal = $request->getJournal();
+        $journal = $actualRequest->getJournal();
 
         if (!$journal || !$journal->getSetting('restrictSiteAccess')) {
             $templateMgr->setCacheability(CACHEABILITY_PUBLIC);
@@ -264,21 +298,23 @@ class CommentHandler extends Handler {
 
         $pageHierarchy = [
             [
-                $request->url(null, 'article', 'view', [
-                    $article->getBestArticleId($request->getJournal()), $galleyId
+                $actualRequest->url(null, 'article', 'view', [
+                    $actualArticle->getBestArticleId($actualRequest->getJournal()), 
+                    $galleyId ?: 0
                 ]),
-                PKPString::stripUnsafeHtml($article->getLocalizedTitle()),
+                PKPString::stripUnsafeHtml($actualArticle->getLocalizedTitle()),
                 true
             ]
         ];
 
         if ($comment) {
             $pageHierarchy[] = [
-                $request->url(null, 'comment', 'view', [$article->getId(), $galleyId]),
+                $actualRequest->url(null, 'comment', 'view', [$actualArticle->getId(), $galleyId ?: 0]),
                 'comments.readerComments'
             ];
         }
         $templateMgr->assign('pageHierarchy', $pageHierarchy);
     }
+    
 }
 ?>
