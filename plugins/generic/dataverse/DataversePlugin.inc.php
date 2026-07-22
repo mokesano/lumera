@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class DataversePlugin
  * @ingroup plugins_generic_dataverse
  *
- * @brief Dataverse plugin class
- * [WIZDAM EDITION] Refactored into a Clean Architecture Orchestration Hub for PHP 8.4
+ * @brief Dataverse plugin class.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -75,7 +74,7 @@ class DataversePlugin extends GenericPlugin {
             $uiDelegator = new UIHookDelegator($this);
             $formDelegator = new FormHookDelegator($this, $studyService, $apiClient);
 
-            // [WIZDAM FIX] Delegate UI Hooks (No pass-by-reference ampersands)
+            // [WIZDAM] Delegate UI Hooks (No pass-by-reference ampersands)
             HookRegistry::register('LoadHandler', [$uiDelegator, 'setupPublicHandler']);
             HookRegistry::register('TemplateManager::display', [$uiDelegator, 'handleTemplateDisplay']);
             HookRegistry::register('Templates::Article::MoreInfo', [$uiDelegator, 'addDataCitationArticle']);
@@ -83,7 +82,7 @@ class DataversePlugin extends GenericPlugin {
             HookRegistry::register('Templates::About::Index::Policies', [$uiDelegator, 'addPolicyLinks']);
             HookRegistry::register('NotificationManager::getNotificationContents', [$uiDelegator, 'getNotificationContents']);
             
-            // [WIZDAM FIX] Delegate Form & Workflow Hooks
+            // [WIZDAM] Delegate Form & Workflow Hooks
             HookRegistry::register('Templates::Author::Submit::SuppFile::AdditionalMetadata', [$formDelegator, 'suppFileAdditionalMetadata']);
             HookRegistry::register('authorsubmitsuppfileform::initdata', [$formDelegator, 'suppFileFormInitData']);
             HookRegistry::register('authorsubmitsuppfileform::readuservars', [$formDelegator, 'suppFileFormReadUserVars']);
@@ -156,9 +155,9 @@ class DataversePlugin extends GenericPlugin {
     
     /**
      * Get management verbs (actions) for this plugin.
-     * @param array $verbs Existing verbs to merge with
-     * @param Request|null $request Optional request to check for context
-     * @return array List of verbs with their localized names
+     * @param array $verbs
+     * @param Request|null $request
+     * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs($verbs, $request);
@@ -173,14 +172,14 @@ class DataversePlugin extends GenericPlugin {
 
     /**
      * Handle management actions for this plugin.
-     * @param string|null $verb The management verb (action) to handle
-     * @param array $args Additional arguments for the action
-     * @param string $message Message to display (if any)
-     * @param array $messageParams Parameters for the message (if any)
-     * @param Request|null $request Optional request object for context
-     * @return bool True if the action was handled, false otherwise
+     * @param string $verb
+     * @param array $args
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param PKPRequest|null $request
+     * @return bool
      */
-    public function manage(?string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb ?? '', $args, $message, $messageParams)) return false;
 
         if (!$request) $request = Registry::get('request');
@@ -265,7 +264,7 @@ class DataversePlugin extends GenericPlugin {
      * This allows Smarty templates to use {plugin_url path="..." id="..."} to create links to the plugin's pages.
      * @param array $params
      * @param Smarty $smarty
-     * @return string The generated URL
+     * @return string
      */
     public function smartyPluginUrl(array $params, $smarty): string {
         $path = [$this->getCategory(), $this->getName()];
@@ -288,10 +287,11 @@ class DataversePlugin extends GenericPlugin {
      * Used by Delegators to format citation.
      * @param string $dataCitation
      * @param string $persistentUri
-     * @return string Formatted citation with persistent URI as a hyperlink
+     * @return string
      */
     public function _formatDataCitation(string $dataCitation, string $persistentUri): string {
         return str_replace($persistentUri, '<a href="'. $persistentUri .'">'. $persistentUri .'</a>', strip_tags($dataCitation));
     }
+
 }
 ?>
