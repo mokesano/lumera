@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class GoogleAnalyticsPlugin
  * @ingroup plugins_generic_googleAnalytics
  *
- * @brief Google Analytics plugin class
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Google Analytics plugin class.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -40,9 +38,9 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
 
     /**
      * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
+     * @param string $category
      * @param string $path
-     * @return boolean True iff plugin initialized successfully
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
@@ -103,9 +101,9 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
 
     /**
      * Extend the {url ...} smarty to support this plugin.
-     * @param array $params Parameters passed from Smarty
-     * @param Smarty $smarty Smarty instance
-     * @return string Generated URL
+     * @param array $params
+     * @param Smarty $smarty
+     * @return string
      */
     public function smartyPluginUrl(array $params, $smarty): string {
         $path = [$this->getCategory(), $this->getName()];
@@ -152,8 +150,8 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
 
     /**
      * Display verbs for the management interface.
-     * @param array $verbs An array of existing management verbs to add to
-     * @return array The management verbs to display
+     * @param array $verbs
+     * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs($verbs, $request);
@@ -169,10 +167,8 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
      * Insert Google Scholar account info into author submission step 3
      * and metadata edit forms
      * @param string $hookName
-     * @param array $params Parameters passed by the hook, including:
-     *  - $params[1] Smarty instance
-     *  - $params[2] Output string to append to
-     * @return boolean False to indicate that the hook handler should not be called again
+     * @param array $params
+     * @return bool
      */
     public function metadataField($hookName, $params) {
         $smarty = $params[1];
@@ -185,9 +181,8 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
     /**
      * Add Google Scholar to additional author fields
      * @param string $hookName
-     * @param array $params Parameters passed by the hook, including:
-     * - $params[1] Array of additional field names to modify
-     * @return boolean
+     * @param array $params
+     * @return bool
      */
     public function authorSubmitGetFieldNames($hookName, $params) {
         $fields =& $params[1]; // Reference needed for array modification
@@ -198,10 +193,8 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
     /**
      * Execute metadata changes
      * @param string $hookName
-     * @param array $params Parameters passed by the hook, including:
-     * - $params[0] Author object to modify
-     * - $params[1] Array of form data to read from
-     * @return boolean False to indicate that the hook handler should not be called again
+     * @param array $params
+     * @return bool
      */
     public function metadataExecute($hookName, $params) {
         $author = $params[0];
@@ -216,9 +209,8 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
     /**
      * Initialize metadata form data
      * @param string $hookName
-     * @param array $params Parameters passed by the hook, including:
-     * - $params[0] Form object to read from and modify
-     * @return boolean False to indicate that the hook handler should not be called again
+     * @param array $params
+     * @return bool
      */
     public function metadataInitData($hookName, $params) {
         $form = $params[0];
@@ -237,10 +229,8 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
     /**
      * Insert Google Analytics page tag to footer
      * @param string $hookName
-     * @param array $params Parameters passed by the hook, including:
-     * - $params[1] Smarty instance
-     * - $params[2] Output string to append to
-     * @return boolean False to indicate that the hook handler should not be called again
+     * @param array $params
+     * @return bool
      */
     public function insertFooter($hookName, $params) {
         $smarty = $params[1];
@@ -291,11 +281,11 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
      * Execute a management verb on this plugin
      * @param string $verb
      * @param array $args
-     * @param string $message Result status message
-     * @param array $messageParams Parameters for the message key
+     * @param string|null $message
+     * @param array|null $messageParams
      * @return boolean
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb, $args, $message, $messageParams)) return false;
 
         switch ($verb) {
@@ -328,5 +318,6 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
                 return false;
         }
     }
+    
 }
 ?>
