@@ -12,12 +12,13 @@
   -->
  
 <locale name="id_ID" full_name="Bahasa Indonesia">
-	<message key="plugins.pubIds.doi.displayName">DOI</message>
-	<message key="plugins.pubIds.doi.description">Plugin ini mengaktifkan penugasan Digital Object Identifiers untuk terbitan, artikel, galley dan file tambahan dalam OJS.</message>
+	<message key="plugins.pubIds.doi.displayName">Identitas DOI</message>
+	<message key="plugins.pubIds.doi.description">Plugin ini mengaktifkan penugasan Digital Object Identifiers untuk terbitan, artikel, galley dan file tambahan.</message>
+	<message key="plugins.pubIds.doi.poweredBy">DOI oleh Crossref</message>
 
 	<!-- settings form -->
 	<message key="plugins.pubIds.doi.manager.settings.doiSettings">Pengaturan Plugin DOI</message>
-	<message key="plugins.pubIds.doi.manager.settings.description">Silahkan konfigurasikan plugin DOI untuk dapat mengatur dan menggunakan DOIs dalam OJS:</message>
+	<message key="plugins.pubIds.doi.manager.settings.description">Silahkan konfigurasikan plugin DOI untuk dapat mengatur dan menggunakan DOIs:</message>
 	
 	<message key="plugins.pubIds.doi.manager.settings.doiObjects">Konten Jurnal</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiObjectsRequired">Silahkan pilih objek DOIs yang harus ditugaskan.</message>
@@ -33,7 +34,7 @@
 
 	<message key="plugins.pubIds.doi.manager.settings.doiSuffix">Akhiran DOI</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiSuffixDescription">Akhiran DOI dapat dengan format apapun, tetapi harus unik di antara semua objek penerbitan dengan penugasan awalan DOI yang sama:</message>
-	<message key="plugins.pubIds.doi.manager.settings.doiSuffixPattern">Gunakan pola seperti di bawah untuk menciptakan akhiran DOI. Gunakan %j untuk inisial jurnal, %v untuk nomor volume, %i untuk nomor terbitan, %Y untuk tahun, %a untuk ID artikel OJS, %g untuk ID galley OJS, %s untuk ID file tambahan dan %p untuk nomor halaman. </message>
+	<message key="plugins.pubIds.doi.manager.settings.doiSuffixPattern">Gunakan pola seperti di bawah untuk menciptakan akhiran DOI. Gunakan %j untuk inisial jurnal, %v untuk nomor volume, %i untuk nomor terbitan, %Y untuk tahun, %a untuk ID artikel, %g untuk ID galley, %s untuk ID file tambahan dan %p untuk nomor halaman.</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiSuffixPattern.issues">untuk terbitan</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiSuffixPattern.articles">untuk artikel</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiSuffixPattern.galleys">untuk galley</message>
@@ -49,7 +50,6 @@
 	<message key="plugins.pubIds.doi.manager.settings.doiReassign">Penugasan kembali DOI</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiReassign.description">Jika anda mengganti konfigurasi DOI, tidak akan berpengaruh terhadap DOI yang telah ditetapkan sebelumnya. Sekali konfigurasi DOI telah disimpan, gunakan tombol ini untuk membersihkan semua DOI yang ada sehingga pengaturan baru akan berlaku pada artikel yang ada.</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiReassign.confirm">Anda yakin untuk menghapus semua DOI yang ada?</message>	
-
 
 	<!-- metadata form -->
 	<message key="plugins.pubIds.doi.editor.doi">DOI</message>
