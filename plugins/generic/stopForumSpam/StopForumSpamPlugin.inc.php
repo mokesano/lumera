@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class StopForumSpamPlugin
  * @ingroup plugins_generic_stopForumSpam
  *
- * @brief Stop Forum Spam plugin class
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Stop Forum Spam plugin class.
  */
 
 define('STOP_FORUM_SPAM_API_ENDPOINT', 'http://www.stopforumspam.com/api?');
@@ -42,10 +40,9 @@ class StopForumSpamPlugin extends GenericPlugin {
 
     /**
      * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
+     * @param string $category
      * @param string $path
-     * @return boolean True iff plugin initialized successfully; if false,
-     * the plugin will not be registered.
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
@@ -205,7 +202,7 @@ class StopForumSpamPlugin extends GenericPlugin {
      * @param array $messageParams Parameters for the message key
      * @return boolean
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
 
         if (!$request) $request = Registry::get('request');
@@ -240,5 +237,6 @@ class StopForumSpamPlugin extends GenericPlugin {
                 return false;
         }
     }
+    
 }
 ?>
