@@ -253,7 +253,7 @@ class BackupPlugin extends GenericPlugin {
      * @param array $args
      * @param string $message
      * @param array $messageParams
-     * @param null|mixed $request
+     * @param PKPRequest|null $request
      * @return bool
      */
     public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
@@ -286,6 +286,6 @@ class BackupPlugin extends GenericPlugin {
         }
         return false;
     }
-    
+
 }
 ?>
