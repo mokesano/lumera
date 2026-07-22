@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_browse
  *
  * @brief Browse by additional objects plugin class.
- * * MODERNIZED FOR PHP 7.4+ & OJS FORK
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -39,7 +38,8 @@ class BrowsePlugin extends GenericPlugin {
 
     /**
      * Called as a plugin is registered to the registry
-     * @param $category
+     * @param string $category
+     * @param string $path
      * @return bool
      */
     public function register(string $category, string $path): bool {
@@ -87,10 +87,12 @@ class BrowsePlugin extends GenericPlugin {
 
     /**
      * Add additional navigation items.
+     * @param string $hookName
+     * @param array $params
      */
     public function addNavigationItem($hookName, $params) {
         $smarty = $params[1];
-        $output =& $params[2]; // [WIZDAM NOTE]: $output harus by reference.
+        $output =& $params[2]; // [NOTE]: $output Pass by reference.
 
         $journal = $smarty->get_template_vars('currentJournal');
 
@@ -106,6 +108,8 @@ class BrowsePlugin extends GenericPlugin {
 
     /**
      * Enable editor pixel tags management.
+     * @param string $hookName
+     * @param array $params
      */
     public function setupBrowseHandler($hookName, $params) {
         $page = $params[0];
@@ -123,7 +127,7 @@ class BrowsePlugin extends GenericPlugin {
                     define('HANDLER_CLASS', 'BrowseHandler');
                     define('BROWSE_PLUGIN_NAME', $this->getName());
                     AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
-                    // [WIZDAM NOTE]: $handlerFile harus by reference untuk mengubah path handler yang akan dimuat sistem.
+                    // [NOTE]: $handlerFile harus by reference untuk mengubah path handler yang akan dimuat sistem.
                     $handlerFile =& $params[2]; 
                     $handlerFile = $this->getHandlerPath() . 'BrowseHandler.inc.php';
                 }
@@ -133,7 +137,7 @@ class BrowsePlugin extends GenericPlugin {
 
     /**
      * Set the breadcrumbs, given the plugin's tree of items to append.
-     * @param $subclass boolean
+     * @param $isSubclass bool
      */
     public function setBreadcrumbs($isSubclass = false) {
         $templateMgr = TemplateManager::getManager();
@@ -157,6 +161,8 @@ class BrowsePlugin extends GenericPlugin {
 
     /**
      * Display verbs for the management interface.
+     * @param array $verbs
+     * @param PKPRequest $request
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs($verbs, $request);
@@ -168,13 +174,14 @@ class BrowsePlugin extends GenericPlugin {
 
     /**
      * Execute a management verb on this plugin
-     * @param $verb string
-     * @param $args array
-     * @param $message string Location for the plugin to put a result msg
-     * @param $messageParams array
+     * @param string $verb
+     * @param array $args
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param PKPRequest $request
      * @return boolean
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
 
         switch ($verb) {
@@ -208,5 +215,6 @@ class BrowsePlugin extends GenericPlugin {
                 return false;
         }
     }
+    
 }
 ?>
