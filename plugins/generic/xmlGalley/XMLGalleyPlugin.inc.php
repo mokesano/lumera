@@ -44,7 +44,7 @@ class XMLGalleyPlugin extends GenericPlugin {
      * @see Plugin::register()
      * @param string $category
      * @param string $path
-     * @return bool True on successful registration, false on failure
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         if (parent::register($category, $path)) {
@@ -106,8 +106,7 @@ class XMLGalleyPlugin extends GenericPlugin {
      */
     public function getXMLGalley($hookName, $args) {
         if (!$this->getEnabled()) return false;
-        
-        // WIZDAM FIX: Type cast arguments to integer to satisfy strict_types in DAO
+
         $galleyId = isset($args[0]) ? (int) $args[0] : null;
         $articleId = (isset($args[1]) && $args[1] !== null) ? (int) $args[1] : null;
         
@@ -233,9 +232,9 @@ class XMLGalleyPlugin extends GenericPlugin {
     /**
      * Display verbs for the management interface.
      * @see Plugin::getManagementVerbs()
-     * @param $verbs array Existing management verbs
-     * @param $request PKPRequest|null
-     * @return array Modified management verbs
+     * @param array $verbs
+     * @param PKPRequest|null $request
+     * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
        $verbs = parent::getManagementVerbs($verbs, $request);
@@ -249,13 +248,14 @@ class XMLGalleyPlugin extends GenericPlugin {
     /**
      * Execute a management verb on this plugin.
      * @see Plugin::manage()
-     * @param $verb string
-     * @param $args array
-     * @param $message string Result status message
-     * @param $messageParams array Parameters for the message key
+     * @param string $verb
+     * @param array $args
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param PKPRequest|null $request
      * @return boolean
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
 
         $journal = Request::getJournal();
