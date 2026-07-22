@@ -12,7 +12,7 @@
   -->
  
 <locale name="id_ID" full_name="Bahasa Indonesia">
-	<message key="plugins.pubIds.doi.displayName">Identitas DOI</message>
+	<message key="plugins.pubIds.doi.displayName">Modul DOI</message>
 	<message key="plugins.pubIds.doi.description">Plugin ini mengaktifkan penugasan Digital Object Identifiers untuk terbitan, artikel, galley dan file tambahan.</message>
 	<message key="plugins.pubIds.doi.poweredBy">DOI oleh Crossref</message>
 
