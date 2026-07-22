@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @package plugins.generic.staticPages
  * @class StaticPagesPlugin
  *
- * StaticPagesPlugin class
- * * MODERNIZED FOR WIZDAM FORK
+ * @brief StaticPagesPlugin class.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -77,7 +76,7 @@ class StaticPagesPlugin extends GenericPlugin {
      * Declare the handler function to process the actual page PATH
      * @see PKPApplication::getRequest()
      * @param $hookName string
-     * @param $args array
+     * @param array $args array
      * @return boolean
      */
     public function callbackHandleContent($hookName, $args) {
@@ -117,12 +116,12 @@ class StaticPagesPlugin extends GenericPlugin {
      * @see PKPPlugin::manage()
      * @param $verb string
      * @param $args array
-     * @param $message string
-     * @param $messageParams array
+     * @param string|null $message string
+     * @param array|null $messageParams array
      * @param $request PKPRequest
      * @return boolean
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
 
         if (!$request) $request = Application::getRequest();
@@ -209,6 +208,8 @@ class StaticPagesPlugin extends GenericPlugin {
                 return false;
             case 'delete':
                 $staticPageId = isset($args[0])?(int) $args[0]:null;
+
+                /** @var StaticPagesDAO $staticPagesDao */
                 $staticPagesDao = DAORegistry::getDAO('StaticPagesDAO');
                 $staticPagesDao->deleteStaticPageById($staticPageId);
 
@@ -238,5 +239,6 @@ class StaticPagesPlugin extends GenericPlugin {
     public function getInstallSchemaFile(): ?string {
         return $this->getPluginPath() . '/' . 'schema.xml';
     }
+    
 }
 ?>
