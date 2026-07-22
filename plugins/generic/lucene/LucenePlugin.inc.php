@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class LucenePlugin
  * @ingroup plugins_generic_lucene
  *
- * @brief Lucene plugin class
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Lucene plugin class.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -44,7 +42,6 @@ class LucenePlugin extends GenericPlugin {
 	/** @var array */
 	protected $_facets;
 
-
 	/**
 	 * Constructor
 	 */
@@ -62,7 +59,6 @@ class LucenePlugin extends GenericPlugin {
         $args = func_get_args();
         call_user_func_array(array($this, '__construct'), $args);
     }
-
 
 	//
 	// Getters and Setters
@@ -106,7 +102,6 @@ class LucenePlugin extends GenericPlugin {
 		}
 		return $this->_mailTemplates[$emailKey];
 	}
-
 
 	//
 	// Implement template methods from PKPPlugin.
@@ -182,6 +177,7 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Display name of plugin
 	 * @see PKPPlugin::getDisplayName()
+	 * @return string
 	 */
 	public function getDisplayName(): string {
 		return __('plugins.generic.lucene.displayName');
@@ -190,6 +186,7 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Description of plugin.
 	 * @see PKPPlugin::getDescription()
+	 * @return string
 	 */
 	public function getDescription(): string {
 		return __('plugins.generic.lucene.description');
@@ -198,6 +195,7 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Path to the plugin's settings file.
 	 * @see PKPPlugin::getInstallSitePluginSettingsFile()
+	 * @return string
 	 */
 	public function getInstallSitePluginSettingsFile(): ?string {
 		return $this->getPluginPath() . '/settings.xml';
@@ -206,6 +204,7 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Path to the plugin's email templates file.
 	 * @see PKPPlugin::getInstallEmailTemplatesFile()
+	 * @return string
 	 */
 	public function getInstallEmailTemplatesFile(): string {
 		return ($this->getPluginPath() . '/emailTemplates.xml');
@@ -214,6 +213,7 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Path to the plugin's email template data file.
 	 * @see PKPPlugin::getInstallEmailTemplateDataFile()
+	 * @return string
 	 */
 	public function getInstallEmailTemplateDataFile(): string {
 		return ($this->getPluginPath() . '/locale/{$installedLocale}/emailTemplates.xml');
@@ -223,6 +223,7 @@ class LucenePlugin extends GenericPlugin {
      * Indicates whether this plugin is a site plugin 
      * (i.e. a plugin that is not specific to a journal).
 	 * @see PKPPlugin::isSitePlugin()
+	 * @return bool
 	 */
 	public function isSitePlugin(): bool {
 		return true;
@@ -231,19 +232,21 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Path to the plugin's templates directory.
 	 * @see PKPPlugin::getTemplatePath()
+	 * @return string
 	 */
 	public function getTemplatePath(): string {
 		return parent::getTemplatePath() . 'templates/';
 	}
 
-
 	//
 	// Implement template methods from GenericPlugin.
 	//
-	
 	/**
      * Get the management verbs for this plugin.
 	 * @see GenericPlugin::getManagementVerbs()
+	 * @param array|null $verbs
+	 * @param PKPRequest|null $request
+	 * @return array
 	 */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
        $verbs = parent::getManagementVerbs($verbs, $request);
@@ -256,8 +259,14 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Handle management actions for this plugin.
 	 * @see GenericPlugin::manage()
+	 * @param string $verb
+     * @param array $args
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param PKPRequest|null $request
+     * @return bool
 	 */
-	public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+	public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
 		if (!parent::manage($verb, $args, $message, $messageParams)) return false;
 
 		switch ($verb) {
@@ -290,15 +299,14 @@ class LucenePlugin extends GenericPlugin {
 		}
 	}
 
-
 	//
 	// Application level hook implementations.
 	//
 	/**
      * Callback to load the plugin category.
 	 * @see PluginRegistry::loadCategory()
-     * @param $hookName
-     * @param $args array
+     * @param string $hookName
+     * @param array $args
 	 */
 	public function callbackLoadCategory($hookName, $args) {
 		// We only contribute to the block plug-in category.
@@ -326,8 +334,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to load the plugin's handler.
 	 * @see PKPPageRouter::route()
-     * @param $hookName
-     * @param $args array
+     * @param string $hookName
+     * @param array $args
 	 */
 	public function callbackLoadHandler($hookName, $args) {
 		// Check the page.
@@ -357,8 +365,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to add additional field names to the ArticleDAO.
 	 * @see DAO::getAdditionalFieldNames()
-     * @param $hookName
-     * @param $args array
+     * @param string $hookName
+     * @param array $args
 	 */
 	public function callbackArticleDaoAdditionalFieldNames($hookName, $args) {
 		// Add the indexing state setting to the field names.
@@ -369,8 +377,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
 	 * Callback to add additional field names to the SectionDAO.
 	 * @see DAO::getAdditionalFieldNames()
-     * @param $hookName
-     * @param $args array
+     * @param string $hookName
+     * @param array $args
 	 */
 	public function callbackSectionDaoAdditionalFieldNames($hookName, $args) {
 		// Add the custom ranking setting to the field names.
@@ -384,8 +392,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to retrieve search results from the solr web service.
 	 * @see ArticleSearch::retrieveResults()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackRetrieveResults($hookName, $params) {
 		assert($hookName == 'ArticleSearch::retrieveResults');
@@ -428,9 +436,9 @@ class LucenePlugin extends GenericPlugin {
 		$searchRequest->setFacetCategories($facetCategories);
 
 		// Configure custom ranking.
-		$customRanking = (boolean)$this->getSetting(0, 'customRanking');
+		$customRanking = (bool)$this->getSetting(0, 'customRanking');
 		if ($customRanking) {
-			$sectionDao = DAORegistry::getDAO('SectionDAO'); /* @var $sectionDao SectionDAO */
+			$sectionDao = DAORegistry::getDAO('SectionDAO'); /** @var SectionDAO $sectionDao */
 			if ($journal instanceof Journal) {
 				$sections = $sectionDao->getJournalSections($journal->getId());
 			} else {
@@ -507,8 +515,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to mark an article as changed when its metadata has been modified.
 	 * @see ArticleSearchIndex::articleMetadataChanged()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackArticleMetadataChanged($hookName, $params) {
 		assert($hookName == 'ArticleSearchIndex::articleMetadataChanged');
@@ -520,8 +528,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to mark an article as changed when its files have been modified.
 	 * @see ArticleSearchIndex::articleFilesChanged()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackArticleFilesChanged($hookName, $params) {
 		assert($hookName == 'ArticleSearchIndex::articleFilesChanged');
@@ -533,8 +541,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to mark an article as changed when one of its files has been modified.
 	 * @see ArticleSearchIndex::articleFileChanged()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackArticleFileChanged($hookName, $params) {
 		assert($hookName == 'ArticleSearchIndex::articleFileChanged');
@@ -546,8 +554,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to mark an article as changed when one of its files has been deleted.
 	 * @see ArticleSearchIndex::articleFileDeleted()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackArticleFileDeleted($hookName, $params) {
 		assert($hookName == 'ArticleSearchIndex::articleFileDeleted');
@@ -559,12 +567,12 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to mark an article as changed when the metadata of one of its supplementary files has been modified.
 	 * @see ArticleSearchIndex::suppFileMetadataChanged()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackSuppFileMetadataChanged($hookName, $params) {
 		assert($hookName == 'ArticleSearchIndex::suppFileMetadataChanged');
-		list($suppFile) = $params; /* @var $suppFile SuppFile */
+		list($suppFile) = $params; /** @var SuppFile $suppFile */
 		if (!($suppFile instanceof SuppFile)) return true;
 		$this->_solrWebService->markArticleChanged($suppFile->getArticleId());
 		return true;
@@ -573,8 +581,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to delete an article from the index when it has been deleted.
 	 * @see ArticleSearchIndex::articleDeleted()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackArticleDeleted($hookName, $params) {
 		assert($hookName == 'ArticleSearchIndex::articleDeleted');
@@ -587,8 +595,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to push changed articles to the index when a batch of article changes has been completed.
 	 * @see ArticleSearchIndex::articleChangesFinished()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackArticleChangesFinished($hookName, $params) {
 		// In the case of pull-indexing we ignore this call.
@@ -605,8 +613,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to re-build the index.
 	 * @see ArticleSearchIndex::rebuildIndex()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackRebuildIndex($hookName, $params) {
 		assert($hookName == 'ArticleSearchIndex::rebuildIndex');
@@ -629,7 +637,7 @@ class LucenePlugin extends GenericPlugin {
 			$journals = [$journal];
 			unset($journal);
 		} else {
-			$journalDao = DAORegistry::getDAO('JournalDAO'); /* @var $journalDao JournalDAO */
+			$journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
 			$journalIterator = $journalDao->getJournals();
 			$journals = $journalIterator->toArray();
 		}
@@ -674,8 +682,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to add a ranking boost option to the section form.
 	 * @see Form::Form()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackSectionFormConstructor($hookName, $params) {
 		// Check whether we got a valid ranking boost option.
@@ -694,8 +702,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to initialize the ranking boost field in the section form.
 	 * @see Form::initData()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackSectionFormInitData($hookName, $params) {
 		$form = $params[0]; /* @var $form SectionForm */
@@ -705,13 +713,13 @@ class LucenePlugin extends GenericPlugin {
 		$section = $form->section;
 		if ($section instanceof Section) {
 			$rankingBoostSetting = $section->getData('rankingBoost');
-			if (is_numeric($rankingBoostSetting)) $rankingBoost = (float)$rankingBoostSetting;
+			if (is_numeric($rankingBoostSetting)) $rankingBoost = (float) $rankingBoostSetting;
 		}
 
-		$rankingBoostOption = (int)($rankingBoost * 2);
+		$rankingBoostOption = (int) ($rankingBoost * 2);
 		$rankingBoostOptions = $this->_getRankingBoostOptions();
 		if (!in_array($rankingBoostOption, array_keys($rankingBoostOptions))) {
-			$rankingBoostOption = (int)(LUCENE_PLUGIN_DEFAULT_RANKING_BOOST * 2);
+			$rankingBoostOption = (int) (LUCENE_PLUGIN_DEFAULT_RANKING_BOOST * 2);
 		}
 		$form->setData('rankingBoostOption', $rankingBoostOption);
 		return false;
@@ -720,8 +728,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to read the ranking boost field from the section form.
 	 * @see Form::readUserVars()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackSectionFormReadUserVars($hookName, $params) {
 		// Reference needed to modify the array in place
@@ -733,8 +741,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to save the ranking boost field from the section form.
 	 * @see Form::execute()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackSectionFormExecute($hookName, $params) {
 		$form = $params[0]; /* @var $form SectionForm */
@@ -759,8 +767,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to add stylesheets and result set ordering options to the search results template.
 	 * @see TemplateManager::display()
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackTemplateDisplay($hookName, $params) {
 		// We only plug into the search results list.
@@ -792,8 +800,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to add an autosuggest input to the search results template.
 	 * @see templates/search/searchResults.tpl
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackTemplateFilterInput($hookName, $params) {
 		$smarty = $params[1];
@@ -806,8 +814,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to add a spelling suggestion to the search results template.
 	 * @see templates/search/searchResults.tpl
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackTemplatePreResults($hookName, $params) {
 		$smarty = $params[1];
@@ -824,8 +832,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to add a "similar documents" link to each search result.
 	 * @see templates/search/searchResults.tpl
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackTemplateAdditionalArticleLinks($hookName, $params) {
 		if (!$this->getSetting(0, 'simdocs')) return false;
@@ -855,8 +863,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to add a "similar documents" link to each search result.
 	 * @see templates/search/searchResults.tpl
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackTemplateAdditionalArticleInfo($hookName, $params) {
 		if (!$this->getSetting(0, 'highlighting')) return false;
@@ -879,8 +887,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to add syntax instructions to the search results template.
 	 * @see templates/search/searchResults.tpl
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackTemplateSyntaxInstructions($hookName, $params) {
 		$output =& $params[2]; // Reference required for string concatenation
@@ -891,8 +899,8 @@ class LucenePlugin extends GenericPlugin {
 	/**
      * Callback to add custom ranking options to the section form template.
 	 * @see templates/manager/sections/sectionForm.tpl
-     * @param $hookName
-     * @param $params array
+     * @param string $hookName
+     * @param array $params
 	 */
 	public function callbackTemplateSectionFormAdditionalMetadata($hookName, $params) {
 		$smarty = $params[1];
@@ -902,7 +910,6 @@ class LucenePlugin extends GenericPlugin {
 		$output .= $smarty->fetch($this->getTemplatePath() . 'additionalSectionMetadata.tpl');
 		return false;
 	}
-
 
 	//
 	// Private helper methods
@@ -1015,7 +1022,7 @@ class LucenePlugin extends GenericPlugin {
 	/**
 	 * Checks whether a minimum amount of time has passed since
 	 * the last email message went out.
-	 * @return boolean
+	 * @return bool
 	 */
 	protected function _spamCheck() {
 		// Avoid spam.
@@ -1075,5 +1082,6 @@ class LucenePlugin extends GenericPlugin {
 			4 => __('plugins.generic.lucene.sectionForm.ranking.high')
 		];
 	}
+	
 }
 ?>
