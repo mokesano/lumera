@@ -123,5 +123,6 @@ class PubIdPluginHelper {
         $settingName = 'pub-id::'.$pubIdPlugin->getPubIdType();
         $pubObject->setData($settingName, null);
     }
+    
 }
 ?>
