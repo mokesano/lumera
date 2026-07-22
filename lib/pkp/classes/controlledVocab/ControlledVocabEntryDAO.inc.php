@@ -31,7 +31,6 @@ class ControlledVocabEntryDAO extends DAO {
      */
     public function ControlledVocabEntryDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Menggunakan get_class($this) agar log mencatat NAMA CLASS ANAK yang memanggil
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor parent::ControlledVocabEntryDAO(). Please refactor to parent::__construct().", 
                 E_USER_DEPRECATED
@@ -42,12 +41,12 @@ class ControlledVocabEntryDAO extends DAO {
 
     /**
      * Retrieve a controlled vocab entry by controlled vocab entry ID.
-     * @param $controlledVocabEntryId int
-     * @param $controlledVocabEntry int optional
+     * @param int $controlledVocabEntryId int
+     * @param int $controlledVocabId int
      * @return ControlledVocabEntry
      */
     public function getById($controlledVocabEntryId, $controlledVocabId = null) {
-        $params = array((int) $controlledVocabEntryId);
+        $params = [(int) $controlledVocabEntryId];
         if (!empty($controlledVocabId)) $params[] = (int) $controlledVocabId;
 
         $result = $this->retrieve(
@@ -67,12 +66,12 @@ class ControlledVocabEntryDAO extends DAO {
     /**
      * Retrieve a controlled vocab entry by resolving one of its settings
      * to the corresponding entry id.
-     * @param $settingValue string the setting value to be searched for
-     * @param $symbolic string the vocabulary to be searched, identified by its symbolic name
-     * @param $assocType integer
-     * @param $assocId integer
-     * @param $settingName string the setting to be searched
-     * @param $locale string
+     * @param string $settingValue string
+     * @param string $symbolic string
+     * @param int $assocType integer
+     * @param int $assocId integer
+     * @param string $settingName string
+     * @param string $locale string
      * @return ControlledVocabEntry
      */
     public function getBySetting($settingValue, $symbolic, $assocType = 0, $assocId = 0, $settingName = 'name', $locale = '') {
@@ -87,7 +86,7 @@ class ControlledVocabEntryDAO extends DAO {
                 cv.symbolic = ? AND
                 cv.assoc_type = ? AND
                 cv.assoc_id = ?',
-            array($settingName, $locale, $settingValue, $symbolic, (int) $assocType, (int) $assocId)
+            [$settingName, $locale, $settingValue, $symbolic, (int) $assocType, (int) $assocId]
         );
 
         $returner = null;
@@ -107,10 +106,8 @@ class ControlledVocabEntryDAO extends DAO {
     }
 
     /**
-     * Internal function to return an ControlledVocabEntry object from a
-     * row.
-     * [MODERNISASI] Hapus & pada parameter $row
-     * @param $row array
+     * Internal function to return an ControlledVocabEntry object from a row.
+     * @param array $row array
      * @return ControlledVocabEntry
      */
     public function _fromRow($row) {
@@ -129,24 +126,24 @@ class ControlledVocabEntryDAO extends DAO {
      * @return array
      */
     public function getLocaleFieldNames() {
-        return array_merge(parent::getLocaleFieldNames(), array('name'));
+        return array_merge(parent::getLocaleFieldNames(), ['name']);
     }
 
     /**
-     * Update the localized fields for this table
-     * [MODERNISASI] Hapus & pada parameter object
-     * @param $controlledVocabEntry object
+     * Update the localized fields for this table.
+     * @param object $controlledVocabEntry object
      */
     public function updateLocaleFields($controlledVocabEntry) {
-        $this->updateDataObjectSettings('controlled_vocab_entry_settings', $controlledVocabEntry, array(
-            'controlled_vocab_entry_id' => $controlledVocabEntry->getId()
-        ));
+        $this->updateDataObjectSettings(
+            'controlled_vocab_entry_settings', 
+            $controlledVocabEntry, 
+            ['controlled_vocab_entry_id' => $controlledVocabEntry->getId()]
+        );
     }
 
     /**
      * Insert a new ControlledVocabEntry.
-     * [MODERNISASI] Hapus & pada parameter object
-     * @param $controlledVocabEntry ControlledVocabEntry
+     * @param ControlledVocabEntry $controlledVocabEntry
      * @return int
      */
     public function insertObject($controlledVocabEntry) {
@@ -155,19 +152,19 @@ class ControlledVocabEntryDAO extends DAO {
                 (controlled_vocab_id, seq)
                 VALUES
                 (?, ?)'),
-            array(
+            [
                 (int) $controlledVocabEntry->getControlledVocabId(),
                 (float) $controlledVocabEntry->getSequence()
-            )
+            ]
         );
         $controlledVocabEntry->setId($this->getInsertId());
         $this->updateLocaleFields($controlledVocabEntry);
-        return (int)$controlledVocabEntry->getId();
+        return (int) $controlledVocabEntry->getId();
     }
 
     /**
      * Delete a controlled vocab entry.
-     * @param $controlledVocabEntry ControlledVocabEntry
+     * @param ControlledVocabEntry $controlledVocabEntry
      * @return boolean
      */
     public function deleteObject($controlledVocabEntry) {
@@ -176,7 +173,7 @@ class ControlledVocabEntryDAO extends DAO {
 
     /**
      * Delete a controlled vocab entry by controlled vocab entry ID.
-     * @param $controlledVocabEntryId int
+     * @param int $controlledVocabEntryId int
      * @return boolean
      */
     public function deleteObjectById($controlledVocabEntryId) {
@@ -188,11 +185,11 @@ class ControlledVocabEntryDAO extends DAO {
     /**
      * Retrieve an iterator of controlled vocabulary entries matching a
      * particular controlled vocabulary ID.
-     * @param $controlledVocabId int
-     * @return object DAOResultFactory containing matching CVE objects
+     * @param int $controlledVocabId int
+     * @return object
      */
     public function getByControlledVocabId($controlledVocabId, $rangeInfo = null, $filter = null) {
-        $params = array((int) $controlledVocabId);
+        $params = [(int) $controlledVocabId];
         if (!empty($filter)) $params[] = "%$filter%";
 
         $result = $this->retrieveRange(
@@ -212,8 +209,7 @@ class ControlledVocabEntryDAO extends DAO {
 
     /**
      * Update an existing review form element.
-     * [MODERNISASI] Hapus & pada parameter object
-     * @param $controlledVocabEntry ControlledVocabEntry
+     * @param ControlledVocabEntry $controlledVocabEntry
      */
     public function updateObject($controlledVocabEntry) {
         $returner = $this->update(
@@ -221,32 +217,33 @@ class ControlledVocabEntryDAO extends DAO {
             SET    controlled_vocab_id = ?,
                 seq = ?
             WHERE    controlled_vocab_entry_id = ?',
-            array(
+            [
                 (int) $controlledVocabEntry->getControlledVocabId(),
                 (float) $controlledVocabEntry->getSequence(),
                 (int) $controlledVocabEntry->getId()
-            )
+            ]
         );
         $this->updateLocaleFields($controlledVocabEntry);
     }
 
     /**
      * Sequentially renumber entries in their sequence order.
+     * @param int $controlledVocabId int
      */
     public function resequence($controlledVocabId) {
         $result = $this->retrieve(
             'SELECT controlled_vocab_entry_id FROM controlled_vocab_entries WHERE controlled_vocab_id = ? ORDER BY seq',
-            array((int) $controlledVocabId)
+            [(int) $controlledVocabId]
         );
 
         for ($i=1; !$result->EOF; $i++) {
             list($controlledVocabEntryId) = $result->fields;
             $this->update(
                 'UPDATE controlled_vocab_entries SET seq = ? WHERE controlled_vocab_entry_id = ?',
-                array(
+                [
                     (int) $i,
                     (int) $controlledVocabEntryId
-                )
+                ]
             );
 
             $result->MoveNext();
@@ -263,6 +260,6 @@ class ControlledVocabEntryDAO extends DAO {
     public function getInsertId($table = '', $id = '', $callHooks = true) {
         return parent::getInsertId('controlled_vocab_entries', 'controlled_vocab_entry_id');
     }
+    
 }
-
 ?>

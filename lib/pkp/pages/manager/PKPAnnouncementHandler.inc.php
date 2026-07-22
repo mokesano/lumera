@@ -2,19 +2,16 @@
 declare(strict_types=1);
 
 /**
- * @file pages/manager/AnnouncementHandler.inc.php
+ * @file pages/manager/PKPAnnouncementHandler.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
  * Copyright (c) 2000-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @class AnnouncementHandler
+ * @class PKPAnnouncementHandler
  * @ingroup pages_manager
  *
  * @brief Handle requests for announcement management functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
- * FIX: Removed recursive constructor calls (Infinite Loop).
  */
 
 import('pages.manager.ManagerHandler');
@@ -31,43 +28,39 @@ class PKPAnnouncementHandler extends ManagerHandler {
     /**
      * Index handler.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function index($args = [], $request = null) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
-        
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->announcements($args, $request);
     }
 
     /**
      * Display a list of announcements for the current context.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function announcements($args, $request) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
-        // FIXME: Remove call to validate() when all ManagerHandler implementations
-        // (across all apps) have been migrated to the authorize() authorization approach.
         $this->validate();
         $this->setupTemplate($request);
 
-        // [WIZDAM FIX] Handler::getRangeInfo is non-static. 
-        // We use $this if available, otherwise new Handler()
         $rangeInfo = $this->getRangeInfo('announcements', []);
         
         while (true) {
             $announcements = $this->_getAnnouncements($request, $rangeInfo);
-            if ($announcements->isInBounds()) break;
-            unset($rangeInfo);
+            if ($announcements->isInBounds()) {
+                break;
+            }
             $rangeInfo = $announcements->getLastPageRangeInfo();
-            unset($announcements);
         }
 
-        $templateMgr = TemplateManager::getManager();
-        // [WIZDAM] Removed assign_by_ref
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('announcements', $announcements);
         $templateMgr->display('manager/announcement/announcements.tpl');
     }
@@ -79,30 +72,26 @@ class PKPAnnouncementHandler extends ManagerHandler {
      * @return ItemIterator
      */
     public function _getAnnouncements($request, $rangeInfo = null) {
-        // must be implemented by sub-classes
-        assert(false);
-        // [WIZDAM] PHP 8 require return value for reference return type
-        $null = null;
-        return $null; 
+        throw new \BadMethodCallException('Must be implemented by sub-classes.');
     }
 
     /**
      * Delete an announcement.
-     * @param array $args first parameter ID of the announcement to delete
-     * @param PKPRequest $request
+     * @param array $args
+     * @param PKPRequest|null $request
      */
     public function deleteAnnouncement($args, $request) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate();
 
-        if (isset($args) && !empty($args)) {
+        if (!empty($args)) {
             $announcementId = (int) $args[0];
 
+            /** @var AnnouncementDAO $announcementDao */
             $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
-
-            // Ensure announcement is for this context
             if ($this->_announcementIsValid($request, $announcementId)) {
                 $announcementDao->deleteAnnouncementById($announcementId);
             }
@@ -114,31 +103,32 @@ class PKPAnnouncementHandler extends ManagerHandler {
 
     /**
      * Display form to edit an announcement.
-     * @param array $args first parameter is the ID of the announcement to edit
-     * @param PKPRequest $request
+     * @param array $args
+     * @param PKPRequest|null $request
      */
     public function editAnnouncement($args, $request) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate();
         $this->setupTemplate($request);
 
-        $announcementId = !isset($args) || empty($args) ? null : (int) $args[0];
+        $announcementId = empty($args) ? null : (int) $args[0];
+        
+        /** @var AnnouncementDAO $announcementDao */
         $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
 
-        // Ensure announcement is valid and for this context
         if ($this->_announcementIsValid($request, $announcementId)) {
             import('classes.manager.form.AnnouncementForm');
 
-            $templateMgr = TemplateManager::getManager();
-            $templateMgr->append('pageHierarchy', [$request->url(null, 'manager', 'announcements'), 'manager.announcements']);
+            $templateMgr = TemplateManager::getManager($request);
+            $templateMgr->append('pageHierarchy', [
+                $request->url(null, 'manager', 'announcements'), 
+                'manager.announcements'
+            ]);
 
-            if ($announcementId == null) {
-                $templateMgr->assign('announcementTitle', 'manager.announcements.createTitle');
-            } else {
-                $templateMgr->assign('announcementTitle', 'manager.announcements.editTitle');
-            }
+            $templateMgr->assign('announcementTitle', $announcementId === null ? 'manager.announcements.createTitle' : 'manager.announcements.editTitle');
 
             $contextId = $this->getContextId($request);
 
@@ -148,7 +138,7 @@ class PKPAnnouncementHandler extends ManagerHandler {
             } else {
                 $announcementForm->initData();
             }
-            $announcementForm->display();
+            $announcementForm->display($request);
 
         } else {
             $router = $request->getRouter();
@@ -159,7 +149,7 @@ class PKPAnnouncementHandler extends ManagerHandler {
     /**
      * Display form to create new announcement.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function createAnnouncement($args, $request) {
         $this->editAnnouncement($args, $request);
@@ -168,24 +158,26 @@ class PKPAnnouncementHandler extends ManagerHandler {
     /**
      * Save changes to an announcement.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function updateAnnouncement($args, $request) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate();
         $this->setupTemplate($request);
 
         $router = $request->getRouter();
-
         import('classes.manager.form.AnnouncementForm');
 
-        $announcementId = $request->getUserVar('announcementId') == null ? null : (int) $request->getUserVar('announcementId');
+        $announcementIdVar = $request->getUserVar('announcementId');
+        $announcementId = $announcementIdVar === null ? null : (int) $announcementIdVar;
+        
+        /** @var AnnouncementDAO $announcementDao */
         $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
 
         if ($this->_announcementIsValid($request, $announcementId)) {
-
             $contextId = $this->getContextId($request);
 
             $announcementForm = new AnnouncementForm($contextId, $announcementId);
@@ -199,18 +191,15 @@ class PKPAnnouncementHandler extends ManagerHandler {
                 } else {
                     $request->redirectUrl($router->url($request, null, null, 'announcements'));
                 }
-
             } else {
-                $templateMgr = TemplateManager::getManager();
-                $templateMgr->append('pageHierarchy', [$request->url(null, null, 'manager', 'announcements'), 'manager.announcements']);
+                $templateMgr = TemplateManager::getManager($request);
+                $templateMgr->append('pageHierarchy', [
+                    $request->url(null, 'manager', 'announcements'), 
+                    'manager.announcements'
+                ]);
 
-                if ($announcementId == null) {
-                    $templateMgr->assign('announcementTitle', 'manager.announcements.createTitle');
-                } else {
-                    $templateMgr->assign('announcementTitle', 'manager.announcements.editTitle');
-                }
-
-                $announcementForm->display();
+                $templateMgr->assign('announcementTitle', $announcementId === null ? 'manager.announcements.createTitle' : 'manager.announcements.editTitle');
+                $announcementForm->display($request);
             }
         } else {
             $request->redirectUrl($router->url($request, null, null, 'announcements'));
@@ -220,47 +209,59 @@ class PKPAnnouncementHandler extends ManagerHandler {
     /**
      * Display a list of announcement types for the current context.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function announcementTypes($args, $request) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate();
         $this->setupTemplate($request, true);
 
-        // [WIZDAM FIX] Non-static call
         $rangeInfo = $this->getRangeInfo('announcementTypes', []);
+        $router = $request->getRouter();
+        $context = $router->getContext($request);
         
-        while (true) {
-            $announcementTypes = $this->_getAnnouncementTypes($request, $rangeInfo);
-            if ($announcementTypes->isInBounds()) break;
-            unset($rangeInfo);
-            $rangeInfo = $announcementTypes->getLastPageRangeInfo();
+        if (!$context) {
+            $request->redirect(null, 'index');
+            return;
         }
 
-        $templateMgr = TemplateManager::getManager();
+        $assocType = $context->getAssocType();
+        $contextId = (int) $context->getId();
+
+        /** @var AnnouncementTypeDAO $announcementTypeDao */
+        $announcementTypeDao = DAORegistry::getDAO('AnnouncementTypeDAO');
+        $announcementTypes = $announcementTypeDao->getByAssoc($assocType, $contextId, $rangeInfo);
+        while (!$announcementTypes->isInBounds()) {
+            $rangeInfo = $announcementTypes->getLastPageRangeInfo();
+            $announcementTypes = $announcementTypeDao->getByAssoc($assocType, $contextId, $rangeInfo);
+        }
+
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('announcementTypes', $announcementTypes);
         $templateMgr->display('manager/announcement/announcementTypes.tpl');
     }
 
     /**
      * Delete an announcement type.
-     * @param array $args first parameter ID of the announcement type to delete
-     * @param PKPRequest $request
+     * @param array $args
+     * @param PKPRequest|null $request
      */
     public function deleteAnnouncementType($args, $request) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate();
 
-        if (isset($args) && !empty($args)) {
+        if (!empty($args)) {
             $typeId = (int) $args[0];
 
+            /** @var AnnouncementTypeDAO $announcementTypeDao */
             $announcementTypeDao = DAORegistry::getDAO('AnnouncementTypeDAO');
 
-            // Ensure announcement is for this context
             if ($this->_announcementTypeIsValid($request, $typeId)) {
                 $announcementTypeDao->deleteById($typeId);
             }
@@ -272,31 +273,32 @@ class PKPAnnouncementHandler extends ManagerHandler {
 
     /**
      * Display form to edit an announcement type.
-     * @param array $args first parameter ID of the announcement type to edit
-     * @param PKPRequest $request
+     * @param array $args
+     * @param PKPRequest|null $request
      */
     public function editAnnouncementType($args, $request) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate();
         $this->setupTemplate($request, true);
 
-        $typeId = !isset($args) || empty($args) ? null : (int) $args[0];
+        $typeId = empty($args) ? null : (int) $args[0];
+        
+        /** @var AnnouncementTypeDAO $announcementTypeDao */
         $announcementTypeDao = DAORegistry::getDAO('AnnouncementTypeDAO');
 
-        // Ensure announcement type is valid and for this context
         if ($this->_announcementTypeIsValid($request, $typeId)) {
             import('classes.manager.form.AnnouncementTypeForm');
 
-            $templateMgr = TemplateManager::getManager();
-            $templateMgr->append('pageHierarchy', [$request->url(null, 'manager', 'announcementTypes'), 'manager.announcementTypes']);
+            $templateMgr = TemplateManager::getManager($request);
+            $templateMgr->append('pageHierarchy', [
+                $request->url(null, 'manager', 'announcementTypes'), 
+                'manager.announcementTypes'
+            ]);
 
-            if ($typeId == null) {
-                $templateMgr->assign('announcementTypeTitle', 'manager.announcementTypes.createTitle');
-            } else {
-                $templateMgr->assign('announcementTypeTitle', 'manager.announcementTypes.editTitle');
-            }
+            $templateMgr->assign('announcementTypeTitle', $typeId === null ? 'manager.announcementTypes.createTitle' : 'manager.announcementTypes.editTitle');
 
             $announcementTypeForm = new AnnouncementTypeForm($typeId);
             if ($announcementTypeForm->isLocaleResubmit()) {
@@ -304,7 +306,7 @@ class PKPAnnouncementHandler extends ManagerHandler {
             } else {
                 $announcementTypeForm->initData();
             }
-            $announcementTypeForm->display();
+            $announcementTypeForm->display($request);
 
         } else {
             $router = $request->getRouter();
@@ -315,7 +317,7 @@ class PKPAnnouncementHandler extends ManagerHandler {
     /**
      * Display form to create new announcement type.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function createAnnouncementType($args, $request) {
         $this->editAnnouncementType($args, $request);
@@ -324,20 +326,23 @@ class PKPAnnouncementHandler extends ManagerHandler {
     /**
      * Save changes to an announcement type.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function updateAnnouncementType($args, $request) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate();
         $this->setupTemplate($request, true);
 
         $router = $request->getRouter();
-
         import('classes.manager.form.AnnouncementTypeForm');
 
-        $typeId = $request->getUserVar('typeId') == null ? null : (int) $request->getUserVar('typeId');
+        $typeIdVar = $request->getUserVar('typeId');
+        $typeId = $typeIdVar === null ? null : (int) $typeIdVar;
+        
+        /** @var AnnouncementTypeDAO $announcementTypeDao */
         $announcementTypeDao = DAORegistry::getDAO('AnnouncementTypeDAO');
 
         if ($this->_announcementTypeIsValid($request, $typeId)) {
@@ -353,16 +358,14 @@ class PKPAnnouncementHandler extends ManagerHandler {
                     $request->redirectUrl($router->url($request, null, null, 'announcementTypes'));
                 }
             } else {
-                $templateMgr = TemplateManager::getManager();
-                $templateMgr->append('pageHierarchy', [$request->url(null, null, 'manager', 'announcementTypes'), 'manager.announcementTypes']);
+                $templateMgr = TemplateManager::getManager($request);
+                $templateMgr->append('pageHierarchy', [
+                    $request->url(null, 'manager', 'announcementTypes'), 
+                    'manager.announcementTypes'
+                ]);
 
-                if ($typeId == null) {
-                    $templateMgr->assign('announcementTypeTitle', 'manager.announcementTypes.createTitle');
-                } else {
-                    $templateMgr->assign('announcementTypeTitle', 'manager.announcementTypes.editTitle');
-                }
-
-                $announcementTypeForm->display();
+                $templateMgr->assign('announcementTypeTitle', $typeId === null ? 'manager.announcementTypes.createTitle' : 'manager.announcementTypes.editTitle');
+                $announcementTypeForm->display($request);
             }
         } else {
             $request->redirectUrl($router->url($request, null, null, 'announcementTypes'));
@@ -371,23 +374,24 @@ class PKPAnnouncementHandler extends ManagerHandler {
 
     /**
      * Set up the template with breadcrumbs etc.
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      * @param bool $subclass
      */
     public function setupTemplate($request = null, $subclass = false) {
-        // Note: Original code used Registry::get('request') inside setupTemplate but argument was passed. 
-        // We prioritize argument if valid.
-        if (!$request || !is_object($request)) {
-             $request = Registry::get('request');
+        if (!$request) {
+            $request = Application::get()->getRequest();
         }
         
-        parent::setupTemplate(true);
+        parent::setupTemplate();
+        
         if ($subclass) {
-            $templateMgr = TemplateManager::getManager();
-            $templateMgr->append('pageHierarchy', [$request->url(null, 'manager', 'announcements'), 'manager.announcements']);
+            $templateMgr = TemplateManager::getManager($request);
+            $templateMgr->append('pageHierarchy', [
+                $request->url(null, 'manager', 'announcements'), 
+                'manager.announcements'
+            ]);
         }
     }
-
 
     //
     // Protected methods.
@@ -395,13 +399,11 @@ class PKPAnnouncementHandler extends ManagerHandler {
     /**
      * Get the current context id in request.
      * @param PKPRequest $request
-     * @return int|null
+     * @return int
      */
     public function getContextId($request) {
-        // must be implemented by sub-classes
-        assert(false);
+        throw new \BadMethodCallException('Must be implemented by sub-classes.');
     }
-
 
     //
     // Private helper methods.
@@ -413,19 +415,18 @@ class PKPAnnouncementHandler extends ManagerHandler {
      * @return bool
      */
     public function _announcementIsValid($request, $announcementId = null) {
-        // must be implemented by sub-classes
-        assert(false);
+        throw new \BadMethodCallException('Must be implemented by sub-classes.');
     }
 
     /**
-     * Get the announcement types for this request.
+     * Check if the announcement type is valid and belongs to the current context.
      * @param PKPRequest $request
-     * @param mixed $rangeInfo optional
-     * @return ItemIterator
+     * @param int|null $typeId
+     * @return bool
      */
     public function _announcementTypeIsValid($request, $typeId = null) {
-        // must be implemented by sub-classes
-        assert(false);
+        throw new \BadMethodCallException('Must be implemented by sub-classes.');
     }
+
 }
 ?>

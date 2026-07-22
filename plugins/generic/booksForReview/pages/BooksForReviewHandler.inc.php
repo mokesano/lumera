@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class BooksForReviewHandler
  * @ingroup plugins_generic_booksForReview
  *
- * @brief Handle requests for public book for review functions. 
- * [WIZDAM EDITION] Modernized. PHP 8 Safe.
+ * @brief Handle requests for public book for review functions.
  */
 
 import('classes.handler.Handler');
@@ -21,154 +20,160 @@ class BooksForReviewHandler extends Handler {
 
     /**
      * Display books for review public index page.
-     * [MODERNISASI] Hapus referensi & pada $request
+     * @param array $args
+     * @param PKPRequest $request
      */
-    public function index($args = array(), $request) {
-        $this->setupTemplate();
-
+    public function index(array $args = [], $request = null) {
         $journal = $request->getJournal();
-        $journalId = $journal->getId();
+        if (!$journal) {
+            return;
+        }
+        $journalId = (int) $journal->getId();
 
-        $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
-
-        $bfrPlugin->import('classes.BookForReview');
-        $searchField = null;
-        $searchMatch = null;
+        /** @var BooksForReviewPlugin $bookReviewPlugin */
+        $bookReviewPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
         
-        // [SECURITY FIX] Amankan 'search' (string teks pencarian) dengan trim()
-        $search = trim($request->getUserVar('search'));
-
-        if (!empty($search)) {
-            // [SECURITY FIX] Amankan 'searchField' (string key/field) dengan trim()
-            $searchField = trim($request->getUserVar('searchField'));
-            
-            // [SECURITY FIX] Amankan 'searchMatch' (string key/match type) dengan trim()
-            $searchMatch = trim($request->getUserVar('searchMatch'));
+        if (!$bookReviewPlugin || !$bookReviewPlugin->getEnabled()) {
+            $request->redirect(null, 'index');
+            return;
         }
 
-        $rangeInfo = Handler::getRangeInfo('booksForReview');
-        $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
-        $booksForReview = $bfrDao->getBooksForReviewByJournalId($journalId, $searchField, $search, $searchMatch, BFR_STATUS_AVAILABLE, null, null, $rangeInfo);
-
-        $templateMgr = TemplateManager::getManager();
-        // [MODERNISASI] Gunakan assign, bukan assign_by_ref
-        $templateMgr->assign('booksForReview', $booksForReview);
-
-        $isAuthor = Validation::isAuthor();
-        $templateMgr->assign('isAuthor', $isAuthor);
-
-        // Set search parameters
-        $duplicateParameters = array(
-            'searchField', 'searchMatch', 'search'
-        );
+        $bookReviewPlugin->import('classes.BookForReview');
         
-        // [SECURITY FIX] Amankan semua parameter duplikat dari XSS dan input kotor
+        $search = trim((string) $request->getUserVar('search'));
+        $searchField = !empty($search) ? trim((string) $request->getUserVar('searchField')) : null;
+        $searchMatch = !empty($search) ? trim((string) $request->getUserVar('searchMatch')) : null;
+
+        $rangeInfo = $this->getRangeInfo('booksForReview');
+        
+        /** @var BookForReviewDAO $bookReviewDao */
+        $bookReviewDao = DAORegistry::getDAO('BookForReviewDAO');
+        $booksForReview = $bookReviewDao->getBooksForReviewByJournalId(
+            $journalId, $searchField, $search, $searchMatch, BFR_STATUS_AVAILABLE, null, null, $rangeInfo
+        );
+
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign('booksForReview', $booksForReview);
+        $templateMgr->assign('isAuthor', Validation::isAuthor());
+
+        $duplicateParameters = ['searchField', 'searchMatch', 'search'];
         foreach ($duplicateParameters as $param) {
-            $rawInput = trim($request->getUserVar($param));
-            $sanitizedValue = htmlspecialchars($rawInput, ENT_QUOTES, 'UTF-8');
-            $templateMgr->assign($param, $sanitizedValue);
+            $rawInput = trim((string) $request->getUserVar($param));
+            $templateMgr->assign($param, htmlspecialchars($rawInput, ENT_QUOTES, 'UTF-8'));
         }
 
         import('classes.file.PublicFileManager');
         $publicFileManager = new PublicFileManager();
-        $coverPagePath = $request->getBaseUrl() . '/';
-        $coverPagePath .= $publicFileManager->getJournalFilesPath($journalId) . '/';
-        $templateMgr->assign('coverPagePath', $coverPagePath);
-        $templateMgr->assign('locale', AppLocale::getLocale());
-
-        $fieldOptions = Array(
-            BFR_FIELD_TITLE => 'plugins.generic.booksForReview.field.title',
-            BFR_FIELD_PUBLISHER => 'plugins.generic.booksForReview.field.publisher',
-            BFR_FIELD_YEAR => 'plugins.generic.booksForReview.field.year',
-            BFR_FIELD_ISBN => 'plugins.generic.booksForReview.field.isbn',
-            BFR_FIELD_DESCRIPTION => 'plugins.generic.booksForReview.field.description'
-        );
-        $templateMgr->assign('fieldOptions', $fieldOptions);
+        $coverPagePath = $request->getBaseUrl() . '/' . $publicFileManager->getJournalFilesPath($journalId) . '/';
         
-        $templateMgr->assign('additionalInformation', $bfrPlugin->getSetting($journalId, 'additionalInformation'));
-        $templateMgr->display($bfrPlugin->getTemplatePath() . 'booksForReview.tpl');
+        $templateMgr->assign([
+            'coverPagePath' => $coverPagePath,
+            'locale' => AppLocale::getLocale(),
+            'fieldOptions' => [
+                BFR_FIELD_TITLE       => 'plugins.generic.booksForReview.field.title',
+                BFR_FIELD_PUBLISHER   => 'plugins.generic.booksForReview.field.publisher',
+                BFR_FIELD_YEAR        => 'plugins.generic.booksForReview.field.year',
+                BFR_FIELD_ISBN        => 'plugins.generic.booksForReview.field.isbn',
+                BFR_FIELD_DESCRIPTION => 'plugins.generic.booksForReview.field.description'
+            ],
+            'additionalInformation' => $bookReviewPlugin->getSetting($journalId, 'additionalInformation')
+        ]);
+
+        $templateMgr->display($bookReviewPlugin->getTemplatePath() . 'booksForReview.tpl');
     }
 
     /**
      * Public view book for review details.
-     * [MODERNISASI] Hapus referensi & pada $request
+     * @param array $args
+     * @param PKPRequest $request
      */
-    public function viewBookForReview($args = array(), $request) {
-        $this->setupTemplate(true);
-
+    public function viewBookForReview(array $args, PKPRequest $request): void {
         $journal = $request->getJournal();
-        $journalId = $journal->getId();
+        if (!$journal) {
+            return;
+        }
+        $journalId = (int) $journal->getId();
 
-        $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
+        /** @var BooksForReviewPlugin $bookReviewPlugin */
+        $bookReviewPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
+        $bookReviewPlugin->import('classes.BookForReview');
 
-        $bookId = !isset($args) || empty($args) ? null : (int) $args[0];
+        $bookId = isset($args[0]) ? (int) $args[0] : null;
 
-        $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
+        if ($bookId) {
+            /** @var BookForReviewDAO $bookReviewDao */
+            $bookReviewDao = DAORegistry::getDAO('BookForReviewDAO');
+            
+            if ($bookReviewDao->getBookForReviewJournalId($bookId) === $journalId) {
+                $book = $bookReviewDao->getBookForReview($bookId);
 
-        // Ensure book for review is valid and for this journal
-        if ($bfrDao->getBookForReviewJournalId($bookId) == $journalId) {
-            $book = $bfrDao->getBookForReview($bookId);
-            $bfrPlugin->import('classes.BookForReview');
+                if ($book && $book->getStatus() === BFR_STATUS_AVAILABLE) {
+                    import('classes.file.PublicFileManager');
+                    $publicFileManager = new PublicFileManager();
+                    $coverPagePath = $request->getBaseUrl() . '/' . $publicFileManager->getJournalFilesPath($journalId) . '/';
 
-            // Ensure book is still available
-            if ($book->getStatus() == BFR_STATUS_AVAILABLE) {
-                $isAuthor = Validation::isAuthor();
-
-                import('classes.file.PublicFileManager');
-                $publicFileManager = new PublicFileManager();
-                $coverPagePath = $request->getBaseUrl() . '/';
-                $coverPagePath .= $publicFileManager->getJournalFilesPath($journalId) . '/';
-
-                $templateMgr = TemplateManager::getManager();
-                $templateMgr->assign('coverPagePath', $coverPagePath);
-                $templateMgr->assign('locale', AppLocale::getLocale());
-                // [MODERNISASI] Gunakan assign
-                $templateMgr->assign('bookForReview', $book);
-                $templateMgr->assign('isAuthor', $isAuthor);
-                $templateMgr->display($bfrPlugin->getTemplatePath() . 'bookForReview.tpl');
+                    $templateMgr = TemplateManager::getManager($request);
+                    $templateMgr->assign([
+                        'coverPagePath' => $coverPagePath,
+                        'locale' => AppLocale::getLocale(),
+                        'bookForReview' => $book,
+                        'isAuthor' => Validation::isAuthor()
+                    ]);
+                    $templateMgr->display($bookReviewPlugin->getTemplatePath() . 'bookForReview.tpl');
+                    return;
+                }
             }
         }
+        
         $request->redirect(null, 'booksForReview');
     }
 
     /**
-     * Ensure that we have a selected journal and the plugin is enabled
-     * [MODERNISASI] Perbaiki signature authorize sesuai parent (tanpa &)
+     * Ensure that we have a selected journal and the plugin is enabled.
+     * @see PKPHandler::authorize()
+     * @param PKPRequest $request
+     * @param array $args
+     * @param array $roleAssignments
      */
-    public function authorize($request, &$args, $roleAssignments) {
+    public function authorize($request, $args, $roleAssignments) {
         $journal = $request->getJournal();
-        if (!isset($journal)) return false;
+        if (!$journal) {
+            return false;
+        }
 
-        $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
+        /** @var BooksForReviewPlugin $bookReviewPlugin */
+        $bookReviewPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
 
-        if (!isset($bfrPlugin)) return false;
- 
-        if (!$bfrPlugin->getEnabled()) return false;
+        if (!$bookReviewPlugin || !$bookReviewPlugin->getEnabled()) {
+            return false;
+        }
 
         return parent::authorize($request, $args, $roleAssignments);
     }
 
     /**
      * Setup common template variables.
-     * @param $subclass boolean set to true if caller is below this handler in the hierarchy
+     * @param PKPRequest $request
+     * @param bool $subclass
      */
-    public function setupTemplate($subclass = false) {
-        $templateMgr = TemplateManager::getManager();
+    public function setupTemplate($request = null, $subclass = false) {
+        $templateMgr = TemplateManager::getManager($request);
 
         if ($subclass) {
-            $templateMgr->append(
-                'pageHierarchy',
-                array(
-                    Request::url(null, 'booksForReview'), 
-                    AppLocale::Translate('plugins.generic.booksForReview.displayName'),
-                    true
-                )
-            );
+            $templateMgr->append('pageHierarchy', [
+                $request->url(null, 'booksForReview'), 
+                AppLocale::translate('plugins.generic.booksForReview.displayName'),
+                true
+            ]);
         }
 
-        $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
-        $templateMgr->addStyleSheet(Request::getBaseUrl() . '/' . $bfrPlugin->getStyleSheet());
+        /** @var BooksForReviewPlugin $bookReviewPlugin */
+        $bookReviewPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
+        
+        if ($bookReviewPlugin) {
+            $templateMgr->addStyleSheet($request->getBaseUrl() . '/' . $bookReviewPlugin->getStyleSheet());
+        }
     }
-}
 
+}
 ?>

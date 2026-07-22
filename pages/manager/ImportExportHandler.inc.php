@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_manager
  *
  * @brief Handle requests for import/export functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 define('IMPORTEXPORT_PLUGIN_CATEGORY', 'importexport');
@@ -46,28 +44,32 @@ class ImportExportHandler extends ManagerHandler {
     /**
      * Import or export data.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function importexport($args = [], $request = null) {
         $this->validate();
         $this->setupTemplate(true);
 
         PluginRegistry::loadCategory(IMPORTEXPORT_PLUGIN_CATEGORY);
-        $templateMgr = TemplateManager::getManager();
+        
+        // [WIZDAM] Modernization: Pass $request to getManager for better context handling
+        $templateMgr = TemplateManager::getManager($request);
 
         if (array_shift($args) === 'plugin') {
             $pluginName = (string) array_shift($args);
+            /** @var ImportExportPlugin $plugin */
             $plugin = PluginRegistry::getPlugin(IMPORTEXPORT_PLUGIN_CATEGORY, $pluginName);
+            
             if ($plugin) {
                 return $plugin->display($args, $request);
             }
         }
         
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('plugins', PluginRegistry::getPlugins(IMPORTEXPORT_PLUGIN_CATEGORY));
         $templateMgr->assign('helpTopicId', 'journal.managementPages.importExport');
+        
         $templateMgr->display('manager/importexport/plugins.tpl');
     }
-}
 
+}
 ?>

@@ -69,7 +69,7 @@ class GenericPlugin extends LazyLoadPlugin {
      * @param mixed $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if ($verb === 'enable') {
             $this->setEnabled(true, $request);
             return false; // false = redirect ke halaman plugin list

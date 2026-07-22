@@ -362,8 +362,8 @@ class SetupHandler extends ManagerHandler {
     }
 
     /**
-     * Save changes to journal settings.
-     * [LUMERA] Proxy Method untuk Backward Compatibility.
+     * [LUMERA] Save changes to journal settings.
+     * [SHIM] Backward Compatibility.
      * @param array $args
      * @param PKPRequest|null $request
      */
@@ -462,5 +462,6 @@ class SetupHandler extends ManagerHandler {
             $notificationManager->createTrivialNotification($user->getId());
         }
     }
+    
 }
 ?>

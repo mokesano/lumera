@@ -118,6 +118,7 @@ class UserManagementForm extends Form {
      * @param mixed $template
      */
     public function display($request = null, $template = null) {
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $templateMgr = TemplateManager::getManager();
         $requestObj = Application::get()->getRequest();
@@ -140,7 +141,8 @@ class UserManagementForm extends Form {
         $journalId = $journal == null ? 0 : $journal->getId();
         
         import('pages.manager.PeopleHandler');
-        $rolePrefs = PeopleHandler::retrieveRoleAssignmentPreferences($journalId);
+        $peopleHandler = new PeopleHandler();
+        $rolePrefs = $peopleHandler->retrieveRoleAssignmentPreferences($journalId);
         $activeRoles = [
             '' => 'manager.people.doNotEnroll',
             'manager' => 'user.role.manager',
@@ -180,10 +182,12 @@ class UserManagementForm extends Form {
         $templateMgr->assign('availableLocales', $site->getSupportedLocaleNames());
         $templateMgr->assign('helpTopicId', $helpTopicId);
 
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
         $templateMgr->assign('countries', $countries);
 
+        /** @var AuthSourceDAO $authDao */
         $authDao = DAORegistry::getDAO('AuthSourceDAO');
         $authSources = $authDao->getSources();
         $authSourceOptions = [];
@@ -202,6 +206,7 @@ class UserManagementForm extends Form {
      */
     public function initData() {
         if (isset($this->userId)) {
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $user = $userDao->getById($this->userId);
 
@@ -240,6 +245,7 @@ class UserManagementForm extends Form {
         }
         
         if (!isset($this->userId)) {
+            /** @var RoleDAO $roleDao */
             $roleDao = DAORegistry::getDAO('RoleDAO');
             $roleId = Application::get()->getRequest()->getUserVar('roleId');
             $roleSymbolic = $roleDao->getRolePath($roleId);
@@ -331,6 +337,7 @@ class UserManagementForm extends Form {
      * @param mixed $object
      */
     public function execute($object = null) {
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
@@ -375,6 +382,7 @@ class UserManagementForm extends Form {
         $user->setLocales($locales);
 
         if ($user->getAuthId()) {
+            /** @var AuthSourceDAO $authDao */
             $authDao = DAORegistry::getDAO('AuthSourceDAO');
             $auth = $authDao->getPlugin($user->getAuthId());
         }
@@ -424,7 +432,7 @@ class UserManagementForm extends Form {
 
             if (!empty($this->_data['enrollAs'])) {
                 foreach ($this->getData('enrollAs') as $roleName) {
-                    // Enroll new user into an initial role
+                    /** @var RoleDAO $roleDao */
                     $roleDao = DAORegistry::getDAO('RoleDAO');
                     $roleId = $roleDao->getRoleIdFromPath($roleName);
                     if (!$isManager && $roleId != ROLE_ID_READER) continue;
@@ -455,5 +463,6 @@ class UserManagementForm extends Form {
         $interestManager = new InterestManager();
         $interestManager->setInterestsForUser($user, $interests);
     }
+    
 }
 ?>
