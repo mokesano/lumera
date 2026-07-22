@@ -20,9 +20,9 @@ class PiwikPlugin extends GenericPlugin {
 
 	/**
 	 * Called as a plugin is registered to the registry
-	 * @param $category String Name of category plugin was registered to
-	 * @return boolean True iff plugin initialized successfully; if false,
-	 * 	the plugin will not be registered.
+	 * @param string $category String
+	 * @param string $path
+	 * @return bool
 	 */
 	public function register(string $category, string $path): bool {
 		$success = parent::register($category, $path);
@@ -53,7 +53,7 @@ class PiwikPlugin extends GenericPlugin {
 	 * Get the name of this plugin. The name must be unique within
 	 * its category, and should be suitable for part of a filename
 	 * (ie short, no spaces, and no dependencies on cases being unique).
-	 * @return String name of plugin
+	 * @return string
 	 */
 	public function getName(): string {
 		return 'PiwikPlugin';
@@ -77,6 +77,9 @@ class PiwikPlugin extends GenericPlugin {
 
 	/**
 	 * Extend the {url ...} smarty to support this plugin.
+	 * @param array $params array
+	 * @param mixed $smarty Smarty
+	 * @return string
 	 */
 	public function smartyPluginUrl(array $params, $smarty): string {
 		$path = array($this->getCategory(), $this->getName());
@@ -98,7 +101,7 @@ class PiwikPlugin extends GenericPlugin {
 	/**
 	 * Set the page's breadcrumbs, given the plugin's tree of items
 	 * to append.
-	 * @param $subclass boolean
+	 * @param bool $isSubclass bool
 	 */
 	public function setBreadcrumbs($isSubclass = false) {
 		$templateMgr = TemplateManager::getManager();
@@ -122,9 +125,11 @@ class PiwikPlugin extends GenericPlugin {
 
 	/**
 	 * Display verbs for the management interface.
+	 * @param array $verbs
+	 * @param PKPRequest $request
+	 * @return array
 	 */
 	public function getManagementVerbs(array $verbs = [], $request = null): array {
-	    
 	   	// 1. Seragamkan Definisi (tambah $request) 
 	    $verbs = array(); // Logika plugin ini 'mengganti'
 	    
@@ -151,6 +156,8 @@ class PiwikPlugin extends GenericPlugin {
 
 	/**
 	 * Determine whether or not this plugin is enabled.
+	 * @param PKPRequest $request
+	 * @return bool
 	 */
 	public function getEnabled($request = NULL): bool {
 		$journal = Request::getJournal();
@@ -160,6 +167,9 @@ class PiwikPlugin extends GenericPlugin {
 
 	/**
 	 * Set the enabled/disabled state of this plugin
+	 * @param bool $enabled
+	 * @param PKPRequest $request
+	 * @return bool
 	 */
 	public function setEnabled(bool $enabled, $request = NULL): bool { 
 	    return parent::setEnabled($enabled, $request); 
@@ -167,6 +177,8 @@ class PiwikPlugin extends GenericPlugin {
 
 	/**
 	 * Insert Piwik page tag to footer
+	 * @param string $hookName
+	 * @param array $params
 	 */
 	public function insertFooter($hookName, $params) {
 		if ($this->getEnabled()) {
@@ -198,8 +210,14 @@ class PiwikPlugin extends GenericPlugin {
 
 	/**
 	 * Perform management functions
-	 */
-	public function manage(string $verb, array $args, string $message = null, array $messageParams = null, $request = null): bool {
+	 * @param string $verb
+     * @param array $args
+     * @param string $message
+     * @param array $messageParams
+     * @param PKPRequest|null $request
+     * @return bool
+     */
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
 		$templateMgr = TemplateManager::getManager();
 		$templateMgr->register_function('plugin_url', array(&$this, 'smartyPluginUrl'));
 		$journal = Request::getJournal();
@@ -241,5 +259,6 @@ class PiwikPlugin extends GenericPlugin {
 		}
 		return $returner;
 	}
+
 }
 ?>
