@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class SwordPlugin
  * @ingroup plugins_generic_sword
  *
- * @brief SWORD deposit plugin class
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief SWORD deposit plugin class.
  */
 
 define('SWORD_DEPOSIT_TYPE_AUTOMATIC',          1);
@@ -239,11 +237,13 @@ class SwordPlugin extends GenericPlugin {
 
         switch ($type) {
             case NOTIFICATION_TYPE_SWORD_DEPOSIT_COMPLETE:
+                /** @var NotificationSettingsDAO $notificationSettingsDao */
                 $notificationSettingsDao = DAORegistry::getDAO('NotificationSettingsDAO');
                 $params = $notificationSettingsDao->getNotificationSettings($notification->getId());
                 $message = __('plugins.generic.sword.depositComplete', $notificationManager->getParamsForCurrentLocale($params));
                 break;
             case NOTIFICATION_TYPE_SWORD_AUTO_DEPOSIT_COMPLETE:
+                /** @var NotificationSettingsDAO $notificationSettingsDao */
                 $notificationSettingsDao = DAORegistry::getDAO('NotificationSettingsDAO');
                 $params = $notificationSettingsDao->getNotificationSettings($notification->getId());
                 $message = __('plugins.generic.sword.automaticDepositComplete', $notificationManager->getParamsForCurrentLocale($params));
@@ -256,6 +256,8 @@ class SwordPlugin extends GenericPlugin {
 
     /**
      * Display verbs for the management interface.
+     * @param array $verbs
+     * @param PKPRequest $request
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs($verbs, $request);
@@ -274,11 +276,11 @@ class SwordPlugin extends GenericPlugin {
      * Execute a management verb on this plugin
      * @param string $verb
      * @param array $args
-     * @param string $message Result status message
-     * @param array $messageParams Parameters for status message
-     * @return boolean
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb, $args, $message, $messageParams)) return false;
 
         if (!$request) $request = Registry::get('request');
@@ -293,7 +295,7 @@ class SwordPlugin extends GenericPlugin {
                 $this->import('SettingsForm');
                 $form = new SettingsForm($this, $journal->getId());
 
-                // [WIZDAM FIX] Tangkap aksi Cancel secara eksplisit
+                // [WIZDAM] Tangkap aksi Cancel secara eksplisit
                 if ($request->getUserVar('cancel')) {
                     $request->redirect(null, 'manager', 'plugins', $this->getCategory());
                 } elseif ($request->getUserVar('save')) {
@@ -311,14 +313,12 @@ class SwordPlugin extends GenericPlugin {
                 break;
 
             case 'enable':
-                // [WIZDAM FIX] Ganti pemanggilan statis Request::
                 $journal = $request->getJournal();
                 $this->updateSetting($journal->getId(), 'enabled', true);
                 $message = NOTIFICATION_TYPE_SWORD_ENABLED;
                 return false;
 
             case 'disable':
-                // [WIZDAM FIX] Ganti pemanggilan statis Request::
                 $journal = $request->getJournal();
                 $this->updateSetting($journal->getId(), 'enabled', false);
                 $message = NOTIFICATION_TYPE_PLUGIN_DISABLED;
@@ -327,7 +327,6 @@ class SwordPlugin extends GenericPlugin {
 
             case 'createDepositPoint':
             case 'editDepositPoint':
-                // [WIZDAM FIX] Ganti pemanggilan statis Request::
                 $journal = $request->getJournal();
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
@@ -339,14 +338,12 @@ class SwordPlugin extends GenericPlugin {
                 $this->import('DepositPointForm');
                 $form = new DepositPointForm($this, $journal->getId(), $depositPointId);
 
-                // [WIZDAM FIX] Tangkap aksi Cancel dan kembalikan ke halaman Settings SWORD
                 if ($request->getUserVar('cancel')) {
                     $request->redirect(null, 'manager', 'plugin', [$this->getCategory(), $this->getName(), 'settings']);
                 } elseif ($request->getUserVar('save')) {
                     $form->readInputData();
                     if ($form->validate()) {
                         $form->execute();
-                        // [WIZDAM FIX] Hapus magic string 'generic' & 'null, null, null'
                         $request->redirect(null, 'manager', 'plugin', [$this->getCategory(), $this->getName(), 'settings']);
                     } else {
                         $form->display();
@@ -358,7 +355,6 @@ class SwordPlugin extends GenericPlugin {
                 break;
 
             case 'deleteDepositPoint':
-                // [WIZDAM FIX] Ganti pemanggilan statis Request::
                 $journal = $request->getJournal();
                 $journalId = $journal->getId();
                 $depositPointId = (int) array_shift($args);
@@ -368,7 +364,7 @@ class SwordPlugin extends GenericPlugin {
                     unset($depositPoints[$depositPointId]);
                     $this->updateSetting($journalId, 'depositPoints', $depositPoints);
                 }
-                // [WIZDAM FIX] Hapus magic string 'generic' dan 'SwordPlugin'
+
                 $request->redirect(null, 'manager', 'plugin', [$this->getCategory(), $this->getName(), 'settings']);
                 break;
         }
@@ -404,5 +400,6 @@ class SwordPlugin extends GenericPlugin {
     public function getInstallEmailTemplateDataFile(): ?string {
         return ($this->getPluginPath() . '/locale/{$installedLocale}/emailTemplates.xml');
     }
+    
 }
 ?>
