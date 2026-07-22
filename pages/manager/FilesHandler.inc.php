@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_manager
  *
  * @brief Handle requests for files browser functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.manager.ManagerHandler');
@@ -55,11 +53,10 @@ class FilesHandler extends ManagerHandler {
 
         import('lib.pkp.classes.file.FileManager');
         $fileManager = new FileManager();
-
         $templateMgr = TemplateManager::getManager();
+
         $templateMgr->assign('pageHierarchy', [[$request->url(null, 'manager'), 'manager.journalManagement']]);
 
-        // [WIZDAM] Initialize variables before passing by reference
         $currentDir = '';
         $parentDir = '';
         $this->_parseDirArg($args, $currentDir, $parentDir);
@@ -93,11 +90,11 @@ class FilesHandler extends ManagerHandler {
                 closedir($dh);
             }
             ksort($files);
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('files', $files);
             $templateMgr->assign('currentDir', $currentDir);
             $templateMgr->assign('parentDir', $parentDir);
             $templateMgr->assign('helpTopicId', 'journal.managementPages.fileBrowser');
+
             $templateMgr->display('manager/files/index.tpl');
         }
     }
@@ -179,7 +176,6 @@ class FilesHandler extends ManagerHandler {
         if (@is_file($currentPath)) {
             $fileManager->deleteFile($currentPath);
         } else {
-            // TODO Use recursive delete (rmtree) instead?
             @$fileManager->rmdir($currentPath);
         }
 
@@ -194,7 +190,7 @@ class FilesHandler extends ManagerHandler {
 
     /**
      * Parse directory arguments.
-     * [WIZDAM] Retained reference & for Output Accumulator
+     * [LUMERA] Retained reference & for Output Accumulator
      * @param array $args
      * @param string $currentDir
      * @param string $parentDir
@@ -247,6 +243,6 @@ class FilesHandler extends ManagerHandler {
     protected function _fileMimeType($filePath) {
         return PKPString::mime_content_type($filePath);
     }
-}
 
+}
 ?>

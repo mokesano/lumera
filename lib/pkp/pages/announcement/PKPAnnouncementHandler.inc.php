@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_announcement
  *
  * @brief Handle requests for public announcement functions.
- *
- * [WIZDAM EDITION] PHP 8.1+ Compatibility, Strict Types, Visibility Modifiers
  */
 
 import('classes.handler.Handler');
@@ -53,7 +51,7 @@ class PKPAnnouncementHandler extends Handler {
 
     /**
      * View announcement details.
-     * @param array $args first parameter is the ID of announcement to display
+     * @param array $args array
      * @param PKPRequest $request
      */
     public function view($args, $request) {
@@ -61,12 +59,12 @@ class PKPAnnouncementHandler extends Handler {
         $this->setupTemplate($request);
 
         $announcementId = !isset($args) || empty($args) ? null : (int) $args[0];
+        /** @var AnnouncementDAO $announcementDao */
         $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
 
         if ($this->_getAnnouncementsEnabled($request) && $this->_announcementIsValid($request, $announcementId)) {
             $announcement = $announcementDao->getById($announcementId);
 
-            // [Wizdam Fix] Check for null dateExpire or future expiration
             if ($announcement->getDateExpire() == null || strtotime($announcement->getDateExpire()) > time()) {
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign('announcement', $announcement);
@@ -98,7 +96,6 @@ class PKPAnnouncementHandler extends Handler {
         $templateMgr = TemplateManager::getManager();
         $templateMgr->setCacheability(CACHEABILITY_PUBLIC);
         
-        // [Wizdam Refactor] Modern array syntax
         $templateMgr->assign('pageHierachy', [[$request->url(null, null, 'announcements'), 'announcement.announcements']]);
     }
 
@@ -148,5 +145,6 @@ class PKPAnnouncementHandler extends Handler {
         assert(false);
         return false;
     }
+
 }
 ?>

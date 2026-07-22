@@ -20,70 +20,76 @@ class ReviewObjectTypesEditorHandler extends Handler {
 
 	/**
 	 * Display objects for review listing pages.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function reviewObjectTypes($args, &$request) {
+	public function reviewObjectTypes($args, $request) {
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
 		$rangeInfo = $this->getRangeInfo('reviewObjectTypes');
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		$types = $reviewObjectTypeDao->getTypeIdsAlphabetizedByContext($journalId);
+
 		$totalResults = count($types);
-		$types = array_slice($types, $rangeInfo->getCount() * ($rangeInfo->getPage()-1), $rangeInfo->getCount());
+		$types = array_slice($types, $rangeInfo->getCount() * ($rangeInfo->getPage() - 1), $rangeInfo->getCount());
+		
 		import('lib.pkp.classes.core.VirtualArrayIterator');
 		$results = new VirtualArrayIterator($types, $totalResults, $rangeInfo->getPage(), $rangeInfo->getCount());
 
 		$this->setupTemplate($request);
 		$templateMgr = TemplateManager::getManager($request);
-		$templateMgr->assign_by_ref('results', $results);
+		
 		$plugin = $this->_getObjectsForReviewPlugin();
-		$pluginLocales = $this->_getPluginLocales();
-		$missingReviewObjects = $this->_getMissingDefaultReviewObjectsKeys($journalId);
-		$templateMgr->assign_by_ref('pluginLocales', $pluginLocales);
-		$templateMgr->assign_by_ref('missingReviewObjects', $missingReviewObjects);
-		$templateMgr->display($plugin->getTemplatePath() . 'editor/reviewObjectTypes.tpl');
+		
+		// [WIZDAM] Modernization: Micro-payload for template assignment
+		$templateMgr->assign([
+			'results' => $results,
+			'pluginLocales' => $this->_getPluginLocales(),
+			'missingReviewObjects' => $this->_getMissingDefaultReviewObjectsKeys($journalId),
+		]);
 
+		$templateMgr->display($plugin->getTemplatePath() . 'editor/reviewObjectTypes.tpl');
 	}
 
 	/**
 	 * Create a new review object type.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function createReviewObjectType($args, &$request) {
+	public function createReviewObjectType($args, $request) {
 		$this->editReviewObjectType($args, $request);
 	}
 
 	/**
 	 * Create/edit a review object type.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function editReviewObjectType($args, &$request) {
+	public function editReviewObjectType($args, $request) {
 		$typeId = array_shift($args);
+		$typeId = $typeId ? (int) $typeId : null;
 
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		$reviewObjectType = $reviewObjectTypeDao->getById($typeId, $journalId);
-		if ($typeId && (!isset($reviewObjectType))) {
-			$request->redirect(null, null, 'reviewObjectTypes');
+		
+		if ($typeId && !$reviewObjectType) {
+			$request->redirect(null, 'editor', 'reviewObjectTypes');
 		}
 
 		$this->setupTemplate($request, true, $reviewObjectType);
 		$templateMgr = TemplateManager::getManager($request);
-		if ($typeId) {
-			$templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.objectType.edit');
-		} else {
-			$templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.objectType.create');
-		}
+		$templateMgr->assign('pageTitle', $typeId ? 'plugins.generic.objectsForReview.editor.objectType.edit' : 'plugins.generic.objectsForReview.editor.objectType.create');
 
 		$plugin = $this->_getObjectsForReviewPlugin();
 		$plugin->import('classes.form.ReviewObjectTypeForm');
 		$reviewObjectTypeForm = new ReviewObjectTypeForm(OBJECTS_FOR_REVIEW_PLUGIN_NAME, $typeId);
+		
 		if ($reviewObjectTypeForm->isLocaleResubmit()) {
 			$reviewObjectTypeForm->readInputData();
 		} else {
@@ -94,112 +100,105 @@ class ReviewObjectTypesEditorHandler extends Handler {
 
 	/**
 	 * Update a review object type.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function updateReviewObjectType($args, &$request) {
-		// [SECURITY FIX] Amankan 'typeId' (ID integer) dengan trim()
-		$typeId = (int) trim($request->getUserVar('typeId'));
+	public function updateReviewObjectType($args, $request) {
+		$typeId = (int) trim((string) $request->getUserVar('typeId'));
 
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		$reviewObjectType = $reviewObjectTypeDao->getById($typeId, $journalId);
-		if ($typeId && (!isset($reviewObjectType))) {
-				$request->redirect(null, null, 'reviewObjectTypes');
+		
+		if ($typeId && !$reviewObjectType) {
+			$request->redirect(null, 'editor', 'reviewObjectTypes');
 		}
 
 		$plugin = $this->_getObjectsForReviewPlugin();
 		$plugin->import('classes.form.ReviewObjectTypeForm');
 		$reviewObjectTypeForm = new ReviewObjectTypeForm(OBJECTS_FOR_REVIEW_PLUGIN_NAME, $typeId);
 		$reviewObjectTypeForm->readInputData();
+		
 		if (!$typeId) {
 			$formLocale = $reviewObjectTypeForm->getFormLocale();
-			// Reorder option items
 			$options = $reviewObjectTypeForm->getData('possibleOptions');
+			
 			if (isset($options[$formLocale]) && is_array($options[$formLocale])) {
-				usort($options[$formLocale], create_function('$a,$b','return $a[\'order\'] == $b[\'order\'] ? 0 : ($a[\'order\'] < $b[\'order\'] ? -1 : 1);'));
+				// [WIZDAM] Modernization: Replace deprecated create_function with arrow function (PHP 7.4+)
+				usort($options[$formLocale], fn($a, $b) => $a['order'] <=> $b['order']);
 			}
 			$reviewObjectTypeForm->setData('possibleOptions', $options);
 
-			// [SECURITY FIX] Amankan 'addOption' sebagai flag boolean dengan (int) trim()
-            $addOptionFlag = (int) trim($request->getUserVar('addOption'));
+			$addOptionFlag = (int) trim((string) $request->getUserVar('addOption'));
             
-            if ($addOptionFlag) {
-                // Add an option item
-                $editData = true;
-                $options = $reviewObjectTypeForm->getData('possibleOptions');
-                if (!isset($options[$formLocale]) || !is_array($options[$formLocale])) {
-                    $options[$formLocale] = array();
-                    $lastOrder = 0;
-                } else {
-                    $lastOrder = $options[$formLocale][count($options[$formLocale])-1]['order'];
-                }
-                array_push($options[$formLocale], array('order' => $lastOrder+1));
-                $reviewObjectTypeForm->setData('possibleOptions', $options);
+			if ($addOptionFlag) {
+				$editData = true;
+				$options = $reviewObjectTypeForm->getData('possibleOptions');
+				if (!isset($options[$formLocale]) || !is_array($options[$formLocale])) {
+					$options[$formLocale] = [];
+					$lastOrder = 0;
+				} else {
+					$lastOrder = $options[$formLocale][count($options[$formLocale]) - 1]['order'];
+				}
+				// [WIZDAM] Modernization: Short array syntax
+				$options[$formLocale][] = ['order' => $lastOrder + 1];
+				$reviewObjectTypeForm->setData('possibleOptions', $options);
 
-            // [SECURITY FIX] Amankan 'delOption' sebagai flag/value dengan (int) trim() (L. 137)
-            // Catatan: Di sini, delOption diambil dan langsung dicek count-nya,
-            // yang menunjukkan ia mungkin berisi array/data, bukan hanya flag boolean sederhana.
-            // Kita akan tetap trim input sebelum disimpan ke variabel yang dicek.
-            } else {
-                $delOptionInput = $request->getUserVar('delOption'); 
+			} else {
+				$delOptionInput = $request->getUserVar('delOption'); 
 
-                if (!empty($delOptionInput) && is_array($delOptionInput) && count($delOptionInput) == 1) {
-                    // Delete a response item
-                    $editData = true;
-                    list($delOption) = array_keys($delOptionInput);
-                    
-                    // Kita asumsikan key adalah ID/Order integer, jadi kita trim sebelum casting
-                    $delOption = (int) trim($delOption); 
-                    
-                    $options = $reviewObjectTypeForm->getData('possibleOptions');
-                    if (!isset($options[$formLocale])) $options[$formLocale] = array();
-                    array_splice($options[$formLocale], $delOption, 1);
-                    $reviewObjectTypeForm->setData('possibleOptions', $options);
-                }
-            }
+				if (!empty($delOptionInput) && is_array($delOptionInput) && count($delOptionInput) === 1) {
+					$editData = true;
+					// [WIZDAM] Modernization: Array destructuring
+					[$delOptionKey] = array_keys($delOptionInput);
+					$delOption = (int) trim((string) $delOptionKey); 
+					
+					$options = $reviewObjectTypeForm->getData('possibleOptions');
+					if (!isset($options[$formLocale])) {
+						$options[$formLocale] = [];
+					}
+					array_splice($options[$formLocale], $delOption, 1);
+					$reviewObjectTypeForm->setData('possibleOptions', $options);
+				}
+			}
 		}
 
 		if (!isset($editData) && $reviewObjectTypeForm->validate()) {
 			$reviewObjectTypeForm->execute();
-			// Notification
-			if ($typeId) {
-				$notificationType = NOTIFICATION_TYPE_OFR_OT_UPDATED;
-			} else {
-				$notificationType = NOTIFICATION_TYPE_OFR_OT_CREATED;
-			}
+			$notificationType = $typeId ? NOTIFICATION_TYPE_OFR_OT_UPDATED : NOTIFICATION_TYPE_OFR_OT_CREATED;
 			$this->_createTrivialNotification($notificationType, $request);
 			$request->redirect(null, 'editor', 'reviewObjectTypes');
 		} else {
 			$this->setupTemplate($request, true, $reviewObjectType);
 			$templateMgr = TemplateManager::getManager($request);
-			if ($typeId) {
-				$templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.objectType.edit');
-			} else {
-				$templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.objectType.create');
-			}
+			$templateMgr->assign('pageTitle', $typeId ? 'plugins.generic.objectsForReview.editor.objectType.edit' : 'plugins.generic.objectsForReview.editor.objectType.create');
 			$reviewObjectTypeForm->display($request);
 		}
 	}
 
 	/**
 	 * Preview a review object type.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function previewReviewObjectType($args, &$request) {
+	public function previewReviewObjectType($args, $request) {
 		$typeId = array_shift($args);
 
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		$reviewObjectType = $reviewObjectTypeDao->getById($typeId, $journalId);
-		if (!isset($reviewObjectType)) {
+		
+		if (!$reviewObjectType) {
 			$request->redirect(null, 'editor', 'reviewObjectTypes');
 		}
+		
+		/** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
 		$reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
 		$reviewObjectMetadata = $reviewObjectMetadataDao->getArrayByReviewObjectTypeId($typeId);
 
@@ -207,195 +206,207 @@ class ReviewObjectTypesEditorHandler extends Handler {
 		$templateMgr = TemplateManager::getManager($request);
 
 		$templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.objectType.preview');
-		$templateMgr->assign_by_ref('reviewObjectType', $reviewObjectType);
+		$templateMgr->assign('reviewObjectType', $reviewObjectType);
 		$templateMgr->assign('reviewObjectMetadata', $reviewObjectMetadata);
 
+		/** @var LanguageDAO $languageDao */
 		$languageDao = DAORegistry::getDAO('LanguageDAO');
 		$languages = $languageDao->getLanguages();
-		$validLanguages = array('' => __('plugins.generic.objectsForReview.editor.objectForReview.chooseLanguage'));
-		while (list(, $language) = each($languages)) {
+		
+		$validLanguages = ['' => __('plugins.generic.objectsForReview.editor.objectForReview.chooseLanguage')];
+		// [WIZDAM] Modernization: Replace deprecated each() with foreach
+		foreach ($languages as $language) {
 			$validLanguages[$language->getCode()] = $language->getName();
 		}
 		$templateMgr->assign('validLanguages', $validLanguages);
+		
 		$plugin = $this->_getObjectsForReviewPlugin();
 		$templateMgr->display($plugin->getTemplatePath() . 'editor/previewReviewObjectType.tpl');
 	}
 
 	/**
 	 * Delete a review object type.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function deleteReviewObjectType($args, &$request) {
+	public function deleteReviewObjectType($args, $request) {
 		$typeId = array_shift($args);
 
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		if ($reviewObjectTypeDao->reviewObjectTypeExists($typeId, $journalId)) {
 			$reviewObjectTypeDao->deleteById($typeId, $journalId);
 		}
 
 		$this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_OT_DELETED, $request);
-
 		$request->redirect(null, 'editor', 'reviewObjectTypes');
 	}
 
 	/**
 	 * Activate a review object type to be used.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function activateReviewObjectType($args, &$request) {
+	public function activateReviewObjectType($args, $request) {
 		$typeId = array_shift($args);
 
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		$reviewObjectType = $reviewObjectTypeDao->getById($typeId, $journalId);
-		if (isset($reviewObjectType) && !$reviewObjectType->getActive()) {
-				$reviewObjectType->setActive(1);
-				$reviewObjectTypeDao->updateObject($reviewObjectType);
+		
+		if ($reviewObjectType && !$reviewObjectType->getActive()) {
+			$reviewObjectType->setActive(1);
+			$reviewObjectTypeDao->updateObject($reviewObjectType);
 		}
 
 		$this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_OT_ACTIVATED, $request);
-
 		$request->redirect(null, 'editor', 'reviewObjectTypes');
 	}
 
 	/**
 	 * Deactivate a review object type.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function deactivateReviewObjectType($args, &$request) {
+	public function deactivateReviewObjectType($args, $request) {
 		$typeId = array_shift($args);
 
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		$reviewObjectType = $reviewObjectTypeDao->getById($typeId, $journalId);
-		if (isset($reviewObjectType) && $reviewObjectType->getActive()) {
-				$reviewObjectType->setActive(0);
-				$reviewObjectTypeDao->updateObject($reviewObjectType);
+		
+		if ($reviewObjectType && $reviewObjectType->getActive()) {
+			$reviewObjectType->setActive(0);
+			$reviewObjectTypeDao->updateObject($reviewObjectType);
 		}
 
 		$this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_OT_DEACTIVATED, $request);
-
 		$request->redirect(null, 'editor', 'reviewObjectTypes');
 	}
 
 	/**
 	 * Update review object locale data.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function updateOrInstallReviewObjectTypes($args, &$request) {
-        $journal = $request->getJournal();
-        $plugin = $this->_getObjectsForReviewPlugin();
+	public function updateOrInstallReviewObjectTypes($args, $request) {
+		$journal = $request->getJournal();
+		$plugin = $this->_getObjectsForReviewPlugin();
 
-        // [SECURITY FIX] Amankan 'updateLocaleData' (flag boolean)
-        $updateLocaleDataFlag = (int) trim($request->getUserVar('updateLocaleData'));
+		$updateLocaleDataFlag = (int) trim((string) $request->getUserVar('updateLocaleData'));
 
-        if ($updateLocaleDataFlag) {
-            // [SECURITY FIX] Amankan 'update' dan 'updateLocales'
-            $reviewObjectTypes = (array) $request->getUserVar('update'); 
-            $locales = (array) $request->getUserVar('updateLocales'); 
-            $this->_updateOrInstallReviewObjectTypes($journal, $reviewObjectTypes, $locales, 'update');
-            $notificationType = NOTIFICATION_TYPE_OFR_OT_UPDATED;
+		if ($updateLocaleDataFlag) {
+			$reviewObjectTypes = (array) $request->getUserVar('update'); 
+			$locales = (array) $request->getUserVar('updateLocales'); 
+			$this->_updateOrInstallReviewObjectTypes($journal, $reviewObjectTypes, $locales, 'update');
+			$notificationType = NOTIFICATION_TYPE_OFR_OT_UPDATED;
 
-        // [SECURITY FIX] Amankan 'installReviewObjects' (flag boolean)
-        } elseif ((int) trim($request->getUserVar('installReviewObjects'))) { 
-            // Mengamankan langsung di kondisi elseif untuk efisiensi
-            
-            // [SECURITY FIX] Amankan 'reviewObjects' dan 'installLocales'
-            $reviewObjectTypes = (array) $request->getUserVar('reviewObjects');
-            $locales = (array) $request->getUserVar('installLocales'); 
-            $this->_updateOrInstallReviewObjectTypes($journal, $reviewObjectTypes, $locales, 'install');
-            $notificationType = NOTIFICATION_TYPE_OFR_OT_INSTALLED;
-        }
-        $this->_createTrivialNotification($notificationType, $request);
-        $request->redirect(null, 'editor', 'reviewObjectTypes');
-    }
+		} elseif ((int) trim((string) $request->getUserVar('installReviewObjects'))) { 
+			$reviewObjectTypes = (array) $request->getUserVar('reviewObjects');
+			$locales = (array) $request->getUserVar('installLocales'); 
+			$this->_updateOrInstallReviewObjectTypes($journal, $reviewObjectTypes, $locales, 'install');
+			$notificationType = NOTIFICATION_TYPE_OFR_OT_INSTALLED;
+		}
+		
+		$this->_createTrivialNotification($notificationType, $request);
+		$request->redirect(null, 'editor', 'reviewObjectTypes');
+	}
 
 	/**
 	 * Display a list of the metadata within a review object type.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function reviewObjectMetadata($args, &$request) {
+	public function reviewObjectMetadata($args, $request) {
 		$typeId = array_shift($args);
 
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		$reviewObjectType = $reviewObjectTypeDao->getById($typeId, $journalId);
-		if (!isset($reviewObjectType)) {
+		
+		if (!$reviewObjectType) {
 			$request->redirect(null, 'editor', 'reviewObjectTypes');
 		}
 
+		/** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
 		$reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
 		$reviewObjectMetadata = $reviewObjectMetadataDao->getByReviewObjectTypeId($typeId);
 
 		$allTypes = $reviewObjectTypeDao->getTypeIdsAlphabetizedByContext($journalId);
-		$typeOptions = array();
+		$typeOptions = [];
 		foreach ($allTypes as $type) {
 			$typeOptions[$type['typeId']] = $type['typeName'];
 		}
+		
 		$this->setupTemplate($request, true, $reviewObjectType);
 		$templateMgr = TemplateManager::getManager($request);
+
 		$templateMgr->addJavaScript('lib/pkp/js/lib/jquery/plugins/jquery.tablednd.js');
 		$templateMgr->addJavaScript('lib/pkp/js/functions/tablednd.js');
-		$templateMgr->assign_by_ref('reviewObjectMetadata', $reviewObjectMetadata);
-		$templateMgr->assign_by_ref('typeOptions', $typeOptions);
-		$templateMgr->assign('typeId', $typeId);
+
+		$templateMgr->assign([
+			'reviewObjectMetadata' => $reviewObjectMetadata,
+			'typeOptions' => $typeOptions,
+			'typeId' => $typeId,
+		]);
+		
 		$plugin = $this->_getObjectsForReviewPlugin();
 		$templateMgr->display($plugin->getTemplatePath() . 'editor/reviewObjectMetadata.tpl');
 	}
 
 	/**
 	 * Create a new review object metadata.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function createReviewObjectMetadata($args, &$request) {
+	public function createReviewObjectMetadata($args, $request) {
 		$this->editReviewObjectMetadata($args, $request);
 	}
 
 	/**
 	 * Create/edit a review object metadata.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function editReviewObjectMetadata($args, &$request) {
+	public function editReviewObjectMetadata($args, $request) {
 		$typeId = array_shift($args);
 		$metadataId = array_shift($args);
+		$metadataId = $metadataId ? (int) $metadataId : null;
 
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		$reviewObjectType = $reviewObjectTypeDao->getById($typeId, $journalId);
+
+		/** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
 		$reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
-		if (!isset($reviewObjectType) || ($metadataId && !$reviewObjectMetadataDao->reviewObjectMetadataExists($metadataId, $typeId))) {
-			$request->redirect(null, 'editor', 'reviewObjectMetadata', array($typeId));
+		
+		if (!$reviewObjectType || ($metadataId && !$reviewObjectMetadataDao->reviewObjectMetadataExists($metadataId, $typeId))) {
+			$request->redirect(null, 'editor', 'reviewObjectMetadata', [$typeId]);
 		}
 
 		$this->setupTemplate($request, true, $reviewObjectType);
 		$templateMgr = TemplateManager::getManager($request);
-		if ($metadataId) {
-			$templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.objectMetadata.edit');
-		} else {
-			$templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.objectMetadata.create');
-		}
+		$templateMgr->assign('pageTitle', $metadataId ? 'plugins.generic.objectsForReview.editor.objectMetadata.edit' : 'plugins.generic.objectsForReview.editor.objectMetadata.create');
 
 		$plugin = $this->_getObjectsForReviewPlugin();
 		$plugin->import('classes.form.ReviewObjectMetadataForm');
 		$reviewObjectMetadataForm = new ReviewObjectMetadataForm(OBJECTS_FOR_REVIEW_PLUGIN_NAME, $typeId, $metadataId);
+		
 		if ($reviewObjectMetadataForm->isLocaleResubmit()) {
 			$reviewObjectMetadataForm->readInputData();
 		} else {
@@ -406,284 +417,258 @@ class ReviewObjectTypesEditorHandler extends Handler {
 
 	/**
 	 * Update a review object metadata.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function updateReviewObjectMetadata($args, &$request) {
+	public function updateReviewObjectMetadata($args, $request) {
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
-		$typeId = (int) trim($request->getUserVar('reviewObjectTypeId'));
-		$metadataId = (int) trim($request->getUserVar('metadataId'));
+		$typeId = (int) trim((string) $request->getUserVar('reviewObjectTypeId'));
+		$metadataId = (int) trim((string) $request->getUserVar('metadataId'));
 
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		$reviewObjectType = $reviewObjectTypeDao->getById($typeId, $journalId);
+
+		/** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
 		$reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
-		if (!isset($reviewObjectType) || ($metadataId && !$reviewObjectMetadataDao->reviewObjectMetadataExists($metadataId, $typeId))) {
-			$request->redirect(null, null, 'reviewObjectMetadata', array($typeId));
+		
+		if (!$reviewObjectType || ($metadataId && !$reviewObjectMetadataDao->reviewObjectMetadataExists($metadataId, $typeId))) {
+			$request->redirect(null, 'editor', 'reviewObjectMetadata', [$typeId]);
 		}
 
 		$plugin = $this->_getObjectsForReviewPlugin();
 		$plugin->import('classes.form.ReviewObjectMetadataForm');
 		$reviewObjectMetadataForm = new ReviewObjectMetadataForm(OBJECTS_FOR_REVIEW_PLUGIN_NAME, $typeId, $metadataId);
 		$reviewObjectMetadataForm->readInputData();
+		
 		$formLocale = $reviewObjectMetadataForm->getFormLocale();
-		// Reorder option items
 		$options = $reviewObjectMetadataForm->getData('possibleOptions');
+		
 		if (isset($options[$formLocale]) && is_array($options[$formLocale])) {
-			usort($options[$formLocale], create_function('$a,$b','return $a[\'order\'] == $b[\'order\'] ? 0 : ($a[\'order\'] < $b[\'order\'] ? -1 : 1);'));
+			// [WIZDAM] Modernization: Replace deprecated create_function with arrow function
+			usort($options[$formLocale], fn($a, $b) => $a['order'] <=> $b['order']);
 		}
 		$reviewObjectMetadataForm->setData('possibleOptions', $options);
 
-		// [SECURITY FIX] Save 'addOption' as flag boolean with (int) trim()
-        $addOptionFlag = (int) trim($request->getUserVar('addOption'));
+		$addOptionFlag = (int) trim((string) $request->getUserVar('addOption'));
         
-        if ($addOptionFlag) {
-            // Add an option item
-            $editData = true;
-            $options = $reviewObjectMetadataForm->getData('possibleOptions');
-            if (!isset($options[$formLocale]) || !is_array($options[$formLocale])) {
-                $options[$formLocale] = array();
-                $lastOrder = 0;
-            } else {
-                $lastOrder = $options[$formLocale][count($options[$formLocale])-1]['order'];
-            }
-            array_push($options[$formLocale], array('order' => $lastOrder+1));
-            $reviewObjectMetadataForm->setData('possibleOptions', $options);
+		if ($addOptionFlag) {
+			$editData = true;
+			$options = $reviewObjectMetadataForm->getData('possibleOptions');
+			if (!isset($options[$formLocale]) || !is_array($options[$formLocale])) {
+				$options[$formLocale] = [];
+				$lastOrder = 0;
+			} else {
+				$lastOrder = $options[$formLocale][count($options[$formLocale]) - 1]['order'];
+			}
+			$options[$formLocale][] = ['order' => $lastOrder + 1];
+			$reviewObjectMetadataForm->setData('possibleOptions', $options);
 
-        } else {
-            // Ambil input mentah untuk delOption
-            $delOptionInput = $request->getUserVar('delOption');
+		} else {
+			$delOptionInput = $request->getUserVar('delOption');
             
-            // Periksa apakah input array satu elemen (aksi delete yang valid)
-            if (!empty($delOptionInput) && is_array($delOptionInput) && count($delOptionInput) == 1) {
-
-                // Delete a response item
-                $editData = true;
-                
-                // Ekstrak key (yang merupakan indeks/ID yang akan dihapus)
-                list($delOptionKey) = array_keys($delOptionInput);
-                
-                // [SECURITY FIX] Save key diekstrak with trim() sebelum casting
-                $delOption = (int) trim($delOptionKey); 
-                
-                $options = $reviewObjectMetadataForm->getData('possibleOptions');
-                if (!isset($options[$formLocale])) $options[$formLocale] = array();
-                array_splice($options[$formLocale], $delOption, 1);
-                $reviewObjectMetadataForm->setData('possibleOptions', $options);
-            }
-        }
+			if (!empty($delOptionInput) && is_array($delOptionInput) && count($delOptionInput) === 1) {
+				$editData = true;
+				[$delOptionKey] = array_keys($delOptionInput);
+				$delOption = (int) trim((string) $delOptionKey); 
+				
+				$options = $reviewObjectMetadataForm->getData('possibleOptions');
+				if (!isset($options[$formLocale])) {
+					$options[$formLocale] = [];
+				}
+				array_splice($options[$formLocale], $delOption, 1);
+				$reviewObjectMetadataForm->setData('possibleOptions', $options);
+			}
+		}
 
 		if (!isset($editData) && $reviewObjectMetadataForm->validate()) {
 			$reviewObjectMetadataForm->execute();
 			$this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_OT_UPDATED, $request);
-			$request->redirect(null, 'editor', 'reviewObjectMetadata', array($typeId));
+			$request->redirect(null, 'editor', 'reviewObjectMetadata', [$typeId]);
 		} else {
 			$this->setupTemplate($request, true, $reviewObjectType);
 			$templateMgr = TemplateManager::getManager($request);
-			if ($metadataId) {
-				$templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.objectMetadata.edit');
-			} else {
-				$templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.objectMetadata.create');
-			}
+			$templateMgr->assign('pageTitle', $metadataId ? 'plugins.generic.objectsForReview.editor.objectMetadata.edit' : 'plugins.generic.objectsForReview.editor.objectMetadata.create');
 			$reviewObjectMetadataForm->display($request);
 		}
-
 	}
 
 	/**
 	 * Delete a review object metadata.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function deleteReviewObjectMetadata($args, &$request) {
+	public function deleteReviewObjectMetadata($args, $request) {
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
 		$typeId = array_shift($args);
 		$metadataId = array_shift($args);
 
+		/** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
 		$reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
 		$reviewObjectMetadataDao->deleteById($metadataId, $typeId);
 
 		$this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_OT_UPDATED, $request);
-
-		$request->redirect(null, 'editor', 'reviewObjectMetadata', array($typeId));
+		$request->redirect(null, 'editor', 'reviewObjectMetadata', [$typeId]);
 	}
 
 	/**
 	 * Change the sequence of a review object metadata.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function moveReviewObjectMetadata($args, &$request) {
+	public function moveReviewObjectMetadata($args, $request) {
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
+		/** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
 		$reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
 		
-		// [SECURITY FIX] Amankan 'id' (ID integer) dengan (int) trim()
-        $metadataId = (int) trim($request->getUserVar('id'));
-        $reviewObjectMetadata = $reviewObjectMetadataDao->getById($metadataId);
+		$metadataId = (int) trim((string) $request->getUserVar('id'));
+		$reviewObjectMetadata = $reviewObjectMetadataDao->getById($metadataId);
 
-		if (!isset($reviewObjectMetadata)) {
+		if (!$reviewObjectMetadata) {
 			$request->redirect(null, 'editor', 'reviewObjectTypes');
 		}
 
-		// [SECURITY FIX] Amankan 'd' (direction, string key) dengan trim()
-		$direction = trim($request->getUserVar('d'));
+		$direction = trim((string) $request->getUserVar('d'));
 
-		if ($direction != null) {
-			// moving with up or down arrow
-			$reviewObjectMetadata->setSequence($reviewObjectMetadata->getSequence() + ($direction == 'u' ? -1.5 : 1.5));
-
+		if ($direction !== '') {
+			$reviewObjectMetadata->setSequence($reviewObjectMetadata->getSequence() + ($direction === 'u' ? -1.5 : 1.5));
 		} else {
-			// drag and drop
-			// [SECURITY FIX] Amankan 'prevId' (ID integer) dengan (int) trim()
-			$prevId = (int) trim($request->getUserVar('prevId'));
-			if ($prevId == null)
+			$prevId = (int) trim((string) $request->getUserVar('prevId'));
+			if ($prevId === 0) {
 				$prevSeq = 0;
-			else {
+			} else {
 				$prevReviewObjectMetadata = $reviewObjectMetadataDao->getById($prevId);
-				$prevSeq = $prevReviewObjectMetadata->getSequence();
+				$prevSeq = $prevReviewObjectMetadata ? $prevReviewObjectMetadata->getSequence() : 0;
 			}
-
-			$reviewObjectMetadata->setSequence($prevSeq + .5);
+			$reviewObjectMetadata->setSequence($prevSeq + 0.5);
 		}
 
 		$reviewObjectMetadataDao->updateObject($reviewObjectMetadata);
 		$reviewObjectMetadataDao->resequence($reviewObjectMetadata->getReviewObjectTypeId());
 
-		// Moving up or down with the arrows requires a page reload.
-		// In the case of a drag and drop move, the display has been
-		// updated on the client side, so no reload is necessary.
-		if ($direction != null) {
-			$request->redirect(null, 'editor', 'reviewObjectMetadata', array($reviewObjectMetadata->getReviewObjectTypeId()));
+		if ($direction !== '') {
+			$request->redirect(null, 'editor', 'reviewObjectMetadata', [$reviewObjectMetadata->getReviewObjectTypeId()]);
 		}
 	}
 
 	/**
 	 * Copy review object metadata to another review object.
-	 * @param $args array
-	 * @param $request PKPRequest
+	 * @param array $args
+	 * @param PKPRequest $request
 	 */
-	function copyOrUpdateReviewObjectMetadata($args, &$request) {
+	public function copyOrUpdateReviewObjectMetadata($args, $request) {
 		$typeId = array_shift($args);
 
 		$journal = $request->getJournal();
-		$journalId = $journal->getId();
+		$journalId = (int) $journal->getId();
 
-		// [SECURITY FIX] Amankan 'copy' (ID integer) dengan (int) trim()
-		$copy = (int) trim($request->getUserVar('copy'));
+		$copy = (int) trim((string) $request->getUserVar('copy'));
 
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		$reviewObjectType = $reviewObjectTypeDao->getById($typeId, $journalId);
-		if (isset($reviewObjectType)) {
-			$reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
-			// [SECURITY FIX] Amankan 'save' (flag boolean) (L. 537)
-            if ((int) trim($request->getUserVar('save'))) { 
-                
-                // [SECURITY FIX] Amankan 'required' dan 'display' (Array ID) dengan casting
-                $requiredMetadata = (array) $request->getUserVar('required');
-                $displayMetadata = (array) $request->getUserVar('display');
-                $allReviewObjectMetadata = $reviewObjectMetadataDao->getArrayByReviewObjectTypeId($typeId); 
-                
-                foreach ($allReviewObjectMetadata as $metadata) {
-                    if ($metadata->getKey() != REVIEW_OBJECT_METADATA_KEY_TITLE) {
-                        // Logika in_array tetap aman karena $requiredMetadata & $displayMetadata adalah array yang valid
-                        in_array($metadata->getId(), $requiredMetadata) ? $metadata->setRequired(1) : $metadata->setRequired(0);
-                        in_array($metadata->getId(), $displayMetadata) ? $metadata->setDisplay(1) : $metadata->setDisplay(0);
-                        $reviewObjectMetadataDao->updateObject($metadata);
-                    }
-                }
-            } elseif (is_array($copyInput = $request->getUserVar('copy'))) {
-                // [SECURITY FIX] Amankan array $copy dengan casting implisit di pengecekan is_array
-                $copy = (array) $copyInput;
-                
-                // [SECURITY FIX] Save 'targetReviewObjectTypeId' (ID integer)
-                $targetTypeId = (int) trim($request->getUserVar('targetReviewObjectTypeId'));
-                
-                foreach ($copy as $metadataId) {
-                    // [SECURITY FIX] Amankan metadataId di loop (meskipun idealnya sudah dilakukan oleh in_array di atas)
-                    $metadataId = (int) trim($metadataId); 
+		$reallyBigNumber = defined('REALLY_BIG_NUMBER') ? REALLY_BIG_NUMBER : 999999;
 
-                    $reviewObjectMetadata = $reviewObjectMetadataDao->getById($metadataId, $typeId);
-                    
-                    // If metadata and the target review object type exist,
-                    // and it's not the default metadata (doesn't have a key)
-                    if (isset($reviewObjectMetadata) && ($reviewObjectMetadata->getKey() == null) && $reviewObjectTypeDao->reviewObjectTypeExists($targetTypeId, $journalId)) {
-                        $reviewObjectMetadata->setReviewObjectTypeId($targetTypeId);
-                        $reviewObjectMetadata->setSequence(REALLY_BIG_NUMBER);
-                        $reviewObjectMetadataDao->insertObject($reviewObjectMetadata);
-                        $reviewObjectMetadataDao->resequence($targetTypeId);
-                    }
-                    unset($reviewObjectMetadata);
-                }
-                $request->redirect(null, 'editor', 'reviewObjectMetadata', array($targetTypeId));
-            }
+		if ($reviewObjectType) {
+			/** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
+			$reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
+			
+			if ((int) trim((string) $request->getUserVar('save'))) { 
+				$requiredMetadata = (array) $request->getUserVar('required');
+				$displayMetadata = (array) $request->getUserVar('display');
+				$allReviewObjectMetadata = $reviewObjectMetadataDao->getArrayByReviewObjectTypeId($typeId); 
+				
+				foreach ($allReviewObjectMetadata as $metadata) {
+					if ($metadata->getKey() !== REVIEW_OBJECT_METADATA_KEY_TITLE) {
+						$metadata->setRequired(in_array($metadata->getId(), $requiredMetadata, true) ? 1 : 0);
+						$metadata->setDisplay(in_array($metadata->getId(), $displayMetadata, true) ? 1 : 0);
+						$reviewObjectMetadataDao->updateObject($metadata);
+					}
+				}
+			} else {
+				$copyInput = $request->getUserVar('copy');
+				if (is_array($copyInput)) {
+					$copy = (array) $copyInput;
+					$targetTypeId = (int) trim((string) $request->getUserVar('targetReviewObjectTypeId'));
+					
+					foreach ($copy as $metadataId) {
+						$metadataId = (int) trim((string) $metadataId); 
+						$reviewObjectMetadata = $reviewObjectMetadataDao->getById($metadataId, $typeId);
+						
+						if ($reviewObjectMetadata && $reviewObjectMetadata->getKey() === null && $reviewObjectTypeDao->reviewObjectTypeExists($targetTypeId, $journalId)) {
+							$reviewObjectMetadata->setReviewObjectTypeId($targetTypeId);
+							$reviewObjectMetadata->setSequence($reallyBigNumber);
+							$reviewObjectMetadataDao->insertObject($reviewObjectMetadata);
+							$reviewObjectMetadataDao->resequence($targetTypeId);
+						}
+					}
+					$request->redirect(null, 'editor', 'reviewObjectMetadata', [$targetTypeId]);
+				}
+			}
 		}
 		$this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_OT_UPDATED, $request);
-		$request->redirect(null, 'editor', 'reviewObjectMetadata', array($typeId));
+		$request->redirect(null, 'editor', 'reviewObjectMetadata', [$typeId]);
 	}
-
 
 	/**
 	 * Ensure that we have a journal, plugin is enabled, and user is editor.
 	 * @see PKPHandler::authorize()
 	 */
-	function authorize(&$request, &$args, $roleAssignments) {
+	public function authorize($request, $args, $roleAssignments) {
 		$journal = $request->getJournal();
-		if (!isset($journal)) return false;
+		if (!$journal) {
+			return false;
+		}
 
 		$plugin = $this->_getObjectsForReviewPlugin();
+		if (!$plugin || !$plugin->getEnabled()) {
+			return false;
+		}
 
-		if (!isset($plugin)) return false;
-
-		if (!$plugin->getEnabled()) return false;
-
-		if (!Validation::isEditor($journal->getId())) Validation::redirectLogin();;
+		if (!Validation::isEditor($journal->getId())) {
+			Validation::redirectLogin();
+		}
 
 		return parent::authorize($request, $args, $roleAssignments);
 	}
 
 	/**
 	 * Setup common template variables.
-	 * @param $request PKPRequest
-	 * @param $subclass boolean (optional) set to true if caller is below this handler in the hierarchy
-	 * @param $reviewObjectType ReviewObjectType (optional)
+	 * @param PKPRequest|null $request
+	 * @param bool $subclass
+	 * @param ReviewObjectType|null $reviewObjectType
 	 */
-	function setupTemplate(&$request, $subclass = false, $reviewObjectType = null) {
+	public function setupTemplate($request = null, $subclass = false, $reviewObjectType = null) {
 		$templateMgr = TemplateManager::getManager($request);
-		$pageCrumbs = array(
-			array(
-				$request->url(null, 'user'),
-				'navigation.user'
-			),
-			array(
-				$request->url(null, 'editor'),
-				'user.role.editor'
-			)
-		);
+		$pageCrumbs = [
+			[$request->url(null, 'user'), 'navigation.user'],
+			[$request->url(null, 'editor'), 'user.role.editor']
+		];
 
 		if ($subclass) {
-			$pageCrumbs[] = array(
+			$pageCrumbs[] = [
 				$request->url(null, 'editor', 'reviewObjectTypes'),
-				AppLocale::Translate('plugins.generic.objectsForReview.editor.objectTypes'),
+				AppLocale::translate('plugins.generic.objectsForReview.editor.objectTypes'),
 				true
-			);
+			];
 		}
 		if ($reviewObjectType) {
-			$pageCrumbs[] = array(
+			$pageCrumbs[] = [
 				$request->url(null, 'editor', 'editReviewObjectType', $reviewObjectType->getId()),
 				$reviewObjectType->getLocalizedName(),
 				true
-			);
+			];
 		}
 
 		$templateMgr->assign('pageHierarchy', $pageCrumbs);
 		$plugin = $this->_getObjectsForReviewPlugin();
 		$templateMgr->addStyleSheet($request->getBaseUrl() . '/' . $plugin->getStyleSheet());
-
 	}
 
 	//
@@ -691,44 +676,51 @@ class ReviewObjectTypesEditorHandler extends Handler {
 	//
 	/**
 	 * Get the objectForReview plugin object
-	 * @return ObjectsForReviewPlugin
+	 * @return ObjectsForReviewPlugin|null
 	 */
-	function &_getObjectsForReviewPlugin() {
+	private function &_getObjectsForReviewPlugin() {
 		$plugin = PluginRegistry::getPlugin('generic', OBJECTS_FOR_REVIEW_PLUGIN_NAME);
 		return $plugin;
 	}
 
 	/**
 	 * Get plugin locales i.e. the languages the plug-in is translated into
-	 * @return array of plugin locales
+	 * @return array
 	 */
-	function _getPluginLocales() {
+	private function _getPluginLocales(): array {
 		$plugin = $this->_getObjectsForReviewPlugin();
-		$pluginLocales = array();
+		$pluginLocales = [];
 		$allLocales = AppLocale::getAllLocales();
+		
 		foreach ($allLocales as $locale => $localeName) {
 			$localeFilename = $plugin->getPluginPath() . "/locale/$locale/locale.xml";
-			if (file_exists($localeFilename)) $pluginLocales[$locale] = $localeName;
+			if (file_exists($localeFilename)) {
+				$pluginLocales[$locale] = $localeName;
+			}
 		}
 		return $pluginLocales;
 	}
 
 	/**
 	 * Get the missing/not installed review objects/keys
-	 * @param $journalId int
-	 * @return array of missing review objects keys
+	 * @param int $journalId
+	 * @return array
 	 */
-	function _getMissingDefaultReviewObjectsKeys($journalId) {
+	private function _getMissingDefaultReviewObjectsKeys(int $journalId): array {
 		$plugin = $this->_getObjectsForReviewPlugin();
-		$missingReviewObjectKeys = array();
-		// Get the installed review objects/keys
+		$missingReviewObjectKeys = [];
+
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
 		$installedReviewObjectKeys = $reviewObjectTypeDao->getTypeKeys($journalId);
-		// Get all existing review objects
-		foreach (glob($plugin->getPluginPath() . '/xml/reviewObjects/*.xml') as $filePath) {
-			$objectKey = basename($filePath, '.xml');
-			if (!in_array($objectKey, $installedReviewObjectKeys)) {
-				$missingReviewObjectKeys[$objectKey] = $objectKey;
+		
+		$files = glob($plugin->getPluginPath() . '/xml/reviewObjects/*.xml');
+		if ($files) {
+			foreach ($files as $filePath) {
+				$objectKey = basename($filePath, '.xml');
+				if (!in_array($objectKey, $installedReviewObjectKeys, true)) {
+					$missingReviewObjectKeys[$objectKey] = $objectKey;
+				}
 			}
 		}
 		return $missingReviewObjectKeys;
@@ -736,147 +728,158 @@ class ReviewObjectTypesEditorHandler extends Handler {
 
 	/**
 	 * Update or install review objects
-	 * @param $journal Journal
-	 * @param $reviewObjects array of review object types keys or ids
-	 * @param $locales array of locales
-	 * @param $action string (install or update)
+	 * @param Journal $journal
+	 * @param array $reviewObjects
+	 * @param array $locales
+	 * @param string $action
+	 * @return bool
 	 */
-	function _updateOrInstallReviewObjectTypes($journal, $reviewObjects, $locales, $action) {
+	private function _updateOrInstallReviewObjectTypes($journal, array $reviewObjects, array $locales, string $action): bool {
 		$plugin = $this->_getObjectsForReviewPlugin();
-		if (!isset($journal) || !isset($reviewObjects) || !isset($locales) || !isset($action)) return false;
-		$journalId = $journal->getId();
+		if (!$journal || empty($reviewObjects) || empty($locales) || empty($action)) {
+			return false;
+		}
+		$journalId = (int) $journal->getId();
+		
 		$plugin->import('classes.ReviewObjectType');
 		$plugin->import('classes.ReviewObjectMetadata');
+
+		/** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
 		$reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
+		/** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
 		$reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
-		$onlyCommonMetadata = false;
+
+		$metadataHelper = new ReviewObjectMetadata();
+		$multipleOptionsTypes = $metadataHelper->getMultipleOptionsTypes();
+		$dtdTypes = $metadataHelper->getMetadataDTDTypes();
+		$reallyBigNumber = defined('REALLY_BIG_NUMBER') ? REALLY_BIG_NUMBER : 999999;
+
 		foreach ($reviewObjects as $keyOrId) {
-			if ($action == 'install') {
-				// Create a new review object type
+			$reviewObjectType = null;
+
+			if ($action === 'install') {
 				$reviewObjectType = $reviewObjectTypeDao->newDataObject();
 				$reviewObjectType->setContextId($journalId);
 				$reviewObjectType->setActive(0);
 				$reviewObjectType->setKey($keyOrId);
-			} elseif ($action == 'update') {
-				// Get the review object type
+			} elseif ($action === 'update') {
 				$reviewObjectType = $reviewObjectTypeDao->getById($keyOrId, $journalId);
-				if (!isset($reviewObjectType)) return false;
-				// If the type was created by the user, update only the common metadata
-				if ($reviewObjectType->getKey() == NULL) {
-					$onlyCommonMetadata = true;
+				if (!$reviewObjectType) {
+					return false;
 				}
 			}
 
-			// Callect the metadata in the array
-			$reviewObjectMetadataArray = array();
-			// For all languages
+			if (!$reviewObjectType) {
+				continue;
+			}
+
+			$onlyCommonMetadata = ($action === 'update' && $reviewObjectType->getKey() === null);
+			$reviewObjectMetadataArray = [];
+			
 			foreach ($locales as $locale) {
-				// Register the locale/translation file
 				$localePath = $plugin->getPluginPath() . '/locale/'. $locale . '/locale.xml';
 				AppLocale::registerLocaleFile($locale, $localePath, true);
 
 				$xmlDao = new XMLDAO();
-				// Get common metadata
 				$commonDataPath = $plugin->getPluginPath() . '/xml/commonMetadata.xml';
 				$commonData = $xmlDao->parse($commonDataPath);
-				$commonMetadata = $commonData->getChildByName('objectMetadata');
-				$allMetadataChildren = $commonMetadata->getChildren();
-
-				// Get the object metadata
-				if (!$onlyCommonMetadata) {
-					// Parse the review object XML file
-					$itemPath = $plugin->getPluginPath() . '/xml/reviewObjects/'. $reviewObjectType->getKey() . '.xml';
-					$data = $xmlDao->parse($itemPath);
-					if (!$data) return false;
-
-					// Set the review object name
-					$itemTypeName = __($data->getChildValue('objectType'), array(), $locale);
-					$reviewObjectType->setName($itemTypeName, $locale);
-					// $reviewObjectType->setDescription($itemTypeNameDescription, $locale);
-
-					// Get the review object role selection options
-					$roleSelectionOptions = $data->getChildByName('roleSelectionOptions');
-
-					// Handle Metadata
-					// Get multiple options metadata types
-					$multipleOptionsTypes = ReviewObjectMetadata::getMultipleOptionsTypes();
-					// Get metadata types defined in DTD
-					$dtdTypes = ReviewObjectMetadata::getMetadataDTDTypes();
-					// Get the review object metadata
-					$itemMetadata = $data->getChildByName('objectMetadata');
-					// Merge all (common + review objec) metadata
-					$allMetadataChildren = array_merge($commonMetadata->getChildren(), $itemMetadata->getChildren());
+				
+				if (!$commonData) {
+					continue; // Null safety
 				}
 
-				// Go through the metadata
+				$commonMetadata = $commonData->getChildByName('objectMetadata');
+				$allMetadataChildren = $commonMetadata ? $commonMetadata->getChildren() : [];
+
+				if (!$onlyCommonMetadata) {
+					$itemPath = $plugin->getPluginPath() . '/xml/reviewObjects/'. $reviewObjectType->getKey() . '.xml';
+					$data = $xmlDao->parse($itemPath);
+					if (!$data) {
+						return false;
+					}
+
+					$itemTypeName = __($data->getChildValue('objectType'), [], $locale);
+					$reviewObjectType->setName($itemTypeName, $locale);
+
+					$roleSelectionOptions = $data->getChildByName('roleSelectionOptions');
+					$itemMetadata = $data->getChildByName('objectMetadata');
+					
+					if ($itemMetadata) {
+						$allMetadataChildren = array_merge($allMetadataChildren, $itemMetadata->getChildren());
+					}
+				}
+
 				foreach ($allMetadataChildren as $metadataNode) {
 					$key = $metadataNode->getAttribute('key');
+					$reviewObjectMetadata = null;
 
-					// If we have already went througt, collected/considered the metadata
 					if (array_key_exists($key, $reviewObjectMetadataArray)) {
 						$reviewObjectMetadata = $reviewObjectMetadataArray[$key];
 					} else {
-						if ($action == 'update') {
-							// Get the metadata
+						if ($action === 'update') {
 							$reviewObjectMetadata = $reviewObjectMetadataDao->getByKey($key, $reviewObjectType->getId());
 						}
-						if ($action == 'install' || !isset($reviewObjectMetadata)) {
-							// Create a new metadata
+						if ($action === 'install' || !$reviewObjectMetadata) {
 							$reviewObjectMetadata = $reviewObjectMetadataDao->newDataObject();
-							$reviewObjectMetadata->setSequence(REALLY_BIG_NUMBER);
-							$metadataType = $dtdTypes[$metadataNode->getAttribute('type')];
+							$reviewObjectMetadata->setSequence($reallyBigNumber);
+							
+							$typeAttr = $metadataNode->getAttribute('type');
+							$metadataType = $dtdTypes[$typeAttr] ?? null;
 							$reviewObjectMetadata->setMetadataType($metadataType);
+							
 							$required = $metadataNode->getAttribute('required');
-							$reviewObjectMetadata->setRequired($required == 'true' ? 1 : 0);
+							$reviewObjectMetadata->setRequired($required === 'true' ? 1 : 0);
+							
 							$display = $metadataNode->getAttribute('display');
-							$reviewObjectMetadata->setDisplay($display == 'true' ? 1 : 0);
+							$reviewObjectMetadata->setDisplay($display === 'true' ? 1 : 0);
 						}
 					}
-					// Set metadata name
-					$name = __($metadataNode->getChildValue('name'), array(), $locale);
+
+					if (!$reviewObjectMetadata) {
+						continue;
+					}
+					
+					$name = __($metadataNode->getChildValue('name'), [], $locale);
 					$reviewObjectMetadata->setName($name, $locale);
-					// Set roles options
-					if ($key == REVIEW_OBJECT_METADATA_KEY_ROLE) {
-						if (!$onlyCommonMetadata) {
-							$possibleOptions = array();
+					
+					if ($key === REVIEW_OBJECT_METADATA_KEY_ROLE) {
+						if (!$onlyCommonMetadata && isset($roleSelectionOptions)) {
+							$possibleOptions = [];
 							$index = 1;
 							foreach ($roleSelectionOptions->getChildren() as $selectionOptionNode) {
-								$possibleOptions[] = array('order' => $index, 'content' => __($selectionOptionNode->getValue(), array(), $locale));
+								$possibleOptions[] = ['order' => $index, 'content' => __($selectionOptionNode->getValue(), [], $locale)];
 								$index++;
-							}
+			}
 							$reviewObjectMetadata->setPossibleOptions($possibleOptions, $locale);
 						}
 					} else {
-						// Set possible options for multiple options metadata type
-						if (in_array($reviewObjectMetadata->getMetadataType(), $multipleOptionsTypes)) {
+						if (in_array($reviewObjectMetadata->getMetadataType(), $multipleOptionsTypes, true)) {
 							$selectionOptions = $metadataNode->getChildByName('selectionOptions');
-							$possibleOptions = array();
+							$possibleOptions = [];
 							$index = 1;
-							foreach ($selectionOptions->getChildren() as $selectionOptionNode) {
-								$possibleOptions[] = array('order' => $index, 'content' => __($selectionOptionNode->getValue(), array(), $locale));
-								$index++;
+							if ($selectionOptions) {
+								foreach ($selectionOptions->getChildren() as $selectionOptionNode) {
+									$possibleOptions[] = ['order' => $index, 'content' => __($selectionOptionNode->getValue(), [], $locale)];
+									$index++;
+								}
 							}
 							$reviewObjectMetadata->setPossibleOptions($possibleOptions, $locale);
 						} else {
 							$reviewObjectMetadata->setPossibleOptions(null, null);
 						}
 					}
-					// Collect/consider the metadata
 					$reviewObjectMetadataArray[$key] = $reviewObjectMetadata;
-					unset($reviewObjectMetadata);
-				} // End foreach metadata
-			} // End foreach locales
+				}
+			}
 
-			// Insert resp. update the review object type
-			if ($action == 'install') {
-				$reviewObjectTypeId = $reviewObjectTypeDao->insertObject($reviewObjectType);
-			} elseif ($action == 'update') {
+			if ($action === 'install') {
+				$reviewObjectTypeDao->insertObject($reviewObjectType);
+			} elseif ($action === 'update') {
 				$reviewObjectTypeDao->updateObject($reviewObjectType);
 			}
-			// Insert resp. update review object metadata
+			
 			foreach ($reviewObjectMetadataArray as $key => $reviewObjectMetadata) {
-				// if this is a new metadata insert it
-				if ($reviewObjectMetadata->getKey() == '') {
+				if ($reviewObjectMetadata->getKey() === '') {
 					$reviewObjectMetadata->setKey($key);
 					$reviewObjectMetadata->setReviewObjectTypeId($reviewObjectType->getId());
 					$reviewObjectMetadataDao->insertObject($reviewObjectMetadata);
@@ -885,16 +888,16 @@ class ReviewObjectTypesEditorHandler extends Handler {
 					$reviewObjectMetadataDao->updateObject($reviewObjectMetadata);
 				}
 			}
-			unset($reviewObjectType);
-		} // End foreach review objects
+		}
+		return true;
 	}
 
 	/**
 	 * Create trivial notification
-	 * @param $notificationType int
-	 * @param $request PKPRequest
+	 * @param int $notificationType
+	 * @param PKPRequest $request
 	 */
-	function _createTrivialNotification($notificationType, &$request) {
+	private function _createTrivialNotification(int $notificationType, $request): void {
 		$user = $request->getUser();
 		import('classes.notification.NotificationManager');
 		$notificationManager = new NotificationManager();
@@ -902,5 +905,4 @@ class ReviewObjectTypesEditorHandler extends Handler {
 	}
 
 }
-
 ?>

@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_copyeditor
  *
  * @brief Handle requests for copyeditor functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.submission.copyeditor.CopyeditorAction');
@@ -52,31 +50,31 @@ class CopyeditorHandler extends Handler {
      * @param array $args
      * @param PKPRequest $request
      */
-    public function index($args, $request) {
+    public function index(array $args = [], $request = null) {
         $this->validate($request);
         $this->setupTemplate();
 
         $journal = $request->getJournal();
         $user = $request->getUser();
+        /** @var CopyeditorSubmissionDAO $copyeditorSubmissionDao */
         $copyeditorSubmissionDao = DAORegistry::getDAO('CopyeditorSubmissionDAO');
 
-        // Get the user's search conditions, if any
         $searchField = trim((string) $request->getUserVar('searchField'));
         $allowedFields = ['title', 'author', 'editor', SUBMISSION_FIELD_TITLE, SUBMISSION_FIELD_AUTHOR, SUBMISSION_FIELD_EDITOR, SUBMISSION_FIELD_ID]; 
         if (!in_array($searchField, $allowedFields)) {
-            $searchField = SUBMISSION_FIELD_TITLE; // Default aman
+            $searchField = SUBMISSION_FIELD_TITLE;
         }
         
         $dateSearchField = trim((string) $request->getUserVar('dateSearchField'));
         $allowedDateFields = ['dateSubmitted', 'dateCopyeditComplete', SUBMISSION_FIELD_DATE_SUBMITTED, SUBMISSION_FIELD_DATE_COPYEDIT_COMPLETE, SUBMISSION_FIELD_DATE_LAYOUT_COMPLETE, SUBMISSION_FIELD_DATE_PROOFREADING_COMPLETE]; 
         if (!in_array($dateSearchField, $allowedDateFields)) {
-            $dateSearchField = SUBMISSION_FIELD_DATE_SUBMITTED; // Default aman
+            $dateSearchField = SUBMISSION_FIELD_DATE_SUBMITTED;
         }
 
         $searchMatch = trim((string) $request->getUserVar('searchMatch'));
         $allowedMatches = ['all', 'any', 'phrase', 'is', 'contains', 'startsWith']; 
         if (!in_array($searchMatch, $allowedMatches)) {
-            $searchMatch = 'contains'; // Default aman
+            $searchMatch = 'contains';
         }
         
         $search = trim((string) $request->getUserVar('search'));
@@ -121,7 +119,6 @@ class CopyeditorHandler extends Handler {
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('pageToDisplay', $page);
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('submissions', $submissions);
 
         // Set search parameters
@@ -132,7 +129,7 @@ class CopyeditorHandler extends Handler {
             'dateSearchField'
         ];
         foreach ($duplicateParameters as $param) {
-            // [SECURITY FIX] Terapkan htmlspecialchars untuk mencegah XSS
+            // [SECURITY] Terapkan htmlspecialchars untuk mencegah XSS
             $value = $request->getUserVar($param);
             $templateMgr->assign($param, htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'));
         }
@@ -160,12 +157,13 @@ class CopyeditorHandler extends Handler {
         $templateMgr->assign('helpTopicId', 'editorial.copyeditorsRole.submissions');
         $templateMgr->assign('sort', $sort);
         $templateMgr->assign('sortDirection', $sortDirection);
+
         $templateMgr->display('copyeditor/index.tpl');
     }
 
     /**
      * Setup common template variables.
-     * @param bool $subclass set to true if caller is below this handler in the hierarchy
+     * @param bool $subclass
      * @param int $articleId
      * @param string|null $parentPage
      */
@@ -174,7 +172,7 @@ class CopyeditorHandler extends Handler {
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_SUBMISSION);
         $templateMgr = TemplateManager::getManager();
         
-        // [WIZDAM] Singleton fallback for request within helper
+        // [WIZDAM] Singleton fallback
         $request = Application::get()->getRequest();
         
         $pageHierarchy = $subclass ? [[$request->url(null, 'user'), 'navigation.user'], [$request->url(null, 'copyeditor'), 'user.role.copyeditor']]
@@ -205,19 +203,21 @@ class CopyeditorHandler extends Handler {
      * Validate that the user is the assigned copyeditor for
      * the article, if specified. Validate user role.
      * @param PKPRequest $request
-     * @param int|null $articleId optional
+     * @param int|null $articleId
      */
-    public function validate($request, $articleId = null) {
+    public function validate($request = null, $articleId = null) {
         parent::validate();
 
         if ($articleId !== null) {
+            /** @var CopyeditorSubmissionDAO $copyeditorSubmissionDao */
             $copyeditorSubmissionDao = DAORegistry::getDAO('CopyeditorSubmissionDAO');
             $journal = $request->getJournal();
             $user = $request->getUser();
 
             $isValid = true;
+            $articleId = (int) $articleId;
 
-            $copyeditorSubmission = $copyeditorSubmissionDao->getCopyeditorSubmission($articleId, $user->getId());
+            $copyeditorSubmission = $copyeditorSubmissionDao->getCopyeditorSubmission($articleId);
 
             if ($copyeditorSubmission == null) {
                 $isValid = false;
@@ -238,5 +238,6 @@ class CopyeditorHandler extends Handler {
             $this->submission = $copyeditorSubmission;
         }
     }
+
 }
 ?>

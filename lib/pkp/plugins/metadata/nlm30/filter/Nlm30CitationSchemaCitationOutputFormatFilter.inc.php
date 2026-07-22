@@ -11,9 +11,8 @@ declare(strict_types=1);
  * @class Nlm30CitationSchemaCitationOutputFormatFilter
  * @ingroup plugins_metadata_nlm30_filter
  *
- * @brief Abstract base class for all filters that transform
- * NLM citation metadata descriptions into citation output formats
- * via smarty template.
+ * @brief Base class for filters that transform NLM citation metadata 
+ * descriptions into citation output formats via Smarty templates.
  */
 
 import('lib.pkp.classes.filter.TemplateBasedFilter');
@@ -23,7 +22,8 @@ import('lib.pkp.plugins.metadata.nlm30.schema.Nlm30CitationSchema');
 define('GOOGLE_SCHOLAR_TAG', '[Google Scholar]');
 
 class Nlm30CitationSchemaCitationOutputFormatFilter extends TemplateBasedFilter {
-    /** @var array */
+    
+    /** @var array|null */
     protected $_supportedPublicationTypes;
 
     /**
@@ -36,6 +36,7 @@ class Nlm30CitationSchemaCitationOutputFormatFilter extends TemplateBasedFilter 
 
     /**
      * [SHIM] Backward Compatibility
+     * @param FilterGroup $filterGroup
      */
     public function Nlm30CitationSchemaCitationOutputFormatFilter($filterGroup) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -64,10 +65,12 @@ class Nlm30CitationSchemaCitationOutputFormatFilter extends TemplateBasedFilter 
      * @return array
      */
     public function getSupportedPublicationTypes() {
-        if (is_null($this->_supportedPublicationTypes)) {
-            // Set default supported publication types.
+        // [WIZDAM] Modernization: Gunakan strict comparison === null
+        if ($this->_supportedPublicationTypes === null) {
             $this->_supportedPublicationTypes = [
-                NLM30_PUBLICATION_TYPE_BOOK, NLM30_PUBLICATION_TYPE_JOURNAL, NLM30_PUBLICATION_TYPE_CONFPROC
+                NLM30_PUBLICATION_TYPE_BOOK, 
+                NLM30_PUBLICATION_TYPE_JOURNAL, 
+                NLM30_PUBLICATION_TYPE_CONFPROC
             ];
         }
         return $this->_supportedPublicationTypes;
@@ -77,17 +80,16 @@ class Nlm30CitationSchemaCitationOutputFormatFilter extends TemplateBasedFilter 
     // Implement template methods from Filter
     //
     /**
+     * Process the input of NLM meta-data description to be transformed.
      * @see Filter::process()
-     * @param MetadataDescription $input the NLM meta-data description
-     * to be transformed
-     * @return string the rendered citation output
+     * @param MetadataDescription $input
+     * @return string
      */
     public function process($input) {
-        // Check whether the incoming publication type is supported by this
-        // output filter.
         $supportedPublicationTypes = $this->getSupportedPublicationTypes();
         $inputPublicationType = $input->getStatement('[@publication-type]');
-        if (!in_array($inputPublicationType, $supportedPublicationTypes)) {
+        
+        if (!in_array($inputPublicationType, $supportedPublicationTypes, true)) {
             $this->addError(__('submission.citations.filter.unsupportedPublicationType'));
             return '';
         }
@@ -107,35 +109,30 @@ class Nlm30CitationSchemaCitationOutputFormatFilter extends TemplateBasedFilter 
     }
 
     /**
+     * Add template variabels
      * @see TemplateBasedFilter::addTemplateVars()
      * @param TemplateManager $templateMgr
-     * @param MetadataDescription $input the NLM meta-data description
-     * to be transformed
+     * @param MetadataDescription $input
      * @param Request $request
-     * @param string $locale AppLocale
+     * @param string $locale
      */
     public function addTemplateVars($templateMgr, $input, $request, $locale) {
-        // Loop over the statements in the schema and add them
-        // to the template
         $propertyNames = $input->getPropertyNames();
-        $setProperties = [];
-        foreach($propertyNames as $propertyName) {
+        
+        foreach ($propertyNames as $propertyName) {
             $templateVariable = $input->getNamespacedPropertyId($propertyName);
+            
             if ($input->hasStatement($propertyName)) {
                 $property = $input->getProperty($propertyName);
                 $propertyLocale = $property->getTranslated() ? $locale : null;
-                // Assign by reference not strictly required for scalar/simple values but often used in older Smarty integration
-                // We keep assign_by_ref or change to assign depending on framework version. Assuming OJS 2.x/3.x legacy uses assign_by_ref.
-                // However, getting statement returns value, not reference usually.
-                // If getStatement returns by ref in core, we might need &
+                
                 $value = $input->getStatement($propertyName, $propertyLocale);
                 $templateMgr->assign($templateVariable, $value); 
-                unset($property);
             } else {
-                // Delete potential leftovers from previous calls
                 $templateMgr->clear_assign($templateVariable);
             }
         }
     }
+    
 }
 ?>

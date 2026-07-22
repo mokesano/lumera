@@ -188,6 +188,6 @@ class SubmissionCommentsHandler extends LayoutEditorHandler {
             $request->redirect(null, null, 'viewProofreadComments', $articleId);
         }
     }
+    
 }
-
 ?>

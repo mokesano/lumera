@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_admin
  *
  * @brief Handle requests for people management functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.admin.AdminHandler');
@@ -53,7 +51,9 @@ class AdminPeopleHandler extends AdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $templateMgr = TemplateManager::getManager();
@@ -64,24 +64,21 @@ class AdminPeopleHandler extends AdminHandler {
         $newUserId = (int) $request->getUserVar('newUserId');
 
         if (!empty($oldUserIds) && !empty($newUserId)) {
-            // Both user IDs have been selected. Merge the accounts.
             import('classes.user.UserAction');
             foreach ($oldUserIds as $oldUserId) {
-                UserAction::mergeUsers($oldUserId, $newUserId);
+                $userAction = new UserAction();
+                $userAction->mergeUsers($oldUserId, $newUserId);
             }
             $request->redirect(null, 'admin', 'mergeUsers');
         }
 
-        // The administrator must select one or both IDs.
-        // [SECURITY FIX] Ambil dan sanitasi roleSymbolic (Menggantikan Line 51)
         $roleSymbolicInput = $request->getUserVar('roleSymbolic');
         if ($roleSymbolicInput != null) {
-            $roleSymbolic = trim((string) $roleSymbolicInput); // Terapkan trim() untuk sanitasi
+            $roleSymbolic = trim((string) $roleSymbolicInput);
         } else {
             $roleSymbolic = isset($args[0]) ? (string) $args[0] : 'all';
         }
-        
-        // [LOGIKA VALIDASI OJS ASLI]
+
         $matches = [];
         if ($roleSymbolic != 'all' && PKPString::regexp_match_get('/^(\w+)s$/', $roleSymbolic, $matches)) {
             $roleId = $roleDao->getRoleIdFromPath($matches[1]);
@@ -98,26 +95,23 @@ class AdminPeopleHandler extends AdminHandler {
         $searchMatch = null;
         $search = trim((string) $request->getUserVar('search'));
         $searchInitial = trim((string) $request->getUserVar('searchInitial'));
-        
-        // Whitelisting: Pastikan hanya satu huruf
+
         if (!preg_match('/^[A-Z]$/i', $searchInitial)) {
             $searchInitial = '';
         }
         
         if (!empty($search)) {
             $searchType = trim((string) $request->getUserVar('searchField'));
-            // Whitelisting (PENTING):
             $allowedFields = ['name', 'username', 'email', 'affiliation', USER_FIELD_FIRSTNAME, USER_FIELD_LASTNAME, USER_FIELD_USERNAME, USER_FIELD_EMAIL, USER_FIELD_INTERESTS]; 
             if (!in_array($searchType, $allowedFields)) {
-                $searchType = USER_FIELD_FIRSTNAME; // Default aman fallback
-                if($searchType == 'name') $searchType = USER_FIELD_FIRSTNAME; // Adjust if 'name' was conceptual
+                $searchType = USER_FIELD_FIRSTNAME;
+                if($searchType == 'name') $searchType = USER_FIELD_FIRSTNAME;
             }
             
             $searchMatch = trim((string) $request->getUserVar('searchMatch'));
-            // Whitelisting (PENTING):
-            $allowedMatches = ['is', 'contains', 'startsWith']; // Standard OJS matches
+            $allowedMatches = ['is', 'contains', 'startsWith'];
             if (!in_array($searchMatch, $allowedMatches)) {
-                $searchMatch = 'contains'; // Default aman
+                $searchMatch = 'contains';
             }
 
         } elseif (!empty($searchInitial)) {
@@ -138,8 +132,6 @@ class AdminPeopleHandler extends AdminHandler {
         $templateMgr->assign('currentUrl', $request->url(null, null, 'mergeUsers'));
         $templateMgr->assign('helpTopicId', 'site.administrativeFunctions');
         $templateMgr->assign('roleName', $roleName);
-        
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('users', $users);
         $templateMgr->assign('thisUser', $request->getUser());
         $templateMgr->assign('isReviewer', $roleId == ROLE_ID_REVIEWER);
@@ -156,11 +148,14 @@ class AdminPeopleHandler extends AdminHandler {
             USER_FIELD_EMAIL => 'user.email',
             USER_FIELD_INTERESTS => 'user.interests'
         ]);
+
         $templateMgr->assign('alphaList', explode(' ', __('common.alphaList')));
         $templateMgr->assign('oldUserIds', $oldUserIds);
         $templateMgr->assign('rolePath', $roleDao->getRolePath($roleId));
         $templateMgr->assign('roleSymbolic', $roleSymbolic);
+        
         $templateMgr->display('admin/selectMergeUser.tpl');
     }
+
 }
 ?>

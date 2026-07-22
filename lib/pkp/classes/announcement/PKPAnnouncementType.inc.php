@@ -13,11 +13,6 @@ declare(strict_types=1);
  * @see AnnouncementTypeDAO, AnnouncementTypeForm, PKPAnnouncementTypeDAO, PKPAnnouncementTypeForm
  *
  * @brief Basic class describing an announcement type.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor)
- * - Strict SHIM
- * - Visibility explicit
  */
 
 class PKPAnnouncementType extends DataObject {
@@ -102,6 +97,7 @@ class PKPAnnouncementType extends DataObject {
     }
 
     /**
+     * [DEPRECATED] Get the type of the announcement type.
      * @deprecated
      */
     public function getAnnouncementTypeName() {
@@ -126,6 +122,6 @@ class PKPAnnouncementType extends DataObject {
     public function setName($name, $locale) {
         return $this->setData('name', $name, $locale);
     }
+    
 }
-
 ?>

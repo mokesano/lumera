@@ -12,13 +12,12 @@ declare(strict_types=1);
  * @ingroup pages_copyeditor
  *
  * @brief Handle requests for submission comments.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.copyeditor.SubmissionCopyeditHandler');
 
 class SubmissionCommentsHandler extends CopyeditorHandler {
+
     /** @var Comment|null comment associated with this request */
     public $comment;
 
@@ -137,7 +136,7 @@ class SubmissionCommentsHandler extends CopyeditorHandler {
 
         CopyeditorAction::saveComment($this->submission, $comment, $emailComment, $request);
 
-        // refresh the comment
+        /** @var ArticleCommentDAO $articleCommentDao */
         $articleCommentDao = DAORegistry::getDAO('ArticleCommentDAO');
         $comment = $articleCommentDao->getArticleCommentById($commentId);
 
@@ -168,6 +167,7 @@ class SubmissionCommentsHandler extends CopyeditorHandler {
         CopyeditorAction::deleteComment($commentId);
 
         // Redirect back to initial comments page
+        /** @var ArticleComment $comment */
         if ($comment->getCommentType() == COMMENT_TYPE_COPYEDIT) {
             $request->redirect(null, null, 'viewCopyeditComments', $articleId);
         } elseif ($comment->getCommentType() == COMMENT_TYPE_LAYOUT) {
@@ -176,5 +176,6 @@ class SubmissionCommentsHandler extends CopyeditorHandler {
             $request->redirect(null, null, 'viewProofreadComments', $articleId);
         }
     }
+
 }
 ?>

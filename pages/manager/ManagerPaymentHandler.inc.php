@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_manager
  *
  * @brief Handle requests for configuring payments.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.manager.ManagerHandler');
@@ -110,8 +108,6 @@ class ManagerPaymentHandler extends ManagerHandler {
 
     /**
      * Display form to edit program settings.
-     * @param array $args
-     * @param PKPRequest $request
      */
     public function payMethodSettings() {
         $this->validate();
@@ -148,5 +144,6 @@ class ManagerPaymentHandler extends ManagerHandler {
             $templateMgr->display('common/message.tpl');        
         }
     }
+    
 }
 ?>

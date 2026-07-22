@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class ManagerHandler
  * @ingroup pages_manager
  *
- * @brief Handle requests for journal management functions. 
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * @brief Handle requests for journal management functions.
  */
 
 import('classes.handler.Handler');
@@ -32,8 +30,6 @@ class ManagerHandler extends Handler {
 
     /**
      * [SHIM] Backward Compatibility
-     * FIX: Menggunakan self::__construct() untuk memutus rantai polimorfisme
-     * yang menyebabkan infinite loop jika dipanggil dari Child Class.
      */
     public function ManagerHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -43,57 +39,54 @@ class ManagerHandler extends Handler {
             );
         }
         
-        // [WIZDAM CRITICAL FIX]
-        // JANGAN gunakan $this->__construct() atau call_user_func([$this...])
-        // Karena $this merujuk ke Child Class (AnnouncementHandler), yang akan
-        // memanggil parent::__construct, yang kembali ke sini -> LOOP.
-        // Gunakan self::__construct() untuk memaksa eksekusi konstruktor kelas INI.
-        
         $args = func_get_args();
-        // Memanggil __construct milik ManagerHandler secara eksplisit
         self::__construct(...$args);
     }
 
     /**
      * Display journal management index page.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function index($args = [], $request = null) {
         $this->validate();
         $this->setupTemplate();
         
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         
         $journal = $request->getJournal();
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
 
-        // Display a warning message if there is a new version of OJS available
         $newVersionAvailable = false;
         if (Config::getVar('general', 'show_upgrade_warning')) {
             import('lib.pkp.classes.site.VersionCheck');
-            if ($latestVersion = VersionCheck::checkIfNewVersionExists()) {
+            $latestVersion = VersionCheck::checkIfNewVersionExists();
+            
+            if ($latestVersion) {
                 $newVersionAvailable = true;
                 $templateMgr->assign('latestVersion', $latestVersion);
-                $currentVersion = VersionCheck::getCurrentDBVersion();
-                $templateMgr->assign('currentVersion', $currentVersion->getVersionString());
                 
-                // Get contact information for site administrator
+                $currentVersion = VersionCheck::getCurrentDBVersion();
+                $templateMgr->assign('currentVersion', $currentVersion ? $currentVersion->getVersionString() : '');
+                
+                /** @var RoleDAO $roleDao */
                 $roleDao = DAORegistry::getDAO('RoleDAO');
                 $siteAdmins = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN);
-                $templateMgr->assign('siteAdmin', $siteAdmins->next());
+                $siteAdmin = $siteAdmins ? $siteAdmins->next() : null;
+                $templateMgr->assign('siteAdmin', $siteAdmin);
             }
         }
 
         $templateMgr->assign('newVersionAvailable', $newVersionAvailable);
-        // Kode dipindahkan ke setup template agar global
-        // $templateMgr->assign('roleSettings', $this->retrieveRoleAssignmentPreferences($journal->getId()));
-        $templateMgr->assign('publishingMode', $journal->getSetting('publishingMode'));
-        $templateMgr->assign('announcementsEnabled', $journal->getSetting('enableAnnouncements'));
+        $templateMgr->assign('publishingMode', $journal ? $journal->getSetting('publishingMode') : null);
+        $templateMgr->assign('announcementsEnabled', $journal ? (bool) $journal->getSetting('enableAnnouncements') : false);
         
         $session = $request->getSession();
-        $session->unsetSessionVar('enrolmentReferrer');
+        if ($session) {
+            $session->unsetSessionVar('enrolmentReferrer');
+        }
 
         $templateMgr->assign('helpTopicId', 'journal.index');
         $templateMgr->display('manager/index.tpl');
@@ -102,71 +95,65 @@ class ManagerHandler extends Handler {
     /**
      * Send an email to a user or group of users.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function email($args, $request = null) {
         $this->validate();
         $this->setupTemplate(true);
         
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         
-        $templateMgr = TemplateManager::getManager(); 
+        $templateMgr = TemplateManager::getManager($request); 
         $templateMgr->assign('helpTopicId', 'journal.users.emailUsers');
 
-        $userDao = DAORegistry::getDAO('UserDAO');
-
-        $site = $request->getSite();
         $journal = $request->getJournal();
         $user = $request->getUser();
 
         import('classes.mail.MailTemplate');
-        
-        // [SECURITY FIX] Amankan 'template' dan 'locale' (string key) trim()
         $templateKey = trim((string) ($request->getUserVar('template') ?? ''));
         $localeKey = trim((string) ($request->getUserVar('locale') ?? ''));
         $email = new MailTemplate($templateKey, $localeKey);
-
-        // [SECURITY FIX] Amankan flag boolean 'send' dengan (int) trim()
-        $sendFlag = (int) trim((string) ($request->getUserVar('send') ?? ''));
+        
+        $sendFlag = (bool) $request->getUserVar('send');
         
         if ($sendFlag && !$email->hasErrors()) {
             $email->send();
             $request->redirect(null, $request->getRequestedPage());
         } else {
-            $email->assignParams(); // FIXME Forces default parameters to be assigned (should do this automatically in MailTemplate?)
+            $email->assignParams(); 
             
-            // [SECURITY FIX] Amankan flag boolean 'continued' with (int) trim()
-            if (!(int) trim((string) ($request->getUserVar('continued') ?? ''))) {
+            $continued = (bool) $request->getUserVar('continued');
+            if (!$continued) {
+                $groupId = (int) $request->getUserVar('toGroup');
                 
-                // [SECURITY FIX] Amankan 'toGroup' (groupId) with (int) trim()
-                $groupId = (int) trim((string) ($request->getUserVar('toGroup') ?? ''));
-                
-                if ($groupId != 0) {
-                    // Special case for emailing entire groups:
-                    // Check for a group ID and add recipients.
-                    
+                if ($groupId !== 0) {
+                    /** @var GroupDAO $groupDao */
                     $groupDao = DAORegistry::getDAO('GroupDAO');
-                    
                     $group = $groupDao->getById($groupId);
-                    
-                    if ($group && $group->getAssocId() == $journal->getId() && $group->getAssocType() == ASSOC_TYPE_JOURNAL) {
-                        
+
+                    if ($group && $group->getAssocId() === (int) $journal->getId() && $group->getAssocType() === ASSOC_TYPE_JOURNAL) {
+                        /** @var GroupMembershipDAO $groupMembershipDao */
                         $groupMembershipDao = DAORegistry::getDAO('GroupMembershipDAO');
                         
-                        $memberships = $groupMembershipDao->getMemberships($group->getId());
-                        $memberships = $memberships->toArray();
+                        $membershipsIterator = $groupMembershipDao->getMemberships($group->getId());
+                        $membershipsArray = $membershipsIterator ? $membershipsIterator->toArray() : [];
                         
-                        foreach ($memberships as $membership) {
+                        foreach ($membershipsArray as $membership) {
                             $memberUser = $membership->getUser();
-                            $email->addRecipient($memberUser->getEmail(), $memberUser->getFullName());
+                            if ($memberUser) {
+                                $email->addRecipient($memberUser->getEmail(), $memberUser->getFullName());
+                            }
                         }
                     }
                 }
-                // KODE BARU — Aman di semua versi PHP
+                
                 $recipients = $email->getRecipients();
                 if (!is_array($recipients) || count($recipients) === 0) {
-                    $email->addRecipient($user->getEmail(), $user->getFullName());
+                    if ($user) {
+                        $email->addRecipient($user->getEmail(), $user->getFullName());
+                    }
                 }
             }
             $email->displayEditForm($request->url(null, null, 'email'), [], 'manager/people/email.tpl');
@@ -175,7 +162,7 @@ class ManagerHandler extends Handler {
 
     /**
      * Setup common template variables.
-     * @param bool $subclass set to true if caller is below this handler in the hierarchy
+     * @param bool $subclass
      */
     public function setupTemplate($subclass = false) {
         parent::setupTemplate();
@@ -184,43 +171,48 @@ class ManagerHandler extends Handler {
             LOCALE_COMPONENT_CORE_MANAGER, 
             LOCALE_COMPONENT_APP_MANAGER 
         );
-        $templateMgr = TemplateManager::getManager();
+        
         $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
         
-        $templateMgr->assign('pageHierarchy',
-            $subclass ? [[$request->url(null, 'user'), 'navigation.user'], [$request->url(null, 'manager'), 'manager.journalManagement']]
-                : [[$request->url(null, 'user'), 'navigation.user']]
-        );
-        
-        // [WIZDAM FIX] Globalisasi roleSettings.
+        $pageHierarchy = $subclass 
+            ? [[$request->url(null, 'user'), 'navigation.user'], [$request->url(null, 'manager'), 'manager.journalManagement']]
+            : [[$request->url(null, 'user'), 'navigation.user']];
+            
+        $templateMgr->assign('pageHierarchy', $pageHierarchy);
+
         $journal = $request->getJournal();
         if ($journal) {
             $templateMgr->assign('roleSettings', $this->retrieveRoleAssignmentPreferences($journal->getId()));
         } else {
-            // Jaring pengaman PHP 8 jika context journal tidak ditemukan
             $templateMgr->assign('roleSettings', ['useLayoutEditors' => 0, 'useCopyeditors' => 0, 'useProofreaders' => 0]);
         }
     }
        
     /**
-     * Retrieves a list of special Journal Management settings related to the journal's inclusion of individual copyeditors, layout editors, and proofreaders.
-     * @param int $journalId Journal ID of the journal from which the settings will be obtained
+     * Retrieves a list of special Journal Management settings related 
+     * to the journal's inclusion of individual copyeditors, 
+     * layout editors, and proofreaders.
+     * @param int $journalId Journal ID
      * @return array
      */    
     public function retrieveRoleAssignmentPreferences($journalId) {
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $journalSettings = $journalSettingsDao->getJournalSettings($journalId);
+        if (!is_array($journalSettings)) {
+            $journalSettings = [];
+        }
+        
         $returner = ['useLayoutEditors' => 0, 'useCopyeditors' => 0, 'useProofreaders' => 0];
 
-        foreach($returner as $specific => $value) {
-            if (isset($journalSettings[$specific])) {
-                if ($journalSettings[$specific]) {
-                    $returner[$specific] = 1;
-                }
+        foreach ($returner as $specific => $value) {
+            if (isset($journalSettings[$specific]) && $journalSettings[$specific]) {
+                $returner[$specific] = 1;
             }
         }
         return $returner;
     }
+    
 }
-
 ?>

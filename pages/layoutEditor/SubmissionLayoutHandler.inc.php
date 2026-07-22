@@ -58,6 +58,7 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
         $submission = $this->submission;
         $this->setupTemplate(true, $articleId);
         
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
 
         import('classes.submission.proofreader.ProofreaderAction');
@@ -80,12 +81,15 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
         $templateMgr->assign('templates', $journal->getSetting('templates'));
         $templateMgr->assign('helpTopicId', 'editorial.layoutEditorsRole.layout');
 
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($submission->getId());
         
         if ($publishedArticle) {
+            /** @var IssueDAO $issueDao */
             $issueDao = DAORegistry::getDAO('IssueDAO');
             $issue = $issueDao->getIssueById($publishedArticle->getIssueId());
+
             $templateMgr->assign('publishedArticle', $publishedArticle);
             $templateMgr->assign('issue', $issue);
         }
@@ -209,7 +213,7 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
             $submitForm->display();
 
         } else {
-            // View galley only
+            /** @var ArticleGalleyDAO $galleyDao */
             $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
             $galley = $galleyDao->getGalley($galleyId, $articleId);
 
@@ -221,6 +225,7 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
             $templateMgr = TemplateManager::getManager($request);
             $templateMgr->assign('articleId', $articleId);
             $templateMgr->assign('galley', $galley);
+
             $templateMgr->display('submission/layout/galleyView.tpl');
         }
     }
@@ -251,6 +256,8 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
             // Send a notification to associated users
             import('classes.notification.NotificationManager');
             $notificationManager = new NotificationManager();
+
+            /** @var ArticleDAO $articleDao */
             $articleDao = DAORegistry::getDAO('ArticleDAO');
             $article = $articleDao->getArticle($articleId);
             $notificationUsers = $article->getAssociatedUserIds(true, false);
@@ -347,6 +354,7 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('articleId', $articleId);
         $templateMgr->assign('galleyId', $galleyId);
+
         $templateMgr->display('submission/layout/proofGalley.tpl');
     }
 
@@ -361,8 +369,11 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
 
         $articleId = (int) ($args[0] ?? 0);
         $galleyId = (int) ($args[1] ?? 0);
+        
         $this->validate($request, $articleId);
         $submission = $this->submission;
+
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galley = $galleyDao->getGalley($galleyId, $articleId);
 
@@ -372,6 +383,7 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
         $templateMgr->assign('article', $submission);
         $templateMgr->assign('galley', $galley);
         $templateMgr->assign('backHandler', 'submissionEditing');
+
         $templateMgr->display('submission/layout/proofGalleyTop.tpl');
     }
 
@@ -388,6 +400,7 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
         $galleyId = (int) ($args[1] ?? 0);
         $this->validate($request, $articleId);
 
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galley = $galleyDao->getGalley($galleyId, $articleId);
 
@@ -395,10 +408,12 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
 
         if (isset($galley)) {
             if ($galley->isHTMLGalley()) {
+                /** @var ArticleHTMLGalley $htmlGalley */
+                $htmlGalley = $galley;
                 $templateMgr = TemplateManager::getManager($request);
                 $templateMgr->assign('galley', $galley);
                 
-                if ($galley->isHTMLGalley() && $styleFile = $galley->getStyleFile()) {
+                if (method_exists($htmlGalley, 'getStyleFile') && $styleFile = $htmlGalley->getStyleFile()) {
                     $templateMgr->addStyleSheet($request->url(null, 'article', 'viewFile', [
                         $articleId, $galleyId, $styleFile->getFileId()
                     ]));
@@ -465,7 +480,7 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
             }
             $submitForm->display();
         } else {
-            // View supplementary file only
+            /** @var SuppFileDAO $suppFileDao */
             $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
             $suppFile = $suppFileDao->getSuppFile($suppFileId, $articleId);
 
@@ -477,6 +492,7 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
             $templateMgr = TemplateManager::getManager($request);
             $templateMgr->assign('articleId', $articleId);
             $templateMgr->assign('suppFile', $suppFile);
+
             $templateMgr->display('submission/suppFile/suppFileView.tpl');
         }
     }
@@ -510,6 +526,8 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
             // Send a notification to associated users
             import('classes.notification.NotificationManager');
             $notificationManager = new NotificationManager();
+
+            /** @var ArticleDAO $articleDao */
             $articleDao = DAORegistry::getDAO('ArticleDAO');
             $article = $articleDao->getArticle($articleId);
             $notificationUsers = $article->getAssociatedUserIds(true, false);
@@ -671,5 +689,6 @@ class SubmissionLayoutHandler extends LayoutEditorHandler {
         $filename = "template-$templateId." . $journalFileManager->parseFileExtension($template['originalFilename']);
         $journalFileManager->downloadFile($filename, $template['fileType']);
     }
+    
 }
 ?>

@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class AuthSourcesHandler
  * @ingroup pages_admin
  *
- * @brief Handle requests for authentication source management in site administration. 
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * @brief Handle requests for authentication source management in site administration.
  */
 
 import('classes.plugins.AuthPlugin');
@@ -54,8 +52,9 @@ class AuthSourcesHandler extends AdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
         
-        $this->setupTemplate($request, true);
+        $this->setupTemplate($request);
 
+        /** @var AuthSourceDAO $authDao */
         $authDao = DAORegistry::getDAO('AuthSourceDAO');
         $sources = $authDao->getSources();
 
@@ -66,10 +65,10 @@ class AuthSourcesHandler extends AdminHandler {
         }
 
         $templateMgr = TemplateManager::getManager();
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('sources', $sources);
         $templateMgr->assign('pluginOptions', $pluginOptions);
         $templateMgr->assign('helpTopicId', 'site.siteManagement');
+
         $templateMgr->display('admin/auth/sources.tpl');
     }
 
@@ -84,6 +83,7 @@ class AuthSourcesHandler extends AdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var AuthSourceDAO $authDao */
         $authDao = DAORegistry::getDAO('AuthSourceDAO');
         $authDao->setDefault((int) $request->getUserVar('defaultAuthId'));
 
@@ -101,10 +101,10 @@ class AuthSourcesHandler extends AdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var AuthSourceDAO $authDao */
         $authDao = DAORegistry::getDAO('AuthSourceDAO');
         $auth = $authDao->newDataObject();
-        
-        // [WIZDAM] Safe string casting and sanitization
+
         $pluginName = trim(basename((string) $request->getUserVar('plugin')));
         $auth->setPlugin($pluginName);
 
@@ -126,7 +126,7 @@ class AuthSourcesHandler extends AdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
         
-        $this->setupTemplate($request, true);
+        $this->setupTemplate($request);
 
         import('classes.security.form.AuthSourceSettingsForm');
         $form = new AuthSourceSettingsForm((int) array_shift($args));
@@ -164,9 +164,11 @@ class AuthSourcesHandler extends AdminHandler {
         if (!$request) $request = Application::get()->getRequest();
 
         $authId = (int) array_shift($args);
+        /** @var AuthSourceDAO $authDao */
         $authDao = DAORegistry::getDAO('AuthSourceDAO');
         $authDao->deleteObject($authId);
         $request->redirect(null, null, 'auth');
     }
+
 }
 ?>

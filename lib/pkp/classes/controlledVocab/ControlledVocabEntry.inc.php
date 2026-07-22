@@ -52,7 +52,7 @@ class ControlledVocabEntry extends DataObject {
 
     /**
      * Set the ID of the controlled vocab.
-     * @param $controlledVocabId int
+     * @param int $controlledVocabId int
      */
     public function setControlledVocabId($controlledVocabId) {
         return $this->setData('controlledVocabId', $controlledVocabId);
@@ -68,7 +68,7 @@ class ControlledVocabEntry extends DataObject {
 
     /**
      * Set sequence number.
-     * @param $sequence float
+     * @param float $sequence float
      */
     public function setSequence($sequence) {
         return $this->setData('sequence', $sequence);
@@ -84,7 +84,7 @@ class ControlledVocabEntry extends DataObject {
 
     /**
      * Get the name of the controlled vocabulary entry.
-     * @param $locale string
+     * @param string $locale string
      * @return string
      */
     public function getName($locale) {
@@ -93,12 +93,12 @@ class ControlledVocabEntry extends DataObject {
 
     /**
      * Set the name of the controlled vocabulary entry.
-     * @param $name string
-     * @param $locale string
+     * @param string $name string
+     * @param string $locale string
      */
     public function setName($name, $locale) {
         return $this->setData('name', $name, $locale);
     }
+    
 }
-
 ?>

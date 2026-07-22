@@ -13,11 +13,6 @@ declare(strict_types=1);
  * @see AnnouncementType, PKPAnnouncementType
  *
  * @brief Operations for retrieving and modifying AnnouncementType objects.
- *
- * WIZDAM MODERNIZATION:
- * - PHP 8.x Compatibility (Constructor, Ref removal)
- * - Strict Integer Casting
- * - Null Safety
  */
 
 import('lib.pkp.classes.announcement.PKPAnnouncementType');
@@ -43,27 +38,26 @@ class PKPAnnouncementTypeDAO extends DAO {
 
     /**
      * Generate a new data object.
-     * @return DataObject
+     * @return PKPAnnouncementType
      */
     public function newDataObject() {
-        // assert(false); // To be implemented by subclasses
         return new PKPAnnouncementType();
     }
 
     /**
      * Retrieve an announcement type by announcement type ID.
-     * @param int $typeId
-     * @return AnnouncementType|null
+     * @param mixed $typeId
+     * @return PKPAnnouncementType|null
      */
     public function getById($typeId) {
         $result = $this->retrieve(
             'SELECT * FROM announcement_types WHERE type_id = ?',
-            (int) $typeId
+            [(int) $typeId]
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
-            $returner = $this->_returnAnnouncementTypeFromRow($result->GetRowAssoc(false));
+        if (!$result->EOF) {
+            $returner = $this->_returnAnnouncementTypeFromRow($result->getRowAssoc(false));
         }
         $result->Close();
         return $returner;
@@ -71,66 +65,71 @@ class PKPAnnouncementTypeDAO extends DAO {
 
     /**
      * Retrieve announcement type Assoc ID by announcement type ID.
-     * @param int $typeId
+     * @param mixed $typeId
      * @return int
      */
     public function getAnnouncementTypeAssocId($typeId) {
         $result = $this->retrieve(
             'SELECT assoc_id FROM announcement_types WHERE type_id = ?',
-            (int) $typeId
+            [(int) $typeId]
         );
 
-        return isset($result->fields[0]) ? (int)$result->fields[0] : 0;
+        $returner = 0;
+        if (!$result->EOF) {
+            $row = $result->getRowAssoc(false);
+            $returner = (int) ($row['assoc_id'] ?? 0);
+        }
+        $result->Close();
+        return $returner;
     }
 
     /**
      * Retrieve announcement type name by ID.
-     * @param int $typeId
+     * @param mixed $typeId
      * @return string|false
      */
     public function getAnnouncementTypeName($typeId) {
         $result = $this->retrieve(
-            'SELECT COALESCE(l.setting_value, p.setting_value) FROM announcement_type_settings p LEFT JOIN announcement_type_settings l ON (l.type_id = ? AND l.setting_name = ? AND l.locale = ?) WHERE p.type_id = ? AND p.setting_name = ? AND p.locale = ?',
-            array(
+            'SELECT COALESCE(l.setting_value, p.setting_value) AS setting_value 
+             FROM announcement_type_settings p 
+             LEFT JOIN announcement_type_settings l ON (l.type_id = ? AND l.setting_name = ? AND l.locale = ?) 
+             WHERE p.type_id = ? AND p.setting_name = ? AND p.locale = ?',
+            [
                 (int) $typeId, 'name', AppLocale::getLocale(),
                 (int) $typeId, 'name', AppLocale::getPrimaryLocale()
-            )
+            ]
         );
 
-        $returner = isset($result->fields[0]) ? $result->fields[0] : false;
-
+        $returner = false;
+        if (!$result->EOF) {
+            $row = $result->getRowAssoc(false);
+            $returner = $row['setting_value'] ?? false;
+        }
         $result->Close();
-        unset($result);
-
         return $returner;
     }
 
-
     /**
-     * Check if a announcement type exists with the given type id for a assoc type/id pair.
-     * @param int $typeId
-     * @param int $assocType
-     * @param int $assocId
-     * @return boolean
+     * Check if an announcement type exists with the given type id for an assoc type/id pair.
+     * @param mixed $typeId
+     * @param mixed $assocType
+     * @param mixed $assocId
+     * @return bool
      */
     public function announcementTypeExistsByTypeId($typeId, $assocType, $assocId) {
         $result = $this->retrieve(
-            'SELECT COUNT(*)
+            'SELECT COUNT(*) AS count
             FROM announcement_types
-            WHERE type_id = ? AND
-                assoc_type = ? AND
-                assoc_id = ?',
-            array(
-                (int) $typeId,
-                (int) $assocType,
-                (int) $assocId
-            )
+            WHERE type_id = ? AND assoc_type = ? AND assoc_id = ?',
+            [(int) $typeId, (int) $assocType, (int) $assocId]
         );
-        $returner = isset($result->fields[0]) && $result->fields[0] != 0 ? true : false;
-
+        
+        $returner = false;
+        if (!$result->EOF) {
+            $row = $result->getRowAssoc(false);
+            $returner = (int) $row['count'] !== 0;
+        }
         $result->Close();
-        unset($result);
-
         return $returner;
     }
 
@@ -139,14 +138,14 @@ class PKPAnnouncementTypeDAO extends DAO {
      * @return array
      */
     public function getLocaleFieldNames() {
-        return array_merge(parent::getLocaleFieldNames(), array('name'));
+        return array_merge(parent::getLocaleFieldNames(), ['name']);
     }
 
     /**
      * Return announcement type ID based on a type name for an assoc type/id pair.
-     * @param string $typeName
-     * @param int $assocType
-     * @param int $assocId
+     * @param mixed $typeName
+     * @param mixed $assocType
+     * @param mixed $assocId
      * @return int
      */
     public function getByTypeName($typeName, $assocType, $assocId) {
@@ -154,64 +153,59 @@ class PKPAnnouncementTypeDAO extends DAO {
             'SELECT ats.type_id
                 FROM announcement_type_settings AS ats
                 LEFT JOIN announcement_types at ON ats.type_id = at.type_id
-                WHERE ats.setting_name = "name"
+                WHERE ats.setting_name = ?
                 AND ats.setting_value = ?
                 AND at.assoc_type = ?
                 AND at.assoc_id = ?',
-            array(
-                $typeName,
-                (int) $assocType,
-                (int) $assocId
-            )
+            ['name', $typeName, (int) $assocType, (int) $assocId]
         );
-        $returner = isset($result->fields[0]) ? (int)$result->fields[0] : 0;
-
+        
+        $returner = 0;
+        if (!$result->EOF) {
+            $row = $result->getRowAssoc(false);
+            $returner = (int) ($row['type_id'] ?? 0);
+        }
         $result->Close();
-        unset($result);
-
         return $returner;
     }
 
     /**
      * Internal function to return an AnnouncementType object from a row.
      * @param array $row
-     * @return AnnouncementType
+     * @return PKPAnnouncementType
      */
     public function _returnAnnouncementTypeFromRow($row) {
         $announcementType = $this->newDataObject();
-        $announcementType->setId($row['type_id']);
-        $announcementType->setAssocType($row['assoc_type']);
-        $announcementType->setAssocId($row['assoc_id']);
-        $this->getDataObjectSettings('announcement_type_settings', 'type_id', $row['type_id'], $announcementType);
+        $announcementType->setId((int) $row['type_id']);
+        $announcementType->setAssocType((int) $row['assoc_type']);
+        $announcementType->setAssocId((int) $row['assoc_id']);
+        $this->getDataObjectSettings('announcement_type_settings', 'type_id', (int) $row['type_id'], $announcementType);
 
         return $announcementType;
     }
 
     /**
      * Update the localized settings for this object
-     * @param AnnouncementType $announcementType
+     * @param PKPAnnouncementType $announcementType
      */
     public function updateLocaleFields($announcementType) {
-        $this->updateDataObjectSettings('announcement_type_settings', $announcementType, array(
+        $this->updateDataObjectSettings('announcement_type_settings', $announcementType, [
             'type_id' => (int) $announcementType->getId()
-        ));
+        ]);
     }
 
     /**
      * Insert a new AnnouncementType.
-     * @param AnnouncementType $announcementType
+     * @param PKPAnnouncementType $announcementType
      * @return int
      */
     public function insertAnnouncementType($announcementType) {
         $this->update(
-            sprintf('INSERT INTO announcement_types
-                (assoc_type, assoc_id)
-                VALUES
-                (?, ?)'),
-            array(
+            'INSERT INTO announcement_types (assoc_type, assoc_id) VALUES (?, ?)',
+            [
                 (int) $announcementType->getAssocType(),
                 (int) $announcementType->getAssocId()
-            )
+            ]
         );
         $announcementType->setId($this->getInsertTypeId());
         $this->updateLocaleFields($announcementType);
@@ -220,62 +214,69 @@ class PKPAnnouncementTypeDAO extends DAO {
 
     /**
      * Update an existing announcement type.
-     * @param AnnouncementType $announcementType
-     * @return boolean
+     * @param PKPAnnouncementType $announcementType
+     * @return bool
      */
     public function updateObject($announcementType) {
-        $returner = $this->update(
-            'UPDATE announcement_types
-            SET assoc_type = ?,
-                assoc_id = ?
-            WHERE type_id = ?',
-            array(
+        $this->update(
+            'UPDATE announcement_types SET assoc_type = ?, assoc_id = ? WHERE type_id = ?',
+            [
                 (int) $announcementType->getAssocType(),
                 (int) $announcementType->getAssocId(),
                 (int) $announcementType->getId()
-            )
+            ]
         );
 
         $this->updateLocaleFields($announcementType);
-        return $returner;
+        return true;
     }
 
     /**
+     * [DEPRECATED] Update an existing announcement type.
      * @see updateObject
+     * @param PKPAnnouncementType $announcementType
      */
     public function updateAnnouncementType($announcementType) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->updateObject($announcementType);
     }
 
     /**
-     * Delete an announcement type. Note that all announcements with this type are also
-     * deleted.
-     * @param AnnouncementType $announcementType
-     * @return boolean
+     * Delete an announcement type.
+     * Note that all announcements with this type are also deleted.
+     * @param PKPAnnouncementType $announcementType
+     * @return bool
      */
     public function deleteObject($announcementType) {
         return $this->deleteById($announcementType->getId());
     }
 
     /**
+     * [DEPRECATED] Delete an announcement type.
      * @see deleteObject
+     * @param PKPAnnouncementType $announcementType
      */
     public function deleteAnnouncementType($announcementType) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->deleteObject($announcementType);
     }
 
     /**
      * Delete an announcement type by announcement type ID. Note that all announcements with
      * this type ID are also deleted.
-     * @param int $typeId
-     * @return boolean
+     * @param mixed $typeId
+     * @return bool
      */
     public function deleteById($typeId) {
-        $this->update('DELETE FROM announcement_type_settings WHERE type_id = ?', (int) $typeId);
-        $this->update('DELETE FROM announcement_types WHERE type_id = ?', (int) $typeId);
+        $typeId = (int) $typeId;
+        $this->update('DELETE FROM announcement_type_settings WHERE type_id = ?', $typeId);
+        $this->update('DELETE FROM announcement_types WHERE type_id = ?', $typeId);
 
+        /** @var AnnouncementDAO $announcementDao */
         $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
         $announcementDao->deleteByTypeId($typeId);
         return true;
@@ -283,33 +284,31 @@ class PKPAnnouncementTypeDAO extends DAO {
 
     /**
      * Delete announcement types by association.
-     * @param int $assocType
-     * @param int $assocId
+     * @param mixed $assocType
+     * @param mixed $assocId
      */
     public function deleteByAssoc($assocType, $assocId) {
         $types = $this->getByAssoc($assocType, $assocId);
-        while (($type = $types->next())) {
+        while ($type = $types->next()) {
             $this->deleteObject($type);
-            unset($type);
         }
     }
 
     /**
      * Retrieve an array of announcement types matching a particular Assoc ID.
-     * @param int $assocType
-     * @param int $assocId
-     * @param DBResultRange|null $rangeInfo
-     * @return DAOResultFactory containing matching AnnouncementTypes
+     * @param mixed $assocType
+     * @param mixed $assocId
+     * @param mixed $rangeInfo
+     * @return DAOResultFactory
      */
     public function getByAssoc($assocType, $assocId, $rangeInfo = null) {
         $result = $this->retrieveRange(
             'SELECT * FROM announcement_types WHERE assoc_type = ? AND assoc_id = ? ORDER BY type_id',
-            array((int) $assocType, (int) $assocId),
+            [(int) $assocType, (int) $assocId],
             $rangeInfo
         );
 
-        $returner = new DAOResultFactory($result, $this, '_returnAnnouncementTypeFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnAnnouncementTypeFromRow');
     }
 
     /**
@@ -319,6 +318,6 @@ class PKPAnnouncementTypeDAO extends DAO {
     public function getInsertTypeId() {
         return $this->getInsertId('announcement_types', 'type_id');
     }
-}
 
+}
 ?>

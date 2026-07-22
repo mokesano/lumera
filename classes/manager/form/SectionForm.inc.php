@@ -45,6 +45,7 @@ class SectionForm extends Form {
         // Retrieve/instantiate section.
         $section = null;
         if ($sectionId !== null && is_numeric($sectionId)) {
+            /** @var SectionDAO $sectionDao */
             $sectionDao = DAORegistry::getDAO('SectionDAO');
             $section = $sectionDao->getSection((int) $sectionId, $journalId);
         }
@@ -66,10 +67,10 @@ class SectionForm extends Form {
         $this->includeSectionEditor = null;
         $this->omitSectionEditor = null;
 
-        // Get a list of section editors for this journal.
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
-        $this->sectionEditors = $roleDao->getUsersByRoleId(ROLE_ID_SECTION_EDITOR, $journal->getId());
-        $this->sectionEditors = $this->sectionEditors->toArray();
+        $sectionEditorsIterator = $roleDao->getUsersByRoleId(ROLE_ID_SECTION_EDITOR, $journal->getId());
+        $this->sectionEditors = $sectionEditorsIterator->toArray();
     }
 
     /**
@@ -137,6 +138,7 @@ class SectionForm extends Form {
         $templateMgr->assign('commentsEnabled', $journal->getSetting('enableComments'));
         $templateMgr->assign('helpTopicId', 'journal.managementPages.sections');
 
+        /** @var ReviewFormDAO $reviewFormDao */
         $reviewFormDao = DAORegistry::getDAO('ReviewFormDAO');
         $reviewForms = $reviewFormDao->getActiveByAssocId(ASSOC_TYPE_JOURNAL, $journal->getId());
         $reviewFormOptions = [];
@@ -153,6 +155,7 @@ class SectionForm extends Form {
      */
     public function initData() {
         $journal = Application::get()->getRequest()->getJournal();
+        /** @var SectionEditorsDAO $sectionEditorsDao */
         $sectionEditorsDao = DAORegistry::getDAO('SectionEditorsDAO');
         $section = $this->section;
 
@@ -208,7 +211,7 @@ class SectionForm extends Form {
             
             if ((in_array($userId, $assignedEditorIds) || $isIncludeEditor) && !$isOmitEditor) {
                 $assignedEditors[] = [
-                    'user' => $sectionEditor, // [WIZDAM] Removed & ref
+                    'user' => $sectionEditor,
                     'canReview' => ($request->getUserVar('canReview' . $userId) ? 1 : 0),
                     'canEdit' => ($request->getUserVar('canEdit' . $userId) ? 1 : 0)
                 ];
@@ -232,15 +235,13 @@ class SectionForm extends Form {
         $journal = $request->getJournal();
         $journalId = $journal->getId();
 
-        // We get the section DAO early on so that
-        // the section class will be imported.
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
 
         $section = $this->section;
         if (!($section instanceof Section)) {
             $section = new Section();
             $section->setJournalId($journalId);
-            // [WIZDAM] Ensure REALLY_BIG_NUMBER is defined
             $section->setSequence(defined('REALLY_BIG_NUMBER') ? REALLY_BIG_NUMBER : 99999);
         }
 
@@ -279,6 +280,7 @@ class SectionForm extends Form {
         if (empty($assignedEditorIds)) $assignedEditorIds = [];
         elseif (!is_array($assignedEditorIds)) $assignedEditorIds = [$assignedEditorIds];
         
+        /** @var SectionEditorsDAO $sectionEditorsDao */
         $sectionEditorsDao = DAORegistry::getDAO('SectionEditorsDAO');
         $sectionEditorsDao->deleteEditorsBySectionId($sectionId, $journalId);
         
@@ -301,5 +303,6 @@ class SectionForm extends Form {
             }
         }
     }
+
 }
 ?>

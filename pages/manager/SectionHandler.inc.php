@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_manager
  *
  * @brief Handle requests for section management functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.manager.ManagerHandler');
@@ -55,18 +53,21 @@ class SectionHandler extends ManagerHandler {
 
         $journal = $request->getJournal();
         $rangeInfo = $this->getRangeInfo('sections');
+
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $sections = $sectionDao->getJournalSections($journal->getId(), $rangeInfo);
         $emptySectionIds = $sectionDao->getJournalEmptySectionIds($journal->getId());
+
         $templateMgr = TemplateManager::getManager();
         $templateMgr->addJavaScript('lib/pkp/js/lib/jquery/plugins/jquery.tablednd.js');
         $templateMgr->addJavaScript('lib/pkp/js/functions/tablednd.js');
+
         $templateMgr->assign('pageHierarchy', [[$request->url(null, 'manager'), 'manager.journalManagement']]);
-        
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('sections', $sections);
         $templateMgr->assign('emptySectionIds', $emptySectionIds);
         $templateMgr->assign('helpTopicId', 'journal.managementPages.sections');
+
         $templateMgr->display('manager/sections/sections.tpl');
     }
 
@@ -81,7 +82,7 @@ class SectionHandler extends ManagerHandler {
 
     /**
      * Display form to create/edit a section.
-     * @param array $args if set the first parameter is the ID of the section to edit
+     * @param array $args
      * @param PKPRequest $request
      */
     public function editSection($args, $request) {
@@ -113,20 +114,15 @@ class SectionHandler extends ManagerHandler {
 
         import('classes.manager.form.SectionForm');
         $sectionForm = new SectionForm(!isset($args) || empty($args) ? null : ((int) $args[0]));
-
-        // [SECURITY FIX] Amankan 'editorAction' (string key) dengan trim()
         $editorAction = trim((string) $request->getUserVar('editorAction'));
-
         $canExecute = false;
         switch ($editorAction) {
             case 'addSectionEditor':
-                // [SECURITY FIX] Amankan 'userId' (ID integer) dengan trim()
                 $userId = (int) trim((string) $request->getUserVar('userId'));
                 $sectionForm->includeSectionEditor($userId);
                 $canExecute = false;
                 break;
             case 'removeSectionEditor':
-                // [SECURITY FIX] Amankan 'userId' (ID integer) dengan trim()
                 $userId = (int) trim((string) $request->getUserVar('userId'));
                 $sectionForm->omitSectionEditor($userId);
                 $canExecute = false;
@@ -147,7 +143,7 @@ class SectionHandler extends ManagerHandler {
 
     /**
      * Delete a section.
-     * @param array $args first parameter is the ID of the section to delete
+     * @param array $args
      * @param PKPRequest $request
      */
     public function deleteSection($args, $request) {
@@ -158,6 +154,7 @@ class SectionHandler extends ManagerHandler {
 
         if (isset($args) && !empty($args)) {
             $journal = $request->getJournal();
+            /** @var SectionDAO $sectionDao */
             $sectionDao = DAORegistry::getDAO('SectionDAO');
             $sectionDao->deleteSectionById($args[0], $journal->getId());
         }
@@ -176,37 +173,26 @@ class SectionHandler extends ManagerHandler {
         if (!$request) $request = Application::get()->getRequest();
 
         $journal = $request->getJournal();
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
-        
-        // [SECURITY FIX] Amankan 'id' (sectionId) dengan (int) trim()
         $sectionId = (int) trim((string) $request->getUserVar('id'));
-        
         $section = $sectionDao->getSection($sectionId, $journal->getId()); 
 
         if ($section != null) {
-            
-            // [SECURITY FIX] Whitelist 'd' (direction)
             $direction = trim((string) $request->getUserVar('d'));
 
             if (!empty($direction)) {
-                // moving with up or down arrow
-                // Gunakan whitelisting yang ketat untuk arah yang valid
                 if ($direction == 'u') {
                     $section->setSequence($section->getSequence() - 1.5);
                 } elseif ($direction == 'd') {
                     $section->setSequence($section->getSequence() + 1.5);
                 }
-
             } else {
-                // Dragging and dropping
-                
-                // [SECURITY FIX] Amankan 'prevId' (ID integer) dengan (int) trim()
                 $prevId = (int) trim((string) $request->getUserVar('prevId'));
                 
-                if ($prevId == 0) { // $prevId akan 0 jika null/kosong karena (int) casting
+                if ($prevId == 0) {
                     $prevSeq = 0;
                 } else {
-                    // Gunakan $prevId yang sudah diamankan
                     $prevJournal = $sectionDao->getSection($prevId);
                     $prevSeq = $prevJournal->getSequence();
                 }
@@ -218,7 +204,6 @@ class SectionHandler extends ManagerHandler {
             $sectionDao->resequenceSections($journal->getId());
         }
 
-        // Moving up or down with the arrows requires a page reload.
         if (isset($direction) && $direction != null) {
             $request->redirect(null, null, 'sections');
         }
@@ -226,7 +211,7 @@ class SectionHandler extends ManagerHandler {
 
     /**
      * Configure the template.
-     * @param bool $subclass True iff this page is a second level deep in the breadcrumb heirarchy.
+     * @param bool $subclass
      */
     public function setupTemplate($subclass = false) {
         AppLocale::requireComponents(
@@ -240,5 +225,6 @@ class SectionHandler extends ManagerHandler {
             $templateMgr->append('pageHierarchy', [$request->url(null, 'manager', 'sections'), 'section.sections']);
         }
     }
+
 }
 ?>
