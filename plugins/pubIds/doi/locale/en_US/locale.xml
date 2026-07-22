@@ -12,12 +12,13 @@
   -->
  
 <locale name="en_US" full_name="U.S. English">
-	<message key="plugins.pubIds.doi.displayName">DOI</message>
-	<message key="plugins.pubIds.doi.description">This plugin enables the assignment of the Digital Object Identifiers to issues, articles, galleys and supplementary files in OJS.</message>
+	<message key="plugins.pubIds.doi.displayName">DOI Identifiers</message>
+	<message key="plugins.pubIds.doi.description">This plugin enables the assignment of the Digital Object Identifiers to issues, articles, galleys and supplementary files.</message>
+	<message key="plugins.pubIds.doi.poweredBy">DOI by Crossref</message>
 
 	<!-- settings form -->
 	<message key="plugins.pubIds.doi.manager.settings.doiSettings">DOI Plugin Settings</message>
-	<message key="plugins.pubIds.doi.manager.settings.description">Please configure the DOI plug-in to be able to manage and use DOIs in OJS:</message>
+	<message key="plugins.pubIds.doi.manager.settings.description">Please configure the DOI plug-in to be able to manage and use DOIs:</message>
 	
 	<message key="plugins.pubIds.doi.manager.settings.doiObjects">Journal Content</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiObjectsRequired">Please choose the objects DOIs should be assigned to.</message>
@@ -34,7 +35,7 @@
 
 	<message key="plugins.pubIds.doi.manager.settings.doiSuffix">DOI Suffix</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiSuffixDescription">A DOI suffix can take any form, but must be unique among all publishing objects with the same DOI prefix assigned:</message>
-	<message key="plugins.pubIds.doi.manager.settings.doiSuffixPattern">Use the pattern entered below to generate DOI suffixes. Use %j for journal initials, %v for the volume number, %i for the issue number, %Y for the year, %a for the OJS article ID, %g for the OJS galley ID, %s for the OJS supplementary file ID, %p for the page number and %x for "Custom Identifier" (must be enabled in Setup 4.3).</message>
+	<message key="plugins.pubIds.doi.manager.settings.doiSuffixPattern">Use the pattern entered below to generate DOI suffixes. Use %j for journal initials, %v for the volume number, %i for the issue number, %Y for the year, %a for the article ID, %g for the galley ID, %s for the supplementary file ID, %p for the page number and %x for "Custom Identifier" (must be enabled in Setup 4.3).</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiSuffixPattern.issues">for issues</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiSuffixPattern.articles">for articles</message>
 	<message key="plugins.pubIds.doi.manager.settings.doiSuffixPattern.galleys">for galleys</message>
