@@ -11,7 +11,6 @@ declare(strict_types=1);
  * @class CustomLocalePlugin
  *
  * @brief This plugin enables customization of locale strings.
- * * MODERNIZED FOR PHP 7.4+ & OJS FORK
  */
 
 define('CUSTOM_LOCALE_DIR', 'customLocale');
@@ -39,9 +38,9 @@ class CustomLocalePlugin extends GenericPlugin {
 
     /**
      * Called as a plugin is registered to the registry
-     * @param $category String Name of category plugin was registered to
-     * @param $path String Plugin path
-     * @return boolean True if plugin initialized successfully
+     * @param string $category
+     * @param string $path
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         if (parent::register($category, $path)) {
@@ -82,9 +81,9 @@ class CustomLocalePlugin extends GenericPlugin {
 
     /**
      * Hook callback to add custom locale files.
-     * @param $hookName string
-     * @param $args array [0] => locale, [1] => locale filename
-     * @return boolean
+     * @param string $hookName
+     * @param array $args
+     * @return bool
      */
     public function addCustomLocale($hookName, $args) {
         $locale = $args[0];
@@ -96,9 +95,8 @@ class CustomLocalePlugin extends GenericPlugin {
         if (!$journal) {
             return false; 
         }
-        
-        // [WIZDAM FIX] Definisikan $journalId sebelum menggunakannya
-        $journalId = $journal->getId();
+
+        $journalId = (int) $journal->getId();
         
         $publicFilesDir = Config::getVar('files', 'public_files_dir');
         $customLocalePath = $publicFilesDir . DIRECTORY_SEPARATOR . 'journals' . DIRECTORY_SEPARATOR . $journalId . DIRECTORY_SEPARATOR . CUSTOM_LOCALE_DIR . DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . $localeFilename;
@@ -130,7 +128,7 @@ class CustomLocalePlugin extends GenericPlugin {
 
     /**
      * Extend the {url ...} smarty to support this plugin.
-     * @param $params array
+     * @param array $params
      * @param $smarty Smarty
      * @return string
      */
@@ -159,8 +157,8 @@ class CustomLocalePlugin extends GenericPlugin {
 
     /**
      * Display verbs for the management interface.
-     * @param $verbs array
-     * @param $request PKPRequest
+     * @param array $verbs
+     * @param PKPRequest $request
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
@@ -175,13 +173,14 @@ class CustomLocalePlugin extends GenericPlugin {
 
     /**
      * Execute a management verb on this plugin
-     * @param $verb string
-     * @param $args array
-     * @param $message string Result status message
-     * @param $messageParams array Parameters for the message key
-     * @return boolean
+     * @param string $verb
+     * @param array $args
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param PKPRequest $request
+     * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
 
         $this->import('CustomLocaleHandler');
@@ -204,5 +203,6 @@ class CustomLocalePlugin extends GenericPlugin {
                 return true;
         }
     }
+    
 }
 ?>
