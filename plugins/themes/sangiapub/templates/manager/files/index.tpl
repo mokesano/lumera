@@ -9,15 +9,15 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="manager.filesBrowser"}
-{include file="common/header-USER027.tpl"}
+	{assign var="pageTitle" value="manager.filesBrowser"}
+	{include file="common/header-USER027.tpl"}
 {/strip}
 
 {assign var=displayDir value="/$currentDir"}
 <h3>{translate key="manager.files.indexOfDir" dir=$displayDir|escape}</h3>
 
 {if $currentDir}
-<p><a href="{url op="files" path=$parentDir|explode:"/"}" class="action">&lt; {translate key="manager.files.parentDir"}</a></p>
+	<p><a href="{url op="files" path=$parentDir|explode:"/"}" class="action">&lt; {translate key="manager.files.parentDir"}</a></p>
 {/if}
 
 <table width="100%" class="listing">
@@ -26,11 +26,11 @@
 	</tr>
 	<tr class="heading" valign="bottom">
 		<td></td>
-		<td width="25%">{translate key="common.fileName"}</td>
-		<td width="25%">{translate key="common.type"}</td>
+		<td width="35%">{translate key="common.fileName"}</td>
+		<td width="20%">{translate key="common.type"}</td>
 		<td width="25%">{translate key="common.dateModified"}</td>
 		<td width="5%">{translate key="common.size"}</td>
-		<td width="20%" align="right">{translate key="common.action"}</td>
+		<td width="10%" align="center">{translate key="common.action"}</td>
 	</tr>
 	{** <tr>
 		<td class="headseparator" colspan="6">&nbsp;</td>
@@ -85,4 +85,3 @@
 <p>{translate key="manager.files.note"}</p>
 
 {include file="common/footer-parts/footer-user.tpl"}
-
