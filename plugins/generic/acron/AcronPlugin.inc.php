@@ -142,20 +142,20 @@ class AcronPlugin extends GenericPlugin {
     /**
      * Manage plugin actions: enable, disable, reload.
      * @see GenericPlugin::manage()
-     * [WIZDAM PROTOCOL] Modernized: Used NotificationManager
+     * [LUMERA] Modernized: Used NotificationManager
      * @param string $verb
      * @param array $args
-     * @param string $message
+     * @param string|null $message
      * @param array|null $messageParams
-     * @param Request|null $request
+     * @param PKPRequest|null $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams = null, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         switch ($verb) {
             case 'enable':
                 $this->updateSetting(0, 'enabled', true);
                 
-                // [WIZDAM] Gunakan NotificationManager
+                // [LUMERA] Gunakan NotificationManager
                 import('classes.notification.NotificationManager');
                 $notificationMgr = new NotificationManager();
                 $notificationMgr->createTrivialNotification(
@@ -168,7 +168,7 @@ class AcronPlugin extends GenericPlugin {
             case 'disable':
                 $this->updateSetting(0, 'enabled', false);
                 
-                // [WIZDAM] Gunakan NotificationManager
+                // [LUMERA] Gunakan NotificationManager
                 import('classes.notification.NotificationManager');
                 $notificationMgr = new NotificationManager();
                 $notificationMgr->createTrivialNotification(
@@ -198,13 +198,13 @@ class AcronPlugin extends GenericPlugin {
 
     /**
      * Load handler hook to check for tasks to run.
-     * [WIZDAM FIX] IMPLEMENTED THROTTLING TO PREVENT DB OVERLOAD
+     * [WIZDAM] IMPLEMENTED THROTTLING TO PREVENT DB OVERLOAD
      * @param string $hookName
      * @param array $args
      * @return bool
      */
     public function callbackLoadHandler($hookName, $args) {
-        // [WIZDAM FIX] Probability Gate, Pastikan tipe data integer untuk mt_rand
+        // [LUMERA] Probability Gate, Pastikan tipe data integer untuk mt_rand
         // Default: 100 (Artinya hanya 1 dari 100 request yang akan memicu cek database)
         $throttleRatio = (int) Config::getVar('general', 'acron_throttle', 100);
 
@@ -240,12 +240,11 @@ class AcronPlugin extends GenericPlugin {
      * @return bool
      */
     public function callbackManage($hookName, $args) {
-        // [WIZDAM FIX] Cegah Undefined array key warning
+        // [FIX] Cegah Undefined array key warning
         $verb = $args[0] ?? '';
-        $plugin = $args[4] ?? null; /* @var $plugin LazyLoadPlugin */
+        $plugin = $args[4] ?? null; /** @var LazyLoadPlugin $plugin */
 
         // Only interested in plugins that can be enabled/disabled.
-        // [WIZDAM FIX] Replaced is_a with instanceof
         if (!($plugin instanceof LazyLoadPlugin)) return false;
 
         // Only interested in enable/disable actions.
@@ -325,8 +324,9 @@ class AcronPlugin extends GenericPlugin {
         flush();
     }
 
-    // --- MODULAR HELPER METHODS --- //
-
+    //
+    // MODULAR HELPER Protected METHODS
+    //
     /**
      * Arrange task execution flow and delegate to single task executor.
      * @param array $tasksToRun
@@ -368,11 +368,9 @@ class AcronPlugin extends GenericPlugin {
         }
     }
 
-
     //
     // Private helper methods.
     //
-    
     /**
      * Parse all scheduled tasks files and save the result object in database.
      * (Orchestrator: Mengatur alur penemuan file dan penyimpanan)
@@ -398,8 +396,9 @@ class AcronPlugin extends GenericPlugin {
         $this->updateSetting(0, 'crontab', $tasks, 'object');
     }
 
-    // --- HELPER UNTUK PARSING CRONTAB --- //
-
+    //
+    // HELPER UNTUK PARSING CRONTAB
+    //
     /**
      * Extract tasks from a specific XML file.
      * @param string $filePath
@@ -426,7 +425,7 @@ class AcronPlugin extends GenericPlugin {
      * Build a standardized task data array from an XML node.
      * Transform a single XML node into a standardized task data array.
      * @param XMLNode $taskNode
-     * @return array Array dengan keys: 'className', 'frequency', 'args'.
+     * @return array
      */
     protected function _buildTaskDataArray($taskNode): array {
         $frequency = $taskNode->getChildByName('frequency');
@@ -458,7 +457,7 @@ class AcronPlugin extends GenericPlugin {
     /**
      * Get all scheduled tasks that needs to be executed.
      * (Orchestrator: Mengambil daftar master, memfilter yang siap dieksekusi)
-     * @return array Array ready run with keys: 'className', 'frequency', 'args'
+     * @return array
      */
     public function _getTasksToRun() {
         if (!$this->getSetting(0, 'enabled')) {
@@ -480,12 +479,13 @@ class AcronPlugin extends GenericPlugin {
         return $tasksToRun;
     }
 
-    // --- HELPER UNTUK EVALUASI TUGAS --- //
-
+    //
+    // HELPER UNTUK EVALUASI TUGAS
+    //
     /**
      * Load the master crontab from database, or 
      * trigger parsing if not available.
-     * @return array Array tugas yang tersimpan di database, atau array kosong.
+     * @return array
      */
     protected function _loadMasterCrontab(): array {
         $scheduledTasks = $this->getSetting(0, 'crontab');
@@ -500,8 +500,8 @@ class AcronPlugin extends GenericPlugin {
 
     /**
      * Evaluate if a task is ready to be executed based on its frequency.
-     * @param $task Array dengan keys: 'className', 'frequency', 'args'.
-     * @return bool True jika tugas siap dieksekusi, false jika tidak.
+     * @param $task
+     * @return bool
      */
     protected function _isTaskReadyToExecute(array $task): bool {
         if (!isset($task['frequency']) || !is_array($task['frequency'])) {
