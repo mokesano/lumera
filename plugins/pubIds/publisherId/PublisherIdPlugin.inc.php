@@ -2,8 +2,15 @@
 declare(strict_types=1);
 
 /**
+ * @file plugins/pubIds/publisherId/PublisherIdPlugin.inc.php
+ *
+ * Copyright (c) 2017-Current Sangia Publishing
+ * Copyright (c) 2017-Current Rochmady
+ * Distributed under the GNU GPL v3.
+ *
  * @class PublisherIdPlugin
- * [WIZDAM] Plugin khusus untuk mengelola Publisher ID (Custom Identifier)
+ * 
+ * @brief [WIZDAM] Plugin khusus untuk mengelola Publisher ID (Custom Identifier)
  * Modernized for ScholarWizdam (PHP 7.4/8.x Compatibility)
  */
 
@@ -79,7 +86,7 @@ class PublisherIdPlugin extends PubIdPlugin {
      * @return string
      */
     public function getDisplayName(): string { 
-        return 'Wizdam Publisher ID Plugin'; 
+        return 'Publisher ID Plugin'; 
     }
 
     /**
@@ -89,5 +96,6 @@ class PublisherIdPlugin extends PubIdPlugin {
     public function getDescription(): string { 
         return 'Mengelola identitas khusus penerbit di level volume dan issue untuk kebutuhan pengarsipan dan ekspor.'; 
     }
+
 }
 ?>
