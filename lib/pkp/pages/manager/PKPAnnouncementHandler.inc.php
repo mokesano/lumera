@@ -228,7 +228,7 @@ class PKPAnnouncementHandler extends ManagerHandler {
             return;
         }
 
-        $assocType = $context->getAssocType();
+        $assocType = ASSOC_TYPE_JOURNAL;
         $contextId = (int) $context->getId();
 
         /** @var AnnouncementTypeDAO $announcementTypeDao */
