@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class BackupPlugin
  * @ingroup plugins_generic_backup
  *
- * @brief Plugin to allow generation of a backup extract
- * [WIZDAM EDITION] Modernized. PHP 8 Safe CLI Execution & Resource Mgmt.
+ * @brief Plugin to allow generation of a backup extract with Safe CLI Execution & Resource Mgmt.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -257,7 +256,7 @@ class BackupPlugin extends GenericPlugin {
      * @param null|mixed $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         switch ($verb) {
             case 'enable':
                 $this->updateSetting(0, 'enabled', true);
@@ -287,5 +286,6 @@ class BackupPlugin extends GenericPlugin {
         }
         return false;
     }
+    
 }
 ?>
