@@ -44,11 +44,11 @@ class ReportPlugin extends Plugin {
      * a statistics report.
      * @see <http://pkp.sfu.ca/wiki/index.php/OJSdeStatisticsConcept#Input_and_Output_Formats_.28Aggregation.2C_Filters.2C_Metrics_Data.29>
      * for a full specification of the input and output format of this method.
-     * @param null|string|array $metricType metrics selection
-     * @param string|array $columns column (aggregation level) selection
-     * @param array $filters report-level filter selection
-     * @param array $orderBy order criteria
-     * @param null|DBResultRange $range paging specification
+     * @param null|string|array $metricType
+     * @param string|array $columns
+     * @param array $filters
+     * @param array $orderBy order
+     * @param null|DBResultRange $range
      * @return null|array
      */
     public function getMetrics($metricType = null, $columns = [], $filters = [], $orderBy = [], $range = null) {
@@ -65,7 +65,7 @@ class ReportPlugin extends Plugin {
 
     /**
      * Public metric type that will be displayed to end users.
-     * @param string $metricType One of the values returned from getMetricTypes()
+     * @param string $metricType
      * @return null|string 
      */
     public function getMetricDisplayType($metricType) {
@@ -74,7 +74,7 @@ class ReportPlugin extends Plugin {
 
     /**
      * Full name of the metric type.
-     * @param string $metricType One of the values returned from getMetricTypes()
+     * @param string $metricType
      * @return null|string
      */
     public function getMetricFullName($metricType) {
@@ -83,7 +83,7 @@ class ReportPlugin extends Plugin {
 
     /**
      * Get the columns used in reports by the passed metric type.
-     * @param string $metricType One of the values returned from getMetricTypes()
+     * @param string $metricType
      * @return array 
      */
     public function getColumns($metricType) {
@@ -93,7 +93,7 @@ class ReportPlugin extends Plugin {
     /**
      * Get optional columns that are not required for this report
      * to implement the passed metric type.
-     * @param string $metricType One of the values returned from getMetricTypes()
+     * @param string $metricType
      * @return array 
      */
     public function getOptionalColumns($metricType) {
@@ -103,7 +103,7 @@ class ReportPlugin extends Plugin {
     /**
      * Get the object types that the passed metric type
      * counts statistics for.
-     * @param string $metricType One of the values returned from getMetricTypes()
+     * @param string $metricType
      * @return null|array 
      */
     public function getObjectTypes($metricType) {
@@ -207,8 +207,8 @@ class ReportPlugin extends Plugin {
     /**
      * Set the page's breadcrumbs, given the plugin's tree of items to append.
      * @see PKPPageRouter::url() for generating the URLs for the breadcrumbs.
-     * @param array $crumbs Array ($url, $name, $isTranslated)
-     * @param bool $subclass
+     * @param array $crumbs
+     * @param bool $isSubclass
      */
     public function setBreadcrumbs($crumbs = [], $isSubclass = false) {
         $templateMgr = TemplateManager::getManager();
@@ -238,8 +238,8 @@ class ReportPlugin extends Plugin {
     /**
      * Base method to display the report plugin UI.
      * @see ReportPlugin::display() for the supported verbs.
-     * @param array $args The array of arguments the user supplied.
-     * @param PKPRequest $request The PKP Request object initiating the call.
+     * @param array $args
+     * @param PKPRequest $request
      */
     public function display($args, $request) {
         $templateManager = TemplateManager::getManager();
@@ -249,8 +249,8 @@ class ReportPlugin extends Plugin {
     /**
      * Display verbs for the management interface.
      * @see ReportPlugin::getManagementVerbs() for the supported verbs.
-     * @param array $verbs The array of verbs the user supplied.
-     * @param PKPRequest $request The PKP Request object initiating the call.
+     * @param array $verbs
+     * @param PKPRequest $request
      * @return array 
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
@@ -265,14 +265,14 @@ class ReportPlugin extends Plugin {
     /**
      * Perform management functions
      * @see ReportPlugin::manage() for the supported verbs.
-     * @param string $verb The verb to perform.
-     * @param array $args The array of arguments the user supplied.
-     * @param string $message
-     * @param array $messageParams Parameters to pass with the message.
-     * @param PKPRequest|null $request The PKP Request object initiating the call.
-     * @return bool True if the management function was performed, false if not.
+     * @param string $verb
+     * @param array $args
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param PKPRequest|null $request
+     * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if ($verb === 'reports') {
             Request::redirect(null, 'manager', 'report', $this->getName());
         }
@@ -283,8 +283,8 @@ class ReportPlugin extends Plugin {
      * Extend the {url ...} smarty to support reporting plugins.
      * @see PKPPageRouter::url() for the supported parameters.
      * @param array $params
-     * @param Smarty $smarty The Smarty instance.
-     * @return string The generated URL.
+     * @param $smarty Smarty
+     * @return string
      */
     public function smartyPluginUrl(array $params, $smarty): string {
         $path = ['plugin', $this->getName()];
@@ -297,6 +297,6 @@ class ReportPlugin extends Plugin {
         }
         return $smarty->smartyUrl($params, $smarty);
     }
+    
 }
-
 ?>
