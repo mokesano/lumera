@@ -69,9 +69,9 @@ class CustomBlockManagerPlugin extends GenericPlugin {
 
     /**
      * Callback to load custom block plugins when the 'blocks' category is loaded.
-     * @param $hookName string
-     * @param $args array [category, &plugins]
-     * @return boolean
+     * @param string $hookName
+     * @param array $args
+     * @return bool
      */
     public function callbackLoadCategory($hookName, $args) {
         $category = $args[0];
@@ -81,7 +81,7 @@ class CustomBlockManagerPlugin extends GenericPlugin {
             $journal = Request::getJournal();
             
             if ($journal) {
-                // Gunakan strtolower agar sesuai DB
+                /** @var PluginSettingsDAO $pluginSettingsDao */
                 $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
                 $blocks = $pluginSettingsDao->getSetting($journal->getId(), strtolower($this->getName()), 'blocks');
                 
@@ -111,8 +111,8 @@ class CustomBlockManagerPlugin extends GenericPlugin {
 
     /**
      * Extend the management verbs for this plugin.
-     * @param $verbs array
-     * @param $request Request
+     * @param array $verbs
+     * @param PKPRequest $request
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
@@ -125,14 +125,14 @@ class CustomBlockManagerPlugin extends GenericPlugin {
 
     /**
      * Perform management functions for this plugin.
-     * @param $verb string
-     * @param $args array
-     * @param $message string
-     * @param $messageParams array
-     * @param $request Request
-     * @return boolean
+     * @param string $verb
+     * @param array $args
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param PKPRequest $request
+     * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if ($verb === 'settings') {
             $this->import('CustomBlockPlugin');
             $journal = Request::getJournal();
@@ -194,6 +194,6 @@ class CustomBlockManagerPlugin extends GenericPlugin {
         }
         return parent::manage($verb, $args, $message, $messageParams, $request);
     }
+    
 }
-
 ?>
