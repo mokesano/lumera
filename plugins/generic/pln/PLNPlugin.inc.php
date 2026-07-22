@@ -212,7 +212,7 @@ class PLNPlugin extends GenericPlugin {
      * @param int $journalId
      * @param string $settingName
      */
-    public function getSetting($journalId,$settingName) {
+    public function getSetting($journalId, $settingName) {
         // if there isn't a journal_uuid, make one
         switch ($settingName) {
             case 'journal_uuid':
@@ -290,8 +290,8 @@ class PLNPlugin extends GenericPlugin {
     /**
      * A callback to add this plugin's cron tasks to the list of scheduled tasks
      * @copydoc AcronPlugin::parseCronTab()
-     * @param $hookName
-     * @param mixed $args string
+     * @param string $hookName
+     * @param array $args
      */
     public function callbackParseCronTab($hookName, $args) {
         $taskFilesPath =& $args[0]; // Reference needed
@@ -343,8 +343,8 @@ class PLNPlugin extends GenericPlugin {
     /**
      * A callback to load this plugin's page handler
      * @copydoc PKPPageRouter::route()
-     * @param $hookName
-     * @param mixed $args string
+     * @param string $hookName
+     * @param array $args
      */
     public function callbackLoadHandler($hookName, $args) {
         $page = $args[0];
@@ -366,12 +366,12 @@ class PLNPlugin extends GenericPlugin {
      * @copydoc PKPPlugin::manage()
      * @param string $verb
      * @param array $args
-     * @param string $message (Passed by reference)
-     * @param array $messageParams (Passed by reference)
-     * @param mixed $request
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param PKPRequest $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
 
         $journal = $request->getJournal();
 
@@ -539,8 +539,7 @@ class PLNPlugin extends GenericPlugin {
     public function termsAgreed($journalId) {
         $terms = unserialize($this->getSetting($journalId, 'terms_of_use'));
         $termsAgreed = unserialize($this->getSetting($journalId, 'terms_of_use_agreement'));
-        
-        // PHP 8: Handle potential non-array unserialized data
+
         if (!is_array($terms) || !is_array($termsAgreed)) return false;
 
         foreach (array_keys($terms) as $term) {
