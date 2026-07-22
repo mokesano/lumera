@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class AnnouncementFeedPlugin
  * @ingroup plugins_generic_announcementFeed
  *
- * @brief Annoucement Feed plugin class
- * [WIZDAM EDITION] Modernized. PHP 8 Safe & Strict Standards.
+ * @brief Annoucement Feed plugin class.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -48,7 +47,6 @@ class AnnouncementFeedPlugin extends GenericPlugin {
     public function register(string $category, string $path): bool {
         if (parent::register($category, $path)) {
             if ($this->getEnabled()) {
-                // [MODERNISASI] Callback tanpa &
                 HookRegistry::register('TemplateManager::display', array($this, 'callbackAddLinks'));
                 HookRegistry::register('PluginRegistry::loadCategory', array($this, 'callbackLoadCategory'));
             }
@@ -81,7 +79,7 @@ class AnnouncementFeedPlugin extends GenericPlugin {
      */
     public function callbackLoadCategory($hookName, $args) {
         $category = $args[0];
-        $plugins =& $args[1]; // [WIZDAM NOTE] Ini array pass-by-reference dari HookRegistry, biarkan & karena diperlukan untuk memodifikasi list plugin
+        $plugins =& $args[1]; // [NOTE] Pass-by-reference HookRegistry, biarkan & karena diperlukan untuk memodifikasi list plugin
         
         switch ($category) {
             case 'blocks':
@@ -106,13 +104,10 @@ class AnnouncementFeedPlugin extends GenericPlugin {
      */
     public function callbackAddLinks($hookName, $args) {
         if ($this->getEnabled()) {
-            // [MODERNISASI] Ambil request dengan cara yang benar
             $request = Application::getRequest();
-            
-            // Safety check for Router type
+
             $router = $request->getRouter();
-            
-            // [WIZDAM FIX] Replaced is_a with instanceof
+
             if (!($router instanceof PKPPageRouter)) return false;
 
             $templateManager = $args[0];
@@ -156,15 +151,15 @@ class AnnouncementFeedPlugin extends GenericPlugin {
 
     /**
      * Execute a management verb on this plugin.
-     * [WIZDAM MODERNIZED] Used NotificationManager for user feedback.
+     * [WIZDAM] Used NotificationManager for user feedback.
      * @param string $verb
      * @param array $args
-     * @param string $message
-     * @param array $messageParams
+     * @param string|null $message
+     * @param array|null $messageParams
      * @param Request|null $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
         
         switch ($verb) {
@@ -204,5 +199,6 @@ class AnnouncementFeedPlugin extends GenericPlugin {
                 return false;
         }
     }
+    
 }
 ?>
