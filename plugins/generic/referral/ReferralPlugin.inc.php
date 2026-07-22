@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class ReferralPlugin
  * @ingroup plugins_generic_referral
  *
- * @brief Referral plugin to track and maintain potential references to published articles
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Referral plugin to track and maintain potential references to published articles.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -43,7 +41,7 @@ class ReferralPlugin extends GenericPlugin {
      * runs under both Journal and Site contexts.
      * @param string $category
      * @param string $path
-     * @return boolean
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         if (parent::register($category, $path)) {
@@ -63,6 +61,8 @@ class ReferralPlugin extends GenericPlugin {
 
     /**
      * Display verbs for the management interface.
+     * @param array $verbs
+     * @param mixed $request
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array { 
         $verbs = parent::getManagementVerbs($verbs, $request); 
@@ -78,11 +78,11 @@ class ReferralPlugin extends GenericPlugin {
      * Execute a management verb on this plugin
      * @param string $verb
      * @param array $args
-     * @param string $message Result status message
-     * @param array $messageParams Parameters for the message key
-     * @return boolean
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb, $args, $message, $messageParams)) return false;
 
         switch ($verb) {
@@ -118,7 +118,7 @@ class ReferralPlugin extends GenericPlugin {
     /**
      * Set the page's breadcrumbs, given the plugin's tree of items
      * to append.
-     * @param boolean $isSubclass
+     * @param bool $isSubclass
      */
     public function setBreadcrumbs($isSubclass = false) {
         $templateMgr = TemplateManager::getManager();
@@ -143,6 +143,8 @@ class ReferralPlugin extends GenericPlugin {
     /**
      * Intercept the load handler hook to present the user-facing
      * referrals list if necessary.
+     * @param mixed $hookName
+     * @param array $args
      */
     public function handleLoadHandler($hookName, $args) {
         $page = $args[0];
@@ -161,13 +163,17 @@ class ReferralPlugin extends GenericPlugin {
 
     /**
      * Intercept the author index page to add referral content
+     * @param mixed $hookName
+     * @param array $args
      */
     public function handleAuthorTemplateInclude($hookName, $args) {
         $templateMgr = $args[0];
         $params = $args[1];
+
         if (!isset($params['smarty_include_tpl_file'])) return false;
         switch ($params['smarty_include_tpl_file']) {
             case 'common/footer.tpl':
+                /** @var ReferralDAO $referralDao */
                 $referralDao = DAORegistry::getDAO('ReferralDAO');
                 $user = Request::getUser();
                 $rangeInfo = Handler::getRangeInfo('referrals');
@@ -177,6 +183,7 @@ class ReferralPlugin extends GenericPlugin {
                 // Fetch article titles
                 $journal = Request::getJournal();
                 $referrals = $referralDao->getByUserId($user->getId(), $journal->getId(), $referralFilter, $rangeInfo);
+                /** @var ArticleDAO $articleDao */
                 $articleDao = DAORegistry::getDAO('ArticleDAO');
                 $articleTitles = $referralsArray = [];
                 
@@ -194,6 +201,7 @@ class ReferralPlugin extends GenericPlugin {
                 $templateMgr->assign('articleTitles', $articleTitles);
                 $templateMgr->assign('referrals', $referrals);
                 $templateMgr->assign('referralFilter', $referralFilter);
+
                 $templateMgr->display($this->getTemplatePath() . 'authorReferrals.tpl', 'text/html', 'ReferralPlugin::addAuthorReferralContent');
                 break;
         }
@@ -202,13 +210,17 @@ class ReferralPlugin extends GenericPlugin {
 
     /**
      * Intercept the article comments template to add referral content
+     * @param mixed $hookName
+     * @param array $args
      */
     public function handleReaderTemplateInclude($hookName, $args) {
         $templateMgr = $args[0];
         $params = $args[1];
+
         if (!isset($params['smarty_include_tpl_file'])) return false;
         switch ($params['smarty_include_tpl_file']) {
             case 'article/comments.tpl':
+                /** @var ReferralDAO $referralDao */
                 $referralDao = DAORegistry::getDAO('ReferralDAO');
                 $article = $templateMgr->get_template_vars('article');
                 $referrals = $referralDao->getPublishedReferralsForArticle($article->getId());
@@ -222,6 +234,8 @@ class ReferralPlugin extends GenericPlugin {
 
     /**
      * Hook callback: Handle requests.
+     * @param mixed $hookName
+     * @param array $args
      */
     public function handleTemplateDisplay($hookName, $args) {
         $templateMgr = $args[0];
@@ -248,6 +262,7 @@ class ReferralPlugin extends GenericPlugin {
     /**
      * Intercept requests for article display to collect and record
      * incoming referrals.
+     * @param mixed $templateMgr
      */
     public function logArticleRequest($templateMgr) {
         $article = $templateMgr->get_template_vars('article');
@@ -259,6 +274,7 @@ class ReferralPlugin extends GenericPlugin {
         // Check if referrer is empty or is the local journal
         if (empty($referrer) || strpos($referrer, Request::getIndexUrl()) !== false) return false;
 
+        /** @var ReferralDAO $referralDao */
         $referralDao = DAORegistry::getDAO('ReferralDAO');
         if ($referralDao->referralExistsByUrl($articleId, $referrer)) {
             // It exists -- increment the count
@@ -267,12 +283,13 @@ class ReferralPlugin extends GenericPlugin {
             // It's a new referral. Log it unless it's excluded.
             $journal = $templateMgr->get_template_vars('currentJournal');
             $exclusions = $this->getSetting($journal->getId(), 'exclusions');
-            // PHP 8: Ensure $exclusions is string before explode
             $exclusionsString = (string)$exclusions;
+
             foreach (array_map('trim', explode("\n", $exclusionsString)) as $exclusion) {
                 if (empty($exclusion)) continue;
                 if (preg_match($exclusion, $referrer)) return false;
             }
+
             $referral = new Referral();
             $referral->setArticleId($article->getId());
             $referral->setLinkCount(1);
@@ -311,10 +328,11 @@ class ReferralPlugin extends GenericPlugin {
 
     /**
      * Get the filename of the ADODB schema for this plugin.
+     * @return string|null
      */
     public function getInstallSchemaFile(): ?string {
         return $this->getPluginPath() . '/' . 'schema.xml';
     }
-}
 
+}
 ?>
