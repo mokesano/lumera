@@ -164,14 +164,14 @@ class UsageStatsPlugin extends GenericPlugin {
     /**
      * Handle management verbs.
      * @see PKPPlugin::manage()
-     * @param $verb string
-     * @param $args array
-     * @param $message string
-     * @param $messageParams array
-     * @param $request PKPRequest
+     * @param string $verb string
+     * @param array $args array
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param PKPRequest $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         $returner = parent::manage($verb, $args, $message, $messageParams);
         if (!$returner) return false;
         $this->import('UsageStatsSettingsForm');
@@ -210,8 +210,8 @@ class UsageStatsPlugin extends GenericPlugin {
     /**
      * Get the management verbs associated with this plugin.
      * @see GenericPlugin::getManagementVerbs()
-     * @param $verbs array
-     * @param $request PKPRequest
+     * @param array $verbs
+     * @param PKPRequest $request
      * @return array
      */
     function getManagementVerbs(array $verbs = [], $request = null): array {
@@ -222,15 +222,14 @@ class UsageStatsPlugin extends GenericPlugin {
         return $verbs;
     }
 
-
     //
     // Hook implementations.
     //
     /**
      * Callback to load the report plugin.
      * @see PluginRegistry::loadCategory()
-     * @param $hookName string
-     * @param $args array
+     * @param string $hookName
+     * @param array $args
      * @return boolean
      */
     public function callbackLoadCategory($hookName, $args) {
@@ -258,8 +257,8 @@ class UsageStatsPlugin extends GenericPlugin {
     /**
      * Callback to load the usage stats handler.
      * @see PKPPageRouter::route()
-     * @param $hookName string
-     * @param $args array
+     * @param string $hookName
+     * @param array $args
      * @return boolean
      */
     public function callbackLoadHandler($hookName, $args) {
@@ -284,8 +283,8 @@ class UsageStatsPlugin extends GenericPlugin {
     /**
      * Callback to add scheduled tasks.
      * @see AcronPlugin::parseCronTab()
-     * @param $hookName string
-     * @param $args array
+     * @param string $hookName
+     * @param array $args
      * @return boolean
      */
     public function callbackParseCronTab($hookName, $args) {
@@ -297,7 +296,7 @@ class UsageStatsPlugin extends GenericPlugin {
 
     /**
      * Validate that the path of the salt file exists and is writable.
-     * @param $saltpath string
+     * @param string $saltpath
      * @return boolean
      */
     public function validateSaltpath($saltpath) {
@@ -312,9 +311,9 @@ class UsageStatsPlugin extends GenericPlugin {
 
     /**
      * Log the usage event into a file.
-     * @param $hookName string
-     * @param $args array
-     * @return boolean
+     * @param string $hookName
+     * @param array $args
+     * @return bool
      */
     public function logUsageEvent($hookName, $args) {
         $hookName = $args[0];
@@ -347,7 +346,7 @@ class UsageStatsPlugin extends GenericPlugin {
 
     /**
      * Get the geolocation tool to process geo localization data.
-     * @return mixed GeoLocationTool object or null
+     * @return mixed
      */
     public function getGeoLocationTool() {
         /** Geo location tool wrapper class. If changing the geo location tool
@@ -396,8 +395,8 @@ class UsageStatsPlugin extends GenericPlugin {
     //
     /**
      * Write the usage event into the log file.
-     * @param $usageEvent array
-     * @return boolean
+     * @param array $usageEvent
+     * @return bool
      */
     public function _writeUsageEventInLogFile($usageEvent) {
         $salt = null;
@@ -502,11 +501,10 @@ class UsageStatsPlugin extends GenericPlugin {
     *
     * NB: This implementation was taken from OA-S directly. 
     * See http://sourceforge.net/p/openaccessstati/code-0/3/tree/trunk/logfile-parser/lib/logutils.php
-    * We just do not implement the PHP4 part as OJS dropped PHP4 support.
     *
-    * @param $ip string
-    * @param $salt string
-    * @return string|boolean The hashed IP or boolean false if something went wrong.
+    * @param string $ip
+    * @param string $salt
+    * @return string|bool
     */
     private function _hashIp($ip, $salt) {
         if(function_exists('mhash')) {
@@ -517,5 +515,6 @@ class UsageStatsPlugin extends GenericPlugin {
             return hash('sha256', $ip.$salt);
         }
     }
+
 }
 ?>
