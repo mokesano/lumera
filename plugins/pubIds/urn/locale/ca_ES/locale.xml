@@ -17,17 +17,17 @@
 
 	<!-- plugin -->
 	<message key="plugins.pubIds.urn.displayName">Mòdul URN</message>
-	<message key="plugins.pubIds.urn.description">This plugin enables the assignment of the Uniform Resource Names to the objects (issues, articles, galley and supplementary files) in OJS.</message>
+	<message key="plugins.pubIds.urn.description">This plugin enables the assignment of the Uniform Resource Names to the objects (issues, articles, galley and supplementary files).</message>
 
 	<!-- URN manager options, setting -->
-	<message key="plugins.pubIds.urn.manager.settings.description"><![CDATA[Please do the following setup steps to be able to manage and use URNs in OJS:]]></message>
+	<message key="plugins.pubIds.urn.manager.settings.description"><![CDATA[Please do the following setup steps to be able to manage and use URNs:]]></message>
 	<message key="plugins.pubIds.urn.manager.settings.urnSettings">URN Settings</message>
 	<message key="plugins.pubIds.urn.manager.settings.urnPrefix">URN Prefix</message>
 	<message key="plugins.pubIds.urn.manager.settings.urnPrefix.description"><![CDATA[The URN prefix is the fix, never changing part of the URN (e.g. "urn:nbn:de:0000-").]]></message>
 	<message key="plugins.pubIds.urn.manager.settings.urnSuffix">URN Suffix</message>
 	<message key="plugins.pubIds.urn.manager.settings.urnSuffix.default">Use default patterns.</message>
 	<message key="plugins.pubIds.urn.manager.settings.urnSuffix.default.description"><![CDATA[%j.v%vi%i for issues<br />%j.v%vi%i.%a for articles<br />%j.v%vi%i.%a.g%g for galleys <br />%j.v%vi%i.%a.s%s for supplementary files.]]></message>
-	<message key="plugins.pubIds.urn.manager.settings.urnSuffix.pattern">Use the pattern entered below to generate URN suffixes. Use %j for journal initials, %v for the volume number, %i for the issue number, %Y for the year, %a for the OJS article ID, %g for the OJS galley ID, %s for the OJS supplementary file ID and %p for the page number.</message>
+	<message key="plugins.pubIds.urn.manager.settings.urnSuffix.pattern">Use the pattern entered below to generate URN suffixes. Use %j for journal initials, %v for the volume number, %i for the issue number, %Y for the year, %a for the article ID, %g for the galley ID, %s for the supplementary file ID and %p for the page number.</message>
 	<message key="plugins.pubIds.urn.manager.settings.urnSuffix.pattern.issues">for issues</message>
 	<message key="plugins.pubIds.urn.manager.settings.urnSuffix.pattern.articles">for articles</message>
 	<message key="plugins.pubIds.urn.manager.settings.urnSuffix.pattern.galleys">for galleys</message>
