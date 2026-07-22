@@ -121,7 +121,7 @@ class ExternalFeedPlugin extends GenericPlugin {
     /**
      * Extend the {url ...} smarty to support externalFeed plugin.
      * @param array $params
-     * @param Smarty $smarty
+     * @param $smarty Smarty
      * @return string
      */
     public function smartyPluginUrl(array $params, $smarty): string {
@@ -528,6 +528,6 @@ class ExternalFeedPlugin extends GenericPlugin {
                 return true;
         }
     }
-    
+
 }
 ?>
