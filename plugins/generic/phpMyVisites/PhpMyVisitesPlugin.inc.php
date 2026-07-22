@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class PhpMyVisitesPlugin
  * @ingroup plugins_generic_phpMyVisites
  *
- * @brief phpMyVisites plugin class
- * * MODERNIZED FOR PHP 7.4+ & OJS FORK
+ * @brief phpMyVisites plugin class.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -28,15 +27,13 @@ class PhpMyVisitesPlugin extends GenericPlugin {
 
     /**
      * Called as a plugin is registered to the registry
-     * @param $category String Name of category plugin was registered to
-     * @return boolean True iff plugin initialized successfully; if false,
-     * the plugin will not be registered.
+     * @param $category
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
         if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
         if ($success && $this->getEnabled()) {
-            // Modernized: Removed & references
             // Insert phpmv page tag to common footer
             HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertFooter'));
 
@@ -98,7 +95,7 @@ class PhpMyVisitesPlugin extends GenericPlugin {
     /**
      * Set the page's breadcrumbs, given the plugin's tree of items
      * to append.
-     * @param $subclass boolean
+     * @param $isSubclass bool
      */
     public function setBreadcrumbs($isSubclass = false) {
         $templateMgr = TemplateManager::getManager();
@@ -122,6 +119,8 @@ class PhpMyVisitesPlugin extends GenericPlugin {
 
     /**
      * Display verbs for the management interface.
+     * @param array $verbs
+     * @param mixed $request
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs($verbs, $request); 
@@ -134,7 +133,9 @@ class PhpMyVisitesPlugin extends GenericPlugin {
     }
 
     /**
-     * Insert phpmv page tag to footer
+     * Insert phpmv page tag to footer.
+     * @param mixed $hookName
+     * @param mixed $params
      */
     public function insertFooter($hookName, $params) {
         if ($this->getEnabled()) {
@@ -160,15 +161,14 @@ class PhpMyVisitesPlugin extends GenericPlugin {
     }
 
     /**
-     * Execute a management verb on this plugin
-     * FIX: Signature matched (Removed & from $message, $messageParams)
+     * Execute a management verb on this plugin.
      * @param $verb string
      * @param $args array
-     * @param $message string Result status message
-     * @param $messageParams array Parameters for the message key
+     * @param string|null $message string
+     * @param array|null $messageParams array
      * @return boolean
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
 
         if (!$request) $request = Registry::get('request');
@@ -204,5 +204,6 @@ class PhpMyVisitesPlugin extends GenericPlugin {
                 return false;
         }
     }
+
 }
 ?>
