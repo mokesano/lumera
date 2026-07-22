@@ -50,7 +50,7 @@ class CustomBlockPlugin extends BlockPlugin {
 
     /**
      * Get the management plugin object.
-     * @return object|null The parent CustomBlockManagerPlugin instance.
+     * @return object|null
      */
     public function getManagerPlugin() {
         if (!$this->parentPluginName) return null;
@@ -59,7 +59,7 @@ class CustomBlockPlugin extends BlockPlugin {
 
     /**
      * Get the current version of the plugin.
-     * @return false Custom blocks don't have individual versions.
+     * @return false
      */
     public function getCurrentVersion() { 
         return false; 
@@ -104,6 +104,7 @@ class CustomBlockPlugin extends BlockPlugin {
         $journal = ($request && is_a($request, 'PKPRequest')) ? $request->getJournal() : Request::getJournal();
         $journalId = $journal ? $journal->getId() : 0;
 
+        /** @var PluginSettingsDAO $pluginSettingsDao */
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
         $setting = $pluginSettingsDao->getSetting($journalId, $this->getName(), 'enabled');
 
@@ -122,6 +123,7 @@ class CustomBlockPlugin extends BlockPlugin {
         $journal = ($request && is_a($request, 'PKPRequest')) ? $request->getJournal() : Request::getJournal();
         $journalId = $journal ? $journal->getId() : 0;
         
+        /** @var PluginSettingsDAO $pluginSettingsDao */
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
         $pluginSettingsDao->updateSetting($journalId, $this->getName(), 'enabled', $enabled ? '1' : '0', 'string');
         
@@ -151,12 +153,12 @@ class CustomBlockPlugin extends BlockPlugin {
      * 
      * @param string $verb
      * @param array $args
-     * @param string $message
-     * @param array $messageParams
+     * @param string|null $message
+     * @param array|null $messageParams
      * @param PKPRequest|null $request
      * @return boolean
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         // Handle enable/disable langsung
         if ($verb === 'enable') {
             $this->setEnabled(true, $request);
@@ -284,5 +286,6 @@ class CustomBlockPlugin extends BlockPlugin {
     public function getDescription(): string {
         return __('plugins.generic.customBlock.description');
     }
+    
 }
 ?>
