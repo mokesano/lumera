@@ -17,6 +17,7 @@ declare(strict_types=1);
  *
  */
 
+/** @var string $op */
 switch ($op) {
 	case 'index':
 	case 'delete':

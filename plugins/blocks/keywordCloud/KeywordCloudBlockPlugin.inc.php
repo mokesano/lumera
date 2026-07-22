@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class KeywordCloudBlockPlugin
  * @ingroup plugins_blocks_keyword_cloud
  *
- * @brief Class for keyword cloud block plugin
- * [WIZDAM STATUS] DEPRECATED UI PATTERN. Safe for PHP 8, but recommended for removal.
+ * @brief Class for keyword cloud block plugin.
  */
 
 import('lib.pkp.classes.plugins.BlockPlugin');
@@ -44,7 +43,7 @@ class KeywordCloudBlockPlugin extends BlockPlugin {
 
     /**
      * Get the display name of this plugin.
-     * @return String
+     * @return string
      */
     public function getDisplayName(): string {
         return __('plugins.block.keywordCloud.displayName');
@@ -52,6 +51,7 @@ class KeywordCloudBlockPlugin extends BlockPlugin {
 
     /**
      * Get a description of the plugin.
+     * @return string
      */
     public function getDescription(): string {
         return __('plugins.block.keywordCloud.description');
@@ -59,72 +59,92 @@ class KeywordCloudBlockPlugin extends BlockPlugin {
 
     /**
      * Cache Miss Handler
-     * [MODERNISASI] Removed & form $cache signature
+     * @param FileCache $cache
+     * @param string $id
+     * @return int|null
      */
     public function _cacheMiss($cache, $id) {
-        $keywordMap = array();
-        // [MODERNISASI] Hapus referensi &
+        $keywordMap = [];
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $publishedArticles = $publishedArticleDao->getPublishedArticlesByJournalId($cache->getCacheId());
         
         while ($publishedArticle = $publishedArticles->next()) {
-            $keywords = array_map('trim', explode(';', $publishedArticle->getLocalizedSubject()));
+            $subject = (string) $publishedArticle->getLocalizedSubject();
+            $keywords = array_map('trim', explode(';', $subject));
+            
             foreach ($keywords as $keyword) {
-                if (!empty($keyword)) {
-                    if (!isset($keywordMap[$keyword])) $keywordMap[$keyword] = 0;
+                if ($keyword !== '') {
+                    if (!isset($keywordMap[$keyword])) {
+                        $keywordMap[$keyword] = 0;
+                    }
                     $keywordMap[$keyword]++;
                 }
             }
-            unset($publishedArticle);
         }
+        
         arsort($keywordMap, SORT_NUMERIC);
 
-        $i=0;
-        $newKeywordMap = array();
+        $newKeywordMap = [];
+        $i = 0;
         foreach ($keywordMap as $k => $v) {
             $newKeywordMap[$k] = $v;
-            if ($i++ >= KEYWORD_BLOCK_MAX_ITEMS) break;
+            $i++;
+            if ($i >= KEYWORD_BLOCK_MAX_ITEMS) {
+                break;
+            }
         }
 
         $cache->setEntireCache($newKeywordMap);
-        return $newKeywordMap[$id];
+
+        return $newKeywordMap[$id] ?? null;
     }
 
     /**
      * Get the HTML contents for this block.
-     * @param $templateMgr object
-     * @param $request PKPRequest
+     * @param TemplateManager $templateMgr
+     * @param PKPRequest|null $request
      * @return string
      */
     public function getContents($templateMgr, $request = null) {
-        // 1. GUNAKAN LOGIKA MODERN
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        
         $journal = $request->getJournal();
-        if (!$journal) return '';
+        if (!$journal) {
+            return '';
+        }
 
-        // 2. KEMBALIKAN LOGIKA ORIGINAL ANDA (CACHE)
-        // [MODERNISASI] Hapus referensi &
         $cacheManager = CacheManager::getManager();
+        $cache = $cacheManager->getFileCache(
+            'keywords_' . AppLocale::getLocale(), 
+            (int) $journal->getId(), 
+            [$this, '_cacheMiss']
+        );
         
-        // PHP 8 Callback: array($this, '_cacheMiss') tanpa &
-        $cache = $cacheManager->getFileCache('keywords_' . AppLocale::getLocale(), $journal->getId(), array($this, '_cacheMiss'));
-        
-        if (time() - $cache->getCacheTime() > 60 * 60 * 24 * KEYWORD_BLOCK_CACHE_DAYS) $cache->flush();
+        if (time() - $cache->getCacheTime() > (60 * 60 * 24 * KEYWORD_BLOCK_CACHE_DAYS)) {
+            $cache->flush();
+        }
 
         $keywords = $cache->getContents();
-        if (empty($keywords)) return '';
+        if (empty($keywords)) {
+            return '';
+        }
 
-        $maxOccurs = array_shift(array_values($keywords));
+        $maxOccurs = reset($keywords);
         ksort($keywords);
-        
-        // Gunakan assign, bukan assign_by_ref
+
         $templateMgr->assign('cloudKeywords', $keywords);
         $templateMgr->assign('maxOccurs', $maxOccurs);
 
-        // 3. SOLUSI BYPASS PARENT (WAJIB)
         $templateFilename = $this->getBlockTemplateFilename($request);
-        if ($templateFilename === null) return '';
+        if ($templateFilename === null || $templateFilename === '') {
+            return '';
+        }
         
         return $templateMgr->fetch($this->getTemplatePath() . $templateFilename);
     }
+
 }
 ?>

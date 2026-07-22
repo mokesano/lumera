@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_help
  *
  * @brief Handle requests for viewing notifications.
- *
- * [WIZDAM EDITION] PHP 8.1+ Compatibility, Strict Types, Security Hardening
  */
 
 import('classes.handler.Handler');
@@ -52,6 +50,7 @@ class NotificationHandler extends Handler {
         $contextId = $context ? $context->getId() : null;
 
         $notificationManager = new NotificationManager();
+        /** @var NotificationDAO $notificationDao */
         $notificationDao = DAORegistry::getDAO('NotificationDAO');
 
         $rangeInfo = Handler::getRangeInfo('notifications');
@@ -85,6 +84,7 @@ class NotificationHandler extends Handler {
         $user = $request->getUser();
         if ($user) {
             $userId = (int) $user->getId();
+            /** @var NotificationDAO $notificationDao */
             $notificationDao = DAORegistry::getDAO('NotificationDAO');
             $notificationDao->deleteById($notificationId, $userId);
         }
@@ -156,6 +156,7 @@ class NotificationHandler extends Handler {
 
         $userId = $user ? (int) $user->getId() : 0;
 
+        /** @var NotificationSubscriptionSettingsDAO $notificationSubscriptionSettingsDao */
         $notificationSubscriptionSettingsDao = DAORegistry::getDAO('NotificationSubscriptionSettingsDAO');
         $feedType = array_shift($args);
 
@@ -191,6 +192,7 @@ class NotificationHandler extends Handler {
         $site = $request->getSite();
         $siteTitle = $site->getLocalizedTitle();
 
+        /** @var NotificationSubscriptionSettingsDAO $notificationSubscriptionSettingsDao */
         $notificationSubscriptionSettingsDao = DAORegistry::getDAO('NotificationSubscriptionSettingsDAO');
         $context = $request->getContext();
         
@@ -221,6 +223,7 @@ class NotificationHandler extends Handler {
         $notificationManager = new NotificationManager();
         $notifications = $notificationManager->getFormattedNotificationsForUser($request, $userId, NOTIFICATION_LEVEL_NORMAL, $context->getId(), null, 'notification/' . $contentTypeMap[$type]);
 
+        /** @var VersionDAO $versionDao */
         $versionDao = DAORegistry::getDAO('VersionDAO');
         $version = $versionDao->getCurrentVersion();
 
@@ -230,7 +233,7 @@ class NotificationHandler extends Handler {
         $templateMgr->assign('locale', AppLocale::getPrimaryLocale());
         $templateMgr->assign('appName', $appName);
         $templateMgr->assign('siteTitle', $siteTitle);
-        $templateMgr->assign('formattedNotifications', $notifications); // assign_by_ref removed
+        $templateMgr->assign('formattedNotifications', $notifications);
 
         $templateMgr->display('notification/' . $typeMap[$type], $mimeTypeMap[$type]);
 
@@ -248,7 +251,6 @@ class NotificationHandler extends Handler {
         $user = $request->getUser();
 
         if (!$user) {
-            // [WIZDAM SECURITY] Lempar Variabel Keamanan ke Template Form
             $templateMgr = TemplateManager::getManager();
             $this->_assignSecurityVariables($templateMgr);
 
@@ -270,7 +272,7 @@ class NotificationHandler extends Handler {
         $this->validate();
         $this->setupTemplate(true);
 
-        // [WIZDAM SECURITY] Validasi Token Ganda Sebelum Proses Simpan
+        // [SECURITY] Validasi Token Ganda Sebelum Proses Simpan
         if (!$this->_validateSecurityTokens($request)) {
             $templateMgr = TemplateManager::getManager();
             $this->_assignSecurityVariables($templateMgr);
@@ -280,7 +282,7 @@ class NotificationHandler extends Handler {
             $notificationMailingListForm = new NotificationMailingListForm();
             $notificationMailingListForm->readInputData();
             $notificationMailingListForm->display($request);
-            return; // Hentikan eksekusi di sini
+            return;
         }
 
         import('lib.pkp.classes.notification.form.NotificationMailingListForm');
@@ -330,11 +332,10 @@ class NotificationHandler extends Handler {
         $templateMgr->assign('confirm', true);
 
         $context = $request->getContext();
+        /** @var NotificationMailListDAO $notificationMailListDao */
         $notificationMailListDao = DAORegistry::getDAO('NotificationMailListDAO');
-        
-        // [Wizdam Safety] Ensure context exists
+
         $contextId = $context ? $context->getId() : 0;
-        
         $settingId = $notificationMailListDao->getMailListIdByToken($userToken, $contextId);
 
         if ($settingId) {
@@ -362,6 +363,7 @@ class NotificationHandler extends Handler {
 
         $userToken = array_shift($args);
 
+        /** @var NotificationMailListDAO $notificationMailListDao */
         $notificationMailListDao = DAORegistry::getDAO('NotificationMailListDAO');
         if (isset($userToken)) {
             if ($notificationMailListDao->unsubscribeGuest($userToken, $contextId)) {
@@ -385,21 +387,20 @@ class NotificationHandler extends Handler {
         $this->setupTemplate();
         $user = $request->getUser();
         $context = $request->getContext();
+
+        /** @var NotificationDAO $notificationDao */
         $notificationDao = DAORegistry::getDAO('NotificationDAO');
         $notifications = [];
 
         // Get the notification options from request.
-        // [SECURITY FIX] Sanitasi requestOptions (bukan $requestOptions yg undefined)
         $notificationOptions = $request->getUserVar('requestOptions');
         
         $userId = $user ? $user->getId() : 0;
         $contextId = $context ? $context->getId() : 0;
 
         if (is_array($notificationOptions)) {
-            // Retrieve the notifications.
             $notifications = $this->_getNotificationsByOptions($notificationOptions, $contextId, $userId);
         } else {
-            // No options, get only TRIVIAL notifications.
             if ($user) {
                 $notifications = $notificationDao->getByUserId($user->getId(), NOTIFICATION_LEVEL_TRIVIAL);
                 $notifications = $notifications->toArray();
@@ -413,13 +414,9 @@ class NotificationHandler extends Handler {
             $formattedNotificationsData = [];
             $notificationManager = new NotificationManager();
 
-            // Format in place notifications.
             $formattedNotificationsData['inPlace'] = $notificationManager->formatToInPlaceNotification($request, $notifications);
-
-            // Format general notifications.
             $formattedNotificationsData['general'] = $notificationManager->formatToGeneralNotification($request, $notifications);
 
-            // Delete trivial notifications from database.
             $notificationManager->deleteTrivialNotifications($notifications);
 
             $json->setContent($formattedNotificationsData);
@@ -437,6 +434,7 @@ class NotificationHandler extends Handler {
      * @return array
      */
     public function _getNotificationsByOptions($notificationOptions, $contextId, $userId = null) {
+        /** @var NotificationDAO $notificationDao */
         $notificationDao = DAORegistry::getDAO('NotificationDAO');
         $notificationsArray = [];
         $notificationMgr = new NotificationManager();
@@ -469,7 +467,6 @@ class NotificationHandler extends Handler {
                     $notificationsArray = $this->_addNotificationsToArray($notificationsResultFactory, $notificationsArray);
                 }
             }
-            // Cleanup factory
             unset($notificationsResultFactory);
         }
 
@@ -498,5 +495,6 @@ class NotificationHandler extends Handler {
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_GRID, LOCALE_COMPONENT_CORE_SUBMISSION);
         parent::setupTemplate($subclass);
     }
+
 }
 ?>

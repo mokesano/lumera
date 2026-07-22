@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_layoutEditor
  *
  * @brief Handle requests for layout editor functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.submission.layoutEditor.LayoutEditorAction');
@@ -54,12 +52,13 @@ class LayoutEditorHandler extends Handler {
      * @param array $args
      * @param PKPRequest $request
      */
-    public function index($args, $request) {
+    public function index($args = [], $request = null) {
         $this->validate($request);
         $this->setupTemplate();
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('helpTopicId', 'editorial.layoutEditorsRole');
+
         $templateMgr->display('layoutEditor/index.tpl');
     }
 
@@ -74,6 +73,8 @@ class LayoutEditorHandler extends Handler {
 
         $journal = $request->getJournal();
         $user = $request->getUser();
+
+        /** @var LayoutEditorSubmissionDAO $layoutEditorSubmissionDao */
         $layoutEditorSubmissionDao = DAORegistry::getDAO('LayoutEditorSubmissionDAO');
 
         $page = isset($args[0]) ? $args[0] : '';
@@ -86,9 +87,7 @@ class LayoutEditorHandler extends Handler {
                 $active = true;
         }
 
-        // [SECURITY FIX] Whitelist 'sort' untuk mencegah SQL Injection
         $sortInput = trim((string) $request->getUserVar('sort'));
-        // **WAJIB**: Sesuaikan array ini dengan nama kolom LayoutEditor yang valid
         $validSortColumns = ['title', 'id', 'status', 'dateSubmitted']; 
         if (!empty($sortInput) && in_array($sortInput, $validSortColumns)) {
             $sort = $sortInput;
@@ -96,7 +95,6 @@ class LayoutEditorHandler extends Handler {
             $sort = 'title'; // Default aman
         }
 
-        // [SECURITY FIX] Whitelist 'sortDirection' untuk mencegah SQL Injection
         $sortDirectionInput = trim((string) $request->getUserVar('sortDirection'));
         if ($sortDirectionInput == SORT_DIRECTION_DESC) {
             $sortDirection = SORT_DIRECTION_DESC;
@@ -104,11 +102,7 @@ class LayoutEditorHandler extends Handler {
             $sortDirection = SORT_DIRECTION_ASC; // Default aman
         }
 
-        // Get the user's search conditions, if any
-        
-        // [SECURITY FIX] Whitelist 'searchField'
         $searchFieldInput = $request->getUserVar('searchField');
-        // **WAJIB**: Sesuaikan array ini dengan konstanta field yang valid
         $validSearchFields = [
             SUBMISSION_FIELD_TITLE, 
             SUBMISSION_FIELD_AUTHOR, 
@@ -120,12 +114,9 @@ class LayoutEditorHandler extends Handler {
             $searchField = null; // Default aman
         }
 
-        // [SECURITY FIX] Whitelist 'dateSearchField'
         $dateSearchFieldInput = $request->getUserVar('dateSearchField');
-        // **WAJIB**: Sesuaikan array ini dengan konstanta field tanggal yang valid
         $validDateSearchFields = [
-            SUBMISSION_FIELD_DATE_SUBMITTED, 
-            SUBMISSION_FIELD_DATE_MODIFIED
+            SUBMISSION_FIELD_DATE_SUBMITTED
         ];
         if (in_array($dateSearchFieldInput, $validDateSearchFields)) {
             $dateSearchField = $dateSearchFieldInput;
@@ -133,7 +124,6 @@ class LayoutEditorHandler extends Handler {
             $dateSearchField = null; // Default aman
         }
 
-        // [SECURITY FIX] Whitelist 'searchMatch'
         $searchMatchInput = trim((string) $request->getUserVar('searchMatch'));
         $validSearchMatches = ['is', 'contains', 'startsWith'];
         if (in_array($searchMatchInput, $validSearchMatches)) {
@@ -142,10 +132,7 @@ class LayoutEditorHandler extends Handler {
             $searchMatch = 'contains'; // Default aman
         }
 
-        // [SECURITY FIX] Amankan 'search' (string) dengan trim()
         $search = trim((string) $request->getUserVar('search'));
-
-        // Kode tanggal (getUserDateVar) sudah aman
         $fromDate = $request->getUserDateVar('dateFrom', 1, 1);
         if ($fromDate !== null) $fromDate = date('Y-m-d H:i:s', $fromDate);
         $toDate = $request->getUserDateVar('dateTo', 32, 12, null, 23, 59, 59);
@@ -154,7 +141,6 @@ class LayoutEditorHandler extends Handler {
         $rangeInfo = $this->getRangeInfo('submissions');
         $submissions = $layoutEditorSubmissionDao->getSubmissions($user->getId(), $journal->getId(), $searchField, $searchMatch, $search, $dateSearchField, $fromDate, $toDate, $active, $rangeInfo, $sort, $sortDirection);
 
-        // If only result is returned from a search, fast-forward to it
         if ($search && $submissions && $submissions->getCount() == 1) {
             $submission = $submissions->next();
             $request->redirect(null, null, 'submission', [$submission->getId()]);
@@ -162,7 +148,6 @@ class LayoutEditorHandler extends Handler {
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('pageToDisplay', $page);
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('submissions', $submissions);
 
         // Set search parameters
@@ -173,7 +158,6 @@ class LayoutEditorHandler extends Handler {
             'dateSearchField'
         ];
         foreach ($duplicateParameters as $param) {
-            // [SECURITY FIX] Escape semua output ke template untuk mencegah XSS
             $templateMgr->assign(
                 $param,
                 htmlspecialchars(trim((string)$request->getUserVar($param)), ENT_QUOTES, 'UTF-8')
@@ -197,12 +181,12 @@ class LayoutEditorHandler extends Handler {
 
         import('classes.issue.IssueAction');
         $issueAction = new IssueAction();
-        // Note: register_function might be deprecated depending on Smarty version.
         $templateMgr->register_function('print_issue_id', [$issueAction, 'smartyPrintIssueId']);
         
         $templateMgr->assign('helpTopicId', 'editorial.layoutEditorsRole.submissions');
         $templateMgr->assign('sort', $sort);
         $templateMgr->assign('sortDirection', $sortDirection);
+
         $templateMgr->display('layoutEditor/submissions.tpl');
     }
 
@@ -216,12 +200,14 @@ class LayoutEditorHandler extends Handler {
         $this->setupTemplate(true);
 
         $journal = $request->getJournal();
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $rangeInfo = $this->getRangeInfo('issues');
         $templateMgr = TemplateManager::getManager();
-        // [WIZDAM] Removed assign_by_ref
+
         $templateMgr->assign('issues', $issueDao->getUnpublishedIssues($journal->getId(), $rangeInfo));
         $templateMgr->assign('helpTopicId', 'publishing.index');
+
         $templateMgr->display('layoutEditor/futureIssues.tpl');
     }
 
@@ -235,15 +221,10 @@ class LayoutEditorHandler extends Handler {
         $this->setupTemplate(true);
 
         $journal = $request->getJournal();
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
-
         $rangeInfo = $this->getRangeInfo('issues');
-
-        // [SECURITY FIX] Whitelist 'sort' untuk mencegah SQL Injection
         $sortInput = trim((string) $request->getUserVar('sort'));
-        
-        // **WAJIB**: Sesuaikan array ini dengan nama kolom yang diizinkan 
-        // untuk pengurutan di halaman Layout Editor.
         $validSortColumns = ['title', 'issue_id', 'date_published']; 
         
         if (!empty($sortInput) && in_array($sortInput, $validSortColumns)) {
@@ -252,9 +233,7 @@ class LayoutEditorHandler extends Handler {
             $sort = 'title'; // Default aman
         }
 
-        // [SECURITY FIX] Whitelist 'sortDirection' untuk mencegah SQL Injection
         $sortDirectionInput = trim((string) $request->getUserVar('sortDirection'));
-        
         if ($sortDirectionInput == SORT_DIRECTION_DESC) {
             $sortDirection = SORT_DIRECTION_DESC;
         } else {
@@ -262,7 +241,6 @@ class LayoutEditorHandler extends Handler {
         }
 
         $templateMgr = TemplateManager::getManager();
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('issues', $issueDao->getPublishedIssues($journal->getId(), $rangeInfo));
 
         $allIssuesIterator = $issueDao->getPublishedIssues($journal->getId());
@@ -275,12 +253,13 @@ class LayoutEditorHandler extends Handler {
 
         $currentIssue = $issueDao->getCurrentIssue($journal->getId());
         $currentIssueId = $currentIssue ? $currentIssue->getId() : null;
-        $templateMgr->assign('currentIssueId', $currentIssueId);
 
+        $templateMgr->assign('currentIssueId', $currentIssueId);
         $templateMgr->assign('helpTopicId', 'publishing.index');
         $templateMgr->assign('usesCustomOrdering', $issueDao->customIssueOrderingExists($journal->getId()));
         $templateMgr->assign('sort', $sort);
         $templateMgr->assign('sortDirection', $sortDirection);
+
         $templateMgr->display('layoutEditor/backIssues.tpl');
     }
 
@@ -290,13 +269,12 @@ class LayoutEditorHandler extends Handler {
      * @param PKPRequest $request
      */
     public function completeProofreader($args, $request) {
-        // [SECURITY FIX] Amankan 'articleId' dengan trim() dan (int)
         $articleId = (int) trim((string) $request->getUserVar('articleId'));
 
         $this->validate($request, $articleId);
         $this->setupTemplate(true);
 
-        // set the date notified for this signoff so proofreading can no longer be initiated.
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
         $signoff = $signoffDao->build('SIGNOFF_PROOFREADING_PROOFREADER', ASSOC_TYPE_ARTICLE, $articleId);
         $signoff->setDateNotified(Core::getCurrentDate());
@@ -306,7 +284,6 @@ class LayoutEditorHandler extends Handler {
         $signoff->setDateCompleted(Core::getCurrentDate());
         $signoffDao->updateObject($signoff);
 
-        // [SECURITY FIX] Amankan flag boolean 'send' dengan (int) dan trim()
         if (ProofreaderAction::proofreadEmail($articleId, 'PROOFREAD_COMPLETE', $request, (int) trim((string) $request->getUserVar('send')) ? '' : $request->url(null, 'layoutEditor', 'completeProofreader'))) {
             $request->redirect(null, null, 'submission', [$articleId]);
         }
@@ -354,17 +331,15 @@ class LayoutEditorHandler extends Handler {
     //
     // Validation
     //
-
-
     /**
      * Validate that the user is the assigned layout editor for the submission.
      * Redirects to layoutEditor index page if validation fails.
      * @param PKPRequest $request
-     * @param int|null $articleId optional the submission being edited
-     * @param bool $checkEdit check if editor has editing permissions
+     * @param int|null $articleId
+     * @param bool $checkEdit
      * @return bool|void
      */
-    public function validate($request, $articleId = null, $checkEdit = false) {
+    public function validate($request = null, $articleId = null, $checkEdit = false) {
         parent::validate();
 
         if ($articleId !== null) {
@@ -373,7 +348,9 @@ class LayoutEditorHandler extends Handler {
             $journal = $request->getJournal();
             $user = $request->getUser();
 
+            /** @var LayoutEditorSubmissionDAO $layoutDao */
             $layoutDao = DAORegistry::getDAO('LayoutEditorSubmissionDAO');
+            /** @var SignoffDAO $signoffDao */
             $signoffDao = DAORegistry::getDAO('SignoffDAO');
             $submission = $layoutDao->getSubmission($articleId, $journal->getId());
 
@@ -403,9 +380,10 @@ class LayoutEditorHandler extends Handler {
      * This is allowed if there is an outstanding galley creation or layout editor
      * proofreading request.
      * @param LayoutEditorSubmission $submission
-     * @return bool true if layout editor can modify the submission
+     * @return bool
      */
-    public function _layoutEditingEnabled(&$submission) {
+    public function _layoutEditingEnabled($submission) {
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
         $layoutEditorProofreadSignoff = $signoffDao->build('SIGNOFF_PROOFREADING_LAYOUT', ASSOC_TYPE_ARTICLE, $submission->getId());
         $layoutSignoff = $signoffDao->build('SIGNOFF_LAYOUT', ASSOC_TYPE_ARTICLE, $submission->getId());
@@ -415,5 +393,6 @@ class LayoutEditorHandler extends Handler {
         || ($layoutEditorProofreadSignoff->getDateNotified() != null
             && $layoutEditorProofreadSignoff->getDateCompleted() == null));
     }
+    
 }
 ?>

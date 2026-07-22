@@ -12,9 +12,7 @@ declare(strict_types=1);
  * @ingroup plugins_importexport_crossref_classes
  *
  * @brief Base class for DOI export/registration plugins.
- * MODERNIZED FOR WIZDAM FORK
  */
-
 
 import('classes.plugins.ImportExportPlugin');
 
@@ -44,14 +42,16 @@ class DOIExportPlugin extends ImportExportPlugin {
     //
     // Protected Properties
     //
-    /** @var PubObjectCache */
-    public $_cache;
+    /** @var PubObjectCache|null */
+    public ?PubObjectCache $_cache = null;
 
-    public function getCache() {
-        // [WIZDAM FIX] Replaced is_a with instanceof
-        if (!($this->_cache instanceof PubObjectCache)) {
-            // Instantiate the cache.
-            if (!class_exists('PubObjectCache')) { // Bug #7848
+    /**
+     * Get the publication object cache.
+     * @return PubObjectCache
+     */
+    public function getCache(): PubObjectCache {
+        if (!$this->_cache instanceof PubObjectCache) {
+            if (!class_exists('PubObjectCache')) {
                 $this->import('classes.PubObjectCache');
             }
             $this->_cache = new PubObjectCache();
@@ -59,13 +59,11 @@ class DOIExportPlugin extends ImportExportPlugin {
         return $this->_cache;
     }
 
-
     //
     // Private Properties
     //
-    /** @var boolean */
-    public $_checkedForTar = false;
-
+    /** @var bool */
+    public bool $_checkedForTar = false;
 
     /**
      * Constructor
@@ -85,9 +83,8 @@ class DOIExportPlugin extends ImportExportPlugin {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
-
 
     //
     // Implement template methods from PKPPlugin
@@ -114,7 +111,7 @@ class DOIExportPlugin extends ImportExportPlugin {
      * @return string
      */
     public function getTemplatePath(): string {
-        return parent::getTemplatePath().'templates/';
+        return parent::getTemplatePath() . 'templates' . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -123,7 +120,7 @@ class DOIExportPlugin extends ImportExportPlugin {
      * @return string
      */
     public function getContextSpecificPluginSettingsFile(): string {
-        return $this->getPluginPath() . '/settings.xml';
+        return $this->getPluginPath() . DIRECTORY_SEPARATOR . 'settings.xml';
     }
 
     /**
@@ -132,15 +129,11 @@ class DOIExportPlugin extends ImportExportPlugin {
      * @param string $locale
      * @return array
      */
-    public function getLocaleFilename($locale) {
+    public function getLocaleFilename($locale): array {
         $localeFilenames = parent::getLocaleFilename($locale);
-
-        // Add shared locale keys.
         $localeFilenames[] = $this->getPluginPath() . DIRECTORY_SEPARATOR . 'locale' . DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'common.xml';
-
         return $localeFilenames;
     }
-
 
     //
     // Implement template methods from ImportExportPlugin
@@ -153,7 +146,7 @@ class DOIExportPlugin extends ImportExportPlugin {
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
-        $verbs = parent::getManagementVerbs();
+        $verbs = parent::getManagementVerbs($verbs, $request);
         $verbs[] = ['settings', __('plugins.importexport.common.settings')];
         return $verbs;
     }
@@ -161,81 +154,75 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Display the plugin homepage.
      * @see ImportExportPlugin::display()
-     * @param $args array
-     * @param $request PKPRequest
-     * @return void
+     * @param array $args
+     * @param PKPRequest|null $request
      */
     public function display($args, $request) {
         parent::display($args, $request);
-        $templateMgr = TemplateManager::getManager();
-
-        // Retrieve journal from the request context.
+        $templateMgr = TemplateManager::getManager($request);
         $journal = $request->getJournal();
-
         $op = array_shift($args);
 
-        switch($op) {
-            // Show the plugin homepage
+        switch ($op) {
             case '':
             case 'index':
-                return $this->_displayPluginHomePage($templateMgr, $journal);
+                $this->_displayPluginHomePage($templateMgr, $journal);
+                break;
 
-            // Display cases: show a list of the specified objects
             case 'all':
             case 'issues':
             case 'articles':
             case 'galleys':
             case 'suppFiles':
-                // Test mode.
                 $templateMgr->assign('testMode', $this->isTestMode($request) ? ['testMode' => 1] : []);
                 $templateMgr->assign('filter', $request->getUserVar('filter'));
-
-                // Export without account.
                 $username = $this->getSetting($journal->getId(), 'username');
                 $templateMgr->assign('hasCredentials', !empty($username));
 
                 switch ($op) {
                     case 'issues':
-                        return $this->displayIssueList($templateMgr, $journal);
+                        $this->displayIssueList($templateMgr, $journal);
+                        break;
                     case 'articles':
-                        return $this->displayArticleList($templateMgr, $journal);
+                        $this->displayArticleList($templateMgr, $journal);
+                        break;
                     case 'galleys':
-                        return $this->_displayGalleyList($templateMgr, $journal);
+                        $this->_displayGalleyList($templateMgr, $journal);
+                        break;
                     case 'suppFiles':
-                        return $this->displaySuppFileList($templateMgr, $journal);
+                        $this->displaySuppFileList($templateMgr, $journal);
+                        break;
                     case 'all':
-                        return $this->displayAllUnregisteredObjects($templateMgr, $journal);
+                        $this->displayAllUnregisteredObjects($templateMgr, $journal);
+                        break;
                 }
+                break;
 
-            // Process register/reset/export/mark actions.
             case 'process':
                 $this->process($request, $journal);
                 break;
 
             default:
-                fatalError('Invalid command.');
+                throw new \UnexpectedValueException('Invalid command.');
         }
     }
 
     /**
      * Process a DOI activity request.
      * @see ImportExportPlugin::process()
-     * @param $request PKPRequest
-     * @param $journal Journal
-     * @return void
+     * @param PKPRequest $request
+     * @param Journal $journal
      */
-    public function process($request, $journal) {
+    public function process($request, $journal): void {
         $objectTypes = $this->getAllObjectTypes();
         $target = $request->getUserVar('target');
         $result = false;
 
-        // Dispatch the action.
-        switch(true) {
-            case $request->getUserVar('export'):
-            case $request->getUserVar('register'):
-            case $request->getUserVar('markRegistered'):
-                // Find the objects to be exported (registered).
-                if ($target == 'all') {
+        switch (true) {
+            case (bool) $request->getUserVar('export'):
+            case (bool) $request->getUserVar('register'):
+            case (bool) $request->getUserVar('markRegistered'):
+                if ($target === 'all') {
                     $exportSpec = [];
                     foreach ($objectTypes as $objectName => $exportType) {
                         $objectIds = (array) $request->getUserVar($objectName . 'Id');
@@ -244,151 +231,144 @@ class DOIExportPlugin extends ImportExportPlugin {
                         }
                     }
                 } else {
-                    assert(isset($objectTypes[$target]));
+                    if (!isset($objectTypes[$target])) {
+                        break;
+                    }
                     $exportSpec = [$objectTypes[$target] => (array) $request->getUserVar($target . 'Id')];
                 }
 
                 if ($request->getUserVar('export')) {
-                    // Export selected objects.
                     $result = $this->exportObjects($request, $exportSpec, $journal);
                 } elseif ($request->getUserVar('markRegistered')) {
-                    foreach($exportSpec as $exportType => $objectIds) {
-                        // Normalize the object id(s) into an array.
-                        if (is_scalar($objectIds)) $objectIds = [(int)$objectIds];
-                        // Retrieve the object(s).
+                    foreach ($exportSpec as $exportType => $objectIds) {
+                        if (is_scalar($objectIds)) {
+                            $objectIds = [(int) $objectIds];
+                        }
+                        $errors = [];
                         $objects = $this->_getObjectsFromIds($exportType, $objectIds, $journal->getId(), $errors);
                         $this->processMarkRegistered($request, $exportType, $objects, $journal);
                     }
-                    // Redisplay the changed object list.
-                    $listAction = $target . ($target == 'all' ? '' : 's');
+                    $listAction = $target . ($target === 'all' ? '' : 's');
                     $request->redirect(
                         null, null, null,
                         ['plugin', $this->getName(), $listAction],
-                        ($this->isTestMode($request) ? ['testMode' => 1] : null)
+                        $this->isTestMode($request) ? ['testMode' => 1] : null
                     );
                     break;
-                } else { // Register selected objects.
-                    assert($request->getUserVar('register') != false);
+                } else {
                     $result = $this->registerObjects($request, $exportSpec, $journal);
-
-                    // Provide the user with some visual feedback that
-                    // registration was successful.
                     if ($result === true) {
                         $this->_sendNotification(
                             $request,
-                            'plugins.importexport.'.$this->getPluginId() .'.register.success',
+                            'plugins.importexport.' . $this->getPluginId() . '.register.success',
                             NOTIFICATION_TYPE_SUCCESS
                         );
-
-                        // Redisplay the changed object list.
-                        $listAction = $target . ($target == 'all' ? '' : 's');
+                        $listAction = $target . ($target === 'all' ? '' : 's');
                         $request->redirect(
                             null, null, null,
                             ['plugin', $this->getName(), $listAction],
-                            ($this->isTestMode($request) ? ['testMode' => 1] : null)
+                            $this->isTestMode($request) ? ['testMode' => 1] : null
                         );
                     }
                 }
                 break;
-            case $request->getUserVar('reset'):
-                // Reset the selected target object to "unregistered" state.
+            case (bool) $request->getUserVar('reset'):
                 $ids = (array) $request->getUserVar($target . 'Id');
-                $result = $this->resetRegistration($objectTypes[$target], array_shift($ids), $journal);
-
-                // Redisplay the changed object list.
-                if ($result === true) {
-                    $request->redirect(
-                        null, null, null,
-                        ['plugin', $this->getName(), $target.'s'],
-                        ($this->isTestMode($request) ? ['testMode' => 1] : null)
-                    );
+                if (isset($objectTypes[$target])) {
+                    $result = $this->resetRegistration($objectTypes[$target], array_shift($ids), $journal);
+                    if ($result === true) {
+                        $request->redirect(
+                            null, null, null,
+                            ['plugin', $this->getName(), $target . 's'],
+                            $this->isTestMode($request) ? ['testMode' => 1] : null
+                        );
+                    }
                 }
                 break;
         }
 
-        // Redirect to the index page.
-        if ($result !== true) {
-            if (is_array($result)) {
-                foreach($result as $error) {
-                    assert(is_array($error) && count($error) >= 1);
+        if ($result !== true && is_array($result)) {
+            foreach ($result as $error) {
+                if (is_array($error) && count($error) >= 1) {
                     $this->_sendNotification(
                         $request,
                         $error[0],
                         NOTIFICATION_TYPE_ERROR,
-                        (isset($error[1]) ? $error[1] : null)
+                        $error[1] ?? null
                     );
                 }
             }
-            $path = ['plugin', $this->getName()];
-            $request->redirect(null, null, null, $path);
+            $request->redirect(null, null, null, ['plugin', $this->getName()]);
         }
     }
 
     /**
      * CLI execution.
      * @see ImportExportPlugin::executeCLI()
-     * @param $scriptName string
-     * @param $args array
-     * @return void
+     * @param string $scriptName
+     * @param array $args
      */
-    public function executeCLI($scriptName, $args) {
+    public function executeCLI($scriptName, $args): void {
         $result = [];
+        $journal = null;
+        $objectType = null;
+        $xmlFile = null;
 
-        // Add additional locale file.
         AppLocale::requireComponents([LOCALE_COMPONENT_APPLICATION_COMMON]);
 
-        // Command.
-        $command = strtolower_codesafe(array_shift($args));
-        if (!in_array($command, ['export', 'register'])) {
+        $command = strtolower_codesafe(array_shift($args) ?? '');
+        if (!in_array($command, ['export', 'register'], true)) {
             $result = false;
         }
 
-        if ($command == 'export') {
-            // Output file.
-            if (is_array($result)) {
-                $xmlFile = array_shift($args);
-                if (empty($xmlFile)) {
-                    $result = false;
-                }
+        if ($command === 'export' && is_array($result)) {
+            $xmlFile = array_shift($args);
+            if (empty($xmlFile)) {
+                $result = false;
             }
         }
 
-        // Journal.
         if (is_array($result)) {
-            $journalPath = array_shift($args);
+            $journalPath = array_shift($args) ?? '';
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
-            $journal = $journalDao->getJournalByPath($journalPath);
+            $journal = $journalDao ? $journalDao->getJournalByPath($journalPath) : null;
+
             if (!$journal) {
-                if ($journalPath != '') {
+                if ($journalPath !== '') {
                     $result[] = ['plugins.importexport.common.export.error.unknownJournal', $journalPath];
-                } elseif(empty($result)) {
+                } elseif (empty($result)) {
                     $result = false;
                 }
             }
         }
 
-        // Object type.
         if (is_array($result) && empty($result)) {
-            $objectType = strtolower_codesafe(array_shift($args));
+            $objectTypeRaw = array_shift($args);
+            if ($objectTypeRaw !== null) {
+                $objectType = strtolower_codesafe($objectTypeRaw);
+                if (substr($objectType, -1) === 's') {
+                    $objectType = substr($objectType, 0, -1);
+                }
+                if ($objectType === 'suppfile') {
+                    $objectType = 'suppFile';
+                }
 
-            // Accept both singular and plural forms.
-            if (substr($objectType, -1) == 's') $objectType = substr($objectType, 0, -1);
-            if ($objectType == 'suppfile') $objectType = 'suppFile';
-
-            // Check whether the object type exists.
-            $objectTypes = $this->getAllObjectTypes();
-            if (!in_array($objectType, array_keys($objectTypes))) {
-                // Return an error for unhandled object types.
-                $result[] = ['plugins.importexport.common.export.error.unknownObjectType', $objectType];
+                $objectTypes = $this->getAllObjectTypes();
+                if (!array_key_exists($objectType, $objectTypes)) {
+                    $result[] = ['plugins.importexport.common.export.error.unknownObjectType', $objectType];
+                }
+            } else {
+                $result = false;
             }
         }
 
-        // Export (or register) objects.
-        if (is_array($result) && empty($result)) {
-            assert(isset($objectTypes[$objectType]));
+        if (is_array($result) && empty($result) && $objectType !== null && $journal !== null) {
+            $objectTypes = $this->getAllObjectTypes();
             $exportSpec = [$objectTypes[$objectType] => $args];
-            $request = Application::getRequest();
-            if ($command == 'export') {
+            $request = Application::get()->getRequest();
+
+            if ($command === 'export') {
                 $result = $this->exportObjects($request, $exportSpec, $journal, $xmlFile);
             } else {
                 $result = $this->registerObjects($request, $exportSpec, $journal);
@@ -408,124 +388,122 @@ class DOIExportPlugin extends ImportExportPlugin {
      * @see ImportExportPlugin::manage()
      * @param string $verb
      * @param array $args
-     * @param string|null $message
-     * @param mixed $messageParams
+     * @param string|null &$message
+     * @param array|null &$messageParams
      * @param PKPRequest|null $request
-     * @return bool True if the management verb was recognized and processed.
+     * @return bool
      */
-    public function manage(string $verb, array $args, ?string $message = null, $messageParams = null, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         parent::manage($verb, $args, $message, $messageParams, $request);
 
-        switch ($verb) {
-            case 'settings':
-                $journal = $request->getJournal();
-                $form = $this->_instantiateSettingsForm($journal);
-
-                // FIXME: JM: duplicate code from _displayPluginHomePage()
-                // Check for configuration errors:
-                $configurationErrors = [];
-
-                // 1) missing DOI prefix
-                $doiPrefix = null;
-                $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
-                if (isset($pubIdPlugins['DOIPubIdPlugin'])) {
-                    $doiPrefix = $pubIdPlugins['DOIPubIdPlugin']->getSetting($journal->getId(), 'doiPrefix');
-                }
-                if (empty($doiPrefix)) {
-                    $configurationErrors[] = DOI_EXPORT_CONFIGERROR_DOIPREFIX;
-                }
-
-                // 2) missing plug-in setting.
-                $form = $this->_instantiateSettingsForm($journal);
-                foreach($form->getFormFields() as $fieldName => $fieldType) {
-                    if ($form->isOptional($fieldName)) continue;
-
-                    $setting = $this->getSetting($journal->getId(), $fieldName);
-                    if (empty($setting)) {
-                        $configurationErrors[] = DOI_EXPORT_CONFIGERROR_SETTINGS;
-                        break;
-                    }
-                }
-
-                $templateMgr = TemplateManager::getManager();
-                $templateMgr->assign('configurationErrors', $configurationErrors);
-                // JM end duplicate code
-
-                if ($request->getUserVar('save')) {
-                    $form->readInputData();
-                    if ($form->validate()) {
-                        $form->execute();
-                        $request->redirect(null, 'manager', 'importexport', ['plugin', $this->getName()]);
-                    } else {
-                        $this->setBreadCrumbs([], true);
-                        $form->display($request);
-                    }
-                } else {
-                    $this->setBreadCrumbs([], true);
-                    $form->initData();
-                    $form->display($request);
-                }
-                return true;
-
-            default:
-                // Unknown management verb.
-                assert(false);
+        if ($verb !== 'settings') {
+            throw new \UnexpectedValueException("Unknown management verb: {$verb}");
         }
-        return false;
-    }
 
+        if (!$request instanceof PKPRequest) {
+            $request = Application::get()->getRequest();
+        }
+
+        $journal = $request->getJournal();
+        if (!$journal) {
+            return false;
+        }
+
+        $configurationErrors = [];
+        $doiPrefix = null;
+        $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
+        
+        if (isset($pubIdPlugins['DOIPubIdPlugin'])) {
+            $doiPrefix = $pubIdPlugins['DOIPubIdPlugin']->getSetting($journal->getId(), 'doiPrefix');
+        }
+        
+        if (empty($doiPrefix)) {
+            $configurationErrors[] = DOI_EXPORT_CONFIGERROR_DOIPREFIX;
+        }
+
+        $form = $this->_instantiateSettingsForm($journal);
+        $formFields = $form->getFormFields();
+
+        if (is_array($formFields)) {
+            foreach ($formFields as $fieldName => $fieldType) {
+                if ($form->isOptional($fieldName)) {
+                    continue;
+                }
+                $setting = $this->getSetting($journal->getId(), $fieldName);
+                if (empty($setting)) {
+                    $configurationErrors[] = DOI_EXPORT_CONFIGERROR_SETTINGS;
+                    break;
+                }
+            }
+        }
+
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign('configurationErrors', $configurationErrors);
+
+        if ($request->getUserVar('save')) {
+            $form->readInputData();
+            if ($form->validate()) {
+                $form->execute();
+                $request->redirect(null, 'manager', 'importexport', ['plugin', $this->getName()]);
+                return true; 
+            } else {
+                $this->setBreadcrumbs([], true);
+                $form->display($request);
+            }
+        } else {
+            $this->setBreadcrumbs([], true);
+            $form->initData();
+            $form->display($request);
+        }
+
+        return true;
+    }
 
     //
     // Protected template methods
     //
     /**
      * Return the directory below the files dir where export files should be placed.
-     * @see ImportExportPlugin::getExportPath()
      * @return string
      */
-    public function getPluginId() {
-        assert(false);
+    public function getPluginId(): string {
+        throw new \BadMethodCallException('Must be implemented by subclass.');
     }
 
     /**
      * Return the class name of the plug-in's settings form.
-     * @see ImportExportPlugin::getSettingsFormClassName()
      * @return string
      */
-    public function getSettingsFormClassName() {
-        assert(false);
+    public function getSettingsFormClassName(): string {
+        throw new \BadMethodCallException('Must be implemented by subclass.');
     }
 
     /**
      * Return the object types supported by this plug-in.
-     * @see ImportExportPlugin::getAllObjectTypes()
-     * @return array An array with object names and the corresponding export types.
+     * @return array
      */
-    public function getAllObjectTypes() {
+    public function getAllObjectTypes(): array {
         return [
-            'issue' => DOI_EXPORT_ISSUES,
+            'issue'   => DOI_EXPORT_ISSUES,
             'article' => DOI_EXPORT_ARTICLES,
-            'galley' => DOI_EXPORT_GALLEYS
+            'galley'  => DOI_EXPORT_GALLEYS
         ];
     }
 
     /**
      * Display a list of issues for export.
-     * @see ImportExportPlugin::displayIssueList()
-     * @param $templateMgr TemplateManager
-     * @param $journal Journal
-     * @return void
+     * @param TemplateManager $templateMgr
+     * @param Journal $journal
      */
-    public function displayIssueList($templateMgr, $journal) {
+    public function displayIssueList($templateMgr, $journal): void {
         $this->setBreadcrumbs([], true);
 
-        // Retrieve all published issues.
         AppLocale::requireComponents([LOCALE_COMPONENT_APP_EDITOR]);
-        $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
+        /** @var IssueDAO $issueDao */
+        $issueDao = DAORegistry::getDAO('IssueDAO');
         $this->registerDaoHook('IssueDAO');
-        $issueIterator = $issueDao->getPublishedIssues($journal->getId(), Handler::getRangeInfo('issues'));
+        $issueIterator = $issueDao->getPublishedIssues((int) $journal->getId(), Handler::getRangeInfo('issues'));
 
-        // Get issues that should be excluded i.e. that have no DOI.
         $excludes = [];
         $allExcluded = true;
         while ($issue = $issueIterator->next()) {
@@ -535,12 +513,9 @@ class DOIExportPlugin extends ImportExportPlugin {
                 $excludes[$issue->getId()] = false;
                 $allExcluded = false;
             }
-            unset($issue);
         }
         unset($issueIterator);
 
-        // Prepare and display the issue template.
-        // Get the issue iterator from the DB for the template again.
         $issueIterator = $issueDao->getPublishedIssues($journal->getId(), Handler::getRangeInfo('issues'));
         $templateMgr->assign('issues', $issueIterator);
         $templateMgr->assign('allExcluded', $allExcluded);
@@ -550,16 +525,13 @@ class DOIExportPlugin extends ImportExportPlugin {
 
     /**
      * Display a list of all yet unregistered objects.
-     * @see ImportExportPlugin::displayAllUnregisteredObjects()
-     * @param $templateMgr TemplateManager
-     * @param $journal Journal
-     * @return void
+     * @param TemplateManager $templateMgr
+     * @param Journal $journal
      */
-    public function displayAllUnregisteredObjects($templateMgr, $journal) {
+    public function displayAllUnregisteredObjects($templateMgr, $journal): void {
         $this->setBreadcrumbs([], true);
         AppLocale::requireComponents([LOCALE_COMPONENT_CORE_SUBMISSION]);
 
-        // Prepare and display the template.
         $templateMgr->assign('issues', $this->_getUnregisteredIssues($journal));
         $templateMgr->assign('articles', $this->_getUnregisteredArticles($journal));
         $templateMgr->assign('galleys', $this->_getUnregisteredGalleys($journal));
@@ -569,34 +541,29 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Display a list of supplementary files for export.
      * @see ImportExportPlugin::displaySuppFileList()
-     * @param $templateMgr TemplateManager
-     * @param $journal Journal
-     * @return void
+     * @param TemplateManager $templateMgr
+     * @param Journal $journal
      */
-    public function displaySuppFileList($templateMgr, $journal) {
-        fatalError('Not implemented for this plug-in');
+    public function displaySuppFileList($templateMgr, $journal): void {
+        throw new \BadMethodCallException('Not implemented for this plug-in');
     }
 
     /**
      * Retrieve all published articles.
      * @see ImportExportPlugin::getAllPublishedArticles()
-     * @param $journal Journal
+     * @param Journal $journal
      * @return array
      */
-    public function getAllPublishedArticles($journal) {
-        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /* @var $publishedArticleDao PublishedArticleDAO */
+    public function getAllPublishedArticles($journal): array {
+        /** @var PublishedArticleDAO $publishedArticleDao */
+        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $articleIterator = $publishedArticleDao->getPublishedArticlesByJournalId($journal->getId());
 
-        // Return articles from published issues only.
         $articles = [];
         while ($article = $articleIterator->next()) {
-            // Retrieve issue
             $issue = $this->_getArticleIssue($article, $journal);
-
-            // Check whether the issue is published.
             if ($issue->getPublished()) {
                 $articles[] = $article;
-                unset($article);
             }
         }
         unset($articleIterator);
@@ -607,19 +574,16 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Identify published article and issue of the given article file.
      * @see ImportExportPlugin::prepareArticleFileData()
-     * @param $articleFile ArticleFile
-     * @param $journal Journal
-     * @return array|null An array with the article and issue data or null if not found.
+     * @param ArticleFile $articleFile
+     * @param Journal $journal
+     * @return array|null
      */
-    public function prepareArticleFileData($articleFile, $journal) {
-        // Prepare and return article data for the article file.
-        $articleData = $this->_prepareArticleDataByArticleId($articleFile->getArticleId(), $journal);
+    public function prepareArticleFileData($articleFile, $journal): ?array {
+        $articleData = $this->_prepareArticleDataByArticleId((int) $articleFile->getArticleId(), $journal);
         if (!is_array($articleData)) {
-            $nullVar = null;
-            return $nullVar;
+            return null;
         }
 
-        // Add the article file to the cache.
         $cache = $this->getCache();
         $cache->add($articleFile, $articleData['article']);
 
@@ -629,47 +593,41 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Export publishing objects.
      * @see ImportExportPlugin::exportObjects()
-     * @param $request Request
-     * @param $exportSpec array An array with DOI_EXPORT_* 
-     * @param $journal Journal
-     * @param $outputFile string The final file to export
-     * @return boolean|array True for success or an array of error messages.
+     * @param PKPRequest $request
+     * @param array $exportSpec
+     * @param Journal $journal
+     * @param string|null $outputFile
+     * @return bool|array
      */
-    public function exportObjects($request, $exportSpec, $journal, $outputFile = null) {
-        // Initialize local variables.
+    public function exportObjects($request, array $exportSpec, $journal, ?string $outputFile = null) {
         $errors = [];
 
-        // If we have more than one object type, then we'll need the
-        // tar tool to package the resulting export files. Check this
-        // early on to avoid unnecessary export processing.
         if (count($exportSpec) > 1) {
-            if (is_array($errors = $this->_checkForTar())) return $errors;
+            $errors = $this->_checkForTar();
+            if (is_array($errors)) {
+                return $errors;
+            }
         }
 
-        // Get the target directory.
         $result = $this->_getExportPath();
-        if (is_array($result)) return $result;
+        if (is_array($result)) {
+            return $result;
+        }
         $exportPath = $result;
 
-        // Run through the export spec and generate the corresponding
-        // export files.
         $exportFiles = $this->_generateExportFilesForObjects($request, $journal, $exportSpec, $exportPath, $errors);
         if ($exportFiles === false) {
             return $errors;
         }
 
-        // Check whether we need the tar tool for this export if
-        // we've not checked this before.
         if (count($exportFiles) > 1 && !$this->_checkedForTar) {
-            if (is_array($errors = $this->_checkForTar())) {
+            $errors = $this->_checkForTar();
+            if (is_array($errors)) {
                 $this->cleanTmpfiles($exportPath, array_keys($exportFiles));
                 return $errors;
             }
         }
 
-        // If we have more than one export file we package the files
-        // up as a single tar before going on.
-        assert(count($exportFiles) >= 1);
         if (count($exportFiles) > 1) {
             $finalExportFileName = $exportPath . $this->getPluginId() . '-export.tar.gz';
             $finalExportFileType = DOI_EXPORT_FILE_TAR;
@@ -680,55 +638,49 @@ class DOIExportPlugin extends ImportExportPlugin {
             $finalExportFileType = DOI_EXPORT_FILE_XML;
         }
 
-        // Stream the results to the browser...
-        if (is_null($outputFile)) {
-            header('Content-Type: application/' . ($finalExportFileType == DOI_EXPORT_FILE_TAR ? 'x-gtar' : 'xml'));
+        if ($outputFile === null) {
+            header('Content-Type: application/' . ($finalExportFileType === DOI_EXPORT_FILE_TAR ? 'x-gtar' : 'xml'));
             header('Cache-Control: private');
             header('Content-Disposition: attachment; filename="' . basename($finalExportFileName) . '"');
             readfile($finalExportFileName);
-
-        // ...or save them as a file.
         } else {
-            $outputFileExtension = ($finalExportFileType == DOI_EXPORT_FILE_TAR ? '.tar.gz' : '.xml');
-            if (substr($outputFile, -strlen($outputFileExtension)) != $outputFileExtension) {
+            $outputFileExtension = ($finalExportFileType === DOI_EXPORT_FILE_TAR ? '.tar.gz' : '.xml');
+            if (substr($outputFile, -strlen($outputFileExtension)) !== $outputFileExtension) {
                 $outputFile .= $outputFileExtension;
             }
             $outputDir = dirname($outputFile);
-            if (empty($outputDir)) $outputDir = getcwd();
+            if (empty($outputDir)) {
+                $outputDir = getcwd();
+            }
             if (!is_writable($outputDir) || (file_exists($outputFile) && !is_writable($outputFile))) {
                 $this->cleanTmpfiles($exportPath, array_keys($exportFiles));
-                $errors[] = ['plugins.importexport.common.export.error.outputFileNotWritable', $outputFile];
-                return $errors;
+                return [['plugins.importexport.common.export.error.outputFileNotWritable', $outputFile]];
             }
             $fileManager = new FileManager();
             $fileManager->copyFile($finalExportFileName, $outputFile);
         }
 
-        // Remove all temporary files.
         $this->cleanTmpfiles($exportPath, array_keys($exportFiles));
-
         return true;
     }
 
     /**
      * Register publishing objects.
      * @see ImportExportPlugin::registerObjects()
-     * @param $request Request
-     * @param $exportSpec array An array with DOI_EXPORT_*
-     * @param $journal Journal
-     * @return boolean|array True for success or an array of error messages.
+     * @param PKPRequest $request
+     * @param array $exportSpec
+     * @param Journal $journal
+     * @return bool|array
      */
-    public function registerObjects($request, $exportSpec, $journal) {
-        // Registering can take a long time.
-        @set_time_limit(0);
+    public function registerObjects($request, array $exportSpec, $journal) {
+        set_time_limit(0);
 
-        // Get the target directory.
         $result = $this->_getExportPath();
-        if (is_array($result)) return $result;
+        if (is_array($result)) {
+            return $result;
+        }
         $exportPath = $result;
 
-        // Run through the export spec and generate the corresponding
-        // export files.
         $errors = [];
         $exportFiles = $this->_generateExportFilesForObjects($request, $journal, $exportSpec, $exportPath, $errors);
         if ($exportFiles === false) {
@@ -736,26 +688,27 @@ class DOIExportPlugin extends ImportExportPlugin {
         }
 
         $arrayResult = [];
-        $falseResult = false; // medra can return also false
-        // Register DOIs and their meta-data.
-        foreach($exportFiles as $exportFile => $objects) {
+        $falseResult = false;
+
+        foreach ($exportFiles as $exportFile => $objects) {
             $result = $this->registerDoi($request, $journal, $objects, $exportFile);
             if ($result !== true) {
                 if (is_array($result)) {
                     $arrayResult = array_merge($arrayResult, $result);
-                } elseif ($result == false) {
+                } elseif ($result === false) {
                     $falseResult = true;
                 }
             }
         }
 
-        // Remove all temporary files.
         $this->cleanTmpfiles($exportPath, array_keys($exportFiles));
 
         if (!empty($arrayResult)) {
             return $arrayResult;
         }
-        if ($falseResult) return false;
+        if ($falseResult) {
+            return false;
+        }
 
         return true;
     }
@@ -763,17 +716,15 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Return the target file name for the given export type and object id.
      * @see ImportExportPlugin::getTargetFileName()
-     * @param $exportPath string
-     * @param $exportType integer One of the DOI_EXPORT_* constants.
-     * @param $objectId int An optional object id.
-     * @return string The generated file name.
+     * @param string $exportPath
+     * @param int $exportType
+     * @param int|null $objectId
+     * @return string
      */
-    public function getTargetFileName($exportPath, $exportType, $objectId = null) {
-        // Define the prefix of the exported files.
+    public function getTargetFileName(string $exportPath, int $exportType, ?int $objectId = null): string {
         $targetFileName = $exportPath . date('Ymd-Hi-') . $this->getObjectName($exportType);
 
-        // Define the target file type and the final target file name.
-        if (is_null($objectId)) {
+        if ($objectId === null) {
             $targetFileName .= 's.xml';
         } else {
             $targetFileName .= '-' . $objectId . '.xml';
@@ -784,128 +735,120 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Return the name of the object for the given export type.
      * @see ImportExportPlugin::getObjectName()
-     * @param $exportType integer One of the DOI_EXPORT_* constants.
+     * @param int $exportType
      * @return string
      */
-    public function getObjectName($exportType) {
+    public function getObjectName(int $exportType): string {
         $objectNames = [
-            DOI_EXPORT_ISSUES => 'issue',
+            DOI_EXPORT_ISSUES   => 'issue',
             DOI_EXPORT_ARTICLES => 'article',
-            DOI_EXPORT_GALLEYS => 'galley',
+            DOI_EXPORT_GALLEYS  => 'galley',
         ];
-        assert(isset($objectNames[$exportType]));
-        return $objectNames[$exportType];
+        return $objectNames[$exportType] ?? 'unknown';
     }
 
     /**
      * The selected object can be exported if it has a DOI.
      * @see ImportExportPlugin::canBeExported()
-     * @param $foundObject Issue|PublishedArticle|ArticleGalley|SuppFile
-     * @param $errors array
-     * @return array|boolean
-    */
-    public function canBeExported($foundObject, $errors) {
-        // [WIZDAM FIX] Replaced is_a with instanceof
-        if ($foundObject instanceof PublishedArticle && (int)$foundObject->getStatus() === STATUS_ARCHIVED) {
+     * @param Issue|PublishedArticle|ArticleGalley|SuppFile $foundObject
+     * @param array $errors
+     * @return bool
+     */
+    public function canBeExported($foundObject, &$errors): bool {
+        if ($foundObject instanceof PublishedArticle && (int) $foundObject->getStatus() === STATUS_ARCHIVED) {
             return false;
         }
-        return !is_null($foundObject->getPubId('doi'));
+        return $foundObject->getPubId('doi') !== null;
     }
 
     /**
      * Generate the export data model.
      * @see ImportExportPlugin::generateExportFiles()
-     * @param $request Request
-     * @param $exportType integer
-     * @param $objects array
-     * @param $targetPath string
-     * @param $journal Journal
-     * @param $errors array
-     * @return array|boolean
+     * @param PKPRequest $request
+     * @param int $exportType
+     * @param array $objects
+     * @param string $targetPath
+     * @param Journal $journal
+     * @param array $errors
+     * @return array|bool
      */
-    public function generateExportFiles($request, $exportType, $objects, $targetPath, $journal, $errors) {
-        assert(false);
+    public function generateExportFiles($request, int $exportType, array $objects, string $targetPath, $journal, &$errors) {
+        throw new \BadMethodCallException('Must be implemented by subclass.');
     }
 
     /**
      * Process the marking of the selected objects as registered.
      * @see ImportExportPlugin::processMarkRegistered()
-     * @param $request Request
-     * @param $exportType integer
-     * @param $objects array
-     * @param $journal Journal
-     * @return void
+     * @param PKPRequest $request
+     * @param int $exportType
+     * @param array $objects
+     * @param Journal $journal
      */
-    public function processMarkRegistered($request, $exportType, $objects, $journal) {
-        assert(false);
+    public function processMarkRegistered($request, int $exportType, array $objects, $journal): void {
+        throw new \BadMethodCallException('Must be implemented by subclass.');
     }
 
     /**
      * Create a tar archive.
      * @see ImportExportPlugin::tarFiles()
-     * @param $targetPath string
-     * @param $targetFile string
-     * @param $sourceFiles array
-     * @return void
+     * @param string $targetPath
+     * @param string $targetFile
+     * @param array $sourceFiles
      */
-    public function tarFiles($targetPath, $targetFile, $sourceFiles) {
-        assert($this->_checkedForTar);
+    public function tarFiles(string $targetPath, string $targetFile, array $sourceFiles): void {
+        if (!$this->_checkedForTar) {
+            return;
+        }
 
-        // GZip compressed result file.
         $tarCommand = Config::getVar('cli', 'tar') . ' -czf ' . escapeshellarg($targetFile);
-
-        // Do not reveal our internal export path by exporting only relative filenames.
         $tarCommand .= ' -C ' . escapeshellarg($targetPath);
-
-        // Do not reveal our webserver user by forcing root as owner.
         $tarCommand .= ' --owner 0 --group 0 --';
 
-        // Add each file individually so that other files in the directory
-        // will not be included.
-        foreach($sourceFiles as $sourceFile) {
-            assert(dirname($sourceFile) . '/' === $targetPath);
-            if (dirname($sourceFile) . '/' !== $targetPath) continue;
+        foreach ($sourceFiles as $sourceFile) {
+            if (dirname($sourceFile) . '/' !== $targetPath) {
+                continue;
+            }
             $tarCommand .= ' ' . escapeshellarg(basename($sourceFile));
         }
 
-        // Execute the command.
         exec($tarCommand);
     }
 
     /**
      * Register the given DOI.
      * @see ImportExportPlugin::registerDoi()
-     * @param $request Request
-     * @param $journal Journal
-     * @param $objects array
-     * @param $file string
-     * @return boolean|array True for success or an array of error messages.
+     * @param PKPRequest $request
+     * @param Journal $journal
+     * @param array $objects
+     * @param string $file
+     * @return bool|array
      */
-    public function registerDoi($request, $journal, $objects, $file) {
-        fatalError('Not implemented for this plug-in');
+    public function registerDoi($request, $journal, array $objects, string $file) {
+        throw new \BadMethodCallException('Not implemented for this plug-in');
     }
 
     /**
      * Check whether we are in test mode.
      * @see ImportExportPlugin::isTestMode()
-     * @param $request Request
-     * @return boolean
+     * @param PKPRequest $request
+     * @return bool
      */
-    public function isTestMode($request) {
-        return ($request->getUserVar('testMode') == '1');
+    public function isTestMode($request): bool {
+        return $request->getUserVar('testMode') === '1';
     }
 
     /**
      * Mark the given object as registered.
      * @see ImportExportPlugin::markRegistered()
-     * @param $request Request
-     * @param $object Issue|PublishedArticle|ArticleGalley|SuppFile
-     * @param $testPrefix string
-     * @return void
+     * @param PKPRequest $request
+     * @param Issue|PublishedArticle|ArticleGalley|SuppFile $object
+     * @param string $testPrefix
      */
-    public function markRegistered($request, $object, $testPrefix = '10.1234') {
+    public function markRegistered($request, $object, string $testPrefix = '10.1234'): void {
         $registeredDoi = $object->getPubId('doi');
-        assert(!empty($registeredDoi));
+        if (empty($registeredDoi)) {
+            return;
+        }
         if ($this->isTestMode($request)) {
             $registeredDoi = PKPString::regexp_replace('#^[^/]+/#', $testPrefix . '/', $registeredDoi);
         }
@@ -915,57 +858,52 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Reset the given object.
      * @see ImportExportPlugin::resetRegistration()
-     * @param $objectType integer A DOI_EXPORT_* constant.
-     * @param $objectId integer The ID of the object to be reset.
-     * @param $journal Journal
-     * @return boolean|array True for success or an array of error messages.
+     * @param int $objectType
+     * @param int $objectId
+     * @param Journal $journal
+     * @return bool|array
      */
-    public function resetRegistration($objectType, $objectId, $journal) {
-        // Identify the object to be reset.
+    public function resetRegistration(int $objectType, int $objectId, $journal) {
         $errors = [];
         $objects = $this->_getObjectsFromIds($objectType, $objectId, $journal->getId(), $errors);
-        if ($objects === false || count($objects) != 1) {
+        if ($objects === false || count($objects) !== 1) {
             return $errors;
         }
 
-        // Reset the object.
         $this->saveRegisteredDoi($objects[0], '');
-
         return true;
     }
 
     /**
      * Set the object's "registeredDoi" setting.
      * @see ImportExportPlugin::saveRegisteredDoi()
-     * @param $object Issue|PublishedArticle|ArticleGalley|SuppFile
-     * @param $registeredDoi string
-     * @return void
+     * @param Issue|PublishedArticle|ArticleGalley|SuppFile $object
+     * @param string $registeredDoi
      */
-    public function saveRegisteredDoi($object, $registeredDoi) {
-        // Identify the dao name and update method for the given object.
+    public function saveRegisteredDoi($object, string $registeredDoi): void {
         $configurations = [
-            'Issue' => ['IssueDAO', 'updateIssue'],
-            'Article' => ['ArticleDAO', 'updateArticle'],
+            'Issue'         => ['IssueDAO', 'updateIssue'],
+            'Article'       => ['ArticleDAO', 'updateArticle'],
             'ArticleGalley' => ['ArticleGalleyDAO', 'updateGalley'],
-            'SuppFile' => ['SuppFileDAO', 'updateSuppFile']
+            'SuppFile'      => ['SuppFileDAO', 'updateSuppFile']
         ];
-        $foundConfig = false;
-        foreach($configurations as $objectType => $configuration) {
-            // [WIZDAM FIX] Replaced is_a with instanceof using variable class name
+
+        $configuration = null;
+        foreach ($configurations as $objectType => $config) {
             if ($object instanceof $objectType) {
-                $foundConfig = true;
+                $configuration = $config;
                 break;
             }
         }
-        assert($foundConfig);
-        list($daoName, $daoMethod) = $configuration;
 
-        // Register a hook for the required additional
-        // object fields. We do this on a temporary
-        // basis as the hook adds a performance overhead
-        // and the field will "stealthily" survive even
-        // when the DAO does not know about it.
+        if ($configuration === null) {
+            throw new \UnexpectedValueException('Unsupported object type for DOI registration: ' . get_class($object));
+        }
+
+        [$daoName, $daoMethod] = $configuration;
         $this->registerDaoHook($daoName);
+        
+        /** @var DAO $dao */
         $dao = DAORegistry::getDAO($daoName);
         $object->setData($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, $registeredDoi);
         $dao->$daoMethod($object);
@@ -974,38 +912,36 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Register a hook for the given DAO
      * @see DAO::getAdditionalFieldNames()
-     * @param $daoName string
-     * @return void
+     * @param string $daoName
      */
-    public function registerDaoHook($daoName) {
+    public function registerDaoHook(string $daoName): void {
         HookRegistry::register(strtolower_codesafe($daoName) . '::getAdditionalFieldNames', [$this, 'getAdditionalFieldNames']);
     }
 
     /**
      * Add the additional field name
      * @see DAO::getAdditionalFieldNames()
-     * @param $hookName string
-     * @param $args array
+     * @param string $hookName
+     * @param array $args
      */
-    public function getAdditionalFieldNames($hookName, $args) {
-        assert(count($args) == 2);
-        $dao = $args[0];
-        $returner = $args[1];
-        assert(is_array($returner));
-        $returner[] = $this->getPluginId() . '::' . DOI_EXPORT_REGDOI;
+    public function getAdditionalFieldNames($hookName, $args): void {
+        if (count($args) >= 2 && is_array($args[1])) {
+            $args[1][] = $this->getPluginId() . '::' . DOI_EXPORT_REGDOI;
+        }
     }
 
     /**
      * Remove the given temporary files.
      * @see ImportExportPlugin::cleanTmpfiles()
-     * @param $tempdir string
-     * @param $tempfiles array
+     * @param string $tempdir
+     * @param array $tempfiles
      */
-    public function cleanTmpfiles($tempdir, $tempfiles) {
+    public function cleanTmpfiles(string $tempdir, array $tempfiles): void {
         foreach ($tempfiles as $tempfile) {
             $tempfilePath = dirname($tempfile) . '/';
-            assert($tempdir === $tempfilePath);
-            if ($tempdir !== $tempfilePath) continue;
+            if ($tempdir !== $tempfilePath) {
+                continue;
+            }
             unlink($tempfile);
         }
     }
@@ -1013,54 +949,48 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Get the DAO name and method name for the given export type.
      * @see ImportExportPlugin::getDaoName()
-     * @param $exportType One of the DOI_EXPORT_* constants
-     * @return array A list with the DAO name and DAO method name.
+     * @param int $exportType
+     * @return array
      */
-    public function getDaoName($exportType) {
+    public function getDaoName(int $exportType): array {
         $daoNames = [
-            DOI_EXPORT_ISSUES => ['IssueDAO', 'getIssueById'],
+            DOI_EXPORT_ISSUES   => ['IssueDAO', 'getIssueById'],
             DOI_EXPORT_ARTICLES => ['PublishedArticleDAO', 'getPublishedArticleByArticleId'],
-            DOI_EXPORT_GALLEYS => ['ArticleGalleyDAO', 'getGalley'],
+            DOI_EXPORT_GALLEYS  => ['ArticleGalleyDAO', 'getGalley'],
         ];
-        assert(isset($daoNames[$exportType]));
-        return $daoNames[$exportType];
+        return $daoNames[$exportType] ?? [];
     }
 
     /**
      * Get the translation key for "object not found" errors.
      * @see ImportExportPlugin::getObjectNotFoundErrorKey()
-     * @param $exportType One of the DOI_EXPORT_* constants
-     * @return string A translation key.
+     * @param int $exportType
+     * @return string
      */
-    public function getObjectNotFoundErrorKey($exportType) {
+    public function getObjectNotFoundErrorKey(int $exportType): string {
         $errorKeys = [
-            DOI_EXPORT_ISSUES => 'plugins.importexport.common.export.error.issueNotFound',
+            DOI_EXPORT_ISSUES   => 'plugins.importexport.common.export.error.issueNotFound',
             DOI_EXPORT_ARTICLES => 'plugins.importexport.common.export.error.articleNotFound',
-            DOI_EXPORT_GALLEYS => 'plugins.importexport.common.export.error.galleyNotFound'
+            DOI_EXPORT_GALLEYS  => 'plugins.importexport.common.export.error.galleyNotFound'
         ];
-        assert(isset($errorKeys[$exportType]));
-        return $errorKeys[$exportType];
+        return $errorKeys[$exportType] ?? 'plugins.importexport.common.export.error.objectNotFound';
     }
-
 
     //
     // Private helper methods
     //
     /**
      * Display the plug-in home page.
-     * @param $templateMgr TemplageManager
-     * @param $journal Journal
-     * @return void
+     * @param TemplateManager $templateMgr
+     * @param Journal $journal
      */
-    public function _displayPluginHomePage($templateMgr, $journal) {
+    private function _displayPluginHomePage($templateMgr, $journal): void {
         $this->setBreadcrumbs();
 
-        // Check for configuration errors:
         $configurationErrors = [];
-
-        // 1) missing DOI prefix
         $doiPrefix = null;
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
+        
         if (isset($pubIdPlugins['DOIPubIdPlugin'])) {
             $doiPrefix = $pubIdPlugins['DOIPubIdPlugin']->getSetting($journal->getId(), 'doiPrefix');
         }
@@ -1068,11 +998,11 @@ class DOIExportPlugin extends ImportExportPlugin {
             $configurationErrors[] = DOI_EXPORT_CONFIGERROR_DOIPREFIX;
         }
 
-        // 2) missing plug-in setting.
         $form = $this->_instantiateSettingsForm($journal);
-        foreach($form->getFormFields() as $fieldName => $fieldType) {
-            if ($form->isOptional($fieldName)) continue;
-
+        foreach ($form->getFormFields() as $fieldName => $fieldType) {
+            if ($form->isOptional($fieldName)) {
+                continue;
+            }
             $setting = $this->getSetting($journal->getId(), $fieldName);
             if (empty($setting)) {
                 $configurationErrors[] = DOI_EXPORT_CONFIGERROR_SETTINGS;
@@ -1081,214 +1011,174 @@ class DOIExportPlugin extends ImportExportPlugin {
         }
 
         $templateMgr->assign('configurationErrors', $configurationErrors);
-
-        // Prepare and display the index page template.
         $templateMgr->assign('journal', $journal);
         $templateMgr->display($this->getTemplatePath() . 'index.tpl');
     }
 
     /**
      * Display a list of articles for export.
-     * @param $templateMgr TemplateManager
-     * @param $journal Journal
-     * @return void
+     * @param TemplateManager $templateMgr
+     * @param Journal $journal
      */
-    public function displayArticleList($templateMgr, $journal) {
+    public function displayArticleList($templateMgr, $journal): void {
         $this->setBreadcrumbs([], true);
-
-        // Retrieve all published articles.
         $this->registerDaoHook('PublishedArticleDAO');
         $allArticles = $this->getAllPublishedArticles($journal);
 
-        // Filter only articles that can be exported.
         $articles = [];
-        foreach($allArticles as $article) {
+        foreach ($allArticles as $article) {
             $errors = [];
             if ($this->canBeExported($article, $errors)) {
                 $articles[] = $article;
             }
-            unset($article);
         }
         unset($allArticles);
 
-        // Paginate articles.
         $totalArticles = count($articles);
         $rangeInfo = Handler::getRangeInfo('articles');
         if ($rangeInfo->isValid()) {
-            $articles = array_slice($articles, $rangeInfo->getCount() * ($rangeInfo->getPage()-1), $rangeInfo->getCount());
+            $articles = array_slice($articles, $rangeInfo->getCount() * ($rangeInfo->getPage() - 1), $rangeInfo->getCount());
         }
 
-        // Retrieve article data.
-        $articleData = [];
-        foreach($articles as $article) {
-            $preparedArticle = $this->_prepareArticleData($article, $journal);
-            // We should always get a prepared article as we've already
-            // filtered non-published articles above.
-            assert(is_array($preparedArticle));
-            $articleData[] = $preparedArticle;
-            unset($article, $preparedArticle);
-        }
-        unset($articles);
-
-        // Instantiate article iterator.
-        import('lib.pkp.classes.core.VirtualArrayIterator');
-        $iterator = new VirtualArrayIterator($articleData, $totalArticles, $rangeInfo->getPage(), $rangeInfo->getCount());
-
-        // Prepare and display the article template.
-        $templateMgr->assign('articles', $iterator);
-        $templateMgr->display($this->getTemplatePath() . 'articles.tpl');
-    }
-
-    /**
-     * Display a list of galleys for export.
-     * @param $templateMgr TemplateManager
-     * @param $journal Journal
-     * @return void
-     */
-    public function _displayGalleyList($templateMgr, $journal) {
-        $this->setBreadcrumbs([], true);
-
-        // Retrieve all published articles.
-        $allArticles = $this->getAllPublishedArticles($journal);
-
-        // Retrieve galley data.
-        $this->registerDaoHook('ArticleGalleyDAO');
-        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /* @var $galleyDao ArticleGalleyDAO */
-        $galleys = [];
-        foreach($allArticles as $article) {
-            // Retrieve galleys for the article.
-            $articleGalleys = $galleyDao->getGalleysByArticle($article->getId());
-
-            // Filter only galleys that can be exported.
-            foreach ($articleGalleys as $galley) {
-                $errors = [];
-                if ($this->canBeExported($galley, $errors)) {
-                    $galleys[] = $galley;
-                }
-                unset($galley);
-            }
-            unset($article, $articleGalleys);
-        }
-        unset($allArticles);
-
-        // Paginate galleys.
-        $totalGalleys = count($galleys);
-        $rangeInfo = Handler::getRangeInfo('galleys');
-        if ($rangeInfo->isValid()) {
-            $galleys = array_slice($galleys, $rangeInfo->getCount() * ($rangeInfo->getPage()-1), $rangeInfo->getCount());
-        }
-
-        // Retrieve galley data.
-        $galleyData = [];
-        foreach($galleys as $galley) {
-            $preparedGalley = $this->_prepareGalleyData($galley, $journal);
-            // As we select only published articles, we should always
-            // get data back here.
-            assert(is_array($preparedGalley));
-            if (is_array($preparedGalley)) {
-                $galleyData[] = $preparedGalley;
-            }
-            unset($galley, $preparedGalley);
-        }
-        unset($galleys);
-
-        // Instantiate galley iterator.
-        import('lib.pkp.classes.core.VirtualArrayIterator');
-        $iterator = new VirtualArrayIterator($galleyData, $totalGalleys, $rangeInfo->getPage(), $rangeInfo->getCount());
-
-        // Prepare and display the galley template.
-        $templateMgr->assign('galleys', $iterator);
-        $templateMgr->display($this->getTemplatePath() . 'galleys.tpl');
-    }
-
-    /**
-     * Retrieve all unregistered issues.
-     * @param $journal Journal
-     * @return array
-     */
-    public function _getUnregisteredIssues($journal) {
-        // Retrieve all issues that have not yet been registered.
-        $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
-        $issues = $issueDao->getIssuesBySetting($this->getPluginId(). '::' . DOI_EXPORT_REGDOI, null, $journal->getId());
-
-        // Filter and cache issues.
-        $nullVar = null;
-        $cache = $this->getCache();
-        $issueData = [];
-        foreach ($issues as $issue) {
-            $cache->add($issue, $nullVar);
-            if ($issue->getPublished()) {
-                // Only propose published issues for export.
-                $issueData[] = $issue;
-            }
-            unset($issue);
-        }
-        return $issueData;
-    }
-
-    /**
-     * Retrieve all unregistered articles and their corresponding issues.
-     * @param $journal Journal
-     * @return array
-     */
-    public function _getUnregisteredArticles($journal) {
-        // Retrieve all published articles that have not yet been registered.
-        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /* @var $publishedArticleDao PublishedArticleDAO */
-        $articles = $publishedArticleDao->getBySetting($this->getPluginId(). '::' . DOI_EXPORT_REGDOI, null, $journal->getId());
-
-        // Retrieve issues for articles.
         $articleData = [];
         foreach ($articles as $article) {
             $preparedArticle = $this->_prepareArticleData($article, $journal);
             if (is_array($preparedArticle)) {
                 $articleData[] = $preparedArticle;
             }
-            unset($article, $preparedArticle);
         }
-        return $articleData;
+        unset($articles);
+
+        import('lib.pkp.classes.core.VirtualArrayIterator');
+        $iterator = new VirtualArrayIterator($articleData, $totalArticles, $rangeInfo->getPage(), $rangeInfo->getCount());
+
+        $templateMgr->assign('articles', $iterator);
+        $templateMgr->display($this->getTemplatePath() . 'articles.tpl');
     }
 
     /**
-     * Retrieve all unregistered galleys and their corresponding issues and articles.
-     * @param $journal Journal
-     * @return array
+     * Display a list of galleys for export.
+     * @param TemplateManager $templateMgr
+     * @param Journal $journal
      */
-    public function _getUnregisteredGalleys($journal) {
-        // Retrieve all galleys that have not yet been registered.
-        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /* @var $galleyDao ArticleGalleyDAO */
-        $galleys = $galleyDao->getGalleysBySetting($this->getPluginId(). '::' . DOI_EXPORT_REGDOI, null, null, $journal->getId());
+    private function _displayGalleyList($templateMgr, $journal): void {
+        $this->setBreadcrumbs([], true);
+        $allArticles = $this->getAllPublishedArticles($journal);
 
-        // Retrieve issues, articles and language for galleys.
+        $this->registerDaoHook('ArticleGalleyDAO');
+        /** @var ArticleGalleyDAO $galleyDao */
+        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+        $galleys = [];
+        
+        foreach ($allArticles as $article) {
+            $articleGalleys = $galleyDao->getGalleysByArticle($article->getId());
+            foreach ($articleGalleys as $galley) {
+                $errors = [];
+                if ($this->canBeExported($galley, $errors)) {
+                    $galleys[] = $galley;
+                }
+            }
+        }
+        unset($allArticles);
+
+        $totalGalleys = count($galleys);
+        $rangeInfo = Handler::getRangeInfo('galleys');
+        if ($rangeInfo->isValid()) {
+            $galleys = array_slice($galleys, $rangeInfo->getCount() * ($rangeInfo->getPage() - 1), $rangeInfo->getCount());
+        }
+
         $galleyData = [];
         foreach ($galleys as $galley) {
             $preparedGalley = $this->_prepareGalleyData($galley, $journal);
             if (is_array($preparedGalley)) {
                 $galleyData[] = $preparedGalley;
             }
-            unset($galley, $preparedGalley);
+        }
+        unset($galleys);
+
+        import('lib.pkp.classes.core.VirtualArrayIterator');
+        $iterator = new VirtualArrayIterator($galleyData, $totalGalleys, $rangeInfo->getPage(), $rangeInfo->getCount());
+
+        $templateMgr->assign('galleys', $iterator);
+        $templateMgr->display($this->getTemplatePath() . 'galleys.tpl');
+    }
+
+    /**
+     * Retrieve all unregistered issues.
+     * @param Journal $journal
+     * @return array
+     */
+    private function _getUnregisteredIssues($journal): array {
+        /** @var IssueDAO $issueDao */
+        $issueDao = DAORegistry::getDAO('IssueDAO');
+        $issues = $issueDao->getIssuesBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, $journal->getId());
+
+        $cache = $this->getCache();
+        $issueData = [];
+        foreach ($issues as $issue) {
+            $cache->add($issue, null);
+            if ($issue->getPublished()) {
+                $issueData[] = $issue;
+            }
+        }
+        return $issueData;
+    }
+
+    /**
+     * Retrieve all unregistered articles and their corresponding issues.
+     * @param Journal $journal
+     * @return array
+     */
+    private function _getUnregisteredArticles($journal): array {
+        /** @var PublishedArticleDAO $publishedArticleDao */
+        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+        $articles = $publishedArticleDao->getBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, $journal->getId());
+
+        $articleData = [];
+        foreach ($articles as $article) {
+            $preparedArticle = $this->_prepareArticleData($article, $journal);
+            if (is_array($preparedArticle)) {
+                $articleData[] = $preparedArticle;
+            }
+        }
+        return $articleData;
+    }
+
+    /**
+     * Retrieve all unregistered galleys and their corresponding issues and articles.
+     * @param Journal $journal
+     * @return array
+     */
+    private function _getUnregisteredGalleys($journal): array {
+        /** @var ArticleGalleyDAO $galleyDao */
+        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+        $galleys = $galleyDao->getGalleysBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, null, $journal->getId());
+
+        $galleyData = [];
+        foreach ($galleys as $galley) {
+            $preparedGalley = $this->_prepareGalleyData($galley, $journal);
+            if (is_array($preparedGalley)) {
+                $galleyData[] = $preparedGalley;
+            }
         }
         return $galleyData;
     }
 
     /**
      * Identify published article, issue and language of the given galley.
-     * @param $galley ArticleGalley
-     * @param $journal Journal
-     * @return array|null An array with article, issue and language
+     * @param ArticleGalley $galley
+     * @param Journal $journal
+     * @return array|null
      */
-    public function _prepareGalleyData($galley, $journal) {
-        // Retrieve article and issue for the galley.
+    private function _prepareGalleyData($galley, $journal): ?array {
         $galleyData = $this->prepareArticleFileData($galley, $journal);
         if (!is_array($galleyData)) {
-            $nullVar = null;
-            return $nullVar;
+            return null;
         }
 
-        // Add the galley language.
-        $languageDao = DAORegistry::getDAO('LanguageDAO'); /* @var $languageDao LanguageDAO */
+        /** @var LanguageDAO $languageDao */
+        $languageDao = DAORegistry::getDAO('LanguageDAO');
         $galleyData['language'] = $languageDao->getLanguageByCode(AppLocale::getIso1FromLocale($galley->getLocale()));
-
-        // Add the galley itself.
         $galleyData['galley'] = $galley;
 
         return $galleyData;
@@ -1296,83 +1186,66 @@ class DOIExportPlugin extends ImportExportPlugin {
 
     /**
      * Identify published article and issue for the given article id.
-     * @param $articleId integer
-     * @param $journal Journal
-     * @return array|null An array with the published article and issue
+     * @param int $articleId
+     * @param Journal $journal
+     * @return array|null
      */
-    public function _prepareArticleDataByArticleId($articleId, $journal) {
-        // Get the cache.
+    private function _prepareArticleDataByArticleId(int $articleId, $journal): ?array {
         $cache = $this->getCache();
 
-        // Retrieve article if not yet cached.
-        $article = null;
         if (!$cache->isCached('articles', $articleId)) {
-            $nullVar = null;
-            $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /* @var $publishedArticleDao PublishedArticleDAO */
+            /** @var PublishedArticleDAO $publishedArticleDao */
+            $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
             $article = $publishedArticleDao->getPublishedArticleByArticleId($articleId, $journal->getId(), true);
-            // [WIZDAM FIX] Replaced is_a with instanceof
+            
             if (!$article instanceof PublishedArticle) {
-                // It seems that the article ID we got does not belong to a
-                // published article. This may happen if we try to prepare
-                // article data for a galley or supplementary file.
-                return $nullVar;
+                return null;
             }
-            $cache->add($article, $nullVar);
+            $cache->add($article, null);
         }
-        if (!$article) $article = $cache->get('articles', $articleId);
-        // [WIZDAM FIX] Updated assert to use instanceof
-        assert($article instanceof PublishedArticle);
 
-        // Prepare and return article data for the article file.
+        $article = $cache->get('articles', $articleId);
         return $this->_prepareArticleData($article, $journal);
     }
 
     /**
      * Identify the issue of the given article.
-     * @param $article PublishedArticle
-     * @param $journal Journal
-     * @return array|null Return prepared article data or null
+     * @param PublishedArticle $article
+     * @param Journal $journal
+     * @return Issue|null
      */
-    public function _prepareArticleData($article, $journal) {
-        $nullVar = null;
-
-        // Add the article to the cache.
+    private function _prepareArticleData($article, $journal): ?array {
         $cache = $this->getCache();
-        $cache->add($article, $nullVar);
+        $cache->add($article, null);
 
-        // Retrieve the issue.
         $issue = $this->_getArticleIssue($article, $journal);
-
-        if ($issue->getPublished()) {
-            $articleData = [
+        if ($issue && $issue->getPublished()) {
+            return [
                 'article' => $article,
-                'issue' => $issue
+                'issue'   => $issue
             ];
-            return $articleData;
-        } else {
-            return $nullVar;
         }
+        return null;
     }
 
     /**
      * Retrieve the issue for the given article.
-     * @param $article Article
-     * @param $journal Journal
-     * @return Issue
+     * @param PublishedArticle $article
+     * @param Journal $journal
+     * @return Issue|null
      */
-    public function _getArticleIssue($article, $journal) {
-        $issueId = $article->getIssueId();
-
-        // Retrieve issue if not yet cached.
+    private function _getArticleIssue($article, $journal) {
+        $issueId = (int) $article->getIssueId();
         $cache = $this->getCache();
+        
         if (!$cache->isCached('issues', $issueId)) {
-            $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
+            /** @var IssueDAO $issueDao */
+            $issueDao = DAORegistry::getDAO('IssueDAO');
             $issue = $issueDao->getIssueById($issueId, $journal->getId(), true);
-            // [WIZDAM FIX] Updated assert to use instanceof
-            assert($issue instanceof Issue);
-            $nullVar = null;
-            $cache->add($issue, $nullVar);
-            unset($issue);
+
+            if ($issue instanceof Issue) {
+                $cache->add($issue, null);
+            }
         }
 
         return $cache->get('issues', $issueId);
@@ -1380,52 +1253,45 @@ class DOIExportPlugin extends ImportExportPlugin {
 
     /**
      * Generate export files for the given export spec.
-     * @param $request Request
-     * @param $journal Journal
-     * @param $exportSpec array
-     * @param $exportPath string
-     * @param $errors array
-     * @return array|boolean An array with generated export files
+     * @param PKPRequest $request
+     * @param Journal $journal
+     * @param array $exportSpec
+     * @param string $exportPath
+     * @param array $errors
+     * @return array|bool
      */
-    public function _generateExportFilesForObjects($request, $journal, $exportSpec, $exportPath, $errors) {
-        // Run through the export types and generate the corresponding
-        // export files.
+    private function _generateExportFilesForObjects($request, $journal, array $exportSpec, string $exportPath, &$errors) {
         $exportFiles = [];
-        foreach($exportSpec as $exportType => $objectIds) {
-            // Normalize the object id(s) into an array.
-            if (is_scalar($objectIds)) $objectIds = array($objectIds);
+        foreach ($exportSpec as $exportType => $objectIds) {
+            if (is_scalar($objectIds)) {
+                $objectIds = [$objectIds];
+            }
 
-            // Retrieve the object(s).
             $objects = $this->_getObjectsFromIds($exportType, $objectIds, $journal->getId(), $errors);
             if (empty($objects)) {
-                $this->cleanTmpfiles($exportPath, $exportFiles);
+                $this->cleanTmpfiles($exportPath, array_keys($exportFiles));
                 return false;
             }
 
-            // Export the object(s) to a file.
             $newFiles = $this->generateExportFiles($request, $exportType, $objects, $exportPath, $journal, $errors);
             if ($newFiles === false) {
-                $this->cleanTmpfiles($exportPath, $exportFiles);
+                $this->cleanTmpfiles($exportPath, array_keys($exportFiles));
                 return false;
             }
 
-            // Add the new files to the result array.
             $exportFiles = array_merge($exportFiles, $newFiles);
         }
-
         return $exportFiles;
     }
 
     /**
      * Test whether the tar binary is available.
-     * @return boolean|array
+     * @return bool|array
      */
-    public function _checkForTar() {
+    private function _checkForTar() {
         $tarBinary = Config::getVar('cli', 'tar');
         if (empty($tarBinary) || !is_executable($tarBinary)) {
-            $result = [
-                ['manager.plugins.tarCommandNotFound']
-            ];
+            $result = [['manager.plugins.tarCommandNotFound']];
         } else {
             $result = true;
         }
@@ -1437,85 +1303,79 @@ class DOIExportPlugin extends ImportExportPlugin {
      * Return the plug-ins export directory.
      * @return string|array
      */
-    public function _getExportPath() {
+    private function _getExportPath() {
         $exportPath = Config::getVar('files', 'files_dir') . '/' . $this->getPluginId();
         if (!file_exists($exportPath)) {
             $fileManager = new FileManager();
             $fileManager->mkdir($exportPath);
         }
         if (!is_writable($exportPath)) {
-            $errors = [
-                ['plugins.importexport.common.export.error.outputFileNotWritable', $exportPath]
-            ];
-            return $errors;
+            return [['plugins.importexport.common.export.error.outputFileNotWritable', $exportPath]];
         }
         return realpath($exportPath) . '/';
     }
 
     /**
      * Retrieve the objects corresponding to the given ids.
-     * @param $exportType integer One of the DOI_EXPORT_* constants.
-     * @param $objectIds integer|array
-     * @param $journalId integer
-     * @param $errors array
-     * @return array|boolean
+     * @param int $exportType
+     * @param int|array $objectIds
+     * @param int $journalId
+     * @param array $errors
+     * @return array|bool
      */
-    public function _getObjectsFromIds($exportType, $objectIds, $journalId, $errors) {
-        $falseVar = false;
-        if (empty($objectIds)) return $falseVar;
-        if (!is_array($objectIds)) $objectIds = array($objectIds);
+    private function _getObjectsFromIds(int $exportType, $objectIds, int $journalId, &$errors) {
+        if (empty($objectIds)) {
+            return false;
+        }
+        if (!is_array($objectIds)) {
+            $objectIds = [$objectIds];
+        }
 
-        // Instantiate the correct DAO.
-        list($daoName, $daoMethod) = $this->getDaoName($exportType);
+        [$daoName, $daoMethod] = $this->getDaoName($exportType);
         $dao = DAORegistry::getDAO($daoName);
-        $daoMethod = [$dao, $daoMethod];
+        $daoMethodCallable = [$dao, $daoMethod];
 
         $objects = [];
         foreach ($objectIds as $objectId) {
-            // Retrieve the objects from the DAO.
-            $daoMethodArgs = array($objectId);
-            if ($exportType != DOI_EXPORT_GALLEYS && $exportType != DOI_EXPORT_SUPPFILES) {
-                $daoMethodArgs[] = (int) $journalId;
+            $daoMethodArgs = [$objectId];
+            if ($exportType !== DOI_EXPORT_GALLEYS && $exportType !== DOI_EXPORT_SUPPFILES) {
+                $daoMethodArgs[] = $journalId;
             }
-            $foundObjects = call_user_func_array($daoMethod, $daoMethodArgs);
+            
+            $foundObjects = call_user_func_array($daoMethodCallable, $daoMethodArgs);
             if (!$foundObjects || empty($foundObjects)) {
-                $objectNotFoundKey = $this->getObjectNotFoundErrorKey($exportType);
-                $errors[] = [$objectNotFoundKey, $objectId];
-                return $falseVar;
+                $errors[] = [$this->getObjectNotFoundErrorKey($exportType), $objectId];
+                return false;
             }
 
-            // Add the objects to our result array.
-            if (!is_array($foundObjects)) $foundObjects = [$foundObjects];
+            if (!is_array($foundObjects)) {
+                $foundObjects = [$foundObjects];
+            }
+            
             foreach ($foundObjects as $foundObject) {
-                // Only consider objects that should be exported.
-                // NB: This may generate DOIs for the selected
-                // objects on the fly.
-                if ($this->canBeExported($foundObject, $errors)) $objects[] = $foundObject;
-                else return $falseVar;
-                unset($foundObject);
+                if ($this->canBeExported($foundObject, $errors)) {
+                    $objects[] = $foundObject;
+                } else {
+                    return false;
+                }
             }
-            unset($foundObjects);
         }
-
         return $objects;
     }
 
     /**
      * Display execution errors (if any) and command-line usage information.
-     * @param $scriptName string
-     * @param $errors array An optional list of translated error messages.
+     * @param string $scriptName
+     * @param array|null $errors
      */
-    public function _usage($scriptName, $errors = null) {
+    private function _usage(string $scriptName, $errors = null): void {
         if (is_array($errors) && !empty($errors)) {
             echo __('plugins.importexport.common.cliError') . "\n";
             foreach ($errors as $error) {
-                assert(is_array($error) && count($error) >=1);
-                if (isset($error[1])) {
-                    $errorMessage = __($error[0], ['param' => $error[1]]);
-                } else {
-                    $errorMessage = __($error[0]);
+                if (is_array($error) && count($error) >= 1) {
+                    $errorMessage = isset($error[1]) ? __($error[0], ['param' => $error[1]]) : __($error[0]);
+                    echo "*** $errorMessage\n";
                 }
-                echo "*** $errorMessage\n";
             }
             echo "\n\n";
         }
@@ -1530,40 +1390,35 @@ class DOIExportPlugin extends ImportExportPlugin {
 
     /**
      * Instantiate the settings form.
-     * @param $journal Journal
+     * @param Journal $journal
      * @return DOIExportSettingsForm
      */
-    public function _instantiateSettingsForm($journal) {
+    private function _instantiateSettingsForm($journal) {
         $settingsFormClassName = $this->getSettingsFormClassName();
         $this->import('classes.form.' . $settingsFormClassName);
+        
         $settingsForm = new $settingsFormClassName($this, $journal->getId());
-        // [WIZDAM FIX] Updated assert to use instanceof
-        assert($settingsForm instanceof DOIExportSettingsForm);
         return $settingsForm;
     }
 
     /**
      * Add a notification.
-     * @param $request Request
-     * @param $message string An i18n key.
-     * @param $notificationType integer One of the NOTIFICATION_TYPE_* constants
-     * @param $param string An additional parameter for the message.
+     * @param PKPRequest $request
+     * @param string $message
+     * @param int $notificationType
+     * @param string|null $param
      */
-    public function _sendNotification($request, $message, $notificationType, $param = null) {
+    private function _sendNotification($request, string $message, int $notificationType, ?string $param = null): void {
         static $notificationManager = null;
 
-        if (is_null($notificationManager)) {
+        if ($notificationManager === null) {
             import('classes.notification.NotificationManager');
             $notificationManager = new NotificationManager();
         }
 
-        if (!is_null($param)) {
-            $params = ['param' => $param];
-        } else {
-            $params = null;
-        }
-
+        $params = $param !== null ? ['param' => $param] : null;
         $user = $request->getUser();
+        
         $notificationManager->createTrivialNotification(
             $user->getId(),
             $notificationType,
@@ -1574,12 +1429,13 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Hook callback to parse the cron tab.
      * @see AcronPlugin::parseCronTab()
-     * @param $hookName string
-     * @param $args array
-     * @return boolean Always false to let other plugins
+     * @param string $hookName
+     * @param array $args
+     * @return bool
      */
-    public function callbackParseCronTab($hookName, $args) {
+    public function callbackParseCronTab($hookName, $args): bool {
         return false;
     }
+
 }
 ?>

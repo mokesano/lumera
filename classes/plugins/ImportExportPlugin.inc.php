@@ -21,7 +21,7 @@ class ImportExportPlugin extends Plugin {
 	/**
 	 * Constructor
 	 */
-    function __construct() {
+    public function __construct() {
         parent::__construct();
     }
 
@@ -31,7 +31,7 @@ class ImportExportPlugin extends Plugin {
 	 * 
 	 * @return String name of plugin
 	 */
-	function getName(): string {
+	public function getName(): string {
 		assert(false); // Should always be overridden
 	}
 
@@ -42,7 +42,7 @@ class ImportExportPlugin extends Plugin {
 	 * 
 	 * @return String
 	 */
-	function getDisplayName(): string {
+	public function getDisplayName(): string {
 		return 'Abstract Import/Export Plugin';
 	}
 
@@ -52,7 +52,7 @@ class ImportExportPlugin extends Plugin {
 	 * 
      * @return String
 	 */
-	function getDescription(): string {
+	public function getDescription(): string {
 		return 'This is the ImportExportPlugin base class. Its functions can be overridden by subclasses to provide import/export functionality for various formats.';
 	}
 
@@ -63,7 +63,7 @@ class ImportExportPlugin extends Plugin {
 	 * @param $crumbs Array ($url, $name, $isTranslated)
 	 * @param bool $isSubclass
 	 */
-	function setBreadcrumbs($crumbs = [], $isSubclass = false) {
+	public function setBreadcrumbs($crumbs = [], $isSubclass = false) {
 		$templateMgr = TemplateManager::getManager();
 		$pageCrumbs = [
 			[
@@ -95,7 +95,7 @@ class ImportExportPlugin extends Plugin {
 	 * @param $args array
 	 * @param $request Request
 	 */
-	function display($args, $request) {
+	public function display($args, $request) {
 		$templateManager = TemplateManager::getManager();
 		$templateManager->register_function('plugin_url', [&$this, 'smartyPluginUrl']);
 	}
@@ -107,7 +107,7 @@ class ImportExportPlugin extends Plugin {
 	 * @param mixed $scriptName
 	 * @param $args
 	 */
-	function executeCLI($scriptName, $args) {
+	public function executeCLI($scriptName, $args) {
 		$this->usage($scriptName);
 		// Implemented by subclasses
 	}
@@ -118,7 +118,7 @@ class ImportExportPlugin extends Plugin {
 	 * 
      * @param $scriptName
 	 */
-	function usage($scriptName) {
+	public function usage($scriptName) {
 		// Implemented by subclasses
 	}
 
@@ -130,7 +130,7 @@ class ImportExportPlugin extends Plugin {
      * @param $request Request
      * @return array
 	 */
-	function getManagementVerbs(array $verbs = [], $request = null): array {
+	public function getManagementVerbs(array $verbs = [], $request = null): array {
 		return [
 			[
 				'importexport',
@@ -150,7 +150,7 @@ class ImportExportPlugin extends Plugin {
      * @param $request Request
      * @return boolean
 	 */
-	function manage(string $verb, array $args, string &$message = null, &$messageParams = null, $request = null): bool {
+	public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
 		if ($verb === 'importexport') {
 			Request::redirect(null, 'manager', 'importexport', ['plugin', $this->getName()]);
 		}
@@ -167,7 +167,7 @@ class ImportExportPlugin extends Plugin {
      * @param $smarty Smarty
      * @return string
 	 */
-	function smartyPluginUrl($params, $smarty): string {
+	public function smartyPluginUrl($params, $smarty): string {
 	    $path = array();
 		if (!empty($params['path'])) $path = $params['path'];
 		if (!is_array($path)) $path = array($params['path']);

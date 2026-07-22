@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_admin
  *
  * @brief Handle requests for changing site language settings.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.admin.AdminHandler');
@@ -119,6 +117,7 @@ class AdminLanguagesHandler extends AdminHandler {
         }
         $site->setSupportedLocales($newSupportedLocales);
 
+        /** @var SiteDAO $siteDao */
         $siteDao = DAORegistry::getDAO('SiteDAO');
         $siteDao->updateObject($site);
 
@@ -159,6 +158,7 @@ class AdminLanguagesHandler extends AdminHandler {
             }
 
             $site->setInstalledLocales($installedLocales);
+            /** @var SiteDAO $siteDao */
             $siteDao = DAORegistry::getDAO('SiteDAO');
             $siteDao->updateObject($site);
         }
@@ -189,6 +189,7 @@ class AdminLanguagesHandler extends AdminHandler {
                 $supportedLocales = $site->getSupportedLocales();
                 $supportedLocales = array_diff($supportedLocales, [$locale]);
                 $site->setSupportedLocales($supportedLocales);
+                /** @var SiteDAO $siteDao */
                 $siteDao = DAORegistry::getDAO('SiteDAO');
                 $siteDao->updateObject($site);
 
@@ -208,7 +209,6 @@ class AdminLanguagesHandler extends AdminHandler {
     public function reloadLocale($args, $request) {
         $this->validate();
 
-        // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
         $site = $request->getSite();
@@ -235,13 +235,13 @@ class AdminLanguagesHandler extends AdminHandler {
     public function reloadDefaultEmailTemplates($args, $request) {
         $this->validate();
 
-        // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
         $site = $request->getSite();
         $locale = trim((string) $request->getUserVar('locale'));
 
         if (in_array($locale, $site->getInstalledLocales())) {
+            /** @var EmailTemplateDAO $emailTemplateDao */
             $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
             $emailTemplateDao->installEmailTemplates($emailTemplateDao->getMainEmailTemplatesFilename(), false, null, true);
             $emailTemplateDao->installEmailTemplateData($emailTemplateDao->getMainEmailTemplateDataFilename($locale));
@@ -267,7 +267,9 @@ class AdminLanguagesHandler extends AdminHandler {
         $site = $request->getSite();
         $siteSupportedLocales = $site->getSupportedLocales();
 
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
+        /** @var JournalSettingsDAO $settingsDao */
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $journals = $journalDao->getJournals();
         $journals = $journals->toArray();
@@ -297,7 +299,6 @@ class AdminLanguagesHandler extends AdminHandler {
         $this->validate();
         $this->setupTemplate(true);
 
-        // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
         $locale = trim((string) $request->getUserVar('locale'));
@@ -315,8 +316,8 @@ class AdminLanguagesHandler extends AdminHandler {
 
         $errors = [];
         if (!$languageAction->downloadLocale($locale, $errors)) {
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('errors', $errors);
+
             $templateMgr->display('admin/languageDownloadErrors.tpl');
             return;
         }
@@ -329,5 +330,6 @@ class AdminLanguagesHandler extends AdminHandler {
         $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_LOCALE_INSTALLED, $params);
         $request->redirect(null, null, 'languages');
     }
+
 }
 ?>

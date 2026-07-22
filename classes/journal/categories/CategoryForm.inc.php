@@ -19,7 +19,7 @@ import('lib.pkp.classes.form.Form');
 
 class CategoryForm extends Form {
 
-    /** @var Category object the category being edited */
+    /** @var mixed $category  */
     public $category;
 
     /**
@@ -53,6 +53,7 @@ class CategoryForm extends Form {
      * @return array
      */
     public function getLocaleFieldNames() {
+        /** @var CategoryDAO $categoryDao */
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
         $categoryEntryDao = $categoryDao->getEntryDAO();
         
@@ -91,6 +92,7 @@ class CategoryForm extends Form {
      * Save group group.
      */
     public function execute($object = null) {
+        /** @var CategoryDAO $categoryDao */
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
         $categoryEntryDao = $categoryDao->getEntryDAO();
         $categoryControlledVocab = $categoryDao->build();
@@ -106,10 +108,11 @@ class CategoryForm extends Form {
         if ($this->category->getId() != null) {
             $categoryEntryDao->updateObject($this->category);
         } else {
-            $this->category->setSequence(REALLY_BIG_NUMBER);
+            $this->category->setSequence(defined('REALLY_BIG_NUMBER') ? REALLY_BIG_NUMBER : 999999);
             $categoryEntryDao->insertObject($this->category);
             $categoryEntryDao->resequence($categoryControlledVocab->getId());
         }
     }
+
 }
 ?>

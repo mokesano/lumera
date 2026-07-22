@@ -61,7 +61,6 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
 
         $templateMgr = TemplateManager::getManager();
 
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('submission', $submission);
         $templateMgr->assign('copyeditor', $submission->getUserBySignoffType('SIGNOFF_COPYEDITING_INITIAL'));
         $templateMgr->assign('initialCopyeditFile', $submission->getFileBySignoffType('SIGNOFF_COPYEDITING_INITIAL'));
@@ -70,6 +69,7 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
         $templateMgr->assign('useLayoutEditors', $useLayoutEditors);
         $templateMgr->assign('metaCitations', $metaCitations);
         $templateMgr->assign('helpTopicId', 'editorial.copyeditorsRole.copyediting');
+
         $templateMgr->display('copyeditor/submission.tpl');
     }
 
@@ -83,7 +83,7 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
         $this->validate($request, $articleId);
         $this->setupTemplate(true, $articleId);
 
-        // [SECURITY FIX] Terapkan (int) pada parameter 'send'
+        // [SECURITY] Terapkan (int) pada parameter 'send'
         if (CopyeditorAction::completeCopyedit($this->submission, (int) $request->getUserVar('send'), $request)) {
             $request->redirect(null, null, 'submission', $articleId);
         }
@@ -99,7 +99,7 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
         $this->validate($request, $articleId);
         $this->setupTemplate(true, $articleId);
         
-        // [SECURITY FIX] Terapkan (int) pada parameter 'send'
+        // [SECURITY] Terapkan (int) pada parameter 'send'
         if (CopyeditorAction::completeFinalCopyedit($this->submission, (int) $request->getUserVar('send'), $request)) {
             $request->redirect(null, null, 'submission', $articleId);
         }
@@ -122,7 +122,6 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
     //
     // Misc
     //
-
     /**
      * Download a file.
      * @param array $args ($articleId, $fileId, [$revision])
@@ -170,9 +169,7 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
         $this->setupTemplate(true, $articleId);
 
         $send = (int) $request->getUserVar('send') === 1;
-
         import('classes.submission.proofreader.ProofreaderAction');
-
         if (ProofreaderAction::proofreadEmail($articleId, 'PROOFREAD_AUTHOR_COMPLETE', $request, $send ? '' : $request->url(null, 'copyeditor', 'authorProofreadingComplete', 'send'))) {
             $request->redirect(null, null, 'submission', $articleId);
         }
@@ -189,8 +186,10 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
         $this->validate($request, $articleId);
 
         $templateMgr = TemplateManager::getManager();
+
         $templateMgr->assign('articleId', $articleId);
         $templateMgr->assign('galleyId', $galleyId);
+
         $templateMgr->display('submission/layout/proofGalley.tpl');
     }
 
@@ -202,17 +201,22 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
     public function proofGalleyTop($args, $request) {
         $articleId = (int) array_shift($args);
         $galleyId = (int) array_shift($args);
+        
         $this->validate($request, $articleId);
         $submission = $this->submission;
+
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galley = $galleyDao->getGalley($galleyId, $articleId);
 
         $templateMgr = TemplateManager::getManager();
+        
         $templateMgr->assign('articleId', $articleId);
         $templateMgr->assign('galleyId', $galleyId);
         $templateMgr->assign('article', $submission);
         $templateMgr->assign('galley', $galley);
         $templateMgr->assign('backHandler', 'submission');
+
         $templateMgr->display('submission/layout/proofGalleyTop.tpl');
     }
 
@@ -226,6 +230,7 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
         $galleyId = (int) array_shift($args);
         $this->validate($request, $articleId);
 
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galley = $galleyDao->getGalley($galleyId, $articleId);
 
@@ -233,10 +238,12 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
 
         if (isset($galley)) {
             if ($galley->isHTMLGalley()) {
+                /** @var ArticleHTMLGalley $htmlGalley */
+                $htmlGalley = $galley;
                 $templateMgr = TemplateManager::getManager();
-                // [WIZDAM] Removed assign_by_ref
                 $templateMgr->assign('galley', $galley);
-                if ($galley->isHTMLGalley() && $styleFile = $galley->getStyleFile()) {
+
+                if (method_exists($htmlGalley, 'getStyleFile') && $styleFile = $htmlGalley->getStyleFile()) {
                     $templateMgr->addStyleSheet($request->url(null, 'article', 'viewFile', [
                         $articleId, $galleyId, $styleFile->getFileId()
                     ]));
@@ -300,7 +307,6 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
         }
     }
 
-
     //
     // Citation Editing
     //
@@ -324,5 +330,6 @@ class SubmissionCopyeditHandler extends CopyeditorHandler {
         $templateMgr = TemplateManager::getManager();
         $templateMgr->display('copyeditor/submissionCitations.tpl');
     }
+
 }
 ?>

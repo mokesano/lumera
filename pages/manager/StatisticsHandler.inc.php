@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_manager
  *
  * @brief Handle requests for statistics functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.manager.ManagerHandler');
@@ -58,19 +56,19 @@ class StatisticsHandler extends ManagerHandler {
         $journal = $request->getJournal();
         $templateMgr = TemplateManager::getManager($request);
 
-        // Get the statistics year
-        // [SECURITY FIX] Amankan 'statisticsYear' dengan trim() dan (int)
         $statisticsYear = (int) trim((string) $request->getUserVar('statisticsYear'));
 
-        // Ensure that the requested statistics year is within a sane range
+        /** @var JournalStatisticsDAO $journalStatisticsDao */
         $journalStatisticsDao = DAORegistry::getDAO('JournalStatisticsDAO');
-        $lastYear = strftime('%Y');
+        $lastYear = date('Y');
         $firstDate = $journalStatisticsDao->getFirstActivityDate($journal->getId());
-        if (!$firstDate) $firstYear = $lastYear;
-        else $firstYear = strftime('%Y', $firstDate);
+        if (!$firstDate) {
+            $firstYear = $lastYear;
+        } else {
+            $firstYear = date('Y', $firstDate);
+        }
         if ($statisticsYear < $firstYear || $statisticsYear > $lastYear) {
-            // Request out of range; redirect to the current year's statistics
-            return $request->redirect(null, null, null, null, ['statisticsYear' => strftime('%Y')]);
+            return $request->redirect(null, null, null, null, ['statisticsYear' => date('Y')]);
         }
 
         $templateMgr->assign('statisticsYear', $statisticsYear);
@@ -95,6 +93,7 @@ class StatisticsHandler extends ManagerHandler {
         $limitedArticleStatistics = $journalStatisticsDao->getArticleStatistics($journal->getId(), $sectionIds, $fromDate, $toDate);
         $templateMgr->assign('limitedArticleStatistics', $limitedArticleStatistics);
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $sections = $sectionDao->getJournalSections($journal->getId());
         $templateMgr->assign('sections', $sections->toArray());
@@ -120,12 +119,9 @@ class StatisticsHandler extends ManagerHandler {
         }
 
         $reportPlugins = PluginRegistry::loadCategory('reports');
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('reportPlugins', $reportPlugins);
-
         $templateMgr->assign('defaultMetricType', $journal->getSetting('defaultMetricType'));
         $templateMgr->assign('availableMetricTypes', $journal->getMetricTypes(true));
-
         $templateMgr->assign('helpTopicId', 'journal.managementPages.statsAndReports');
 
         $templateMgr->display('manager/statistics/index.tpl');
@@ -140,28 +136,23 @@ class StatisticsHandler extends ManagerHandler {
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
 
-        // [SECURITY FIX] Amankan 'sectionIds'. Jika string tunggal, trim()
         $sectionIds = $request->getUserVar('sectionIds');
         if (!is_array($sectionIds)) {
             if (empty($sectionIds)) {
                 $sectionIds = [];
             } else {
-                // Input string tunggal harus diamankan.
                 $sectionIds = [(int) trim((string) $sectionIds)];
             }
         } else {
-            // Jika sudah array, bersihkan setiap elemennya (ID integer)
             foreach ($sectionIds as $key => $id) {
                 $sectionIds[$key] = (int) trim((string) $id);
             }
         }
         $journal->updateSetting('statisticsSectionIds', $sectionIds);
 
-        // [SECURITY FIX] Amankan 'defaultMetricType' (string key) dengan trim()
         $defaultMetricType = trim((string) $request->getUserVar('defaultMetricType'));
         $journal->updateSetting('defaultMetricType', $defaultMetricType);
 
-        // [SECURITY FIX] Amankan 'statisticsYear' dengan (int) trim()
         $statisticsYear = (int) trim((string) $request->getUserVar('statisticsYear'));
         $request->redirect(null, null, 'statistics', null, ['statisticsYear' => $statisticsYear]);
     }
@@ -175,16 +166,13 @@ class StatisticsHandler extends ManagerHandler {
         $journal = $request->getJournal();
         
         foreach ($this->_getPublicStatisticsNames() as $name) {
-            // Input dari getUserVar($name) harus diamankan
             $flagValue = (int) trim((string) $request->getUserVar($name));
             $journal->updateSetting($name, $flagValue ? true : false);
         }
-        
-        // [SECURITY FIX] Amankan 'statViews' (flag boolean) dengan (int) trim()
+
         $statViews = (int) trim((string) $request->getUserVar('statViews'));
         $journal->updateSetting('statViews', $statViews ? true : false);
-        
-        // [SECURITY FIX] Amankan 'statisticsYear' dengan (int) trim()
+
         $statisticsYear = (int) trim((string) $request->getUserVar('statisticsYear'));
         $request->redirect(null, null, 'statistics', null, ['statisticsYear' => $statisticsYear]);
     }
@@ -250,8 +238,6 @@ class StatisticsHandler extends ManagerHandler {
 
         $router = $request->getRouter();
         $context = $router->getContext($request);
-
-        // [SECURITY FIX] Amankan 'metricType' (string key) dengan trim()
         $metricType = trim((string) $request->getUserVar('metricType'));
         if ($metricType === null || empty($metricType)) {
             $metricType = $context->getDefaultMetricType();
@@ -266,31 +252,16 @@ class StatisticsHandler extends ManagerHandler {
             $request->redirect(null, null, 'statistics');
         }
 
-        // [SECURITY FIX] Amankan 'columns' (string) dengan trim()
         $columns = (array) $request->getUserVar('columns');
-        // Ensure columns is array if it was expected to be one, or handle logic appropriately. 
-        // Original code: $columns = trim($request->getUserVar('columns')); suggests it's a string or array?
-        // Actually, $columns in getMetrics is typically an array of column IDs.
-        // If it comes from checkboxes, it's an array. If string, convert.
         if (!is_array($columns)) $columns = [$columns];
-        
-        // --- Filters ---
+
         $filterInput = $request->getUserVar('filters');
-        
-        // Coba unserialize.
-        $filters = @unserialize($filterInput); 
-        
-        // [SECURITY FIX] Jika unserialize gagal, gunakan input mentah yang sudah diamankan
+        $filters = @unserialize($filterInput);
         if ($filters === false && $filterInput !== 'b:0;') $filters = trim((string) $filterInput); 
 
-        // --- OrderBy ---
-        $orderByInput = $request->getUserVar('orderBy'); // Input mentah
-        
+        $orderByInput = $request->getUserVar('orderBy');
         if (!empty($orderByInput)) {
-            // Coba unserialize
             $orderBy = @unserialize($orderByInput); 
-            
-            // [SECURITY FIX] Jika unserialize gagal, gunakan input mentah yang sudah diamankan
             if ($orderBy === false && $orderByInput !== 'b:0;') $orderBy = trim((string) $orderByInput);
         } else {
             $orderBy = [];
@@ -312,7 +283,6 @@ class StatisticsHandler extends ManagerHandler {
             }
         }
 
-        // Make sure the metric column will always be present.
         if (!in_array(STATISTICS_METRIC, $columnNames)) $columnNames[STATISTICS_METRIC] = $allColumnNames[STATISTICS_METRIC];
 
         header('content-type: text/comma-separated-values');
@@ -326,13 +296,11 @@ class StatisticsHandler extends ManagerHandler {
 
         // Just for better displaying.
         $columnNames = array_merge([''], $columnNames);
-
         fputcsv($fp, $columnNames);
         foreach ($metrics as $record) {
             $row = [];
             foreach ($columnNames as $key => $name) {
                 if (empty($name)) {
-                    // Column just for better displaying.
                     $row[] = '';
                     continue;
                 }
@@ -394,7 +362,6 @@ class StatisticsHandler extends ManagerHandler {
         fclose($fp);
     }
 
-
     //
     // Private helper methods.
     //
@@ -420,9 +387,8 @@ class StatisticsHandler extends ManagerHandler {
     }
 
     /**
-     * Get data object title based on passed
-     * assoc type and id. If no object, return
-     * a default title.
+     * Get data object title based on passed assoc type 
+     * and id. If no object, return a default title.
      * @param int $assocId
      * @param int $assocType
      * @return string
@@ -430,11 +396,13 @@ class StatisticsHandler extends ManagerHandler {
     protected function _getObjectTitle($assocId, $assocType) {
         switch ($assocType) {
             case ASSOC_TYPE_JOURNAL:
+                /** @var JournalDAO $journalDao */
                 $journalDao = DAORegistry::getDAO('JournalDAO');
                 $journal = $journalDao->getJournal($assocId);
                 if (!$journal) break;
                 return $journal->getLocalizedTitle();
             case ASSOC_TYPE_ISSUE:
+                /** @var IssueDAO $issueDao */
                 $issueDao = DAORegistry::getDAO('IssueDAO');
                 $issue = $issueDao->getIssueById($assocId, null, true);
                 if (!$issue) break;
@@ -444,26 +412,29 @@ class StatisticsHandler extends ManagerHandler {
                 }
                 return $title;
             case ASSOC_TYPE_ISSUE_GALLEY:
+                /** @var IssueGalleyDAO $issueGalleyDao */
                 $issueGalleyDao = DAORegistry::getDAO('IssueGalleyDAO');
                 $issueGalley = $issueGalleyDao->getGalley($assocId);
                 if (!$issueGalley) break;
                 return $issueGalley->getFileName();
             case ASSOC_TYPE_ARTICLE:
+                /** @var ArticleDAO $articleDao */
                 $articleDao = DAORegistry::getDAO('ArticleDAO');
                 $article = $articleDao->getArticle($assocId, null, true);
                 if (!$article) break;
                 return $article->getLocalizedTitle();
             case ASSOC_TYPE_GALLEY:
+                /** @var ArticleGalleyDAO $articleGalleyDao */
                 $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
                 $galley = $articleGalleyDao->getGalley($assocId);
                 if (!$galley) break;
                 return $galley->getFileName();
             default:
-                // assert(false); // Removed assert
                 break;
         }
 
         return __('manager.statistics.reports.objectNotFound');
     }
+    
 }
 ?>

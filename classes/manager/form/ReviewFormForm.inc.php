@@ -77,6 +77,8 @@ class ReviewFormForm extends Form {
     public function initData() {
         if ($this->reviewFormId != null) {
             $journal = Application::get()->getRequest()->getJournal();
+
+            /** @var ReviewFormDAO $reviewFormDao */
             $reviewFormDao = DAORegistry::getDAO('ReviewFormDAO');
             $reviewForm = $reviewFormDao->getReviewForm($this->reviewFormId, ASSOC_TYPE_JOURNAL, $journal->getId());
 
@@ -105,8 +107,8 @@ class ReviewFormForm extends Form {
         $journal = Application::get()->getRequest()->getJournal();
         $journalId = $journal->getId();
 
+        /** @var ReviewFormDAO $reviewFormDao */
         $reviewFormDao = DAORegistry::getDAO('ReviewFormDAO');
-
         if ($this->reviewFormId != null) {
             $reviewForm = $reviewFormDao->getReviewForm($this->reviewFormId, ASSOC_TYPE_JOURNAL, $journalId);
         }
@@ -116,7 +118,7 @@ class ReviewFormForm extends Form {
             $reviewForm->setAssocType(ASSOC_TYPE_JOURNAL);
             $reviewForm->setAssocId($journalId);
             $reviewForm->setActive(0);
-            $reviewForm->setSequence(defined('REALLY_BIG_NUMBER') ? REALLY_BIG_NUMBER : 99999);
+            $reviewForm->setSequence(defined('REALLY_BIG_NUMBER') ? REALLY_BIG_NUMBER : 999999);
         }
 
         $reviewForm->setTitle($this->getData('title'), null); // Localized
@@ -131,5 +133,6 @@ class ReviewFormForm extends Form {
             $reviewFormDao->resequenceReviewForms(ASSOC_TYPE_JOURNAL, $journalId);
         }
     }
+
 }
 ?>

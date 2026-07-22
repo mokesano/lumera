@@ -276,7 +276,6 @@ class PKPAnnouncement extends DataObject {
      * @return string (YYYY-MM-DD)
      */
     public function getDatePosted() {
-        // PHP 8 Safety: Handle null datePosted
         $datePosted = $this->getData('datePosted');
         if (!$datePosted) return null;
         return date('Y-m-d', strtotime($datePosted));
@@ -305,5 +304,6 @@ class PKPAnnouncement extends DataObject {
     public function setDatetimePosted($datetimePosted) {
         return $this->setData('datePosted', $datetimePosted);
     }
+    
 }
 ?>

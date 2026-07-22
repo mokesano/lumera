@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_manager
  *
  * @brief Handle requests for changing journal language settings.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.manager.ManagerHandler');
@@ -97,8 +95,6 @@ class JournalLanguagesHandler extends ManagerHandler {
 
         // make sure the locale is valid
         $localeToLoad = trim((string) $request->getUserVar('localeToLoad'));
-        
-        // [WIZDAM FIX] Fixed undefined variable $locale -> $localeToLoad
         if (!AppLocale::isLocaleValid($localeToLoad)) {
             $request->redirect(null, null, 'languages');
         }
@@ -107,6 +103,7 @@ class JournalLanguagesHandler extends ManagerHandler {
         $this->setupTemplate(true);
 
         $journal = $request->getJournal();
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $journalSettingsDao->reloadLocalizedDefaultSettings(
             $journal->getId(), 
@@ -128,5 +125,6 @@ class JournalLanguagesHandler extends ManagerHandler {
         $notificationManager->createTrivialNotification($user->getId());
         $request->redirect(null, null, 'languages');
     }
+
 }
 ?>

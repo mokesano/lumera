@@ -24,7 +24,6 @@ class PKPAction {
      * Constructor.
      */
     public function __construct() {
-
     }
 
     /**
@@ -32,7 +31,10 @@ class PKPAction {
      */
     public function PKPAction() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::PKPAction(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                'Class ' . get_class($this) . ' uses deprecated constructor parent::PKPAction(). Please refactor to parent::__construct().', 
+                E_USER_DEPRECATED
+            );
         }
         self::__construct();
     }
@@ -42,89 +44,110 @@ class PKPAction {
     //
     /**
      * Edit citations
-     * @param $request Request
-     * @param $submission Submission
-     * @return string the rendered response
+     * 
+     * @param PKPRequest $request
+     * @param Submission $submission
+     * @return void
      */
     public static function editCitations($request, $submission) {
         $router = $request->getRouter();
         $dispatcher = $request->getDispatcher();
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
 
-        // Add extra style sheets required for ajax components
-        // FIXME: Must be removed after OMP->OJS backporting
-        $templateMgr->addStyleSheet($request->getBaseUrl().'/styles/ojs.css');
+        $templateMgr->addStyleSheet($request->getBaseUrl() . '/styles/ojs.css');
 
         // Add extra java script required for ajax components
-        // FIXME: Must be removed after OMP->OJS backporting
         $templateMgr->addJavaScript('lib/pkp/js/functions/modal.js');
         $templateMgr->addJavaScript('lib/pkp/js/lib/jquery/plugins/validate/jquery.validate.min.js');
         $templateMgr->addJavaScript('lib/pkp/js/functions/jqueryValidatorI18n.js');
         $templateMgr->addJavaScript('lib/pkp/js/lib/jquery/plugins/jquery.splitter.js');
 
-        // Check whether the citation editor requirements are complete.
         $citationEditorConfigurationError = null;
-
-        // 1) Citation editing must be enabled for the journal.
-        if (!$citationEditorConfigurationError) {
-            $context = $router->getContext($request);
-            if (!$context->getSetting('metaCitations')) $citationEditorConfigurationError = 'submission.citations.editor.pleaseSetup';
+        $context = $router->getContext($request);
+        if (!$context || !$context->getSetting('metaCitations')) {
+            $citationEditorConfigurationError = 'submission.citations.editor.pleaseSetup';
         }
 
-        // 2) At least one citation parser is available.
-        $citationDao = DAORegistry::getDAO('CitationDAO'); // NB: This also loads the parser/lookup filter category constants.
-        if (!$citationEditorConfigurationError) {
-            $filterDao = DAORegistry::getDAO('FilterDAO'); /* @var $filterDao FilterDAO */
-            $configuredCitationParsers = $filterDao->getObjectsByGroup(CITATION_PARSER_FILTER_GROUP, $context->getId());
-            if (!count($configuredCitationParsers)) $citationEditorConfigurationError = 'submission.citations.editor.pleaseAddParserFilter';
+        if (!$citationEditorConfigurationError && $context) {
+            /** @var FilterDAO $filterDao */
+            $filterDao = DAORegistry::getDAO('FilterDAO');
+            $contextId = (int) $context->getId();
+            $configuredCitationParsers = $filterDao->getObjectsByGroup(CITATION_PARSER_FILTER_GROUP, $contextId);
+
+            if (empty($configuredCitationParsers)) {
+                $citationEditorConfigurationError = 'submission.citations.editor.pleaseAddParserFilter';
+            }
         }
 
-        // 3) A citation output filter has been set.
-        if (!$citationEditorConfigurationError && !($context->getSetting('metaCitationOutputFilterId') > 0)) {
-            $citationEditorConfigurationError = 'submission.citations.editor.pleaseConfigureOutputStyle';
+        if (!$citationEditorConfigurationError && $context) {
+            $outputFilterId = $context->getSetting('metaCitationOutputFilterId');
+            if (!is_numeric($outputFilterId) || (int) $outputFilterId <= 0) {
+                $citationEditorConfigurationError = 'submission.citations.editor.pleaseConfigureOutputStyle';
+            }
         }
 
         $templateMgr->assign('citationEditorConfigurationError', $citationEditorConfigurationError);
 
-        // Should we display the "Introduction" tab?
-        if (is_null($citationEditorConfigurationError)) {
+        if ($citationEditorConfigurationError === null) {
             $user = $request->getUser();
-            $introductionHide = (boolean)$user->getSetting('citation-editor-hide-intro');
+            $introductionHide = $user ? (bool) $user->getSetting('citation-editor-hide-intro') : false;
         } else {
-            // Always show the introduction tab if we have a configuration error.
             $introductionHide = false;
         }
         $templateMgr->assign('introductionHide', $introductionHide);
 
-        // Display an initial help message.
+        /** @var CitationDAO $citationDao */
+        $citationDao = DAORegistry::getDAO('CitationDAO');
         $citations = $citationDao->getObjectsByAssocId(ASSOC_TYPE_ARTICLE, $submission->getId());
-        if ($citations->getCount() > 0) {
+        $citationCount = $citations ? $citations->getCount() : 0;
+        if ($citationCount > 0) {
             $initialHelpMessage = __('submission.citations.editor.details.pleaseClickOnCitationToStartEditing');
         } else {
             $articleMetadataUrl = $router->url($request, null, null, 'viewMetadata', $submission->getId());
-            $initialHelpMessage = __('submission.citations.editor.pleaseImportCitationsFirst', array('articleMetadataUrl' => $articleMetadataUrl));
+            $initialHelpMessage = __('submission.citations.editor.pleaseImportCitationsFirst', ['articleMetadataUrl' => $articleMetadataUrl]);
         }
         $templateMgr->assign('initialHelpMessage', $initialHelpMessage);
 
-        // Find out whether all citations have been processed or not.
-        $unprocessedCitations = $citationDao->getObjectsByAssocId(ASSOC_TYPE_ARTICLE, $submission->getId(), 0, CITATION_CHECKED);
-        if ($unprocessedCitations->getCount() > 0) {
-            $templateMgr->assign('unprocessedCitations', $unprocessedCitations->toArray());
+        if ($citationCount > 0) {
+            $unprocessedCitations = $citationDao->getObjectsByAssocId(ASSOC_TYPE_ARTICLE, $submission->getId(), 0, CITATION_CHECKED);
+            $unprocessedCount = $unprocessedCitations ? $unprocessedCitations->getCount() : 0;
+            
+            if ($unprocessedCount > 0) {
+                $templateMgr->assign('unprocessedCitations', $unprocessedCitations->toArray());
+            } else {
+                $templateMgr->assign('unprocessedCitations', []);
+            }
         } else {
-            $templateMgr->assign('unprocessedCitations', false);
+            $templateMgr->assign('unprocessedCitations', []);
         }
 
         // Add the grid URL.
-        $citationGridUrl = $dispatcher->url($request, ROUTE_COMPONENT, null, 'grid.citation.CitationGridHandler', 'fetchGrid', null, array('assocId' => $submission->getId()));
+        $citationGridUrl = $dispatcher->url(
+            $request, 
+            ROUTE_COMPONENT, 
+            null, 
+            'grid.citation.CitationGridHandler', 
+            'fetchGrid', 
+            null, 
+            ['assocId' => $submission->getId()]
+        );
         $templateMgr->assign('citationGridUrl', $citationGridUrl);
 
         // Add the export URL.
-        $citationGridUrl = $dispatcher->url($request, ROUTE_COMPONENT, null, 'grid.citation.CitationGridHandler', 'exportCitations', null, array('assocId' => $submission->getId()));
-        $templateMgr->assign('citationExportUrl', $citationGridUrl);
+        $citationExportUrl = $dispatcher->url(
+            $request, 
+            ROUTE_COMPONENT, 
+            null, 
+            'grid.citation.CitationGridHandler', 
+            'exportCitations', 
+            null, 
+            ['assocId' => $submission->getId()]
+        );
+        $templateMgr->assign('citationExportUrl', $citationExportUrl);
 
         // Add the submission.
-        // Modernisasi: assign_by_ref diganti assign karena objek sudah passed by handle
         $templateMgr->assign('submission', $submission);
     }
+
 }
 ?>

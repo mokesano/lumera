@@ -106,6 +106,7 @@ class GroupForm extends Form {
      * Save group group.
      */
     public function execute($object = NULL) {
+        /** @var GroupDAO $groupDao */
         $groupDao = DAORegistry::getDAO('GroupDAO');
         
         // [WIZDAM] Singleton Pattern
@@ -130,12 +131,13 @@ class GroupForm extends Form {
             $groupDao->updateObject($this->group);
         } else {
             // [WIZDAM] Ensure REALLY_BIG_NUMBER is defined or handle gracefully if missing (usually in Core)
-            $this->group->setSequence(defined('REALLY_BIG_NUMBER') ? REALLY_BIG_NUMBER : 99999);
+            $this->group->setSequence(defined('REALLY_BIG_NUMBER') ? REALLY_BIG_NUMBER : 999999);
             $groupDao->insertGroup($this->group);
 
             // Re-order the groups so the new one is at the end of the list.
             $groupDao->resequenceGroups($this->group->getAssocType(), $this->group->getAssocId());
         }
     }
+
 }
 ?>

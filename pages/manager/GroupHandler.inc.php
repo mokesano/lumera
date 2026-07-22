@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_manager
  *
  * @brief Handle requests for editorial team management functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.manager.ManagerHandler');
@@ -61,21 +59,23 @@ class GroupHandler extends ManagerHandler {
 
         $rangeInfo = $this->getRangeInfo('groups');
 
+        /** @var GroupDAO $groupDao */
         $groupDao = DAORegistry::getDAO('GroupDAO');
         $groups = $groupDao->getGroups(ASSOC_TYPE_JOURNAL, $journal->getId(), null, $rangeInfo);
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->addJavaScript('lib/pkp/js/lib/jquery/plugins/jquery.tablednd.js');
         $templateMgr->addJavaScript('lib/pkp/js/functions/tablednd.js');
-        // [WIZDAM] assign_by_ref deprecated
+        
         $templateMgr->assign('groups', $groups);
         $templateMgr->assign('boardEnabled', $journal->getSetting('boardEnabled'));
+
         $templateMgr->display('manager/groups/groups.tpl');
     }
 
     /**
      * Delete a group.
-     * @param array $args first parameter is the ID of the group to delete
+     * @param array $args
      */
     public function deleteGroup($args) {
         $groupId = isset($args[0]) ? (int)$args[0] : 0;
@@ -83,6 +83,7 @@ class GroupHandler extends ManagerHandler {
 
         $group = $this->group;
 
+        /** @var GroupDAO $groupDao */
         $groupDao = DAORegistry::getDAO('GroupDAO');
         $groupDao->deleteObject($group);
         $groupDao->resequenceGroups($group->getAssocType(), $group->getAssocId());
@@ -95,39 +96,28 @@ class GroupHandler extends ManagerHandler {
      */
     public function moveGroup() {
         $request = Application::get()->getRequest();
-        // [SECURITY FIX] Amankan 'id' dengan trim() dan (int)
         $groupId = (int) trim((string) $request->getUserVar('id'));
         $this->validate($groupId);
 
         $group = $this->group;
+        /** @var GroupDAO $groupDao */
         $groupDao = DAORegistry::getDAO('GroupDAO');
-        
-        // [SECURITY FIX] Whitelist 'd' (direction)
+
         $direction = trim((string) $request->getUserVar('d'));
 
         if (!empty($direction)) {
-            // Whitelist arah pergerakan yang valid
             if ($direction == 'u') {
                 $group->setSequence($group->getSequence() - 1.5);
             } elseif ($direction == 'd') {
                 $group->setSequence($group->getSequence() + 1.5);
             }
-            // Jika $direction tidak valid, aksi dilewati
-
         } else {
-            // Dragging and dropping
-            
-            // [SECURITY FIX] Amankan 'prevId' (integer ID) dengan trim()
             $prevId = (int) trim((string) $request->getUserVar('prevId'));
             
-            if ($prevId == 0) { // Jika $prevId tidak disetel atau 0
+            if ($prevId == 0) {
                 $prevSeq = 0;
             } else {
-                // [MODERNISASI] Hapus operator legacy = &
                 $journal = $request->getJournal();
-                
-                // [MODERNISASI] Hapus operator legacy = &
-                // Kita juga menggunakan $prevId yang sudah diamankan
                 $prevGroup = $groupDao->getById($prevId, ASSOC_TYPE_JOURNAL, $journal->getId());
                 $prevSeq = $prevGroup->getSequence();
             }
@@ -138,9 +128,6 @@ class GroupHandler extends ManagerHandler {
         $groupDao->updateObject($group);
         $groupDao->resequenceGroups($group->getAssocType(), $group->getAssocId());
 
-        // Moving up or down with the arrows requires a page reload.
-        // In the case of a drag and drop move, the display has been
-        // updated on the client side, so no reload is necessary.
         if ($direction != null) {
             $request->redirect(null, null, 'groups');
         }
@@ -148,7 +135,7 @@ class GroupHandler extends ManagerHandler {
 
     /**
      * Display form to edit a group.
-     * @param array $args optional, first parameter is the ID of the group to edit
+     * @param array $args
      */
     public function editGroup($args = []) {
         $groupId = isset($args[0]) ? (int)$args[0] : null;
@@ -156,6 +143,7 @@ class GroupHandler extends ManagerHandler {
         $journal = Application::get()->getRequest()->getJournal();
 
         if ($groupId !== null) {
+            /** @var GroupDAO $groupDao */
             $groupDao = DAORegistry::getDAO('GroupDAO');
             $group = $groupDao->getById($groupId, ASSOC_TYPE_JOURNAL, $journal->getId());
             if (!$group) {
@@ -169,7 +157,6 @@ class GroupHandler extends ManagerHandler {
         import('classes.manager.form.GroupForm');
 
         $templateMgr = TemplateManager::getManager();
-
         $templateMgr->assign('pageTitle',
             $group === null ?
                 'manager.groups.createTitle' :
@@ -198,8 +185,6 @@ class GroupHandler extends ManagerHandler {
      */
     public function updateGroup() {
         $request = Application::get()->getRequest();
-        // [SECURITY FIX] Amankan 'groupId' dengan trim() sebelum (int)
-        // Kita juga pastikan trim() hanya dilakukan pada string non-null.
         $groupIdInput = $request->getUserVar('groupId');
         $groupId = $groupIdInput === null ? null : (int) trim((string) $groupIdInput); 
         
@@ -208,13 +193,11 @@ class GroupHandler extends ManagerHandler {
             $group = null;
         } else {
             $this->validate($groupId);
-            // [MODERNISASI] Hapus operator legacy = &
             $group = $this->group; 
         }
         $this->setupTemplate($group);
 
         import('classes.manager.form.GroupForm');
-
         $groupForm = new GroupForm($group);
         $groupForm->readInputData();
 
@@ -222,7 +205,6 @@ class GroupHandler extends ManagerHandler {
             $groupForm->execute();
             $request->redirect(null, null, 'groups');
         } else {
-
             $templateMgr = TemplateManager::getManager();
             $templateMgr->append('pageHierarchy', [$request->url(null, 'manager', 'groups'), 'manager.groups']);
 
@@ -248,13 +230,14 @@ class GroupHandler extends ManagerHandler {
         $rangeInfo = $this->getRangeInfo('memberships');
 
         $this->setupTemplate($group, true);
+        /** @var GroupMembershipDAO $groupMembershipDao */
         $groupMembershipDao = DAORegistry::getDAO('GroupMembershipDAO');
         $memberships = $groupMembershipDao->getMemberships($group->getId(), $rangeInfo);
         $templateMgr = TemplateManager::getManager();
+
         $templateMgr->addJavaScript('lib/pkp/js/lib/jquery/plugins/jquery.tablednd.js');
         $templateMgr->addJavaScript('lib/pkp/js/functions/tablednd.js');
-        
-        // [WIZDAM] Removed assign_by_ref
+
         $templateMgr->assign('memberships', $memberships);
         $templateMgr->assign('group', $group);
         
@@ -269,26 +252,20 @@ class GroupHandler extends ManagerHandler {
         $groupId = isset($args[0]) ? (int)$args[0] : 0;
         $userId = isset($args[1]) ? (int)$args[1] : null;
 
+        /** @var GroupMembershipDAO $groupMembershipDao */
         $groupMembershipDao = DAORegistry::getDAO('GroupMembershipDAO');
         $request = Application::get()->getRequest();
 
-        // If a user has been selected, add them to the group.
-        // Otherwise list users.
         if ($userId !== null) {
             $this->validate($groupId, $userId);
             $group = $this->group;
             $user = $this->user;
-            // A valid user has been chosen. Add them to
-            // the membership list and redirect.
-
-            // Avoid duplicating memberships.
             $groupMembership = $groupMembershipDao->getMembership($group->getId(), $user->getId());
 
             if (!$groupMembership) {
                 $groupMembership = new GroupMembership();
                 $groupMembership->setGroupId($group->getId());
                 $groupMembership->setUserId($user->getId());
-                // For now, all memberships are displayed in About
                 $groupMembership->setAboutDisplayed(true);
                 $groupMembershipDao->insertMembership($groupMembership);
             }
@@ -300,24 +277,20 @@ class GroupHandler extends ManagerHandler {
 
             $searchType = null;
             $searchMatch = null;
-            // [SECURITY FIX] Amankan 'search' dan 'searchInitial' dengan trim()
             $search = $searchQuery = trim((string) $request->getUserVar('search'));
             $searchInitial = trim((string) $request->getUserVar('searchInitial'));
             
             if (!empty($search)) {
-                // [SECURITY FIX] Amankan 'searchField' (key) dengan trim()
                 $searchType = trim((string) $request->getUserVar('searchField'));
-                
-                // [SECURITY FIX] Amankan 'searchMatch' (key) dengan trim()
                 $searchMatch = trim((string) $request->getUserVar('searchMatch')); 
 
             } elseif (!empty($searchInitial)) {
-                // $searchInitial sudah diamankan
                 $searchInitial = PKPString::strtoupper($searchInitial);
                 $searchType = USER_FIELD_INITIAL;
                 $search = $searchInitial;
             }
 
+            /** @var RoleDAO $roleDao */
             $roleDao = DAORegistry::getDAO('RoleDAO');
             $journal = $request->getJournal();
             $users = $roleDao->getUsersByRoleId(null, $journal->getId(), $searchType, $search, $searchMatch);
@@ -327,11 +300,8 @@ class GroupHandler extends ManagerHandler {
             $templateMgr->assign('searchField', $searchType);
             $templateMgr->assign('searchMatch', $searchMatch);
             $templateMgr->assign('search', $searchQuery);
-            // [SECURITY FIX] Amankan 'searchInitial' dengan trim() dan htmlspecialchars() untuk mencegah XSS
             $searchInitialRaw = trim((string) $request->getUserVar('searchInitial'));
             $templateMgr->assign('searchInitial', htmlspecialchars($searchInitialRaw, ENT_QUOTES, 'UTF-8'));
-
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('users', $users);
             
             $templateMgr->assign('fieldOptions', [
@@ -360,6 +330,7 @@ class GroupHandler extends ManagerHandler {
         $user = $this->user;
         $groupMembership = $this->groupMembership;
 
+        /** @var GroupMembershipDAO $groupMembershipDao */
         $groupMembershipDao = DAORegistry::getDAO('GroupMembershipDAO');
         $groupMembershipDao->deleteMembershipById($group->getId(), $user->getId());
         $groupMembershipDao->resequenceMemberships($group->getId());
@@ -374,34 +345,27 @@ class GroupHandler extends ManagerHandler {
     public function moveMembership($args) {
         $request = Application::get()->getRequest();
         $groupId = isset($args[0]) ? (int)$args[0] : 0;
-        // [SECURITY FIX] Amankan 'id' (userId) dengan trim() dan (int)
         $userId = (int) trim((string) $request->getUserVar('id'));
         $this->validate($groupId, $userId, true);
+
         $group = $this->group;
         $groupMembership = $this->groupMembership;
-
+        /** @var GroupMembershipDAO $groupMembershipDao */
         $groupMembershipDao = DAORegistry::getDAO('GroupMembershipDAO');
-        
-        // [SECURITY FIX] Whitelist 'd' (direction)
+
         $direction = trim((string) $request->getUserVar('d'));
-        
         if (!empty($direction)) {
-            // Whitelist arah pergerakan yang valid
             if ($direction == 'u') {
                 $groupMembership->setSequence($groupMembership->getSequence() - 1.5);
             } elseif ($direction == 'd') {
                 $groupMembership->setSequence($groupMembership->getSequence() + 1.5);
             }
         } else {
-            // drag and drop
-            
-            // [SECURITY FIX] Amankan 'prevId' (ID numerik) dengan (int) trim()
             $prevId = (int) trim((string) $request->getUserVar('prevId'));
             
-            if ($prevId == 0) { // $prevId akan 0 jika null/kosong karena (int) casting
+            if ($prevId == 0) {
                 $prevSeq = 0;
             } else {
-                // [MODERNISASI] Hapus operator legacy = &
                 $prevMembership = $groupMembershipDao->getMembership($groupId, $prevId);
                 $prevSeq = $prevMembership->getSequence();
             }
@@ -411,31 +375,30 @@ class GroupHandler extends ManagerHandler {
         $groupMembershipDao->updateObject($groupMembership);
         $groupMembershipDao->resequenceMemberships($group->getId());
 
-        // Moving up or down with the arrows requires a page reload.
-        // In the case of a drag and drop move, the display has been
-        // updated on the client side, so no reload is necessary.
         if ($direction != null) {
             $request->redirect(null, null, 'groupMembership', $group->getId());
         }
     }
 
     /**
+     * Set board of a group membership to enabled.
      * @param array $args
      */
     public function setBoardEnabled($args) {
         $this->validate();
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
-        
-        // [SECURITY FIX] Amankan 'boardEnabled' dengan (int) trim()
+
         $boardEnabled = (int) trim((string) $request->getUserVar('boardEnabled')) == 1;
         
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $journalSettingsDao->updateSetting($journal->getId(), 'boardEnabled', $boardEnabled);
         $request->redirect(null, null, 'groups');
     }
 
     /**
+     * Setup group of a group membership to template.
      * @param Group|null $group
      * @param bool $subclass
      */
@@ -454,13 +417,11 @@ class GroupHandler extends ManagerHandler {
     }
 
     /**
-     * Validate the request. If a group ID is supplied, the group object
-     * will be fetched and validated against the current journal. If,
-     * additionally, the user ID is supplied, the user and membership
-     * objects will be validated and fetched.
-     * @param int|null $groupId optional
-     * @param int|null $userId optional
-     * @param bool $fetchMembership Whether or not to fetch membership object
+     * Validate the request.
+     * If a group ID is supplied, the group object will be fetched and validated against the current journal.
+     * @param int|null $groupId 
+     * @param int|null $userId 
+     * @param bool $fetchMembership
      * @return bool
      */
     public function validate($groupId = null, $userId = null, $fetchMembership = false) {
@@ -469,8 +430,8 @@ class GroupHandler extends ManagerHandler {
         $journal = Application::get()->getRequest()->getJournal();
 
         $passedValidation = true;
-
         if ($groupId !== null) {
+            /** @var GroupDAO $groupDao */
             $groupDao = DAORegistry::getDAO('GroupDAO');
             $group = $groupDao->getById($groupId, ASSOC_TYPE_JOURNAL, $journal->getId());
 
@@ -478,6 +439,7 @@ class GroupHandler extends ManagerHandler {
             else $this->group = $group;
 
             if ($userId !== null) {
+                /** @var UserDAO $userDao */
                 $userDao = DAORegistry::getDAO('UserDAO');
                 $user = $userDao->getById($userId);
 
@@ -485,6 +447,7 @@ class GroupHandler extends ManagerHandler {
                 else $this->user = $user;
 
                 if ($fetchMembership === true) {
+                    /** @var GroupMembershipDAO $groupMembershipDao */
                     $groupMembershipDao = DAORegistry::getDAO('GroupMembershipDAO');
                     $groupMembership = $groupMembershipDao->getMembership($groupId, $userId);
                     if (!$groupMembership) $passedValidation = false;
@@ -497,5 +460,6 @@ class GroupHandler extends ManagerHandler {
         }
         return true;
     }
+
 }
 ?>

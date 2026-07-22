@@ -33,7 +33,6 @@ class ControlledVocab extends DataObject {
      */
     public function ControlledVocab() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Menggunakan get_class($this) agar log mencatat NAMA CLASS ANAK yang memanggil
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor parent::ControlledVocab(). Please refactor to parent::__construct().", 
                 E_USER_DEPRECATED
@@ -47,7 +46,7 @@ class ControlledVocab extends DataObject {
     //
 
     /**
-     * get assoc id
+     * Get assoc id
      * @return int
      */
     public function getAssocId() {
@@ -55,8 +54,8 @@ class ControlledVocab extends DataObject {
     }
 
     /**
-     * set assoc id
-     * @param $assocId int
+     * Set assoc id
+     * @param int $assocId int
      */
     public function setAssocId($assocId) {
         return $this->setData('assocId', $assocId);
@@ -72,7 +71,7 @@ class ControlledVocab extends DataObject {
 
     /**
      * Set associated type.
-     * @param $assocType int
+     * @param int $assocType int
      */
     public function setAssocType($assocType) {
         return $this->setData('assocType', $assocType);
@@ -88,7 +87,7 @@ class ControlledVocab extends DataObject {
 
     /**
      * Set symbolic name.
-     * @param $symbolic string
+     * @param string $symbolic string
      */
     public function setSymbolic($symbolic) {
         return $this->setData('symbolic', $symbolic);
@@ -100,10 +99,10 @@ class ControlledVocab extends DataObject {
      * @return array $controlledVocabEntryId => name
      */
     public function enumerate($settingName = 'name') {
-        // [MODERNISASI] Hapus tanda & pada assignment object
+        /** @var ControlledVocabDAO $controlledVocabDao */
         $controlledVocabDao = DAORegistry::getDAO('ControlledVocabDAO');
         return $controlledVocabDao->enumerate($this->getId(), $settingName);
     }
-}
 
+}
 ?>
