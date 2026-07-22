@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_translator
  *
  * @brief This plugin helps with translation maintenance.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -28,7 +27,7 @@ class TranslatorPlugin extends GenericPlugin {
      * @return bool
      */
     public function register($category, $path, $mainContextId = null): bool {
-        if (parent::register($category, $path, $mainContextId)) {
+        if (parent::register($category, $path)) {
             if ($this->getEnabled()) {
                 $this->addHelpData();
                 // [WIZDAM FIX] Modern HookRegistry syntax
@@ -106,12 +105,12 @@ class TranslatorPlugin extends GenericPlugin {
      * Execute a management verb on this plugin
      * @param string $verb
      * @param array $args
-     * @param string $message Result status message
-     * @param array $messageParams Parameters for the message key
-     * @param Request $request
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param PKPRequest $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if (!parent::manage($verb, $args, $message, $messageParams, $request)) {
             return false;
         }
@@ -125,6 +124,6 @@ class TranslatorPlugin extends GenericPlugin {
                 return false;
         }
     }
-}
 
+}
 ?>
