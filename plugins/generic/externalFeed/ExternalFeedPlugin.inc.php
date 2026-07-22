@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class ExternalFeedPlugin
  * @ingroup plugins_generic_externalFeed
  *
- * @brief ExternalFeed plugin class
- * [WIZDAM] MODERNIZED FOR PHP 8.x
+ * @brief ExternalFeed plugin class.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -216,7 +215,7 @@ class ExternalFeedPlugin extends GenericPlugin {
     /**
      * Display external feed content on journal homepage.
      * Uses Smarty template for rendering instead of string concatenation.
-     * [WIZDAM LOGIC PRESERVED] Firewall Bypass logic maintained.
+     * [WIZDAM PRESERVED] Firewall Bypass logic maintained.
      * @param string $hookName
      * @param array $args
      * @return bool
@@ -227,18 +226,16 @@ class ExternalFeedPlugin extends GenericPlugin {
 
         $request = Registry::get('request');
         if ($this->getEnabled($request)) {
-            // [WIZDAM FIX] Replaced is_a with instanceof
             if (!($request->getRouter() instanceof PKPPageRouter)) return false;
             
             $requestedPage = $request->getRequestedPage();
 
             if (empty($requestedPage) || $requestedPage == 'index') {
+                /** @var ExternalFeedDAO $externalFeedDao */
                 $externalFeedDao = DAORegistry::getDAO('ExternalFeedDAO');
                 $this->import('simplepie.SimplePie');
-                
-                // PENTING: Import PKPString agar tidak error Class Not Found
-                import('lib.pkp.classes.core.PKPString');
 
+                import('lib.pkp.classes.core.PKPString');
                 $feeds = $externalFeedDao->getExternalFeedsByJournalId($journal->getId());
                 $processedFeeds = array(); 
                 $sectionIdSlug = ''; 
@@ -340,33 +337,30 @@ class ExternalFeedPlugin extends GenericPlugin {
      * @return bool
      */
     public function displayManagerLink($hookName, $params) {
-        $request = Registry::get('request'); // FIX: Ambil $request
-        if ($this->getEnabled($request)) { // FIX: Teruskan $request
+        $request = Registry::get('request');
+
+        if ($this->getEnabled($request)) {
             $smarty = $params[1];
             $output =& $params[2]; // Reference required to append output
-            
-            // [WIZDAM FIX] Gunakan fungsi global __() alih-alih memanggil 
-            // fungsi Smarty non-static secara statis yang memicu Fatal Error di PHP 8.4.
+
             $translatedText = __('plugins.generic.externalFeed.manager.feeds');
             
-            $output .= '<li><a href="' . $this->smartyPluginUrl(array('op'=>'plugin', 'path'=>'feeds'), $smarty) . '">' . $translatedText . '</a></li>';
+            $output .= '<li><a href="' . $this->smartyPluginUrl(['op'=>'plugin', 'path'=>'feeds'], $smarty) . '">' . $translatedText . '</a></li>';
         }
         return false;
     }
 
     /**
      * Execute a management verb on this plugin
-     * [WIZDAM PROTOCOL] Used NotificationManager for user feedback.
+     * [WIZDAM] Used NotificationManager for user feedback.
      * @param string $verb
      * @param array $args
-     * @param string $message
-     * @param array $messageParams
-     * @param null|Request $request
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param null|PKPRequest $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = NULL): bool {
-        // FIX 4: Perbaiki logika parent::manage() — teruskan $request
-        // dan jangan blokir semua verb
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if ($verb !== 'enable' && $verb !== 'disable') {
             if (!$this->getEnabled($request)) {
                 fatalError('Invalid management action on disabled plug-in!');
@@ -389,6 +383,7 @@ class ExternalFeedPlugin extends GenericPlugin {
             case 'delete':
                 if (!empty($args)) {
                     $externalFeedId = !isset($args) || empty($args) ? null : (int) $args[0];
+                    /** @var ExternalFeedDAO $externalFeedDao */
                     $externalFeedDao = DAORegistry::getDAO('ExternalFeedDAO');
                     if ($externalFeedDao->getExternalFeedJournalId($externalFeedId) == $journalId) {
                         $externalFeedDao->deleteExternalFeedById($externalFeedId);
@@ -398,6 +393,7 @@ class ExternalFeedPlugin extends GenericPlugin {
                 return true;
             case 'move':
                 $externalFeedId = !isset($args) || empty($args) ? null : (int) $args[0];
+                /** @var ExternalFeedDAO $externalFeedDao */
                 $externalFeedDao = DAORegistry::getDAO('ExternalFeedDAO');
                 if (($externalFeedId != null && $externalFeedDao->getExternalFeedJournalId($externalFeedId) == $journalId)) {
                     $feed = $externalFeedDao->getExternalFeed($externalFeedId);
@@ -414,6 +410,7 @@ class ExternalFeedPlugin extends GenericPlugin {
             case 'create':
             case 'edit':
                 $externalFeedId = !isset($args) || empty($args) ? null : (int) $args[0];
+                /** @var ExternalFeedDAO $externalFeedDao */
                 $externalFeedDao = DAORegistry::getDAO('ExternalFeedDAO');
 
                 if (($externalFeedId != null && $externalFeedDao->getExternalFeedJournalId($externalFeedId) == $journalId) || ($externalFeedId == null)) {
@@ -425,6 +422,7 @@ class ExternalFeedPlugin extends GenericPlugin {
                         $templateMgr->assign('externalFeedTitle', 'plugins.generic.externalFeed.manager.editTitle');
                     }
 
+                    /** @var JournalSettingsDAO $journalSettingsDao */
                     $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
                     $journalSettings = $journalSettingsDao->getJournalSettings($journalId);
 
@@ -443,6 +441,7 @@ class ExternalFeedPlugin extends GenericPlugin {
                 return true;
             case 'update':
                 $externalFeedId = Request::getUserVar('feedId') == null ? null : (int) Request::getUserVar('feedId');
+                /** @var ExternalFeedDAO $externalFeedDao */
                 $externalFeedDao = DAORegistry::getDAO('ExternalFeedDAO');
 
                 if (($externalFeedId != null && $externalFeedDao->getExternalFeedJournalId($externalFeedId) == $journalId) || $externalFeedId == null) {
@@ -473,6 +472,7 @@ class ExternalFeedPlugin extends GenericPlugin {
                         } else {
                             $templateMgr->assign('externalFeedTitle', 'plugins.generic.externalFeed.manager.editTitle');
                         }
+                        /** @var JournalSettingsDAO $journalSettingsDao */
                         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
                         $journalSettings = $journalSettingsDao->getJournalSettings($journalId);
 
@@ -501,7 +501,7 @@ class ExternalFeedPlugin extends GenericPlugin {
                         );
                         Request::redirect(null, 'manager', 'plugin', array('generic', $this->getName(), 'feeds'));
                     } else {
-                        $this->setBreadcrumbs(true); // FIX 3: lowercase 'c'
+                        $this->setBreadcrumbs(true);
                         $form->display();
                     }
                 } elseif (Request::getUserVar('uploadStyleSheet')) {
@@ -509,7 +509,7 @@ class ExternalFeedPlugin extends GenericPlugin {
                 } elseif (Request::getUserVar('deleteStyleSheet')) {
                     $form->deleteStyleSheet();
                 } else {
-                    $this->setBreadcrumbs(true); // FIX 3: lowercase 'c'
+                    $this->setBreadcrumbs(true);
                     $form->initData();
                     $form->display();
                 }
@@ -519,13 +519,15 @@ class ExternalFeedPlugin extends GenericPlugin {
             default:
                 $this->import('ExternalFeed');
                 $rangeInfo = Handler::getRangeInfo('feeds');
+                /** @var ExternalFeedDAO $externalFeedDao */
                 $externalFeedDao = DAORegistry::getDAO('ExternalFeedDAO');
                 $feeds = $externalFeedDao->getExternalFeedsByJournalId($journalId, $rangeInfo);
                 $templateMgr->assign('feeds', $feeds);
-                $this->setBreadcrumbs(); // FIX 3: lowercase 'c'
+                $this->setBreadcrumbs();
                 $templateMgr->display($this->getTemplatePath() . 'templates/externalFeeds.tpl');
                 return true;
         }
     }
+    
 }
 ?>
