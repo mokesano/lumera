@@ -12,14 +12,13 @@ declare(strict_types=1);
  * @ingroup pages_author
  *
  * @brief Handle requests for journal author functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.submission.author.AuthorAction');
 import('classes.handler.Handler');
 
 class AuthorHandler extends Handler {
+
     /** @var AuthorSubmission|null */
     public $submission = null;
 
@@ -81,41 +80,34 @@ class AuthorHandler extends Handler {
 
         $sort = $request->getUserVar('sort');
         $sort = isset($sort) ? (string) $sort : 'title';
-        // [DATA INTEGRITY FIX] Whitelisting: Memastikan hanya nama kolom yang valid.
         $allowedSortFields = [
             'id', 
             'title', 
             'status'
-        ]; // Sesuaikan dengan kolom yang valid di Submissions DAO
+        ];
         
         if (!in_array($sort, $allowedSortFields)) {
-            $sort = 'id'; // Default ke nilai aman
+            $sort = 'id';
         }
         
         $sortDirection = (string) $request->getUserVar('sortDirection');
-        
-        // [SECURITY & ROBUSTNESS FIX] Mengganti kode ternary OJS dengan whitelisting yang jelas
         $allowedSortDirections = [
             'ASC', 
             'DESC'
         ];
         
         $normalizedDirection = strtoupper($sortDirection);
-        
         if (!in_array($normalizedDirection, $allowedSortDirections)) {
             $sortDirection = 'ASC'; 
         } else {
-            $sortDirection = $normalizedDirection; // Gunakan nilai yang sudah divalidasi dan dinormalisasi
+            $sortDirection = $normalizedDirection;
         }
 
         if ($sort == 'status') {
             // FIXME Does not pass $rangeInfo else we only get partial results
             $unsortedSubmissions = $authorSubmissionDao->getAuthorSubmissions($user->getId(), $journal->getId(), $active, null, $sort, $sortDirection);
 
-            // Sort all submissions by status, which is too complex to do in the DB
             $submissionsArray = $unsortedSubmissions->toArray();
-            
-            // [WIZDAM FIX] Replaced create_function with anonymous Closure
             $compare = function($s1, $s2) { 
                 return strcmp($s1->getSubmissionStatus(), $s2->getSubmissionStatus()); 
             };
@@ -124,7 +116,6 @@ class AuthorHandler extends Handler {
             if($sortDirection == SORT_DIRECTION_DESC) {
                 $submissionsArray = array_reverse($submissionsArray);
             }
-            // Convert submission array back to an ItemIterator class
             import('lib.pkp.classes.core.ArrayItemIterator');
             $submissions = ArrayItemIterator::fromRangeInfo($submissionsArray, $rangeInfo);
         } else {
@@ -134,13 +125,10 @@ class AuthorHandler extends Handler {
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('pageToDisplay', $page);
         if (!$active) {
-            // Make view counts available if enabled.
             $templateMgr->assign('statViews', $journal->getSetting('statViews'));
         }
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('submissions', $submissions);
 
-        // assign payment 
         import('classes.payment.ojs.OJSPaymentManager');
         $paymentManager = new OJSPaymentManager($request);
 
@@ -148,9 +136,8 @@ class AuthorHandler extends Handler {
             $templateMgr->assign('submissionEnabled', $paymentManager->submissionEnabled());
             $templateMgr->assign('fastTrackEnabled', $paymentManager->fastTrackEnabled());
             $templateMgr->assign('publicationEnabled', $paymentManager->publicationEnabled());
-            
+            /** @var OJSCompletedPaymentDAO $completedPaymentDAO */
             $completedPaymentDAO = DAORegistry::getDAO('OJSCompletedPaymentDAO');
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('completedPaymentDAO', $completedPaymentDAO);
         }
 
@@ -158,12 +145,12 @@ class AuthorHandler extends Handler {
         $issueAction = new IssueAction();
         
         // Note: register_function might be deprecated depending on Smarty version, consider registering plugin/modifier.
-        // Keeping as is for OJS 2.x compatibility structure unless Smarty updated.
         $templateMgr->register_function('print_issue_id', [$issueAction, 'smartyPrintIssueId']);
         
         $templateMgr->assign('helpTopicId', 'editorial.authorsRole.submissions');
         $templateMgr->assign('sort', $sort);
         $templateMgr->assign('sortDirection', $sortDirection);
+
         $templateMgr->display('author/index.tpl');
     }
 
@@ -171,13 +158,12 @@ class AuthorHandler extends Handler {
      * Validate that user has author permissions in the selected journal
      * and, optionally, for the specified article.
      * Redirects to user index page if not properly authenticated.
-     * @param mixed $requiredContexts (Legacy param)
+     * @param mixed $requiredContexts
      * @param PKPRequest $request
      * @param int|null $articleId optional
      * @param string|null $reason optional
      */
     public function validate($requiredContexts = null, $request = null, $articleId = null, $reason = null) {
-        // [WIZDAM] Parameter swapping detection fix
         if ($requiredContexts !== null && is_object($requiredContexts)) {
             if (method_exists($requiredContexts, 'getRouter')) {
                 $request = $requiredContexts;

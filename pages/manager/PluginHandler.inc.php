@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_manager
  *
  * @brief Handle requests for plugin management functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.manager.ManagerHandler');
@@ -54,8 +52,6 @@ class PluginHandler extends ManagerHandler {
         $this->validate();
 
         if (isset($category) && in_array($category, $categories)) {
-            // The user specified a category of plugins to view;
-            // get the plugins in that category only.
             $mainPage = false;
             $plugins = PluginRegistry::loadCategory($category);
 
@@ -121,9 +117,7 @@ class PluginHandler extends ManagerHandler {
         $messageParams = [];
         
         if (!$pluginObject->manage($verb, $args, $message, $messageParams, $request)) {
-            // [WIZDAM] Hooks usually expect reference params if modification is intended, 
-            // but here we just pass values as per legacy signature
-            HookRegistry::dispatch('PluginHandler::plugin', [$verb, $args, $message, $messageParams, $pluginObject]);
+            HookRegistry::dispatch('PluginHandler::plugin', [$verb, $args, &$message, &$messageParams, $pluginObject]);
             
             if ($message) {
                 $user = $request->getUser();
@@ -166,5 +160,6 @@ class PluginHandler extends ManagerHandler {
 
         return $pageCrumbs;
     }
+
 }
 ?>

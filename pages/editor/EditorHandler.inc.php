@@ -74,8 +74,7 @@ class EditorHandler extends SectionEditorHandler {
         /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $sections = $sectionDao->getSectionTitles($journal->getId());
-        
-        // [PHP 8.x FIX] Metode AppLocale seharusnya camelCase: translate()
+
         $templateMgr->assign('sectionOptions', [0 => AppLocale::translate('editor.allSections')] + $sections);
         $templateMgr->assign('fieldOptions', $this->_getSearchFieldOptions());
         $templateMgr->assign('dateFieldOptions', $this->_getDateFieldOptions());
@@ -89,10 +88,8 @@ class EditorHandler extends SectionEditorHandler {
         if (array_shift($args) == 'search') {
             $rangeInfo = $this->getRangeInfo('submissions');
 
-            // Get the user's search conditions, if any
             $searchField = trim((string) $request->getUserVar('searchField'));
             $allowedFields = ['title', 'author', 'editor', 'abstract', SUBMISSION_FIELD_TITLE, SUBMISSION_FIELD_AUTHOR, SUBMISSION_FIELD_EDITOR, SUBMISSION_FIELD_ID]; 
-            // [PHP 8.x FIX] Tambahkan parameter strict 'true' untuk mencegah type juggling
             if (!in_array($searchField, $allowedFields, true)) {
                 $searchField = SUBMISSION_FIELD_TITLE; // Default aman
             }
@@ -128,8 +125,6 @@ class EditorHandler extends SectionEditorHandler {
             if ($toDate !== null) $toDate = date('Y-m-d H:i:s', $toDate);
 
             if ($sort == 'status') {
-                // [FIX UTAMA] Gunakan method publik `getEditorSubmissions` alih-alih `_getUnfilteredEditorSubmissions` 
-                // yang bersifat protected/internal dan menyebabkan error validasi di PHP 8.x / PSR-12.
                 $submissions = $editorSubmissionDao->getEditorSubmissions(
                     $journal->getId(),
                     (int) $request->getUserVar('section'),
@@ -140,31 +135,23 @@ class EditorHandler extends SectionEditorHandler {
                     $dateSearchField,
                     $fromDate,
                     $toDate,
-                    null, // $rangeInfo (null agar mengambil semua data untuk di-sort manual di PHP)
+                    null,
                     $sort,
                     $sortDirection
                 );
 
-                // Sort all submissions by status, which is too complex to do in the DB
                 $submissionsArray = $submissions->toArray();
-                
-                // [WIZDAM FIX] Replaced create_function with anonymous Closure
                 usort($submissionsArray, function($s1, $s2) {
                     return strcmp((string) $s1->getSubmissionStatus(), (string) $s2->getSubmissionStatus());
                 });
-                
-                // [PHP 8.x FIX] Strict string comparison. 
-                // Sebelumnya: `if ($sortDirection == SORT_DIRECTION_DESC)` akan selalu FALSE di PHP 8 
-                // karena membandingkan string 'DESC' dengan integer 1.
+
                 if ($sortDirection === 'DESC') {
                     $submissionsArray = array_reverse($submissionsArray);
                 }
-                
-                // Convert submission array back to an ItemIterator class
+
                 import('lib.pkp.classes.core.ArrayItemIterator');
                 $submissions = ArrayItemIterator::fromRangeInfo($submissionsArray, $rangeInfo);
             } else {
-                // [FIX UTAMA] Gunakan method publik `getEditorSubmissions`
                 $submissions = $editorSubmissionDao->getEditorSubmissions(
                     $journal->getId(),
                     (int) $request->getUserVar('section'),
@@ -179,24 +166,18 @@ class EditorHandler extends SectionEditorHandler {
                     $sort,
                     $sortDirection
                 );
-                // Baris `new DAOResultFactory(...)` dihapus karena `getEditorSubmissions` sudah mengembalikannya.
             }
 
-            // If only result is returned from a search, fast-forward to it
             if ($search && $submissions && $submissions->getCount() == 1) {
                 $submission = $submissions->next();
                 $request->redirect(null, null, 'submission', [$submission->getId()]);
             }
 
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('submissions', $submissions);
-            // [SECURITY FIX] Terapkan htmlspecialchars untuk mencegah XSS
             $templateMgr->assign('section', htmlspecialchars((string) $request->getUserVar('section'), ENT_QUOTES, 'UTF-8'));
 
-            // Set search parameters
             foreach ($this->_getSearchFormDuplicateParameters() as $param) {
                 $value = $request->getUserVar($param);
-                // [SECURITY FIX] Terapkan htmlspecialchars untuk mencegah XSS
                 $templateMgr->assign($param, htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'));
             }
 
@@ -255,7 +236,6 @@ class EditorHandler extends SectionEditorHandler {
             FILTER_SECTION_ALL => AppLocale::Translate('editor.allSections')
         ] + $sections;
 
-        // Get the user's search conditions, if any
         $searchField = trim((string) $request->getUserVar('searchField'));
         $allowedFields = ['title', 'author', 'editor', 'abstract', SUBMISSION_FIELD_TITLE, SUBMISSION_FIELD_AUTHOR, SUBMISSION_FIELD_EDITOR, SUBMISSION_FIELD_ID]; 
         if (!in_array($searchField, $allowedFields)) {
@@ -357,10 +337,8 @@ class EditorHandler extends SectionEditorHandler {
         $templateMgr->assign('filterEditor', $filterEditor);
         $templateMgr->assign('filterSection', $filterSection);
 
-        // Set search parameters
         foreach ($this->_getSearchFormDuplicateParameters() as $param) {
             $value = $request->getUserVar($param);
-            // [SECURITY FIX] Terapkan htmlspecialchars untuk mencegah XSS
             $templateMgr->assign($param, htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'));
         }
 
@@ -510,20 +488,11 @@ class EditorHandler extends SectionEditorHandler {
         $isEditor = $roleDao->userHasRole($journal->getId(), $editorId, ROLE_ID_EDITOR);
 
         if (isset($editorId) && $editorId != null && ($isEditor || $isSectionEditor)) {
-            // A valid section editor has already been chosen;
-            // either prompt with a modifiable email or, if this
-            // has been done, send the email and store the editor
-            // selection.
-
             $this->setupTemplate(EDITOR_SECTION_SUBMISSIONS, $articleId, 'summary');
-
-            // FIXME: Prompt for due date.
-            // [SECURITY FIX] Terapkan (int) pada parameter 'send'
             if (EditorAction::assignEditor($articleId, $editorId, $isEditor, (int) $request->getUserVar('send'), $request)) {
                 $request->redirect(null, null, 'submission', [$articleId]);
             }
         } else {
-            // Allow the user to choose a section editor or editor.
             $this->setupTemplate(EDITOR_SECTION_SUBMISSIONS, $articleId, 'summary');
 
             $searchType = null;
@@ -569,7 +538,6 @@ class EditorHandler extends SectionEditorHandler {
 
             $templateMgr = TemplateManager::getManager();
 
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('editors', $editors);
             $templateMgr->assign('roleName', $roleName);
             $templateMgr->assign('rolePath', $rolePath);
@@ -589,7 +557,6 @@ class EditorHandler extends SectionEditorHandler {
             $templateMgr->assign('searchField', $searchType);
             $templateMgr->assign('searchMatch', $searchMatch);
             $templateMgr->assign('search', $search);
-            // [SECURITY FIX] Gunakan variabel $searchInitial yang sudah bersih
             $templateMgr->assign('searchInitial', $searchInitial);
 
             $templateMgr->assign('fieldOptions', [
@@ -600,6 +567,7 @@ class EditorHandler extends SectionEditorHandler {
             ]);
             $templateMgr->assign('alphaList', explode(' ', __('common.alphaList')));
             $templateMgr->assign('helpTopicId', 'editorial.editorsRole.submissionSummary.submissionManagement');
+
             $templateMgr->display('editor/selectSectionEditor.tpl');
         }
     }
@@ -624,12 +592,10 @@ class EditorHandler extends SectionEditorHandler {
         $status = $article->getStatus();
 
         if ($article->getJournalId() == $journal->getId() && ($status == STATUS_DECLINED || $status == STATUS_ARCHIVED)) {
-            // Delete article files
             import('classes.file.ArticleFileManager');
             $articleFileManager = new ArticleFileManager($articleId);
             $articleFileManager->deleteArticleTree();
 
-            // Delete article database entries
             $articleDao->deleteArticleById($articleId);
         }
 
@@ -644,18 +610,9 @@ class EditorHandler extends SectionEditorHandler {
      * @param bool $showSidebar
      */
     public function setupTemplate($subclass = false, $articleId = 0, $parentPage = null, $showSidebar = true) {
-        // Note: The original method signature had $level but body used $level without declaring it (assuming it meant $subclass logic or global define?)
-        // The original code used global defines EDITOR_SECTION_*.
-        // I will adapt the signature to match usage in index() where setupTemplate(EDITOR_SECTION_HOME) was called.
-        // It seems the original code signature was `setupTemplate($subclass = false...)` but called as `setupTemplate(0)`.
-        // So $subclass acts as $level.
-        
-        $level = $subclass; // Alias for clarity based on original logic inside method
-        
+        $level = $subclass;
         parent::setupTemplate();
 
-        // Layout Editors have access to some Issue Mgmt functions. Make sure we give them
-        // the appropriate breadcrumbs and sidebar.
         $request = Application::get()->getRequest();
         $isLayoutEditor = $request->getRequestedPage() == 'layoutEditor';
 

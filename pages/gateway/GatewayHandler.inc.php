@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_gateway
  *
  * @brief Handle external gateway requests.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.handler.Handler');
@@ -63,95 +61,112 @@ class GatewayHandler extends Handler {
         $this->setupTemplate();
 
         // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $journal = $request->getJournal();
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
 
-        if ($journal != null) {
-            if (!$journal->getSetting('enableLockss')) {
-                $request->redirect(null, 'index');
-            }
-
-            $year = (int) $request->getUserVar('year');
-
-            $issueDao = DAORegistry::getDAO('IssueDAO');
-
-            // FIXME Should probably go in IssueDAO or a subclass
-            // [WIZDAM] Logic adjusted: checking if year was provided via user var (which cast to 0 if missing/invalid string)
-            // Original code checked `isset($year)` on a variable that came from `$request->getUserVar`. 
-            // In strict PHP 8, getUserVar returns null if missing. Casting null to int gives 0.
-            // If the user actually passed "year=2023", it's 2023. If missing, it's 0.
-            // Original logic `if (isset($year))` is always true for local variable unless unset.
-            // We should check if the original input was present.
-            
-            $yearInput = $request->getUserVar('year');
-            
-            if ($yearInput !== null) {
-                $year = (int) $yearInput;
-                $result = $issueDao->retrieve(
-                    'SELECT * FROM issues WHERE journal_id = ? AND year = ? AND published = 1 ORDER BY current DESC, year ASC, volume ASC, number ASC',
-                    [(int)$journal->getId(), $year]
-                );
-                if ($result->RecordCount() == 0) {
-                    $yearInput = null; // Mark as unset for logic flow below
-                }
-            }
-
-            if ($yearInput === null) {
-                $showInfo = true;
-                $result = $issueDao->retrieve(
-                    'SELECT MAX(year) FROM issues WHERE journal_id = ? AND published = 1',
-                    [(int)$journal->getId()]
-                );
-                list($year) = $result->fields;
-                $result = $issueDao->retrieve(
-                    'SELECT * FROM issues WHERE journal_id = ? AND year = ? AND published = 1 ORDER BY current DESC, year ASC, volume ASC, number ASC',
-                    [(int)$journal->getId(), $year]
-                );
-            } else {
-                $showInfo = false;
-            }
-
-            $issues = new DAOResultFactory($result, $issueDao, '_returnIssueFromRow');
-
-            $prevYear = null;
-            $nextYear = null;
-            if ($yearInput !== null || isset($year)) {
-                $result = $issueDao->retrieve(
-                    'SELECT MAX(year) FROM issues WHERE journal_id = ? AND published = 1 AND year < ?',
-                    [(int)$journal->getId(), $year]
-                );
-                list($prevYear) = $result->fields;
-
-                $result = $issueDao->retrieve(
-                    'SELECT MIN(year) FROM issues WHERE journal_id = ? AND published = 1 AND year > ?',
-                    [(int)$journal->getId(), $year]
-                );
-                list($nextYear) = $result->fields;
-            }
-
-            // [WIZDAM] Removed assign_by_ref
-            $templateMgr->assign('journal', $journal);
-            $templateMgr->assign('issues', $issues);
-            $templateMgr->assign('year', $year);
-            $templateMgr->assign('prevYear', $prevYear);
-            $templateMgr->assign('nextYear', $nextYear);
-            $templateMgr->assign('showInfo', $showInfo);
-
-            $locales = $journal->getSupportedLocaleNames();
-            if (!isset($locales) || empty($locales)) {
-                $localeNames = AppLocale::getAllLocales();
-                $primaryLocale = AppLocale::getPrimaryLocale();
-                $locales = [$primaryLocale => $localeNames[$primaryLocale]];
-            }
-            $templateMgr->assign('locales', $locales);
-
-        } else {
+        if (!$journal) {
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journals = $journalDao->getJournals(true);
             $templateMgr->assign('journals', $journals);
+            $templateMgr->display('gateway/lockss.tpl');
+            return;
         }
+
+        if (!$journal->getSetting('enableLockss')) {
+            $request->redirect(null, 'index');
+            return;
+        }
+
+        $yearInput = $request->getUserVar('year');
+        $targetYear = $yearInput !== null ? (int) $yearInput : null;
+        $journalId = (int) $journal->getId();
+
+        /** @var IssueDAO $issueDao */
+        $issueDao = DAORegistry::getDAO('IssueDAO');
+
+        $result = null;
+        $showInfo = false;
+
+        if ($targetYear !== null) {
+            $result = $issueDao->retrieve(
+                'SELECT * FROM issues WHERE journal_id = ? AND year = ? AND published = 1 ORDER BY current DESC, year ASC, volume ASC, number ASC',
+                [$journalId, $targetYear]
+            );
+
+            if ($result->EOF) {
+                $targetYear = null;
+                $showInfo = true;
+            }
+        }
+
+        if ($targetYear === null) {
+            $showInfo = true;
+            $latestYearResult = $issueDao->retrieve(
+                'SELECT MAX(year) AS max_year FROM issues WHERE journal_id = ? AND published = 1',
+                [$journalId]
+            );
+            
+            if (!$latestYearResult->EOF) {
+                $row = $latestYearResult->getRowAssoc(false);
+                $targetYear = (int) ($row['max_year'] ?? 0);
+            } else {
+                $targetYear = 0;
+            }
+            $latestYearResult->Close();
+
+            $result = $issueDao->retrieve(
+                'SELECT * FROM issues WHERE journal_id = ? AND year = ? AND published = 1 ORDER BY current DESC, year ASC, volume ASC, number ASC',
+                [$journalId, $targetYear]
+            );
+        }
+
+        $prevYear = null;
+        $nextYear = null;
+        if ($targetYear > 0) {
+            $rangeResult = $issueDao->retrieve(
+                'SELECT 
+                    MAX(CASE WHEN year < ? THEN year END) AS prev_year,
+                    MIN(CASE WHEN year > ? THEN year END) AS next_year
+                 FROM issues 
+                 WHERE journal_id = ? AND published = 1',
+                [$targetYear, $targetYear, $journalId]
+            );
+
+            if (!$rangeResult->EOF) {
+                $row = $rangeResult->getRowAssoc(false);
+                if (isset($row['prev_year']) && $row['prev_year'] !== null) {
+                    $prevYear = (int) $row['prev_year'];
+                }
+                if (isset($row['next_year']) && $row['next_year'] !== null) {
+                    $nextYear = (int) $row['next_year'];
+                }
+            }
+            $rangeResult->Close();
+        }
+
+        $issues = new DAOResultFactory($result, $issueDao, '_returnIssueFromRow');
+
+        $templateMgr->assign([
+            'journal'    => $journal,
+            'issues'     => $issues,
+            'year'       => $targetYear,
+            'prevYear'   => $prevYear,
+            'nextYear'   => $nextYear,
+            'showInfo'   => $showInfo
+        ]);
+
+        $locales = $journal->getSupportedLocaleNames();
+        if (empty($locales)) {
+            $localeNames = AppLocale::getAllLocales();
+            $primaryLocale = AppLocale::getPrimaryLocale();
+            $locales = [$primaryLocale => $localeNames[$primaryLocale] ?? 'Unknown'];
+        }
+        $templateMgr->assign('locales', $locales);
 
         $templateMgr->display('gateway/lockss.tpl');
     }
@@ -179,5 +194,6 @@ class GatewayHandler extends Handler {
             $request->redirect(null, 'index');
         }
     }
+
 }
 ?>

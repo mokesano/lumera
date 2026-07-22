@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_announcement
  *
  * @brief Handle requests for public announcement functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance & Null Safety
  */
 
 import('lib.pkp.pages.announcement.PKPAnnouncementHandler');
@@ -52,55 +50,46 @@ class AnnouncementHandler extends PKPAnnouncementHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
-        // Mengambil data announcement
         $announcements = $this->_getAnnouncements($request);
-
-        // LOGIKA ANTI-LOOP & CLEAN URL:
         if ($announcements->wasEmpty() && $request->getRequestedPage() === 'announcement') {
-            
             $journal = $request->getJournal();
-            
-            // [FIX CRITICAL] Cek apakah journal ada sebelum memanggil getUrl()
-            // Jika journal null, jangan redirect (atau redirect ke site index jika perlu)
             if ($journal) {
                 $request->redirectUrl($journal->getUrl());
                 return;
             }
         }
 
-        // Jika ada isinya atau bukan halaman announcement langsung, panggil fungsi parent
         parent::index($args, $request);
     }
 
+    //
+    // Helper Method
     /**
+     * HELPER: Get announcements enabled
      * @see PKPAnnouncementHandler::_getAnnouncementsEnabled()
      * @param PKPRequest $request
      * @return bool
      */
     public function _getAnnouncementsEnabled($request) {
         $journal = $request->getJournal();
-        // [FIX] Null coalescing logic
         return $journal ? (bool) $journal->getSetting('enableAnnouncements') : false;
     }
 
     /**
+     * HELPER: Get announcements
      * @see PKPAnnouncementHandler::_getAnnouncements()
-     * [MODERNISASI] Menghapus tanda & reference return
      * @param PKPRequest $request
      * @param object|null $rangeInfo
      * @return DAOResultFactory
      */
     public function _getAnnouncements($request, $rangeInfo = null) {
         $journal = $request->getJournal();
+        /** @var AnnouncementDAO $announcementDao */
         $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
 
-        // [FIX CRITICAL] Penyebab Fatal Error sebelumnya diperbaiki di sini.
-        // Jika Journal NULL, gunakan ID 0 atau return kosong agar tidak crash.
         if ($journal) {
             $announcements = $announcementDao->getAnnouncementsNotExpiredByAssocId(ASSOC_TYPE_JOURNAL, $journal->getId(), $rangeInfo);
         } else {
-            // Jika tidak ada konteks jurnal, kembalikan hasil kosong atau Site Level (sesuai kebutuhan)
-            // Di sini kita ambil Site Level (ID 0) agar aman
             $announcements = $announcementDao->getAnnouncementsNotExpiredByAssocId(ASSOC_TYPE_SITE, 0, $rangeInfo);
         }
 
@@ -108,17 +97,18 @@ class AnnouncementHandler extends PKPAnnouncementHandler {
     }
 
     /**
+     * HELPER: Get announcements introduction
      * @see PKPAnnouncementHandler::_getAnnouncementsIntroduction()
      * @param PKPRequest $request
      * @return string
      */
     public function _getAnnouncementsIntroduction($request) {
         $journal = $request->getJournal();
-        // [FIX] Return empty string if no journal
         return $journal ? (string) $journal->getLocalizedSetting('announcementsIntroduction') : '';
     }
 
     /**
+     * HELPER: Announcement is valid
      * @see PKPAnnouncementHandler::_announcementIsValid()
      * @param PKPRequest $request
      * @param int $announcementId
@@ -126,12 +116,13 @@ class AnnouncementHandler extends PKPAnnouncementHandler {
      */
     public function _announcementIsValid($request, $announcementId) {
         $journal = $request->getJournal();
+        /** @var AnnouncementDAO $announcementDao */
         $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
-        
-        // [FIX] Pastikan journal tidak null sebelum cek ID
+
         if (!$journal) return false;
 
         return ($announcementId != null && $announcementDao->getAnnouncementAssocId($announcementId) == $journal->getId());
     }
+    
 }
 ?>

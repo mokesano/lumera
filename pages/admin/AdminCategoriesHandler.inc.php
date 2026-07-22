@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_admin
  *
  * @brief Handle requests for changing admin's category list.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.admin.AdminHandler');
@@ -58,21 +56,21 @@ class AdminCategoriesHandler extends AdminHandler {
 
         $rangeInfo = $this->getRangeInfo('categories');
 
+        /** @var CategoryDAO $categoryDao */
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
-        // Unused variable removed: $categoryEntryDao
-
         $categoriesArray = $categoryDao->getCategories();
+
         import('lib.pkp.classes.core.ArrayItemIterator');
         $categories = ArrayItemIterator::fromRangeInfo($categoriesArray, $rangeInfo);
 
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->addJavaScript('lib/pkp/js/lib/jquery/plugins/jquery.tablednd.js');
         $templateMgr->addJavaScript('lib/pkp/js/functions/tablednd.js');
-        // [WIZDAM] assign_by_ref deprecated
+        
         $templateMgr->assign('categories', $categories);
 
         $site = $request->getSite();
-        $templateMgr->assign('categoriesEnabled', $site->getSetting('categoriesEnabled'));
+        $templateMgr->assign('categoriesEnabled', (bool) $site->getSetting('categoriesEnabled'));
 
         $templateMgr->display('admin/categories/categories.tpl');
     }
@@ -83,15 +81,20 @@ class AdminCategoriesHandler extends AdminHandler {
      * @param PKPRequest $request
      */
     public function deleteCategory($args, $request) {
-        $categoryId = (int) array_shift($args);
+        $categoryId = !empty($args) ? (int) array_shift($args) : null;
         $this->validate($request, $categoryId);
 
         $category = $this->category;
+        if (!$category) {
+            $request->redirect(null, null, 'categories');
+            return;
+        }
 
+        /** @var CategoryDAO $categoryDao */
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
         $categoryEntryDao = $categoryDao->getEntryDAO();
+        
         $categoryEntryDao->deleteObject($category);
-
         $categoryEntryDao->resequence($this->categoryControlledVocab->getId());
         $categoryDao->rebuildCache();
 
@@ -109,61 +112,55 @@ class AdminCategoriesHandler extends AdminHandler {
 
         $category = $this->category;
 
-        // Penjaga 'null' (sudah benar)
         if (!$category) {
             $request->redirect(null, null, 'categories');
             return;
         }
 
+        /** @var CategoryDAO $categoryDao */
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
         $categoryEntryDao = $categoryDao->getEntryDAO();
-        // [SECURITY FIX] Whitelist 'd' (direction)
+
         $direction = trim((string) $request->getUserVar('d'));
-
-        if (!empty($direction)) {
+        if ($direction !== '') {
             // moving with up or down arrow
-            $category->setSequence($category->getSequence() + ($direction == 'u' ? -1.5 : 1.5));
-
+            $category->setSequence($category->getSequence() + ($direction === 'u' ? -1.5 : 1.5));
         } else {
             // Dragging and dropping
             $prevId = (int) $request->getUserVar('prevId');
-            if ($prevId == 0) { // Will match null or 0 from (int)
-                $prevSeq = 0;
-            } else {
+            $prevSeq = 0;
+            
+            if ($prevId !== 0) {
                 $prevCategory = $categoryEntryDao->getById($prevId, $this->categoryControlledVocab->getId());
                 $prevSeq = $prevCategory ? $prevCategory->getSequence() : 0;
             }
 
-            $category->setSequence($prevSeq + .5);
+            $category->setSequence($prevSeq + 0.5);
         }
 
         $categoryEntryDao->updateObject($category);
         $categoryEntryDao->resequence($this->categoryControlledVocab->getId());
         $categoryDao->rebuildCache();
 
-        // Moving up or down with the arrows requires a page reload.
-        // In the case of a drag and drop move, the display has been
-        // updated on the client side, so no reload is necessary.
-        if ($direction != null) {
+        if ($direction !== '') {
             $request->redirect(null, null, 'categories');
         }
     }
 
     /**
      * Display form to edit a category.
-     * @param array $args optional, parameter is the ID of the category to edit
+     * @param array $args
      * @param PKPRequest $request
      */
     public function editCategory($args, $request) {
-        $categoryId = (int) array_shift($args);
-        if (!$categoryId) $categoryId = null;
+        $categoryId = !empty($args) ? (int) $args[0] : null;
 
         $this->validate($request, $categoryId);
 
         $this->setupTemplate($request, $this->category, true);
         import('classes.journal.categories.CategoryForm');
 
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('pageTitle',
             $this->category === null ?
                 'admin.categories.createTitle' :
@@ -176,7 +173,7 @@ class AdminCategoriesHandler extends AdminHandler {
         } else {
             $categoryForm->initData();
         }
-        $categoryForm->display();
+        $categoryForm->display($request);
     }
 
     /**
@@ -213,21 +210,22 @@ class AdminCategoriesHandler extends AdminHandler {
 
         if ($categoryForm->validate()) {
             $categoryForm->execute();
+            /** @var CategoryDAO $categoryDao */
             $categoryDao = DAORegistry::getDAO('CategoryDAO');
             $categoryDao->rebuildCache();
             $request->redirect(null, null, 'categories');
         } else {
-
-            $templateMgr = TemplateManager::getManager();
-            $templateMgr->append('pageHierarchy', [$request->url(null, 'admin', 'categories'), 'admin.categories']);
+            $templateMgr = TemplateManager::getManager($request);
+            $templateMgr->append('pageHierarchy', [
+                $request->url(null, 'admin', 'categories'), 
+                'admin.categories'
+            ]);
 
             $templateMgr->assign('pageTitle',
-                $category ?
-                    'admin.categories.editTitle' :
-                    'admin.categories.createTitle'
+                $category ? 'admin.categories.editTitle' : 'admin.categories.createTitle'
             );
 
-            $categoryForm->display();
+            $categoryForm->display($request);
         }
     }
 
@@ -239,51 +237,67 @@ class AdminCategoriesHandler extends AdminHandler {
     public function setCategoriesEnabled($args, $request) {
         $this->validate($request);
         $categoriesEnabled = (int) $request->getUserVar('categoriesEnabled') === 1;
+        
+        /** @var SiteSettingsDAO $siteSettingsDao */
         $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO');
         $siteSettingsDao->updateSetting('categoriesEnabled', $categoriesEnabled);
+        
         $request->redirect(null, null, 'categories');
     }
 
     /**
      * Set up the template.
-     * @param PKPRequest $request
-     * @param Category|null $category optional
+     * @param PKPRequest|null $request
+     * @param $category
      * @param bool $subclass optional
      */
     public function setupTemplate($request = null, $category = null, $subclass = false) {
         parent::setupTemplate(true);
-        $templateMgr = TemplateManager::getManager();
-        if ($subclass) {
-            $templateMgr->append('pageHierarchy', [$request->url(null, 'admin', 'categories'), 'admin.categories']);
+        
+        if (!$request) {
+            $request = Application::get()->getRequest();
         }
+        
+        $templateMgr = TemplateManager::getManager($request);
+        
+        if ($subclass) {
+            $templateMgr->append('pageHierarchy', [
+                $request->url(null, 'admin', 'categories'), 
+                'admin.categories'
+            ]);
+        }
+        
         if ($category) {
-            $templateMgr->append('pageHierarchy', [$request->url(null, 'admin', 'editCategory', $category->getId()), $category->getLocalizedName(), true]);
+            $templateMgr->append('pageHierarchy', [
+                $request->url(null, 'admin', 'editCategory', $category->getId()), 
+                $category->getLocalizedName(), 
+                true
+            ]);
         }
     }
 
     /**
      * Validate the request. If a category ID is supplied, the category object
-     * will be fetched and validated against. If, additionally, the user ID is 
-     * supplied, the user and membership objects will be validated and fetched.
+     * will be fetched and validated against.
      * @param PKPRequest|null $request
      * @param int|null $categoryId optional
      * @return bool
      */
     public function validate($request = null, $categoryId = null) {
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         parent::validate();
         $passedValidation = true;
 
+        /** @var CategoryDAO $categoryDao */
         $categoryDao = DAORegistry::getDAO('CategoryDAO');
         $this->categoryControlledVocab = $categoryDao->build();
 
-        // Logika ini sekarang akan berfungsi karena $categoryId sudah benar
         if ($categoryId !== null) {
             $categoryEntryDao = $categoryDao->getEntryDAO();
-
-            $category = $categoryEntryDao->getById($categoryId, $this->categoryControlledVocab->getId());
+            $category = $categoryEntryDao->getById((int) $categoryId, $this->categoryControlledVocab->getId());
             
             if (!$category) {
                 $passedValidation = false;
@@ -294,9 +308,13 @@ class AdminCategoriesHandler extends AdminHandler {
             $this->category = null;
         }
 
-        // Variabel $request sekarang sudah benar
-        if (!$passedValidation) $request->redirect(null, null, 'categories');
+        if (!$passedValidation) {
+            $request->redirect(null, null, 'categories');
+            return false;
+        }
+        
         return true;
     }
+
 }
 ?>

@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_manager
  *
  * @brief Handle requests for announcement management functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.pages.manager.PKPAnnouncementHandler');
@@ -66,6 +64,7 @@ class AnnouncementHandler extends PKPAnnouncementHandler {
     }
 
     /**
+     * Get context announcement id
      * @see PKPAnnouncementHandler::getContextId()
      * @param PKPRequest $request
      * @return int|null
@@ -78,15 +77,20 @@ class AnnouncementHandler extends PKPAnnouncementHandler {
         return null;
     }
 
+    //
+    // Helper Method
+    //
     /**
+     * HELPER: Get announcements 
      * @see PKPAnnouncementHandler::_getAnnouncements
-     * [WIZDAM] Removed & reference return
      * @param PKPRequest $request
      * @param object|null $rangeInfo
      * @return DAOResultFactory
      */
     public function _getAnnouncements($request, $rangeInfo = null) {
         $journalId = $this->getContextId($request);
+        
+        /** @var AnnouncementDAO $announcementDao */
         $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
         $announcements = $announcementDao->getByAssocId(ASSOC_TYPE_JOURNAL, (int) $journalId, $rangeInfo);
 
@@ -94,14 +98,16 @@ class AnnouncementHandler extends PKPAnnouncementHandler {
     }
 
     /**
+     * HELPER: Get announcement types
      * @see PKPAnnouncementHandler::_getAnnouncementTypes
-     * [WIZDAM] Removed & reference return
      * @param PKPRequest $request
      * @param object|null $rangeInfo
      * @return DAOResultFactory
      */
     public function _getAnnouncementTypes($request, $rangeInfo = null) {
         $journalId = $this->getContextId($request);
+
+        /** @var AnnouncementTypeDAO $announcementTypeDao */
         $announcementTypeDao = DAORegistry::getDAO('AnnouncementTypeDAO');
         $announcements = $announcementTypeDao->getByAssoc(ASSOC_TYPE_JOURNAL, (int) $journalId, $rangeInfo);
 
@@ -117,6 +123,7 @@ class AnnouncementHandler extends PKPAnnouncementHandler {
     public function _announcementIsValid($request, $announcementId = null) {
         if ($announcementId == null) return true;
 
+        /** @var AnnouncementDAO $announcementDao */
         $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
         $announcement = $announcementDao->getById($announcementId);
 
@@ -131,16 +138,21 @@ class AnnouncementHandler extends PKPAnnouncementHandler {
     }
 
     /**
-     * Checks the announcement type to see if it belongs to this journal.  All announcement types are set at the journal level.
+     * HELPER: Checks the announcement type to see if it belongs to this journal.  
+     * All announcement types are set at the journal level.
      * @param PKPRequest $request
      * @param int|null $typeId
      * @return bool
      */
     public function _announcementTypeIsValid($request, $typeId = null) {
         $journalId = $this->getContextId($request);
+
+        /** @var AnnouncementTypeDAO $announcementTypeDao */
         $announcementTypeDao = DAORegistry::getDAO('AnnouncementTypeDAO');
         $announcementType = $announcementTypeDao->getById($typeId);
+
         return (($announcementType && $announcementType->getAssocId() == $journalId && $announcementType->getAssocType() == ASSOC_TYPE_JOURNAL) || $typeId == null);
     }
+
 }
 ?>

@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_manager
  *
  * @brief Handle requests for installing/upgrading/deleting plugins.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 define('VERSION_FILE', '/version.xml');
@@ -90,7 +88,7 @@ class PluginManagementHandler extends ManagerHandler {
     /**
      * The site setting option 'preventManagerPluginManagement' must not be set for
      * journal managers to be able to manage plugins.
-     * @param mixed|null $requiredContexts (legacy param, ignored)
+     * @param mixed|null $requiredContexts
      * @param PKPRequest|null $request
      */
     public function validate($requiredContexts = null, $request = null) {
@@ -119,7 +117,6 @@ class PluginManagementHandler extends ManagerHandler {
         $templateMgr->assign('path', 'install');
         $templateMgr->assign('uploaded', false);
         $templateMgr->assign('error', false);
-
         $templateMgr->assign('pageHierarchy', $this->_setBreadcrumbs($request, true));
 
         $templateMgr->display('manager/plugins/managePlugins.tpl');
@@ -262,18 +259,16 @@ class PluginManagementHandler extends ManagerHandler {
 
         $pluginVersion = VersionCheck::getValidPluginVersionInfo($versionFile);
         if ($pluginVersion === null) return false;
-        
-        // [WIZDAM] Type Checking
+
         if (!($pluginVersion instanceof Version)) return false;
 
-        $versionDao = DAORegistry::getDAO('VersionDAO'); /* @var $versionDao VersionDAO */
+        $versionDao = DAORegistry::getDAO('VersionDAO'); /** @var VersionDAO $versionDao */
         $installedPlugin = $versionDao->getCurrentVersion($pluginVersion->getProductType(), $pluginVersion->getProduct(), true);
 
         if(!$installedPlugin) {
             $pluginDest = Core::getBaseDir() . DIRECTORY_SEPARATOR . strtr($pluginVersion->getProductType(), '.', DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $pluginVersion->getProduct();
 
-            // Copy the plug-in from the temporary folder to the
-            // target folder.
+            // Copy the plug-in from the temporary folder to the target folder.
             $fileManager = new FileManager();
             if(!$fileManager->copyDir($path, $pluginDest)) {
                 $templateMgr->assign('message', 'manager.plugins.copyError');
@@ -286,8 +281,7 @@ class PluginManagementHandler extends ManagerHandler {
             // Upgrade the database with the new plug-in.
             $installFile = $pluginDest . INSTALL_FILE;
             if(!is_file($installFile)) $installFile = Core::getBaseDir() . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'pkp' . DIRECTORY_SEPARATOR . 'xml' . DIRECTORY_SEPARATOR . 'defaultPluginInstall.xml';
-            
-            // [WIZDAM] assert replaced with explicit check
+
             if (!is_file($installFile)) return false;
 
             $params = $this->_setConnectionParams();
@@ -321,8 +315,8 @@ class PluginManagementHandler extends ManagerHandler {
     /**
      * Upgrade a plugin to a newer version from the user's filesystem
      * @param PKPRequest $request
-     * @param string $path path to plugin Directory
-     * @param TemplateManager $templateMgr reference to template manager
+     * @param string $path
+     * @param TemplateManager $templateMgr
      * @param string $category
      * @param string $plugin
      * @return bool
@@ -350,6 +344,7 @@ class PluginManagementHandler extends ManagerHandler {
             return false;
         }
 
+        /** @var VersionDAO $versionDao */
         $versionDao = DAORegistry::getDAO('VersionDAO');
         $installedPlugin = $versionDao->getCurrentVersion($pluginVersion->getProductType(), $pluginVersion->getProduct(), true);
         if(!$installedPlugin) {
@@ -373,8 +368,7 @@ class PluginManagementHandler extends ManagerHandler {
                 return false;
             }
 
-            // Copy the plug-in from the temporary folder to the
-            // target folder.
+            // Copy the plug-in from the temporary folder to the target folder.
             if(!$fileManager->copyDir($path, $pluginDest)) {
                 $templateMgr->assign('message', 'manager.plugins.copyError');
                 return false;
@@ -423,7 +417,7 @@ class PluginManagementHandler extends ManagerHandler {
         $templateMgr->assign('deleted', false);
         $templateMgr->assign('error', false);
 
-        $versionDao = DAORegistry::getDAO('VersionDAO'); /* @var $versionDao VersionDAO */
+        $versionDao = DAORegistry::getDAO('VersionDAO'); /** @var VersionDAO $versionDao */
         $installedPlugin = $versionDao->getCurrentVersion('plugins.'.$category, $plugin, true);
 
         if ($installedPlugin) {
@@ -455,12 +449,13 @@ class PluginManagementHandler extends ManagerHandler {
 
     /**
      * Checks to see if local version of plugin is newer than installed version
-     * @param string $productType Product type of plugin
-     * @param string $productName Product name of plugin
-     * @param Version $newVersion Version object of plugin to check against database
+     * @param string $productType
+     * @param string $productName
+     * @param Version $newVersion
      * @return bool
      */
     public function _checkIfNewer($productType, $productName, $newVersion) {
+        /** @var VersionDAO $versionDao */
         $versionDao = DAORegistry::getDAO('VersionDAO');
         $installedPlugin = $versionDao->getCurrentVersion($productType, $productName, true);
 
@@ -526,5 +521,6 @@ class PluginManagementHandler extends ManagerHandler {
             'databaseName' => Config::getVar('database', 'name')
         ];
     }
+    
 }
 ?>

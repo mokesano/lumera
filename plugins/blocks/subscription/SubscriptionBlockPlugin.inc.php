@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_blocks_subscription
  *
  * @brief Class for subscription block plugin
- * [WIZDAM EDITION] Modernized. Reference safe for PHP 8.
  */
 
 import('lib.pkp.classes.plugins.BlockPlugin');
@@ -65,12 +64,11 @@ class SubscriptionBlockPlugin extends BlockPlugin {
 
     /**
      * Get the HTML contents for this block.
-     * @param $templateMgr object
-     * @param $request PKPRequest
+     * @param object $templateMgr object
+     * @param PKPRequest $request
      * @return string
      */
     public function getContents($templateMgr, $request = null) {
-        // 1. GUNAKAN LOGIKA MODERN ($request->) HANYA UNTUK JURNAL
         $journal = $request->getJournal();
         $journalId = ($journal) ? $journal->getId() : null;
         if (!$journal) return '';
@@ -78,40 +76,34 @@ class SubscriptionBlockPlugin extends BlockPlugin {
         if ($journal->getSetting('publishingMode') != PUBLISHING_MODE_SUBSCRIPTION)
             return '';
 
-        // 2. KEMBALIKAN LOGIKA KUNO (Request::) UNTUK USER (TERBUKTI BERFUNGSI)
-        // Kita tidak mau ambil risiko user session hilang dengan $request->getUser() di konteks block ini
         $user = Request::getUser();
         $userId = ($user) ? $user->getId() : null;
         $templateMgr->assign('userLoggedIn', isset($userId));
 
         if (isset($userId)) {
-            // [MODERNISASI] Hapus referensi &
+            /** @var IndividualSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
             $individualSubscription = $subscriptionDao->getSubscriptionByUserForJournal($userId, $journalId);
-            
-            // [MODERNISASI] Gunakan assign, bukan assign_by_ref (Safe for PHP 8 Smarty)
+
             $templateMgr->assign('individualSubscription', $individualSubscription);
         }
 
         if (!isset($individualSubscription) || !$individualSubscription->isValid()) {
-            // 3. KEMBALIKAN LOGIKA KUNO (Request::)
             $ip = Request::getRemoteAddr();
             $domain = Request::getRemoteDomain();
             
-            // [MODERNISASI] Hapus referensi &
+            /** @var InstitutionalSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
             $subscriptionId = $subscriptionDao->isValidInstitutionalSubscription($domain, $ip, $journalId);
             
             if ($subscriptionId) {
                 $institutionalSubscription = $subscriptionDao->getSubscription($subscriptionId);
-                // [MODERNISASI] Gunakan assign
                 $templateMgr->assign('institutionalSubscription', $institutionalSubscription);
                 $templateMgr->assign('userIP', $ip);
             }
         }
 
         import('classes.payment.ojs.OJSPaymentManager');
-        // [MODERNISASI] Hapus referensi &
         $paymentManager = new OJSPaymentManager($request);
 
         if (isset($individualSubscription) || isset($institutionalSubscription)) {
@@ -122,12 +114,11 @@ class SubscriptionBlockPlugin extends BlockPlugin {
         $acceptGiftSubscriptionPayments = $paymentManager->acceptGiftSubscriptionPayments();
         $templateMgr->assign('acceptGiftSubscriptionPayments', $acceptGiftSubscriptionPayments);
 
-        // 4. SOLUSI BYPASS PARENT (WAJIB)
         $templateFilename = $this->getBlockTemplateFilename($request);
         if ($templateFilename === null) return '';
         
         return $templateMgr->fetch($this->getTemplatePath() . $templateFilename);
     }
+    
 }
-
 ?>

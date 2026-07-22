@@ -95,10 +95,11 @@ class IssueManagementHandler extends EditorHandler {
 
         $currentIssue = $issueDao->getCurrentIssue($journal->getId());
         $currentIssueId = $currentIssue ? $currentIssue->getId() : null;
-        $templateMgr->assign('currentIssueId', $currentIssueId);
 
+        $templateMgr->assign('currentIssueId', $currentIssueId);
         $templateMgr->assign('helpTopicId', 'publishing.index');
         $templateMgr->assign('usesCustomOrdering', $issueDao->customIssueOrderingExists($journal->getId()));
+
         $templateMgr->display('editor/issues/backIssues.tpl');
     }
 
@@ -122,7 +123,6 @@ class IssueManagementHandler extends EditorHandler {
         $publishedArticles = $publishedArticleDao->getPublishedArticles($issueId);
         
         if (isset($publishedArticles) && !empty($publishedArticles)) {
-            // Insert article tombstone if the issue is published
             import('classes.article.ArticleTombstoneManager');
             $articleTombstoneManager = new ArticleTombstoneManager();
             foreach ($publishedArticles as $article) {
@@ -166,10 +166,9 @@ class IssueManagementHandler extends EditorHandler {
 
         $templateMgr = TemplateManager::getManager();
         import('classes.issue.IssueAction');
+
         $templateMgr->assign('issueOptions', IssueAction::getIssueOptions());
         $templateMgr->assign('helpTopicId', 'publishing.createIssue');
-
-        // [WIZDAM FIX - PHP8 Null Safety]
         $templateMgr->assign('issue', []);
         $templateMgr->assign('numberingOptions', []);
 
@@ -203,9 +202,9 @@ class IssueManagementHandler extends EditorHandler {
         } else {
             $templateMgr = TemplateManager::getManager();
             import('classes.issue.IssueAction');
+
             $templateMgr->assign('issueOptions', IssueAction::getIssueOptions());
             $templateMgr->assign('helpTopicId', 'publishing.createIssue');
-            // [WIZDAM FIX - PHP8 Null Safety] — konsisten dengan createIssue()
             $templateMgr->assign('issue', []);
             $templateMgr->assign('numberingOptions', []);
 
@@ -227,22 +226,18 @@ class IssueManagementHandler extends EditorHandler {
         $templateMgr = TemplateManager::getManager();
         import('classes.issue.IssueAction');
         $templateMgr->assign('issueOptions', IssueAction::getIssueOptions());
-
         import('classes.issue.form.IssueForm');
-
         $issueForm = new IssueForm('editor/issues/issueData.tpl');
-
         if ($issueForm->isLocaleResubmit()) {
             $issueForm->readInputData();
         } else {
             $issueId = $issueForm->initData($issueId);
         }
         $templateMgr->assign('issueId', $issueId);
-
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('issue', $issue);
         $templateMgr->assign('unpublished', !$issue->getPublished());
         $templateMgr->assign('helpTopicId', 'publishing.index');
+
         $issueForm->display();
     }
 
@@ -270,8 +265,7 @@ class IssueManagementHandler extends EditorHandler {
         $issueForm->readInputData();
 
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
-        
-        // [WIZDAM] Removed references in hook array dispatch
+
         if (!HookRegistry::dispatch('Editor::IssueManagementHandler::editIssue', [$issue, $issueForm])) {
             if ($issueForm->validate($issue)) {
                 $issueForm->execute($issueId);
@@ -281,7 +275,6 @@ class IssueManagementHandler extends EditorHandler {
             }
         }
 
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('issue', $issue);
         $templateMgr->assign('unpublished', !$issue->getPublished());
 
@@ -513,8 +506,10 @@ class IssueManagementHandler extends EditorHandler {
         $this->setupTemplate(EDITOR_SECTION_ISSUES);
 
         $templateMgr = TemplateManager::getManager();
+
         $templateMgr->assign('issueId', $issueId);
         $templateMgr->assign('galleyId', $galleyId);
+
         $templateMgr->display('editor/issues/proofIssueGalleyTop.tpl');
     }
 
@@ -543,13 +538,12 @@ class IssueManagementHandler extends EditorHandler {
         }
         
         if (!$galley) {
-            // Beritahu editor secara langsung di dalam frame
             die("Gagal: Data Galley ID $galleyId tidak ditemukan di database.");
         }
     }
 
     /**
-     * Download an issue file (WIZDAM FIX: Support Inline Viewing)
+     * Download an issue file (FIX: Support Inline Viewing)
      * @param array $args ($issueId, $fileId)
      * @param PKPRequest $request
      */
@@ -658,7 +652,6 @@ class IssueManagementHandler extends EditorHandler {
                 $sections[$article->getSectionId()][2][] = $article;
             }
         }
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('sections', $sections);
 
         $templateMgr->assign('accessOptions', [
@@ -687,7 +680,7 @@ class IssueManagementHandler extends EditorHandler {
 
         $journal = $request->getJournal();
 
-        // [SECURITY FIX] Secure casting for arrays
+        // [SECURITY] Secure casting for arrays
         $publishedArticles = array_map('intval', (array) $request->getUserVar('publishedArticles'));
         $removedArticles = array_map('intval', (array) $request->getUserVar('remove'));
         $accessStatus = (array) $request->getUserVar('accessStatus');
@@ -720,9 +713,6 @@ class IssueManagementHandler extends EditorHandler {
                     $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
                     $publicArticleId = $publishedArticles[$articleId];
                     if ($publicArticleId && $journalDao->anyPubIdExists($journal->getId(), 'publisher-id', $publicArticleId, ASSOC_TYPE_ARTICLE, $articleId)) {
-                        // We are not in a form so we cannot send form errors.
-                        // Let's at least send a notification to give some feedback
-                        // to the user.
                         import('classes.notification.NotificationManager');
                         $notificationManager = new NotificationManager();
                         AppLocale::requireComponents([LOCALE_COMPONENT_APP_EDITOR]);
@@ -748,7 +738,6 @@ class IssueManagementHandler extends EditorHandler {
                 $article->setStatus(STATUS_QUEUED);
                 $article->stampStatusModified();
 
-                // If the article is the only one in the section, delete the section from custom issue ordering
                 $sectionId = $article->getSectionId();
                 $publishedArticleArray = $publishedArticleDao->getPublishedArticlesBySectionId($sectionId, $issueId);
                 if (sizeof($publishedArticleArray) == 1) {
@@ -770,9 +759,9 @@ class IssueManagementHandler extends EditorHandler {
      * @param PKPRequest $request
      */
     public function setCurrentIssue($args, $request) {
-        // [SECURITY FIX] Secure casting
         $issueId = (int) trim((string) $request->getUserVar('issueId'));
         $journal = $request->getJournal();
+
         /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         if ($issueId) {
@@ -793,7 +782,7 @@ class IssueManagementHandler extends EditorHandler {
      * @param PKPRequest $request
      */
     public function moveIssue($args, $request) {
-        // [SECURITY FIX] Secure casting
+        // [SECURITY] Secure casting
         $issueId = (int) trim((string) $request->getUserVar('id'));
         $this->validate($issueId);
 
@@ -806,7 +795,6 @@ class IssueManagementHandler extends EditorHandler {
 
         /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
-        // If custom issue ordering isn't yet in place, bring it in.
         if (!$issueDao->customIssueOrderingExists($journalId)) {
             $issueDao->setDefaultCustomIssueOrders($journalId);
         }
@@ -1109,7 +1097,7 @@ class IssueManagementHandler extends EditorHandler {
      * @param PKPRequest $request
      */
     public function notifyUsers($args, $request) {
-        // [SECURITY FIX] Secure casting untuk ID (ini SUDAH BENAR karena Issue ID berupa angka)
+        // [SECURITY] Secure casting ID
         $this->validate((int) trim((string) $request->getUserVar('issue')));
 
         $issue = $this->issue;
@@ -1134,12 +1122,10 @@ class IssueManagementHandler extends EditorHandler {
         import('lib.pkp.classes.mail.MassMail');
         $email = new MassMail('PUBLISH_NOTIFY');
 
-        // [WIZDAM FIX CRITICAL] Hapus (int) agar tombol submit "Send" tidak terbaca sebagai 0
         $isSend = $request->isPost() && $request->getUserVar('send') !== null;
 
         if ($isSend && !$email->hasErrors()) {
 
-            // [WIZDAM FIX] Hapus (int). Checkbox sering mengirim nilai "on" (jika di-int jadi 0)
             if ($request->getUserVar('ccSelf')) {
                 $email->addRecipient($user->getEmail(), $user->getFullName());
             }
@@ -1185,7 +1171,6 @@ class IssueManagementHandler extends EditorHandler {
                 unset($recipient);
             }
 
-            // [WIZDAM FIX] Hapus (int)
             if ($request->getUserVar('sendToMailList')) {
                 $mailList = $notificationMailListDao->getMailList($journal->getId());
                 foreach ($mailList as $mailListRecipient) {
@@ -1197,7 +1182,6 @@ class IssueManagementHandler extends EditorHandler {
                 }
             }
 
-            // [WIZDAM FIX] Hapus (int) pada pengecekan includeToc
             if ($request->getUserVar('includeToc') && isset($issue)) {
                 $issue = $issueDao->getIssueById((int) trim((string) $request->getUserVar('issue')));
 
@@ -1217,8 +1201,6 @@ class IssueManagementHandler extends EditorHandler {
                 $issueDao->updateIssue($issue);
             }
 
-            // [WIZDAM] PHP 8 Modernization for Callbacks
-            // Passing array without reference
             $callback = [$email, 'send'];
             $templateMgr->setProgressFunction($callback);
             unset($callback);
@@ -1233,7 +1215,6 @@ class IssueManagementHandler extends EditorHandler {
             $templateMgr->display('common/progress.tpl');
             echo '<script type="text/javascript">window.location = "' . $request->url(null, 'editor') . '";</script>';
         } else {
-            // [WIZDAM FIX] Hapus (int) di continued
             if (!$request->getUserVar('continued')) {
                 $email->assignParams([
                     'editorialContactSignature' => $user->getContactSignature()
@@ -1265,7 +1246,6 @@ class IssueManagementHandler extends EditorHandler {
     /**
      * Validate that user is an editor in the selected journal and if the issue id is valid
      * Redirects to issue create issue page if not properly authenticated.
-     * NOTE: As of OJS 2.2, Layout Editors are allowed if specified in args.
      * @param int|null $issueId
      * @param bool $allowLayoutEditor
      * @return bool
@@ -1289,7 +1269,6 @@ class IssueManagementHandler extends EditorHandler {
 
         if (!Validation::isEditor($journal->getId())) {
             if (isset($journal) && $allowLayoutEditor && Validation::isLayoutEditor($journal->getId())) {
-                // We're a Layout Editor. If specified, make sure that the issue is not published.
                 if ($issue && !$issue->getPublished()) {
                     Validation::redirectLogin();
                 }
@@ -1314,8 +1293,6 @@ class IssueManagementHandler extends EditorHandler {
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('isLayoutEditor', Request::getRequestedPage() == 'layoutEditor');
-        
-        // Memastikan variabel level tetap ada jika dibutuhkan template lama
         $templateMgr->assign('editorSection', EDITOR_SECTION_ISSUES);
     }
 
