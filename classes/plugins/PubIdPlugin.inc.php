@@ -99,12 +99,12 @@ class PubIdPlugin extends Plugin {
      * @see PKPPlugin::manage()
      * @param string $verb
      * @param array $args
-     * @param string|null $message
-     * @param array|null $messageParams
-     * @param Request|null $request
+     * @param string $message
+     * @param array $messageParams
+     * @param PKPRequest|null $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message = null, array $messageParams = null, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if ($request === null) {
             $request = Application::getRequest();
         }
@@ -171,8 +171,8 @@ class PubIdPlugin extends Plugin {
 
     /**
      * Get the public identifier.
-     * @param object $pubObject (Issue, Article, PublishedArticle, ArticleGalley, SuppFile)
-     * @param bool $preview when true, the public identifier will not be stored
+     * @param object $pubObject
+     * @param bool $preview
      * @return string|null
      */
     public function getPubId($pubObject, $preview = false) {
@@ -212,7 +212,7 @@ class PubIdPlugin extends Plugin {
      * Get the whole resolving URL.
      * @param int $journalId
      * @param string $pubId
-     * @return string resolving URL
+     * @return string
      */
     public function getResolvingURL($journalId, $pubId) {
         assert(false); // Should always be overridden
@@ -220,8 +220,7 @@ class PubIdPlugin extends Plugin {
     }
 
     /**
-     * Get the file (path + filename)
-     * to be included into the object's
+     * Get the file (path + filename) to be included into the object's
      * metadata pages.
      * @return string
      */
@@ -241,11 +240,11 @@ class PubIdPlugin extends Plugin {
 
     /**
      * Verify form data.
-     * @param string $fieldName The form field to be checked.
-     * @param string $fieldValue The value of the form field.
+     * @param string $fieldName
+     * @param string $fieldValue
      * @param object $pubObject
      * @param int $journalId
-     * @param string $errorMsg Return validation error messages here.
+     * @param string $errorMsg
      * @return bool
      */
     public function verifyData($fieldName, $fieldValue, $pubObject, $journalId, &$errorMsg) {
@@ -294,7 +293,7 @@ class PubIdPlugin extends Plugin {
 
     /**
      * Is this object type enabled in plugin settings
-     * @param string $pubObjectType (Issue, Article, Galley, SuppFile)
+     * @param string $pubObjectType
      * @param int $journalId
      * @return bool
      */
@@ -337,7 +336,6 @@ class PubIdPlugin extends Plugin {
     //
     // Public API
     //
-
     /**
      * Check for duplicate public identifiers.
      * @param string $pubId
@@ -403,8 +401,8 @@ class PubIdPlugin extends Plugin {
     /**
      * Add the suffix element and the public identifier
      * to the object (issue, article, galley, supplementary file).
-     * @param string $hookName (daoName::getAdditionalFieldNames)
-     * @param array $params (DAO, array of additional fields)
+     * @param string $hookName
+     * @param array $params
      */
     public function getAdditionalFieldNames($hookName, $params) {
         $fields =& $params[1];
@@ -423,8 +421,8 @@ class PubIdPlugin extends Plugin {
      * Exclude all issue objects (articles, galley, supp files)
      * from assigning them the pubId or
      * clear DOIs of all issue objects (articles, galley, supp files)
-     * @param string $hookName (Editor::IssueManagementHandler::editIssue)
-     * @param array $params (Issue, IssueForm)
+     * @param string $hookName
+     * @param array $params
      */
     public function editIssue($hookName, $params) {
         $issue = $params[0];
@@ -438,8 +436,7 @@ class PubIdPlugin extends Plugin {
                 $excludeSubmittName = 'excludeIssueObjects_' . $pubIdPlugin->getPubIdType();
                 $clearSubmittName = 'clearIssueObjects_' . $pubIdPlugin->getPubIdType();
                 $exclude = $clear = false;
-                
-                // [WIZDAM] FIX: Ganti Request::getUserVar() dengan $request->getUserVar()
+
                 if ($request->getUserVar($excludeSubmittName)) $exclude = true;
                 if ($request->getUserVar($clearSubmittName)) $clear = true;
                 
@@ -507,7 +504,7 @@ class PubIdPlugin extends Plugin {
 
     /**
      * Return the object type.
-     * @param object $pubObject (Issue, Article, PublishedArticle, ArticleGalley, SuppFile)
+     * @param object $pubObject
      * @return string|null
      */
     public function getPubObjectType($pubObject) {
@@ -534,7 +531,7 @@ class PubIdPlugin extends Plugin {
     /**
      * Set and store a public identifier.
      * @param Issue|Article|ArticleGalley|SuppFile $pubObject
-     * @param string $pubObjectType As returned from self::getPubObjectType()
+     * @param string $pubObjectType
      * @param string $pubId
      */
     public function setStoredPubId($pubObject, $pubObjectType, $pubId) {
@@ -601,11 +598,9 @@ class PubIdPlugin extends Plugin {
         return false;
     }
 
-
     //
     // Private helper methods
-    //
-    
+    //    
     /**
      * Return an array of the corresponding DAOs.
      * @return array
@@ -642,5 +637,6 @@ class PubIdPlugin extends Plugin {
         ];
         $templateMgr->assign('pageHierarchy', $pageCrumbs);
     }
+    
 }
 ?>
