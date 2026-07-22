@@ -38,8 +38,7 @@ class WebFeedPlugin extends GenericPlugin {
      * Register plugin and assign hooks.
      * @param string $category
      * @param string $path
-     * @param int|null $mainContextId
-     * @return bool True if plugin initialized successfully
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         if (parent::register($category, $path)) {
@@ -111,6 +110,7 @@ class WebFeedPlugin extends GenericPlugin {
 
         $requestedPage = $request->getRequestedPage();
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $currentIssue = $issueDao->getCurrentIssue($currentJournal->getId(), true);
 
@@ -208,7 +208,7 @@ class WebFeedPlugin extends GenericPlugin {
      * @param null $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message, array $messageParams, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
 
         if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
 
@@ -258,5 +258,6 @@ class WebFeedPlugin extends GenericPlugin {
     public function sanitize($string) {
         return htmlspecialchars(strip_tags($string));
     }
+    
 }
 ?>
