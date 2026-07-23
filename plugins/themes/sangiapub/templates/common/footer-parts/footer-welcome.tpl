@@ -206,7 +206,7 @@
     {** Include Auth Forms JavaScript **}
     {**  <script src="{$baseUrl}/assets/js/auth-forms.js" type="text/javascript"></script> **}
     <script src="{$baseUrl}/assets/js/lumera_authenticate.js" type="text/javascript"></script>
-    <script src="{$baseUrl}/assets/js/lazyload.js" type="text/javascript"></script>
+    {** <script src="{$baseUrl}/assets/js/lazyload.js" type="text/javascript"></script> **}
     <script src="{$baseUrl}/assets/js/sangiastyle.js" type="text/javascript"></script>
     {** <script src="{$baseUrl}/assets/js/editorgender.js" type="text/javascript"></script> **}
 
