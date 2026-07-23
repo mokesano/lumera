@@ -36,7 +36,7 @@ class CustomLocaleAction {
 
     /**
      * Get the list of locale files for a specific locale.
-     * @param $locale string
+     * @param string $locale
      * @return array|null
      */
     public static function getLocaleFiles($locale) {
@@ -59,9 +59,9 @@ class CustomLocaleAction {
 
     /**
      * Check if a filename is a valid locale file for the given locale.
-     * @param $locale string
-     * @param $filename string
-     * @return boolean
+     * @param string $locale
+     * @param string $filename
+     * @return bool
      */
     public static function isLocaleFile($locale, $filename) {
         if (in_array($filename, self::getLocaleFiles($locale))) return true;
