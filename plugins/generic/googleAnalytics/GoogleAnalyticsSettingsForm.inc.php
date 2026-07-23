@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_googleAnalytics
  *
  * @brief Form for journal managers to modify Google Analytics plugin settings
- * [WIZDAM EDITION] Modernized for PHP 8.x
  */
 
 define('GOOGLE_ANALYTICS_SITE_ENABLE', 1);
@@ -23,22 +22,21 @@ import('lib.pkp.classes.form.Form');
 
 class GoogleAnalyticsSettingsForm extends Form {
 
-    /** @var $journalId int */
+    /** @var int */
     public $journalId;
 
-    /** @var $plugin object */
+    /** @var GoogleAnalyticsPlugin */
     public $plugin;
 
     /**
      * Constructor
-     * @param $plugin object
-     * @param $journalId int
+     * @param GoogleAnalyticsPlugin $plugin 
+     * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
         $this->journalId = $journalId;
         $this->plugin = $plugin;
 
-        // [WIZDAM FIX] Use parent::__construct instead of legacy parent::Form
         parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
 
         $this->addCheck(new FormValidator($this, 'googleAnalyticsSiteId', 'required', 'plugins.generic.googleAnalytics.manager.settings.googleAnalyticsSiteIdRequired'));
@@ -48,6 +46,8 @@ class GoogleAnalyticsSettingsForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param GoogleAnalyticsPlugin $plugin 
+     * @param int $journalId
      */
     public function GoogleAnalyticsSettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -62,20 +62,23 @@ class GoogleAnalyticsSettingsForm extends Form {
     /**
      * Display the form.
      * @see Form::display()
-     * @param $request PKPRequest
-     * @param $template string (optional) Override the default template path.
+     * @param PKPRequest|null $request
+     * @param string|null $template
      */
     public function display($request = null, $template = null) {
         if (Validation::isSiteAdmin()) {
+            /** @var GoogleAnalyticsPlugin $plugin */
             $plugin = $this->plugin;
+            
             $templateMgr = TemplateManager::getManager($request);
-            $templateMgr->assign('siteAdmin', TRUE);
+            $templateMgr->assign('siteAdmin', true);
+            
             if ($plugin->getSetting(CONTEXT_ID_NONE, 'enabled')) {
-                $templateMgr->assign('siteEnabled', TRUE);
+                $templateMgr->assign('siteEnabled', true);
                 $templateMgr->assign('siteTrackingCode', $plugin->getSetting(CONTEXT_ID_NONE, 'trackingCode'));
                 $templateMgr->assign('siteGoogleAnalyticsSiteId', $plugin->getSetting(CONTEXT_ID_NONE, 'googleAnalyticsSiteId'));
             } else {
-                $templateMgr->assign('siteEnabled', FALSE);
+                $templateMgr->assign('siteEnabled', false);
                 $templateMgr->assign('siteTrackingCode', __('plugins.generic.googleAnalytics.manager.settings.disabled'));
                 $templateMgr->assign('siteGoogleAnalyticsSiteId', __('plugins.generic.googleAnalytics.manager.settings.disabled'));
             }
@@ -88,12 +91,14 @@ class GoogleAnalyticsSettingsForm extends Form {
      */
     public function initData() {
         $journalId = $this->journalId;
+        /** @var GoogleAnalyticsPlugin $plugin */
         $plugin = $this->plugin;
 
-        $this->_data = array(
+        $this->_data = [
             'googleAnalyticsSiteId' => $plugin->getSetting($journalId, 'googleAnalyticsSiteId'),
             'trackingCode' => $plugin->getSetting($journalId, 'trackingCode')
-        );
+        ];
+        
         if (Validation::isSiteAdmin()) {
             $this->_data['enableSite'] = GOOGLE_ANALYTICS_SITE_UNCHANGED;
         }
@@ -103,7 +108,7 @@ class GoogleAnalyticsSettingsForm extends Form {
      * Assign form data to user-submitted data.
      */
     public function readInputData() {
-        $vars = array('googleAnalyticsSiteId', 'trackingCode');
+        $vars = ['googleAnalyticsSiteId', 'trackingCode'];
         if (Validation::isSiteAdmin()) {
             $vars[] = 'enableSite';
         }
@@ -112,30 +117,42 @@ class GoogleAnalyticsSettingsForm extends Form {
 
     /**
      * Save settings.
-     * @param $object object (optional) Unused.
+     * @param mixed $object (optional) Unused.
      */
     public function execute($object = null) {
+        /** @var GoogleAnalyticsPlugin $plugin */
         $plugin = $this->plugin;
         $journalId = $this->journalId;
 
-        $plugin->updateSetting($journalId, 'googleAnalyticsSiteId', trim($this->getData('googleAnalyticsSiteId'), "\"\';"), 'string');
+        $plugin->updateSetting(
+            $journalId, 
+            'googleAnalyticsSiteId', 
+            trim((string) $this->getData('googleAnalyticsSiteId'), "\"\';"), 
+            'string'
+        );
 
-        $trackingCode = $this->getData('trackingCode');
-        // [WIZDAM NOTE] Preserving legacy tracking code logic
-        if (($trackingCode != "urchin") && ($trackingCode != "ga") && ($trackingCode != "analytics")) {
-            $trackingCode = "urchin";
+        $trackingCode = (string) $this->getData('trackingCode');
+        if ($trackingCode !== 'urchin' && $trackingCode !== 'ga' && $trackingCode !== 'analytics') {
+            $trackingCode = 'urchin';
         }
         $plugin->updateSetting($journalId, 'trackingCode', $trackingCode, 'string');
         
         if (Validation::isSiteAdmin()) {
             // Enable this code on the site level
             if ($this->getData('enableSite')) {
-                $plugin->updateSetting(CONTEXT_ID_NONE, 'enabled', $this->getData('enableSite') == GOOGLE_ANALYTICS_SITE_ENABLE ? TRUE : FALSE, 'bool');
-                $plugin->updateSetting(CONTEXT_ID_NONE, 'trackingCode', $this->getData('enableSite') == GOOGLE_ANALYTICS_SITE_ENABLE ? $trackingCode : '', 'string');
-                $plugin->updateSetting(CONTEXT_ID_NONE, 'googleAnalyticsSiteId', $this->getData('enableSite') == GOOGLE_ANALYTICS_SITE_ENABLE ? trim($this->getData('googleAnalyticsSiteId'), "\"\';") : '', 'string');
+                $isEnabled = ($this->getData('enableSite') == GOOGLE_ANALYTICS_SITE_ENABLE);
+                
+                $plugin->updateSetting(CONTEXT_ID_NONE, 'enabled', $isEnabled, 'bool');
+                $plugin->updateSetting(CONTEXT_ID_NONE, 'trackingCode', $isEnabled ? $trackingCode : '', 'string');
+                $plugin->updateSetting(
+                    CONTEXT_ID_NONE, 
+                    'googleAnalyticsSiteId', 
+                    $isEnabled ? trim((string) $this->getData('googleAnalyticsSiteId'), "\"\';") : '', 
+                    'string'
+                );
             }
         }
     }
-}
 
+}
 ?>

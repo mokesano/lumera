@@ -33,7 +33,7 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
             trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::GoogleAnalyticsPlugin(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -44,7 +44,9 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
-        if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
+        if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) {
+            return true;
+        }
         
         if ($success && $this->getEnabled()) {
             // Insert field into author submission page and metadata form
@@ -102,7 +104,7 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
     /**
      * Extend the {url ...} smarty to support this plugin.
      * @param array $params
-     * @param Smarty $smarty
+     * @param $smarty Smarty
      * @return string
      */
     public function smartyPluginUrl(array $params, $smarty): string {
@@ -124,23 +126,21 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
 
     /**
      * Set the page's breadcrumbs, given the plugin's tree of items to append.
-     * @param boolean $isSubclass
+     * @param bool $isSubclass
      */
     public function setBreadcrumbs($isSubclass = false) {
-        $templateMgr = TemplateManager::getManager();
+        // [WIZDAM] FIX: Gunakan Application::get()->getRequest() karena signature tidak boleh diubah
+        $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
+        
         $pageCrumbs = [
-            [
-                Request::url(null, 'user'),
-                'navigation.user'
-            ],
-            [
-                Request::url(null, 'manager'),
-                'user.role.manager'
-            ]
+            [$request->url(null, 'user'), 'navigation.user'],
+            [$request->url(null, 'manager'), 'user.role.manager']
         ];
+        
         if ($isSubclass) {
             $pageCrumbs[] = [
-                Request::url(null, 'manager', 'plugins'),
+                $request->url(null, 'manager', 'plugins'),
                 'manager.plugins'
             ];
         }
@@ -151,21 +151,21 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
     /**
      * Display verbs for the management interface.
      * @param array $verbs
+     * @param PKPRequest|null $request
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs($verbs, $request);
         
-        if ($this->getEnabled()) {
+        if ($this->getEnabled($request)) {
             $verbs[] = ['settings', __('plugins.generic.googleAnalytics.manager.settings')];
         }
         
-        return $verbs; // [WIZDAM FIX] Hapus pemanggilan parent:: di sini
+        return $verbs;
     }
 
     /**
-     * Insert Google Scholar account info into author submission step 3
-     * and metadata edit forms
+     * Insert Google Scholar account info into author submission step 3 and metadata edit forms
      * @param string $hookName
      * @param array $params
      * @return bool
@@ -199,7 +199,7 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
     public function metadataExecute($hookName, $params) {
         $author = $params[0];
         $formAuthor = $params[1];
-        // Safe access to array index
+        
         if (isset($formAuthor['gs'])) {
             $author->setData('gs', $formAuthor['gs']);
         }
@@ -215,11 +215,20 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
     public function metadataInitData($hookName, $params) {
         $form = $params[0];
         $article = $form->getArticle();
+
+        if (!is_object($article)) {
+            return false;
+        }
+        
         $formAuthors = $form->getData('authors');
         $articleAuthors = $article->getAuthors();
 
-        for ($i=0; $i<count($articleAuthors); $i++) {
-            $formAuthors[$i]['gs'] = $articleAuthors[$i]->getData('gs');
+        if (is_array($articleAuthors)) {
+            foreach ($articleAuthors as $i => $author) {
+                if (isset($formAuthors[$i])) {
+                    $formAuthors[$i]['gs'] = $author->getData('gs');
+                }
+            }
         }
 
         $form->setData('authors', $formAuthors);
@@ -234,29 +243,34 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
      */
     public function insertFooter($hookName, $params) {
         $smarty = $params[1];
-        $output =& $params[2]; // Reference needed for string concatenation on output
+        $output =& $params[2]; 
         
         $templateMgr = TemplateManager::getManager();
         $currentJournal = $templateMgr->get_template_vars('currentJournal');
-
+        
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+        
         $contextId = CONTEXT_ID_NONE;
-        if (!empty($currentJournal)) {
-            $journal = Request::getJournal();
-            if ($journal) {
-                $contextId = $journal->getId();
-            }
+        if ($journal) {
+            $contextId = $journal->getId();
         }
         
-        if ($contextId || $this->getSetting($contextId, 'enabled')) {
+        if ($contextId !== CONTEXT_ID_NONE || $this->getSetting($contextId, 'enabled')) {
             $googleAnalyticsSiteId = $this->getSetting($contextId, 'googleAnalyticsSiteId');
 
             $article = $templateMgr->get_template_vars('article');
             $authorAccounts = [];
-            
-            if (Request::getRequestedPage() == 'article' && $article) {
-                foreach ($article->getAuthors() as $author) {
-                    $account = $author->getData('gs');
-                    if (!empty($account)) $authorAccounts[] = $account;
+
+            if ($request->getRequestedPage() === 'article' && is_object($article)) {
+                $authors = $article->getAuthors();
+                if (is_array($authors)) {
+                    foreach ($authors as $author) {
+                        $account = $author->getData('gs');
+                        if (!empty($account)) {
+                            $authorAccounts[] = $account;
+                        }
+                    }
                 }
                 $templateMgr->assign('gsAuthorAccounts', $authorAccounts);
             }
@@ -265,11 +279,11 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
                 $templateMgr->assign('googleAnalyticsSiteId', $googleAnalyticsSiteId);
                 $trackingCode = $this->getSetting($contextId, 'trackingCode');
                 
-                if ($trackingCode == "ga") {
+                if ($trackingCode === 'ga') {
                     $output .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagGa.tpl');
-                } elseif ($trackingCode == "urchin") {
+                } elseif ($trackingCode === 'urchin') {
                     $output .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagUrchin.tpl');
-                } elseif ($trackingCode == "analytics") {
+                } elseif ($trackingCode === 'analytics') {
                     $output .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagAnalytics.tpl');
                 }
             }
@@ -283,21 +297,33 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
      * @param array $args
      * @param string|null $message
      * @param array|null $messageParams
-     * @return boolean
+     * @param PKPRequest|null $request
+     * @return bool
      */
     public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
-        if (!parent::manage($verb, $args, $message, $messageParams)) return false;
+        if (!parent::manage($verb, $args, $message, $messageParams, $request)) {
+            return false;
+        }
+
+        // [WIZDAM] FIX: Singleton fallback untuk request
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         switch ($verb) {
             case 'settings':
-                $templateMgr = TemplateManager::getManager();
+                $templateMgr = TemplateManager::getManager($request);
                 $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
-                $journal = Request::getJournal();
+                $journal = $request->getJournal();
+                
+                if (!$journal) {
+                    return false;
+                }
 
                 $this->import('GoogleAnalyticsSettingsForm');
                 $form = new GoogleAnalyticsSettingsForm($this, $journal->getId());
-                
-                if (Request::getUserVar('save')) {
+
+                if ($request->getUserVar('save')) {
                     $form->readInputData();
                     if ($form->validate()) {
                         $form->execute();
@@ -305,16 +331,15 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
                         return false;
                     } else {
                         $this->setBreadcrumbs(true);
-                        $form->display();
+                        $form->display($request);
                     }
                 } else {
                     $this->setBreadcrumbs(true);
                     $form->initData();
-                    $form->display();
+                    $form->display($request);
                 }
                 return true;
             default:
-                // Unknown management verb
                 return false;
         }
     }
