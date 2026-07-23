@@ -96,6 +96,8 @@ class CategoryDAO extends ControlledVocabDAO {
         }
         
         $contents = file_get_contents($filename);
+        import('classes.controlledVocab.ControlledVocabEntry');
+        
         if ($contents !== false) {
             return unserialize((string) $contents);
         }

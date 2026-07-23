@@ -12,8 +12,10 @@ declare(strict_types=1);
  * @ingroup controlled_vocabs
  * @see ControlledVocabEntryDAO
  *
- * @brief Basic class describing a controlled vocab.
+ * @brief Basic class describing a controlled vocab entry.
  */
+
+import('lib.pkp.classes.core.DataObject');
 
 class ControlledVocabEntry extends DataObject {
     
@@ -29,7 +31,6 @@ class ControlledVocabEntry extends DataObject {
      */
     public function ControlledVocabEntry() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Menggunakan get_class($this) agar log mencatat NAMA CLASS ANAK yang memanggil
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor parent::ControlledVocabEntry(). Please refactor to parent::__construct().", 
                 E_USER_DEPRECATED
@@ -44,7 +45,7 @@ class ControlledVocabEntry extends DataObject {
 
     /**
      * Get the ID of the controlled vocab.
-     * @return int
+     * @return int|null
      */
     public function getControlledVocabId() {
         return $this->getData('controlledVocabId');
@@ -52,15 +53,15 @@ class ControlledVocabEntry extends DataObject {
 
     /**
      * Set the ID of the controlled vocab.
-     * @param int $controlledVocabId int
+     * @param int $controlledVocabId
      */
     public function setControlledVocabId($controlledVocabId) {
-        return $this->setData('controlledVocabId', $controlledVocabId);
+        return $this->setData('controlledVocabId', (int) $controlledVocabId);
     }
 
     /**
      * Get sequence number.
-     * @return float
+     * @return float|null
      */
     public function getSequence() {
         return $this->getData('sequence');
@@ -68,15 +69,15 @@ class ControlledVocabEntry extends DataObject {
 
     /**
      * Set sequence number.
-     * @param float $sequence float
+     * @param float $sequence
      */
     public function setSequence($sequence) {
-        return $this->setData('sequence', $sequence);
+        return $this->setData('sequence', (float) $sequence);
     }
 
     /**
      * Get the localized name.
-     * @return string
+     * @return string|null
      */
     public function getLocalizedName() {
         return $this->getLocalizedData('name');
@@ -84,8 +85,8 @@ class ControlledVocabEntry extends DataObject {
 
     /**
      * Get the name of the controlled vocabulary entry.
-     * @param string $locale string
-     * @return string
+     * @param string $locale
+     * @return string|null
      */
     public function getName($locale) {
         return $this->getData('name', $locale);
@@ -93,11 +94,11 @@ class ControlledVocabEntry extends DataObject {
 
     /**
      * Set the name of the controlled vocabulary entry.
-     * @param string $name string
-     * @param string $locale string
+     * @param string $name
+     * @param string $locale
      */
     public function setName($name, $locale) {
-        return $this->setData('name', $name, $locale);
+        return $this->setData('name', (string) $name, $locale);
     }
     
 }
