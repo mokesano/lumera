@@ -14,6 +14,7 @@ declare(strict_types=1);
  */
 
 define('CUSTOM_LOCALE_DIR', 'customLocale');
+
 import('lib.pkp.classes.plugins.GenericPlugin');
 
 class CustomLocalePlugin extends GenericPlugin {
@@ -29,10 +30,12 @@ class CustomLocalePlugin extends GenericPlugin {
      * [SHIM] Backward Compatibility
      */
     public function CustomLocalePlugin() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::CustomLocalePlugin(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::CustomLocalePlugin(). Please refactor to use parent::__construct().",
+                E_USER_DEPRECATED
+            );
+        }
         self::__construct();
     }
 
@@ -45,16 +48,18 @@ class CustomLocalePlugin extends GenericPlugin {
     public function register(string $category, string $path): bool {
         if (parent::register($category, $path)) {
             if ($this->getEnabled()) {
-                $journal = Request::getJournal();
+                // [WIZDAM FIX] Replace deprecated static Request:: call
+                $request = Application::get()->getRequest();
+                $journal = $request->getJournal();
                 
-                // [WIZDAM FIX] ARSITEKTUR PRUDEN: 
+                // ARSITEKTUR PRUDEN: 
                 // Jika tidak ada konteks jurnal (misal di halaman utama situs admin), 
                 // batalkan pemuatan locale kustom. Jangan paksakan memanggil getId().
                 if (!$journal) {
                     return true;
                 }
 
-                $journalId = $journal->getId();
+                $journalId = (int) $journal->getId();
                 $locale = AppLocale::getLocale();
                 $localeFiles = AppLocale::getLocaleFiles($locale);
                 
@@ -63,6 +68,7 @@ class CustomLocalePlugin extends GenericPlugin {
 
                 import('lib.pkp.classes.file.FileManager');
                 $fileManager = new FileManager();
+                
                 foreach ($localeFiles as $localeFile) {
                     $customLocalePath = $customLocalePathBase . $localeFile->getFilename();
                     if ($fileManager->fileExists($customLocalePath)) {
@@ -71,7 +77,7 @@ class CustomLocalePlugin extends GenericPlugin {
                 }
 
                 // Add custom locale data for all locale files registered after this plugin
-                HookRegistry::register('PKPLocale::registerLocaleFile', array($this, 'addCustomLocale'));
+                HookRegistry::register('PKPLocale::registerLocaleFile', [$this, 'addCustomLocale']);
             }
 
             return true;
@@ -89,7 +95,8 @@ class CustomLocalePlugin extends GenericPlugin {
         $locale = $args[0];
         $localeFilename = $args[1];
 
-        $journal = Request::getJournal();
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
         
         // Pengaman Null: Hentikan eksekusi jika tidak ada konteks jurnal
         if (!$journal) {
@@ -97,12 +104,12 @@ class CustomLocalePlugin extends GenericPlugin {
         }
 
         $journalId = (int) $journal->getId();
-        
         $publicFilesDir = Config::getVar('files', 'public_files_dir');
         $customLocalePath = $publicFilesDir . DIRECTORY_SEPARATOR . 'journals' . DIRECTORY_SEPARATOR . $journalId . DIRECTORY_SEPARATOR . CUSTOM_LOCALE_DIR . DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . $localeFilename;
 
         import('lib.pkp.classes.file.FileManager');
         $fileManager = new FileManager();
+        
         if ($fileManager->fileExists($customLocalePath)) {
             AppLocale::registerLocaleFile($locale, $customLocalePath, false);
         }
@@ -133,22 +140,23 @@ class CustomLocalePlugin extends GenericPlugin {
      * @return string
      */
     public function smartyPluginUrl(array $params, $smarty): string {
-        $path = array($this->getCategory(), $this->getName());
-        if (is_array($params['path'])) {
+        $path = [$this->getCategory(), $this->getName()];
+
+        if (is_array($params['path'] ?? null)) {
             $params['path'] = array_merge($path, $params['path']);
         } elseif (!empty($params['path'])) {
-            $params['path'] = array_merge($path, array($params['path']));
+            $params['path'] = array_merge($path, [$params['path']]);
         } else {
             $params['path'] = $path;
         }
 
         if (!empty($params['key'])) {
-            $params['path'] = array_merge($params['path'], array($params['key']));
+            $params['path'] = array_merge($params['path'], [$params['key']]);
             unset($params['key']);
         }
 
         if (!empty($params['file'])) {
-            $params['path'] = array_merge($params['path'], array($params['file']));
+            $params['path'] = array_merge($params['path'], [$params['file']]);
             unset($params['file']);
         }
 
@@ -158,14 +166,14 @@ class CustomLocalePlugin extends GenericPlugin {
     /**
      * Display verbs for the management interface.
      * @param array $verbs
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs($verbs, $request);
 
         if ($this->getEnabled($request)) {
-            $verbs[] = array('index', __('plugins.generic.customLocale.customize'));
+            $verbs[] = ['index', __('plugins.generic.customLocale.customize')];
         }
         
         return $verbs;
@@ -177,14 +185,17 @@ class CustomLocalePlugin extends GenericPlugin {
      * @param array $args
      * @param string|null $message
      * @param array|null $messageParams
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      * @return bool
      */
     public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
-        if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
+        if (!parent::manage($verb, $args, $message, $messageParams, $request)) {
+            return false;
+        }
 
         $this->import('CustomLocaleHandler');
         $customLocaleHandler = new CustomLocaleHandler($this->getName());
+        
         switch ($verb) {
             case 'edit':
                 $customLocaleHandler->edit($args);

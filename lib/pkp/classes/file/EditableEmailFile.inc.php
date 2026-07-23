@@ -196,6 +196,6 @@ class EditableEmailFile {
         
         return true;
     }
-    
+
 }
 ?>
