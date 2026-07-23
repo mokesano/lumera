@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class PaymethodPlugin
  * @ingroup plugins
  *
- * @brief Abstract class for paymethod plugins
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance & Signature Fixes
+ * @brief Abstract class for paymethod plugins.
  */
 
 import('classes.plugins.Plugin');
@@ -43,15 +41,14 @@ class PaymethodPlugin extends Plugin {
     /**
      * Called as a plugin is registered to the registry. Subclasses over-
      * riding this method should call the parent method first.
-     * @param string $category Name of category plugin was registered to
-     * @param string $path The path the plugin was found in
+     * @param string $category
+     * @param string $path
      * @param int|null $mainContextId
-     * @return bool True iff plugin initialized successfully
+     * @return bool
      */
     public function register(string $category, string $path, $mainContextId = null): bool {
-        $success = parent::register($category, $path, $mainContextId);
+        $success = parent::register($category, $path);
         if ($success) {
-            // [MODERNIZATION] Removed reference &$this
             HookRegistry::register('Template::Manager::Payment::displayPaymentSettingsForm', [$this, '_smartyDisplayPaymentSettingsForm']);
         }
         return $success;
@@ -61,7 +58,7 @@ class PaymethodPlugin extends Plugin {
      * Get the name of this plugin. The name must be unique within
      * its category, and should be suitable for part of a filename
      * (ie short, no spaces, and no dependencies on cases being unique).
-     * @return string name of plugin
+     * @return string
      */
     public function getName(): string {
         assert(false); // Should always be overridden
@@ -87,7 +84,6 @@ class PaymethodPlugin extends Plugin {
 
     /**
      * Display the payment form.
-     * [WIZDAM CRITICAL FIX] Removed $key parameter to match PaymentManager call signature
      * @param int $queuedPaymentId
      * @param QueuedPayment $queuedPayment
      * @param PKPRequest $request
@@ -152,5 +148,6 @@ class PaymethodPlugin extends Plugin {
         // Subclass should override.
         $request->redirect(null, null, 'index');
     }
+    
 }
 ?>

@@ -4,6 +4,10 @@ declare(strict_types=1);
 /**
  * @file classes/plugins/AuthPlugin.inc.php
  *
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2000-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
  * @class AuthPlugin
  * @ingroup plugins
  *
@@ -11,6 +15,7 @@ declare(strict_types=1);
  */
 
 define('AUTH_PLUGIN_CATEGORY', 'auth');
+
 import('classes.plugins.Plugin');
 
 class AuthPlugin extends Plugin {
@@ -217,6 +222,8 @@ class AuthPlugin extends Plugin {
 
     /**
      * Return the management verbs for this plugin.
+     * @param array $verbs
+     * @param PKPRequest $request
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
@@ -230,25 +237,20 @@ class AuthPlugin extends Plugin {
 
     /**
      * Management handler.
-     * * MODERNIZATION NOTE:
-     * Removed pass-by-reference (&) for $message and $messageParams.
-     * Use NotificationManager for user feedback instead.
-     *
      * @param string $verb
      * @param array $args
-     * @param string|null $message DEPRECATED: Do not use. Use NotificationManager.
-     * @param array|null $messageParams DEPRECATED: Do not use.
-     * @param object|null $plugin
-     * @param object|null $request
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param PKPRequest|null $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message = null, $messageParams = null, $plugin = null, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         if ($verb === 'authSources') {
             Request::redirect('index', 'admin', 'auth');
             return false;
         }
         return false;
     }
-}
 
+}
 ?>
