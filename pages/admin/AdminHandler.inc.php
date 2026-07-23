@@ -63,7 +63,7 @@ class AdminHandler extends Handler {
 
         $templateMgr = TemplateManager::getManager();
 
-        // Display a warning message if there is a new version of OJS available
+        // Display a warning message if there is a new version available
         $newVersionAvailable = false;
         if (Config::getVar('general', 'show_upgrade_warning')) {
             import('lib.pkp.classes.site.VersionCheck');
