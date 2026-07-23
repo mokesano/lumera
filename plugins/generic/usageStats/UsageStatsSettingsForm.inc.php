@@ -12,33 +12,50 @@ declare(strict_types=1);
  * @ingroup plugins_generic_usageStats
  *
  * @brief Form for journal managers to modify usage statistics plugin settings.
- * MODERNIZED FOR PHP 7.4+ (Fork Version)
  */
 
 import('lib.pkp.classes.form.Form');
 
 class UsageStatsSettingsForm extends Form {
 
-    /** @var object */
+    /** @var UsageStatsPlugin */
     protected $plugin;
 
     /**
      * Constructor
-     * @param $plugin object
+     * @param UsageStatsPlugin $plugin
      */
-    function __construct($plugin) {
+    public function __construct($plugin) {
         $this->plugin = $plugin;
 
         parent::__construct($plugin->getTemplatePath() . 'usageStatsSettingsForm.tpl');
 
-        // Callback array($this, 'method') secara otomatis menangani referensi objek di PHP modern.
-        // Tidak perlu &$this.
-        $this->addCheck(new FormValidatorCustom($this, 'dataPrivacyOption', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.usageStats.settings.dataPrivacyOption.requiresSalt', array($this, '_dependentFormFieldIsSet'), array($this, 'saltFilepath')));
-        $this->addCheck(new FormValidatorCustom($this, 'dataPrivacyOption', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.usageStats.settings.dataPrivacyOption.excludesRegion', array($this, '_dependentFormFieldIsSet'), array($this, 'selectedOptionalColumns', STATISTICS_DIMENSION_REGION), true));
-        $this->addCheck(new FormValidatorCustom($this, 'dataPrivacyOption', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.usageStats.settings.dataPrivacyOption.excludesCity', array($this, '_dependentFormFieldIsSet'), array($this, 'selectedOptionalColumns', STATISTICS_DIMENSION_CITY), true));
+        $this->addCheck(new FormValidatorCustom(
+            $this, 'dataPrivacyOption', FORM_VALIDATOR_OPTIONAL_VALUE, 
+            'plugins.generic.usageStats.settings.dataPrivacyOption.requiresSalt', 
+            [$this, '_dependentFormFieldIsSet'], 
+            [$this, 'saltFilepath']
+        ));
+        $this->addCheck(new FormValidatorCustom(
+            $this, 'dataPrivacyOption', FORM_VALIDATOR_OPTIONAL_VALUE, 
+            'plugins.generic.usageStats.settings.dataPrivacyOption.excludesRegion', 
+            [$this, '_dependentFormFieldIsSet'], 
+            [$this, 'selectedOptionalColumns', STATISTICS_DIMENSION_REGION], 
+            true
+        ));
+        $this->addCheck(new FormValidatorCustom(
+            $this, 'dataPrivacyOption', FORM_VALIDATOR_OPTIONAL_VALUE, 
+            'plugins.generic.usageStats.settings.dataPrivacyOption.excludesCity', 
+            [$this, '_dependentFormFieldIsSet'], 
+            [$this, 'selectedOptionalColumns', STATISTICS_DIMENSION_CITY], 
+            true
+        ));
         
-        // Callback ke plugin juga aman tanpa & karena $plugin sudah tersimpan sebagai object handle.
-        $this->addCheck(new FormValidatorCustom($this, 'saltFilepath', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.usageStats.settings.dataPrivacyOption.saltFilepath.invalid', array($plugin, 'validateSaltpath')));
+        $this->addCheck(new FormValidatorCustom(
+            $this, 'saltFilepath', FORM_VALIDATOR_OPTIONAL_VALUE, 
+            'plugins.generic.usageStats.settings.dataPrivacyOption.saltFilepath.invalid', 
+            [$plugin, 'validateSaltpath']
+        ));
         
         $this->addCheck(new FormValidatorPost($this));
     }
@@ -47,7 +64,7 @@ class UsageStatsSettingsForm extends Form {
      * Initialize form data.
      * @see Form::initData()
      */
-    function initData() {
+    public function initData() {
         $plugin = $this->plugin;
 
         $this->setData('createLogFiles', $plugin->getSetting(CONTEXT_ID_NONE, 'createLogFiles'));
@@ -62,36 +79,49 @@ class UsageStatsSettingsForm extends Form {
      * Assign form data to user-submitted data.
      * @see Form::readInputData()
      */
-    function readInputData() {
-        $this->readUserVars(array('createLogFiles','accessLogFileParseRegex', 'dataPrivacyOption', 'optionalColumns', 'compressArchives', 'saltFilepath'));
+    public function readInputData() {
+        $this->readUserVars([
+            'createLogFiles', 
+            'accessLogFileParseRegex', 
+            'dataPrivacyOption', 
+            'optionalColumns', 
+            'compressArchives', 
+            'saltFilepath'
+        ]);
         $this->setData('selectedOptionalColumns', $this->getData('optionalColumns'));
     }
 
     /**
      * Display the form.
      * @see Form::fetch()
-     * @param $request PKPRequest
-     * @param $template string
+     * @param PKPRequest|null $request
+     * @param string|null $template
      * @return string
      */
-    function display($request = NULL, $template = NULL) {
-        $templateMgr = TemplateManager::getManager();
+    public function display($request = null, $template = null) {
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('pluginName', $this->plugin->getName());
+        
         $saltFilepath = Config::getVar('usageStats', 'salt_filepath');
-        $templateMgr->assign('saltFilepath', $saltFilepath && file_exists($saltFilepath) && is_writable($saltFilepath));
+
+        $isSaltValid = $saltFilepath && file_exists((string) $saltFilepath) && is_writable((string) $saltFilepath);
+        $templateMgr->assign('saltFilepath', $isSaltValid);
+        
         $templateMgr->assign('optionalColumnsOptions', $this->getOptionalColumnsList());
+        
         if (!$this->getData('selectedOptionalColumns')) {
-            $this->setData('selectedOptionalColumns', array());
+            $this->setData('selectedOptionalColumns', []);
         }
-        parent::display();
+        
+        parent::display($request, $template);
     }
 
     /**
      * Save settings.
      * @see Form::execute()
-     * @param $object null
+     * @param mixed $object (optional) Unused.
      */
-    function execute($object = NULL) {
+    public function execute($object = null) {
         $plugin = $this->plugin;
 
         $plugin->updateSetting(CONTEXT_ID_NONE, 'createLogFiles', $this->getData('createLogFiles'));
@@ -100,18 +130,25 @@ class UsageStatsSettingsForm extends Form {
         $plugin->updateSetting(CONTEXT_ID_NONE, 'compressArchives', $this->getData('compressArchives'));
         $plugin->updateSetting(CONTEXT_ID_NONE, 'saltFilepath', $this->getData('saltFilepath'));
 
-        $optionalColumns = $this->getData('optionalColumns');
+        $optionalColumns = $this->getData('optionalColumns') ?? [];
         
         // Make sure optional columns data makes sense.
-        if (in_array(STATISTICS_DIMENSION_CITY, $optionalColumns) && !in_array(STATISTICS_DIMENSION_REGION, $optionalColumns)) {
-            $user = Request::getUser();
-            import('classes.notification.NotificationManager');
-            $notificationManager = new NotificationManager();
-            $notificationManager->createTrivialNotification(
-                $user->getId(), NOTIFICATION_TYPE_WARNING, array('contents' => __('plugins.generic.usageStats.settings.optionalColumns.cityRequiresRegion'))
-            );
+        if (in_array(STATISTICS_DIMENSION_CITY, $optionalColumns, true) && !in_array(STATISTICS_DIMENSION_REGION, $optionalColumns, true)) {
+            $request = Application::get()->getRequest();
+            $user = $request->getUser();
+            
+            if ($user) {
+                import('classes.notification.NotificationManager');
+                $notificationManager = new NotificationManager();
+                $notificationManager->createTrivialNotification(
+                    $user->getId(), 
+                    NOTIFICATION_TYPE_WARNING, 
+                    ['contents' => __('plugins.generic.usageStats.settings.optionalColumns.cityRequiresRegion')]
+                );
+            }
             $optionalColumns[] = STATISTICS_DIMENSION_REGION;
         }
+        
         $plugin->updateSetting(CONTEXT_ID_NONE, 'optionalColumns', $optionalColumns);
     }
 
@@ -119,31 +156,33 @@ class UsageStatsSettingsForm extends Form {
      * Get optional columns list.
      * @return array
      */
-    function getOptionalColumnsList() {
+    public function getOptionalColumnsList() {
         $plugin = $this->plugin;
         $reportPlugin = $plugin->getReportPlugin();
         $optionalColumns = $reportPlugin->getOptionalColumns(OJS_METRIC_TYPE_COUNTER);
-        $columnsList = array();
+        $columnsList = [];
+        
         foreach ($optionalColumns as $column) {
             $columnsList[$column] = StatisticsHelper::getColumnNames($column);
         }
+        
         return $columnsList;
     }
 
     /**
-     * Check for the presence of dependent fields if a field value is set
-     * The Complement call will enforce a dependent value as unset if a field value is set
-     * @param mixed $fieldValue the value of the field being checked
-     * @param object $form a reference to this form
-     * @param string $dependentFieldName the name of the dependent field
-     * @param mixed $expectedValue if provided, the expected value which must be in the dependent field
-     * @return boolean
+     * Check for the presence of dependent fields if a field value is set.
+     * The Complement call will enforce a dependent value as unset if a field value is set.
+     * @param mixed $fieldValue
+     * @param Form $form
+     * @param string $dependentFieldName
+     * @param mixed $expectedValue
+     * @return bool
      */
-    function _dependentFormFieldIsSet($fieldValue, $form, $dependentFieldName, $expectedValue = null) {
+    public function _dependentFormFieldIsSet($fieldValue, $form, $dependentFieldName, $expectedValue = null) {
         if ($fieldValue) {
             $dependentValue = $form->getData($dependentFieldName);
             if ($dependentValue) {
-                if ($expectedValue) {
+                if ($expectedValue !== null) {
                     // Check the expected value against the dependent value
                     if (is_array($dependentValue)) {
                         return in_array($expectedValue, $dependentValue, true);
@@ -164,5 +203,6 @@ class UsageStatsSettingsForm extends Form {
             return false;
         }
     }
+    
 }
 ?>
