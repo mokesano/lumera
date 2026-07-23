@@ -203,12 +203,12 @@
     
     {** include file="common/chatbox.tpl" **}
     
-    {* Include Auth Forms JavaScript *}
-    {*  <script src="{$baseUrl}/assets/js/auth-forms.js" type="text/javascript"></script> *}
-    <script src="{$baseUrl}/assets/js/wizdam_authForms.js" type="text/javascript"></script>
+    {** Include Auth Forms JavaScript **}
+    {**  <script src="{$baseUrl}/assets/js/auth-forms.js" type="text/javascript"></script> **}
+    <script src="{$baseUrl}/assets/js/lumera_authenticate.js" type="text/javascript"></script>
     <script src="{$baseUrl}/assets/js/lazyload.js" type="text/javascript"></script>
     <script src="{$baseUrl}/assets/js/sangiastyle.js" type="text/javascript"></script>
-    <script src="{$baseUrl}/assets/js/editorgender.js" type="text/javascript"></script>
+    {** <script src="{$baseUrl}/assets/js/editorgender.js" type="text/javascript"></script> **}
 
     {get_debug_info}
     {if $enableDebugStats}{include file=$pqpTemplate}{/if}    
