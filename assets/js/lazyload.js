@@ -1,8 +1,13 @@
 /**
+ * @file assets/js/lumera_lazyload.js
+ * 
+ * Copyright (c) 2017-2026 Rochmady and Sangia Publishing House
+ * Distributed under the MIT.
+ * 
+ * @author Rochmady and Sangia Lumera team
+ * @version 0.0.1
  * @fileoverview Modul ini menangani lazy loading untuk gambar dan konten, 
  * menggunakan Intersection Observer API jika tersedia, dengan fallback untuk browser yang tidak mendukung.
- * @author Rochmady and Wizdam team
- * @version 1.0
  */
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -115,8 +120,8 @@ document.addEventListener("DOMContentLoaded", function() {
             lazyLoadContent();
             setTimeout(() => {
                 lazyLoadImages();
-            }, 1000); // Waktu delay dapat disesuaikan sesuai kebutuhan
-        }, 1000); // Waktu delay dapat disesuaikan sesuai kebutuhan
+            }, 1000); // Waktu delay dapat diatur sesuai kebutuhan
+        }, 1000); // Waktu delay dapat diatur sesuai kebutuhan
     }
 
     // Memulai proses lazy loading dengan delay

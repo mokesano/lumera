@@ -1,12 +1,12 @@
 /**
- * @file lumera_authenticate.js
+ * @file assets/js/lumera_authenticate.js
  * 
  * Copyright (c) 2017-2026 Rochmady and Sangia Publishing House
  * Distributed under the MIT.
  * 
  * @author Rochmady and Wizdam Teams
  * @requires Kopi plus Rokok
- * @version 1.3.6
+ * @version 0.2.7
  * @brief Modern Auth Forms JavaScript for Lumera Environment
  * Production-ready authentication forms with modern UI components
  * 

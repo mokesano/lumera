@@ -13,31 +13,50 @@ declare(strict_types=1);
  * @see GenericCache
  *
  * @brief Provides caching based on APCu's variable store.
- * [WIZDAM] Renamed from APCCache to APCuCache to reflect modern PHP usage.
  */
 
 import('lib.pkp.classes.cache.GenericCache');
 
-// Helper class untuk menyimpan nilai boolean false
-// (Karena apcu_fetch mengembalikan false jika gagal, kita butuh cara membedakannya)
-class apc_false {};
+// [LUMERA] Stubs for  the APCu PHP extension.
+if (!function_exists('apcu_fetch')) {
+    function apcu_fetch($key, &$success = null) { return false; }
+}
+if (!function_exists('apcu_store')) {
+    function apcu_store($key, $var = null, $ttl = 0) { return false; }
+}
+if (!function_exists('apcu_delete')) {
+    function apcu_delete($key) { return false; }
+}
+if (!function_exists('apcu_cache_info')) {
+    function apcu_cache_info($type = '') { return false; }
+}
+
+/**
+ * Helper class to distinguish cached boolean false from APCu fetch failure.
+ * APCu returns false on cache miss, so we wrap actual false values in this class.
+ */
+class apc_false {}
 
 class APCuCache extends GenericCache {
     
     /**
      * Construct
-     * Instantiate a cache.
+     * @param mixed $context string
+     * @param mixed $cacheId string
+     * @param mixed $fallback callable
      */
     public function __construct($context, $cacheId, $fallback) {
         parent::__construct($context, $cacheId, $fallback);
     }
 
     /**
-     * [SHIM] Backward Compatibility for legacy instantiation
+     * [SHIM] Backward Compatibility
+     * @param mixed $context string
+     * @param mixed $cacheId string
+     * @param mixed $fallback callable
      */
     public function APCuCache($context, $cacheId, $fallback) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Smart Error Log
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor parent::APCuCache(). Please refactor to parent::__construct().", 
                 E_USER_DEPRECATED
@@ -52,82 +71,94 @@ class APCuCache extends GenericCache {
     public function flush() {
         $prefix = INDEX_FILE_LOCATION . ':' . $this->getContext() . ':' . $this->getCacheId();
         
-        // [MODERNISASI] APCu menggunakan apcu_cache_info (parameter 'user' sudah default/deprecated di apcu)
         $info = apcu_cache_info();
         
-        if (isset($info['cache_list']) && is_array($info['cache_list'])) {
+        if (is_array($info) && isset($info['cache_list'])) {
             foreach ($info['cache_list'] as $entry) {
-                // Di APCu, key ada di 'info'
-                if (isset($entry['info']) && substr($entry['info'], 0, strlen($prefix)) == $prefix) {
+                if (isset($entry['info']) && strpos((string) $entry['info'], $prefix) === 0) {
                     apcu_delete($entry['info']);
                 }
             }
         }
-        // [FIX] Hapus juga kunci _contents saat flush
-        apcu_delete(INDEX_FILE_LOCATION . ':' . $this->getContext() . ':' . $this->getCacheId() . ':_contents');
+        
+        // Also delete the _contents key to ensure complete flush
+        apcu_delete($prefix . ':_contents');
     }
 
     /**
      * Get an object from the cache.
-     * @param $id
+     * @param mixed $id
+     * @return mixed
      */
     public function getCache($id) {
-        // [FIX] Guard: tolak null id agar tidak membuat kunci tidak valid
-        if ($id === null) return $this->cacheMiss;
+        if ($id === null) {
+            return $this->cacheMiss;
+        }
         
-        $key = INDEX_FILE_LOCATION . ':'. $this->getContext() . ':' . $this->getCacheId() . ':' . $id;
-        
-        // [MODERNISASI] apcu_fetch
+        $key = INDEX_FILE_LOCATION . ':' . $this->getContext() . ':' . $this->getCacheId() . ':' . $id;
         $result = apcu_fetch($key);
         
-        // Return cacheMiss if fetch failed
-        if ($result === false) return $this->cacheMiss;
+        if ($result === false) {
+            return $this->cacheMiss;
+        }
         
-        $returner = unserialize($result);
-        if ($returner === false) return $this->cacheMiss;
+        if (!is_string($result)) {
+            return $this->cacheMiss;
+        }
+        
+        // Suppress unserialize warnings in case of corrupted cache data
+        $returner = @unserialize($result);
+        
+        if ($returner === false) {
+            return $this->cacheMiss;
+        }
         
         // Handle boolean false wrapper
-        if (is_object($returner) && get_class($returner) === 'apc_false') $returner = false;
+        if (is_object($returner) && get_class($returner) === 'apc_false') {
+            return false;
+        }
         
         return $returner;
     }
 
     /**
-     * Set an object in the cache. This function should be overridden
-     * by subclasses.
-     * @param $id
-     * @param $value
+     * Set an object in the cache.
+     * @param mixed $id
+     * @param mixed $value
      */
     public function setCache($id, $value) {
-        // [FIX] Guard: tolak null id
-        if ($id === null) return;
+        if ($id === null) {
+            return;
+        }
         
-        $key = INDEX_FILE_LOCATION . ':'. $this->getContext() . ':' . $this->getCacheId() . ':' . $id;
+        $key = INDEX_FILE_LOCATION . ':' . $this->getContext() . ':' . $this->getCacheId() . ':' . $id;
         
-        // Wrap boolean false
-        if ($value === false) $value = new apc_false;
+        // Wrap boolean false to distinguish from APCu fetch failure
+        if ($value === false) {
+            $value = new apc_false();
+        }
         
-        // [MODERNISASI] apcu_store
         apcu_store($key, serialize($value));
     }
 
     /**
-     * [FIX] Tambah getContents() — sebelumnya tidak ada, 
-     * menyebabkan Fatal Error
-     * Menggunakan _contents key untuk menyimpan seluruh data sekaligus
+     * Get the entire contents of the cache.
+     * @return array
      */
     public function getContents() {
         $contentsKey = INDEX_FILE_LOCATION . ':' . $this->getContext() . ':' . $this->getCacheId() . ':_contents';
         $result = apcu_fetch($contentsKey);
 
-        if ($result !== false) {
-            $contents = unserialize($result);
-            if (is_array($contents)) return $contents;
+        if ($result !== false && is_string($result)) {
+            $contents = @unserialize($result);
+            if (is_array($contents)) {
+                return $contents;
+            }
         }
 
-        // [FIX] Fallback dengan cacheId yang benar (bukan null)
-        if ($this->fallback) {
-            $contents = call_user_func($this->fallback, $this, $this->cacheId);
+        // Safety: Ensure fallback is callable before invoking
+        if (is_callable($this->fallback)) {
+            $contents = call_user_func($this->fallback, $this, $this->getCacheId());
             if (is_array($contents)) {
                 $this->setEntireCache($contents);
                 return $contents;
@@ -140,6 +171,7 @@ class APCuCache extends GenericCache {
     /**
      * Get the time at which the data was cached.
      * Not implemented in this type of cache.
+     * @return null
      */
     public function getCacheTime() {
         return null;
@@ -148,17 +180,21 @@ class APCuCache extends GenericCache {
     /**
      * Set the entire contents of the cache.
      * WARNING: THIS DOES NOT FLUSH THE CACHE FIRST!
+     * @param array $contents
      */
     public function setEntireCache($contents) {
-        // Simpan seluruh contents dalam satu key khusus
+        if (!is_array($contents)) {
+            return;
+        }
+
         $contentsKey = INDEX_FILE_LOCATION . ':' . $this->getContext() . ':' . $this->getCacheId() . ':_contents';
         apcu_store($contentsKey, serialize($contents));
 
-        // Simpan juga per-key untuk getCache($id) individual
+        // Also store per-key for individual getCache($id) lookups
         foreach ($contents as $id => $value) {
             $this->setCache($id, $value);
         }
     }
-}
 
+}
 ?>
