@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_rtadmin
  *
  * @brief Handle Reading Tools administration requests -- contexts section.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.rtadmin.RTAdminHandler');
@@ -54,6 +52,7 @@ class RTContextHandler extends RTAdminHandler {
 
         $journal = $request->getJournal();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
         $versionId = isset($args[0]) ? (int)$args[0] : 0;
         $version = $rtDao->getVersion($versionId, $journal->getId());
@@ -84,6 +83,7 @@ class RTContextHandler extends RTAdminHandler {
 
         $journal = $request->getJournal();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
         $rangeInfo = $this->getRangeInfo('contexts');
 
@@ -121,6 +121,7 @@ class RTContextHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
@@ -151,6 +152,7 @@ class RTContextHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
@@ -177,6 +179,7 @@ class RTContextHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
@@ -206,34 +209,25 @@ class RTContextHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
         $versionId = isset($args[0]) ? (int)$args[0] : 0;
         $version = $rtDao->getVersion($versionId, $journal->getId());
-        
-        // [SECURITY FIX] Amankan 'id' (contextId, ID integer) with (int) trim()
         $contextId = (int) trim((string) $request->getUserVar('id'));
-        
         $context = $rtDao->getContext($contextId);
 
-        // [SECURITY FIX] Whitelist 'dir' (direction)
         $direction = trim((string) $request->getUserVar('dir')); 
-
         if (isset($version) && isset($context) && $context->getVersionId() == $version->getVersionId()) {
             
             if (!empty($direction)) {
-                // moving with up or down arrow
-                // Gunakan whitelisting yang ketat untuk arah yang valid
                 $isDown = $direction == 'd'; 
                 $context->setOrder($context->getOrder() + ($isDown ? 1.5 : -1.5));
             } else {
-                // drag and drop
-                
-                // [SECURITY FIX] Amankan 'prevId' (ID integer) wit (int) trim()
                 $prevId = (int) trim((string) $request->getUserVar('prevId'));
                 
-                if ($prevId == 0) { // $prevId akan 0 jika null/kosong karena (int) casting
+                if ($prevId == 0) {
                     $prevSeq = 0;
                 } else {
                     $prevContext = $rtDao->getContext($prevId); 
@@ -246,12 +240,10 @@ class RTContextHandler extends RTAdminHandler {
             $rtDao->resequenceContexts($version->getVersionId());
         }
 
-        // Moving up or down with the arrows requires a page reload.
-        // In the case of a drag and drop move, the display has been
-        // updated on the client side, so no reload is necessary.
         if (!empty($direction)) {
             $request->redirect(null, null, 'contexts', $versionId);
         }
     }
+    
 }
 ?>

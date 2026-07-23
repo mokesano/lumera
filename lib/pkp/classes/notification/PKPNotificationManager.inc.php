@@ -12,6 +12,7 @@ declare(strict_types=1);
  * @ingroup notification
  * @see NotificationDAO
  * @see Notification
+ * 
  * @brief Class for Notification Manager.
  */
 
@@ -42,7 +43,7 @@ class PKPNotificationManager {
      * @param mixed $level int optional
      * @param $contextId int optional
      * @param $rangeInfo object optional
-     * @param $notificationTemplate string optional Template to use for constructing an individual notification for display
+     * @param $notificationTemplate string
      * @return string
      */
     public function getFormattedNotificationsForUser($request, $userId, $level = NOTIFICATION_LEVEL_NORMAL, $contextId = null, $rangeInfo = null, $notificationTemplate = 'notification/notification.tpl') {
@@ -57,7 +58,7 @@ class PKPNotificationManager {
      * Return a string of formatted notifications for display
      * @param mixed $request PKPRequest
      * @param mixed $notifications object DAOResultFactory
-     * @param $notificationTemplate string optional Template to use for constructing an individual notification for display
+     * @param $notificationTemplate string
      * @return string
      */
     public function formatNotifications($request, $notifications, $notificationTemplate = 'notification/notification.tpl') {
