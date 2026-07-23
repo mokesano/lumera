@@ -38,89 +38,97 @@ class NotificationDAO extends DAO {
 
     /**
      * Retrieve Notification by notification id
-     * @param $notificationId int
-     * @return Notification
+     * @param mixed $notificationId
+     * @return Notification|null
      */
     public function getById($notificationId) {
         $result = $this->retrieve(
-            'SELECT * FROM notifications WHERE notification_id = ?', (int) $notificationId
+            'SELECT * FROM notifications WHERE notification_id = ?',
+            [(int) $notificationId]
         );
 
-        $notification = $this->_returnNotificationFromRow($result->GetRowAssoc(false));
-
+        $notification = null;
+        if (!$result->EOF) {
+            $notification = $this->_returnNotificationFromRow($result->getRowAssoc(false));
+        }
         $result->Close();
-        unset($result);
-
         return $notification;
     }
 
     /**
      * Retrieve Notifications by user id
-     * Note that this method will not return fully-fledged notification objects.  Use
+     * Note that this method will not return fully-fledged notification objects. Use
      * NotificationManager::getNotificationsForUser() to get notifications with URL, and contents
-     * @param $userId int
-     * @param $level int
-     * @param $type int
-     * @param $contextId int
-     * @param $rangeInfo Object
-     * @return DAOResultFactory containing matching Notification objects
+     * @param mixed $userId
+     * @param mixed $level
+     * @param mixed $type
+     * @param mixed $contextId
+     * @param mixed $rangeInfo
+     * @return DAOResultFactory
      */
     public function getByUserId($userId, $level = NOTIFICATION_LEVEL_NORMAL, $type = null, $contextId = null, $rangeInfo = null) {
-        $params = array((int) $userId, (int) $level);
-        if ($type) $params[] = (int) $type;
-        if ($contextId) $params[] = (int) $contextId;
+        $params = [(int) $userId, (int) $level];
+        $sql = 'SELECT * FROM notifications WHERE user_id = ? AND level = ?';
+        
+        if ($type !== null) {
+            $sql .= ' AND type = ?';
+            $params[] = (int) $type;
+        }
+        if ($contextId !== null) {
+            $sql .= ' AND context_id = ?';
+            $params[] = (int) $contextId;
+        }
+        $sql .= ' ORDER BY date_created DESC';
 
-        $result = $this->retrieveRange(
-            'SELECT * FROM notifications WHERE user_id = ? AND level = ?' . (isset($type) ?' AND type = ?' : '') . (isset($contextId) ?' AND context_id = ?' : '') . ' ORDER BY date_created DESC',
-            $params, $rangeInfo
-        );
-
-        $returner = new DAOResultFactory($result, $this, '_returnNotificationFromRow');
-
-        return $returner;
+        $result = $this->retrieveRange($sql, $params, $rangeInfo);
+        return new DAOResultFactory($result, $this, '_returnNotificationFromRow');
     }
 
     /**
      * Retrieve Notifications by assoc.
-     * Note that this method will not return fully-fledged notification objects.  Use
+     * Note that this method will not return fully-fledged notification objects. Use
      * NotificationManager::getNotificationsForUser() to get notifications with URL, and contents
-     * @param $assocType int
-     * @param $assocId int
-     * @param $type int
-     * @param $contextId int
-     * @return DAOResultFactory containing matching Notification objects
+     * @param mixed $assocType
+     * @param mixed $assocId
+     * @param mixed $userId
+     * @param mixed $type
+     * @param mixed $contextId
+     * @return DAOResultFactory
      */
     public function getByAssoc($assocType, $assocId, $userId = null, $type = null, $contextId = null) {
-        $params = array((int) $assocType, (int) $assocId);
-        if ($userId) $params[] = (int) $userId;
-        if ($contextId) $params[] = (int) $contextId;
-        if ($type) $params[] = (int) $type;
+        $params = [(int) $assocType, (int) $assocId];
+        $sql = 'SELECT * FROM notifications WHERE assoc_type = ? AND assoc_id = ?';
+        
+        if ($userId !== null) {
+            $sql .= ' AND user_id = ?';
+            $params[] = (int) $userId;
+        }
+        if ($contextId !== null) {
+            $sql .= ' AND context_id = ?';
+            $params[] = (int) $contextId;
+        }
+        if ($type !== null) {
+            $sql .= ' AND type = ?';
+            $params[] = (int) $type;
+        }
+        $sql .= ' ORDER BY date_created DESC';
 
-        $result = $this->retrieveRange(
-            'SELECT * FROM notifications WHERE assoc_type = ? AND assoc_id = ?' . (isset($userId) ?' AND user_id = ?' : '') . (isset($contextId) ?' AND context_id = ?' : '') . (isset($type) ?' AND type = ?' : '') . ' ORDER BY date_created DESC',
-            $params
-        );
-
-        $returner = new DAOResultFactory($result, $this, '_returnNotificationFromRow');
-
-        return $returner;
+        $result = $this->retrieveRange($sql, $params);
+        return new DAOResultFactory($result, $this, '_returnNotificationFromRow');
     }
 
     /**
      * Retrieve Notifications by notification id
-     * @param $notificationId int
-     * @param $dateRead date
+     * @param mixed $notificationId
+     * @param string|null $dateRead
      * @return string
      */
     public function setDateRead($notificationId, $dateRead = null) {
-        $dateRead = isset($dateRead) ? $dateRead : Core::getCurrentDate();
+        $dateRead = $dateRead ?? Core::getCurrentDate();
 
         $this->update(
-            sprintf('UPDATE notifications
-                SET date_read = %s
-                WHERE notification_id = ?',
-                $this->datetimeToDB($dateRead)),
-            (int) $notificationId
+            'UPDATE notifications SET date_read = ? WHERE notification_id = ?',
+            [$this->datetimeToDB($dateRead), (int) $notificationId]
         );
 
         return $dateRead;
@@ -136,48 +144,43 @@ class NotificationDAO extends DAO {
 
     /**
      * Creates and returns an notification object from a row
-     * @param $row array
-     * @return Notification object
+     * @param array $row
+     * @return Notification
      */
     public function _returnNotificationFromRow($row) {
         $notification = $this->newDataObject();
-        $notification->setId($row['notification_id']);
-        $notification->setUserId($row['user_id']);
-        $notification->setLevel($row['level']);
+        $notification->setId((int) $row['notification_id']);
+        $notification->setUserId((int) $row['user_id']);
+        $notification->setLevel((int) $row['level']);
         $notification->setDateCreated($this->datetimeFromDB($row['date_created']));
         $notification->setDateRead($this->datetimeFromDB($row['date_read']));
-        $notification->setContextId($row['context_id']);
-        $notification->setType($row['type']);
-        $notification->setAssocType($row['assoc_type']);
-        $notification->setAssocId($row['assoc_id']);
+        $notification->setContextId((int) $row['context_id']);
+        $notification->setType((int) $row['type']);
+        $notification->setAssocType((int) $row['assoc_type']);
+        $notification->setAssocId((int) $row['assoc_id']);
 
-        // WIZDAM UPDATE: HookRegistry::dispatch. 
-        // $notification (object) by value, $row (array) by ref.
-        HookRegistry::dispatch('NotificationDAO::_returnNotificationFromRow', array($notification, &$row));
+        HookRegistry::dispatch('NotificationDAO::_returnNotificationFromRow', [$notification, &$row]);
 
         return $notification;
     }
 
     /**
      * Inserts a new notification into notifications table
-     * @param $notification Notification
+     * @param Notification $notification
      * @return int Notification Id
      */
     public function insertObject($notification) {
         $this->update(
-            sprintf('INSERT INTO notifications
-                    (user_id, level, date_created, context_id, type, assoc_type, assoc_id)
-                VALUES
-                    (?, ?, %s, ?, ?, ?, ?)',
-                $this->datetimeToDB(Core::getCurrentDate())),
-            array(
+            'INSERT INTO notifications (user_id, level, date_created, context_id, type, assoc_type, assoc_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [
                 (int) $notification->getUserId(),
                 (int) $notification->getLevel(),
+                $this->datetimeToDB(Core::getCurrentDate()),
                 (int) $notification->getContextId(),
                 (int) $notification->getType(),
                 (int) $notification->getAssocType(),
                 (int) $notification->getAssocId()
-            )
+            ]
         );
         $notification->setId($this->getInsertNotificationId());
 
@@ -186,42 +189,44 @@ class NotificationDAO extends DAO {
 
     /**
      * Inserts or update a notification into notifications table.
-     * @param $notification Notification
-     * @return int
+     * @param Notification $notification
+     * @return void
      */
     public function build($notification) {
-        $this->update('DELETE FROM notifications
-            WHERE context_id = ? AND level = ? AND type = ? AND user_id = ?
-                AND assoc_type = ? AND assoc_id = ?',
-            array(
+        $this->update(
+            'DELETE FROM notifications WHERE context_id = ? AND level = ? AND type = ? AND user_id = ? AND assoc_type = ? AND assoc_id = ?',
+            [
                 (int) $notification->getContextId(),
                 (int) $notification->getLevel(),
                 (int) $notification->getType(),
-                $notification->getUserId(),
-                $notification->getAssocType(),
-                $notification->getAssocId()
-            )
+                (int) $notification->getUserId(),
+                (int) $notification->getAssocType(),
+                (int) $notification->getAssocId()
+            ]
         );
         $this->insertObject($notification);
     }
 
     /**
      * Delete Notification by notification id
-     * @param $notificationId int
-     * @param $userId int
-     * @return boolean
+     * @param mixed $notificationId
+     * @param mixed $userId
+     * @return bool
      */
     public function deleteById($notificationId, $userId = null) {
-        $params = array((int) $notificationId);
-        if (isset($userId)) $params[] = (int) $userId;
-        $this->update(
-            'DELETE FROM notifications WHERE notification_id = ?' . (isset($userId) ? ' AND user_id = ?' : ''),
-            $params
-        );
+        $params = [(int) $notificationId];
+        $sql = 'DELETE FROM notifications WHERE notification_id = ?';
+        
+        if ($userId !== null) {
+            $sql .= ' AND user_id = ?';
+            $params[] = (int) $userId;
+        }
+        
+        $this->update($sql, $params);
+        
         if ($this->getAffectedRows()) {
-            // If a notification was deleted (possibly validating
-            // $userId in the process) delete associated settings.
-            $notificationSettingsDao = DAORegistry::getDAO('NotificationSettingsDAO'); /* @var $notificationSettingsDaoDao NotificationSettingsDAO */
+            /** @var NotificationSettingsDAO $notificationSettingsDao */
+            $notificationSettingsDao = DAORegistry::getDAO('NotificationSettingsDAO');
             $notificationSettingsDao->deleteSettingsByNotificationId($notificationId);
             return true;
         }
@@ -230,8 +235,8 @@ class NotificationDAO extends DAO {
 
     /**
      * Delete Notification
-     * @param $notification Notification
-     * @return boolean
+     * @param Notification $notification
+     * @return bool
      */
     public function deleteObject($notification) {
         return $this->deleteById($notification->getId());
@@ -239,18 +244,17 @@ class NotificationDAO extends DAO {
 
     /**
      * Delete notification(s) by association
-     * @param $assocType int
-     * @param $assocId int
-     * @param $userId int optional
-     * @param $type int optional
-     * @param $contextId int optional
-     * @return boolean
+     * @param mixed $assocType
+     * @param mixed $assocId
+     * @param mixed $userId
+     * @param mixed $type
+     * @param mixed $contextId
+     * @return void
      */
     public function deleteByAssoc($assocType, $assocId, $userId = null, $type = null, $contextId = null) {
         $notificationsFactory = $this->getByAssoc($assocType, $assocId, $userId, $type, $contextId);
         while ($notification = $notificationsFactory->next()) {
             $this->deleteObject($notification);
-            unset($notification);
         }
     }
 
@@ -264,41 +268,45 @@ class NotificationDAO extends DAO {
 
     /**
      * Get the number of unread messages for a user
-     * @param $read boolean Whether to check for read (true) or unread (false) notifications
-     * @param $contextId int
-     * @param $userId int
-     * @param $level int
+     * @param mixed $userId
+     * @param mixed $contextId
+     * @param mixed $level
+     * @param bool $read
      * @return int
      */
-    public function getNotificationCount($read = true, $userId, $contextId = null, $level = NOTIFICATION_LEVEL_NORMAL) {
-        $params = array((int) $userId, (int) $level);
-        if ($contextId) $params[] = (int) $contextId;
+    public function getNotificationCount($userId, $contextId = null, $level = NOTIFICATION_LEVEL_NORMAL, $read = true) {
+        $params = [(int) $userId, (int) $level];
+        $sql = 'SELECT COUNT(*) AS count FROM notifications WHERE user_id = ? AND date_read IS' . ($read ? ' NOT' : '') . ' NULL AND level = ?';
+        
+        if ($contextId !== null) {
+            $sql .= ' AND context_id = ?';
+            $params[] = (int) $contextId;
+        }
 
-        $result = $this->retrieve(
-            'SELECT count(*) FROM notifications WHERE user_id = ? AND date_read IS' . ($read ? ' NOT' : '') . ' NULL AND level = ?'
-            . (isset($contextId) ? ' AND context_id = ?' : ''),
-            $params
-        );
-
-        $returner = $result->fields[0];
-
+        $result = $this->retrieve($sql, $params);
+        
+        $returner = 0;
+        if (!$result->EOF) {
+            $row = $result->getRowAssoc(false);
+            $returner = (int) $row['count'];
+        }
         $result->Close();
-        unset($result);
 
         return $returner;
     }
 
     /**
      * Transfer the notifications for a user.
-     * @param $oldUserId int
-     * @param $newUserId int
+     * @param mixed $oldUserId
+     * @param mixed $newUserId
+     * @return void
      */
     public function transferNotifications($oldUserId, $newUserId) {
         $this->update(
-                'UPDATE notifications SET user_id = ? WHERE user_id = ?',
-                array($newUserId, $oldUserId)
+            'UPDATE notifications SET user_id = ? WHERE user_id = ?',
+            [(int) $newUserId, (int) $oldUserId]
         );
     }
-}
 
+}
 ?>

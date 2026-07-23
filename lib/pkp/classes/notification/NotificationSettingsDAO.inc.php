@@ -37,73 +37,80 @@ class NotificationSettingsDAO extends DAO {
     }
 
     /**
-     * Update a notification's metadata
-     * @param $notificationId int
+     * Retrieve a notification's metadata
+     * @param mixed $notificationId
      * @return array
      */
     public function getNotificationSettings($notificationId) {
-        // Hapus '&'
         $result = $this->retrieve(
             'SELECT * FROM notification_settings WHERE notification_id = ?',
-            (int) $notificationId
+            [(int) $notificationId]
         );
 
-        $params = array();
+        $params = [];
         while (!$result->EOF) {
-            $row = $result->GetRowAssoc(false);
+            $row = $result->getRowAssoc(false);
             $name = $row['setting_name'];
             $value = $this->convertFromDB($row['setting_value'], $row['setting_type']);
             $locale = $row['locale'];
 
-            if ($locale == '') $params[$name] = $value;
-            else $params[$name][$locale] = $value;
+            if ($locale === '') {
+                $params[$name] = $value;
+            } else {
+                $params[$name][$locale] = $value;
+            }
             $result->MoveNext();
         }
 
         $result->Close();
-        unset($result);
         return $params;
     }
 
     /**
      * Store a notification's metadata
-     * @param $notificationId int
-     * @param $name string
-     * @param $value mixed
-     * @param $isLocalized boolean
-     * @param $type string
+     * @param mixed $notificationId
+     * @param string $name
+     * @param mixed $value
+     * @param bool $isLocalized
+     * @param string|null $type
      */
     public function updateNotificationSetting($notificationId, $name, $value, $isLocalized = false, $type = null) {
-        $keyFields = array('setting_name', 'locale', 'notification_id');
+        $keyFields = ['setting_name', 'locale', 'notification_id'];
+        
         if (!$isLocalized) {
-            $value = $this->convertToDB($value, $type);
+            $dbValue = $this->convertToDB($value, $type);
             $this->replace('notification_settings',
-                array(
+                [
                     'notification_id' => (int) $notificationId,
-                    'setting_name' => $name,
-                    'setting_value' => $value,
-                    'setting_type' => $type,
-                    'locale' => ''
-                ),
+                    'setting_name'    => (string) $name,
+                    'setting_value'   => $dbValue,
+                    'setting_type'    => $type,
+                    'locale'          => ''
+                ],
                 $keyFields
             );
         } else {
             if (is_array($value)) {
                 foreach ($value as $locale => $localeValue) {
-                    $this->update('DELETE FROM notification_settings WHERE notification_id = ? AND setting_name = ? AND locale = ?', array((int) $notificationId, $name, $locale));
-                    if (empty($localeValue)) continue;
+                    $this->update(
+                        'DELETE FROM notification_settings WHERE notification_id = ? AND setting_name = ? AND locale = ?', 
+                        [(int) $notificationId, (string) $name, (string) $locale]
+                    );
                     
-                    $type = null;
-                    $this->update('INSERT INTO notification_settings
-                        (notification_id, setting_name, setting_value, setting_type, locale)
-                        VALUES (?, ?, ?, ?, ?)',
-                        array(
+                    if (empty($localeValue)) {
+                        continue;
+                    }
+                    
+                    $dbLocaleValue = $this->convertToDB($localeValue, $type);
+                    $this->update(
+                        'INSERT INTO notification_settings (notification_id, setting_name, setting_value, setting_type, locale) VALUES (?, ?, ?, ?, ?)',
+                        [
                             (int) $notificationId, 
-                            $name, 
-                            $this->convertToDB($localeValue, $type), 
+                            (string) $name, 
+                            $dbLocaleValue, 
                             $type, 
-                            $locale
-                        )
+                            (string) $locale
+                        ]
                     );
                 }
             }
@@ -112,13 +119,12 @@ class NotificationSettingsDAO extends DAO {
 
     /**
      * Delete all settings for a notification
-     * @param $notificationId int
-     * @return boolean
+     * @param mixed $notificationId
+     * @return bool
      */
     public function deleteSettingsByNotificationId($notificationId) {
         return $this->update('DELETE FROM notification_settings WHERE notification_id = ?', (int) $notificationId);
     }
 
 }
-
 ?>
