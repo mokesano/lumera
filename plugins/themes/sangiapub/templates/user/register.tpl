@@ -3,16 +3,15 @@
  *
  * Copyright (c) 2017-2026 Wizdam Publishing House
  * Copyright (c) 2017-2026 Rochmady and Wizdam Team
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3.
  *
- * Modern register form ScholarWizdam Editorial Systems 
- * kompatibel dengan OJS v2.4.8.2
+ * Modern register form ScholarWizdam Editorial Systems.
  * Production-ready template dengan modern UI components
  *}
 
 {strip}
-{assign var="pageTitle" value="user.register"}
-{include file="common/header-parts/header-welcome.tpl"}
+    {assign var="pageTitle" value="user.register"}
+    {include file="common/header-parts/header-welcome.tpl"}
 {/strip}
 
 {assign var=isloggedin value=Validation::isLoggedIn()}
@@ -30,8 +29,8 @@
             </div>
         {else}
             <form id="registerForm" method="post" action="{url op="register"}">
-                {* WIZDAM SECURITY: Token CSRF Wajib Ada *}
-                <input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
+                <input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
+                <input type="hidden" name="authLength" value="{$minPasswordLength|escape}" />
     
                 {* Existing user handling *}
                 {if !$implicitAuth || ($implicitAuth === $smarty.const.IMPLICIT_AUTH_OPTIONAL && !$isloggedin)}
