@@ -213,7 +213,7 @@ switch ($op) {
 		import('pages.manager.ManagerPaymentHandler');
 		break;
 	//
-	//	announcements
+	//	Announcements
 	//
 	case 'announcements':
 	case 'deleteAnnouncement':
@@ -221,7 +221,7 @@ switch ($op) {
 	case 'editAnnouncement':
 	case 'updateAnnouncement':
 	//
-	//	announcement Types
+	//	Announcement Types
 	//
 	case 'announcementTypes':
 	case 'deleteAnnouncementType':

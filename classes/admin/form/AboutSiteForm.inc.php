@@ -9,6 +9,7 @@ declare(strict_types=1);
  *
  * @class AboutSiteForm
  * @ingroup admin_form
+ * 
  * @brief Form to manage static "About Site" settings (Mission, History, Leadership, Awards).
  */
 
@@ -45,7 +46,6 @@ class AboutSiteForm extends Form {
         $site = $request->getSite();
         
         if ($site) {
-            // [FIX] Gunakan ?? [] agar default selalu array, mencegah error "null" di PHP 8
             $this->setData('publisherMission', $site->getSetting('publisherMission') ?? []);
             $this->setData('publisherHistory', $site->getSetting('publisherHistory') ?? []);
             $this->setData('publisherLeaderships', $site->getSetting('publisherLeaderships') ?? []);
@@ -77,7 +77,7 @@ class AboutSiteForm extends Form {
 
     /**
      * Save settings.
-     * [FIX] Ubah parameter tipe dari 'string' menjadi null untuk field multibahasa (array)
+     * Ubah parameter tipe dari 'string' menjadi null untuk field multibahasa (array)
      * 
      * @param mixed $functionArgs
      * @return bool
@@ -90,7 +90,6 @@ class AboutSiteForm extends Form {
             return false;
         }
 
-        // [FIX] Parameter ke-3 harus 'null' (bukan 'string') agar DAO menangani array multibahasa dengan benar
         $siteSettingsDao->updateSetting('publisherMission', $this->getData('publisherMission'), null, true);
         $siteSettingsDao->updateSetting('publisherHistory', $this->getData('publisherHistory'), null, true);
         $siteSettingsDao->updateSetting('publisherLeaderships', $this->getData('publisherLeaderships'), null, true);
@@ -115,8 +114,7 @@ class AboutSiteForm extends Form {
             'publisherHistoryKey' => 'admin.siteSettings.publisherHistory',
             'publisherLeadershipsKey' => 'admin.siteSettings.publisherLeaderships',
             'publisherAwardsKey' => 'admin.siteSettings.publisherAwards',
-            
-            // [FIX] Pastikan data yang dikirim ke template selalu array, tidak pernah null
+
             'publisherMission' => $this->getData('publisherMission') ?? [],
             'publisherHistory' => $this->getData('publisherHistory') ?? [],
             'publisherLeaderships' => $this->getData('publisherLeaderships') ?? [],

@@ -16,7 +16,7 @@
 <p>{translate key="admin.aboutSiteSettings.description"}</p>
 
 <form method="post" action="{url op="saveAboutSite"}">
-    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
+    <input name="csrfToken" type="hidden" value="{$csrfToken|escape}" />
     {include file="common/formErrors.tpl"}
         
     <div id="settings">
@@ -58,8 +58,11 @@
     </div>
 
     <p>
-        <input type="submit" name="save" class="button defaultButton" value="{translate key="common.save"}" />
+        <input type="submit" name="save" class="button" value="{translate key="common.save"}" />
         <input type="button" class="button" value="{translate key="common.cancel"}" onclick="document.location.href='{url op="index" escape=false}'" />
+        {if $justSaved}
+            <input type="button" class="button" value="{translate key="common.back"}" onclick="document.location.href='{url op="index" escape=false}'" />
+        {/if}
     </p>
 </form>
 

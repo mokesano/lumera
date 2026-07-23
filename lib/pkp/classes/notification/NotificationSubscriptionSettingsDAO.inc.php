@@ -13,6 +13,7 @@ declare(strict_types=1);
  * @see Notification
  *
  * @brief Operations for retrieving and modifying user's notification settings.
+ * 
  * This class stores user settings that determine how notifications should be
  * delivered to them.
  */
@@ -38,13 +39,13 @@ class NotificationSubscriptionSettingsDAO extends DAO {
 
     /**
      * Delete a notification setting by setting name
-     * @param $notificationId int
-     * @param $userId int
-     * @param $settingName string optional
-     * @return boolean
+     * @param mixed $notificationId
+     * @param mixed $userId
+     * @param string|null $settingName optional
+     * @return bool
      */
     public function deleteNotificationSubscriptionSettings($notificationId, $userId, $settingName = null) {
-        $params = array((int) $notificationId, (int) $userId);
+        $params = [(int) $notificationId, (int) $userId];
         $sql = 'DELETE FROM notification_subscription_settings WHERE notification_id= ? AND user_id = ?';
         
         if ($settingName !== null) {
@@ -57,42 +58,40 @@ class NotificationSubscriptionSettingsDAO extends DAO {
 
     /**
      * Retrieve Notification subscription settings by user id
-     * @param $settingName string
-     * @param $userId int
-     * @param $contextId int
+     * @param string $settingName
+     * @param mixed $userId
+     * @param mixed $contextId
      * @return array
      */
     public function getNotificationSubscriptionSettings($settingName, $userId, $contextId) {
-        // Hapus '&'
         $result = $this->retrieve(
             'SELECT setting_value FROM notification_subscription_settings WHERE user_id = ? AND setting_name = ? AND context = ?',
-            array((int) $userId, $settingName, (int) $contextId)
+            [(int) $userId, (string) $settingName, (int) $contextId]
         );
 
-        $settings = array();
+        $settings = [];
         while (!$result->EOF) {
-            $row = $result->GetRowAssoc(false);
+            $row = $result->getRowAssoc(false);
             $settings[] = (int) $row['setting_value'];
             $result->MoveNext();
         }
 
         $result->Close();
-        unset($result);
-
         return $settings;
     }
 
     /**
      * Update a user's notification subscription settings
-     * @param $settingName string
-     * @param $settings array
-     * @param $userId int
-     * @param $contextId int
+     * @param string $settingName
+     * @param array|null $settings
+     * @param mixed $userId
+     * @param mixed $contextId
      */
     public function updateNotificationSubscriptionSettings($settingName, $settings, $userId, $contextId) {
-        // Delete old settings first, then insert new settings
-        $this->update('DELETE FROM notification_subscription_settings WHERE user_id = ? AND setting_name = ? AND context = ?',
-            array((int) $userId, $settingName, (int) $contextId));
+        $this->update(
+            'DELETE FROM notification_subscription_settings WHERE user_id = ? AND setting_name = ? AND context = ?',
+            [(int) $userId, (string) $settingName, (int) $contextId]
+        );
 
         if (is_array($settings)) {
             foreach ($settings as $setting) {
@@ -101,13 +100,13 @@ class NotificationSubscriptionSettingsDAO extends DAO {
                         (setting_name, setting_value, user_id, context, setting_type)
                         VALUES
                         (?, ?, ?, ?, ?)',
-                    array(
-                        $settingName,
+                    [
+                        (string) $settingName,
                         (int) $setting,
                         (int) $userId,
                         (int) $contextId,
                         'int'
-                    )
+                    ]
                 );
             }
         }
@@ -115,84 +114,76 @@ class NotificationSubscriptionSettingsDAO extends DAO {
 
     /**
      * Gets a user id by an RSS token value
-     * @param $token string
-     * @param $contextId int
-     * @return int|0
+     * @param string $token
+     * @param mixed $contextId
+     * @return int
      */
     public function getUserIdByRSSToken($token, $contextId) {
         $result = $this->retrieve(
             'SELECT user_id FROM notification_subscription_settings WHERE setting_value = ? AND setting_name = ? AND context = ?',
-                array($token, 'token', (int) $contextId)
+            [(string) $token, 'token', (int) $contextId]
         );
 
-        // PHP 8 Fix: Handle empty result safety
         $userId = 0;
-        if ($result->RecordCount() != 0) {
-            $row = $result->GetRowAssoc(false);
+        if (!$result->EOF) {
+            $row = $result->getRowAssoc(false);
             $userId = (int) $row['user_id'];
         }
 
         $result->Close();
-        unset($result);
-
         return $userId;
     }
 
     /**
      * Gets an RSS token for a user id
-     * @param $userId int
-     * @param $contextId int
+     * @param mixed $userId
+     * @param mixed $contextId
      * @return string|null
      */
     public function getRSSTokenByUserId($userId, $contextId) {
         $result = $this->retrieve(
             'SELECT setting_value FROM notification_subscription_settings WHERE user_id = ? AND setting_name = ? AND context = ?',
-                array((int) $userId, 'token', (int) $contextId)
+            [(int) $userId, 'token', (int) $contextId]
         );
 
-        // PHP 8 Fix: Handle empty result safety
         $tokenId = null;
-        if ($result->RecordCount() != 0) {
-            $row = $result->GetRowAssoc(false);
-            $tokenId = $row['setting_value'];
+        if (!$result->EOF) {
+            $row = $result->getRowAssoc(false);
+            $tokenId = (string) $row['setting_value'];
         }
 
         $result->Close();
-        unset($result);
-
         return $tokenId;
     }
 
     /**
      * Generates and inserts a new token for a user's RSS feed
-     * @param $userId int
-     * @param $contextId int
+     * @param mixed $userId
+     * @param mixed $contextId
      * @return string
      */
     public function insertNewRSSToken($userId, $contextId) {
-        // Entropy fix: rand() -> mt_rand()
-        $token = uniqid(mt_rand());
-
-        // Recurse if this token already exists
-        if($this->getUserIdByRSSToken($token, $contextId)) return $this->insertNewRSSToken($userId, $contextId);
+        $token = bin2hex(random_bytes(16));
+        if ($this->getUserIdByRSSToken($token, $contextId) !== 0) {
+            return $this->insertNewRSSToken($userId, $contextId);
+        }
 
         $this->update(
             'INSERT INTO notification_subscription_settings
                 (setting_name, setting_value, user_id, context, setting_type)
                 VALUES
                 (?, ?, ?, ?, ?)',
-            array(
+            [
                 'token',
                 $token,
                 (int) $userId,
                 (int) $contextId,
                 'string'
-            )
+            ]
         );
 
         return $token;
     }
 
 }
-
 ?>
