@@ -27,6 +27,10 @@ class PubIdPluginHelper {
         if (is_array($pubIdPlugins)) {
             foreach ($pubIdPlugins as $pubIdPlugin) {
                 $fieldNames = $pubIdPlugin->getFormFieldNames();
+                if (!is_array($fieldNames)) {
+                    continue;
+                }
+                
                 foreach ($fieldNames as $fieldName) {
                     $fieldValue = $form->getData($fieldName);
                     $errorMsg = '';
@@ -44,11 +48,15 @@ class PubIdPluginHelper {
      * @param object $pubObject
      */
     public function init($form, $pubObject) {
-        if (isset($pubObject)) {
+        if ($pubObject !== null) {
             $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
             if (is_array($pubIdPlugins)) {
                 foreach ($pubIdPlugins as $pubIdPlugin) {
                     $fieldNames = $pubIdPlugin->getFormFieldNames();
+                    if (!is_array($fieldNames)) {
+                        continue;
+                    }
+                    
                     foreach ($fieldNames as $fieldName) {
                         $form->setData($fieldName, $pubObject->getData($fieldName));
                     }
@@ -65,7 +73,11 @@ class PubIdPluginHelper {
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
         if (is_array($pubIdPlugins)) {
             foreach ($pubIdPlugins as $pubIdPlugin) {
-                $form->readUserVars($pubIdPlugin->getFormFieldNames());
+                $fieldNames = $pubIdPlugin->getFormFieldNames();
+                if (is_array($fieldNames)) {
+                    $form->readUserVars($fieldNames);
+                }
+
                 $clearFormFieldName = 'clear_' . $pubIdPlugin->getPubIdType();
                 $form->readUserVars([$clearFormFieldName]);
             }
@@ -81,20 +93,24 @@ class PubIdPluginHelper {
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
         if (is_array($pubIdPlugins)) {
             foreach ($pubIdPlugins as $pubIdPlugin) {
-                // Public ID data can only be changed as long
-                // as no ID has been generated.
+                
+                // Public ID data can only be changed as long as no ID has been generated.
                 $storedId = $pubObject->getStoredPubId($pubIdPlugin->getPubIdType());
                 
                 $fieldNames = $pubIdPlugin->getFormFieldNames();
                 $excludeFormFieldName = $pubIdPlugin->getExcludeFormFieldName();
                 $clearFormFieldName = 'clear_' . $pubIdPlugin->getPubIdType();
                 
+                if (!is_array($fieldNames)) {
+                    continue;
+                }
+                
                 foreach ($fieldNames as $fieldName) {
                     $data = $form->getData($fieldName);
-                    // if the exclude checkbox is unselected
-                    if ($fieldName == $excludeFormFieldName && !isset($data))  {
+                    if ($fieldName === $excludeFormFieldName && $data === null) {
                         $data = 0;
                     }
+                    
                     $pubObject->setData($fieldName, $data);
                     
                     if ($data) {
@@ -113,14 +129,19 @@ class PubIdPluginHelper {
      * @param object $pubObject
      */
     private function _clearPubId($pubIdPlugin, $pubObject) {
-        // clear the pubId:
-        // delete the pubId from the DB
+        // clear the pubId: delete the pubId from the DB
         $pubObjectType = $pubIdPlugin->getPubObjectType($pubObject);
         $dao = $pubIdPlugin->getDAO($pubObjectType);
-        $dao->deletePubId((int) $pubObject->getId(), $pubIdPlugin->getPubIdType());
-        // set the object setting/data 'pub-id::...' to null, in order
+        $pubIdType = $pubIdPlugin->getPubIdType();
+        
+        // [LUMERA] Runtime safety & Linter
+        if (method_exists($dao, 'deletePubId')) {
+            $dao->deletePubId((int) $pubObject->getId(), $pubIdType);
+        }
+        
+        // Set the object setting/data 'pub-id::...' to null, in order
         // not to be considered in the DB object update later in the form
-        $settingName = 'pub-id::'.$pubIdPlugin->getPubIdType();
+        $settingName = 'pub-id::' . $pubIdType;
         $pubObject->setData($settingName, null);
     }
     

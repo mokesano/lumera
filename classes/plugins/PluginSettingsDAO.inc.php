@@ -51,7 +51,6 @@ class PluginSettingsDAO extends DAO {
      * @return mixed
      */
     public function getSetting($journalId, $pluginName, $name) {
-        // Normalize the plug-in name to lower case.
         $pluginName = strtolower_codesafe((string) $pluginName);
 
         // Retrieve the setting.
@@ -69,6 +68,7 @@ class PluginSettingsDAO extends DAO {
         $contextParts = explode('-', $cache->getContext());
         $journalId = (int) array_pop($contextParts);
         $settings = $this->getPluginSettings($journalId, $cache->getCacheId());
+        
         if (!isset($settings[$id])) {
             // Make sure that even null values are cached
             $cache->setCache($id, null);
@@ -84,12 +84,11 @@ class PluginSettingsDAO extends DAO {
      * @return array
      */
     public function getPluginSettings($journalId, $pluginName) {
-        // Normalize plug-in name to lower case.
-        $pluginName = strtolower_codesafe($pluginName);
+        $pluginName = strtolower_codesafe((string) $pluginName);
 
         $result = $this->retrieve(
             'SELECT setting_name, setting_value, setting_type FROM plugin_settings WHERE plugin_name = ? AND journal_id = ?', 
-            [$pluginName, (int) $journalId]
+            [(string) $pluginName, (int) $journalId]
         );
 
         $pluginSettings = [];
@@ -99,7 +98,6 @@ class PluginSettingsDAO extends DAO {
             $result->MoveNext();
         }
         $result->Close();
-        unset($result);
 
         // Update the cache.
         $cache = $this->_getCache($journalId, $pluginName);
@@ -118,36 +116,40 @@ class PluginSettingsDAO extends DAO {
      * @return bool
      */
     public function updateSetting($journalId, $pluginName, $name, $value, $type = null) {
-        // Normalize the plug-in name to lower case.
-        $pluginName = strtolower_codesafe($pluginName);
+        $pluginName = strtolower_codesafe((string) $pluginName);
 
         $cache = $this->_getCache($journalId, $pluginName);
         $cache->setCache($name, $value);
 
         $result = $this->retrieve(
-            'SELECT COUNT(*) FROM plugin_settings WHERE plugin_name = ? AND setting_name = ? AND journal_id = ?',
-            [$pluginName, $name, (int) $journalId]
+            'SELECT COUNT(*) AS count FROM plugin_settings WHERE plugin_name = ? AND setting_name = ? AND journal_id = ?',
+            [(string) $pluginName, (string) $name, (int) $journalId]
         );
-        $count = $result->fields[0];
+        
+        $count = 0;
+        if (!$result->EOF) {
+            $row = $result->getRowAssoc(false);
+            $count = (int) $row['count'];
+        }
         $result->Close();
-        unset($result);
 
-        $value = $this->convertToDB($value, $type);
-        if ($count == 0) {
+        $dbValue = $this->convertToDB($value, $type);
+
+        if ($count === 0) {
             $returner = $this->update(
                 'INSERT INTO plugin_settings
                     (plugin_name, journal_id, setting_name, setting_value, setting_type)
-                    VALUES
+                VALUES
                     (?, ?, ?, ?, ?)',
-                [$pluginName, (int) $journalId, $name, $value, $type]
+                [(string) $pluginName, (int) $journalId, (string) $name, $dbValue, $type]
             );
         } else {
             $returner = $this->update(
                 'UPDATE plugin_settings SET
                     setting_value = ?,
                     setting_type = ?
-                    WHERE plugin_name = ? AND setting_name = ? AND journal_id = ?',
-                [$value, $type, $pluginName, $name, (int) $journalId]
+                WHERE plugin_name = ? AND setting_name = ? AND journal_id = ?',
+                [$dbValue, $type, (string) $pluginName, (string) $name, (int) $journalId]
             );
         }
 
@@ -162,15 +164,14 @@ class PluginSettingsDAO extends DAO {
      * @return bool
      */
     public function deleteSetting($journalId, $pluginName, $name) {
-        // Normalize the plug-in name to lower case.
-        $pluginName = strtolower_codesafe($pluginName);
+        $pluginName = strtolower_codesafe((string) $pluginName);
 
         $cache = $this->_getCache($journalId, $pluginName);
         $cache->setCache($name, null);
 
         return (bool) $this->update(
             'DELETE FROM plugin_settings WHERE plugin_name = ? AND setting_name = ? AND journal_id = ?',
-            [$pluginName, $name, (int) $journalId]
+            [(string) $pluginName, (string) $name, (int) $journalId]
         );
     }
 
@@ -181,16 +182,15 @@ class PluginSettingsDAO extends DAO {
      * @return bool
      */
     public function deleteSettingsByPlugin($pluginName, $journalId = null) {
-        // Normalize the plug-in name to lower case.
-        $pluginName = strtolower_codesafe($pluginName);
+        $pluginName = strtolower_codesafe((string) $pluginName);
 
-        if ($journalId) {
+        if ($journalId !== null) {
             $cache = $this->_getCache($journalId, $pluginName);
             $cache->flush();
 
             return (bool) $this->update(
                 'DELETE FROM plugin_settings WHERE journal_id = ? AND plugin_name = ?',
-                [(int) $journalId, $pluginName]
+                [(int) $journalId, (string) $pluginName]
             );
         } else {
             $cacheManager = CacheManager::getManager();
@@ -199,7 +199,7 @@ class PluginSettingsDAO extends DAO {
 
             return (bool) $this->update(
                 'DELETE FROM plugin_settings WHERE plugin_name = ?',
-                [$pluginName]
+                [(string) $pluginName]
             );
         }
     }
@@ -212,19 +212,19 @@ class PluginSettingsDAO extends DAO {
     public function deleteSettingsByJournalId($journalId) {
         return (bool) $this->update(
             'DELETE FROM plugin_settings WHERE journal_id = ?', 
-            (int) $journalId
+            [(int) $journalId]
         );
     }
 
     /**
      * Used internally by installSettings to perform variable and translation replacements.
-     * @param string $rawInput contains text including variable and/or translate replacements.
-     * @param array $paramArray contains variables for replacement
+     * @param string $rawInput
+     * @param array $paramArray
      * @return string
      */
     protected function _performReplacement($rawInput, $paramArray = []) {
         $value = preg_replace_callback(
-            '{{translate key="([^"]+)"}}', 
+            '/{{translate key="([^"]+)"}}/', 
             function($matches) {
                 return __($matches[1]);
             }, 
@@ -232,7 +232,7 @@ class PluginSettingsDAO extends DAO {
         );
         
         foreach ($paramArray as $pKey => $pValue) {
-            $value = str_replace('{$' . $pKey . '}', $pValue, $value);
+            $value = str_replace('{$' . $pKey . '}', (string) $pValue, $value);
         }
         return $value;
     }
@@ -241,7 +241,7 @@ class PluginSettingsDAO extends DAO {
      * Used internally by installSettings to recursively build nested arrays.
      * Deals with translation and variable replacement calls.
      * @param XMLNode $node <array> tag
-     * @param array $paramArray Parameters to be replaced in key/value contents
+     * @param array $paramArray
      * @return array
      */
     protected function _buildObject($node, $paramArray = []) {
@@ -249,11 +249,13 @@ class PluginSettingsDAO extends DAO {
         foreach ($node->getChildren() as $element) {
             $key = $element->getAttribute('key');
             $childArray = $element->getChildByName('array');
-            if (isset($childArray)) {
+            
+            if ($childArray) {
                 $content = $this->_buildObject($childArray, $paramArray);
             } else {
                 $content = $this->_performReplacement($element->getValue(), $paramArray);
             }
+            
             if (!empty($key)) {
                 $key = $this->_performReplacement($key, $paramArray);
                 $value[$key] = $content;
@@ -267,13 +269,13 @@ class PluginSettingsDAO extends DAO {
     /**
      * Install plugin settings from an XML file.
      * @param int $journalId
-     * @param string $pluginName name of plugin for settings to apply to
-     * @param string $filename Name of XML file to parse and install
+     * @param string $pluginName
+     * @param string $filename
      * @param array $paramArray 
      * @return bool|void
      */
     public function installSettings($journalId, $pluginName, $filename, $paramArray = []) {
-        $xmlParser = new XMLParser();
+        $xmlParser = new PKPXMLParser();
         $tree = $xmlParser->parse($filename);
 
         if (!$tree) {
@@ -281,28 +283,28 @@ class PluginSettingsDAO extends DAO {
             return false;
         }
 
-        // Check for existing settings and leave them if they are already in place.
         $currentSettings = $this->getPluginSettings($journalId, $pluginName);
 
         foreach ($tree->getChildren() as $setting) {
             $nameNode = $setting->getChildByName('name');
             $valueNode = $setting->getChildByName('value');
 
-            if (isset($nameNode) && isset($valueNode)) {
+            if ($nameNode && $valueNode) {
                 $type = $setting->getAttribute('type');
                 $name = $nameNode->getValue();
 
                 // If the setting already exists, respect it.
-                if (isset($currentSettings[$name])) continue;
+                if (array_key_exists($name, $currentSettings)) {
+                    continue;
+                }
 
-                if ($type == 'object') {
+                if ($type === 'object') {
                     $arrayNode = $valueNode->getChildByName('array');
                     $value = $this->_buildObject($arrayNode, $paramArray);
                 } else {
                     $value = $this->_performReplacement($valueNode->getValue(), $paramArray);
                 }
 
-                // Replace translate calls with translated content
                 $this->updateSetting($journalId, $pluginName, $name, $value, $type);
             }
         }
@@ -314,9 +316,11 @@ class PluginSettingsDAO extends DAO {
 /**
  * Used internally by plugin setting installation code to perform 
  * translation function.
+ * @deprecated Kept for backward compatibility with legacy XML installers that might reference it globally.
+ * @param mixed $matches
  */
 function _installer_plugin_regexp_callback($matches) {
-	return __($matches[1]);
+    return __($matches[1]);
 }
 
 ?>
