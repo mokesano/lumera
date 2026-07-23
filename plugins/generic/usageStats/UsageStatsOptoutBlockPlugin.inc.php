@@ -21,10 +21,9 @@ class UsageStatsOptoutBlockPlugin extends BlockPlugin {
     /** @var string */
     public $_parentPluginName;
 
-
     /**
      * Constructor
-     * @param $parentPluginName string
+     * @param string $parentPluginName
      */
     public function __construct($parentPluginName) {
         $this->_parentPluginName = $parentPluginName;
@@ -33,6 +32,7 @@ class UsageStatsOptoutBlockPlugin extends BlockPlugin {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param string $parentPluginName
      */
     public function UsageStatsOptoutBlockPlugin($parentPluginName) {
         trigger_error(
@@ -48,7 +48,7 @@ class UsageStatsOptoutBlockPlugin extends BlockPlugin {
     /**
      * Get whether or not management functions should be hidden
      * @see PKPPlugin::getHideManagement()
-     * @return boolean
+     * @return bool
      */
     public function getHideManagement(): bool {
         return true;
@@ -84,7 +84,7 @@ class UsageStatsOptoutBlockPlugin extends BlockPlugin {
     /**
      * Indicate that this is not a site-wide plugin
      * @see PKPPlugin::isSitePlugin()
-     * @return boolean
+     * @return bool
      */
     public function isSitePlugin(): bool {
         return false;
@@ -96,7 +96,6 @@ class UsageStatsOptoutBlockPlugin extends BlockPlugin {
      * @return string
      */
     public function getPluginPath(): string {
-        // Removed & reference
         $plugin = $this->_getPlugin();
         return $plugin->getPluginPath();
     }
@@ -107,7 +106,6 @@ class UsageStatsOptoutBlockPlugin extends BlockPlugin {
      * @return string
      */
     public function getTemplatePath(): string {
-        // Removed & reference
         $plugin = $this->_getPlugin();
         return $plugin->getTemplatePath();
     }
@@ -135,10 +133,10 @@ class UsageStatsOptoutBlockPlugin extends BlockPlugin {
     /**
      * Get whether or not this plugin is enabled
      * @see LazyLoadPlugin::getEnabled()
-     * @return boolean
+     * @param PKPRequest|null $request
+     * @return bool
      */
-    public function getEnabled(): bool {
-        // Removed & reference
+    public function getEnabled($request = null): bool {
         $plugin = $this->_getPlugin();
         return $plugin->getEnabled();
     }
@@ -155,7 +153,6 @@ class UsageStatsOptoutBlockPlugin extends BlockPlugin {
     public function getBlockContext() {
         $blockContext = parent::getBlockContext();
 
-        // Place the block on the right by default.
         if (!in_array($blockContext, $this->getSupportedContexts())) {
             $blockContext = BLOCK_CONTEXT_RIGHT_SIDEBAR;
         }
@@ -166,9 +163,10 @@ class UsageStatsOptoutBlockPlugin extends BlockPlugin {
     /**
      * Get the block template filename
      * @see BlockPlugin::getBlockTemplateFilename()
+     * @param PKPRequest|null $request
      * @return string
      */
-    public function getBlockTemplateFilename() {
+    public function getBlockTemplateFilename($request = NULL) {
         // Return the opt-out template.
         return 'optoutBlock.tpl';
     }
@@ -176,13 +174,12 @@ class UsageStatsOptoutBlockPlugin extends BlockPlugin {
     /**
      * Get the contents of the block
      * @see BlockPlugin::getContents()
-     * @param $templateMgr TemplateManager
-     * @param $request PKPRequest
+     * @param TemplateManager $templateMgr
+     * @param PKPRequest|null $request
      * @return string
      */
     public function getContents($templateMgr, $request = null) {
-        // Removed & from $templateMgr
-        $router = $request->getRouter(); /* @var $router PageRouter */
+        $router = $request->getRouter(); /** @var PageRouter $router */
         $privacyInfoUrl = $router->url($request, null, 'usageStats', 'privacyInformation');
         $templateMgr->assign('privacyInfoUrl', $privacyInfoUrl);
         return parent::getContents($templateMgr, $request);
@@ -197,10 +194,9 @@ class UsageStatsOptoutBlockPlugin extends BlockPlugin {
      * @return UsageStatsPlugin
      */
     protected function _getPlugin() {
-        // Removed & reference from return and assignment
         $plugin = PluginRegistry::getPlugin('generic', $this->_parentPluginName);
         return $plugin;
     }
-}
 
+}
 ?>

@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_usageStats
  *
  * @brief Scheduled task to extract transform and load usage statistics data into database.
- * * MODERNIZED FOR PHP 7.4+ (Wizdam Protocol v2.1)
- * * Optimized for Connection Pooling & Memory Management
  */
 
 import('lib.pkp.classes.task.FileLoader');
@@ -27,55 +25,47 @@ define('COUNTER_DOUBLE_CLICK_TIME_FILTER_SECONDS_OTHER', 30);
 
 class UsageStatsLoader extends FileLoader {
 
-    /** @var GeoLocationTool|null A GeoLocationTool object instance to provide geo location based on ip. */
-    protected $_geoLocationTool;
+    /** @var object|null A GeoLocationTool object instance to provide geo location based on ip. */
+    protected $_geoLocationTool = null;
 
-    /** @var object Plugin */
-    protected $_plugin;
+    /** @var object|null Plugin */
+    protected $_plugin = null;
 
-    /** @var string */
-    protected $_counterRobotsListFile;
+    /** @var string|null */
+    protected $_counterRobotsListFile = null;
 
     /** @var array */
-    protected $_journalsByPath;
+    protected $_journalsByPath = [];
 
-    /** @var string */
-    protected $_autoStage;
+    /** @var bool|null */
+    protected $_autoStage = null;
 
-    /** @var string */
-    protected $_externalLogFiles;
+    /** @var bool|null */
+    protected $_externalLogFiles = null;
 
     /**
      * Constructor.
-     * @param $args array. (Default array kosong mencegah Fatal Error)
+     * @param array $args
      */
-    public function __construct($args = array()) {
-        // --- [FIX START] WIZDAM FORK DEFENSIVE LOADING ---
-        // 1. Coba ambil plugin secara normal
+    public function __construct($args = []) {
         $plugin = PluginRegistry::getPlugin('generic', 'usagestatsplugin');
 
-        // 2. Jika NULL (karena dijalankan Acron/CLI), paksa load kategori 'generic'
         if (!$plugin) {
             PluginRegistry::loadCategory('generic');
             $plugin = PluginRegistry::getPlugin('generic', 'usagestatsplugin');
         }
 
-        // 3. Jika MASIH NULL (Plugin didisable/dihapus), hentikan proses agar tidak Fatal Error
         if (!$plugin) {
-            // Opsional: Return diam-diam agar Acron tidak crash
             return;
         }
-        // --- [FIX END] ---
 
+        /** @var UsageStatsPlugin $plugin */
         $this->_plugin = $plugin;
-
         if ($plugin->getSetting(CONTEXT_ID_NONE, 'compressArchives')) {
             $this->setCompressArchives(true);
         }
 
-        // Ambil argumen pertama dengan aman
         $arg = current($args);
-
         switch ($arg) {
             case 'autoStage':
                 if ($plugin->getSetting(0, 'createLogFiles')) {
@@ -87,20 +77,11 @@ class UsageStatsLoader extends FileLoader {
                 break;
         }
 
-        // PENTING: Parent class (FileLoader) membutuhkan path direktori pada index 0.
-        // Karena $plugin sudah dipastikan tidak null di atas, baris ini aman sekarang.
-        if (!isset($args[0])) {
-            $args[0] = $plugin->getFilesPath();
-        } else {
-            $args[0] = $plugin->getFilesPath();
-        }
-
+        $args[0] = $plugin->getFilesPath();
         parent::__construct($args);
-
         if ($plugin->getEnabled()) {
             PluginRegistry::loadCategory('reports');
 
-            // Inisialisasi GeoLocationTool (Tanpa reference &)
             $geoLocationTool = StatisticsHelper::getGeoLocationTool();
             $this->_geoLocationTool = $geoLocationTool;
 
@@ -110,17 +91,15 @@ class UsageStatsLoader extends FileLoader {
 
             $this->_counterRobotsListFile = $this->_getCounterRobotListFile();
 
-            // Wizdam Optimization: Load journals efficiently
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journalFactory = $journalDao->getJournals();
             
-            $journalsByPath = array();
+            $journalsByPath = [];
             while ($journal = $journalFactory->next()) {
                 $journalsByPath[$journal->getPath()] = $journal;
-                unset($journal); // Memory cleanup
             }
             $this->_journalsByPath = $journalsByPath;
-            // Clean factory result set immediately
             unset($journalFactory);
 
             $this->checkFolderStructure(true);
@@ -129,8 +108,9 @@ class UsageStatsLoader extends FileLoader {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param array $args
      */
-    public function UsageStatsLoader($args = array()) {
+    public function UsageStatsLoader($args = []) {
         trigger_error(
             "Class '" . get_class($this) . "' uses deprecated constructor parent::UsageStatsLoader(). Please refactor to use parent::__construct().",
             E_USER_DEPRECATED
@@ -150,22 +130,28 @@ class UsageStatsLoader extends FileLoader {
     /**
      * Execute actions.
      * @see FileLoader::executeActions()
-     * @return boolean True if processing succeeded.
+     * @return bool
      */
     public function executeActions() {
         $plugin = $this->_plugin;
-        if (!$plugin->getEnabled()) {
+        if (!$plugin || !$plugin->getEnabled()) {
             $this->addExecutionLogEntry(__('plugins.generic.usageStats.pluginDisabled'), SCHEDULED_TASK_MESSAGE_TYPE_WARNING);
             return true;
         }
         
         $processingDirFiles = glob($this->getProcessingPath() . DIRECTORY_SEPARATOR . '*');
-        $processingDirError = is_array($processingDirFiles) && count($processingDirFiles);
+        $processingDirError = is_array($processingDirFiles) && count($processingDirFiles) > 0;
+        
         if ($processingDirError) {
-            $this->addExecutionLogEntry(__('plugins.generic.usageStats.processingPathNotEmpty', array('directory' => $this->getProcessingPath())), SCHEDULED_TASK_MESSAGE_TYPE_ERROR);
+            $this->addExecutionLogEntry(
+                __('plugins.generic.usageStats.processingPathNotEmpty', ['directory' => $this->getProcessingPath()]), 
+                SCHEDULED_TASK_MESSAGE_TYPE_ERROR
+            );
         }
 
-        if ($this->_autoStage) $this->autoStage();
+        if ($this->_autoStage) {
+            $this->autoStage();
+        }
 
         return (parent::executeActions() && !$processingDirError);
     }
@@ -173,67 +159,73 @@ class UsageStatsLoader extends FileLoader {
     /**
      * Process a file.
      * @see FileLoader::processFile()
-     * [WIZDAM FIX] PHP 8 Support: Fix trim(false) error on fgets EOF
-     * @param $filePath string
-     * @param $errorMsg string passed by reference
+     * @param string $filePath
+     * @param string $errorMsg
+     * @return mixed
      */
     public function processFile($filePath, &$errorMsg) {
         $fhandle = fopen($filePath, 'r');
         $geoTool = $this->_geoLocationTool;
         
         if (!$fhandle) {
-            $errorMsg = __('plugins.generic.usageStats.openFileFailed', array('file' => $filePath));
+            $errorMsg = __('plugins.generic.usageStats.openFileFailed', ['file' => $filePath]);
             return false;
         }
         
         if (!$this->_counterRobotsListFile) {
-            $errorMsg = __('plugins.generic.usageStats.noCounterBotList', array('botlist' => $this->_counterRobotsListFile, 'file' => $filePath));
+            $errorMsg = __('plugins.generic.usageStats.noCounterBotList', ['botlist' => $this->_counterRobotsListFile, 'file' => $filePath]);
+            fclose($fhandle);
             return false;
         } elseif (!file_exists($this->_counterRobotsListFile)) {
-            $errorMsg = __('plugins.generic.usageStats.failedCounterBotList', array('botlist' => $this->_counterRobotsListFile, 'file' => $filePath));
+            $errorMsg = __('plugins.generic.usageStats.failedCounterBotList', ['botlist' => $this->_counterRobotsListFile, 'file' => $filePath]);
+            fclose($fhandle);
             return false;
         }
 
         $loadId = basename($filePath);
-        $statsDao = DAORegistry::getDAO('UsageStatsTemporaryRecordDAO'); /* @var $statsDao UsageStatsTemporaryRecordDAO */
-
-        // Clean up previous temporary records for this load ID
+        /** @var UsageStatsTemporaryRecordDAO $statsDao */
+        $statsDao = DAORegistry::getDAO('UsageStatsTemporaryRecordDAO');
         $statsDao->deleteByLoadId($loadId);
 
-        $extractedData = array();
-        $lastInsertedEntries = array();
+        $lastInsertedEntries = [];
         $lineNumber = 0;
 
-        while(!feof($fhandle)) {
+        while (!feof($fhandle)) {
             $lineNumber++;
-            
-            // [WIZDAM FIX] Force cast to string prevents "trim() expects string, bool given" fatal error
-            // When fgets returns false (EOF), it becomes "" (empty string), which trim handles safely.
+
             $line = trim((string) fgets($fhandle));
-            
-            if (empty($line) || substr($line, 0, 1) === "#") continue;
+            if (empty($line) || substr($line, 0, 1) === '#') {
+                continue;
+            }
             
             $entryData = $this->_getDataFromLogEntry($line);
             if (!$this->_isLogEntryValid($entryData, $lineNumber)) {
-                $errorMsg = __('plugins.generic.usageStats.invalidLogEntry',
-                    array('file' => $filePath, 'lineNumber' => $lineNumber));
+                $errorMsg = __('plugins.generic.usageStats.invalidLogEntry', ['file' => $filePath, 'lineNumber' => $lineNumber]);
+                fclose($fhandle);
                 return false;
             }
 
-            // Filter logic
-            if ($entryData['url'] == '*') continue; // Apache internal
-            if (!in_array($entryData['returnCode'], array(200, 304))) continue; // Non-success codes
-            if (Core::isUserAgentBot($entryData['userAgent'], $this->_counterRobotsListFile)) continue; // Bots
+            if ($entryData['url'] === '*') {
+                continue; // Apache internal
+            }
+            if (!in_array($entryData['returnCode'], [200, 304], true)) {
+                continue; // Non-success codes
+            }
+            if (Core::isUserAgentBot($entryData['userAgent'], $this->_counterRobotsListFile)) {
+                continue; // Bots
+            }
 
             // Get Association Data
-            list($assocId, $assocType) = $this->_getAssocFromUrl($entryData['url'], $filePath, $lineNumber);
-            if(!$assocId || !$assocType) continue;
+            [$assocId, $assocType] = $this->_getAssocFromUrl($entryData['url'], $filePath, $lineNumber);
+            if (!$assocId || !$assocType) {
+                continue;
+            }
 
-            // --- MODERNIZED GEOIP SECTION ---
-            $countryCode = $cityName = $region = null;
+            $countryCode = null;
+            $cityName = null;
+            $region = null;
             
             if ($geoTool) {
-                // GeoLocationTool returns [Country, City, Region]
                 $geoResult = $geoTool->getGeoLocation($entryData['ip']);
                 if (is_array($geoResult)) {
                     $countryCode = $geoResult[0] ?? null;
@@ -241,24 +233,21 @@ class UsageStatsLoader extends FileLoader {
                     $region      = $geoResult[2] ?? null;
                 }
             }
-            // --- END MODERNIZED GEOIP SECTION ---
 
             $day = date('Ymd', $entryData['date']);
             $type = $this->_getFileType($assocType, $assocId);
 
-            // Double click filtering logic
             $entryHash = $assocType . $assocId . $entryData['ip'];
             $biggestTimeFilter = COUNTER_DOUBLE_CLICK_TIME_FILTER_SECONDS_OTHER;
             
-            // Wizdam Optimization: Clean array inside loop to manage memory
-            foreach($lastInsertedEntries as $hash => $time) {
+            foreach ($lastInsertedEntries as $hash => $time) {
                 if ($time + $biggestTimeFilter < $entryData['date']) {
                     unset($lastInsertedEntries[$hash]);
                 }
             }
 
             if (isset($lastInsertedEntries[$entryHash])) {
-                if ($type == STATISTICS_FILE_TYPE_PDF || $type == STATISTICS_FILE_TYPE_OTHER) {
+                if ($type === STATISTICS_FILE_TYPE_PDF || $type === STATISTICS_FILE_TYPE_OTHER) {
                     $timeFilter = COUNTER_DOUBLE_CLICK_TIME_FILTER_SECONDS_OTHER;
                 } else {
                     $timeFilter = COUNTER_DOUBLE_CLICK_TIME_FILTER_SECONDS_HTML;
@@ -272,7 +261,7 @@ class UsageStatsLoader extends FileLoader {
 
             $lastInsertedEntries[$entryHash] = $entryData['date'];
             
-            // Insert Data (Includes new Geo fields)
+            // Insert Data
             $statsDao->insert($assocType, $assocId, $day, $entryData['date'], $countryCode, $region, $cityName, $type, $loadId);
         }
 
@@ -284,12 +273,11 @@ class UsageStatsLoader extends FileLoader {
         $statsDao->deleteByLoadId($loadId);
 
         if (!$loadResult) {
-            $errorMsg = __('plugins.generic.usageStats.loadDataError',
-                array('file' => $filePath, 'error' => $errorMsg));
+            $errorMsg = __('plugins.generic.usageStats.loadDataError', ['file' => $filePath, 'error' => $errorMsg]);
             return FILE_LOADER_RETURN_TO_STAGING;
-        } else {
-            return true;
         }
+        
+        return true;
     }
 
     //
@@ -297,12 +285,11 @@ class UsageStatsLoader extends FileLoader {
     //
     /**
      * Auto stage usage stats log files
-     * Wizdam Optimization: Use glob() instead of DirectoryIterator for performance
      */
     protected function autoStage() {
         $plugin = $this->_plugin;
         $fileMgr = new FileManager();
-        $logFiles = array();
+        $logFiles = [];
         
         $logsDirFiles = glob($plugin->getUsageEventLogsPath() . DIRECTORY_SEPARATOR . '*');
         $processingDirFiles = glob($this->getProcessingPath() . DIRECTORY_SEPARATOR . '*');
@@ -319,21 +306,22 @@ class UsageStatsLoader extends FileLoader {
             if ($fileMgr->fileExists($filePath)) {
                 $filename = pathinfo($filePath, PATHINFO_BASENAME);
                 $currentDayFilename = $plugin->getUsageEventCurrentDayLogName();
-                if ($filename == $currentDayFilename) continue;
+                if ($filename === $currentDayFilename) {
+                    continue;
+                }
                 $this->moveFile(pathinfo($filePath, PATHINFO_DIRNAME), $this->getStagePath(), $filename);
             }
         }
     }
-
 
     //
     // Private helper methods.
     //
     /**
      * Validate a access log entry.
-     * @param $entry array Log entry data.
-     * @param $lineNumber int Line number in the log file.
-     * @return boolean True if the log entry is valid.
+     * @param array $entry
+     * @param int $lineNumber
+     * @return bool
      */
     protected function _isLogEntryValid($entry, $lineNumber) {
         if (empty($entry)) {
@@ -341,7 +329,7 @@ class UsageStatsLoader extends FileLoader {
         }
 
         $date = $entry['date'];
-        if (!is_numeric($date) && $date <= 0) {
+        if (!is_numeric($date) || (int) $date <= 0) {
             return false;
         }
 
@@ -350,8 +338,8 @@ class UsageStatsLoader extends FileLoader {
 
     /**
      * Get data from the passed log entry.
-     * @param $entry string Log entry.
-     * @return array Associative array with the log entry data.
+     * @param string $entry
+     * @return array
      */
     protected function _getDataFromLogEntry($entry) {
         $plugin = $this->_plugin;
@@ -363,9 +351,11 @@ class UsageStatsLoader extends FileLoader {
             $parseRegex = '/^(?P<ip>\S+) \S+ \S+ "(?P<date>.*?)" (?P<url>\S+) (?P<returnCode>\S+) "(?P<userAgent>.*?)"/';
         }
 
-        if (!$parseRegex) $parseRegex = '/^(?P<ip>\S+) \S+ \S+ \[(?P<date>.*?)\] "\S+ (?P<url>\S+).*?" (?P<returnCode>\S+) \S+ ".*?" "(?P<userAgent>.*?)"/';
+        if (!$parseRegex) {
+            $parseRegex = '/^(?P<ip>\S+) \S+ \S+ \[(?P<date>.*?)\] "\S+ (?P<url>\S+).*?" (?P<returnCode>\S+) \S+ ".*?" "(?P<userAgent>.*?)"/';
+        }
 
-        $returner = array();
+        $returner = [];
         if (preg_match($parseRegex, $entry, $m)) {
             $associative = count(array_filter(array_keys($m), 'is_string')) > 0;
             $returner['ip'] = $associative ? $m['ip'] : $m[1];
@@ -383,34 +373,27 @@ class UsageStatsLoader extends FileLoader {
      * @return array
      */
     protected function _getExpectedPageAndOp() {
-        return array(ASSOC_TYPE_ARTICLE => array(
-                'article/view',
-                'article/viewArticle'),
-            ASSOC_TYPE_GALLEY => array(
-                'article/viewFile',
-                'article/download'),
-            ASSOC_TYPE_SUPP_FILE => array(
-                'article/downloadSuppFile'),
-            ASSOC_TYPE_ISSUE => array(
-                'issue/view'),
-            ASSOC_TYPE_ISSUE_GALLEY => array(
-                'issue/viewFile',
-                'issue/download'),
-            ASSOC_TYPE_JOURNAL => array(
-                'index/index')
-            );
+        return [
+            ASSOC_TYPE_ARTICLE => ['article/view', 'article/viewArticle'],
+            ASSOC_TYPE_GALLEY => ['article/viewFile', 'article/download'],
+            ASSOC_TYPE_SUPP_FILE => ['article/downloadSuppFile'],
+            ASSOC_TYPE_ISSUE => ['issue/view'],
+            ASSOC_TYPE_ISSUE_GALLEY => ['issue/viewFile', 'issue/download'],
+            ASSOC_TYPE_JOURNAL => ['index/index']
+        ];
     }
 
     /**
      * Get the assoc type and id from URL.
-     * Wizdam Optimization: Heavy DB usage here, ensure connections are closed.
-     * @param $url string
-     * @param $filePath string
-     * @param $lineNumber int
-     * @return array (assocId, assocType)
+     * @param string $url
+     * @param string $filePath
+     * @param int $lineNumber
+     * @return array
      */
     protected function _getAssocFromUrl($url, $filePath, $lineNumber) {
-        $assocId = $assocType = $journalId = false;
+        $assocId = false;
+        $assocType = false;
+        $journalId = false;
         $expectedPageAndOp = $this->_getExpectedPageAndOp();
         $pathInfoDisabled = Config::getVar('general', 'disable_path_info');
 
@@ -421,24 +404,25 @@ class UsageStatsLoader extends FileLoader {
             $operation = Core::getOp($url, !$pathInfoDisabled);
             $args = Core::getArgs($url, !$pathInfoDisabled);
         } else {
-            $this->addExecutionLogEntry(__('plugins.generic.usageStats.removeUrlError',
-                array('file' => $filePath, 'lineNumber' => $lineNumber)), SCHEDULED_TASK_MESSAGE_TYPE_WARNING);
-            return array(false, false);
+            $this->addExecutionLogEntry(__('plugins.generic.usageStats.removeUrlError', ['file' => $filePath, 'lineNumber' => $lineNumber]), SCHEDULED_TASK_MESSAGE_TYPE_WARNING);
+            return [false, false];
         }
 
-        if (is_array($contextPaths) && !$page && $operation == 'index') {
+        if (is_array($contextPaths) && !$page && $operation === 'index') {
             $page = 'index';
         }
 
-        if (empty($contextPaths) || !$page || !$operation) return array(false, false);
+        if (empty($contextPaths) || !$page || !$operation) {
+            return [false, false];
+        }
 
         $pageAndOperation = $page . '/' . $operation;
         $pageAndOpMatch = false;
-        $workingAssocType = null; // Initialize
+        $workingAssocType = null;
 
         foreach ($expectedPageAndOp as $wAssocType => $workingPageAndOps) {
-            foreach($workingPageAndOps as $workingPageAndOp) {
-                if ($pageAndOperation == $workingPageAndOp) {
+            foreach ($workingPageAndOps as $workingPageAndOp) {
+                if ($pageAndOperation === $workingPageAndOp) {
                     $pageAndOpMatch = true;
                     $workingAssocType = $wAssocType;
                     break 2;
@@ -448,20 +432,19 @@ class UsageStatsLoader extends FileLoader {
 
         if ($pageAndOpMatch) {
             if (empty($args)) {
-                if ($page == 'index' && $operation == 'index') {
+                if ($page === 'index' && $operation === 'index') {
                     $assocType = ASSOC_TYPE_JOURNAL;
                 } else {
-                    return array(false, false);
+                    return [false, false];
                 }
             } else {
                 $assocId = $args[0];
-                $parentObjectId = null;
             }
 
             if (isset($args[1])) {
-                if ($workingAssocType == ASSOC_TYPE_ARTICLE) {
+                if ($workingAssocType === ASSOC_TYPE_ARTICLE) {
                     $assocType = ASSOC_TYPE_GALLEY;
-                } elseif ($workingAssocType == ASSOC_TYPE_ISSUE) {
+                } elseif ($workingAssocType === ASSOC_TYPE_ISSUE) {
                     $assocType = ASSOC_TYPE_ISSUE_GALLEY;
                 }
                 $parentObjectId = $args[0];
@@ -477,23 +460,23 @@ class UsageStatsLoader extends FileLoader {
                 $journal = $this->_journalsByPath[$journalPath];
                 $journalId = $journal->getId();
 
-                if ($assocType == ASSOC_TYPE_JOURNAL) {
+                if ($assocType === ASSOC_TYPE_JOURNAL) {
                     $assocId = $journalId;
                 }
             } else {
-                return array(false, false);
+                return [false, false];
             }
 
-            // DB Optimization: Ensure DAOs close connections implicitly by not holding refs too long
             switch ($assocType) {
                 case ASSOC_TYPE_SUPP_FILE:
                 case ASSOC_TYPE_GALLEY:
-                    $articleId = $this->_getInternalArticleId($parentObjectId, $journal);
+                    $articleId = $this->_getInternalArticleId($parentObjectId ?? $assocId, $journal);
                     if (!$articleId) {
                         $assocId = false;
                         break;
                     }
-                    if ($assocType == ASSOC_TYPE_SUPP_FILE) {
+                    if ($assocType === ASSOC_TYPE_SUPP_FILE) {
+                        /** @var SuppFileDAO $suppFileDao */
                         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
                         if ($journal->getSetting('enablePublicSuppFileId')) {
                             $suppFile = $suppFileDao->getSuppFileByBestSuppFileId($assocId, $articleId);
@@ -507,6 +490,7 @@ class UsageStatsLoader extends FileLoader {
                         }
                         break;
                     } else {
+                        /** @var ArticleGalleyDAO $galleyDao */
                         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
                         if ($journal->getSetting('enablePublicGalleyId')) {
                             $galley = $galleyDao->getGalleyByBestGalleyId($assocId, $articleId);
@@ -527,11 +511,12 @@ class UsageStatsLoader extends FileLoader {
                     $assocId = $this->_getInternalArticleId($assocId, $journal);
                     break;
                 case ASSOC_TYPE_ISSUE_GALLEY:
-                    $issueId = $this->_getInternalIssueId($parentObjectId, $journal);
+                    $issueId = $this->_getInternalIssueId($parentObjectId ?? $assocId, $journal);
                     if (!$issueId) {
                         $assocId = false;
                         break;
                     }
+                    /** @var IssueGalleyDAO $galleyDao */
                     $galleyDao = DAORegistry::getDAO('IssueGalleyDAO');
                     if ($journal->getSetting('enablePublicGalleyId')) {
                         $galley = $galleyDao->getGalleyByBestGalleyId($assocId, $issueId);
@@ -552,50 +537,50 @@ class UsageStatsLoader extends FileLoader {
             }
 
             // PDF/HTML Galley checks
-            $workingPageAndOp = $pageAndOperation;
-            $articleViewAccessPageAndOp = array('article/view', 'article/viewArticle');
+            $articleViewAccessPageAndOp = ['article/view', 'article/viewArticle'];
 
-            if (in_array($workingPageAndOp, $articleViewAccessPageAndOp) && $assocType == ASSOC_TYPE_GALLEY && isset($galley) && $galley && ($galley->isPdfGalley())) {
-                $assocId = $assocType = false;
+            if (in_array($pageAndOperation, $articleViewAccessPageAndOp, true) && $assocType === ASSOC_TYPE_GALLEY && isset($galley) && $galley && $galley->isPdfGalley()) {
+                $assocId = false;
+                $assocType = false;
             }
         }
 
-        return array($assocId, $assocType);
+        return [$assocId, $assocType];
     }
 
     /**
      * Get internal article id.
-     * Wizdam Optimization: Close DB connection if retrieved manually
-     * @param $id string
-     * @param $journal Journal
-     * @return int|false Internal article ID or false if not found.
+     * @param string $id
+     * @param Journal $journal
+     * @return int|false
      */
     protected function _getInternalArticleId($id, $journal) {
-        $journalId = $journal->getId();
+        $journalId = (int) $journal->getId();
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         
         if ($journal->getSetting('enablePublicArticleId')) {
-            $publishedArticle = $publishedArticleDao->getPublishedArticleByBestArticleId((int) $journalId, $id, true);
+            $publishedArticle = $publishedArticleDao->getPublishedArticleByBestArticleId($journalId, $id, true);
         } else {
-            $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId((int) $id, (int) $journalId, true);
+            $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId((int) $id, $journalId, true);
         }
         
         if ($publishedArticle instanceof PublishedArticle) {
-            return $publishedArticle->getId();
+            return (int) $publishedArticle->getId();
         }
         return false;
     }
 
     /**
      * Get internal issue id.
-     * @param $id string
-     * @param $journal Journal
-     * @return int|false Internal issue ID or false if not found.
+     * @param string $id
+     * @param Journal $journal
+     * @return int|false
      */
     protected function _getInternalIssueId($id, $journal) {
-        $journalId = $journal->getId();
+        $journalId = (int) $journal->getId();
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
-        
         if ($journal->getSetting('enablePublicIssueId')) {
             $issue = $issueDao->getIssueByBestIssueId($id, $journalId, true);
         } else {
@@ -603,32 +588,34 @@ class UsageStatsLoader extends FileLoader {
         }
         
         if ($issue instanceof Issue) {
-            return $issue->getId();
+            return (int) $issue->getId();
         }
         return false;
     }
 
     /**
      * Get the file type of the object.
-     * @param $assocType int
-     * @param $assocId int
-     * @return int STATISTICS_FILE_TYPE_*
+     * @param int $assocType
+     * @param int $assocId
+     * @return int|null
      */
     protected function _getFileType($assocType, $assocId) {
         $file = null;
         $type = null;
 
-        // Get the file.
-        switch($assocType) {
+        switch ($assocType) {
             case ASSOC_TYPE_GALLEY:
+                /** @var ArticleGalleyDAO $articleGalleyDao */
                 $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
                 $file = $articleGalleyDao->getGalley($assocId);
                 break;
-            case ASSOC_TYPE_ISSUE_GALLEY;
+            case ASSOC_TYPE_ISSUE_GALLEY: // [WIZDAM FIX] Changed semicolon to colon
+                /** @var IssueGalleyDAO $issueGalleyDao */
                 $issueGalleyDao = DAORegistry::getDAO('IssueGalleyDAO');
                 $file = $issueGalleyDao->getGalley($assocId);
                 break;
             case ASSOC_TYPE_SUPP_FILE:
+                /** @var SuppFileDAO $suppFileDao */
                 $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
                 $file = $suppFileDao->getSuppFile($assocId);
                 break;
@@ -636,7 +623,7 @@ class UsageStatsLoader extends FileLoader {
 
         if ($file) {
             if ($file instanceof SuppFile) {
-                switch($file->getFileType()) {
+                switch ($file->getFileType()) {
                     case 'application/pdf':
                         $type = STATISTICS_FILE_TYPE_PDF;
                         break;
@@ -652,7 +639,7 @@ class UsageStatsLoader extends FileLoader {
             if ($file instanceof ArticleGalley || $file instanceof IssueGalley) {
                 if ($file->isPdfGalley()) {
                     $type = STATISTICS_FILE_TYPE_PDF;
-                } else if ($file instanceof ArticleGalley && $file->isHtmlGalley()) {
+                } elseif ($file instanceof ArticleGalley && $file->isHtmlGalley()) {
                     $type = STATISTICS_FILE_TYPE_HTML;
                 } else {
                     $type = STATISTICS_FILE_TYPE_OTHER;
@@ -665,21 +652,21 @@ class UsageStatsLoader extends FileLoader {
 
     /**
      * Load the entries inside the temporary database.
-     * Wizdam Optimization: Purge load batch is crucial.
-     * @param $loadId string
-     * @param $errorMsg string passed by reference
-     * @return boolean True if load succeeded.
+     * @param string $loadId
+     * @param string $errorMsg
+     * @return bool
      */
-    protected function _loadData($loadId, $errorMsg) {
+    protected function _loadData($loadId, &$errorMsg) {
+        /** @var UsageStatsTemporaryRecordDAO $statsDao */
         $statsDao = DAORegistry::getDAO('UsageStatsTemporaryRecordDAO');
+        /** @var MetricsDAO $metricsDao */
         $metricsDao = DAORegistry::getDAO('MetricsDAO');
-        
-        // Critical cleanup step
         $metricsDao->purgeLoadBatch($loadId);
-
+        
         while ($record = $statsDao->getNextByLoadId($loadId)) {
             $record['metric_type'] = OJS_METRIC_TYPE_COUNTER;
             $errorMsg = null;
+
             if (!$metricsDao->insertRecord($record, $errorMsg)) {
                 return false;
             }
@@ -693,18 +680,14 @@ class UsageStatsLoader extends FileLoader {
      * @return string|false
      */
     protected function _getCounterRobotListFile() {
-        $file = null;
         $dir = $this->_plugin->getPluginPath() . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'counter';
-
-        $fileCount = 0;
-        foreach (glob($dir . DIRECTORY_SEPARATOR . '*') as $file) {
-            $fileCount++;
-        }
-        if (!$file || $fileCount !== 1) {
+        $files = glob($dir . DIRECTORY_SEPARATOR . '*');
+        if (!is_array($files) || count($files) !== 1) {
             return false;
         }
 
-        return $file;
+        return $files[0];
     }
+    
 }
 ?>

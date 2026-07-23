@@ -43,8 +43,8 @@ class UsageStatsHandler extends Handler {
      * Show a page with privacy information and an
      * opt-out option.
      *
-     * @param $args array
-     * @param $request PKPRequest
+     * @param array $args
+     * @param PKPRequest|null $request
      */
     public function privacyInformation($args, $request) {
         $this->validate(null, $request);
@@ -61,7 +61,7 @@ class UsageStatsHandler extends Handler {
             }
         }
 
-        $router = $request->getRouter(); /* @var $router PageRouter */
+        $router = $request->getRouter(); /** @var PageRouter $router */
         $privacyStatementUrl = $router->url($request, null, 'about', 'submissions', null, null, 'privacyStatement');
 
         // Display the privacy info page.
@@ -72,6 +72,7 @@ class UsageStatsHandler extends Handler {
         $templateMgr->assign('usageStatsDisplayPrivacyInfo', true);
         $templateMgr->assign('hasOptedOut', ($request->getCookieVar('usageStats-opt-out') ? true : false));
         $templateMgr->assign('privacyStatementUrl', $privacyStatementUrl);
+
         $templateMgr->display($plugin->getTemplatePath().'privacyInformation.tpl');
     }
 
@@ -83,10 +84,9 @@ class UsageStatsHandler extends Handler {
      * @return UsageStatsPlugin
      */
     protected function _getPlugin() {
-        // Removed & reference
         $plugin = PluginRegistry::getPlugin('generic', USAGESTATS_PLUGIN_NAME);
         return $plugin;
     }
-}
 
+}
 ?>

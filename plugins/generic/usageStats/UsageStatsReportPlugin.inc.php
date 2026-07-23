@@ -68,40 +68,59 @@ class UsageStatsReportPlugin extends ReportPlugin {
      */
     public function display($args, $request) {
         parent::display($args, $request);
-        // Removed & reference
-        $journal = Request::getJournal();
+        
+        // [WIZDAM] FIX: Replace deprecated static Request:: calls with instance methods
+        $journal = $request->getJournal();
+        if (!$journal) {
+            return; // Safety check to prevent Fatal Error on null
+        }
 
-        $reportArgs = array(
+        // [WIZDAM] Modernization: Short array syntax
+        $reportArgs = [
             'metricType' => OJS_METRIC_TYPE_COUNTER,
-            'columns' => array(
-                STATISTICS_DIMENSION_ASSOC_ID, STATISTICS_DIMENSION_ASSOC_TYPE, STATISTICS_DIMENSION_CONTEXT_ID,
-                STATISTICS_DIMENSION_ISSUE_ID, STATISTICS_DIMENSION_MONTH, STATISTICS_DIMENSION_COUNTRY),
-            'filters' => serialize(array(STATISTICS_DIMENSION_CONTEXT_ID => $journal->getId())),
-            'orderBy' => serialize(array(STATISTICS_DIMENSION_MONTH => STATISTICS_ORDER_ASC))
-        );
-        Request::redirect(null, null, 'generateReport', null, $reportArgs);
+            'columns' => [
+                STATISTICS_DIMENSION_ASSOC_ID, 
+                STATISTICS_DIMENSION_ASSOC_TYPE, 
+                STATISTICS_DIMENSION_CONTEXT_ID,
+                STATISTICS_DIMENSION_ISSUE_ID, 
+                STATISTICS_DIMENSION_MONTH, 
+                STATISTICS_DIMENSION_COUNTRY
+            ],
+            'filters' => serialize([STATISTICS_DIMENSION_CONTEXT_ID => $journal->getId()]),
+            'orderBy' => serialize([STATISTICS_DIMENSION_MONTH => STATISTICS_ORDER_ASC])
+        ];
+        
+        $request->redirect(null, null, 'generateReport', null, $reportArgs);
     }
 
     /**
      * Get metrics data.
      * @see ReportPlugin::getMetrics()
-     * @param string|array $metricType
-     * @param array $columns
-     * @param array $filters
-     * @param array $orderBy
-     * @param DBResultRange $range
+     * @param string|array|null $metricType
+     * @param array|null $columns
+     * @param array|null $filters
+     * @param array|null $orderBy
+     * @param DBResultRange|null $range
      * @return DAOResultFactory|null
      */
     public function getMetrics($metricType = null, $columns = null, $filters = null, $orderBy = null, $range = null) {
-        // Validate the metric type.
-        if (!(is_scalar($metricType) || count($metricType) === 1)) return null;
-        if (is_array($metricType)) $metricType = array_pop($metricType);
-        if ($metricType !== OJS_METRIC_TYPE_COUNTER) return null;
+        // [WIZDAM] FIX: Prevent PHP 8+ TypeError "count(): Argument #1 ($value) must be of type Countable|array, null given"
+        if (is_array($metricType)) {
+            if (count($metricType) !== 1) {
+                return null;
+            }
+            $metricType = array_pop($metricType);
+        } elseif (!is_scalar($metricType)) {
+            return null;
+        }
 
-        // This plug-in uses the MetricsDAO to store metrics. So we simply
-        // delegate there.
-        // Removed & reference
-        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /* @var $metricsDao MetricsDAO */
+        if ($metricType !== OJS_METRIC_TYPE_COUNTER) {
+            return null;
+        }
+
+        // This plug-in uses the MetricsDAO to store metrics. So we simply delegate there.
+        /** @var MetricsDAO $metricsDao */
+        $metricsDao = DAORegistry::getDAO('MetricsDAO');
         return $metricsDao->getMetrics($metricType, $columns, $filters, $orderBy, $range);
     }
 
@@ -111,7 +130,7 @@ class UsageStatsReportPlugin extends ReportPlugin {
      * @return array
      */
     public function getMetricTypes() {
-        return array(OJS_METRIC_TYPE_COUNTER);
+        return [OJS_METRIC_TYPE_COUNTER];
     }
 
     /**
@@ -121,7 +140,9 @@ class UsageStatsReportPlugin extends ReportPlugin {
      * @return string|null
      */
     public function getMetricDisplayType($metricType) {
-        if ($metricType !== OJS_METRIC_TYPE_COUNTER) return null;
+        if ($metricType !== OJS_METRIC_TYPE_COUNTER) {
+            return null;
+        }
         return __('plugins.reports.usageStats.metricType');
     }
 
@@ -132,8 +153,9 @@ class UsageStatsReportPlugin extends ReportPlugin {
      * @return string|null
      */
     public function getMetricFullName($metricType) {
-        // Wizdam Fix: Typo OAS_METRIC_TYPE_COUNTER -> OJS_METRIC_TYPE_COUNTER
-        if ($metricType !== OJS_METRIC_TYPE_COUNTER) return null;
+        if ($metricType !== OJS_METRIC_TYPE_COUNTER) {
+            return null;
+        }
         return __('plugins.reports.usageStats.metricType.full');
     }
 
@@ -144,8 +166,10 @@ class UsageStatsReportPlugin extends ReportPlugin {
      * @return array
      */
     public function getColumns($metricType) {
-        if ($metricType !== OJS_METRIC_TYPE_COUNTER) return array();
-        return array(
+        if ($metricType !== OJS_METRIC_TYPE_COUNTER) {
+            return [];
+        }
+        return [
             STATISTICS_DIMENSION_ASSOC_ID,
             STATISTICS_DIMENSION_ASSOC_TYPE,
             STATISTICS_DIMENSION_SUBMISSION_ID,
@@ -158,7 +182,7 @@ class UsageStatsReportPlugin extends ReportPlugin {
             STATISTICS_DIMENSION_MONTH,
             STATISTICS_DIMENSION_FILE_TYPE,
             STATISTICS_METRIC
-        );
+        ];
     }
 
     /**
@@ -168,14 +192,16 @@ class UsageStatsReportPlugin extends ReportPlugin {
      * @return array
      */
     public function getObjectTypes($metricType) {
-        if ($metricType !== OJS_METRIC_TYPE_COUNTER) return array();
-        return array(
+        if ($metricType !== OJS_METRIC_TYPE_COUNTER) {
+            return [];
+        }
+        return [
             ASSOC_TYPE_JOURNAL,
             ASSOC_TYPE_ISSUE,
             ASSOC_TYPE_ISSUE_GALLEY,
             ASSOC_TYPE_ARTICLE,
             ASSOC_TYPE_GALLEY
-        );
+        ];
     }
 
     /**
@@ -185,12 +211,14 @@ class UsageStatsReportPlugin extends ReportPlugin {
      * @return array
      */
     public function getOptionalColumns($metricType) {
-        if ($metricType !== OJS_METRIC_TYPE_COUNTER) return array();
-        return array(
+        if ($metricType !== OJS_METRIC_TYPE_COUNTER) {
+            return [];
+        }
+        return [
             STATISTICS_DIMENSION_CITY,
             STATISTICS_DIMENSION_REGION
-        );
+        ];
     }
+    
 }
-
 ?>
