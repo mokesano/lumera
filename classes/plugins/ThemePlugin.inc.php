@@ -45,8 +45,7 @@ class ThemePlugin extends Plugin {
      * @return string name of plugin
      */
     public function getName(): string {
-        assert(false); // Should always be overridden
-        return 'ThemePlugin';
+        throw new \BadMethodCallException('Must be implemented by sub-classes.');
     }
 
     /**
@@ -55,8 +54,7 @@ class ThemePlugin extends Plugin {
      * @return string
      */
     public function getDisplayName(): string {
-        assert(false); // Should always be overridden
-        return '';
+        throw new \BadMethodCallException('Must be implemented by sub-classes.');
     }
 
     /**
@@ -64,8 +62,18 @@ class ThemePlugin extends Plugin {
      * @return string
      */
     public function getDescription(): string {
-        assert(false); // Should always be overridden
-        return '';
+        throw new \BadMethodCallException('Must be implemented by sub-classes.');
+    }
+
+    /**
+     * Get the filename of the stylesheet to be included.
+     * Subclasses may override this function to provide a custom stylesheet.
+     * @return string|null
+     */
+    public function getStylesheetFilename() {
+        // [WIZDAM] Stub method: Returns null by default, preventing "Undefined method" 
+        // errors in static analyzers while allowing safe `if ($stylesheetFilename)` checks.
+        return null;
     }
 
     /**
@@ -74,12 +82,14 @@ class ThemePlugin extends Plugin {
      */
     public function activate($templateMgr) {
         // Subclasses may override this function.
-
         $stylesheetFilename = $this->getStylesheetFilename();
+        
         if ($stylesheetFilename) {
-            $path = Request::getBaseUrl() . '/' . $this->getPluginPath() . '/' . $stylesheetFilename;
+            $request = Application::get()->getRequest();
+            $path = $request->getBaseUrl() . '/' . $this->getPluginPath() . '/' . $stylesheetFilename;
             $templateMgr->addStyleSheet($path);
         }
     }
+    
 }
 ?>

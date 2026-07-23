@@ -38,10 +38,10 @@ class PKPNotificationManager {
 
     /**
      * Construct a set of notifications and return them as a formatted string
-     * @param mixed $request PKPRequest
+     * @param PKPRequest $request
      * @param mixed $userId int
      * @param mixed $level int optional
-     * @param $contextId int optional
+     * @param int $contextId optional
      * @param $rangeInfo object optional
      * @param $notificationTemplate string
      * @return string
@@ -56,7 +56,7 @@ class PKPNotificationManager {
 
     /**
      * Return a string of formatted notifications for display
-     * @param mixed $request PKPRequest
+     * @param PKPRequest $request
      * @param mixed $notifications object DAOResultFactory
      * @param $notificationTemplate string
      * @return string
@@ -75,7 +75,7 @@ class PKPNotificationManager {
 
     /**
      * Return a fully formatted notification for display
-     * @param mixed $request PKPRequest
+     * @param PKPRequest $request
      * @param mixed $notification object Notification
      * @return string
      */
@@ -109,7 +109,7 @@ class PKPNotificationManager {
 
     /**
      * Construct a URL for the notification based on its type and associated object
-     * @param $request PKPRequest
+     * @param PKPRequest $request
      * @param $notification Notification
      * @return string|false
      */
@@ -120,7 +120,7 @@ class PKPNotificationManager {
     /**
      * Return a message string for the notification based on its type
      * and associated object.
-     * @param $request PKPRequest
+     * @param PKPRequest $request
      * @param mixed $notification Notification
      * @return string|null
      */
@@ -159,7 +159,7 @@ class PKPNotificationManager {
     /**
      * Using the notification message, construct, if needed, any additional
      * content for the notification body.
-     * @param mixed $request Request
+     * @param PKPRequest $request
      * @param mixed $notification Notification
      * @return String
      */
@@ -189,7 +189,7 @@ class PKPNotificationManager {
     /**
      * Helper function to get a translated string from a notification with parameters
      * @param mixed $key string
-     * @param mixed $notificationId int
+     * @param int $notificationId
      * @return String
      */
     public function _getTranslatedKeyWithParameters($key, $notificationId) {
@@ -199,7 +199,7 @@ class PKPNotificationManager {
 
     /**
      * Return notification settings.
-     * @param mixed $notificationId int
+     * @param int $notificationId
      * @return array|null
      */
     public function getNotificationSettings($notificationId) {
@@ -232,14 +232,14 @@ class PKPNotificationManager {
 
     /**
      * Iterate through the localized params for a notification's locale key.
-     * @param mixed $params array
+     * @param array $params
      * @return array
      */
     public function getParamsForCurrentLocale($params) {
         $locale = AppLocale::getLocale();
         $primaryLocale = AppLocale::getPrimaryLocale();
 
-        $localizedParams = array();
+        $localizedParams = [];
         if (is_array($params)) {
             foreach ($params as $name => $value) {
                 if (!is_array($value)) {
@@ -313,14 +313,14 @@ class PKPNotificationManager {
 
     /**
      * Create a new notification with the specified arguments and insert into DB
-     * @param mixed $request PKPRequest
-     * @param $userId int (optional)
+     * @param PKPRequest $request
+     * @param int|null $userId (optional)
      * @param mixed $notificationType int
-     * @param $contextId int
-     * @param $assocType int
-     * @param $assocId int
-     * @param mixed $level int
-     * @param $params array
+     * @param int $contextId
+     * @param int $assocType
+     * @param int $assocId
+     * @param int $level
+     * @param array $params
      * @return Notification object
      */
     public function createNotification($request, $userId = null, $notificationType, $contextId = null, $assocType = null, $assocId = null, $level = NOTIFICATION_LEVEL_NORMAL, $params = null) {
@@ -368,9 +368,9 @@ class PKPNotificationManager {
 
     /**
      * Create a new notification with the specified arguments and insert into DB
-     * @param mixed $userId int
+     * @param int $userId
      * @param mixed $notificationType int
-     * @param $params array
+     * @param array $params
      * @return Notification object
      */
     public function createTrivialNotification($userId, $notificationType = NOTIFICATION_TYPE_SUCCESS, $params = null) {
@@ -412,19 +412,19 @@ class PKPNotificationManager {
 
     /**
      * General notification data formating.
-     * @param mixed $request PKPRequest
+     * @param PKPRequest $request
      * @param array $notifications
      * @return array
      */
     public function formatToGeneralNotification($request, $notifications) {
-        $formattedNotificationsData = array();
+        $formattedNotificationsData = [];
         foreach ($notifications as $notification) { /** @var Notification $notification */
-            $formattedNotificationsData[$notification->getLevel()][$notification->getId()] = array(
+            $formattedNotificationsData[$notification->getLevel()][$notification->getId()] = [
                 'pnotify_title' => $this->getNotificationTitle($notification),
                 'pnotify_text' => $this->getNotificationContents($request, $notification),
                 'pnotify_addclass' => $this->getStyleClass($notification),
                 'pnotify_notice_icon' => $this->getIconClass($notification)
-            );
+            ];
         }
 
         return $formattedNotificationsData;
@@ -432,8 +432,8 @@ class PKPNotificationManager {
 
     /**
      * In place notification data formating.
-     * @param mixed $request PKPRequest
-     * @param mixed $notifications array
+     * @param PKPRequest $request
+     * @param array $notifications
      * @return array
      */
     public function formatToInPlaceNotification($request, $notifications) {
@@ -451,7 +451,7 @@ class PKPNotificationManager {
 
     /**
      * Send an email to a user regarding the notification
-     * @param mixed $request PKPRequest
+     * @param PKPRequest $request
      * @param mixed $notification object Notification
      */
     public function sendNotificationEmail($request, $notification) {
@@ -465,23 +465,23 @@ class PKPNotificationManager {
         $site = $request->getSite();
         $mail = new MailTemplate('NOTIFICATION', null, null, null, false, true);
         $mail->setReplyTo($site->getLocalizedContactEmail(), $site->getLocalizedContactName());
-        $mail->assignParams(array(
+        $mail->assignParams([
             'notificationContents' => $this->getNotificationContents($request, $notification),
             'url' => $this->getNotificationUrl($request, $notification),
             'siteTitle' => $site->getLocalizedTitle()
-        ));
+        ]);
         $mail->addRecipient($user->getEmail(), $user->getFullName());
         
         // [LUMERA] UPDATE: HookRegistry::dispatch.
-        if (!HookRegistry::dispatch('PKPNotificationManager::sendNotificationEmail', array($notification))) {
+        if (!HookRegistry::dispatch('PKPNotificationManager::sendNotificationEmail', [$notification])) {
             $mail->send();
         }
     }
 
     /**
      * Send an update to all users on the mailing list
-     * @param mixed $request PKPRequest
-     * @param mixed $notification object Notification
+     * @param PKPRequest $request
+     * @param mixed $notification
      */
     public function sendToMailingList($request, $notification) {
         /** @var NotificationMailListDAO $notificationMailListDao */
@@ -498,12 +498,12 @@ class PKPNotificationManager {
 
             $mail = new MailTemplate('NOTIFICATION_MAILLIST');
             $mail->setReplyTo($site->getLocalizedContactEmail(), $site->getLocalizedContactName());
-            $mail->assignParams(array(
+            $mail->assignParams([
                 'notificationContents' => $this->getNotificationContents($request, $notification),
                 'url' => $this->getNotificationUrl($request, $notification),
                 'siteTitle' => $context->getLocalizedTitle(),
                 'unsubscribeLink' => $dispatcher->url($request, ROUTE_PAGE, null, 'notification', 'unsubscribeMailList', $recipient['token'])
-            ));
+            ]);
             $mail->addRecipient($recipient['email']);
             $mail->send();
         }
@@ -511,10 +511,10 @@ class PKPNotificationManager {
 
     /**
      * Static function to send an email to a mailing list user e.g. regarding signup
-     * @param mixed $request PKPRequest
+     * @param PKPRequest $request
      * @param mixed $email string
      * @param mixed $token string the user's token (for confirming and unsubscribing)
-     * @param mixed $template string The mail template to use
+     * @param mixed $template string
      */
     public function sendMailingListEmail($request, $email, $token, $template) {
         import('classes.mail.MailTemplate');
@@ -522,16 +522,16 @@ class PKPNotificationManager {
         $router = $request->getRouter();
         $dispatcher = $router->getDispatcher();
 
-        $params = array(
+        $params = [
             'siteTitle' => $site->getLocalizedTitle(),
-            'unsubscribeLink' => $dispatcher->url($request, ROUTE_PAGE, null, 'notification', 'unsubscribeMailList', array($token))
-        );
+            'unsubscribeLink' => $dispatcher->url($request, ROUTE_PAGE, null, 'notification', 'unsubscribeMailList', [$token])
+        ];
 
         if ($template == 'NOTIFICATION_MAILLIST_WELCOME') {
             $router = $request->getRouter();
             $dispatcher = $router->getDispatcher();
 
-            $confirmLink = $dispatcher->url($request, ROUTE_PAGE, null, 'notification', 'confirmMailListSubscription', array($token));
+            $confirmLink = $dispatcher->url($request, ROUTE_PAGE, null, 'notification', 'confirmMailListSubscription', [$token]);
             $params["confirmLink"] = $confirmLink;
         }
 
