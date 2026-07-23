@@ -18,29 +18,27 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 
 class UsageStatsPlugin extends GenericPlugin {
 
-    /** @var $_currentUsageEvent array */
-    var $_currentUsageEvent;
+    /** @var array|null */
+    private ?array $_currentUsageEvent = null;
 
-    /** @var $_dataPrivacyOn boolean */
-    var $_dataPrivacyOn;
+    /** @var bool */
+    private bool $_dataPrivacyOn = false;
 
-    /** @var $_optedOut boolean */
-    var $_optedOut;
+    /** @var bool */
+    private bool $_optedOut = false;
 
-    /** @var $_saltpath string */
-    var $_saltpath;
+    /** @var string|null */
+    private ?string $_saltpath = null;
 
     /**
-    * Constructor.
-    */
+     * Constructor.
+     */
     public function __construct() {
         parent::__construct();
-
         // The upgrade and install processes will need access
         // to constants defined in that report plugin.
         import('plugins.generic.usageStats.UsageStatsReportPlugin');
     }
-
 
     //
     // Public methods.
@@ -55,44 +53,46 @@ class UsageStatsPlugin extends GenericPlugin {
         return new UsageStatsReportPlugin();
     }
 
-
     //
     // Implement methods from PKPPlugin.
     //
     /**
      * Registers the plugin.
      * @see LazyLoadPlugin::register()
-     * @param $category string
-     * @param $path string
-     * @return boolean True if registration succeeded.
+     * @param string $category
+     * @param string $path
+     * @return bool True if registration succeeded.
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
 
-        // Modernized: Removed & reference
-        HookRegistry::register('AcronPlugin::parseCronTab', array($this, 'callbackParseCronTab'));
+        HookRegistry::register('AcronPlugin::parseCronTab', [$this, 'callbackParseCronTab']);
 
         if ($this->getEnabled() && $success) {
-            HookRegistry::register('PluginRegistry::loadCategory', array($this, 'callbackLoadCategory'));
-            HookRegistry::register('LoadHandler', array($this, 'callbackLoadHandler'));
+            HookRegistry::register('PluginRegistry::loadCategory', [$this, 'callbackLoadCategory']);
+            HookRegistry::register('LoadHandler', [$this, 'callbackLoadHandler']);
 
             // If the plugin will provide the access logs,
             // register to the usage event hook provider.
             if ($this->getSetting(CONTEXT_ID_NONE, 'createLogFiles')) {
-                // Modernized: Removed & reference from $this
-                HookRegistry::register('UsageEventPlugin::getUsageEvent', array($this, 'logUsageEvent'));
+                HookRegistry::register('UsageEventPlugin::getUsageEvent', [$this, 'logUsageEvent']);
             }
 
-            $this->_dataPrivacyOn = $this->getSetting(CONTEXT_ID_NONE, 'dataPrivacyOption');
+            $this->_dataPrivacyOn = (bool) $this->getSetting(CONTEXT_ID_NONE, 'dataPrivacyOption');
             $this->_saltpath = $this->getSetting(CONTEXT_ID_NONE, 'saltFilepath');
+            
             // Check config for backward compatibility.
-            if (!$this->_saltpath) $this->_saltpath = Config::getVar('usageStats', 'salt_filepath');
+            if (!$this->_saltpath) {
+                $this->_saltpath = Config::getVar('usageStats', 'salt_filepath');
+            }
+            
             $application = Application::getApplication();
             $request = $application->getRequest();
-            $this->_optedOut = $request->getCookieVar('usageStats-opt-out');
+            $this->_optedOut = (bool) $request->getCookieVar('usageStats-opt-out');
+            
             if ($this->_optedOut) {
                 // Renew the Opt-Out cookie if present.
-                $request->setCookieVar('usageStats-opt-out', true, time() + 60*60*24*365);
+                $request->setCookieVar('usageStats-opt-out', true, time() + 60 * 60 * 24 * 365);
             }
         }
 
@@ -101,9 +101,9 @@ class UsageStatsPlugin extends GenericPlugin {
 
     /**
      * Get the path to the salt file.
-     * @return string
+     * @return string|null
      */
-    public function getSaltpath() {
+    public function getSaltpath(): ?string {
         return $this->_saltpath;
     }
 
@@ -164,37 +164,40 @@ class UsageStatsPlugin extends GenericPlugin {
     /**
      * Handle management verbs.
      * @see PKPPlugin::manage()
-     * @param string $verb string
-     * @param array $args array
+     * @param string $verb
+     * @param array $args
      * @param string|null $message
      * @param array|null $messageParams
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      * @return bool
      */
     public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
-        $returner = parent::manage($verb, $args, $message, $messageParams);
-        if (!$returner) return false;
+        $returner = parent::manage($verb, $args, $message, $messageParams, $request);
+        if (!$returner) {
+            return false;
+        }
+        
         $this->import('UsageStatsSettingsForm');
-
-        $templateMgr = TemplateManager::getManager();
-        // Modernized: Removed &
-        $templateMgr->register_function('plugin_url', array($this, 'smartyPluginUrl'));
-        switch($verb) {
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
+        
+        switch ($verb) {
             case 'settings':
                 $settingsForm = new UsageStatsSettingsForm($this);
                 $settingsForm->initData();
-                $settingsForm->display();
+                $settingsForm->display($request);
                 break;
             case 'save':
                 $settingsForm = new UsageStatsSettingsForm($this);
                 $settingsForm->readInputData();
                 if ($settingsForm->validate()) {
                     $settingsForm->execute();
-                    $message = NOTIFICATION_TYPE_SUCCESS;
-                    $messageParams = array('contents' => __('plugins.generic.usageStats.settings.saved'));
+                    // [WIZDAM] FIX: Cast to string to prevent TypeError in strict_types=1
+                    $message = (string) NOTIFICATION_TYPE_SUCCESS;
+                    $messageParams = ['contents' => __('plugins.generic.usageStats.settings.saved')];
                     return false;
                 } else {
-                    $settingsForm->display();
+                    $settingsForm->display($request);
                 }
                 break;
             default:
@@ -203,7 +206,6 @@ class UsageStatsPlugin extends GenericPlugin {
         return true;
     }
 
-
     //
     // Implement template methods from GenericPlugin.
     //
@@ -211,13 +213,13 @@ class UsageStatsPlugin extends GenericPlugin {
      * Get the management verbs associated with this plugin.
      * @see GenericPlugin::getManagementVerbs()
      * @param array $verbs
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      * @return array
      */
-    function getManagementVerbs(array $verbs = [], $request = null): array {
+    public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs($verbs, $request);
         if ($this->getEnabled()) {
-            $verbs[] = array('settings', __('manager.plugins.settings'));
+            $verbs[] = ['settings', __('manager.plugins.settings')];
         }
         return $verbs;
     }
@@ -230,15 +232,15 @@ class UsageStatsPlugin extends GenericPlugin {
      * @see PluginRegistry::loadCategory()
      * @param string $hookName
      * @param array $args
-     * @return boolean
+     * @return bool
      */
     public function callbackLoadCategory($hookName, $args) {
-        // Instantiate report plugin.
         $plugin = null;
         $category = $args[0];
-        if ($category == 'reports') {
-            $plugin = $this->getReportPlugin();        }
-        if ($category ==  'blocks' && $this->getSetting(CONTEXT_ID_NONE, 'dataPrivacyOption')) {
+        
+        if ($category === 'reports') {
+            $plugin = $this->getReportPlugin();
+        } elseif ($category === 'blocks' && $this->getSetting(CONTEXT_ID_NONE, 'dataPrivacyOption')) {
             $this->import('UsageStatsOptoutBlockPlugin');
             $plugin = new UsageStatsOptoutBlockPlugin($this->getName());
         }
@@ -246,8 +248,10 @@ class UsageStatsPlugin extends GenericPlugin {
         // Register report plugin (by reference).
         if ($plugin) {
             $seq = $plugin->getSeq();
-            $plugins =& $args[1]; // Reference needed to modify plugins list
-            if (!isset($plugins[$seq])) $plugins[$seq] = array();
+            $plugins =& $args[1];
+            if (!isset($plugins[$seq])) {
+                $plugins[$seq] = [];
+            }
             $plugins[$seq][$this->getPluginPath()] = $plugin;
         }
 
@@ -259,25 +263,26 @@ class UsageStatsPlugin extends GenericPlugin {
      * @see PKPPageRouter::route()
      * @param string $hookName
      * @param array $args
-     * @return boolean
+     * @return void
      */
     public function callbackLoadHandler($hookName, $args) {
-        // Check the page.
         $page = $args[0];
-        if ($page !== 'usageStats') return;
+        if ($page !== 'usageStats') {
+            return;
+        }
         
-        // Check the operation.
-        $availableOps = array('privacyInformation');
+        $availableOps = ['privacyInformation'];
         $op = $args[1];
-        if (!in_array($op, $availableOps)) return;
+        if (!in_array($op, $availableOps, true)) {
+            return;
+        }
         
         // The handler had been requested.
         define('HANDLER_CLASS', 'UsageStatsHandler');
         define('USAGESTATS_PLUGIN_NAME', $this->getName());
         
-        // Reference assignment required here
         $handlerFile =& $args[2];
-        $handlerFile = $this->getPluginPath() . '/' . 'UsageStatsHandler.inc.php';
+        $handlerFile = $this->getPluginPath() . '/UsageStatsHandler.inc.php';
     }
 
     /**
@@ -285,28 +290,24 @@ class UsageStatsPlugin extends GenericPlugin {
      * @see AcronPlugin::parseCronTab()
      * @param string $hookName
      * @param array $args
-     * @return boolean
+     * @return bool
      */
     public function callbackParseCronTab($hookName, $args) {
         $taskFilesPath =& $args[0];
         $taskFilesPath[] = $this->getPluginPath() . DIRECTORY_SEPARATOR . 'scheduledTasksAutoStage.xml';
-
         return false;
     }
 
     /**
      * Validate that the path of the salt file exists and is writable.
      * @param string $saltpath
-     * @return boolean
+     * @return bool
      */
-    public function validateSaltpath($saltpath) {
+    public function validateSaltpath($saltpath): bool {
         if (!file_exists($saltpath)) {
-            touch($saltpath);
+            @touch($saltpath);
         }
-        if (is_writable($saltpath)) {
-            return true;
-        }
-        return false;
+        return is_writable($saltpath);
     }
 
     /**
@@ -320,9 +321,11 @@ class UsageStatsPlugin extends GenericPlugin {
         $usageEvent = $args[1];
 
         // Check the statistics opt-out.
-        if ($this->_optedOut) return false;
+        if ($this->_optedOut) {
+            return false;
+        }
 
-        if ($hookName == 'FileManager::downloadFileFinished' && !$usageEvent && $this->_currentUsageEvent) {
+        if ($hookName === 'FileManager::downloadFileFinished' && !$usageEvent && $this->_currentUsageEvent) {
             // File download is finished, try to log the current usage event.
             $downloadSuccess = $args[2];
             if ($downloadSuccess && !connection_aborted()) {
@@ -331,7 +334,7 @@ class UsageStatsPlugin extends GenericPlugin {
             }
         }
 
-        if ($usageEvent && !$usageEvent['downloadSuccess']) {
+        if ($usageEvent && !($usageEvent['downloadSuccess'] ?? false)) {
             // Don't log until we get the download finished hook call.
             $this->_currentUsageEvent = $usageEvent;
             return false;
@@ -349,28 +352,22 @@ class UsageStatsPlugin extends GenericPlugin {
      * @return mixed
      */
     public function getGeoLocationTool() {
-        /** Geo location tool wrapper class. If changing the geo location tool
-        * is required, change the code inside this class, keeping the public
-        * interface. */
         $this->import('GeoLocationTool');
-
-        $null = null;
         $tool = new GeoLocationTool();
+        
         if ($tool->isPresent()) {
             return $tool;
-        } else {
-            return $null;
         }
+        return null;
     }
 
     /**
-    * Get the plugin's files path.
-    * @return string
-    */
-    public function getFilesPath() {
+     * Get the plugin's files path.
+     * @return string
+     */
+    public function getFilesPath(): string {
         import('lib.pkp.classes.file.PrivateFileManager');
         $fileMgr = new PrivateFileManager();
-
         return realpath($fileMgr->getBasePath()) . DIRECTORY_SEPARATOR . 'usageStats';
     }
 
@@ -378,7 +375,7 @@ class UsageStatsPlugin extends GenericPlugin {
      * Get the plugin's usage event logs path.
      * @return string
      */
-    public function getUsageEventLogsPath() {
+    public function getUsageEventLogsPath(): string {
         return $this->getFilesPath() . DIRECTORY_SEPARATOR . 'usageEventLogs';
     }
 
@@ -386,7 +383,7 @@ class UsageStatsPlugin extends GenericPlugin {
      * Get current day usage event log name.
      * @return string
      */
-    public function getUsageEventCurrentDayLogName() {
+    public function getUsageEventCurrentDayLogName(): string {
         return 'usage_events_' . date("Ymd") . '.log';
     }
 
@@ -398,56 +395,57 @@ class UsageStatsPlugin extends GenericPlugin {
      * @param array $usageEvent
      * @return bool
      */
-    public function _writeUsageEventInLogFile($usageEvent) {
+    private function _writeUsageEventInLogFile(array $usageEvent): bool {
         $salt = null;
         if ($this->_dataPrivacyOn) {
-            // Salt management.
             $saltFilename = $this->getSaltpath();
-            if (!$this->validateSaltpath($saltFilename)) return false;
+            if (!$saltFilename || !$this->validateSaltpath($saltFilename)) {
+                return false;
+            }
+            
             $currentDate = date("Ymd");
             $saltFilenameLastModified = date("Ymd", filemtime($saltFilename));
+            
             $file = fopen($saltFilename, 'r');
-            $salt = trim(fread($file,filesize($saltFilename)));
-            fclose($file);
-            if (empty($salt) || ($currentDate != $saltFilenameLastModified)) {
-                if(function_exists('mcrypt_create_iv')) {
-                    $newSalt = bin2hex(mcrypt_create_iv(16, MCRYPT_DEV_URANDOM|MCRYPT_RAND));
-                } elseif (function_exists('openssl_random_pseudo_bytes')){
-                    $newSalt = bin2hex(openssl_random_pseudo_bytes(16, $cstrong));
-                } elseif (file_exists('/dev/urandom')){
-                    $newSalt = bin2hex(file_get_contents('/dev/urandom', false, null, 0, 16));
-                } else {
-                    $newSalt = mt_rand();
-                }
-                $file = fopen($saltFilename,'wb');
-                if (flock($file, LOCK_EX)) {
+            if ($file) {
+                $salt = trim(fread($file, filesize($saltFilename)));
+                fclose($file);
+            }
+            
+            if (empty($salt) || ($currentDate !== $saltFilenameLastModified)) {
+                // [WIZDAM] Modernization: Use random_bytes() which is standard and secure in PHP 7+
+                $newSalt = bin2hex(random_bytes(16));
+                
+                $file = fopen($saltFilename, 'wb');
+                if ($file && flock($file, LOCK_EX)) {
                     fwrite($file, $newSalt);
                     flock($file, LOCK_UN);
+                    fclose($file);
+                    $salt = $newSalt;
                 } else {
-                    assert(false);
+                    if ($file) fclose($file);
+                    throw new \RuntimeException('Failed to acquire lock on salt file: ' . $saltFilename);
                 }
-                fclose($file);
-                $salt = $newSalt;
             }
         }
 
-        // Manage the IP address (evtually hash it)
+        // Manage the IP address (eventually hash it)
         if ($this->_dataPrivacyOn) {
-            if (!isset($salt)) return false;
+            if ($salt === null) {
+                return false;
+            }
             // Hash the IP
             $hashedIp = $this->_hashIp($usageEvent['ip'], $salt);
             // Never store unhashed IPs!
-            if ($hashedIp === false) return false;
-            $desiredParams = array($hashedIp);
+            if ($hashedIp === false) {
+                return false;
+            }
+            $desiredParams = [$hashedIp];
         } else {
-            $desiredParams = array($usageEvent['ip']);
+            $desiredParams = [$usageEvent['ip']];
         }
 
-        if (isset($usageEvent['classification'])) {
-            $desiredParams[] = $usageEvent['classification'];
-        } else {
-            $desiredParams[] = '-';
-        }
+        $desiredParams[] = $usageEvent['classification'] ?? '-';
 
         if (!$this->_dataPrivacyOn && isset($usageEvent['user'])) {
             $desiredParams[] = $usageEvent['user']->getId();
@@ -455,65 +453,52 @@ class UsageStatsPlugin extends GenericPlugin {
             $desiredParams[] = '-';
         }
 
-        $desiredParams = array_merge($desiredParams,
-        array('"' . $usageEvent['time'] . '"', $usageEvent['canonicalUrl'],
-                        '200', // The usage event plugin always log requests that returned this code.
-                        '"' . $usageEvent['userAgent'] . '"'));
+        $desiredParams = array_merge($desiredParams, [
+            '"' . $usageEvent['time'] . '"',
+            $usageEvent['canonicalUrl'],
+            '200', // The usage event plugin always log requests that returned this code.
+            '"' . $usageEvent['userAgent'] . '"'
+        ]);
 
         $usageLogEntry = implode(' ', $desiredParams) . PHP_EOL;
 
         import('lib.pkp.classes.file.PrivateFileManager');
         $fileMgr = new PrivateFileManager();
 
-        // Get the current day filename.
         $filename = $this->getUsageEventCurrentDayLogName();
-
-        // Check the plugin file directory.
         $usageEventFilesPath = $this->getUsageEventLogsPath();
+        
         if (!$fileMgr->fileExists($usageEventFilesPath, 'dir')) {
             $success = $fileMgr->mkdirtree($usageEventFilesPath);
             if (!$success) {
-                // Files directory wrong configuration?
-                assert(false);
-                return false;
+                throw new \RuntimeException('Files directory wrong configuration: ' . $usageEventFilesPath);
             }
         }
 
         $filePath = $usageEventFilesPath . DIRECTORY_SEPARATOR . $filename;
-        // Log the entry
         $fp = fopen($filePath, 'ab');
-        if (flock($fp, LOCK_EX)) {
+        
+        if ($fp && flock($fp, LOCK_EX)) {
             fwrite($fp, $usageLogEntry);
             flock($fp, LOCK_UN);
+            fclose($fp);
         } else {
-            // Couldn't lock the file.
-            assert(false);
+            if ($fp) fclose($fp);
+            throw new \RuntimeException('Couldn\'t lock the file: ' . $filePath);
         }
-        fclose($fp);
+        
+        return true;
     }
 
-    //
-    // Private helper methods.
-    //
-    
     /**
-    * Hash (SHA256) the given IP using the given SALT.
-    *
-    * NB: This implementation was taken from OA-S directly. 
-    * See http://sourceforge.net/p/openaccessstati/code-0/3/tree/trunk/logfile-parser/lib/logutils.php
-    *
-    * @param string $ip
-    * @param string $salt
-    * @return string|bool
-    */
-    private function _hashIp($ip, $salt) {
-        if(function_exists('mhash')) {
-            return bin2hex(mhash(MHASH_SHA256, $ip.$salt));
-        } else {
-            assert(function_exists('hash'));
-            if (!function_exists('hash')) return false;
-            return hash('sha256', $ip.$salt);
-        }
+     * Hash (SHA256) the given IP using the given SALT.
+     *
+     * @param string $ip
+     * @param string $salt
+     * @return string
+     */
+    private function _hashIp(string $ip, string $salt): string {
+        return hash('sha256', $ip . $salt);
     }
 
 }
