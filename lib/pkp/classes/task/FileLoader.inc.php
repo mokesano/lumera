@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup classes_task
  *
  * @brief Base scheduled task class to reliably handle files processing.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.scheduledTask.ScheduledTask');
@@ -59,6 +57,7 @@ class FileLoader extends ScheduledTask {
 
     /**
      * Constructor.
+     * @param array $args
      */
     public function __construct($args) {
         parent::__construct($args);
@@ -87,15 +86,15 @@ class FileLoader extends ScheduledTask {
         }
 
         // Set admin email and name.
-        // [WIZDAM FIX] Removed reference assignment
-        $siteDao = DAORegistry::getDAO('SiteDAO'); /* @var $siteDao SiteDAO */
-        $site = $siteDao->getSite(); /* @var $site Site */
+        $siteDao = DAORegistry::getDAO('SiteDAO'); /** @var SiteDAO $siteDao */
+        $site = $siteDao->getSite(); /** @var Site $site */
         $this->_adminEmail = $site->getLocalizedContactEmail();
         $this->_adminName = $site->getLocalizedContactName();
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param array $args
      */
     public function FileLoader($args) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -208,12 +207,8 @@ class FileLoader extends ScheduledTask {
     /**
      * A public helper function that can be used to ensure
      * that the file structure has actually been installed.
-     *
-     * @param bool $install Set this parameter to true to
-     * install the folder structure if it is missing.
-     *
-     * @return bool True if the folder structure exists,
-     * otherwise false.
+     * @param bool $install
+     * @return bool
      */
     public function checkFolderStructure($install = false) {
         // Make sure that the base path is inside the private files dir.
@@ -263,16 +258,12 @@ class FileLoader extends ScheduledTask {
     // Protected methods.
     //
     /**
-     * Abstract method that must be
-     * implemented by subclasses to
+     * Abstract method that must be implemented by subclasses to
      * process the passed file.
      * @param string $filePath
-     * @param string|null $errorMsg Define a custom error message
-     * to be used to notify the administrator about the error.
-     * This message will be used if the return value is false.
+     * @param string|null $errorMsg
      * @return mixed
-     * @see FileLoader::execute to understand
-     * the expected return values.
+     * @see FileLoader::execute
      */
     public function processFile($filePath, &$errorMsg) {
         assert(false);
@@ -280,6 +271,7 @@ class FileLoader extends ScheduledTask {
     }
 
     /**
+     * Get name schedule task file loader
      * @see ScheduledTask::getName()
      */
     public function getName() {
@@ -292,8 +284,7 @@ class FileLoader extends ScheduledTask {
     //
     /**
      * Claim the first file that's inside the staging folder.
-     * @return mixed The claimed file path or null if none, or false if
-     * the claim was not successful.
+     * @return mixed
      */
     public function _claimNextFile() {
         if (!is_dir($this->_stagePath)) return null;
@@ -303,7 +294,6 @@ class FileLoader extends ScheduledTask {
 
         $processingFilePath = false;
         $filename = '';
-
         while(($file = readdir($stageDir)) !== false) {
             if ($file == '..' || $file == '.' ||
                 in_array($file, $this->_stagedBackFiles)) continue;
@@ -312,10 +302,8 @@ class FileLoader extends ScheduledTask {
             $processingFilePath = $this->moveFile($this->_stagePath, $this->_processingPath, $filename);
             break;
         }
-        
-        // [WIZDAM FIX] Close directory handle to free resources
-        closedir($stageDir);
 
+        closedir($stageDir);
         if ($processingFilePath && pathinfo((string)$processingFilePath, PATHINFO_EXTENSION) == 'gz') {
             $fileMgr = new FileManager();
             $errorMsg = null;
@@ -377,7 +365,7 @@ class FileLoader extends ScheduledTask {
      * @param string $sourceDir
      * @param string $destDir
      * @param string $filename
-     * @return string The destination path of the moved file.
+     * @return string
      */
     public function moveFile($sourceDir, $destDir, $filename) {
         $currentFilePath = $sourceDir . DIRECTORY_SEPARATOR . $filename;
@@ -395,6 +383,6 @@ class FileLoader extends ScheduledTask {
 
         return $destinationPath;
     }
-}
 
+}
 ?>

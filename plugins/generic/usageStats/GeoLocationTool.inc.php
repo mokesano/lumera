@@ -12,34 +12,61 @@ declare(strict_types=1);
  * @ingroup plugins_generic_usageStats
  *
  * @brief Geo location by ip wrapper class.
- * * REFACTORED: Wizdam Edition (PHP 8 Compatibility & Data Completeness)
  */
 
 /** GeoIp tool for geo location based on ip */
 include('lib' . DIRECTORY_SEPARATOR . 'geoIp' . DIRECTORY_SEPARATOR . 'geoipcity.inc');
 
+if (!defined('GEOIP_STANDARD')) {
+    define('GEOIP_STANDARD', 0);
+}
+if (!defined('GEOIP_MEMORY_CACHE')) {
+    define('GEOIP_MEMORY_CACHE', 1);
+}
+
+if (!function_exists('geoip_open')) {
+    /**
+     * @param string $filename
+     * @param int $flags
+     * @return resource|object|null
+     */
+    function geoip_open($filename, $flags) {
+        return null;
+    }
+}
+
+if (!function_exists('geoip_record_by_addr')) {
+    /**
+     * @param resource|object $gi
+     * @param string $addr
+     * @return object|null
+     */
+    function geoip_record_by_addr($gi, $addr) {
+        return null;
+    }
+}
+
 class GeoLocationTool {
 
-    /** @var object|null GeoIP Handle */
-    public $_geoLocationTool;
+    /** @var object|null GeoIP Handle (stdClass from geoip_open) */
+    protected $_geoLocationTool;
 
     /** @var array List of region names */
-    public $_regionName;
+    protected $_regionName;
 
-    /** @var boolean */
-    public $_isDbFilePresent;
+    /** @var bool */
+    protected $_isDbFilePresent;
 
     /**
      * Constructor.
      */
     public function __construct() {
-        $geoLocationDbFile = dirname(__FILE__) . DIRECTORY_SEPARATOR . "GeoLiteCity.dat";
+        $geoLocationDbFile = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'GeoLiteCity.dat';
         
         if (file_exists($geoLocationDbFile)) {
             $this->_isDbFilePresent = true;
             
             // Open GeoIP Database (Standard Mode)
-            // Pastikan library geoipcity.inc sudah diload
             if (function_exists('geoip_open')) {
                 $this->_geoLocationTool = geoip_open($geoLocationDbFile, GEOIP_STANDARD);
             } else {
@@ -53,14 +80,11 @@ class GeoLocationTool {
             include('lib' . DIRECTORY_SEPARATOR . 'geoIp' . DIRECTORY_SEPARATOR . 'geoipregionvars.php');
             
             // $GEOIP_REGION_NAME berasal dari file include di atas
-            if (isset($GEOIP_REGION_NAME)) {
-                $this->_regionName = $GEOIP_REGION_NAME;
-            } else {
-                $this->_regionName = array();
-            }
+            $this->_regionName = isset($GEOIP_REGION_NAME) ? $GEOIP_REGION_NAME : [];
         } else {
             $this->_isDbFilePresent = false;
             $this->_geoLocationTool = null;
+            $this->_regionName = [];
         }
     }
 
@@ -82,47 +106,45 @@ class GeoLocationTool {
     //
     /**
      * Return country code, city name, and region for the passed ip address.
-     * [WIZDAM] Ensures UTF-8 encoding for City and Region.
-     * @param $ip string
+     * [LUMERA] Ensures UTF-8 encoding for City and Region.
+     * @param string $ip
      * @return array [CountryCode, City, Region]
      */
     public function getGeoLocation($ip) {
         // If no geolocation tool, the geo database file is missing.
         if (!$this->_geoLocationTool) {
-            return array(null, null, null);
+            return [null, null, null];
         }
 
         // Retrieve record from GeoIP
         $record = geoip_record_by_addr($this->_geoLocationTool, $ip);
 
         if (!$record) {
-            return array(null, null, null);
+            return [null, null, null];
         }
 
         // 1. Resolve Region Name
-        // GeoIP Legacy returns region codes (e.g., "01", "CA"). We map it to names if possible.
         $regionName = null;
-        if (isset($record->country_code, $record->region) && isset($this->_regionName[$record->country_code][$record->region])) {
+        if (isset($record->country_code, $record->region, $this->_regionName[$record->country_code][$record->region])) {
             $regionName = $this->_regionName[$record->country_code][$record->region];
         } else {
             // Fallback: use the region code if name not found
-            $regionName = isset($record->region) ? $record->region : null;
+            $regionName = $record->region ?? null;
         }
 
-        // 2. Resolve City
-        $city = isset($record->city) ? $record->city : null;
+        // 2. Resolve City and Country
+        $city = $record->city ?? null;
+        $countryCode = $record->country_code ?? null;
 
         // [WIZDAM FIX] Encoding Handling
         // GeoIP Legacy databases are typically ISO-8859-1 (Latin-1).
         // Database storage usually requires UTF-8.
-        
         if ($city) {
             if (function_exists('mb_convert_encoding')) {
-                // Modern, robust conversion
                 $city = mb_convert_encoding($city, 'UTF-8', 'ISO-8859-1');
             } elseif (function_exists('utf8_encode')) {
-                // Deprecated in PHP 8.2, removed in PHP 9.0, but used as fallback
-                $city = utf8_encode($city);
+                // Fallback for environments without mbstring (suppress deprecation warning in PHP 8.2+)
+                $city = @utf8_encode($city);
             }
         }
 
@@ -130,21 +152,16 @@ class GeoLocationTool {
             if (function_exists('mb_convert_encoding')) {
                 $regionName = mb_convert_encoding($regionName, 'UTF-8', 'ISO-8859-1');
             } elseif (function_exists('utf8_encode')) {
-                $regionName = utf8_encode($regionName);
+                $regionName = @utf8_encode($regionName);
             }
         }
 
-        // Return Array: Country, City, Region
-        return array(
-            isset($record->country_code) ? $record->country_code : null,
-            $city,
-            $regionName
-        );
+        return [$countryCode, $city, $regionName];
     }
 
     /**
      * Identify if the geolocation database tool is available for use.
-     * @return boolean
+     * @return bool
      */
     public function isPresent() {
         return $this->_isDbFilePresent;
@@ -152,17 +169,18 @@ class GeoLocationTool {
 
     /**
      * Get all country codes.
-     * @return mixed array or null
+     * @return array|null
      */
     public function getAllCountryCodes() {
-        if (!$this->_geoLocationTool) return null;
+        if (!$this->_geoLocationTool) {
+            return null;
+        }
 
         $tool = $this->_geoLocationTool;
         
         if (isset($tool->GEOIP_COUNTRY_CODES)) {
             $countryCodes = $tool->GEOIP_COUNTRY_CODES;
-            // Overwrite the first empty record with the code to unknow country.
-            // Check if STATISTICS_UNKNOWN_COUNTRY_ID is defined (usually in UsageStatsPlugin)
+            // Overwrite the first empty record with the code to unknown country.
             $unknownId = defined('STATISTICS_UNKNOWN_COUNTRY_ID') ? STATISTICS_UNKNOWN_COUNTRY_ID : 'other';
             $countryCodes[0] = $unknownId;
             return $countryCodes;
@@ -172,20 +190,18 @@ class GeoLocationTool {
     }
 
     /**
-     * Return the 3 letters version of country codes
-     * based on the passed 2 letters version.
-     * @param $countryCode string
-     * @return mixed string or null
+     * Return the 3 letters version of country codes based on the passed 2 letters version.
+     * @param string $countryCode
+     * @return string|null
      */
     public function get3LettersCountryCode($countryCode) {
         return $this->_getCountryCodeOnList($countryCode, 'GEOIP_COUNTRY_CODES3');
     }
 
     /**
-     * Return the 2 letter version of country codes
-     * based on the passed 3 letters version.
-     * @param $countryCode3 string
-     * @return mixed string or null
+     * Return the 2 letter version of country codes based on the passed 3 letters version.
+     * @param string $countryCode3
+     * @return string|null
      */
     public function get2LettersCountryCode($countryCode3) {
         return $this->_getCountryCodeOnList($countryCode3, 'GEOIP_COUNTRY_CODES');
@@ -193,53 +209,41 @@ class GeoLocationTool {
 
     /**
      * Get regions by country.
-     * @param $countryId int
+     * @param string $countryId
      * @return array
      */
     public function getRegions($countryId) {
-        $regions = array();
-        $database = $this->_regionName;
-        if (isset($database[$countryId])) {
-            $regions = $database[$countryId];
-        }
-
-        return $regions;
+        return $this->_regionName[$countryId] ?? [];
     }
 
+    //
+    // Protected helper methods.
+    //
     /**
      * Get the passed country code inside the passed list.
-     * @param $countryCode The 2 letters country code.
-     * @param $countryCodeListName array Any geoip country code list.
-     * @return mixed String or null.
+     * @param string $countryCode
+     * @param string $countryCodeListName
+     * @return string|null
      */
-    public function _getCountryCodeOnList($countryCode, $countryCodeListName) {
-        $returner = null;
-
-        if (!$this->_geoLocationTool) return $returner;
+    protected function _getCountryCodeOnList($countryCode, $countryCodeListName) {
+        if (!$this->_geoLocationTool) {
+            return null;
+        }
         
         $tool = $this->_geoLocationTool;
-
-        if (isset($tool->$countryCodeListName)) {
-            $countryCodeList = $tool->$countryCodeListName;
-        } else {
-            return $returner;
+        if (!isset($tool->$countryCodeListName)) {
+            return null;
+        }
+        
+        $countryCodeList = $tool->$countryCodeListName;
+        $countryCodesIndex = $tool->GEOIP_COUNTRY_CODE_TO_NUMBER ?? [];
+        $countryCodeIndex = $countryCodesIndex[$countryCode] ?? null;
+        if ($countryCodeIndex !== null && isset($countryCodeList[$countryCodeIndex])) {
+            return $countryCodeList[$countryCodeIndex];
         }
 
-        // Access properties directly if public, check isset first
-        $countryCodesIndex = isset($tool->GEOIP_COUNTRY_CODE_TO_NUMBER) ? $tool->GEOIP_COUNTRY_CODE_TO_NUMBER : array();
-        $countryCodeIndex = null;
-
-        if (isset($countryCodesIndex[$countryCode])) {
-            $countryCodeIndex = $countryCodesIndex[$countryCode];
-        }
-
-        if ($countryCodeIndex) {
-            if (isset($countryCodeList[$countryCodeIndex])) {
-                $returner = $countryCodeList[$countryCodeIndex];
-            }
-        }
-
-        return $returner;
+        return null;
     }
+
 }
 ?>
