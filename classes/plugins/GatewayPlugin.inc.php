@@ -42,7 +42,7 @@ class GatewayPlugin extends Plugin {
     /**
      * Get the name of this plugin. The name must be unique within
      * its category.
-     * @return string name of plugin
+     * @return string
      */
     public function getName(): string {
         assert(false); // Should always be overridden
@@ -70,6 +70,8 @@ class GatewayPlugin extends Plugin {
 
     /**
      * Display verbs for the management interface.
+     * @param array $verbs
+     * @param PKPRequest|null $request
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
@@ -95,12 +97,13 @@ class GatewayPlugin extends Plugin {
     public function getEnabled(): bool {
         $journal = Request::getJournal();
         if (!$journal) return false;
-        return (bool) $this->getSetting($journal->getId(), 'enabled');
+        return (bool) $this->getSetting((int) $journal->getId(), 'enabled');
     }
 
     /**
      * Set the enabled/disabled state of this plugin
      * @param bool $enabled
+     * @param PKPRequest|null $request
      * @return bool
      */
     public function setEnabled(bool $enabled, $request = NULL): bool {
@@ -125,7 +128,7 @@ class GatewayPlugin extends Plugin {
      * @param PKPRequest|null $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message = null, $messageParams = null, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         $templateManager = TemplateManager::getManager();
         $templateManager->register_function('plugin_url', [$this, 'smartyPluginUrl']);
         switch ($verb) {
@@ -145,6 +148,6 @@ class GatewayPlugin extends Plugin {
         // Subclasses should override this function.
         return false;
     }
+    
 }
-
 ?>

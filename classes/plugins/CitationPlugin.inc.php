@@ -28,7 +28,7 @@ class CitationPlugin extends Plugin {
 	/**
 	 * Get the name of this plugin. The name must be unique within
 	 * its category.
-	 * @return String name of plugin
+	 * @return String
 	 */
 	public function getName(): string {
 		assert(false); // Should always be overridden
@@ -64,7 +64,9 @@ class CitationPlugin extends Plugin {
 
 	/**
 	 * Used by the cite function to embed an HTML citation in the
-	 * templates/rt/captureCite.tpl template, which ships with OJS.
+	 * templates/rt/captureCite.tpl template, which ships with App.
+	 * @param string $hookName
+	 * @param array $args
 	 */
 	public function displayCitationHook($hookName, $args) {
 		$params = $args[0];
@@ -78,16 +80,19 @@ class CitationPlugin extends Plugin {
 	 * Display an HTML-formatted citation. Default implementation displays
 	 * an HTML-based citation using the citation.tpl template in the plugin
 	 * path.
-	 * @param $article object
-	 * @param $issue object
+	 * @param mixed $article
+	 * @param mixed $issue
+	 * @param mixed $journal
 	 */
 	public function displayCitation($article, $issue, $journal) {
-		HookRegistry::register('Template::RT::CaptureCite', array(&$this, 'displayCitationHook'));
+		HookRegistry::register('Template::RT::CaptureCite', [&$this, 'displayCitationHook']);
+		
 		$templateMgr = TemplateManager::getManager();
 		$templateMgr->assign('citationPlugin', $this);
 		$templateMgr->assign('article', $article);
 		$templateMgr->assign('issue', $issue);
 		$templateMgr->assign('journal', $journal);
+
 		$templateMgr->display('rt/captureCite.tpl');
 	}
 
@@ -95,8 +100,9 @@ class CitationPlugin extends Plugin {
 	 * Return an HTML-formatted citation. Default implementation displays
 	 * an HTML-based citation using the citation.tpl template in the plugin
 	 * path.
-	 * @param $article object
-	 * @param $issue object
+	 * @param mixed $article
+	 * @param mixed $issue
+	 * @param mixed $journal
 	 */
 	public function fetchCitation($article, $issue, $journal) {
 		$templateMgr = TemplateManager::getManager();
@@ -104,8 +110,9 @@ class CitationPlugin extends Plugin {
 		$templateMgr->assign('article', $article);
 		$templateMgr->assign('issue', $issue);
 		$templateMgr->assign('journal', $journal);
+
 		return $templateMgr->fetch($this->getTemplatePath() . '/citation.tpl');
 	}
-}
 
+}
 ?>
