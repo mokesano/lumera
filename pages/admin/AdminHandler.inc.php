@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_admin
  *
  * @brief Handle requests for site administration functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.handler.Handler');
@@ -27,8 +25,6 @@ class AdminHandler extends Handler {
         parent::__construct();
         
         $this->addCheck(new HandlerValidatorRoles($this, true, null, null, [ROLE_ID_SITE_ADMIN]));
-        
-        // [WIZDAM FIX] Replaced create_function with anonymous Closure
         $this->addCheck(new HandlerValidatorCustom(
             $this, 
             true, 
@@ -81,12 +77,13 @@ class AdminHandler extends Handler {
 
         $templateMgr->assign('newVersionAvailable', $newVersionAvailable);
         $templateMgr->assign('helpTopicId', 'site.index');
+
         $templateMgr->display('admin/index.tpl');
     }
 
     /**
      * Setup common template variables.
-     * @param bool $subclass set to true if caller is below this handler in the hierarchy
+     * @param bool $subclass
      */
     public function setupTemplate($subclass = false) {
         parent::setupTemplate();
@@ -114,7 +111,8 @@ class AdminHandler extends Handler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
         
-        $this->setupTemplate(true); // Param passed to custom setupTemplate? Original code passed $request? No, original signature is just $subclass.
+        $this->setupTemplate(true);
+        // Param passed to custom setupTemplate? Original code passed $request? No, original signature is just $subclass.
         // Wait, original custom code: setupTemplate($request, true).
         // BUT Standard AdminHandler::setupTemplate only accepts $subclass.
         // I will stick to standard signature usage unless custom override exists.
@@ -125,10 +123,13 @@ class AdminHandler extends Handler {
         
         import('classes.admin.form.AboutSiteForm');
         $form = new AboutSiteForm();
-        
         if (!$request->isPost()) {
             $form->initData();
         }
+
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign('justSaved', (bool) $request->getUserVar('saved'));
+        
         $form->display($request); // Hanya ini yang kita perlukan
     }
 
@@ -146,18 +147,18 @@ class AdminHandler extends Handler {
         import('classes.admin.form.AboutSiteForm');
         $form = new AboutSiteForm();
         
-        // --- PERBAIKAN ALUR LOGIKA ---
+        // PERBAIKAN ALUR LOGIKA ---
         // 1. Muat struktur data (kunci) terlebih dahulu
         $form->initData(); 
         
         // 2. Baca data POST berdasarkan kunci yang sudah ada di _data
         $form->readInputData(); 
-        // --- AKHIR PERBAIKAN ALUR ---
+        // AKHIR PERBAIKAN ALUR ---
 
         if ($form->validate()) {
             $form->execute();
             
-            // --- PERBAIKAN NOTIFIKASI ---
+            // PERBAIKAN NOTIFIKASI ---
             import('classes.notification.NotificationManager');
             $notificationManager = new NotificationManager();
             
@@ -165,17 +166,17 @@ class AdminHandler extends Handler {
             $user = $request->getUser();
             
             // Parameter 3: Buat array dengan kunci 'message'
-            $params = ['message' => 'common.changesSaved'];
+            $params = ['contents' => __('common.changesSaved')];
             
             $notificationManager->createTrivialNotification(
-                $user->getId(),             // Param 1: int (User ID)
+                (int) $user->getId(),       // Param 1: int (User ID)
                 NOTIFICATION_TYPE_SUCCESS,  // Param 2: Konstanta (Tipe Notifikasi)
-                $params                     // Param 3: array (Pesan)
+                (array) $params             // Param 3: array (Pesan)
             );
-            // --- AKHIR PERBAIKAN NOTIFIKASI ---
+            // AKHIR PERBAIKAN NOTIFIKASI ---
 
             // Redirect kembali ke halaman form
-            $request->redirect(null, null, 'aboutSite');
+            $request->redirect(null, null, 'aboutSite', null, ['saved' => 1]);
             
         } else {
             // Validasi gagal (misal: jika CSRF nanti diaktifkan), 
@@ -183,21 +184,21 @@ class AdminHandler extends Handler {
             
             $this->setupTemplate(true); // Setup template dasar
             
-            // --- Muat TinyMCE (Wajib ada di blok 'else') ---
+            // Muat TinyMCE (Wajib ada di blok 'else') ---
             // Ini penting agar form tampil benar saat ada error validasi
             $templateMgr = TemplateManager::getManager($request);
             PluginRegistry::loadPlugin('generic', 'TinyMCEPlugin');
             $plugin = PluginRegistry::getPlugin('generic', 'TinyMCEPlugin');
-
             if ($plugin != null) { 
                 $pluginPath = $plugin->getPluginPath();
                 $templateMgr->addJavaScript($pluginPath . '/js/tiny_mce.js');
                 $templateMgr->addJavaScript($pluginPath . '/js/tiny_mce_init.js');
             }
-            // --- Akhir Muat TinyMCE ---
+            // Akhir Muat TinyMCE ---
             
             $form->display($request); // Tampilkan form dengan pesan error
         }
     }
+    
 }
 ?>

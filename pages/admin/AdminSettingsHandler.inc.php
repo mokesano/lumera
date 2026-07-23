@@ -42,13 +42,15 @@ class AdminSettingsHandler extends AdminHandler {
     /**
      * [WIZDAM] Kirim notifikasi (flash message) ke user setelah sebuah aksi.
      * @param PKPRequest $request
-     * @param string|null $localeKey Jika null, gunakan pesan sukses default OJS.
+     * @param string|null $localeKey
      */
     private function _notifyAction($request, $localeKey = null): void {
         import('classes.notification.NotificationManager');
         $notificationManager = new NotificationManager();
         $user = $request->getUser();
-        if (!$user) return;
+        if (!$user) {
+            return;
+        }
 
         if ($localeKey) {
             $notificationManager->createTrivialNotification(
@@ -64,7 +66,7 @@ class AdminSettingsHandler extends AdminHandler {
     /**
      * Display form to modify site settings.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function settings($args = [], $request = null) {
         $this->validate();
@@ -78,20 +80,21 @@ class AdminSettingsHandler extends AdminHandler {
         } else {
             $settingsForm->initData();
         }
-        $settingsForm->display();
+        $settingsForm->display($request);
     }
 
     /**
      * Validate and save changes to site settings.
      * @param array $args
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
      */
     public function saveSettings($args, $request) {
         $this->validate();
         $this->setupTemplate(true);
         
-        // [WIZDAM] Singleton Fallback
-        if (!$request) $request = Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         
         $site = $request->getSite();
 
@@ -101,50 +104,52 @@ class AdminSettingsHandler extends AdminHandler {
         $settingsForm = new SiteSettingsForm();
         $settingsForm->readInputData();
 
-        if ((array) $request->getUserVar('uploadSiteStyleSheet')) {
+        if ($request->getUserVar('uploadSiteStyleSheet')) {
             if (!$settingsForm->uploadSiteStyleSheet()) {
                 $settingsForm->addError('siteStyleSheet', __('admin.settings.siteStyleSheetInvalid'));
             } else {
-                // [WIZDAM] NOTIF
                 $this->_notifyAction($request, 'admin.settings.notification.fileUploaded');
             }
-        } elseif ((array) $request->getUserVar('deleteSiteStyleSheet')) {
+        } elseif ($request->getUserVar('deleteSiteStyleSheet')) {
             $publicFileManager = new PublicFileManager();
             $publicFileManager->removeSiteFile($site->getSiteStyleFilename());
-            // [WIZDAM] NOTIF
             $this->_notifyAction($request, 'admin.settings.notification.fileRemoved');
-        } elseif ((array) $request->getUserVar('uploadPageHeaderTitleImage')) {
+        } elseif ($request->getUserVar('uploadPageHeaderTitleImage')) {
             if (!$settingsForm->uploadPageHeaderTitleImage($settingsForm->getFormLocale())) {
                 $settingsForm->addError('pageHeaderTitleImage', __('admin.settings.homeHeaderImageInvalid'));
             } else {
-                // [WIZDAM] NOTIF
                 $this->_notifyAction($request, 'admin.settings.notification.fileUploaded');
             }
-        } elseif ((array) $request->getUserVar('deletePageHeaderTitleImage')) {
+        } elseif ($request->getUserVar('deletePageHeaderTitleImage')) {
             $publicFileManager = new PublicFileManager();
             $setting = $site->getSetting('pageHeaderTitleImage');
+
+            if (!is_array($setting)) {
+                $setting = [];
+            }
+            
             $formLocale = $settingsForm->getFormLocale();
             if (isset($setting[$formLocale])) {
-                $publicFileManager->removeSiteFile($setting[$formLocale]['uploadName']);
-                $setting[$formLocale] = [];
+                if (!empty($setting[$formLocale]['uploadName'])) {
+                    $publicFileManager->removeSiteFile($setting[$formLocale]['uploadName']);
+                }
+                unset($setting[$formLocale]);
                 $site->updateSetting('pageHeaderTitleImage', $setting, 'object', true);
 
                 // Refresh site header
-                $templateMgr = TemplateManager::getManager();
+                $templateMgr = TemplateManager::getManager($request);
                 $templateMgr->assign('displayPageHeaderTitle', $site->getLocalizedPageHeaderTitle());
 
-                // [WIZDAM] NOTIF
                 $this->_notifyAction($request, 'admin.settings.notification.fileRemoved');
             }
         } elseif ($settingsForm->validate()) {
             $settingsForm->execute();
-            $user = $request->getUser();
-            import('classes.notification.NotificationManager');
-            $notificationManager = new NotificationManager();
-            $notificationManager->createTrivialNotification($user->getId());
+            $this->_notifyAction($request);
             $request->redirect(null, null, 'index');
         }
-        $settingsForm->display();
+        
+        $settingsForm->display($request);
     }
+    
 }
 ?>
