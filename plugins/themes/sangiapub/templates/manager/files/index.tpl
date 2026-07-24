@@ -25,12 +25,12 @@
 		<td class="headseparator" colspan="6">&nbsp;</td>
 	</tr>
 	<tr class="heading" valign="bottom">
-		<td></td>
-		<td width="35%">{translate key="common.fileName"}</td>
+		<td width="5%"></td>
+		<td width="25%">{translate key="common.fileName"}</td>
 		<td width="20%">{translate key="common.type"}</td>
 		<td width="25%">{translate key="common.dateModified"}</td>
-		<td width="5%">{translate key="common.size"}</td>
-		<td width="10%" align="center">{translate key="common.action"}</td>
+		<td width="10%">{translate key="common.size"}</td>
+		<td width="15%" align="center">{translate key="common.action"}</td>
 	</tr>
 	{** <tr>
 		<td class="headseparator" colspan="6">&nbsp;</td>
@@ -71,13 +71,13 @@
 </table>
 
 <form method="post" action="{url op="fileUpload" path=$currentDir|explode:"/"}" enctype="multipart/form-data">
-	<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
+	<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 	<input type="file" size="20" name="file" class="uploadField" />
 	<input type="submit" value="{translate key="manager.files.uploadFile"}" class="button" />
 </form>
 
 <form method="post" action="{url op="fileMakeDir" path=$currentDir|explode:"/"}" enctype="multipart/form-data"  class="u-mt-16">
-	<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
+	<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 	<input type="text" size="20" maxlength="255" name="dirName" class="textField" />
 	<input type="submit" value="{translate key="manager.files.createDir"}" class="button" />
 </form>

@@ -25,7 +25,7 @@ import('classes.issue.IssueAccess');
 import('classes.issue.IssueDisplay');
 import('classes.issue.IssuePubIdService');
 
-// --- IDENTITY CONSTANTS (ISSUEACCESS) ---
+// IDENTITY CONSTANTS (ISSUEACCESS)
 define('ISSUE_ACCESS_OPEN', 1);
 define('ISSUE_ACCESS_SUBSCRIPTION', 2);
 
@@ -41,34 +41,40 @@ class Issue extends DataObject {
     }
 
     /**
-     * Deprecated constructor.
+     * [SHIM] Backward Compatibility.
      */
     public function Issue() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::' . get_class($this) . '(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+        }
         $this->__construct();
     }
 
     /**
-     * Get issue id
-     * @return int
+     * [DEPRECATED] Get issue id
+     * @return int|null
      */
     public function getIssueId() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getId();
     }
 
     /**
-     * Set issue id
-     * @param $issueId int
+     * [DEPRECATED] Set issue id
+     * @param mixed $issueId
      */
     public function setIssueId($issueId) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->setId($issueId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        return $this->setId((int) $issueId);
     }
 
     /**
      * Get journal id
-     * @return int
+     * @return int|null
      */
     public function getJournalId() {
         return $this->getData('journalId');
@@ -76,33 +82,35 @@ class Issue extends DataObject {
 
     /**
      * Set journal id
-     * @param $journalId int
+     * @param mixed $journalId
      */
     public function setJournalId($journalId) {
-        return $this->setData('journalId', $journalId);
+        return $this->setData('journalId', (int) $journalId);
     }
 
     /**
      * Get the localized title
-     * @return string
+     * @return string|null
      */
     public function getLocalizedTitle() {
         return $this->getLocalizedData('title');
     }
 
     /**
-     * Deprecated function to get the localized title
-     * @return string
+     * [DEPRECATED] Deprecated function to get the localized title
+     * @return string|null
      */
     public function getIssueTitle() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedTitle();
     }
 
     /**
      * Get title
-     * @param $locale string
-     * @return string
+     * @param string $locale
+     * @return string|null
      */
     public function getTitle($locale) {
         return $this->getData('title', $locale);
@@ -110,16 +118,16 @@ class Issue extends DataObject {
 
     /**
      * Set title
-     * @param $title string
-     * @param $locale string
+     * @param mixed $title
+     * @param string $locale
      */
     public function setTitle($title, $locale) {
-        return $this->setData('title', $title, $locale);
+        return $this->setData('title', (string) $title, $locale);
     }
 
     /**
      * Get volume
-     * @return int
+     * @return int|null
      */
     public function getVolume() {
         return $this->getData('volume');
@@ -127,15 +135,15 @@ class Issue extends DataObject {
 
     /**
      * Set volume
-     * @param $volume int
+     * @param mixed $volume
      */
     public function setVolume($volume) {
-        return $this->setData('volume', $volume);
+        return $this->setData('volume', (int) $volume);
     }
 
     /**
      * Get number
-     * @return string
+     * @return string|null
      */
     public function getNumber() {
         return $this->getData('number');
@@ -143,15 +151,15 @@ class Issue extends DataObject {
 
     /**
      * Set number
-     * @param $number string
+     * @param mixed $number
      */
     public function setNumber($number) {
-        return $this->setData('number', $number);
+        return $this->setData('number', (string) $number);
     }
 
     /**
      * Get year
-     * @return int
+     * @return int|null
      */
     public function getYear() {
         return $this->getData('year');
@@ -159,33 +167,35 @@ class Issue extends DataObject {
 
     /**
      * Set year
-     * @param $year int
+     * @param mixed $year
      */
     public function setYear($year) {
-        return $this->setData('year', $year);
+        return $this->setData('year', (int) $year);
     }
 
     /**
      * Get the localized description
-     * @return string
+     * @return string|null
      */
     public function getLocalizedDescription() {
         return $this->getLocalizedData('description');
     }
 
     /**
-     * Deprecated function to get the localized description
-     * @return string
+     * [DEPRECATED] Deprecated function to get the localized description
+     * @return string|null
      */
     public function getIssueDescription() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedDescription();
     }
 
     /**
      * Get description
-     * @param $locale string
-     * @return string
+     * @param string $locale
+     * @return string|null
      */
     public function getDescription($locale) {
         return $this->getData('description', $locale);
@@ -193,26 +203,31 @@ class Issue extends DataObject {
 
     /**
      * Set description
-     * @param $description string
-     * @param $locale string
+     * @param mixed $description
+     * @param string $locale
      */
     public function setDescription($description, $locale) {
-        return $this->setData('description', $description, $locale);
+        return $this->setData('description', (string) $description, $locale);
     }
 
     /**
      * Return string of author names, separated by the specified token
-     * @param $separator string
+     * @param string $separator
      * @return string
      */
     public function getAuthorString($separator = ', ') {
         $str = '';
-        $articles = $this->getArticles();
-        foreach ($articles as $article) {
-            if (!empty($str)) {
-                $str .= $separator;
+        $articles = method_exists($this, 'getArticles') ? $this->getArticles() : [];
+        
+        if (is_array($articles)) {
+            foreach ($articles as $article) {
+                if (!empty($str)) {
+                    $str .= $separator;
+                }
+                if (is_object($article) && method_exists($article, 'getAuthorString')) {
+                    $str .= $article->getAuthorString();
+                }
             }
-            $str .= $article->getAuthorString();
         }
         return $str;
     }
@@ -231,29 +246,28 @@ class Issue extends DataObject {
             $displayOptions[] = __('issue.no') . ' ' . $this->getNumber();
         }
         if ($this->getShowYear()) {
-            $displayOptions[] = $this->getYear();
+            $displayOptions[] = (string) $this->getYear();
         }
         
         $identification = implode(', ', $displayOptions);
         
         if ($this->getShowTitle() && $this->getLocalizedTitle() !== null) {
-            $separator = empty($identification) ? '' : ' - ';
+            $separator = $identification === '' ? '' : ' - ';
             $identification .= $separator . $this->getLocalizedTitle();
         }
         
         return $identification;
     }
 
-    // --- WIZDAM DOMAIN LOGIC ---
+    // DOMAIN LOGIC ---
 
     /**
      * Get the issue progress status based on its publication date.
-     * [WIZDAM EDITION] Refactored for pure MVC separation.
+     * [LUMERA] Refactored for pure MVC separation.
      * 
-     * @return string Status identifier: 'in-progress', 'completed', 'halted', or 'unpublished'
+     * @return string Status identifier: 'in-progress', 'completed', 'halted', 'unpublished', or 'error'
      */
     public function getIssueProgressStatus(): string {
-        // Asumsi: getDatePublished() tersedia dari trait IssuePublication
         $datePublished = $this->getDatePublished();
         
         if (empty($datePublished)) {
@@ -262,7 +276,7 @@ class Issue extends DataObject {
 
         try {
             $currentDate = new \DateTime('now');
-            $issueDate = new \DateTime($datePublished);
+            $issueDate = new \DateTime((string) $datePublished);
         } catch (\Exception $e) {
             return 'error';
         }
@@ -290,12 +304,12 @@ class Issue extends DataObject {
     /**
      * Get the public ID of the issue.
      * REFACTORED: Delegated to IssuePubIdService to decouple from PluginRegistry.
-     * @param $pubIdType string One of the NLM pub-id-type values
+     * @param string $pubIdType One of the NLM pub-id-type values
      * @return string|null
      */
     public function getPubId($pubIdType) {
         $storedPubId = $this->getStoredPubId($pubIdType);
-        if ($storedPubId !== null) {
+        if ($storedPubId !== null && $storedPubId !== '') {
             return $storedPubId;
         }
         
@@ -304,40 +318,39 @@ class Issue extends DataObject {
 
     /**
      * Get stored public ID of the issue.
-     * @param $pubIdType string
-     * @return string
+     * @param string $pubIdType
+     * @return mixed
      */
     public function getStoredPubId($pubIdType) {
-        return $this->getData('pub-id::'.$pubIdType);
+        return $this->getData('pub-id::' . $pubIdType);
     }
 
     /**
      * Set stored public ID of the issue.
-     * @param $pubIdType string
-     * @param $pubId string
+     * @param string $pubIdType
+     * @param mixed $pubId
      */
     public function setStoredPubId($pubIdType, $pubId) {
-        return $this->setData('pub-id::'.$pubIdType, $pubId);
+        return $this->setData('pub-id::' . $pubIdType, (string) $pubId);
     }
 
     /**
      * Return the "best" issue ID -- If a public issue ID is set,
      * use it; otherwise use the internal issue Id.
      * REFACTORED: Removed DAORegistry coupling. 
-     * @param $journal Journal (Optional)
+     * @param mixed $journal (Optional)
      * @return string
      */
     public function getBestIssueId($journal = null) {
-        // Pastikan object $journal ada, dan fitur public ID memang diaktifkan
         if ($journal && $journal->getSetting('enablePublicIssueId')) {
             $publicIssueId = $this->getPubId('publisher-id');
             if (!empty($publicIssueId)) {
-                return $publicIssueId;
+                return (string) $publicIssueId;
             }
         }
 
-        // Jika $journal null ATAU fitur Off, gunakan ID numerik internal
-        return $this->getId();
+        // If $journal is null OR feature is Off, use internal numeric ID
+        return (string) $this->getId();
     }
 
     /**
@@ -347,7 +360,8 @@ class Issue extends DataObject {
      * @return int
      */
     public function getNumArticles() {
-        return $this->getData('numArticles') !== null ? $this->getData('numArticles') : 0;
+        $num = $this->getData('numArticles');
+        return $num !== null ? (int) $num : 0;
     }
 
     /**
@@ -357,5 +371,6 @@ class Issue extends DataObject {
     public function isValid() {
         return !empty($this->getJournalId()) && !empty($this->getYear());
     }
+    
 }
 ?>
