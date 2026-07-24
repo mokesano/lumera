@@ -80,7 +80,7 @@ class ReviewFormForm extends Form {
 
             /** @var ReviewFormDAO $reviewFormDao */
             $reviewFormDao = DAORegistry::getDAO('ReviewFormDAO');
-            $reviewForm = $reviewFormDao->getReviewForm($this->reviewFormId, ASSOC_TYPE_JOURNAL, $journal->getId());
+            $reviewForm = $reviewFormDao->getReviewForm((int) $this->reviewFormId, ASSOC_TYPE_JOURNAL, (int) $journal->getId());
 
             if ($reviewForm == null) {
                 $this->reviewFormId = null;
@@ -105,12 +105,12 @@ class ReviewFormForm extends Form {
      */
     public function execute($object = NULL) {
         $journal = Application::get()->getRequest()->getJournal();
-        $journalId = $journal->getId();
+        $journalId = (int) $journal->getId();
 
         /** @var ReviewFormDAO $reviewFormDao */
         $reviewFormDao = DAORegistry::getDAO('ReviewFormDAO');
         if ($this->reviewFormId != null) {
-            $reviewForm = $reviewFormDao->getReviewForm($this->reviewFormId, ASSOC_TYPE_JOURNAL, $journalId);
+            $reviewForm = $reviewFormDao->getReviewForm((int) $this->reviewFormId, ASSOC_TYPE_JOURNAL, $journalId);
         }
 
         if (!isset($reviewForm)) {
