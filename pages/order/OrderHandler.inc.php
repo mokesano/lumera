@@ -7,8 +7,7 @@ declare(strict_types=1);
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance, DDD, and i18n
+ * 
  * @class OrderHandler
  * @ingroup pages_order
  *
@@ -19,8 +18,8 @@ declare(strict_types=1);
 import('classes.handler.Handler');
 
 // Mengimpor Service Layer Wizdam Frontedge
-import('lib.wizdam.classes.checkout.services.CartService');
-import('lib.wizdam.classes.checkout.services.InvoiceService');
+import('lib.wizdam.classes.services.CartService');
+import('lib.wizdam.classes.services.InvoiceService');
 import('lib.wizdam.classes.security.SecurityHashService');
 
 class OrderHandler extends Handler {
@@ -52,33 +51,37 @@ class OrderHandler extends Handler {
         parent::setupTemplate($request);
         // Komponen locale spesifik order (bisa disesuaikan)
         AppLocale::requireComponents(
-            array(
+            [
                 LOCALE_COMPONENT_CORE_COMMON, 
                 LOCALE_COMPONENT_CORE_USER, 
                 LOCALE_COMPONENT_APPLICATION_COMMON
-            )
+            ]
         );
     }
 
     /**
      * Menampilkan Antarmuka Keranjang Belanja.
      * Rute: GET /order/cart
+     * @param array $args
+     * @param Request $request
      */
     public function cart(array $args = [], $request = null): void {
         $this->validate();
         if (!$request) $request = Application::get()->getRequest();
+        $journal = Application::get()->getRequest()->getJournal();
         
         $this->setupTemplate($request);
         $user = $request->getUser();
+        $journalId = (int) $journal->getId();
 
-        // Mengambil isi keranjang milik user (bisa dari session atau tabel temp DB)
+        // Mengambil isi keranjang milik user (dari session atau tabel temp DB)
         $cartItems = $this->cartService->getUserCart((int) $user->getId());
-        $cartSummary = $this->cartService->calculateSummary($cartItems);
+        $cartSummary = $this->cartService->calculateSummary($cartItems, $journalId);
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign([
             'cartItems' => $cartItems,
-            'cartSummary' => $cartSummary, // Array berisi subtotal, pajak, total akhir
+            'cartSummary' => $cartSummary,
             'pageTitle' => 'order.shoppingCart',
             'pageHierarchy' => [
                 [$request->url(null, 'user'), 'navigation.user']
@@ -91,6 +94,8 @@ class OrderHandler extends Handler {
     /**
      * Memproses keranjang menjadi Invoice resmi (Biasanya via form POST).
      * Rute: POST /order/checkout
+     * @param array $args
+     * @param Request $request
      */
     public function checkout(array $args = [], $request = null): void {
         $this->validate();
@@ -116,14 +121,12 @@ class OrderHandler extends Handler {
 
         try {
             // 3. Delegasikan pembuatan Invoice ke Service
-            // Service ini akan melakukan INSERT ke tabel invoices dan invoice_items
             $invoice = $this->invoiceService->createInvoiceFromCart($user, $cartItems);
             
             // 4. Bersihkan keranjang setelah berhasil dikonversi
             $this->cartService->clearCart((int) $user->getId());
 
-            // 5. TRANSAKSI LINTAS DOMAIN: 
-            // Generate Security Hash untuk masuk ke domain Billing
+            // 5. Generate Security Hash untuk masuk ke domain Billing
             $hash = $this->securityHashService->generateHash('invoice', (int) $invoice->getId());
 
             // 6. Buat Notifikasi Sukses
@@ -148,6 +151,9 @@ class OrderHandler extends Handler {
     /**
      * HELPER: Mengalihkan pengguna kembali ke halaman keranjang dengan Notifikasi Error.
      * Menggantikan penggunaan die() demi UX yang sempurna.
+     * @param Request $request
+     * @param string $localeKey
+     * @param string $targetOp
      */
     private function _redirectWithError($request, string $localeKey, string $targetOp = 'cart'): void {
         import('classes.notification.NotificationManager');
@@ -165,5 +171,6 @@ class OrderHandler extends Handler {
         $request->redirect(null, 'order', $targetOp);
         exit;
     }
+
 }
 ?>

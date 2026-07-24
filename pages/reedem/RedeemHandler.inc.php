@@ -7,8 +7,7 @@ declare(strict_types=1);
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance, DDD, and i18n
+ * 
  * @class RedeemHandler
  * @ingroup pages_redeem
  *
@@ -17,7 +16,7 @@ declare(strict_types=1);
  */
 
 import('classes.handler.Handler');
-import('lib.wizdam.classes.checkout.services.RedeemService');
+import('lib.wizdam.classes.services.RedeemService');
 
 class RedeemHandler extends Handler {
     
@@ -38,6 +37,7 @@ class RedeemHandler extends Handler {
 
     /**
      * Setup template
+     * @param Request|null $request
      */
     public function setupTemplate($request = null): void {
         parent::setupTemplate($request);
@@ -50,6 +50,8 @@ class RedeemHandler extends Handler {
     /**
      * Menampilkan Dasbor Dompet Virtual (Saldo & Riwayat Mutasi).
      * Rute: GET /redeem
+     * @param array $args
+     * @param Request|null $request
      */
     public function index(array $args = [], $request = null): void {
         $this->validate();
@@ -78,6 +80,8 @@ class RedeemHandler extends Handler {
     /**
      * Memproses permintaan penukaran poin (POST).
      * Rute: POST /redeem/exchange
+     * @param array $args
+     * @param Request|null $request
      */
     public function exchange(array $args = [], $request = null): void {
         $this->validate();
@@ -127,7 +131,8 @@ class RedeemHandler extends Handler {
 
     /**
      * HELPER: Mengalihkan pengguna kembali ke dasbor dompet dengan Notifikasi Error.
-     * @param mixed $request
+     * @param Request|null $request
+     * @param string $localeKey
      */
     private function _redirectWithError($request, string $localeKey): void {
         import('classes.notification.NotificationManager');

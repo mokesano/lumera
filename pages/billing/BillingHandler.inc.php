@@ -6,9 +6,8 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3.
  *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance & Domain-Driven Design
  * @class BillingHandler
  * @ingroup pages_billing
  *
@@ -53,11 +52,10 @@ class BillingHandler extends Handler {
 
     /**
      * Memuat dependensi antarmuka dan Locale
+     * @param Request|null $request
      */
     public function setupTemplate($request = null): void {
         parent::setupTemplate($request);
-        // Pastikan komponen bahasa dimuat (sesuaikan LOCALE_COMPONENT 
-        // Jika Wizdam Frontedge memiliki custom dictionary)
         AppLocale::requireComponents(
             [
                 LOCALE_COMPONENT_CORE_COMMON, 
@@ -72,8 +70,8 @@ class BillingHandler extends Handler {
     /**
      * Menampilkan Dasbor Tagihan Aktif (UNPAID/PENDING).
      * Rute: GET /billing
-     * @param array $args Parameter URL yang diberikan
-     * @param Request|null $request Objek request dari sistem App
+     * @param array $args
+     * @param Request|null $request
      */
     public function index(array $args = [], $request = null): void {
         $this->validate();
@@ -90,7 +88,7 @@ class BillingHandler extends Handler {
             'invoices' => $invoices,
             'pageTitle' => 'billing.activeInvoices', 
             'activeTab' => 'pending',
-            'hashService' => $this->securityHashService // <-- BARIS BARU INI WAJIB DITAMBAHKAN
+            'hashService' => $this->securityHashService
         ]);
 
         $templateMgr->display('billing/index.tpl');
@@ -99,8 +97,8 @@ class BillingHandler extends Handler {
     /**
      * Menampilkan Arsip Tagihan (PAID/VOID/EXPIRED).
      * Rute: GET /billing/history
-     * @param array $args Parameter URL yang diberikan
-     * @param Request|null $request Objek request dari sistem App
+     * @param array $args Parameter
+     * @param Request|null $request
      */
     public function history(array $args = [], $request = null): void {
         $this->validate();
@@ -115,7 +113,7 @@ class BillingHandler extends Handler {
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign([
             'invoices' => $invoices,
-            'pageTitle' => 'billing.historyInvoices', // Penggunaan Locale Key
+            'pageTitle' => 'billing.historyInvoices',
             'activeTab' => 'history',
             'hashService' => $this->securityHashService
         ]);
@@ -129,7 +127,7 @@ class BillingHandler extends Handler {
      * Rute HTML: GET /billing/invoice/[hash]-[id]
      * Rute PDF:  GET /billing/invoice/pdf-[hash]-[id]
      * @param array $args Harus berisi format: [hash]-[id] atau pdf-[hash]-[id]
-     * @param Request|null $request Objek request dari sistem App
+     * @param Request|null $request
      */
     public function invoice(array $args = [], $request = null): void {
         $this->validate();
@@ -182,7 +180,7 @@ class BillingHandler extends Handler {
      * Memproses permintaan inisiasi pembayaran ke Payment Gateway (AJAX/POST).
      * Rute: POST /billing/pay/[hash]-[id]
      * @param array $args Harus berisi format keamanan: [hash]-[id]
-     * @param Request|null $request Objek request dari sistem App
+     * @param Request|null $request
      */
     public function pay(array $args = [], $request = null): void {
         $this->validate();
@@ -227,10 +225,10 @@ class BillingHandler extends Handler {
 
         // Factory Pattern
         if ($activeGatewayStr === 'xendit') {
-            import('lib.wizdam.classes.checkout.payment.XenditGateway');
+            import('lib.wizdam.classes.payment.XenditGateway');
             $gateway = new XenditGateway($settingsService->getXenditApiKey());
         } else {
-            import('lib.wizdam.classes.checkout.payment.MidtransGateway');
+            import('lib.wizdam.classes.payment.MidtransGateway');
             $gateway = new MidtransGateway(
                 $settingsService->getMidtransServerKey(), 
                 $settingsService->isProduction()
@@ -256,7 +254,7 @@ class BillingHandler extends Handler {
      * Memproses pembatalan tagihan oleh pengguna.
      * Rute: POST/GET /billing/cancel/[hash]-[id]
      * @param array $args Harus berisi format keamanan: [hash]-[id]
-     * @param Request|null $request Objek request dari sistem App
+     * @param Request|null $request
      */
     public function cancel(array $args = [], $request = null): void {
         $this->validate();
@@ -298,21 +296,21 @@ class BillingHandler extends Handler {
 
     /**
      * PRIVATE METHOD: Merender antarmuka HTML Detail Tagihan.
-     * @param object $invoice Entitas data Invoice
-     * @param string $qrCodeBase64 Gambar Base64 dari QR Code
-     * @param string $hash Hash keamanan asli milik invoice ini
-     * @param Request $request Objek request App
+     * @param object $invoice
+     * @param string $qrCodeBase64
+     * @param string $hash
+     * @param Request $request
      */
     private function _handleHtmlView(object $invoice, string $qrCodeBase64, string $hash, $request): void {
         $viewData = $this->invoiceService->getInvoiceSummary($invoice);
         
-        $invoiceId  = $invoice->getInvoiceId(); // FIXED: getId() -> getInvoiceId()
-        $securePath = "{$hash}-{$invoiceId}";   // BARU: dikirim ke template
+        $invoiceId  = $invoice->getInvoiceId();
+        $securePath = "{$hash}-{$invoiceId}";
         $pdfUrl     = $request->url(null, 'billing', 'invoice', ["pdf-{$securePath}"]);
 
         $viewData['qrCodeImage']    = $qrCodeBase64;
         $viewData['pdfDownloadUrl'] = $pdfUrl;
-        $viewData['securePath']     = $securePath; // BARU: untuk Cancel & Pay URL di template
+        $viewData['securePath']     = $securePath;
         $viewData['pageTitle']      = 'billing.invoiceDetail';
         
         $viewData['pageHierarchy'] = [
@@ -327,8 +325,8 @@ class BillingHandler extends Handler {
 
     /**
      * PRIVATE: Memerintahkan PdfService untuk men-generate dan mengunduh PDF.
-     * @param object $invoice Entitas data Invoice
-     * @param string $qrCodeBase64 Gambar Base64 dari QR Code
+     * @param object $invoice
+     * @param string $qrCodeBase64
      * @param mixed $request
      */
     private function _handlePdfDownload(object $invoice, string $qrCodeBase64, $request): void {
