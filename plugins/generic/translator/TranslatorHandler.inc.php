@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_translator
  *
  * @brief This handles requests for the translator plugin.
- * MODERNIZED FOR WIZDAM FORK
  */
 
 require_once('TranslatorAction.inc.php');
@@ -20,15 +19,15 @@ import('classes.handler.Handler');
 
 class TranslatorHandler extends Handler {
     
-    /** @var object */
+    /** @var object|null */
     public $plugin;
 
     /**
      * Constructor
-     **/
+     */
     public function __construct() {
         parent::__construct();
-        $this->addCheck(new HandlerValidatorRoles($this, true, null, null, array(ROLE_ID_SITE_ADMIN)));
+        $this->addCheck(new HandlerValidatorRoles($this, true, null, null, [ROLE_ID_SITE_ADMIN]));
 
         $plugin = Registry::get('plugin');
         $this->plugin = $plugin;
@@ -38,16 +37,18 @@ class TranslatorHandler extends Handler {
      * [SHIM] Backward Compatibility
      */
     public function TranslatorHandler() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::TranslatorHandler(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::TranslatorHandler(). Please refactor to use parent::__construct().",
+                E_USER_DEPRECATED
+            );
+        }
         self::__construct();
     }
 
     /**
      * Get the email template filename for a locale.
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getEmailTemplateFilename($locale) {
@@ -56,20 +57,28 @@ class TranslatorHandler extends Handler {
 
     /**
      * Display the main translator page.
+     * @param array $args
+     * @param PKPRequest|null $request
      */
     public function index(array $args = [], $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
         $this->setupTemplate(false);
 
         $rangeInfo = Handler::getRangeInfo('locales');
 
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         import('lib.pkp.classes.core.ArrayItemIterator');
-        $templateMgr->assign('locales', new ArrayItemIterator(AppLocale::getAllLocales(), $rangeInfo->getPage(), $rangeInfo->getCount()));
+        $templateMgr->assign('locales', new ArrayItemIterator(
+            AppLocale::getAllLocales(), 
+            $rangeInfo->getPage(), 
+            $rangeInfo->getCount()
+        ));
         $templateMgr->assign('masterLocale', MASTER_LOCALE);
 
-        // Test whether the tar binary is available for the export to work
         $tarBinary = Config::getVar('cli', 'tar');
         $templateMgr->assign('tarAvailable', !empty($tarBinary) && file_exists($tarBinary));
 
@@ -78,36 +87,51 @@ class TranslatorHandler extends Handler {
 
     /**
      * Setup common template variables.
-     * @param $subclass boolean Whether this is called from a subclass.
+     * @param bool $subclass Whether this is called from a subclass.
      */
     public function setupTemplate($subclass = true) {
         parent::setupTemplate();
-        $templateMgr = TemplateManager::getManager();
+        $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_ADMIN, LOCALE_COMPONENT_CORE_MANAGER);
-        $pageHierarchy = array(array(Request::url(null, 'user'), 'navigation.user'), array(Request::url(null, 'admin'), 'admin.siteAdmin'));
-        if ($subclass) $pageHierarchy[] = array(Request::url(null, 'translate'), 'plugins.generic.translator.name');
+        
+        $pageHierarchy = [
+            [$request->url(null, 'user'), 'navigation.user'], 
+            [$request->url(null, 'admin'), 'admin.siteAdmin']
+        ];
+        if ($subclass) {
+            $pageHierarchy[] = [$request->url(null, 'translate'), 'plugins.generic.translator.name'];
+        }
+        
         $templateMgr->assign('pageHierarchy', $pageHierarchy);
         $templateMgr->assign('helpTopicId', 'plugins.generic.TranslatorPlugin');
     }
 
     /**
      * Edit a locale.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function edit($args) {
+    public function edit($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
         $file = array_shift($args);
 
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
+        }
+        
         $localeFiles = TranslatorAction::getLocaleFiles($locale);
         $miscFiles = TranslatorAction::getMiscLocaleFiles($locale);
         $emails = TranslatorAction::getEmailTemplates($locale);
 
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
 
         $localeFilesRangeInfo = Handler::getRangeInfo('localeFiles');
         $miscFilesRangeInfo = Handler::getRangeInfo('miscFiles');
@@ -126,31 +150,38 @@ class TranslatorHandler extends Handler {
 
     /**
      * Check a locale for errors.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function check($args) {
+    public function check($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
+        }
 
         $localeFiles = TranslatorAction::getLocaleFiles($locale);
-        $unwriteableFiles = array();
+        $unwriteableFiles = [];
         foreach ($localeFiles as $localeFile) {
             $filename = Core::getBaseDir() . DIRECTORY_SEPARATOR . $localeFile;
-            if (file_exists($filename) && !is_writeable($filename)) {
+            if (file_exists($filename) && !is_writable($filename)) {
                 $unwriteableFiles[] = $localeFile;
             }
         }
 
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('locale', $locale);
         $templateMgr->assign('errors', TranslatorAction::testLocale($locale, MASTER_LOCALE));
         $templateMgr->assign('emailErrors', TranslatorAction::testEmails($locale, MASTER_LOCALE));
         $templateMgr->assign('localeFiles', TranslatorAction::getLocaleFiles($locale));
-        if(!empty($unwriteableFiles)) {
+        
+        if (!empty($unwriteableFiles)) {
             $templateMgr->assign('error', true);
             $templateMgr->assign('unwriteableFiles', $unwriteableFiles);
         }
@@ -160,132 +191,130 @@ class TranslatorHandler extends Handler {
     /**
      * Export the locale files to the browser as a tarball.
      * Requires tar (configured in config.inc.php) for operation.
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function export($args) {
+    public function export($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
-        $plugin = $this->plugin;;
-        $this->setupTemplate();
+        $plugin = $this->plugin;
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
+        }
 
         TranslatorAction::export($locale);
     }
 
     /**
      * Save changes to a locale.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function saveLocaleChanges($args) {
+    public function saveLocaleChanges($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
+        }
 
         $localeFiles = TranslatorAction::getLocaleFiles($locale);
+        $changesByFile = [];
 
-        $changesByFile = array();
-
-        // Arrange the list of changes to save into an array by file.
-        // [SECURITY FIX] Save 'stack' (data array string) casting ke array
-        $stack = (array) Request::getUserVar('stack');
+        $stack = (array) $request->getUserVar('stack');
         
         while (!empty($stack)) {
-            // [SECURITY FIX] Amankan elemen array dengan trim() saat diekstrak
-            // [PHP 8.1 FIX] Cast ke string sebelum trim
             $filename = trim((string) array_shift($stack));
             $key = trim((string) array_shift($stack));
             $value = trim((string) array_shift($stack));
             
-            if (in_array($filename, $localeFiles)) {
-                // $value sudah di-trim sebelum masuk ke correctCr
+            if (in_array($filename, $localeFiles, true)) {
                 $changesByFile[$filename][$key] = $this->correctCr($value);
             }
         }
 
-        // Save the changes file by file.
         import('lib.pkp.classes.file.EditableLocaleFile');
         foreach ($changesByFile as $filename => $changes) {
             $file = new EditableLocaleFile($locale, $filename);
             foreach ($changes as $key => $value) {
-                if (empty($value)) continue;
+                if (empty($value)) {
+                    continue;
+                }
                 if (!$file->update($key, $value)) {
                     $file->insert($key, $value);
                 }
             }
             $file->write();
-
-            unset($nodes);
-            unset($dom);
-            unset($file);
         }
 
-        // Deal with key removals
-        // [SECURITY FIX] Save 'deleteKey' Casting ke array.
-        $deleteKeys = (array) Request::getUserVar('deleteKey');
-        
+        $deleteKeys = (array) $request->getUserVar('deleteKey');
         if (!empty($deleteKeys)) {
-            // if (!is_array($deleteKeys)) $deleteKeys = array($deleteKeys); 
-            
-            foreach ($deleteKeys as $deleteKey) { // FIXME Optimize!
-                // [SECURITY FIX] Save elemen array (string key) dengan trim()
+            foreach ($deleteKeys as $deleteKey) {
                 $safeDeleteKey = trim((string) $deleteKey);
-                
-                // Gunakan $safeDeleteKey yang sudah bersih
-                list($filename, $key) = explode('/', $safeDeleteKey, 2); 
+                [$filename, $key] = explode('/', $safeDeleteKey, 2); 
                 
                 $filename = urldecode(urldecode($filename));
-                if (!in_array($filename, $localeFiles)) continue;
+                if (!in_array($filename, $localeFiles, true)) {
+                    continue;
+                }
                 $file = new EditableLocaleFile($locale, $filename);
-                
-                // Kunci $key yang diekstrak juga sebaiknya dibersihkan
                 $safeKey = trim((string) $key);
                 
                 $file->delete($safeKey);
                 $file->write();
-                unset($file);
             }
         }
 
-        // Deal with email removals
         import('lib.pkp.classes.file.EditableEmailFile');
-        // [SECURITY FIX] Save 'deleteEmail' Casting ke array sudah ada.
-        $deleteEmails = (array) Request::getUserVar('deleteEmail');
-        
+        $deleteEmails = (array) $request->getUserVar('deleteEmail');
         if (!empty($deleteEmails)) {
             $file = new EditableEmailFile($locale, $this->getEmailTemplateFilename($locale));
-            
             foreach ($deleteEmails as $key) {
-                // [SECURITY FIX] Save elemen array (string key) dengan trim()
                 $safeKey = trim((string) $key);
                 $file->delete($safeKey);
             }
             $file->write();
-            unset($file);
         }
 
-        // [SECURITY FIX] Save 'redirectUrl' (string URL) dengan trim()
-        $redirectUrl = trim((string) Request::getUserVar('redirectUrl'));
-        Request::redirectUrl($redirectUrl);;
+        $redirectUrl = trim((string) $request->getUserVar('redirectUrl'));
+        if (!empty($redirectUrl)) {
+            $request->redirectUrl($redirectUrl);
+        } else {
+            $request->redirect(null, null, 'index');
+        }
     }
 
     /**
      * Download a locale file.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function downloadLocaleFile($args) {
+    public function downloadLocaleFile($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
+        }
 
-        $filename = urldecode(urldecode(array_shift($args)));
+        $filename = urldecode(urldecode((string) array_shift($args)));
         if (!TranslatorAction::isLocaleFile($locale, $filename)) {
-            Request::redirect(null, null, 'edit', $locale);
+            $request->redirect(null, null, 'edit', $locale);
         }
 
         header('Content-Type: application/xml');
@@ -296,47 +325,53 @@ class TranslatorHandler extends Handler {
 
     /**
      * Edit a locale file.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function editLocaleFile($args) {
+    public function editLocaleFile($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
-
-        $filename = urldecode(urldecode(array_shift($args)));
-        if (!TranslatorAction::isLocaleFile($locale, $filename)) {
-            Request::redirect(null, null, 'edit', $locale);
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
         }
 
-        $templateMgr = TemplateManager::getManager();
-        if(!is_writeable(Core::getBaseDir() . DIRECTORY_SEPARATOR . $filename)) {
+        $filename = urldecode(urldecode((string) array_shift($args)));
+        if (!TranslatorAction::isLocaleFile($locale, $filename)) {
+            $request->redirect(null, null, 'edit', $locale);
+        }
+
+        $templateMgr = TemplateManager::getManager($request);
+        if (!is_writable(Core::getBaseDir() . DIRECTORY_SEPARATOR . $filename)) {
             $templateMgr->assign('error', true);
         }
-
 
         import('lib.pkp.classes.file.EditableLocaleFile');
         $localeContentsRangeInfo = Handler::getRangeInfo('localeContents');
         $localeContents = EditableLocaleFile::load($filename);
 
-        // Handle a search, if one was executed.
-        // [SECURITY FIX] Save 'searchKey' (string teks pencarian) dengan trim()
-        $searchKey = trim((string) Request::getUserVar('searchKey')); 
+        $searchKey = trim((string) $request->getUserVar('searchKey')); 
         
         $found = false;
         $index = 0;
         $pageIndex = 0;
         
-        // Menggunakan variabel $searchKey yang sudah bersih
-        if (!empty($searchKey)) foreach ($localeContents as $key => $value) {
-            if ($index % $localeContentsRangeInfo->getCount() == 0) $pageIndex++;
-            if ($key == $searchKey) {
-                $found = true;
-                break;
+        if (!empty($searchKey)) {
+            foreach ($localeContents as $key => $value) {
+                if ($index % $localeContentsRangeInfo->getCount() === 0) {
+                    $pageIndex++;
+                }
+                if ($key === $searchKey) {
+                    $found = true;
+                    break;
+                }
+                $index++;
             }
-            $index++;
         }
 
         if ($found) {
@@ -355,56 +390,66 @@ class TranslatorHandler extends Handler {
 
     /**
      * Edit a miscellaneous locale file.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function editMiscFile($args) {
+    public function editMiscFile($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
-
-        $filename = urldecode(urldecode(array_shift($args)));
-        if (!TranslatorAction::isLocaleFile($locale, $filename)) {
-            Request::redirect(null, null, 'edit', $locale);
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
         }
+
+        $filename = urldecode(urldecode((string) array_shift($args)));
+        if (!TranslatorAction::isLocaleFile($locale, $filename)) {
+            $request->redirect(null, null, 'edit', $locale);
+        }
+        
         $referenceFilename = TranslatorAction::determineReferenceFilename($locale, $filename);
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
 
         $templateMgr->assign('locale', $locale);
         $templateMgr->assign('filename', $filename);
         $templateMgr->assign('referenceContents', file_get_contents($referenceFilename));
-        $templateMgr->assign('translationContents', file_exists($filename)?file_get_contents($filename):'');
+        $templateMgr->assign('translationContents', file_exists($filename) ? file_get_contents($filename) : '');
+
         $templateMgr->display($plugin->getTemplatePath() . 'editMiscFile.tpl');
     }
 
     /**
      * Save a locale file.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function saveLocaleFile($args) {
+    public function saveLocaleFile($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
+        }
 
-        $filename = urldecode(urldecode(array_shift($args)));
+        $filename = urldecode(urldecode((string) array_shift($args)));
         if (!TranslatorAction::isLocaleFile($locale, $filename)) {
-            Request::redirect(null, null, 'edit', $locale);
+            $request->redirect(null, null, 'edit', $locale);
         }
 
         import('lib.pkp.classes.file.EditableLocaleFile');
-        
-        // [SECURITY FIX] Save 'changes' (data array string)
-        $changes = (array) Request::getUserVar('changes');
-        
+        $changes = (array) $request->getUserVar('changes');
         $file = new EditableLocaleFile($locale, $filename);
 
         while (!empty($changes)) {
-            // [SECURITY FIX] Save array $key $value with trim() saat diekstrak
             $key = trim((string) array_shift($changes)); 
             $value = $this->correctCr(trim((string) array_shift($changes)));
             
@@ -414,192 +459,231 @@ class TranslatorHandler extends Handler {
         }
         $file->write();
         
-        // [SECURITY FIX] Amankan 'redirectUrl' (string URL) dengan trim()
-        $redirectUrl = trim((string) Request::getUserVar('redirectUrl'));
-        Request::redirectUrl($redirectUrl);
+        $redirectUrl = trim((string) $request->getUserVar('redirectUrl'));
+        if (!empty($redirectUrl)) {
+            $request->redirectUrl($redirectUrl);
+        } else {
+            $request->redirect(null, null, 'edit', $locale);
+        }
     }
 
     /**
      * Delete a locale key.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function deleteLocaleKey($args) {
+    public function deleteLocaleKey($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
-
-        $filename = urldecode(urldecode(array_shift($args)));
-        if (!TranslatorAction::isLocaleFile($locale, $filename)) {
-            Request::redirect(null, null, 'edit', $locale);
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
         }
 
-        // [SECURITY FIX] Save 'changes' (data array string) with array
-        $changes = (array) Request::getUserVar('changes');
+        $filename = urldecode(urldecode((string) array_shift($args)));
+        if (!TranslatorAction::isLocaleFile($locale, $filename)) {
+            $request->redirect(null, null, 'edit', $locale);
+        }
+
+        $changes = (array) $request->getUserVar('changes');
         $file = new EditableLocaleFile($locale, $filename);
 
-        if ($file->delete(array_shift($args))) $file->write();
-        Request::redirect(null, null, 'editLocaleFile', array($locale, urlencode(urlencode($filename))));
+        $keyToDelete = array_shift($args);
+        if ($keyToDelete !== null && $file->delete((string) $keyToDelete)) {
+            $file->write();
+        }
+        $request->redirect(null, null, 'editLocaleFile', [$locale, urlencode(urlencode($filename))]);
     }
 
     /**
      * Save a miscellaneous locale file.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function saveMiscFile($args) {
+    public function saveMiscFile($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
-
-        $filename = urldecode(urldecode(array_shift($args)));
-        if (!TranslatorAction::isLocaleFile($locale, $filename)) {
-            Request::redirect(null, null, 'edit', $locale);
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
         }
 
-        $fp = fopen($filename, 'w+'); // FIXME error handling
+        $filename = urldecode(urldecode((string) array_shift($args)));
+        if (!TranslatorAction::isLocaleFile($locale, $filename)) {
+            $request->redirect(null, null, 'edit', $locale);
+        }
+
+        $fp = fopen($filename, 'w+');
         if ($fp) {
-            // [SECURITY FIX] 'translationContents' (data string) with trim()
-            $rawContents = (string) trim((string) Request::getUserVar('translationContents'));
-            
+            $rawContents = (string) trim((string) $request->getUserVar('translationContents'));
             $contents = $this->correctCr($rawContents);
-            
-            fwrite ($fp, $contents);
+            fwrite($fp, $contents);
             fclose($fp);
         }
-        Request::redirect(null, null, 'edit', $locale);
+        $request->redirect(null, null, 'edit', $locale);
     }
 
     /**
      * Edit an email template.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function editEmail($args) {
+    public function editEmail($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
+        }
 
         $emails = TranslatorAction::getEmailTemplates($locale);
         $referenceEmails = TranslatorAction::getEmailTemplates(MASTER_LOCALE);
         $emailKey = array_shift($args);
 
-        if (!in_array($emailKey, array_keys($referenceEmails)) && !in_array($emailKey, array_keys($emails))) Request::redirect(null, null, 'index');
+        if (!in_array($emailKey, array_keys($referenceEmails), true) && !in_array($emailKey, array_keys($emails), true)) {
+            $request->redirect(null, null, 'index');
+        }
 
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('emailKey', $emailKey);
         $templateMgr->assign('locale', $locale);
-        $templateMgr->assign('email', isset($emails[$emailKey])?$emails[$emailKey]:'');
+        $templateMgr->assign('email', $emails[$emailKey] ?? '');
 
-        // [SECURITY FIX] Save 'returnToCheck' (flag boolean) with (int) trim()
-        $returnToCheckFlag = (int) trim((string) Request::getUserVar('returnToCheck'));
-        // Assign nilai yang sudah diamankan
+        $returnToCheckFlag = (int) trim((string) $request->getUserVar('returnToCheck'));
         $templateMgr->assign('returnToCheck', $returnToCheckFlag);
+        
+        $templateMgr->assign('referenceEmail', $referenceEmails[$emailKey] ?? '');
 
-        $templateMgr->assign('referenceEmail', isset($referenceEmails[$emailKey])?$referenceEmails[$emailKey]:'');
         $templateMgr->display($plugin->getTemplatePath() . 'editEmail.tpl');
     }
 
     /**
      * Create a locale file.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function createFile($args) {
+    public function createFile($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
+        }
 
-        $filename = urldecode(urldecode(array_shift($args)));
+        $filename = urldecode(urldecode((string) array_shift($args)));
         if (!TranslatorAction::isLocaleFile($locale, $filename)) {
-            Request::redirect(null, null, 'edit', $locale);
+            $request->redirect(null, null, 'edit', $locale);
         }
 
         import('lib.pkp.classes.file.FileManager');
         $fileManager = new FileManager();
         $fileManager->copyFile(TranslatorAction::determineReferenceFilename($locale, $filename), $filename);
-        $localeKeys = LocaleFile::load($filename);
+        
         import('lib.pkp.classes.file.EditableLocaleFile');
         $file = new EditableLocaleFile($locale, $filename);
-        // remove default translations from keys
+        
+        $localeKeys = LocaleFile::load($filename);
         foreach (array_keys($localeKeys) as $key) {
             $file->update($key, '');
         }
         $file->write();
         
-        // [SECURITY FIX] Amankan 'redirectUrl' (string URL) dengan trim()
-        $redirectUrl = trim((string) Request::getUserVar('redirectUrl'));
-        Request::redirectUrl($redirectUrl);
+        $redirectUrl = trim((string) $request->getUserVar('redirectUrl'));
+        if (!empty($redirectUrl)) {
+            $request->redirectUrl($redirectUrl);
+        } else {
+            $request->redirect(null, null, 'edit', $locale);
+        }
     }
 
     /**
      * Delete an email template.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function deleteEmail($args) {
+    public function deleteEmail($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
+        }
 
         $emails = TranslatorAction::getEmailTemplates($locale);
         $referenceEmails = TranslatorAction::getEmailTemplates(MASTER_LOCALE);
         $emailKey = array_shift($args);
 
-        if (!in_array($emailKey, array_keys($emails))) Request::redirect(null, null, 'index');
+        if (!in_array($emailKey, array_keys($emails), true)) {
+            $request->redirect(null, null, 'index');
+        }
 
         import('lib.pkp.classes.file.EditableEmailFile');
         $file = new EditableEmailFile($locale, $this->getEmailTemplateFilename($locale));
 
-        // [SECURITY FIX] Amankan 'subject' (string teks) dengan trim()
-        $subject = trim((string) Request::getUserVar('subject'));
-        
-        // [SECURITY FIX] Amankan 'body' (string teks) dengan trim()
-        $body = trim((string) Request::getUserVar('body'));
-        
-        // [SECURITY FIX] Amankan 'description' (string teks) dengan trim()
-        $description = trim((string) Request::getUserVar('description'));
-        
-        if ($file->delete($emailKey)) $file->write();
-        Request::redirect(null, null, 'edit', $locale, null, 'emails');
+        if ($file->delete($emailKey)) {
+            $file->write();
+        }
+        $request->redirect(null, null, 'edit', $locale, null, 'emails');
     }
 
     /**
      * Save an email template.
-     * @param $args array
+     * @param array $args
+     * @param PKPRequest|null $request
      */
-    public function saveEmail($args) {
+    public function saveEmail($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $this->validate();
         $plugin = $this->plugin;
-        $this->setupTemplate();
+        $this->setupTemplate(true);
 
         $locale = array_shift($args);
-        if (!AppLocale::isLocaleValid($locale)) Request::redirect(null, null, 'index');
+        if (!AppLocale::isLocaleValid($locale)) {
+            $request->redirect(null, null, 'index');
+        }
 
         $emails = TranslatorAction::getEmailTemplates($locale);
         $referenceEmails = TranslatorAction::getEmailTemplates(MASTER_LOCALE);
         $emailKey = array_shift($args);
-        $targetFilename = str_replace(MASTER_LOCALE, $locale, $referenceEmails[$emailKey]['templateDataFile']); // FIXME: Ugly.
+        $targetFilename = str_replace(MASTER_LOCALE, $locale, $referenceEmails[$emailKey]['templateDataFile']);
 
-        if (!in_array($emailKey, array_keys($emails))) {
-            // If it's not a reference or translation email, bail.
-            if (!in_array($emailKey, array_keys($referenceEmails))) Request::redirect(null, null, 'index');
+        if (!in_array($emailKey, array_keys($emails), true)) {
+            if (!in_array($emailKey, array_keys($referenceEmails), true)) {
+                $request->redirect(null, null, 'index');
+            }
 
-            // If it's a reference email but not a translated one,
-            // create a blank file. FIXME: This is ugly.
             if (!file_exists($targetFilename)) {
                 $dir = dirname($targetFilename);
-                if (!file_exists($dir)) mkdir($dir);
+                if (!file_exists($dir)) {
+                    mkdir($dir, 0777, true);
+                }
                 file_put_contents($targetFilename, '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE email_texts SYSTEM "../../../../../lib/pkp/dtd/emailTemplateData.dtd">
 <email_texts locale="' . $locale . '">
@@ -610,34 +694,31 @@ class TranslatorHandler extends Handler {
         import('lib.pkp.classes.file.EditableEmailFile');
         $file = new EditableEmailFile($locale, $targetFilename);
 
-        // [SECURITY FIX] Amankan 'subject' (string teks) dengan trim()
-        $subject = $this->correctCr(trim((string) Request::getUserVar('subject'))); 
-        
-        // [SECURITY FIX] Amankan 'body' (string teks) dengan trim()
-        $body = $this->correctCr(trim((string) Request::getUserVar('body')));
-        
-        // [SECURITY FIX] Amankan 'description' (string teks) dengan trim()
-        $description = $this->correctCr(trim((string) Request::getUserVar('description')));
+        $subject = $this->correctCr(trim((string) $request->getUserVar('subject'))); 
+        $body = $this->correctCr(trim((string) $request->getUserVar('body')));
+        $description = $this->correctCr(trim((string) $request->getUserVar('description')));
 
-        if (!$file->update($emailKey, $subject, $body, $description))
+        if (!$file->update($emailKey, $subject, $body, $description)) {
             $file->insert($emailKey, $subject, $body, $description);
+        }
 
         $file->write();
-        // [SECURITY FIX] Save 'returnToCheck' (flag boolean) with (int) trim()
-        if ((int) trim((string) Request::getUserVar('returnToCheck')) == 1) {
-            Request::redirect(null, null, 'check', $locale);
+        
+        if ((int) trim((string) $request->getUserVar('returnToCheck')) === 1) {
+            $request->redirect(null, null, 'check', $locale);
         } else {
-            Request::redirect(null, null, 'edit', $locale);
+            $request->redirect(null, null, 'edit', $locale);
         }
     }
 
     /**
      * Correct CRLF to LF in a string.
-     * @param $value string
+     * @param mixed $value
      * @return string
      */
     public function correctCr($value) {
-        return str_replace("\r\n", "\n", $value);
+        return str_replace("\r\n", "\n", (string) $value);
     }
+    
 }
 ?>
