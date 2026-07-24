@@ -8,15 +8,14 @@ declare(strict_types=1);
  * Copyright (c) 2017-2026 Rochmady
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance & DDD
  * @class WebhookHandler
+ * 
  * @brief Menerima HTTP POST diam-diam dari Payment Gateway (Server-to-Server).
  * Dilengkapi dengan pengamanan Signature, Idempotency, dan Retry-Handling.
  */
 
 import('classes.handler.Handler');
 
-// Memanggil WIZDAM Services dari folder semantik
 import('lib.wizdam.classes.services.InvoiceService');
 import('lib.wizdam.classes.services.PaymentSettingsService');
 
@@ -30,15 +29,14 @@ class WebhookHandler extends Handler {
      */
     public function __construct() {
         parent::__construct();
-        // Handler ini publik (S2S), tidak menggunakan HandlerValidator login.
         $this->invoiceService = new InvoiceService();
     }
 
     /**
      * Menangani request webhook yang masuk dari Payment Gateway.
      * URL contoh: /billing/webhook/midtrans
-     * @param array $args URL segments setelah /webhook/, misal ['midtrans']
-     * @param mixed $request Objek request bawaan OJS
+     * @param array $args
+     * @param Request|null $request
      */
     public function index(array $args = [], $request = null): void {
         $gatewayName = isset($args[0]) ? strtolower($args[0]) : '';
