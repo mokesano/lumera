@@ -2,13 +2,14 @@
 declare(strict_types=1);
 
 /**
- * @file lib/wizdam/classes/checkout/services/TaxVatService.inc.php
+ * @file lib/wizdam/classes/services/TaxVatService.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance
+ * Distributed under the GNU GPL v3.
+ * 
  * @class TaxVatService
+ * 
  * @brief Layanan pengelola kalkulasi Pajak (Inklusif/Eksklusif) sesuai standar.
  */
 
@@ -17,10 +18,11 @@ class TaxVatService {
     /**
      * Menghitung nilai pajak dan grand total berdasarkan pengaturan jurnal.
      * @param int $journalId
-     * @param float $taxableAmount Nilai subtotal yang sudah dikurangi diskon
-     * @return array Array asosiatif berisi rincian kalkulasi pajak
+     * @param float $taxableAmount
+     * @return array
      */
     public function calculateTaxAndTotal(int $journalId, float $taxableAmount): array {
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         
         // Mengambil pengaturan persentase dan mode inklusif
@@ -53,5 +55,6 @@ class TaxVatService {
             'final_amount' => $finalAmount
         ];
     }
+
 }
 ?>

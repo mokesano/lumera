@@ -2,14 +2,14 @@
 declare(strict_types=1);
 
 /**
- * @file lib/wizdam/classes/checkout/payment/MidtransGateway.inc.php
+ * @file lib/wizdam/classes/payment/MidtransGateway.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION]
+ * Distributed under the GNU GPL v3.
+ * 
  * @class MidtransGateway
+ * 
  * @brief Adapter spesifik untuk Midtrans PHP Library (v2.6.2)
  */
 
@@ -41,7 +41,7 @@ class MidtransGateway implements PaymentGatewayInterface {
      * @param array $customerData Data pelanggan
      * @return array Data checkout pembayaran
      */
-    public function getPaymentCheckoutData(Invoice $invoice, array $customerData = []): array {
+    public function getPaymentCheckoutData(Invoice $invoice, array $customerData = [], string $paymentType = 'all'): array {
         $params = [
             'transaction_details' => [
                 'order_id' => 'WIZDAM-' . $invoice->getInvoiceId() . '-' . time(), 
@@ -117,5 +117,6 @@ class MidtransGateway implements PaymentGatewayInterface {
             'method' => 'Midtrans - ' . ($payload['payment_type'] ?? 'Unknown')
         ];
     }
+
 }
 ?>
