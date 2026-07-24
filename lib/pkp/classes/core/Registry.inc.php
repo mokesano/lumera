@@ -19,7 +19,7 @@ declare(strict_types=1);
 class Registry {
     
     /** @var array Static storage for registry items */
-    private static $_registry = array();
+    private static $_registry = [];
 
     /**
      * Constructor.
@@ -90,7 +90,7 @@ class Registry {
      * Clear the registry.
      */
     public static function clear() {
-        self::$_registry = array();
+        self::$_registry = [];
     }
 
 }
