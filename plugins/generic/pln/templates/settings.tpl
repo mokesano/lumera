@@ -12,15 +12,18 @@
 	{assign var="pageTitle" value="plugins.generic.pln.settings_page"}
 	{include file="common/header.tpl"}
 {/strip}
-		{if $prerequisitesMissing|@count > 0}
-			<ul>
-				{foreach from=$prerequisitesMissing item=message}
-					<li><span class='pkp_form_error'>{$message}</span></li>
-				{/foreach}
-			</ul>
-		{/if}
+
+{if $prerequisitesMissing|@count > 0}
+	<ul>
+		{foreach from=$prerequisitesMissing item=message}
+			<li><span class='pkp_form_error'>{$message}</span></li>
+		{/foreach}
+	</ul>
+{/if}
+
 <div id="plnSettings">
 	<form class="pkp_form" id="plnSettingsForm" method="post" action="{plugin_url path="settings"}">
+		<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 		{include file="common/formErrors.tpl"}
 		<table class="data">
 			<tr>

@@ -39,7 +39,6 @@
             </thead>
             <tbody>
                 {foreach from=$invoices item=invoice}
-                    
                     {* [WIZDAM HASH BRIDGE] Membuat parameter URL [hash]-[id] secara dinamis *}
                     {assign var="invId" value=$invoice->getInvoiceId()}
                     {assign var="secureHash" value=$hashService->generateHash('invoice', $invId)}
@@ -48,7 +47,7 @@
                     <tr style="border-bottom: 1px solid #eee;">
                         <td style="padding: 10px;">#{$invId}</td>
                         
-                        <td style="padding: 10px;">{$invoice->getData('feeType')|escape}</td>
+                        <td style="padding: 10px;">{$invoice->getData('localizedFeeType')|escape}</td>
                         
                         <td style="padding: 10px;">{$invoice->getData('dateBilled')|date_format:"%d %b %Y"}</td>
                         

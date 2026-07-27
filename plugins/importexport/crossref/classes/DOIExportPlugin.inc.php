@@ -94,7 +94,7 @@ class DOIExportPlugin extends ImportExportPlugin {
      * @see PKPPlugin::register()
      * @param string $category
      * @param string $path
-     * @return bool True if plugin initialized successfully.
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
@@ -142,7 +142,7 @@ class DOIExportPlugin extends ImportExportPlugin {
      * Return the management verbs for this plugin.
      * @see ImportExportPlugin::getManagementVerbs()
      * @param array $verbs
-     * @param PKPRequest|null $request
+     * @param Request|null $request
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
@@ -155,7 +155,7 @@ class DOIExportPlugin extends ImportExportPlugin {
      * Display the plugin homepage.
      * @see ImportExportPlugin::display()
      * @param array $args
-     * @param PKPRequest|null $request
+     * @param Request|null $request
      */
     public function display($args, $request) {
         parent::display($args, $request);
@@ -210,7 +210,7 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Process a DOI activity request.
      * @see ImportExportPlugin::process()
-     * @param PKPRequest $request
+     * @param Request $request
      * @param Journal $journal
      */
     public function process($request, $journal): void {
@@ -390,7 +390,7 @@ class DOIExportPlugin extends ImportExportPlugin {
      * @param array $args
      * @param string|null &$message
      * @param array|null &$messageParams
-     * @param PKPRequest|null $request
+     * @param Request|null $request
      * @return bool
      */
     public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
@@ -593,7 +593,7 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Export publishing objects.
      * @see ImportExportPlugin::exportObjects()
-     * @param PKPRequest $request
+     * @param Request $request
      * @param array $exportSpec
      * @param Journal $journal
      * @param string|null $outputFile
@@ -667,7 +667,7 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Register publishing objects.
      * @see ImportExportPlugin::registerObjects()
-     * @param PKPRequest $request
+     * @param Request $request
      * @param array $exportSpec
      * @param Journal $journal
      * @return bool|array
@@ -764,7 +764,7 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Generate the export data model.
      * @see ImportExportPlugin::generateExportFiles()
-     * @param PKPRequest $request
+     * @param Request $request
      * @param int $exportType
      * @param array $objects
      * @param string $targetPath
@@ -779,7 +779,7 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Process the marking of the selected objects as registered.
      * @see ImportExportPlugin::processMarkRegistered()
-     * @param PKPRequest $request
+     * @param Request $request
      * @param int $exportType
      * @param array $objects
      * @param Journal $journal
@@ -817,7 +817,7 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Register the given DOI.
      * @see ImportExportPlugin::registerDoi()
-     * @param PKPRequest $request
+     * @param Request $request
      * @param Journal $journal
      * @param array $objects
      * @param string $file
@@ -830,7 +830,7 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Check whether we are in test mode.
      * @see ImportExportPlugin::isTestMode()
-     * @param PKPRequest $request
+     * @param Request $request
      * @return bool
      */
     public function isTestMode($request): bool {
@@ -840,7 +840,7 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * Mark the given object as registered.
      * @see ImportExportPlugin::markRegistered()
-     * @param PKPRequest $request
+     * @param Request $request
      * @param Issue|PublishedArticle|ArticleGalley|SuppFile $object
      * @param string $testPrefix
      */
@@ -1253,7 +1253,7 @@ class DOIExportPlugin extends ImportExportPlugin {
 
     /**
      * Generate export files for the given export spec.
-     * @param PKPRequest $request
+     * @param Request $request
      * @param Journal $journal
      * @param array $exportSpec
      * @param string $exportPath
@@ -1403,7 +1403,7 @@ class DOIExportPlugin extends ImportExportPlugin {
 
     /**
      * Add a notification.
-     * @param PKPRequest $request
+     * @param Request $request
      * @param string $message
      * @param int $notificationType
      * @param string|null $param

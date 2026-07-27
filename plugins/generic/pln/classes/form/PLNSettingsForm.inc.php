@@ -11,23 +11,17 @@ declare(strict_types=1);
  * @class PLNSettingsForm
  * @ingroup plugins_generic_pln
  *
- * @brief Form for journal managers to modify PLN plugin settings
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Form for journal managers to modify PLN plugin settings.
  */
 
 import('lib.pkp.classes.form.Form');
 
 class PLNSettingsForm extends Form {
 
-    /**
-     * @var int
-     */
+    /** @var int */
     protected $_journalId;
 
-    /**
-     * @var object
-     */
+    /** @var object */
     protected $_plugin;
 
     /**
@@ -43,13 +37,15 @@ class PLNSettingsForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param object $plugin
+     * @param int $journalId
      */
     public function PLNSettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::PLNSettingsForm(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -98,9 +94,7 @@ class PLNSettingsForm extends Form {
         $messages = [];
         
         if( ! $this->_plugin->php5Installed()) {
-            // If php5 isn't available, then the other checks are not 
-            // useful.
-            $messages[] =  __('plugins.generic.pln.notifications.php5_missing');
+            $messages[] =  __('plugins.generic.pln.notifications.php_missing');
             return $messages;
         }
         if( ! @include_once('Archive/Tar.php')) {
@@ -142,6 +136,7 @@ class PLNSettingsForm extends Form {
         $templateMgr->assign('journal_uuid', $this->_plugin->getSetting($this->_journalId, 'journal_uuid'));
         $templateMgr->assign('terms_of_use', unserialize($this->_plugin->getSetting($this->_journalId, 'terms_of_use')));
         $templateMgr->assign('terms_of_use_agreement', $this->getData('terms_of_use_agreement'));
+
         parent::display($request, $template);
     }
 
@@ -151,7 +146,7 @@ class PLNSettingsForm extends Form {
      */
     public function execute($object = null) {
         $this->_plugin->updateSetting($this->_journalId, 'terms_of_use_agreement', serialize($this->getData('terms_of_use_agreement')), 'object');
-
+        /** @var PluginSettingsDAO $pluginSettingsDao */
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
         $pluginSettingsDao->installSettings($this->_journalId, $this->_plugin->getName(), $this->_plugin->getContextSpecificPluginSettingsFile());
     }

@@ -6,6 +6,7 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
  * 
  * @class CheckoutHandler
  * @brief Controller antarmuka untuk 3-Tahap Checkout (Cart -> Billing -> Payment/Finalize).
@@ -13,7 +14,7 @@ declare(strict_types=1);
 
 import('classes.handler.Handler');
 import('lib.wizdam.classes.services.CheckoutService');
-import('lib.pkp.classes.validation.ValidatorCSRF'); // Pindahkan ke atas untuk scope global class
+import('lib.pkp.classes.validation.ValidatorCSRF');
 
 class CheckoutHandler extends Handler {
     

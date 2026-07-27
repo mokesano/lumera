@@ -11,23 +11,17 @@ declare(strict_types=1);
  * @class PLNStatusForm
  * @ingroup plugins_generic_pln
  *
- * @brief Form for journal managers to check PLN plugin status
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Form for journal managers to check PLN plugin status.
  */
 
 import('lib.pkp.classes.form.Form');
 
 class PLNStatusForm extends Form {
 
-    /**
-     * @var int
-     */
+    /** @var int */
     protected $_journalId;
 
-    /**
-     * @var object
-     */
+    /** @var object */
     protected $_plugin;
 
     /**
@@ -43,13 +37,15 @@ class PLNStatusForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param object $plugin
+     * @param int $journalId
      */
     public function PLNStatusForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::PLNStatusForm(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -59,6 +55,7 @@ class PLNStatusForm extends Form {
      * @param string $template
      */
     public function display($request = null, $template = null) {
+        /** @var DepositDAO $depositDao */
         $depositDao = DAORegistry::getDAO('DepositDAO');
         $journal = Request::getJournal();
         $networkStatus = $this->_plugin->getSetting($journal->getId(), 'pln_accepting');
@@ -77,7 +74,9 @@ class PLNStatusForm extends Form {
         $templateMgr->assign('networkStatus', $networkStatus);
         $templateMgr->assign('networkStatusMessage', $networkStatusMessage);
         $templateMgr->assign('plnStatusDocs', $this->_plugin->getSetting($journal->getId(), 'pln_status_docs'));
+
         parent::display($request, $template);
     }
+    
 }
 ?>

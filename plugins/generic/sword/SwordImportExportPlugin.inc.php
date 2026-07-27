@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_importexport_sword
  *
  * @brief Sword deposit plugin
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
  */
 
 import('classes.plugins.ImportExportPlugin');
@@ -38,27 +36,27 @@ class SwordImportExportPlugin extends ImportExportPlugin {
             trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::SwordImportExportPlugin(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
+     * @param string $category
      * @param string $path
-     * @return boolean True iff plugin initialized successfully; if false,
-     * the plugin will not be registered.
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         import('classes.sword.OJSSwordDeposit');
         $success = parent::register($category, $path);
         $this->addLocaleData();
+
         return $success;
     }
 
     /**
      * Get the name of this plugin. The name must be unique within
      * its category.
-     * @return String name of plugin
+     * @return String
      */
     public function getName(): string {
         return 'SwordImportExportPlugin';
@@ -66,7 +64,7 @@ class SwordImportExportPlugin extends ImportExportPlugin {
 
     /**
      * Get the display name of the plugin.
-     * @return String display name of plugin
+     * @return String
      */
     public function getDisplayName(): string {
         return __('plugins.importexport.sword.displayName');
@@ -74,7 +72,7 @@ class SwordImportExportPlugin extends ImportExportPlugin {
 
     /**
      * Get a description of the plugin.
-     * @return String description of plugin
+     * @return String
      */
     public function getDescription(): string {
         return __('plugins.importexport.sword.description');
@@ -85,7 +83,6 @@ class SwordImportExportPlugin extends ImportExportPlugin {
      * @return object
      */
     public function getSwordPlugin() {
-        // Menggunakan property parentPluginName untuk mencari induknya
         return PluginRegistry::getPlugin('generic', $this->parentPluginName); 
     }
 
@@ -95,22 +92,22 @@ class SwordImportExportPlugin extends ImportExportPlugin {
      */
     public function getPluginPath(): string {
         $plugin = $this->getSwordPlugin();
-        // [FIX] Tambahkan pengecekan agar tidak error fatal jika plugin null
         if (!$plugin) return ''; 
         return $plugin->getPluginPath();
     }
 
     /**
      * Deposit an article via SWORD
-     * @param string $url SWORD deposit URL
-     * @param string $username SWORD username
-     * @param string $password SWORD password
-     * @param int $articleId ID of the article to deposit
-     * @param bool $depositEditorial Whether to deposit the editorial
-     * @param bool $depositGalleys Whether to deposit the galleys
-     * @return string SWORD deposit ID
+     * @param string $url
+     * @param string $username
+     * @param string $password
+     * @param int $articleId
+     * @param bool $depositEditorial
+     * @param bool $depositGalleys
+     * @return string
      */
     public function deposit($url, $username, $password, $articleId, $depositEditorial, $depositGalleys) {
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($articleId);
         $journal = Request::getJournal();
@@ -122,13 +119,14 @@ class SwordImportExportPlugin extends ImportExportPlugin {
         $deposit->createPackage();
         $response = $deposit->deposit($url, $username, $password);
         $deposit->cleanup();
+
         return $response->sac_id;
     }
 
     /**
      * Display the plugin interface.
      * @param array $args
-     * @param PKPRequest $request
+     * @param Request $request
      */
     public function display($args, $request = null) {
         $templateMgr = TemplateManager::getManager();
@@ -212,6 +210,7 @@ class SwordImportExportPlugin extends ImportExportPlugin {
                 break;
             default:
                 $journal = Request::getJournal();
+                /** @var PublishedArticleDAO $publishedArticleDao */
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                 $rangeInfo = Handler::getRangeInfo('articles');
                 $articleIds = $publishedArticleDao->getPublishedArticleIdsAlphabetizedByJournal($journal->getId(), false);
@@ -247,11 +246,11 @@ class SwordImportExportPlugin extends ImportExportPlugin {
     /**
      * Execute import/export tasks using the command-line interface.
      * @param string $scriptName
-     * @param array $args Parameters to the plugin
+     * @param array $args
      */
     public function executeCLI($scriptName, $args) {
         die('executeCLI unimplemented');
     }
-}
 
+}
 ?>

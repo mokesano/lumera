@@ -19,9 +19,9 @@ import('classes.plugins.CitationPlugin');
 class BibtexCitationPlugin extends CitationPlugin {
     
     /**
+     * Register plugin.
      * @param string $category
      * @param string $path
-     * @param int|null $mainContextId
      * @return bool
      */
     public function register(string $category, string $path): bool {
@@ -38,13 +38,14 @@ class BibtexCitationPlugin extends CitationPlugin {
     /**
      * Get the name of this plugin. The name must be unique within
      * its category.
-     * @return string name of plugin
+     * @return string
      */
     public function getName(): string {
         return 'BibtexCitationPlugin';
     }
 
     /**
+     * Get display name plugin
      * @return string
      */
     public function getDisplayName(): string {
@@ -52,6 +53,7 @@ class BibtexCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get citation format plugin name
      * @return string
      */
     public function getCitationFormatName(): string {
@@ -59,6 +61,7 @@ class BibtexCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get description plugin
      * @return string
      */
     public function getDescription(): string {
@@ -66,7 +69,7 @@ class BibtexCitationPlugin extends CitationPlugin {
     }
 
     /**
-     * @function bibtex_escape Escape strings for inclusion in BibTeX cites
+     * Function bibtex_escape Escape strings for inclusion in BibTeX cites
      * @param string $arg
      * @return string
      */
@@ -77,6 +80,6 @@ class BibtexCitationPlugin extends CitationPlugin {
             html_entity_decode((string) $arg, ENT_QUOTES, 'UTF-8')
         ));
     }
-}
 
+}
 ?>

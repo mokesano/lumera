@@ -12,17 +12,19 @@
 {include file="common/header.tpl"}
 
 <div id="objectsForReview">
-<ul class="menu">
-	<li><a href="{url op="objectsForReview" path="all"}">{translate key="plugins.generic.objectsForReview.editor.assignments"}</a></li>
-	<li class="current"><a href="{url op="objectsForReview"}">{translate key="plugins.generic.objectsForReview.editor.objectsForReview"}</a></li>
-	<li><a href="{url op="objectsForReviewSettings"}">{translate key="plugins.generic.objectsForReview.settings"}</a></li>
-</ul>
-<br />
+	<ul class="menu">
+		<li><a href="{url op="objectsForReview" path="all"}">{translate key="plugins.generic.objectsForReview.editor.assignments"}</a></li>
+		<li class="current"><a href="{url op="objectsForReview"}">{translate key="plugins.generic.objectsForReview.editor.objectsForReview"}</a></li>
+		<li><a href="{url op="objectsForReviewSettings"}">{translate key="plugins.generic.objectsForReview.settings"}</a></li>
+	</ul>
+	<br />
 
-{include file="../plugins/generic/objectsForReview/templates/editor/objectsForReviewList.tpl"}
+	{include file="../plugins/generic/objectsForReview/templates/editor/objectsForReviewList.tpl"}
 
-<form id="createObjectForReview" action="{url op="createObjectForReview"}" method="post"><select name="reviewObjectTypeId" class="selectMenu" size="1">{html_options options=$createTypeOptions}</select>&nbsp;<input type="submit" value="{translate key="common.create"}" class="button defaultButton"/></form>
-
+	<form id="createObjectForReview" action="{url op="createObjectForReview"}" method="post">
+		<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
+		<select name="reviewObjectTypeId" class="selectMenu" size="1">{html_options options=$createTypeOptions}</select>&nbsp;<input type="submit" value="{translate key="common.create"}" class="button defaultButton"/>
+	</form>
 </div>
 
 {include file="common/footer.tpl"}

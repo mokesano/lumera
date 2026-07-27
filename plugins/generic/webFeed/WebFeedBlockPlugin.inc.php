@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class WebFeedBlockPlugin
  * @ingroup plugins_generic_webFeed
  *
- * @brief Class for block component of web feed plugin
- * * MODERNIZED FOR WIZDAM FORK
+ * @brief Class for block component of web feed plugin.
  */
 
 import('lib.pkp.classes.plugins.BlockPlugin');
@@ -40,7 +39,7 @@ class WebFeedBlockPlugin extends BlockPlugin {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -79,17 +78,16 @@ class WebFeedBlockPlugin extends BlockPlugin {
      * Supported contexts for this block.
      * @return array
      */
-    public function getSupportedContexts() {
+    public function getSupportedContexts(): array {
         return [BLOCK_CONTEXT_LEFT_SIDEBAR, BLOCK_CONTEXT_RIGHT_SIDEBAR];
     }
 
     /**
      * Get parent WebFeed plugin.
-     * @return mixed
+     * @return GenericPlugin|null
      */
     public function getWebFeedPlugin() {
-        $plugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
-        return $plugin;
+        return PluginRegistry::getPlugin('generic', $this->parentPluginName);
     }
 
     /**
@@ -112,13 +110,14 @@ class WebFeedBlockPlugin extends BlockPlugin {
 
     /**
      * Get HTML block contents.
-     * @param $templateMgr object
-     * @param $request PKPRequest|null
+     * @param TemplateManager $templateMgr
+     * @param PKPRequest|null $request
      * @return string
      */
     public function getContents($templateMgr, $request = null) {
+        // Lumera Singleton Fallback
         if (!$request) {
-            $request = Application::getRequest();
+            $request = Application::get()->getRequest();
         }
 
         $journal = $request->getJournal();
@@ -131,22 +130,21 @@ class WebFeedBlockPlugin extends BlockPlugin {
             return '';
         }
 
-        $displayPage = $plugin->getSetting($journal->getId(), 'displayPage');
-        $requestedPage = $request->getRequestedPage();
+        $journalId = (int) $journal->getId();
+        $displayPage = (string) $plugin->getSetting($journalId, 'displayPage');
+        $router = $request->getRouter();
+        $requestedPage = ($router instanceof PKPPageRouter) ? $router->getRequestedPage($request) : '';
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
-        $currentIssue = $issueDao->getCurrentIssue($journal->getId(), true);
+        $currentIssue = $issueDao->getCurrentIssue($journalId, true);
 
         if (
             $currentIssue &&
             (
                 $displayPage === 'all' ||
-                ($displayPage === 'homepage' &&
-                    (empty($requestedPage) ||
-                     $requestedPage === 'index' ||
-                     $requestedPage === 'issue')) ||
-                ($displayPage === 'issue' &&
-                     $displayPage === $requestedPage)
+                ($displayPage === 'homepage' && (empty($requestedPage) || $requestedPage === 'index' || $requestedPage === 'issue')) ||
+                ($displayPage === 'issue' && $displayPage === $requestedPage)
             )
         ) {
             return parent::getContents($templateMgr, $request);
@@ -154,5 +152,6 @@ class WebFeedBlockPlugin extends BlockPlugin {
 
         return '';
     }
+    
 }
 ?>

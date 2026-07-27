@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_usageEvent
  *
  * @brief Provide usage event to other statistics plugins.
- * * REFACTORED: Wizdam Edition (HookRegistry::dispatch + instanceof modernization)
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -31,20 +30,20 @@ class UsageEventPlugin extends GenericPlugin {
      * @see LazyLoadPlugin::register()
      * @param string $category
      * @param string $path
-     * @return bool True if plugin initialized successfully.
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
 
         if ($success) {
             // Register callbacks.
-            HookRegistry::register('TemplateManager::display', array($this, 'getUsageEvent'));
-            HookRegistry::register('ArticleHandler::viewFile', array($this, 'getUsageEvent'));
-            HookRegistry::register('ArticleHandler::viewRemoteGalley', array($this, 'getUsageEvent'));
-            HookRegistry::register('ArticleHandler::downloadFile', array($this, 'getUsageEvent'));
-            HookRegistry::register('ArticleHandler::downloadSuppFile', array($this, 'getUsageEvent'));
-            HookRegistry::register('IssueHandler::viewFile', array($this, 'getUsageEvent'));
-            HookRegistry::register('FileManager::downloadFileFinished', array($this, 'getUsageEvent'));
+            HookRegistry::register('TemplateManager::display', [$this, 'getUsageEvent']);
+            HookRegistry::register('ArticleHandler::viewFile', [$this, 'getUsageEvent']);
+            HookRegistry::register('ArticleHandler::viewRemoteGalley', [$this, 'getUsageEvent']);
+            HookRegistry::register('ArticleHandler::downloadFile', [$this, 'getUsageEvent']);
+            HookRegistry::register('ArticleHandler::downloadSuppFile', [$this, 'getUsageEvent']);
+            HookRegistry::register('IssueHandler::viewFile', [$this, 'getUsageEvent']);
+            HookRegistry::register('FileManager::downloadFileFinished', [$this, 'getUsageEvent']);
         }
 
         return $success;
@@ -104,7 +103,7 @@ class UsageEventPlugin extends GenericPlugin {
     //
     /**
      * Get the unique site id.
-     * @return mixed string or null
+     * @return string|null
      */
     public function getUniqueSiteId() {
         return $this->getSetting(0, 'uniqueSiteId');
@@ -116,20 +115,22 @@ class UsageEventPlugin extends GenericPlugin {
     //
     /**
      * Get usage event and pass it to the registered plugins, if any.
-     * @param $hookName string
-     * @param $args array
-     * @return bool false
+     * @param string $hookName
+     * @param array $args
+     * @return bool
      */
     public function getUsageEvent($hookName, $args) {
         // Check if we have a registration to receive the usage event.
         $hooks = HookRegistry::getHooks();
         
-        if (array_key_exists('UsageEventPlugin::getUsageEvent', $hooks)) {
+        if (isset($hooks['UsageEventPlugin::getUsageEvent'])) {
             $usageEvent = $this->_buildUsageEvent($hookName, $args);
             
             // [WIZDAM PROTOCOL] Dispatch Logic
-            $dispatchArgs = array_merge(array($hookName, $usageEvent), $args);
-            HookRegistry::dispatch('UsageEventPlugin::getUsageEvent', $dispatchArgs);
+            if ($usageEvent !== null && $usageEvent !== false) {
+                $dispatchArgs = array_merge([$hookName, $usageEvent], $args);
+                HookRegistry::dispatch('UsageEventPlugin::getUsageEvent', $dispatchArgs);
+            }
         }
         return false;
     }
@@ -139,34 +140,36 @@ class UsageEventPlugin extends GenericPlugin {
     // Private helper methods.
     //
     /**
-     * Build an usage event.
-     * @param $hookName string
-     * @param $args array
-     * @return array
+     * Build a usage event.
+     * @param string $hookName
+     * @param array $args
+     * @return array|bool|null
      */
     private function _buildUsageEvent($hookName, $args) {
         // Finished downloading a file?
-        if ($hookName == 'FileManager::downloadFileFinished') {
+        if ($hookName === 'FileManager::downloadFileFinished') {
             return null;
         }
 
-        $application = Application::getApplication();
-        $request = $application->getRequest();
-        $router = $request->getRouter(); /* @var $router PageRouter */
-        $templateMgr = $args[0]; /* @var $templateMgr TemplateManager */
+        $request = Application::get()->getRequest();
+        $router = $request->getRouter();
+        $templateMgr = $args[0] ?? null;
 
         // We are just interested in page requests.
-        // [WIZDAM FIX] Replaced is_a() with instanceof
-        if (!($router instanceof PageRouter)) return false;
+        if (!($router instanceof PageRouter)) {
+            return false;
+        }
 
         // Check whether we are in journal context.
         $journal = $router->getContext($request);
-        if (!$journal) return false;
+        if (!$journal) {
+            return false;
+        }
 
         // Prepare request information.
         $downloadSuccess = false;
-        $idParams = array();
-        $canonicalUrlParams = array();
+        $idParams = [];
+        $canonicalUrlParams = [];
         
         // Initialize objects to null
         $pubObject = null;
@@ -174,17 +177,15 @@ class UsageEventPlugin extends GenericPlugin {
         $canonicalUrlOp = '';
 
         switch ($hookName) {
-
             // Article abstract and HTML galley.
             case 'TemplateManager::display':
                 $page = $router->getRequestedPage($request);
                 $op = $router->getRequestedOp($request);
 
                 // First check for a journal index page view.
-                if (($page == 'index' || empty($page)) && $op == 'index') {
-                    $pubObject = $templateMgr->get_template_vars('currentJournal');
+                if (($page === 'index' || $page === '') && $op === 'index') {
+                    $pubObject = $templateMgr ? $templateMgr->get_template_vars('currentJournal') : null;
                     
-                    // [WIZDAM FIX] Replaced is_a() with instanceof
                     if ($pubObject instanceof Journal) {
                         $assocType = ASSOC_TYPE_JOURNAL;
                         $canonicalUrlOp = '';
@@ -196,24 +197,28 @@ class UsageEventPlugin extends GenericPlugin {
                 }
 
                 // We are interested in access to the article abstract/galley, issue view page.
-                $wantedPages = array('article', 'issue');
-                $wantedOps = array('view', 'articleView');
+                $wantedPages = ['article', 'issue'];
+                $wantedOps = ['view', 'articleView'];
 
-                if (!in_array($page, $wantedPages) || !in_array($op, $wantedOps)) return false;
+                if (!in_array($page, $wantedPages, true) || !in_array($op, $wantedOps, true)) {
+                    return false;
+                }
 
-                $issue = $templateMgr->get_template_vars('issue');
-                $galley = $templateMgr->get_template_vars('galley'); /* @var $galley ArticleGalley */
-                $article = $templateMgr->get_template_vars('article');
+                $issue = $templateMgr ? $templateMgr->get_template_vars('issue') : null;
+                $galley = $templateMgr ? $templateMgr->get_template_vars('galley') : null;
+                $article = $templateMgr ? $templateMgr->get_template_vars('article') : null;
 
                 // If there is no published object, there is no usage event.
-                if (!$issue && !$galley && !$article) return false;
+                if (!$issue && !$galley && !$article) {
+                    return false;
+                }
 
                 if ($galley) {
                     if ($galley->isHTMLGalley()) {
                         $pubObject = $galley;
                         $assocType = ASSOC_TYPE_GALLEY;
-                        $canonicalUrlParams = array($article->getId(), $pubObject->getId($journal));
-                        $idParams = array('a' . $article->getId(), 'g' . $pubObject->getId());
+                        $canonicalUrlParams = [(int) $article->getId(), $pubObject->getId($journal)];
+                        $idParams = ['a' . (int) $article->getId(), 'g' . $pubObject->getId()];
                     } else {
                         // This is an access to an intermediary galley page which we do not count.
                         return false;
@@ -222,13 +227,13 @@ class UsageEventPlugin extends GenericPlugin {
                     if ($article) {
                         $pubObject = $article;
                         $assocType = ASSOC_TYPE_ARTICLE;
-                        $canonicalUrlParams = array($pubObject->getId($journal));
-                        $idParams = array('a' . $pubObject->getId());
+                        $canonicalUrlParams = [$pubObject->getId($journal)];
+                        $idParams = ['a' . (int) $pubObject->getId()];
                     } else {
                         $pubObject = $issue;
                         $assocType = ASSOC_TYPE_ISSUE;
-                        $canonicalUrlParams = array($pubObject->getId($journal));
-                        $idParams = array('i' . $pubObject->getId());
+                        $canonicalUrlParams = [$pubObject->getId($journal)];
+                        $idParams = ['i' . (int) $pubObject->getId()];
                     }
                 }
                 // The article, issue and HTML/remote galley pages do not download anything.
@@ -237,11 +242,13 @@ class UsageEventPlugin extends GenericPlugin {
                 break;
 
             case 'ArticleHandler::viewRemoteGalley':
-                $article = $args[0];
-                $pubObject = $args[1];
+                $article = $args[0] ?? null;
+                $pubObject = $args[1] ?? null;
+                if (!$article || !$pubObject) return false;
+                
                 $assocType = ASSOC_TYPE_GALLEY;
-                $canonicalUrlParams = array($article->getId(), $pubObject->getId($journal));
-                $idParams = array('a' . $article->getId(), 'g' . $pubObject->getId());
+                $canonicalUrlParams = [(int) $article->getId(), $pubObject->getId($journal)];
+                $idParams = ['a' . (int) $article->getId(), 'g' . $pubObject->getId()];
                 $downloadSuccess = true;
                 $canonicalUrlOp = 'view';
                 break;
@@ -249,35 +256,41 @@ class UsageEventPlugin extends GenericPlugin {
             // Article galley (except for HTML and remote galley).
             case 'ArticleHandler::viewFile':
             case 'ArticleHandler::downloadFile':
-                $article = $args[0];
-                $pubObject = $args[1];
-                $fileId = $args[2];
-                // if file is not a gallay file (e.g. CSS or images), there is no usage event.
-                if ($pubObject->getFileId() != $fileId) return false;
+                $article = $args[0] ?? null;
+                $pubObject = $args[1] ?? null;
+                $fileId = (int) ($args[2] ?? 0);
+                
+                if (!$pubObject || $pubObject->getFileId() !== $fileId) {
+                    return false;
+                }
                 $assocType = ASSOC_TYPE_GALLEY;
                 $canonicalUrlOp = 'download';
-                $canonicalUrlParams = array($article->getId(), $pubObject->getId($journal));
-                $idParams = array('a' . $article->getId(), 'g' . $pubObject->getId());
+                $canonicalUrlParams = [(int) $article->getId(), $pubObject->getId($journal)];
+                $idParams = ['a' . (int) $article->getId(), 'g' . $pubObject->getId()];
                 break;
 
             // Supplementary file.
             case 'ArticleHandler::downloadSuppFile':
-                $pubObject = $args[1];
+                $article = $args[0] ?? null;
+                $pubObject = $args[1] ?? null;
+                if (!$article || !$pubObject) return false;
+                
                 $assocType = ASSOC_TYPE_SUPP_FILE;
                 $canonicalUrlOp = 'downloadSuppFile';
-                $article = $args[0];
-                $canonicalUrlParams = array($article->getId(), $pubObject->getId($journal));
-                $idParams = array('a' . $article->getId(), 's' . $pubObject->getId());
+                $canonicalUrlParams = [(int) $article->getId(), $pubObject->getId($journal)];
+                $idParams = ['a' . (int) $article->getId(), 's' . $pubObject->getId()];
                 break;
 
             // Issue galley.
             case 'IssueHandler::viewFile':
-                $pubObject = $args[1];
+                $issue = $args[0] ?? null;
+                $pubObject = $args[1] ?? null;
+                if (!$issue || !$pubObject) return false;
+                
                 $assocType = ASSOC_TYPE_ISSUE_GALLEY;
                 $canonicalUrlOp = 'download';
-                $issue = $args[0];
-                $canonicalUrlParams = array($issue->getId(), $pubObject->getId($journal));
-                $idParams = array('i' . $issue->getId(), 'ig' . $pubObject->getId());
+                $canonicalUrlParams = [(int) $issue->getId(), $pubObject->getId($journal)];
+                $idParams = ['i' . (int) $issue->getId(), 'ig' . $pubObject->getId()];
                 break;
 
             default:
@@ -288,15 +301,15 @@ class UsageEventPlugin extends GenericPlugin {
         $time = Core::getCurrentDate();
 
         // Actual document size, MIME type.
-        $htmlPageAssocTypes = array(ASSOC_TYPE_ARTICLE, ASSOC_TYPE_ISSUE, ASSOC_TYPE_JOURNAL);
-        if (in_array($assocType, $htmlPageAssocTypes)) {
+        $htmlPageAssocTypes = [ASSOC_TYPE_ARTICLE, ASSOC_TYPE_ISSUE, ASSOC_TYPE_JOURNAL];
+        if (in_array($assocType, $htmlPageAssocTypes, true)) {
             // Article abstract or issue view page.
             $docSize = 0;
             $mimeType = 'text/html';
         } else {
             // Files.
-            $docSize = (int)$pubObject->getFileSize();
-            $mimeType = $pubObject->getFileType();
+            $docSize = (int) $pubObject->getFileSize();
+            $mimeType = (string) $pubObject->getFileType();
         }
 
         // Canonical URL.
@@ -321,69 +334,74 @@ class UsageEventPlugin extends GenericPlugin {
         );
 
         // Make sure we log the server name and not aliases.
-        $configBaseUrl = Config::getVar('general', 'base_url');
-        $requestBaseUrl = $request->getBaseUrl();
+        $configBaseUrl = (string) Config::getVar('general', 'base_url');
+        $requestBaseUrl = (string) $request->getBaseUrl();
+        
         if ($requestBaseUrl !== $configBaseUrl) {
-            if (!in_array($requestBaseUrl, Config::getContextBaseUrls()) &&
-                    $requestBaseUrl !== Config::getVar('general', 'base_url[index]')) {
-                $baseUrlReplacement = Config::getVar('general', 'base_url['.$journal->getPath().']');
-                if (!$baseUrlReplacement) $baseUrlReplacement = $configBaseUrl;
+            $contextBaseUrls = Config::getContextBaseUrls();
+            if (!in_array($requestBaseUrl, $contextBaseUrls, true) &&
+                $requestBaseUrl !== (string) Config::getVar('general', 'base_url[index]')) {
+                
+                $baseUrlReplacement = (string) Config::getVar('general', 'base_url[' . $journal->getPath() . ']');
+                if ($baseUrlReplacement === '') {
+                    $baseUrlReplacement = $configBaseUrl;
+                }
                 $canonicalUrl = str_replace($requestBaseUrl, $baseUrlReplacement, $canonicalUrl);
             }
         }
 
         // Public identifiers.
-        array_unshift($idParams, 'j' . $journal->getId());
+        array_unshift($idParams, 'j' . (int) $journal->getId());
         $siteId = $this->getUniqueSiteId();
+        
         if (empty($siteId)) {
             $siteId = uniqid();
-            $this->updateSetting(0, 'uniqueSiteId', $siteId);
+            $this->updateSetting(0, 'uniqueSiteId', (string) $siteId);
         }
-        array_unshift($idParams, $siteId);
+        array_unshift($idParams, (string) $siteId);
         $ojsId = 'ojs:' . implode('-', $idParams);
-        $identifiers = array('other::ojs' => $ojsId);
+        $identifiers = ['other::ojs' => $ojsId];
 
         // Standardized public identifiers
-        // [WIZDAM FIX] Replaced is_a() with instanceof
         if (!($pubObject instanceof IssueGalley) && !($pubObject instanceof Journal)) {
-            $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $journal->getId());
+            $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, (int) $journal->getId());
             if (is_array($pubIdPlugins)) {
                 foreach ($pubIdPlugins as $pubIdPlugin) {
-                    if (!$pubIdPlugin->getEnabled()) continue;
+                    if (!$pubIdPlugin->getEnabled()) {
+                        continue;
+                    }
                     $pubId = $pubIdPlugin->getPubId($pubObject);
                     if ($pubId) {
-                        $identifiers[$pubIdPlugin->getPubIdType()] = $pubId;
+                        $identifiers[$pubIdPlugin->getPubIdType()] = (string) $pubId;
                     }
                 }
             }
         }
 
         // Service URI.
-        $serviceUri = $router->url($request, $journal->getPath());
+        $serviceUri = $router->url($request, (string) $journal->getPath());
 
         // IP and Host.
-        $ip = $request->getRemoteAddr();
-        $host = null;
-        if (isset($_SERVER['REMOTE_HOST'])) {
-            $host = $_SERVER['REMOTE_HOST'];
-        }
+        $ip = (string) $request->getRemoteAddr();
+        $host = $_SERVER['REMOTE_HOST'] ?? null;
 
         // HTTP user agent.
-        $userAgent = $request->getUserAgent();
+        $userAgent = (string) $request->getUserAgent();
 
         // HTTP referrer.
-        $referrer = (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null);
+        $referrer = $_SERVER['HTTP_REFERER'] ?? null;
 
         // User and roles.
         $user = $request->getUser();
-        $roles = array();
+        $roles = [];
         if ($user) {
+            /** @var RoleDAO $roleDao */
             $roleDao = DAORegistry::getDAO('RoleDAO');
-            $rolesByContext = $roleDao->getByUserIdGroupedByContext($user->getId());
-            foreach (array(CONTEXT_SITE, $journal->getId()) as $context) {
-                if(isset($rolesByContext[$context])) {
+            $rolesByContext = $roleDao->getByUserIdGroupedByContext((int) $user->getId());
+            foreach ([CONTEXT_SITE, (int) $journal->getId()] as $context) {
+                if (isset($rolesByContext[$context])) {
                     foreach ($rolesByContext[$context] as $role) {
-                        $roles[] = $role->getRoleId();
+                        $roles[] = (int) $role->getRoleId();
                     }
                 }
             }
@@ -392,12 +410,12 @@ class UsageEventPlugin extends GenericPlugin {
         // Try a simple classification of the request.
         $classification = null;
         if (!empty($roles)) {
-            $internalRoles = array_diff($roles, array(ROLE_ID_READER));
+            $internalRoles = array_diff($roles, [ROLE_ID_READER]);
             if (!empty($internalRoles)) {
                 $classification = USAGE_EVENT_PLUGIN_CLASSIFICATION_ADMIN;
             }
         }
-        if ($request->isBot()) {
+        if (method_exists($request, 'isBot') && $request->isBot()) {
             $classification = USAGE_EVENT_PLUGIN_CLASSIFICATION_BOT;
         }
 
@@ -411,6 +429,6 @@ class UsageEventPlugin extends GenericPlugin {
 
         return $usageEvent;
     }
-}
 
+}
 ?>

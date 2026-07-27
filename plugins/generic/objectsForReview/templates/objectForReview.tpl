@@ -15,9 +15,10 @@
 
 <div id="objectForReviewDetails">
 
-{include file="$ofrTemplatePath/objectForReviewMetadata.tpl"}
+    {include file="$ofrTemplatePath/objectForReviewMetadata.tpl"}
 
-<div style="clear:both;"></div>
+    <div style="clear:both;"></div>
+
 </div>
 
 {include file="common/footer.tpl"}

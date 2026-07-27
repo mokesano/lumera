@@ -29,6 +29,10 @@ trait IssueCover {
         return $this->getLocalizedData('fileName');
     }
 
+    /**
+     * [DEPRECATED]
+     * Get the localized issue cover filename
+     */
     public function getIssueFileName() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedFileName();
@@ -36,7 +40,7 @@ trait IssueCover {
 
     /**
      * Get issue cover image file name
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getFileName($locale) {
@@ -45,8 +49,8 @@ trait IssueCover {
 
     /**
      * set file name
-     * @param $fileName string
-     * @param $locale string
+     * @param string $fileName
+     * @param string $locale
      */
     public function setFileName($fileName, $locale) {
         return $this->setData('fileName', $fileName, $locale);
@@ -60,6 +64,10 @@ trait IssueCover {
         return $this->getLocalizedData('width');
     }
 
+    /**
+     * [DEPRECATED]
+     * Get the localized issue cover width
+     */
     public function getIssueWidth() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedWidth();
@@ -67,7 +75,7 @@ trait IssueCover {
 
     /**
      * Get width of cover page image
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getWidth($locale) {
@@ -76,8 +84,8 @@ trait IssueCover {
 
     /**
      * Set width of cover page image
-     * @param $locale string
-     * @param $width int
+     * @param int $width
+     * @param string $locale
      */
     public function setWidth($width, $locale) {
         return $this->setData('width', $width, $locale);
@@ -91,6 +99,10 @@ trait IssueCover {
         return $this->getLocalizedData('height');
     }
 
+    /**
+     * [DEPRECATED]
+     * Get the localized issue cover height
+     */
     public function getIssueHeight() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedHeight();
@@ -98,7 +110,7 @@ trait IssueCover {
 
     /**
      * Get height of cover page image
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getHeight($locale) {
@@ -107,8 +119,8 @@ trait IssueCover {
 
     /**
      * Set height of cover page image
-     * @param $locale string
-     * @param $height int
+     * @param int $height
+     * @param string $locale
      */
     public function setHeight($height, $locale) {
         return $this->setData('height', $height, $locale);
@@ -122,6 +134,10 @@ trait IssueCover {
         return $this->getLocalizedData('originalFileName');
     }
 
+    /**
+     * [DEPRECATED]
+     * Get the localized issue cover filename
+     */
     public function getIssueOriginalFileName() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedOriginalFileName();
@@ -129,7 +145,7 @@ trait IssueCover {
 
     /**
      * Get original issue cover image file name
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getOriginalFileName($locale) {
@@ -138,8 +154,8 @@ trait IssueCover {
 
     /**
      * Set original file name
-     * @param $originalFileName string
-     * @param $locale string
+     * @param string $originalFileName
+     * @param string $locale
      */
     public function setOriginalFileName($originalFileName, $locale) {
         return $this->setData('originalFileName', $originalFileName, $locale);
@@ -153,6 +169,10 @@ trait IssueCover {
         return $this->getLocalizedData('coverPageAltText');
     }
 
+    /**
+     * [DEPRECATED]
+     * Get the localized issue cover alternate text
+     */
     public function getIssueCoverPageAltText() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedCoverPageAltText();
@@ -160,7 +180,7 @@ trait IssueCover {
 
     /**
      * Get issue cover image alternate text
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getCoverPageAltText($locale) {
@@ -169,8 +189,8 @@ trait IssueCover {
 
     /**
      * Set issue cover image alternate text
-     * @param $coverPageAltText string
-     * @param $locale string
+     * @param string $coverPageAltText
+     * @param string $locale
      */
     public function setCoverPageAltText($coverPageAltText, $locale) {
         return $this->setData('coverPageAltText', $coverPageAltText, $locale);
@@ -184,6 +204,10 @@ trait IssueCover {
         return $this->getLocalizedData('coverPageDescription');
     }
 
+    /**
+     * [DEPRECATED]
+     * Get the localized issue cover description
+     */
     public function getIssueCoverPageDescription() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedCoverPageDescription();
@@ -191,7 +215,7 @@ trait IssueCover {
 
     /**
      * Get cover page description
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getCoverPageDescription($locale) {
@@ -200,8 +224,8 @@ trait IssueCover {
 
     /**
      * Set cover page description
-     * @param $coverPageDescription string
-     * @param $locale string
+     * @param string $coverPageDescription
+     * @param string $locale
      */
     public function setCoverPageDescription($coverPageDescription, $locale) {
         return $this->setData('coverPageDescription', $coverPageDescription, $locale);
@@ -215,6 +239,10 @@ trait IssueCover {
         return $this->getLocalizedData('showCoverPage');
     }
 
+    /**
+     * [DEPRECATED]
+     * Get the localized issue cover enable/disable flag
+     */
     public function getIssueShowCoverPage() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
         return $this->getLocalizedShowCoverPage();
@@ -222,7 +250,7 @@ trait IssueCover {
 
     /**
      * Get show issue cover image flag
-     * @param $locale string
+     * @param string $locale
      * @return int
      */
     public function getShowCoverPage($locale) {
@@ -231,8 +259,8 @@ trait IssueCover {
 
     /**
      * Set show issue cover image flag
-     * @param $showCoverPage int
-     * @param $locale string
+     * @param int $showCoverPage
+     * @param string $locale
      */
     public function setShowCoverPage($showCoverPage, $locale) {
         return $this->setData('showCoverPage', $showCoverPage, $locale);
@@ -240,7 +268,7 @@ trait IssueCover {
 
     /**
      * Get hide cover page in archives
-     * @param $locale string
+     * @param string $locale
      * @return int
      */
     public function getHideCoverPageArchives($locale) {
@@ -249,8 +277,8 @@ trait IssueCover {
 
     /**
      * Set hide cover page in archives
-     * @param $hideCoverPageArchives int
-     * @param $locale string
+     * @param int $hideCoverPageArchives
+     * @param string $locale
      */
     public function setHideCoverPageArchives($hideCoverPageArchives, $locale) {
         return $this->setData('hideCoverPageArchives', $hideCoverPageArchives, $locale);
@@ -258,7 +286,7 @@ trait IssueCover {
 
     /**
      * Get hide cover page prior to ToC
-     * @param $locale string
+     * @param string $locale
      * @return int
      */
     public function getHideCoverPageCover($locale) {
@@ -267,8 +295,8 @@ trait IssueCover {
 
     /**
      * Set hide cover page prior to ToC
-     * @param $hideCoverPageCover int
-     * @param $locale string
+     * @param int $hideCoverPageCover
+     * @param string $locale
      */
     public function setHideCoverPageCover($hideCoverPageCover, $locale) {
         return $this->setData('hideCoverPageCover', $hideCoverPageCover, $locale);

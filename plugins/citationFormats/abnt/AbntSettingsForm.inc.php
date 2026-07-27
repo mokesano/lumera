@@ -21,30 +21,32 @@ import('lib.pkp.classes.form.Form');
 class AbntSettingsForm extends Form {
 
     /** @var int */
-    public int $journalId;
+    protected $_journalId;
 
     /** @var object */
-    public object $plugin;
+    protected $_plugin;
 
     /**
      * Constructor
      * @param object $plugin
      * @param int $journalId
      */
-    public function __construct($plugin, int $journalId) {
-        $this->journalId = $journalId;
-        $this->plugin = $plugin;
+    public function __construct($plugin, $journalId) {
+        $this->_journalId = (int) $journalId;
+        $this->_plugin = $plugin;
 
         parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param object $plugin
+     * @param int $journalId
      */
     public function AbntSettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -56,11 +58,8 @@ class AbntSettingsForm extends Form {
      * Initialize form data.
      */
     public function initData() {
-        $journalId = $this->journalId;
-        $plugin = $this->plugin;
-
         $this->_data = [
-            'location' => $plugin->getSetting($journalId, 'location')
+            'location' => $this->_plugin->getSetting($this->_journalId, 'location')
         ];
     }
 
@@ -73,29 +72,30 @@ class AbntSettingsForm extends Form {
     }
 
     /**
-     * Display the form. (DITAMBAHKAN UNTUK MEMPERBAIKI CANCEL)
-     * [WIZDAM FIX] Overrides Form::display untuk menginjeksi URL Cancel yang benar.
+     * Display the form.
+     * @param mixed $request
+     * @param string|null $template
      */
-    public function display($request = NULL, $template = NULL) {
-        // [MASALAH 2: TOMBOL CANCEL TIDAK BERFUNGSI]
-        // Kita harus menghitung URL Cancel/Back secara manual dan menyuntikkannya ke TemplateManager.
-        $router = Request::getRouter();
-        $journal = Request::getJournal();
-        
-        // Target kembali (Citation Format Plugins)
-        $cancelUrl = Request::url(
-            $journal->getPath(), 
+    public function display($request = null, $template = null) {
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
+        $journal = $request->getJournal();
+        $cancelUrl = $request->url(
+            $journal ? $journal->getPath() : 'index', 
             'manager', 
             'plugins', 
             null, 
             ['category' => 'citationFormats', 'verb' => 'settings']
         );
         
-        $templateMgr = TemplateManager::getManager();
-        $templateMgr->assign('pageUrl', $cancelUrl); // Beberapa template menggunakan pageUrl
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign('pageUrl', $cancelUrl);
         $templateMgr->assign('cancelUrl', $cancelUrl);
 
-        parent::display($template);
+        parent::display($request, $template);
     }
     
     /**
@@ -107,39 +107,42 @@ class AbntSettingsForm extends Form {
 
     /**
      * Save settings.
+     * @param mixed $object
      */
-    public function execute($object = NULL) {
-        $journal = Request::getJournal();
-        $journalId = $journal ? $journal->getId() : $this->journalId;
-        $plugin = $this->plugin;
+    public function execute($object = null) {
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+        $journalId = $journal ? (int) $journal->getId() : $this->_journalId;
+        $plugin = $this->_plugin;
 
         $value = $this->getData('location');
         if (is_array($value)) {
             $plugin->updateSetting($journalId, 'location', $value, 'object');
         }
 
-        // Modern UX: Send notification confirming save
         import('classes.notification.NotificationManager');
         $notificationMgr = new NotificationManager();
-        $user = Request::getUser();
+        $user = $request->getUser();
+        
         if ($user) {
             $notificationMgr->createTrivialNotification(
-                $user->getId(),
+                (int) $user->getId(),
                 NOTIFICATION_TYPE_SUCCESS,
                 ['contents' => __('common.changesSaved')]
             );
         }
         
-        $url = Request::url(
-            $journal->getPath(), 
+        $url = $request->url(
+            $journal ? $journal->getPath() : 'index', 
             'manager', 
             'plugins', 
             null, 
-            ['category' => 'citationFormats', 'verb' => 'settings'] // Target halaman plugin list
+            ['category' => 'citationFormats', 'verb' => 'settings']
         );
         
-        Request::redirectUrl($url);
+        $request->redirectUrl($url);
     }
-}
 
+}
 ?>

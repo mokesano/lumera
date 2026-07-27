@@ -19,40 +19,39 @@ import('lib.pkp.classes.config.Config');
 import('classes.article.PublishedArticle');
 import('classes.issue.Issue');
 
-define('PLN_PLUGIN_NAME','plnplugin');
+define('PLN_PLUGIN_NAME', 'plnplugin');
 
-// defined here in case an upgrade doesn't pick up the default value.
+// Defined here in case an upgrade doesn't pick up the default value.
 define('PLN_DEFAULT_NETWORK', 'http://pkp-pln.lib.sfu.ca');
 define('PLN_DEFAULT_STATUS_SUFFIX', '/docs/status');
 
 define('PLN_PLUGIN_HTTP_STATUS_OK', 200);
 define('PLN_PLUGIN_HTTP_STATUS_CREATED', 201);
 
-define('PLN_PLUGIN_XML_NAMESPACE','http://pkp.sfu.ca/SWORD');
+define('PLN_PLUGIN_XML_NAMESPACE', 'http://pkp.sfu.ca/SWORD');
 
-// base IRI for the SWORD server. IRIs are constructed by appending to 
-// this constant.
+// Base IRI for the SWORD server. IRIs are constructed by appending to this constant.
 define('PLN_PLUGIN_BASE_IRI', '/api/sword/2.0');
-// used to retrieve the service document
+// Used to retrieve the service document
 define('PLN_PLUGIN_SD_IRI', PLN_PLUGIN_BASE_IRI . '/sd-iri');
-// used to submit a deposit
-define('PLN_PLUGIN_COL_IRI',PLN_PLUGIN_BASE_IRI . '/col-iri');
-// used to edit and query the state of a deposit
-define('PLN_PLUGIN_CONT_IRI',PLN_PLUGIN_BASE_IRI . '/cont-iri');
+// Used to submit a deposit
+define('PLN_PLUGIN_COL_IRI', PLN_PLUGIN_BASE_IRI . '/col-iri');
+// Used to edit and query the state of a deposit
+define('PLN_PLUGIN_CONT_IRI', PLN_PLUGIN_BASE_IRI . '/cont-iri');
 
-define('PLN_PLUGIN_ARCHIVE_FOLDER','pln');
+define('PLN_PLUGIN_ARCHIVE_FOLDER', 'pln');
 
-// local statuses
+// Local statuses
 define('PLN_PLUGIN_DEPOSIT_STATUS_NEW',                 0x00);
 define('PLN_PLUGIN_DEPOSIT_STATUS_PACKAGED',            0x01);
 define('PLN_PLUGIN_DEPOSIT_STATUS_TRANSFERRED',         0x02);
 
-// status on the processing server
+// Status on the processing server
 define('PLN_PLUGIN_DEPOSIT_STATUS_RECEIVED',            0x04);
 define('PLN_PLUGIN_DEPOSIT_STATUS_VALIDATED',           0x08); // was SYNCING
 define('PLN_PLUGIN_DEPOSIT_STATUS_SENT',                0x10); // was SYNCED
 
-// status in the LOCKSS PLN 
+// Status in the LOCKSS PLN 
 define('PLN_PLUGIN_DEPOSIT_STATUS_LOCKSS_RECEIVED',     0x20); // was REMOTE_FAILURE
 define('PLN_PLUGIN_DEPOSIT_STATUS_LOCKSS_SYNCING',      0x40); // was LOCAL_FAILURE
 define('PLN_PLUGIN_DEPOSIT_STATUS_LOCKSS_AGREEMENT',    0x80); // was UPDATE
@@ -90,7 +89,7 @@ class PLNPlugin extends GenericPlugin {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
     
     /**
@@ -98,20 +97,20 @@ class PLNPlugin extends GenericPlugin {
      * @copydoc LazyLoadPlugin::register()
      * @param string $category String
      * @param string $path String
-     * @return boolean
+     * @return bool
      */
     public function register(string $category, string $path): bool {
-        if (!$this->php5Installed()) return false;
+        if (!$this->php5Installed()) {
+            return false;
+        }
     
         $success = parent::register($category, $path);
         if ($success) {
-            
             HookRegistry::register('TemplateManager::display', [$this, 'callbackTemplateDisplay']);
             HookRegistry::register('Templates::Manager::Setup::JournalArchiving', [$this, 'callbackJournalArchivingSetup']);
             HookRegistry::register('AcronPlugin::parseCronTab', [$this, 'callbackParseCronTab']);
         
             if ($this->getEnabled()) {
-            
                 $this->registerDAOs();
                 $this->import('classes.Deposit');
                 $this->import('classes.DepositObject');
@@ -135,13 +134,10 @@ class PLNPlugin extends GenericPlugin {
         $this->import('classes.DepositObjectDAO');
         
         $depositDao = new DepositDAO();
-        /** @var DepositDAO $depositDao */
         DAORegistry::registerDAO('DepositDAO', $depositDao);
         
         $depositObjectDao = new DepositObjectDAO();
-        /** @var DepositObjectDAO $depositObjectDao */
         DAORegistry::registerDAO('DepositObjectDAO', $depositObjectDao);
-        
     }
     
     /**
@@ -165,7 +161,7 @@ class PLNPlugin extends GenericPlugin {
     /**
      * Get the path to the plugin's installation schema file.
      * @see PKPPlugin::getInstallSchemaFile()
-     * @return string
+     * @return string|null
      */
     public function getInstallSchemaFile(): ?string {
         return $this->getPluginPath() . DIRECTORY_SEPARATOR . 'xml' . DIRECTORY_SEPARATOR . 'schema.xml';
@@ -192,7 +188,7 @@ class PLNPlugin extends GenericPlugin {
     /**
      * Get the path to the plugin's context-specific settings file.
      * @see PKPPlugin::getContextSpecificPluginSettingsFile()
-     * @return string
+     * @return string|null
      */
     public function getContextSpecificPluginSettingsFile(): ?string {
         return $this->getPluginPath() . DIRECTORY_SEPARATOR . 'xml' . DIRECTORY_SEPARATOR . 'settings.xml';
@@ -211,19 +207,23 @@ class PLNPlugin extends GenericPlugin {
      * @see PKPPlugin::getSetting()
      * @param int $journalId
      * @param string $settingName
+     * @return mixed
      */
     public function getSetting($journalId, $settingName) {
-        // if there isn't a journal_uuid, make one
+        // If there isn't a journal_uuid, make one
         switch ($settingName) {
             case 'journal_uuid':
                 $uuid = parent::getSetting($journalId, $settingName);
-                if (!is_null($uuid) && $uuid != '')
+                if ($uuid !== null && $uuid !== '') {
                     return $uuid;
+                }
                 $this->updateSetting($journalId, $settingName, $this->newUUID());
                 break;
             case 'object_type':
                 $type = parent::getSetting($journalId, $settingName);
-                if( ! is_null($type)) return $type;
+                if ($type !== null) {
+                    return $type;
+                }
                 $this->updateSetting($journalId, $settingName, PLN_PLUGIN_DEPOSIT_OBJECT_ISSUE);
                 break;
             case 'pln_network':
@@ -233,17 +233,19 @@ class PLNPlugin extends GenericPlugin {
             default:
                 break;
         }
-        return parent::getSetting($journalId,$settingName);
+        return parent::getSetting($journalId, $settingName);
     }
 
     /**
      * Register as a gateway plugin.
      * @param string $hookName
      * @param array $args
+     * @return bool
      */
     public function callbackLoadCategory($hookName, $args) {
         $category = $args[0];
-        $plugins =& $args[1]; // Reference needed to modify plugin list
+        $plugins =& $args[1];
+        
         switch ($category) {
             case 'gateways':
                 $this->import('PLNGatewayPlugin');
@@ -258,29 +260,34 @@ class PLNPlugin extends GenericPlugin {
      * Delete all plug-in data for a journal when the journal is deleted
      * @param string $hookName
      * @param array $params
-     * @return boolean
+     * @return bool
      */
     public function callbackDeleteJournalById($hookName, $params) {
-        $journalId = $params[1];
-        $depositDao = DAORegistry::getDAO('DepositDAO'); /** @var DepositDAO $depositDao */
-        $depositDao->deleteDeposit($journalId);
-        $depositObjectDao = DAORegistry::getDAO('DepositObjectDAO'); /** @var DepositObjectDAO $depositObjectDao */
+        // [WIZDAM FIX] Fallback to $params[0] as it's the standard first parameter for this hook in OJS
+        $journalId = (int) ($params[0] ?? $params[1] ?? 0);
+        
+        /** @var DepositDAO $depositDao */
+        $depositDao = DAORegistry::getDAO('DepositDAO');
+        $depositDao->deleteDepositsByJournalId($journalId);
+        
+        /** @var DepositObjectDAO $depositObjectDao */
+        $depositObjectDao = DAORegistry::getDAO('DepositObjectDAO');
         $depositObjectDao->deleteDepositObjectsByJournalId($journalId);
+        
         return false;
     }
     
     /**
      * Callback for template display
      * @copydoc TemplateManager::display()
-     * @param $hookName
-     * @param mixed $params string
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function callbackTemplateDisplay($hookName, $params) {
-        // Get request and context.
-        $request = PKPApplication::getRequest();
+        $request = Application::get()->getRequest();
         $journal = $request->getContext();
         
-        // Assign our private stylesheet.
         $templateMgr = $params[0];
         $templateMgr->addStylesheet($request->getBaseUrl() . '/' . $this->getStyleSheet());
         
@@ -292,9 +299,10 @@ class PLNPlugin extends GenericPlugin {
      * @copydoc AcronPlugin::parseCronTab()
      * @param string $hookName
      * @param array $args
+     * @return bool
      */
     public function callbackParseCronTab($hookName, $args) {
-        $taskFilesPath =& $args[0]; // Reference needed
+        $taskFilesPath =& $args[0];
         $taskFilesPath[] = $this->getPluginPath() . DIRECTORY_SEPARATOR . 'xml' . DIRECTORY_SEPARATOR . 'scheduledTasks.xml';
         return false;
     }
@@ -303,11 +311,11 @@ class PLNPlugin extends GenericPlugin {
      * A callback used to populate journal setup step 2.6 with PLN preservation info
      * @param string $hookName
      * @param array $args
-     * @return boolean
+     * @return bool
      */
     public function callbackJournalArchivingSetup($hookName, $args) {
         $smarty = $args[1];
-        $output =& $args[2]; // Reference needed for output modification
+        $output =& $args[2];
         $templateMgr = TemplateManager::getManager();
         $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
         $output .= $templateMgr->fetch($this->getTemplatePath() . DIRECTORY_SEPARATOR . 'setup.tpl');
@@ -318,14 +326,19 @@ class PLNPlugin extends GenericPlugin {
      * Hook registry function to provide notification messages
      * @param string $hookName
      * @param array $args
-     * @return boolean
+     * @return bool
      */
     public function callbackNotificationContents($hookName, $args) {
         $notification = $args[0];
-        $message =& $args[1]; // Reference needed for output modification
+        $message =& $args[1];
 
         $type = $notification->getType();
-        assert(isset($type));
+        
+        // [WIZDAM FIX] Replaced assert with safe check
+        if (!isset($type)) {
+            return false;
+        }
+        
         switch ($type) {
             case PLN_PLUGIN_NOTIFICATION_TYPE_TERMS_UPDATED:
                 $message = __('plugins.generic.pln.notifications.terms_updated');
@@ -345,20 +358,22 @@ class PLNPlugin extends GenericPlugin {
      * @copydoc PKPPageRouter::route()
      * @param string $hookName
      * @param array $args
+     * @return bool
      */
     public function callbackLoadHandler($hookName, $args) {
         $page = $args[0];
-        if ($page == 'pln') {
-            $op = $args[1];
+        if ($page === 'pln') {
+            $op = $args[1] ?? null;
             if ($op) {
-                if (in_array($op, ['deposits'])) {
+                if (in_array($op, ['deposits'], true)) {
                     define('HANDLER_CLASS', 'PLNHandler');
                     AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
-                    $handlerFile =& $args[2]; // Reference needed
+                    $handlerFile =& $args[2];
                     $handlerFile = $this->getHandlerPath() . DIRECTORY_SEPARATOR . 'PLNHandler.inc.php';
                 }
             }
         }
+        return false;
     }
     
     /**
@@ -368,98 +383,107 @@ class PLNPlugin extends GenericPlugin {
      * @param array $args
      * @param string|null $message
      * @param array|null $messageParams
-     * @param PKPRequest $request
+     * @param mixed $request
      * @return bool
      */
     public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
-
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        
         $journal = $request->getJournal();
+        if (!$journal) {
+            return false;
+        }
 
-        switch($verb) {
+        switch ($verb) {
             case 'enable':
-                if( ! @include_once('Archive/Tar.php')) {
-                    $message = NOTIFICATION_TYPE_ERROR;
+                if (!@include_once('Archive/Tar.php')) {
+                    $message = (string) NOTIFICATION_TYPE_ERROR;
                     $messageParams = ['contents' => __('plugins.generic.pln.notifications.archive_tar_missing')];
                     break;
                 }
-                if( ! $this->php5Installed()) {
-                    $message = NOTIFICATION_TYPE_ERROR;
-                    $messageParams = ['contents' => __('plugins.generic.pln.notifications.php5_missing')];
+                if (!$this->php5Installed()) {
+                    $message = (string) NOTIFICATION_TYPE_ERROR;
+                    $messageParams = ['contents' => __('plugins.generic.pln.notifications.php_missing')];
                     break;
                 }
-                if( ! $this->curlInstalled()) {
-                    $message = NOTIFICATION_TYPE_ERROR;
+                if (!$this->curlInstalled()) {
+                    $message = (string) NOTIFICATION_TYPE_ERROR;
                     $messageParams = ['contents' => __('plugins.generic.pln.notifications.curl_missing')];
                     break;
                 }
-                if( ! $this->zipInstalled()) {
-                    $message = NOTIFICATION_TYPE_ERROR;
+                if (!$this->zipInstalled()) {
+                    $message = (string) NOTIFICATION_TYPE_ERROR;
                     $messageParams = ['contents' => __('plugins.generic.pln.notifications.zip_missing')];
                     break;
                 }
-                if( ! $this->tarInstalled()) {
-                    $message = NOTIFICATION_TYPE_ERROR;
+                if (!$this->tarInstalled()) {
+                    $message = (string) NOTIFICATION_TYPE_ERROR;
                     $messageParams = ['contents' => __('plugins.generic.pln.notifications.tar_missing')];
                     break;
                 }
-                $message = NOTIFICATION_TYPE_SUCCESS;
+                $message = (string) NOTIFICATION_TYPE_SUCCESS;
                 $messageParams = ['contents' => __('plugins.generic.pln.enabled')];
-                $this->updateSetting($journal->getId(), 'enabled', true);
+                $this->updateSetting((int) $journal->getId(), 'enabled', true);
                 break;
             case 'disable':
-                $message = NOTIFICATION_TYPE_SUCCESS;
+                $message = (string) NOTIFICATION_TYPE_SUCCESS;
                 $messageParams = ['contents' => __('plugins.generic.pln.disabled')];
-                $this->updateSetting($journal->getId(), 'enabled', false);
+                $this->updateSetting((int) $journal->getId(), 'enabled', false);
                 break;
             case 'settings':
-                $templateMgr = TemplateManager::getManager();
+                $templateMgr = TemplateManager::getManager($request);
                 $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
                 $this->import('classes.form.PLNSettingsForm');
-                $form = new PLNSettingsForm($this, $journal->getId());
+                $form = new PLNSettingsForm($this, (int) $journal->getId());
 
-                if (Request::getUserVar('save')) {
+                if ($request->getUserVar('save')) {
                     $form->readInputData();
                     if ($form->validate()) {
                         $form->execute();
-                        $message = NOTIFICATION_TYPE_SUCCESS;
+                        $message = (string) NOTIFICATION_TYPE_SUCCESS;
                         $messageParams = ['contents' => __('plugins.generic.pln.settings.saved')];
                         return false;
                     } else {
                         $this->setBreadcrumbs('settings');
-                        $form->display();
+                        $form->display($request);
                     }
                 } else {
-                    if (Request::getUserVar('refresh')) {
-                        $this->getServiceDocument($journal->getId());
+                    if ($request->getUserVar('refresh')) {
+                        $this->getServiceDocument((int) $journal->getId());
                     } 
                     $this->setBreadcrumbs('settings');
                     $form->initData();
-                    $form->display();
+                    $form->display($request);
                 }
                 return true;
             case 'status':
-                $templateMgr = TemplateManager::getManager();
+                $templateMgr = TemplateManager::getManager($request);
                 $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
                 $this->import('classes.form.PLNStatusForm');
-                $form = new PLNStatusForm($this, $journal->getId());
+                $form = new PLNStatusForm($this, (int) $journal->getId());
                 
-                if (Request::getUserVar('reset')) {
-                    $journal = $request->getJournal();
-                    $deposit_ids = array_keys(Request::getUserVar('reset'));
+                $resetIds = $request->getUserVar('reset');
+                if (is_array($resetIds)) {
+                    $depositIds = array_keys($resetIds);
                     /** @var DepositDAO $depositDao */
                     $depositDao = DAORegistry::getDAO('DepositDAO');
-                    foreach ($deposit_ids as $deposit_id) {
-                        $deposit = $depositDao->getDepositById($journal->getId(),$deposit_id);
-                        $deposit->setStatus(PLN_PLUGIN_DEPOSIT_STATUS_NEW);
-                        $depositDao->updateDeposit($deposit);
+                    foreach ($depositIds as $depositId) {
+                        $deposit = $depositDao->getDepositById((int) $journal->getId(), (int) $depositId);
+                        if ($deposit) {
+                            $deposit->setStatus(PLN_PLUGIN_DEPOSIT_STATUS_NEW);
+                            $depositDao->updateDeposit($deposit);
+                        }
                     }
                 }
                 
-                $this->setBreadCrumbs('status');
-                $form->display();
+                $this->setBreadcrumbs('status'); // [WIZDAM FIX] Corrected typo from setBreadCrumbs
+                $form->display($request);
                 return true;
             default:
-                return parent::manage($verb, $args, $message, $messageParams);
+                return parent::manage($verb, $args, $message, $messageParams, $request);
         }
 
         return false;
@@ -470,8 +494,13 @@ class PLNPlugin extends GenericPlugin {
      * @copydoc GenericPlugin::getManagementVerbs()
      * @param array $verbs
      * @param mixed $request
+     * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array { 
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        
         $verbs = parent::getManagementVerbs($verbs, $request); 
         if ($this->getEnabled($request)) { 
             $verbs[] = ['settings', __('plugins.generic.pln.settings')];
@@ -482,8 +511,9 @@ class PLNPlugin extends GenericPlugin {
     
     /**
      * Extend the {url ...} smarty to support this plugin.
-     * @param $params
+     * @param array $params
      * @param object $smarty
+     * @return string
      */
     public function smartyPluginUrl(array $params, $smarty): string {
         $path = [$this->getCategory(), $this->getName()];
@@ -503,27 +533,27 @@ class PLNPlugin extends GenericPlugin {
     }
     
     /**
-     * Set the page's breadcrumbs, given the plugin's tree of items
-     * to append.
+     * Set the page's breadcrumbs, given the plugin's tree of items to append.
      * @param string $page
      */
     public function setBreadcrumbs($page) {
-        $templateMgr = TemplateManager::getManager();
+        $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
         $pageCrumbs = [
             [
-                Request::url(null, 'user'),
+                $request->url(null, 'user'),
                 'navigation.user'
             ],
             [
-                Request::url(null, 'manager'),
+                $request->url(null, 'manager'),
                 'manager.journalManagement'
             ],
             [
-                Request::url(null, 'manager', 'plugins'),
+                $request->url(null, 'manager', 'plugins'),
                 'manager.plugins.pluginManagement'
             ],
             [
-                Request::url(null, 'manager', 'plugins', 'generic'),
+                $request->url(null, 'manager', 'plugins', 'generic'),
                 'plugins.categories.generic'
             ]
         ];
@@ -531,19 +561,22 @@ class PLNPlugin extends GenericPlugin {
     }
     
     /**
-     * Check to see whether the PLN's terms have been agreed to
-     * to append.
+     * Check to see whether the PLN's terms have been agreed to.
      * @param int $journalId
-     * @return boolean
+     * @return bool
      */
     public function termsAgreed($journalId) {
-        $terms = unserialize($this->getSetting($journalId, 'terms_of_use'));
-        $termsAgreed = unserialize($this->getSetting($journalId, 'terms_of_use_agreement'));
+        $terms = unserialize((string) $this->getSetting($journalId, 'terms_of_use'));
+        $termsAgreed = unserialize((string) $this->getSetting($journalId, 'terms_of_use_agreement'));
 
-        if (!is_array($terms) || !is_array($termsAgreed)) return false;
+        if (!is_array($terms) || !is_array($termsAgreed)) {
+            return false;
+        }
 
         foreach (array_keys($terms) as $term) {
-            if (!isset($termsAgreed[$term]) || (!$termsAgreed[$term])) return false;
+            if (!isset($termsAgreed[$term]) || !$termsAgreed[$term]) {
+                return false;
+            }
         }
         
         return true;
@@ -552,30 +585,33 @@ class PLNPlugin extends GenericPlugin {
     /**
      * Request service document at specified URL
      * @param int $journalId
-     * @return int
+     * @return int|bool
      */
     public function getServiceDocument($journalId) {
         /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
-        $journal = $journalDao->getById($journalId);
+        $journal = $journalDao->getById((int) $journalId);
+        if (!$journal) {
+            return false;
+        }
 
-        // get the journal and determine the language.
         $locale = $journal->getPrimaryLocale();
         $language = strtolower(str_replace('_', '-', $locale));
-        $network = $this->getSetting($journal->getId(), 'pln_network');
-        // retrieve the service document
+        $network = $this->getSetting((int) $journalId, 'pln_network');
+        
+        // Retrieve the service document
         $result = $this->_curlGet(
             $network . PLN_PLUGIN_SD_IRI,
             [
-                'On-Behalf-Of: '.$this->getSetting($journalId, 'journal_uuid'),
-                'Journal-URL: '.$journal->getUrl(),
-                'Accept-language:' . $language,
+                'On-Behalf-Of: ' . $this->getSetting((int) $journalId, 'journal_uuid'),
+                'Journal-URL: ' . $journal->getUrl(),
+                'Accept-language: ' . $language,
             ]
         );
         
-        // stop here if we didn't get an OK
-        if ($result['status'] != PLN_PLUGIN_HTTP_STATUS_OK) {
-            if($result['status'] === false) {
+        // Stop here if we didn't get an OK
+        if ($result['status'] !== PLN_PLUGIN_HTTP_STATUS_OK) {
+            if ($result['status'] === false) {
                 error_log(__('plugins.generic.pln.error.network.servicedocument', ['error' => $result['error']]));
             } else {
                 error_log(__('plugins.generic.pln.error.http.servicedocument', ['error' => $result['status']]));
@@ -587,23 +623,29 @@ class PLNPlugin extends GenericPlugin {
         $serviceDocument->preserveWhiteSpace = false;
         $serviceDocument->loadXML($result['result']);
         
-        // update the max upload size
+        // Update the max upload size
         $element = $serviceDocument->getElementsByTagName('maxUploadSize')->item(0);
-        $this->updateSetting($journalId, 'max_upload_size', $element->nodeValue);
+        if ($element) {
+            $this->updateSetting((int) $journalId, 'max_upload_size', $element->nodeValue);
+        }
         
-        // update the checksum type
+        // Update the checksum type
         $element = $serviceDocument->getElementsByTagName('uploadChecksumType')->item(0);
-        $this->updateSetting($journalId, 'checksum_type', $element->nodeValue);
+        if ($element) {
+            $this->updateSetting((int) $journalId, 'checksum_type', $element->nodeValue);
+        }
         
-        // update the network status
+        // Update the network status
         $element = $serviceDocument->getElementsByTagName('pln_accepting')->item(0);
-        $this->updateSetting($journalId, 'pln_accepting', (($element->getAttribute('is_accepting')=='Yes')?true:false));
-        $this->updateSetting($journalId, 'pln_accepting_message', $element->nodeValue);
+        if ($element) {
+            $this->updateSetting((int) $journalId, 'pln_accepting', ($element->getAttribute('is_accepting') === 'Yes'));
+            $this->updateSetting((int) $journalId, 'pln_accepting_message', $element->nodeValue);
+        }
         
-        // update the terms of use
+        // Update the terms of use
         $termElements = $serviceDocument->getElementsByTagName('terms_of_use')->item(0)->childNodes;
         $terms = [];
-        foreach($termElements as $termElement) {
+        foreach ($termElements as $termElement) {
             if (!$termElement instanceof DOMElement) {
                 continue;
             }
@@ -614,18 +656,18 @@ class PLNPlugin extends GenericPlugin {
         }
         
         $newTerms = serialize($terms);
-        $oldTerms = $this->getSetting($journalId,'terms_of_use');
+        $oldTerms = $this->getSetting((int) $journalId, 'terms_of_use');
         
-        // if the new terms don't match the exiting ones we need to reset agreement
-        if ($newTerms != $oldTerms) {
+        // If the new terms don't match the existing ones we need to reset agreement
+        if ($newTerms !== $oldTerms) {
             $termAgreements = [];
-            foreach($terms as $termName => $termText) {
+            foreach ($terms as $termName => $termText) {
                 $termAgreements[$termName] = null;
             }
         
-            $this->updateSetting($journalId, 'terms_of_use', $newTerms, 'object');
-            $this->updateSetting($journalId, 'terms_of_use_agreement', serialize($termAgreements), 'object');
-            $this->createJournalManagerNotification($journalId,PLN_PLUGIN_NOTIFICATION_TYPE_TERMS_UPDATED);
+            $this->updateSetting((int) $journalId, 'terms_of_use', $newTerms, 'object');
+            $this->updateSetting((int) $journalId, 'terms_of_use_agreement', serialize($termAgreements), 'object');
+            $this->createJournalManagerNotification((int) $journalId, PLN_PLUGIN_NOTIFICATION_TYPE_TERMS_UPDATED);
         }
         
         return $result['status'];
@@ -639,19 +681,18 @@ class PLNPlugin extends GenericPlugin {
     public function createJournalManagerNotification($journalId, $notificationType) {
         /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
-        $journalManagers = $roleDao->getUsersByRoleId(ROLE_ID_JOURNAL_MANAGER,$journalId);
+        $journalManagers = $roleDao->getUsersByRoleId(ROLE_ID_JOURNAL_MANAGER, (int) $journalId);
         import('classes.notification.NotificationManager');
         $notificationManager = new NotificationManager();
-        // TODO: this currently gets sent to all journal managers - perhaps only limit to the technical contact's account?
+        
         while ($journalManager = $journalManagers->next()) {
-            $notificationManager->createTrivialNotification($journalManager->getId(), $notificationType);
-            unset($journalManager);
+            $notificationManager->createTrivialNotification((int) $journalManager->getId(), $notificationType);
         }
     }
 
     /**
-     * Get whether we're running php 7
-     * @return boolean
+     * Get whether we're running php 7+
+     * @return bool
      */
     public function php5Installed() {
         return version_compare(PHP_VERSION, '7.4.0', '>=');
@@ -659,7 +700,7 @@ class PLNPlugin extends GenericPlugin {
     
     /**
      * Get whether curl is available
-     * @return boolean
+     * @return bool
      */
     public function curlInstalled() {
         return function_exists('curl_version');
@@ -667,16 +708,15 @@ class PLNPlugin extends GenericPlugin {
     
     /**
      * Get whether zip archive support is present
-     * @return boolean
+     * @return bool
      */
     public function zipInstalled() {
         return class_exists('ZipArchive');
     }
         
     /**
-     * Check if the Archive_Tar extension is installed and available. BagIt
-     * requires it, and will not function without it.
-     * @return boolean
+     * Check if the Archive_Tar extension is installed and available. BagIt requires it.
+     * @return bool
      */
     public function tarInstalled() {
         @include_once('Archive/Tar.php');
@@ -685,8 +725,7 @@ class PLNPlugin extends GenericPlugin {
 
     /**
      * Check if acron is enabled, or if the scheduled_tasks config var is set.
-     * The plugin needs to run periodically through one of those systems.
-     * @return boolean
+     * @return bool
      */
     public function cronEnabled() {
         $application = PKPApplication::getApplication();
@@ -696,21 +735,25 @@ class PLNPlugin extends GenericPlugin {
         
     /**
      * Get resource using CURL
+     * [WIZDAM FIX] Changed from protected to public to allow access from DepositPackage
      * @param string $url
      * @param array $headers
      * @return array
      */
-    protected function _curlGet($url,$headers=[]) {
+    public function _curlGet($url, $headers = []) {
         $curl = curl_init();
         curl_setopt_array($curl, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_URL => $url
         ]);
-        if ($httpProxyHost = Config::getVar('proxy', 'http_host')) {
+        
+        $httpProxyHost = Config::getVar('proxy', 'http_host');
+        if ($httpProxyHost) {
             curl_setopt($curl, CURLOPT_PROXY, $httpProxyHost);
             curl_setopt($curl, CURLOPT_PROXYPORT, Config::getVar('proxy', 'http_port', '80'));
-            if ($username = Config::getVar('proxy', 'username')) {
+            $username = Config::getVar('proxy', 'username');
+            if ($username) {
                 curl_setopt($curl, CURLOPT_PROXYUSERPWD, $username . ':' . Config::getVar('proxy', 'password'));
             }
         }
@@ -718,7 +761,7 @@ class PLNPlugin extends GenericPlugin {
         $httpResult = curl_exec($curl);
         $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         $httpError = curl_error($curl);
-        curl_close ($curl);
+        curl_close($curl);
                 
         return [
             'status' => $httpStatus,
@@ -729,24 +772,28 @@ class PLNPlugin extends GenericPlugin {
     
     /**
      * Post a file to a resource using CURL
+     * [WIZDAM FIX] Changed from protected to public to allow access from DepositPackage
      * @param string $url
      * @param string $filename
      * @return array
      */
-    protected function _curlPostFile($url, $filename) {
+    public function _curlPostFile($url, $filename) {
         $curl = curl_init(); 
         curl_setopt_array($curl, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
-            CURLOPT_HTTPHEADER => ["Content-Length: ".filesize($filename)],
+            CURLOPT_HTTPHEADER => ["Content-Length: " . filesize($filename)],
             CURLOPT_INFILE => fopen($filename, "r"),
             CURLOPT_INFILESIZE => filesize($filename),
             CURLOPT_URL => $url
         ]);
-        if ($httpProxyHost = Config::getVar('proxy', 'http_host')) {
+        
+        $httpProxyHost = Config::getVar('proxy', 'http_host');
+        if ($httpProxyHost) {
             curl_setopt($curl, CURLOPT_PROXY, $httpProxyHost);
             curl_setopt($curl, CURLOPT_PROXYPORT, Config::getVar('proxy', 'http_port', '80'));
-            if ($username = Config::getVar('proxy', 'username')) {
+            $username = Config::getVar('proxy', 'username');
+            if ($username) {
                 curl_setopt($curl, CURLOPT_PROXYUSERPWD, $username . ':' . Config::getVar('proxy', 'password'));
             }
         }
@@ -754,7 +801,7 @@ class PLNPlugin extends GenericPlugin {
         $httpResult = curl_exec($curl);
         $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         $httpError = curl_error($curl);
-        curl_close ($curl);
+        curl_close($curl);
         
         return [
             'status' => $httpStatus,
@@ -765,14 +812,15 @@ class PLNPlugin extends GenericPlugin {
     
     /**
      * Put a file to a resource using CURL
+     * [WIZDAM FIX] Changed from protected to public to allow access from DepositPackage
      * @param string $url
      * @param string $filename
      * @return array
      */
-    protected function _curlPutFile($url, $filename) {
+    public function _curlPutFile($url, $filename) {
         $headers = [
-            "Content-Type: ".mime_content_type($filename),
-            "Content-Length: ".filesize($filename)
+            "Content-Type: " . mime_content_type($filename),
+            "Content-Length: " . filesize($filename)
         ];
         
         $curl = curl_init(); 
@@ -784,10 +832,13 @@ class PLNPlugin extends GenericPlugin {
             CURLOPT_INFILESIZE => filesize($filename),
             CURLOPT_URL => $url
         ]);
-        if ($httpProxyHost = Config::getVar('proxy', 'http_host')) {
+        
+        $httpProxyHost = Config::getVar('proxy', 'http_host');
+        if ($httpProxyHost) {
             curl_setopt($curl, CURLOPT_PROXY, $httpProxyHost);
             curl_setopt($curl, CURLOPT_PROXYPORT, Config::getVar('proxy', 'http_port', '80'));
-            if ($username = Config::getVar('proxy', 'username')) {
+            $username = Config::getVar('proxy', 'username');
+            if ($username) {
                 curl_setopt($curl, CURLOPT_PROXYUSERPWD, $username . ':' . Config::getVar('proxy', 'password'));
             }
         }
@@ -795,7 +846,7 @@ class PLNPlugin extends GenericPlugin {
         $httpResult = curl_exec($curl);
         $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         $httpError = curl_error($curl);
-        curl_close ($curl);
+        curl_close($curl);
         
         return [
             'status' => $httpStatus,

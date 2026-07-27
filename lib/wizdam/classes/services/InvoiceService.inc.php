@@ -6,15 +6,14 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance & DDD
+ * Distributed under the GNU GPL v3.
+ * 
  * @class InvoiceService
+ * 
  * @brief Jantung pengelola tagihan. Menangani bisnis proses pembayaran, 
  * bersih dari raw SQL query, mendukung i18n, dan berada di direktori services terpusat.
  */
 
-// Model & DAO tetap di domain checkout (atau sesuaikan jika ikut dipindah)
 import('lib.wizdam.classes.invoice.Invoice');
 import('lib.wizdam.classes.invoice.InvoiceDAO');
 
@@ -37,8 +36,12 @@ class InvoiceService {
      * Generate nomor dan kode invoice yang semantik dan permanen.
      * Format artikel : [4 digit awal ISSN]-[articleId]-[4 digit akhir ISSN]
      * Format non-artikel: [PREFIX]-[userId]-[yymmdd]
+     * @param string $feeType
+     * @param int $journalId
+     * @param int $userId
+     * @param null|int $articleId
      */
-    public function generateInvoiceNumber( string $feeType, int $journalId, int $userId, ?int $articleId = null ): array {
+    public function generateInvoiceNumber(string $feeType, int $journalId, int $userId, ?int $articleId = null ): array {
         $articleFeeTypes = [
             'PUBLICATION', 'FAST_TRACK', 'SUBMISSION',
             Invoice::FEE_TYPE_PUBLICATION,
@@ -47,7 +50,7 @@ class InvoiceService {
         ];
 
         if (in_array(strtoupper($feeType), $articleFeeTypes, true) && $articleId > 0) {
-            // ── Format berbasis ISSN untuk biaya yang terkait artikel ──
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journal    = $journalDao->getById($journalId);
 
@@ -99,7 +102,6 @@ class InvoiceService {
     public function generateInvoice( int $journalId, int $userId, ?int $submissionId, string $feeType, float $amount, string $currencyCode = 'IDR', ?string $invoiceNumber = null, ?string $invoiceCode = null ): Invoice {
         
         if ($amount < 0) {
-            // [WIZDAM i18n FIX] Menggunakan locale key untuk exception
             throw new \InvalidArgumentException(__('billing.error.negativeAmount'));
         }
         
@@ -128,15 +130,12 @@ class InvoiceService {
     /**
      * [WIZDAM] Membuat tagihan dari sesi Keranjang Belanja (B2C -> B2B)
      * Fungsi ini dipanggil oleh OrderHandler saat mengeksekusi Checkout.
-     * @param object $user Objek pengguna yang melakukan checkout
-     * @param array $cartItems Array item dalam keranjang
-     * @param int item_reference_id (ID artikel/manuskrip)
-     * @param string item_type
-     * @return Invoice Tagihan yang baru dibuat berdasarkan isi keranjang
+     * @param object $user
+     * @param array $cartItems
+     * @return Invoice
      */
     public function createInvoiceFromCart(object $user, array $cartItems): Invoice {
         if (empty($cartItems)) {
-            // [WIZDAM i18n FIX] Menggunakan locale key (sudah disiapkan di OrderHandler)
             throw new \Exception(__('order.error.emptyCart'));
         }
 
@@ -286,10 +285,24 @@ class InvoiceService {
             case Invoice::FEE_TYPE_PURCHASE_ISSUE:
             case '9':  return __('manager.payment.options.purchaseIssueFee');
             case Invoice::FEE_TYPE_GIFT:
-            case '10': return __('manager.payment.options.giftFee');
+            case '16': return __('manager.payment.options.giftFee');
             case 'BUNDLE_PAYMENT': return __('billing.feeType.bundlePayment');
             default:   return __('manager.payment.options.otherFee');
         }
+    }
+
+    /**
+     * Get Invoices by submission id
+     * @param int $submissionId
+     */
+    public function getInvoicesBySubmissionId(int $submissionId): array {
+        $result = $this->invoiceDao->getBySubmissionId($submissionId);
+
+        if ($result instanceof Invoice) return [$result];
+        if (is_array($result)) return $result;
+        if (is_object($result) && method_exists($result, 'toArray')) return $result->toArray();
+
+        return [];
     }
     
     /**
@@ -298,11 +311,11 @@ class InvoiceService {
      * @return array
      */
     public function getInvoiceSummary(Invoice $invoice): array {
-        $journalDao = DAORegistry::getDAO('JournalDAO');
-        $userDao    = DAORegistry::getDAO('UserDAO');
-        $articleDao = DAORegistry::getDAO('ArticleDAO');
-        $authorDao  = DAORegistry::getDAO('AuthorDAO');
-        $countryDao = DAORegistry::getDAO('CountryDAO');
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
+        $userDao    = DAORegistry::getDAO('UserDAO'); /** @var UserDAO $userDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO'); /** @var ArticleDAO $articleDao */
+        $authorDao  = DAORegistry::getDAO('AuthorDAO'); /** @var AuthorDAO $authorDao */
+        $countryDao = DAORegistry::getDAO('CountryDAO'); /** @var CountryDAO $countryDao */
 
         $journalId = (int) $invoice->getData('journalId');
         $journal   = $journalDao->getById($journalId);
@@ -313,7 +326,7 @@ class InvoiceService {
 
         $localizedFeeName = $this->getLocalizedFeeName($feeType);
 
-        // ── Invoice Number: 3 lapis prioritas, tidak ada fallback status ──
+        // Invoice Number: 3 lapis prioritas, tidak ada fallback status ──
         // Prioritas 1: dari kolom invoice_number di tabel 'invoices' mutlak
         $invoiceNumber = (string) $invoice->getData('invoiceNumber');
         $invoiceCode   = (string) $invoice->getData('invoiceCode');
@@ -337,7 +350,7 @@ class InvoiceService {
             $invoiceCode   = $generated['invoiceCode'];
         }
 
-        // ── Data penulis/biller ──
+        // Data penulis/biller ──
         $articleTitle   = $localizedFeeName;
         $billedName     = $submitter ? $submitter->getFullName() : '';
         $billedEmail    = $submitter ? $submitter->getEmail() : '';
@@ -372,7 +385,7 @@ class InvoiceService {
             }
         }
 
-        // ── Afiliasi + Negara ──
+        // Afiliasi + Negara ──
         $affiliationList = array_values(array_filter(
             array_map('trim', preg_split('/\r\n|\r|\n/', (string) $rawAffiliation))
         ));
@@ -384,7 +397,7 @@ class InvoiceService {
             }
         }
 
-        // ── Kalkulasi pajak ──
+        // Kalkulasi pajak ──
         $settingTaxRate  = $journal ? (float) $journal->getSetting('paymentTax')          : 0;
         $isTaxInclusive  = $journal ? (bool)  $journal->getSetting('paymentTaxInclusive') : false;
         $discount        = $journal ? (float) $journal->getSetting('paymentDiscount')      : 0;
@@ -474,5 +487,6 @@ class InvoiceService {
     public function deleteInvoice(Invoice $invoice): bool {
         return $this->invoiceDao->deleteInvoiceById((int) $invoice->getInvoiceId());
     }
+
 }
 ?>

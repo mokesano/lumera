@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_payment
  *
  * @brief Handle requests for payment functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.handler.Handler');
@@ -64,5 +62,6 @@ class PaymentHandler extends Handler {
 
         $paymentMethodPlugin->handle($args, $request);
     }
+    
 }
 ?>

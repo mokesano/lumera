@@ -28,7 +28,7 @@ class CustomThemePlugin extends ThemePlugin
      */
     public function register(string $category, string $path, $mainContextId = null): bool
     {
-        if (parent::register($category, $path, $mainContextId)) {
+        if (parent::register($category, $path)) {
             $this->addLocaleData();
             return true;
         }
@@ -102,7 +102,7 @@ class CustomThemePlugin extends ThemePlugin
     /**
      * Set the page's breadcrumbs, given the plugin's tree of items
      * to append.
-     * @param bool $isSubclass Whether called from a subclass
+     * @param bool $isSubclass
      * @return void
      */
     public function setBreadcrumbs(bool $isSubclass = false): void
@@ -136,7 +136,7 @@ class CustomThemePlugin extends ThemePlugin
      * Extend the {url ...} smarty to support this plugin.
      *
      * @param array $params
-     * @param object $smarty reference
+     * @param object $smarty
      */
     public function smartyPluginUrl(array $params, $smarty): string
     {
@@ -164,7 +164,7 @@ class CustomThemePlugin extends ThemePlugin
      * @param string $verb management action
      * @param array $args
      */
-    public function manage(string $verb, array $args, string $message = null, $messageParams = null, $pluginModalContent = null): bool
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $pluginModalContent = null): bool
     {
         if ($verb !== 'settings') {
             return false;
@@ -215,5 +215,6 @@ class CustomThemePlugin extends ThemePlugin
             $templateMgr->addStyleSheet($path);
         }
     }
+    
 }
 ?>

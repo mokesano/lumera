@@ -61,7 +61,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set ID of author.
-     * @param $authorId int
+     * @param int $authorId
      */
     public function setAuthorId($authorId) {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.', E_USER_DEPRECATED);
@@ -78,7 +78,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set ID of submission.
-     * @param $submissionId int
+     * @param int $submissionId
      */
     public function setSubmissionId($submissionId) {
         return $this->setData('submissionId', $submissionId);
@@ -86,7 +86,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set the user group id
-     * @param $userGroupId int
+     * @param int $userGroupId
      */
     public function setUserGroupId($userGroupId) {
         $this->setData('userGroupId', $userGroupId);
@@ -110,7 +110,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set first name.
-     * @param $firstName string
+     * @param string $firstName
      */
     public function setFirstName($firstName) {
         return $this->setData('firstName', $firstName);
@@ -126,7 +126,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set middle name.
-     * @param $middleName string
+     * @param string $middleName
      */
     public function setMiddleName($middleName) {
         return $this->setData('middleName', $middleName);
@@ -142,7 +142,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set initials.
-     * @param $initials string
+     * @param string $initials
      */
     public function setInitials($initials) {
         return $this->setData('initials', $initials);
@@ -158,7 +158,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set last name.
-     * @param $lastName string
+     * @param string $lastName
      */
     public function setLastName($lastName) {
         return $this->setData('lastName', $lastName);
@@ -174,7 +174,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set suffix.
-     * @param $suffix string
+     * @param string $suffix
      */
     public function setSuffix($suffix) {
         return $this->setData('suffix', $suffix);
@@ -190,7 +190,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set user salutation.
-     * @param $salutation string
+     * @param string $salutation
      */
     public function setSalutation($salutation) {
         return $this->setData('salutation', $salutation);
@@ -198,7 +198,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Get affiliation (position, institution, etc.).
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getAffiliation($locale) {
@@ -207,8 +207,8 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set affiliation.
-     * @param $affiliation string
-     * @param $locale string
+     * @param string $affiliation
+     * @param string $locale
      */
     public function setAffiliation($affiliation, $locale) {
         return $this->setData('affiliation', $affiliation, $locale);
@@ -234,7 +234,7 @@ class PKPAuthor extends DataObject {
      * @return string
      */
     public function getCountryLocalized() {
-        // Hapus '&'
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $country = $this->getCountry();
         if ($country) {
@@ -245,7 +245,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set country code.
-     * @param $country string
+     * @param string $country
      */
     public function setCountry($country) {
         return $this->setData('country', $country);
@@ -261,7 +261,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set email address.
-     * @param $email string
+     * @param string $email
      */
     public function setEmail($email) {
         return $this->setData('email', $email);
@@ -277,7 +277,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set URL.
-     * @param $url string
+     * @param string $url
      */
     public function setUrl($url) {
         return $this->setData('url', $url);
@@ -290,6 +290,9 @@ class PKPAuthor extends DataObject {
         return $this->getLocalizedData('biography');
     }
 
+    /**
+     * [DEPRECATED] Get Author Biography
+     */
     public function getAuthorBiography() {
         if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.', E_USER_DEPRECATED);
         return $this->getLocalizedBiography();
@@ -297,7 +300,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Get author biography.
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getBiography($locale) {
@@ -306,8 +309,8 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set author biography.
-     * @param $biography string
-     * @param $locale string
+     * @param string $biography
+     * @param string $locale
      */
     public function setBiography($biography, $locale) {
         return $this->setData('biography', $biography, $locale);
@@ -323,7 +326,7 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set primary contact.
-     * @param $primaryContact boolean
+     * @param boolean $primaryContact
      */
     public function setPrimaryContact($primaryContact) {
         return $this->setData('primaryContact', $primaryContact);
@@ -339,11 +342,11 @@ class PKPAuthor extends DataObject {
 
     /**
      * Set sequence of author in article's author list.
-     * @param $sequence float
+     * @param float $sequence
      */
     public function setSequence($sequence) {
         return $this->setData('sequence', $sequence);
     }
+    
 }
-
 ?>

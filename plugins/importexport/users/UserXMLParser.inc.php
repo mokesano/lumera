@@ -60,8 +60,8 @@ class UserXMLParser {
 
     /**
      * Parse an XML users file into a set of users to import.
-     * @param string $file path to the XML file to parse
-     * @return array ImportedUsers the collection of users read from the file
+     * @param string $file XML file to parse
+     * @return array
      */
     public function parseData(string $file): array {
         /** @var RoleDAO $roleDao */
@@ -194,8 +194,8 @@ class UserXMLParser {
 
     /**
      * Import the parsed users into the system.
-     * @param bool $sendNotify send an email notification to each imported user containing their username and password
-     * @param bool $continueOnError continue to import remaining users if a failure occurs
+     * @param bool $sendNotify
+     * @param bool $continueOnError
      * @return bool success
      */
     public function importUsers(bool $sendNotify = false, bool $continueOnError = false): bool {
@@ -378,7 +378,7 @@ class UserXMLParser {
 
     /**
      * Generate a unique username for a user based on the user's name.
-     * @param ImportedUser $user the user to be modified by this function
+     * @param ImportedUser $user
      */
     public function generateUsername(ImportedUser $user): void {
         /** @var UserDAO $userDao */
@@ -404,7 +404,7 @@ class UserXMLParser {
 
     /**
      * Generate a random password for a user.
-     * @param ImportedUser $user the user to be modified by this function
+     * @param ImportedUser $user
      */
     public function generatePassword(ImportedUser $user): void {
         $password = Validation::generatePassword();

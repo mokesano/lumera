@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 
 class O4DOIObjectCache {
+    
     /** @var array */
     protected $_objectCache = [];
 
@@ -36,7 +37,7 @@ class O4DOIObjectCache {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -45,7 +46,7 @@ class O4DOIObjectCache {
     /**
      * Add a publishing object to the cache.
      * @param Issue|PublishedArticle|ArticleGalley $object
-     * @param PublishedArticle|null $parent Only required when adding a galley.
+     * @param PublishedArticle|null $parent
      */
     public function add($object, $parent) {
         if ($object instanceof Issue) {
@@ -88,7 +89,6 @@ class O4DOIObjectCache {
      * @param string $cacheId
      * @param int $id1
      * @param int|null $id2
-     *
      * @return mixed
      */
     public function get($cacheId, $id1, $id2 = null) {
@@ -110,7 +110,6 @@ class O4DOIObjectCache {
      * @param string $cacheId
      * @param int $id1
      * @param int|null $id2
-     *
      * @return bool
      */
     public function isCached($cacheId, $id1, $id2 = null): bool {
@@ -159,6 +158,6 @@ class O4DOIObjectCache {
             $this->_objectCache[$cacheId][$id1][$id2] = $object;
         }
     }
-}
 
+}
 ?>

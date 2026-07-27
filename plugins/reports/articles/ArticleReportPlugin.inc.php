@@ -7,10 +7,11 @@ declare(strict_types=1);
  * Copyright (c) 2013-2019 Simon Fraser University
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- * * @class ArticleReportPlugin
+ * 
+ * @class ArticleReportPlugin
  * @ingroup plugins_reports_article
  *
- * @brief Article report plugin
+ * @brief Article report plugin.
  */
 
 import('classes.plugins.ReportPlugin');
@@ -18,14 +19,14 @@ import('classes.plugins.ReportPlugin');
 class ArticleReportPlugin extends ReportPlugin {
     
     /**
-     * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path The path the plugin was found in
+     * Called as a plugin is registered to the registry.
+     * @param string $category
+     * @param string $path
      * @param int|null $mainContextId
-     * @return bool True if plugin initialized successfully; if false, the plugin will not be registered.
+     * @return bool
      */
     public function register(string $category, string $path, $mainContextId = null): bool {
-        $success = parent::register($category, $path, $mainContextId);
+        $success = parent::register($category, $path);
         if ($success && Config::getVar('general', 'installed')) {
             $this->import('ArticleReportDAO');
             $articleReportDAO = new ArticleReportDAO();
@@ -36,9 +37,8 @@ class ArticleReportPlugin extends ReportPlugin {
     }
 
     /**
-     * Get the name of this plugin. The name must be unique within
-     * its category.
-     * @return string name of plugin
+     * Get the name of this plugin. The name must be unique within its category.
+     * @return string
      */
     public function getName(): string {
         return 'ArticleReportPlugin';
@@ -63,39 +63,52 @@ class ArticleReportPlugin extends ReportPlugin {
     /**
      * Display the report.
      * @param array $args
-     * @param Request $request
+     * @param mixed $request
      */
     public function display($args, $request) {
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
         $journal = $request->getJournal();
+        if (!$journal) {
+            return;
+        }
 
-        header('content-type: text/comma-separated-values');
-        header('content-disposition: attachment; filename=articles-' . date('Ymd') . '.csv');
+        header('Content-Type: text/comma-separated-values');
+        header('Content-Disposition: attachment; filename=articles-' . date('Ymd') . '.csv');
 
-        $articleReportDao = DAORegistry::getDAO('ArticleReportDAO'); /* @var $articleReportDao ArticleReportDAO */
+        /** @var ArticleReportDAO $articleReportDao */
+        $articleReportDao = DAORegistry::getDAO('ArticleReportDAO');
         
-        // PHP 7.1+ supports short list syntax [], strictly we use standard list() or destructuring.
-        // Assuming getArticleReport returns an array of iterators.
-        list($articlesIterator, $authorsIterator, $decisionsIteratorsArray) = $articleReportDao->getArticleReport($journal->getId());
+        // Modern destructuring syntax
+        [$articlesIterator, $authorsIterator, $decisionsIteratorsArray] = $articleReportDao->getArticleReport((int) $journal->getId());
 
         $maxAuthors = $this->getMaxAuthorCount($authorsIterator);
 
         $decisions = [];
         foreach ($decisionsIteratorsArray as $decisionsIterator) {
             while ($row = $decisionsIterator->next()) {
-                $decisions[$row['article_id']] = $row['decision'];
+                $decisions[(int) $row['article_id']] = (int) $row['decision'];
             }
         }
 
         AppLocale::requireComponents(LOCALE_COMPONENT_APP_EDITOR, LOCALE_COMPONENT_CORE_SUBMISSION);
 
         import('classes.article.Article');
+        
+        // [WIZDAM FIX] Instantiate Article to call non-static method getStatusMap()
+        $articleObj = new Article();
+        $statusMap = $articleObj->getStatusMap();
+
         $decisionMessages = [
             SUBMISSION_EDITOR_DECISION_ACCEPT => __('editor.article.decision.accept'),
             SUBMISSION_EDITOR_DECISION_PENDING_REVISIONS => __('editor.article.decision.pendingRevisions'),
             SUBMISSION_EDITOR_DECISION_RESUBMIT => __('editor.article.decision.resubmit'),
             SUBMISSION_EDITOR_DECISION_DECLINE => __('editor.article.decision.decline'),
-            null => __('plugins.reports.articles.nodecision')
         ];
+        $defaultDecisionMessage = __('plugins.reports.articles.nodecision');
 
         $columns = [
             'article_id' => __('article.submissionId'),
@@ -105,14 +118,14 @@ class ArticleReportPlugin extends ReportPlugin {
             
         for ($a = 1; $a <= $maxAuthors; $a++) {
             $columns = array_merge($columns, [
-                'fname' . $a => __('user.firstName') . " (" . __('user.role.author') . " $a)",
-                'mname' . $a => __('user.middleName') . " (" . __('user.role.author') . " $a)",
-                'lname' . $a => __('user.lastName') . " (" . __('user.role.author') . " $a)",
-                'country' . $a => __('common.country') . " (" . __('user.role.author') . " $a)",
-                'affiliation' . $a => __('user.affiliation') . " (" . __('user.role.author') . " $a)",
-                'email' . $a => __('user.email') . " (" . __('user.role.author') . " $a)",
-                'url' . $a => __('user.url') . " (" . __('user.role.author') . " $a)",
-                'biography' . $a => __('user.biography') . " (" . __('user.role.author') . " $a)"
+                'fname' . $a => __('user.firstName') . ' (' . __('user.role.author') . " $a)",
+                'mname' . $a => __('user.middleName') . ' (' . __('user.role.author') . " $a)",
+                'lname' . $a => __('user.lastName') . ' (' . __('user.role.author') . " $a)",
+                'country' . $a => __('common.country') . ' (' . __('user.role.author') . " $a)",
+                'affiliation' . $a => __('user.affiliation') . ' (' . __('user.role.author') . " $a)",
+                'email' . $a => __('user.email') . ' (' . __('user.role.author') . " $a)",
+                'url' . $a => __('user.url') . ' (' . __('user.role.author') . " $a)",
+                'biography' . $a => __('user.biography') . ' (' . __('user.role.author') . " $a)"
             ]);
         }
             
@@ -126,44 +139,40 @@ class ArticleReportPlugin extends ReportPlugin {
         $fp = fopen('php://output', 'wt');
         PKPString::fputcsv($fp, array_values($columns));
 
-        import('classes.article.Article'); // Bring in getStatusMap function
-        $statusMap = Article::getStatusMap();
-
         $authorIndex = 0;
         while ($row = $articlesIterator->next()) {
-            if (isset($authorsIterator[$row['article_id']])) {
-                $authors = $this->mergeAuthors($authorsIterator[$row['article_id']]->toArray());
+            $articleId = (int) $row['article_id'];
+            
+            if (isset($authorsIterator[$articleId])) {
+                $authors = $this->mergeAuthors($authorsIterator[$articleId]->toArray());
             } else {
                 $authors = $this->mergeAuthors([]);
             }
 
             foreach ($columns as $index => $junk) {
-                if ($index == 'editor_decision') {
-                    if (isset($decisions[$row['article_id']])) {
-                        $columns[$index] = $decisionMessages[$decisions[$row['article_id']]];
-                    } else {
-                        $columns[$index] = $decisionMessages[null];
-                    }
-                } elseif ($index == 'status') {
-                    $columns[$index] = __($statusMap[$row[$index]]);
-                } elseif ($index == 'abstract') {
-                    // Safe cast to string to avoid PHP 8.1 null deprecation in strip_tags
-                    $columns[$index] = html_entity_decode(strip_tags((string) $row[$index]));
-                } elseif (strstr($index, 'biography') !== false) {
-                    // "Convert" HTML to text for export
+                if ($index === 'editor_decision') {
+                    $decision = $decisions[$articleId] ?? null;
+                    $columns[$index] = ($decision !== null && isset($decisionMessages[$decision])) 
+                        ? $decisionMessages[$decision] 
+                        : $defaultDecisionMessage;
+                } elseif ($index === 'status') {
+                    $statusValue = (int) $row[$index];
+                    $columns[$index] = isset($statusMap[$statusValue]) ? __($statusMap[$statusValue]) : '';
+                } elseif ($index === 'abstract') {
+                    $columns[$index] = html_entity_decode(strip_tags((string) ($row[$index] ?? '')));
+                } elseif (str_contains($index, 'biography')) {
                     $columns[$index] = isset($authors[$index]) ? html_entity_decode(strip_tags((string) $authors[$index])) : '';
                 } else {
                     if (isset($row[$index])) {
-                        $columns[$index] = $row[$index];
-                    } else if (isset($authors[$index])) {
-                        $columns[$index] = $authors[$index];
+                        $columns[$index] = (string) $row[$index];
+                    } elseif (isset($authors[$index])) {
+                        $columns[$index] = (string) $authors[$index];
                     } else {
                         $columns[$index] = '';
                     }
                 }
             }
             PKPString::fputcsv($fp, $columns);
-            unset($row);
             $authorIndex++;
         }
         
@@ -171,40 +180,44 @@ class ArticleReportPlugin extends ReportPlugin {
     }
     
     /**
-     * Get the highest author count for any article (to determine how many columns to set)
-     * @param DBRowIterator $authorsIterator
+     * Get the highest author count for any article to determine column count.
+     * @param array $authorsIterators
      * @return int
      */
-    public function getMaxAuthorCount($authorsIterator) {
+    public function getMaxAuthorCount($authorsIterators) {
         $maxAuthors = 0;
-        foreach ($authorsIterator as $authorIterator) {
-            $count = $authorIterator->getCount();
-            $maxAuthors = $count > $maxAuthors ? $count : $maxAuthors;
+        if (is_array($authorsIterators)) {
+            foreach ($authorsIterators as $authorIterator) {
+                $count = (int) $authorIterator->getCount();
+                if ($count > $maxAuthors) {
+                    $maxAuthors = $count;
+                }
+            }
         }
         return $maxAuthors;
     }
     
     /**
-     * Flatten an array of author information into one array and append author sequence to each key
+     * Flatten an array of author information into one array and append author sequence to each key.
      * @param array $authors
      * @return array
      */
-    public function mergeAuthors(array $authors) {
+    public function mergeAuthors(array $authors): array {
         $returner = [];
         $seq = 0;
-        foreach($authors as $author) {
+        foreach ($authors as $author) {
             $seq++;
-            
-            $returner['fname' . $seq] = isset($author['fname']) ? $author['fname'] : '';
-            $returner['mname' . $seq] = isset($author['mname']) ? $author['mname'] : '';
-            $returner['lname' . $seq] = isset($author['lname']) ? $author['lname'] : '';
-            $returner['email' . $seq] = isset($author['email']) ? $author['email'] : '';
-            $returner['affiliation' . $seq] = isset($author['affiliation']) ? $author['affiliation'] : '';
-            $returner['country' . $seq] = isset($author['country']) ? $author['country'] : '';
-            $returner['url' . $seq] = isset($author['url']) ? $author['url'] : '';
-            $returner['biography' . $seq] = isset($author['biography']) ? $author['biography'] : '';
+            $returner['fname' . $seq] = (string) ($author['fname'] ?? '');
+            $returner['mname' . $seq] = (string) ($author['mname'] ?? '');
+            $returner['lname' . $seq] = (string) ($author['lname'] ?? '');
+            $returner['email' . $seq] = (string) ($author['email'] ?? '');
+            $returner['affiliation' . $seq] = (string) ($author['affiliation'] ?? '');
+            $returner['country' . $seq] = (string) ($author['country'] ?? '');
+            $returner['url' . $seq] = (string) ($author['url'] ?? '');
+            $returner['biography' . $seq] = (string) ($author['biography'] ?? '');
         }
         return $returner;
     }
+
 }
 ?>

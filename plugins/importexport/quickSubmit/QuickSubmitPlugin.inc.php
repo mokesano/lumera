@@ -41,9 +41,9 @@ class QuickSubmitPlugin extends ImportExportPlugin {
 
     /**
      * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path Path to plugin
-     * @return bool True iff plugin initialized successfully
+     * @param string $category
+     * @param string $path
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
@@ -79,7 +79,7 @@ class QuickSubmitPlugin extends ImportExportPlugin {
     /**
      * Display the plugin.
      * @param array $args
-     * @param object $request
+     * @param Request $request
      */
     public function display($args, $request): void {
         $templateMgr = TemplateManager::getManager();
@@ -104,7 +104,7 @@ class QuickSubmitPlugin extends ImportExportPlugin {
     /**
      * Save the submitted form
      * @param array $args
-     * @param object $request
+     * @param Request $request
      */
     public function saveSubmit($args, $request): void {
         $templateMgr = TemplateManager::getManager();
@@ -207,5 +207,6 @@ class QuickSubmitPlugin extends ImportExportPlugin {
         }
         return $smarty->smartyUrl($params, $smarty);
     }
+
 }
 ?>

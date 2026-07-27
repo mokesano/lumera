@@ -17,7 +17,9 @@
 		$('#submit').pkpHandler('$.pkp.controllers.form.FormHandler');
 	{rdelim});
 </script>
+
 <form class="pkp_form" method="post" id="submit" action="{url op="selectObjectForReviewAuthor" path=$objectId}">
+	<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 	<select name="searchField" size="1" class="selectMenu">
 		{html_options_translate options=$searchFieldOptions selected=$searchField}
 	</select>
@@ -41,31 +43,31 @@
 		<td width="10%" align="right"></td>
 	</tr>
 	<tr><td colspan="4" class="headseparator">&nbsp;</td></tr>
-{iterate from=users item=user}
-	{assign var="userId" value=$user->getId()}
-	<tr valign="top">
-		<td>{if $isJournalManager}<a class="action" href="{url page="manager" op="userProfile" path=$userId}">{/if}{$user->getUsername()|escape}{if $isJournalManager}</a>{/if}</td>
-		<td>{$user->getFullName(true)|escape}</td>
-		<td class="nowrap">
-			{assign var=emailString value=$user->getFullName()|concat:" <":$user->getEmail():">"}
-			{url|assign:"url" page="user" op="email" to=$emailString|to_array}
-			{$user->getEmail()|truncate:20:"..."|escape}&nbsp;{icon name="mail" url=$url}
-		</td>
-		<td align="right" class="nowrap">
-			{if not in_array($userId,$usersAssigned)}<a href="{url op="assignObjectForReviewAuthor" path=$objectId userId=$userId}" class="action">{translate key="plugins.generic.objectsForReview.editor.assignAuthor.assign"}</a>{/if}
-		</td>
-	</tr>
-	<tr><td colspan="4" class="{if $users->eof()}end{/if}separator">&nbsp;</td></tr>
-{/iterate}
-{if $users->wasEmpty()}
-	<tr><td colspan="4" class="nodata">{translate key="common.none"}</td></tr>
-	<tr><td colspan="4" class="endseparator">&nbsp;</td></tr>
-{else}
-	<tr>
-		<td colspan="3" align="left">{page_info iterator=$users}</td>
-		<td colspan="2" align="right">{page_links anchor="users" name="users" iterator=$users searchInitial=$searchInitial searchField=$searchField searchMatch=$searchMatch search=$search}</td>
-	</tr>
-{/if}
+	{iterate from=users item=user}
+		{assign var="userId" value=$user->getId()}
+		<tr valign="top">
+			<td>{if $isJournalManager}<a class="action" href="{url page="manager" op="userProfile" path=$userId}">{/if}{$user->getUsername()|escape}{if $isJournalManager}</a>{/if}</td>
+			<td>{$user->getFullName(true)|escape}</td>
+			<td class="nowrap">
+				{assign var=emailString value=$user->getFullName()|concat:" <":$user->getEmail():">"}
+				{url|assign:"url" page="user" op="email" to=$emailString|to_array}
+				{$user->getEmail()|truncate:20:"..."|escape}&nbsp;{icon name="mail" url=$url}
+			</td>
+			<td align="right" class="nowrap">
+				{if not in_array($userId,$usersAssigned)}<a href="{url op="assignObjectForReviewAuthor" path=$objectId userId=$userId}" class="action">{translate key="plugins.generic.objectsForReview.editor.assignAuthor.assign"}</a>{/if}
+			</td>
+		</tr>
+		<tr><td colspan="4" class="{if $users->eof()}end{/if}separator">&nbsp;</td></tr>
+	{/iterate}
+	{if $users->wasEmpty()}
+		<tr><td colspan="4" class="nodata">{translate key="common.none"}</td></tr>
+		<tr><td colspan="4" class="endseparator">&nbsp;</td></tr>
+	{else}
+		<tr>
+			<td colspan="3" align="left">{page_info iterator=$users}</td>
+			<td colspan="2" align="right">{page_links anchor="users" name="users" iterator=$users searchInitial=$searchInitial searchField=$searchField searchMatch=$searchMatch search=$search}</td>
+		</tr>
+	{/if}
 </table>
 
 {if $isJournalManager}

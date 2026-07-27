@@ -19,9 +19,9 @@ import('classes.plugins.CitationPlugin');
 class RefManCitationPlugin extends CitationPlugin {
     
     /**
+     * Register plugin
      * @param string $category
      * @param string $path
-     * @param int|null $mainContextId
      * @return bool
      */
     public function register(string $category, string $path): bool {
@@ -40,6 +40,7 @@ class RefManCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get display name of plugin
      * @return string
      */
     public function getDisplayName(): string {
@@ -47,6 +48,7 @@ class RefManCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get citation format name of plugin
      * @return string
      */
     public function getCitationFormatName(): string {
@@ -54,6 +56,7 @@ class RefManCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get description of plugin
      * @return string
      */
     public function getDescription(): string {
@@ -71,6 +74,6 @@ class RefManCitationPlugin extends CitationPlugin {
         header('Content-Type: application/x-Research-Info-Systems');
         echo parent::fetchCitation($article, $issue, $journal);
     }
+    
 }
-
 ?>

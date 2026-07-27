@@ -400,14 +400,14 @@
     <upgrade minversion="2.0.0.0" maxversion="2.4.9.9">
         <code function="syncArticleIdentifiers" />
         <data file="dbscripts/xml/upgrade/lumera_schema.xml" />
-        <code function="migrateLegacyInvoicesToFrontedge" />
+        <code function="migrateLegacyInvoicesToLumera" />
     </upgrade>
     
     <!-- Prepare for Lumera schema upgrade from OJS 3.x -->
     <upgrade minversion="3.0.0.0" maxversion="3.9.9.9">
         <code function="syncArticleIdentifiers" />
         <data file="dbscripts/xml/upgrade/lumera_schema.xml" />
-        <code function="migrateLegacyInvoicesToFrontedge" />
+        <code function="migrateLegacyInvoicesToLumera" />
     </upgrade>
     
     <!-- Lumera schema upgrade -->

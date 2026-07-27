@@ -135,6 +135,7 @@ class NativeExportDom {
             }
         }
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         foreach ($sectionDao->getSectionsForIssue($issue->getId()) as $section) {
             $sectionNode = self::generateSectionDom($doc, $journal, $issue, $section);
@@ -183,6 +184,7 @@ class NativeExportDom {
             }
         }
 
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         foreach ($publishedArticleDao->getPublishedArticlesBySectionId($section->getId(), $issue->getId()) as $article) {
             $articleNode = self::generateArticleDom($doc, $journal, $issue, $section, $article);
@@ -321,7 +323,7 @@ class NativeExportDom {
                     XMLCustomWriter::appendChild($root, $coverNode);
                     XMLCustomWriter::setAttribute($coverNode, 'locale', $locale);
 
-                    XMLCustomWriter::createChildWithText($doc, $coverNode, 'altText', $issue->getCoverPageDescription($locale), false);
+                    XMLCustomWriter::createChildWithText($doc, $coverNode, 'altText', $article->getCoverPageDescription($locale), false);
 
                     $coverFile = $article->getFileName($locale);
                     if ($coverFile != '') {
@@ -449,6 +451,7 @@ class NativeExportDom {
         $isHtml = $galley->isHTMLGalley();
 
         $articleFileManager = new ArticleFileManager($article->getId());
+        /** @var ArticleFileDAO $articleFileDao */
         $articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
 
         $root = XMLCustomWriter::createElement($doc, $isHtml ? 'htmlgalley' : 'galley');
@@ -636,8 +639,10 @@ class NativeExportDom {
      * @return string|null
      */
     public static function formatDate($date): ?string {
-        if ($date == '') return null;
-        return date('Y-m-d', strtotime($date));
+        if (empty($date)) return null;
+        $timestamp = strtotime($date);
+
+        return $timestamp !== false ? date('Y-m-d', $timestamp) : null;
     }
 
     /**
@@ -664,6 +669,6 @@ class NativeExportDom {
             }
         }
     }
-}
 
+}
 ?>

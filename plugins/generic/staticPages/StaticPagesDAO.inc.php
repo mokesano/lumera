@@ -8,14 +8,12 @@ declare(strict_types=1);
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @package plugins.generic.staticPages
  * @class StaticPagesDAO
+ * @ingroup plugins_generic_staticPages
  *
- * Operations for retrieving and modifying StaticPages objects.
- * * MODERNIZED FOR WIZDAM FORK
+ * @brief Operations for retrieving and modifying StaticPages objects.
  */
- 
- 
+
 import('lib.pkp.classes.db.DAO');
 
 class StaticPagesDAO extends DAO {
@@ -24,94 +22,103 @@ class StaticPagesDAO extends DAO {
     public $parentPluginName;
 
     /**
-     * Constructor
+     * Constructor.
+     * @param string $parentPluginName
      */
     public function __construct($parentPluginName) {
-        $this->parentPluginName = $parentPluginName;
+        $this->parentPluginName = (string) $parentPluginName;
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $parentPluginName
      */
     public function StaticPagesDAO($parentPluginName) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::StaticPagesDAO(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($parentPluginName);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Retrieve a static page by ID.
-     * @param $staticPageId int
-     * @return StaticPage
+     * @param int $staticPageId
+     * @return StaticPage|null
      */
     public function getStaticPage($staticPageId) {
         $result = $this->retrieve(
-            'SELECT * FROM static_pages WHERE static_page_id = ?', (int) $staticPageId
+            'SELECT * FROM static_pages WHERE static_page_id = ?',
+            [(int) $staticPageId]
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if ($result && !$result->EOF) {
             $returner = $this->_returnStaticPageFromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Retrieve all static pages for a journal.
-     * @param $journalId int
-     * @param $rangeInfo DBResultRange optional
-     * @return DAOResultFactory<StaticPage>
+     * @param int $journalId
+     * @param mixed $rangeInfo
+     * @return DAOResultFactory
      */
     public function getStaticPagesByJournalId($journalId, $rangeInfo = null) {
         $result = $this->retrieveRange(
-            'SELECT * FROM static_pages WHERE journal_id = ?', (int) $journalId, $rangeInfo
+            'SELECT * FROM static_pages WHERE journal_id = ?',
+            [(int) $journalId],
+            $rangeInfo
         );
 
-        $returner = new DAOResultFactory($result, $this, '_returnStaticPageFromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_returnStaticPageFromRow');
     }
 
     /**
      * Retrieve a static page by path.
-     * @param $journalId int
-     * @param $path string
-     * @return StaticPage
+     * @param int $journalId
+     * @param string $path
+     * @return StaticPage|null
      */
     public function getStaticPageByPath($journalId, $path) {
         $result = $this->retrieve(
-            'SELECT * FROM static_pages WHERE journal_id = ? AND path = ?', array((int) $journalId, $path)
+            'SELECT * FROM static_pages WHERE journal_id = ? AND path = ?',
+            [(int) $journalId, (string) $path]
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if ($result && !$result->EOF) {
             $returner = $this->_returnStaticPageFromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Insert a new static page.
-     * @param $staticPage StaticPage
-     * @return int Static Page ID
+     * @param StaticPage $staticPage
+     * @return int
      */
     public function insertStaticPage($staticPage) {
         $this->update(
-            'INSERT INTO static_pages
-                (journal_id, path)
-                VALUES
-                (?, ?)',
-            array(
+            'INSERT INTO static_pages (journal_id, path) VALUES (?, ?)',
+            [
                 (int) $staticPage->getJournalId(),
-                $staticPage->getPath()
-            )
+                (string) $staticPage->getPath()
+            ]
         );
 
-        $staticPage->setId($this->getInsertStaticPageId());
+        $staticPage->setId((int) $this->getInsertStaticPageId());
         $this->updateLocaleFields($staticPage);
 
         return $staticPage->getId();
@@ -119,8 +126,8 @@ class StaticPagesDAO extends DAO {
 
     /**
      * Update an existing static page.
-     * @param $staticPage StaticPage
-     * @return int Static Page ID
+     * @param StaticPage $staticPage
+     * @return bool
      */
     public function updateStaticPage($staticPage) {
         $returner = $this->update(
@@ -129,33 +136,36 @@ class StaticPagesDAO extends DAO {
                     journal_id = ?,
                     path = ?
                 WHERE static_page_id = ?',
-                array(
-                    (int) $staticPage->getJournalId(),
-                    $staticPage->getPath(),
-                    (int) $staticPage->getId()
-                    )
-            );
+            [
+                (int) $staticPage->getJournalId(),
+                (string) $staticPage->getPath(),
+                (int) $staticPage->getId()
+            ]
+        );
         $this->updateLocaleFields($staticPage);
         return $returner;
     }
 
     /**
      * Delete a static page by ID.
-     * @param $staticPageId int
-     * @return int
+     * @param int $staticPageId
+     * @return bool
      */
     public function deleteStaticPageById($staticPageId) {
-        $returner = $this->update(
-            'DELETE FROM static_pages WHERE static_page_id = ?', (int) $staticPageId
+        $staticPageId = (int) $staticPageId;
+        $this->update(
+            'DELETE FROM static_pages WHERE static_page_id = ?',
+            [$staticPageId]
         );
         return $this->update(
-            'DELETE FROM static_page_settings WHERE static_page_id = ?', (int) $staticPageId
+            'DELETE FROM static_page_settings WHERE static_page_id = ?',
+            [$staticPageId]
         );
     }
 
     /**
      * Internal function to return a StaticPage object from a row.
-     * @param $row array
+     * @param array $row
      * @return StaticPage
      */
     public function _returnStaticPageFromRow($row) {
@@ -163,11 +173,11 @@ class StaticPagesDAO extends DAO {
         $staticPagesPlugin->import('StaticPage');
 
         $staticPage = new StaticPage();
-        $staticPage->setId($row['static_page_id']);
-        $staticPage->setPath($row['path']);
-        $staticPage->setJournalId($row['journal_id']);
+        $staticPage->setId((int) $row['static_page_id']);
+        $staticPage->setPath((string) $row['path']);
+        $staticPage->setJournalId((int) $row['journal_id']);
 
-        $this->getDataObjectSettings('static_page_settings', 'static_page_id', $row['static_page_id'], $staticPage);
+        $this->getDataObjectSettings('static_page_settings', 'static_page_id', (int) $row['static_page_id'], $staticPage);
         return $staticPage;
     }
 
@@ -184,50 +194,51 @@ class StaticPagesDAO extends DAO {
      * @return array
      */
     public function getLocaleFieldNames() {
-        return array('title', 'content');
+        return ['title', 'content'];
     }
 
     /**
-     * Update the localized data for this object
-     * @param $author object
+     * Update the localized data for this object.
+     * @param StaticPage $staticPage
      */
     public function updateLocaleFields($staticPage) {
-        $this->updateDataObjectSettings('static_page_settings', $staticPage, array(
-            'static_page_id' => $staticPage->getId()
-        ));
+        $this->updateDataObjectSettings('static_page_settings', $staticPage, [
+            'static_page_id' => (int) $staticPage->getId()
+        ]);
     }
 
     /**
-     * Find duplicate path
-     * @param $path String
-     * @param journalId int
-     * @param $staticPageId    int
-     * @return boolean
+     * Find duplicate path.
+     * @param string $path
+     * @param int $journalId
+     * @param int|null $staticPageId
+     * @return bool
      */
-    public function duplicatePathExists ($path, $journalId, $staticPageId = null) {
-        $params = array(
-                    (int) $journalId,
-                    $path
-                    );
-        if (isset($staticPageId)) $params[] = (int) $staticPageId;
+    public function duplicatePathExists($path, $journalId, $staticPageId = null) {
+        $params = [
+            (int) $journalId,
+            (string) $path
+        ];
+        if ($staticPageId !== null) {
+            $params[] = (int) $staticPageId;
+        }
 
         $result = $this->retrieve(
             'SELECT *
                 FROM static_pages
                 WHERE journal_id = ?
                 AND path = ?' .
-                (isset($staticPageId)?' AND NOT (static_page_id = ?)':''),
-                $params
-            );
+                ($staticPageId !== null ? ' AND NOT (static_page_id = ?)' : ''),
+            $params
+        );
 
-        if($result->RecordCount() == 0) {
-            // no duplicate exists
-            $returner = false;
-        } else {
-            $returner = true;
+        $returner = ($result && !$result->EOF);
+        if ($result) {
+            $result->Close();
         }
+        
         return $returner;
     }
-}
 
+}
 ?>

@@ -83,7 +83,7 @@
 	<message key="plugins.generic.pln.notifications.issn_setting">У вашего журнала должен быть ISSN до того, как вы примение условия использования. Вы можете ввести ISSN на странице «Настройка журнала». После того как будет введен ISSN журнал, условия использования будут показаны ниже.</message>
 	<message key="plugins.generic.pln.notifications.tar_missing">В вашей системе должен быть исполняемый файл tar.</message>
 	<message key="plugins.generic.pln.notifications.archive_tar_missing">Расширение PHP Archive_Tar должно быть установлено до включения PKP PLN.</message>
-	<message key="plugins.generic.pln.notifications.php5_missing">PKP PLN требует PHP версии 5 или выше.</message>
+	<message key="plugins.generic.pln.notifications.php_missing">PKP PLN требует PHP версии 7 или выше.</message>
 
 	<message key="plugins.generic.pln.error.include.bagit">Библиотеку BagIt, входящую в состав OJS, не удается загрузить, скорее всего из-за отсутствия необходимых для ее работы компонент.</message>
 	<message key="plugins.generic.pln.error.network.servicedocument">Ошибка сети {$error} при подключении к PLN для получения служебного документа.</message>

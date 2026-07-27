@@ -21,24 +21,28 @@ import('classes.plugins.CitationPlugin');
 class AbntCitationPlugin extends CitationPlugin {
     
     /**
+     * Register plugin
      * @see Plugin::register
+     * @param string $category String
+     * @param string $path String
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
         $this->addLocaleData();
+
         return $success;
     }
 
     /**
-     * Get the name of this plugin. The name must be unique within
-     * its category.
-     * @return string name of plugin
+     * Get the name of this plugin. The name must be unique within its category.
+     * @return string
      */
     public function getName(): string {
         return 'AbntCitationPlugin';
     }
 
     /**
+     * Get display plugin name
      * @see Plugin::getDisplayName
      * @return string
      */
@@ -47,6 +51,7 @@ class AbntCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get Citation format plugin
      * @see CitationFormatPlugin::getCitationFormatName
      * @return string
      */
@@ -55,6 +60,7 @@ class AbntCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get description plugin
      * @see Plugin::getDescription
      * @return string
      */
@@ -72,10 +78,12 @@ class AbntCitationPlugin extends CitationPlugin {
         if ($settings === null) {
             return null;
         }
+
         $location = $settings[AppLocale::getLocale()] ?? null;
         if (empty($location)) {
             $location = $settings[AppLocale::getPrimaryLocale()] ?? null;
         }
+        
         return $location;
     }
 
@@ -104,6 +112,7 @@ class AbntCitationPlugin extends CitationPlugin {
         $templateMgr->register_modifier('mb_upper', ['PKPString', 'strtoupper']);
         $templateMgr->register_modifier('abnt_date_format', [$this, 'abntDateFormat']);
         $templateMgr->register_modifier('abnt_date_format_with_day', [$this, 'abntDateFormatWithDay']);
+
         return parent::displayCitation($article, $issue, $journal);
     }
 
@@ -111,15 +120,12 @@ class AbntCitationPlugin extends CitationPlugin {
      * Execute a management verb on this plugin
      * @param string $verb
      * @param array $args
-     * @param string|null $message If a message is returned from this by-ref
-     * argument then it will be displayed as a notification if (and only
-     * if) the method returns false.
+     * @param string|null $message
      * @param array|null $messageParams
-     * @param PKPRequest|null $request
-     * @return bool will redirect to the plugin category page if false,
-     * otherwise will remain on the same page
+     * @param Request|null $request
+     * @return bool
      */
-    public function manage(string $verb, array $args, string $message = null, $messageParams = null, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         switch ($verb) {
             case 'settings':
                 $templateMgr = TemplateManager::getManager();
@@ -179,6 +185,8 @@ class AbntCitationPlugin extends CitationPlugin {
 
     /**
      * Extend the {url ...} smarty to support this plugin.
+     * @param array $params
+     * @param mixed $smarty Smarty
      * @return string
      */
     public function smartyPluginUrl($params, $smarty): string {
@@ -226,7 +234,7 @@ class AbntCitationPlugin extends CitationPlugin {
     public function abntDateFormatWithDay($string) {
         if (is_numeric($string)) {
             // it is a numeric string, we handle it as timestamp
-            $timestamp = (int)$string;
+            $timestamp = (int) $string;
         } else {
             $timestamp = strtotime($string);
         }
@@ -240,5 +248,6 @@ class AbntCitationPlugin extends CitationPlugin {
 
         return PKPString::strtolower(date($format, $timestamp));
     }
+
 }
 ?>

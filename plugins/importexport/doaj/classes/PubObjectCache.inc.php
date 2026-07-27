@@ -37,7 +37,7 @@ class PubObjectCache {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -46,7 +46,7 @@ class PubObjectCache {
     /**
      * Add a publishing object to the cache.
      * @param Issue|PublishedArticle|ArticleGalley|SuppFile $object
-     * @param PublishedArticle|null $parent Only required when adding a galley.
+     * @param PublishedArticle|null $parent
      */
     public function add($object, $parent = null) {
         if ($object instanceof Issue) {
@@ -57,10 +57,11 @@ class PubObjectCache {
             $this->_insertInternally($object, 'articlesByIssue', (int) $object->getIssueId(), (int) $object->getId());
         }
         if ($object instanceof ArticleGalley) {
-            assert($parent instanceof PublishedArticle);
-            $this->_insertInternally($object, 'galleys', (int) $object->getId());
-            $this->_insertInternally($object, 'galleysByArticle', (int) $object->getArticleId(), (int) $object->getId());
-            $this->_insertInternally($object, 'galleysByIssue', (int) $parent->getIssueId(), (int) $object->getId());
+            if ($parent instanceof PublishedArticle) {
+                $this->_insertInternally($object, 'galleys', (int) $object->getId());
+                $this->_insertInternally($object, 'galleysByArticle', (int) $object->getArticleId(), (int) $object->getId());
+                $this->_insertInternally($object, 'galleysByIssue', (int) $parent->getIssueId(), (int) $object->getId());
+            }
         }
         if ($object instanceof SuppFile) {
             $this->_insertInternally($object, 'suppFiles', (int) $object->getId());
@@ -77,17 +78,16 @@ class PubObjectCache {
      * @param int $objectId
      */
     public function markComplete(string $cacheId, int $objectId): void {
-        assert(isset($this->_objectCache[$cacheId][$objectId]) && is_array($this->_objectCache[$cacheId][$objectId]));
-        $this->_objectCache[$cacheId][$objectId]['complete'] = true;
-
-        // Order objects in the completed cache by ID.
-        ksort($this->_objectCache[$cacheId][$objectId]);
+        if (isset($this->_objectCache[$cacheId][$objectId]) && is_array($this->_objectCache[$cacheId][$objectId])) {
+            $this->_objectCache[$cacheId][$objectId]['complete'] = true;
+            ksort($this->_objectCache[$cacheId][$objectId]);
+        }
     }
 
     /**
      * Retrieve (an) object(s) from the cache.
-     * NB: You must check whether an object is in the cache
-     * before you try to retrieve it with this method.
+     * NB: You should check whether an object is in the cache
+     * with isCached() before you try to retrieve it with this method.
      *
      * @param string $cacheId
      * @param int $id1
@@ -95,15 +95,20 @@ class PubObjectCache {
      * @return mixed
      */
     public function get(string $cacheId, int $id1, ?int $id2 = null) {
-        assert($this->isCached($cacheId, $id1, $id2));
         if ($id2 === null) {
-            $returner = $this->_objectCache[$cacheId][$id1];
-            if (is_array($returner)) {
-                unset($returner['complete']);
+            if (isset($this->_objectCache[$cacheId][$id1])) {
+                $returner = $this->_objectCache[$cacheId][$id1];
+                if (is_array($returner)) {
+                    unset($returner['complete']);
+                }
+                return $returner;
             }
-            return $returner;
+            return null;
         } else {
-            return $this->_objectCache[$cacheId][$id1][$id2];
+            if (isset($this->_objectCache[$cacheId][$id1][$id2])) {
+                return $this->_objectCache[$cacheId][$id1][$id2];
+            }
+            return null;
         }
     }
 
@@ -115,18 +120,19 @@ class PubObjectCache {
      * @return bool
      */
     public function isCached(string $cacheId, int $id1, ?int $id2 = null): bool {
-        if (!isset($this->_objectCache[$cacheId])) return false;
+        if (!isset($this->_objectCache[$cacheId])) {
+            return false;
+        }
 
-        // $id1 is int via type hint
         if ($id2 === null) {
-            if (!isset($this->_objectCache[$cacheId][$id1])) return false;
+            if (!isset($this->_objectCache[$cacheId][$id1])) {
+                return false;
+            }
             if (is_array($this->_objectCache[$cacheId][$id1])) {
                 return isset($this->_objectCache[$cacheId][$id1]['complete']);
-            } else {
-                return true;
             }
+            return true;
         } else {
-            // $id2 is int via type hint
             return isset($this->_objectCache[$cacheId][$id1][$id2]);
         }
     }
@@ -142,7 +148,9 @@ class PubObjectCache {
      * @param int|null $id2
      */
     protected function _insertInternally($object, string $cacheId, int $id1, ?int $id2 = null): void {
-        if ($this->isCached($cacheId, $id1, $id2)) return;
+        if ($this->isCached($cacheId, $id1, $id2)) {
+            return;
+        }
 
         if (!isset($this->_objectCache[$cacheId])) {
             $this->_objectCache[$cacheId] = [];
@@ -157,6 +165,6 @@ class PubObjectCache {
             $this->_objectCache[$cacheId][$id1][$id2] = $object;
         }
     }
-}
 
+}
 ?>

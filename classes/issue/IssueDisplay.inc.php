@@ -31,7 +31,7 @@ trait IssueDisplay {
 
     /**
      * Set show volume
-     * @param $showVolume int
+     * @param int $showVolume
      */
     public function setShowVolume($showVolume) {
         return $this->setData('showVolume', $showVolume);
@@ -47,7 +47,7 @@ trait IssueDisplay {
 
     /**
      * Set show number
-     * @param $showNumber int
+     * @param int $showNumber
      */
     public function setShowNumber($showNumber) {
         return $this->setData('showNumber', $showNumber);
@@ -63,7 +63,7 @@ trait IssueDisplay {
 
     /**
      * Set show year
-     * @param $showYear int
+     * @param int $showYear
      */
     public function setShowYear($showYear) {
         return $this->setData('showYear', $showYear);
@@ -79,7 +79,7 @@ trait IssueDisplay {
 
     /**
      * Set show title
-     * @param $showTitle int
+     * @param int $showTitle
      */
     public function setShowTitle($showTitle) {
         return $this->setData('showTitle', $showTitle);
@@ -95,7 +95,7 @@ trait IssueDisplay {
 
     /**
      * Set customized stylesheet filename
-     * @param $styleFileName string
+     * @param string $styleFileName
      */
     public function setStyleFileName($styleFileName) {
         return $this->setData('styleFileName', $styleFileName);
@@ -111,7 +111,7 @@ trait IssueDisplay {
 
     /**
      * Set original customized stylesheet filename
-     * @param $originalStyleFileName string
+     * @param string $originalStyleFileName
      */
     public function setOriginalStyleFileName($originalStyleFileName) {
         return $this->setData('originalStyleFileName', $originalStyleFileName);

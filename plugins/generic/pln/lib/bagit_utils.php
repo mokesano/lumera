@@ -26,18 +26,15 @@ declare(strict_types=1);
  * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache 2.0
  * @version   0.2.1
  * @link      https://github.com/erochest/BagItPHP
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * 
  */
-
-
 
 /**
  * This filters an array by items that match a regex.
  *
  * @param string $regex The regex to filter by.
  * @param array  $list  The list of items to filter.
- * * @return array The match objects for items from $list that match $regex.
+ * @return array The match objects for items from $list that match $regex.
  */
 function filterArrayMatches($regex, $list) 
 {
@@ -58,7 +55,7 @@ function filterArrayMatches($regex, $list)
  *
  * @param string $main   The primary string to test.
  * @param string $suffix The string to test against the end of the other.
- * * @return bool True if $suffix occurs at the end of $main.
+ * @return bool True if $suffix occurs at the end of $main.
  */
 function endsWith($main, $suffix) 
 {
@@ -73,8 +70,8 @@ function endsWith($main, $suffix)
 /**
  * This recursively lists the contents of a directory. This doesn't return 
  * hidden files.
- * * @param string $dir The name of the directory to list.
- * * @return array A list of files in the directory.
+ * @param string $dir The name of the directory to list.
+ * @return array A list of files in the directory.
  */
 function rls($dir) 
 {
@@ -425,7 +422,7 @@ function BagIt_uncompressBag($compressedFile)
 
     } else if ($ext == 'tgz' || $ext == 'tar.gz') {
 
-        $tar = new Archive_Tar($compressedFile, 'gz');
+        $tar = new Archive_Tar($compressedFile, 'gz'); // Undefined type 'Archive_Tar'.
         $tar->extract($dir);
 
     }
@@ -458,7 +455,7 @@ function BagIt_compressBag($dirname, $output, $method='tgz')
         $zip->close();
 
     } else if ($method == 'tgz') {
-        $tar = new Archive_Tar($output, 'gz');
+        $tar = new Archive_Tar($output, 'gz'); // Undefined type 'Archive_Tar'.
         $tar->createModify($dirname, $base, $dirname);
 
     }

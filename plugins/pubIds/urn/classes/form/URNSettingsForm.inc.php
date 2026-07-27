@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @class URNSettingsForm
  * @ingroup plugins_pubIds_urn
  *
- * @brief Form for journal managers to setup URN plugin
+ * @brief Form for journal managers to setup URN plugin.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -31,7 +31,7 @@ class URNSettingsForm extends Form {
     // Constructor
     //
     /**
-     * Constructor
+     * Constructor.
      * @param URNPubIdPlugin $plugin
      * @param int $journalId
      */
@@ -67,8 +67,8 @@ class URNSettingsForm extends Form {
             'required',
             'plugins.pubIds.urn.manager.settings.form.urnIssueSuffixPatternRequired',
             function($urnIssueSuffixPattern, $form) {
-                if ($form->getData('urnSuffix') == 'pattern' && $form->getData('enableIssueURN')) {
-                    return $urnIssueSuffixPattern != '';
+                if ($form->getData('urnSuffix') === 'pattern' && $form->getData('enableIssueURN')) {
+                    return $urnIssueSuffixPattern !== '';
                 }
                 return true;
             },
@@ -82,8 +82,8 @@ class URNSettingsForm extends Form {
             'required',
             'plugins.pubIds.urn.manager.settings.form.urnArticleSuffixPatternRequired',
             function($urnArticleSuffixPattern, $form) {
-                if ($form->getData('urnSuffix') == 'pattern' && $form->getData('enableArticleURN')) {
-                    return $urnArticleSuffixPattern != '';
+                if ($form->getData('urnSuffix') === 'pattern' && $form->getData('enableArticleURN')) {
+                    return $urnArticleSuffixPattern !== '';
                 }
                 return true;
             },
@@ -97,8 +97,8 @@ class URNSettingsForm extends Form {
             'required',
             'plugins.pubIds.urn.manager.settings.form.urnGalleySuffixPatternRequired',
             function($urnGalleySuffixPattern, $form) {
-                if ($form->getData('urnSuffix') == 'pattern' && $form->getData('enableGalleyURN')) {
-                    return $urnGalleySuffixPattern != '';
+                if ($form->getData('urnSuffix') === 'pattern' && $form->getData('enableGalleyURN')) {
+                    return $urnGalleySuffixPattern !== '';
                 }
                 return true;
             },
@@ -112,8 +112,8 @@ class URNSettingsForm extends Form {
             'required',
             'plugins.pubIds.urn.manager.settings.form.urnSuppFileSuffixPatternRequired',
             function($urnSuppFileSuffixPattern, $form) {
-                if ($form->getData('urnSuffix') == 'pattern' && $form->getData('enableSuppFileURN')) {
-                    return $urnSuppFileSuffixPattern != '';
+                if ($form->getData('urnSuffix') === 'pattern' && $form->getData('enableSuppFileURN')) {
+                    return $urnSuppFileSuffixPattern !== '';
                 }
                 return true;
             },
@@ -138,9 +138,11 @@ class URNSettingsForm extends Form {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param URNPubIdPlugin $plugin
+     * @param int $journalId
      */
-    public function URNSettingsForm() {
+    public function URNSettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
@@ -148,17 +150,17 @@ class URNSettingsForm extends Form {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
     // Implement template methods from Form
     //
     /**
-     * Get the form display template
+     * Get the form display template.
      * @see Form::display()
-     * @param null|Request $request
-     * @param null|string $template
+     * @param mixed $request
+     * @param string|null $template
      * @return void
      */
     public function display($request = null, $template = null) {
@@ -183,7 +185,7 @@ class URNSettingsForm extends Form {
         $journalId = $this->_journalId;
         $plugin = $this->_plugin;
 
-        foreach($this->_getFormFields() as $fieldName => $fieldType) {
+        foreach ($this->_getFormFields() as $fieldName => $fieldType) {
             $this->setData($fieldName, $plugin->getSetting($journalId, $fieldName));
         }
     }
@@ -202,11 +204,11 @@ class URNSettingsForm extends Form {
      * @see Form::execute()
      * @return void
      */
-    public function execute() {
+    public function execute($object = null) {
         $plugin = $this->_plugin;
         $journalId = $this->_journalId;
 
-        foreach($this->_getFormFields() as $fieldName => $fieldType) {
+        foreach ($this->_getFormFields() as $fieldName => $fieldType) {
             $plugin->updateSetting($journalId, $fieldName, $this->getData($fieldName), $fieldType);
         }
     }
@@ -215,7 +217,7 @@ class URNSettingsForm extends Form {
     // Private helper methods
     //
     /**
-     * Get all form fields and their types
+     * Get all form fields and their types.
      * @return array
      */
     private function _getFormFields(): array {
@@ -235,6 +237,6 @@ class URNSettingsForm extends Form {
             'urnResolver' => 'string'
         ];
     }
-}
 
+}
 ?>

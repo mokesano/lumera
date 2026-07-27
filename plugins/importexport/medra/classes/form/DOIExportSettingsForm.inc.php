@@ -53,7 +53,7 @@ class DOIExportSettingsForm extends Form {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -137,5 +137,6 @@ class DOIExportSettingsForm extends Form {
     public function isOptional($settingName): bool {
         return in_array($settingName, ['username', 'password']);
     }
+    
 }
 ?>

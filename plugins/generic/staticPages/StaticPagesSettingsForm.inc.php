@@ -8,11 +8,10 @@ declare(strict_types=1);
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @package plugins.generic.staticPages
  * @class StaticPagesSettingsForm
+ * @ingroup plugins_generic_staticPages
  *
- * Form for journal managers to modify Static Page content and title
- * * MODERNIZED FOR WIZDAM FORK
+ * @brief Form for journal managers to modify Static Page content and title.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -20,70 +19,74 @@ import('lib.pkp.classes.form.Form');
 class StaticPagesSettingsForm extends Form {
 
     /** @var int */
-    public $journalId;
+    protected $_journalId;
 
-    /** @var object */
-    public $plugin;
+    /** @var GenericPlugin */
+    protected $_plugin;
 
     /** @var string */
-    public $errors;
+    public $_errors;
 
     /**
-     * Constructor
-     * @param $plugin object
-     * @param $journalId int
+     * Constructor.
+     * @param GenericPlugin $plugin
+     * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
+        $this->_journalId = (int) $journalId;
+        $this->_plugin = $plugin;
 
         parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
-
-        $this->journalId = (int) $journalId;
-        $this->plugin = $plugin;
-
         $this->addCheck(new FormValidatorPost($this));
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param GenericPlugin $plugin
+     * @param int $journalId
      */
     public function StaticPagesSettingsForm($plugin, $journalId) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::StaticPagesSettingsForm(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($plugin, $journalId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Initialize form data from current group group.
+     * Initialize form data.
      * @see Form::initData()
+     * @return void
      */
     public function initData() {
-        $journalId = $this->journalId;
-        $plugin = $this->plugin;
-
+        /** @var StaticPagesDAO $staticPagesDao */
         $staticPagesDao = DAORegistry::getDAO('StaticPagesDAO');
 
         $rangeInfo = Handler::getRangeInfo('staticPages');
-        $staticPages = $staticPagesDao->getStaticPagesByJournalId($journalId);
+        $staticPages = $staticPagesDao->getStaticPagesByJournalId($this->_journalId, $rangeInfo);
         $this->setData('staticPages', $staticPages);
     }
 
     /**
      * Assign form data to user-submitted data.
      * @see Form::readInputData()
+     * @return void
      */
     public function readInputData() {
-        $this->readUserVars(array('pages'));
+        $this->readUserVars(['pages']);
     }
 
     /**
-     * Save settings/changes
+     * Save settings/changes.
      * @see Form::execute()
+     * @param mixed $object Ignored.
+     * @return void
      */
     public function execute($object = null) {
-        $plugin = $this->plugin;
-        $journalId = $this->journalId;
+        // Logic is intentionally empty in the original code. Preserved to maintain signature.
     }
 
 }

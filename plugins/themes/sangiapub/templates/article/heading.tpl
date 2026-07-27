@@ -880,7 +880,7 @@
                 </section>
                 {/if}
                 
-                <div class="tooltip__Wrapper-sc-1lc2ea0-0 side-article-impact{if $issue && $issue->getShowTitle()} u-mt-16{/if}">
+                <div class="tooltip__Wrapper-sc-1lc2ea0-0 side-article-impact u-mb-16{if $issue && $issue->getShowTitle()} u-mt-16{/if}">
                     <ul class="nav-sangia u-text-center">
                         <li class="impact-data u-mb-16">
                             <script async type="application/javascript" src="https://cdn.scite.ai/badge/scite-badge-latest.min.js">

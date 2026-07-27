@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class SwordHandler
  * @ingroup plugins_generic_sword
  *
- * @brief Handle requests for author SWORD deposits
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Handle requests for author SWORD deposits.
  */
 
 import('classes.handler.Handler');
@@ -35,7 +33,7 @@ class SwordHandler extends Handler {
             trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::SwordHandler(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -43,7 +41,7 @@ class SwordHandler extends Handler {
      * @param array $args
      * @param PKPRequest $request
      */
-    public function index($args, $request) {
+    public function index($args = null, $request = null) {
         $this->validate();
         $this->setupTemplate();
 
@@ -53,6 +51,7 @@ class SwordHandler extends Handler {
         $articleId = (int) array_shift($args);
         $save = array_shift($args) == 'save';
 
+        /** @var SectionEditorSubmissionDAO $sectionEditorSubmissionDao */
         $sectionEditorSubmissionDao = DAORegistry::getDAO('SectionEditorSubmissionDAO');
         $article = $sectionEditorSubmissionDao->getSectionEditorSubmission($articleId);
 
@@ -89,6 +88,6 @@ class SwordHandler extends Handler {
         $plugin = PluginRegistry::getPlugin('generic', SWORD_PLUGIN_NAME);
         return $plugin;
     }
-}
 
+}
 ?>

@@ -6,10 +6,10 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION]
+ * Distributed under the GNU GPL v3.
+ * 
  * @class PaymentSettingsService
+ * 
  * @brief Manajer Konfigurasi Payment Gateway.
  * Hierarki: Admin UI (DB: site_settings) > config.inc.php.
  */
@@ -115,5 +115,6 @@ class PaymentSettingsService {
     public function getXenditWebhookToken(): string {
         return trim((string) $this->getSetting('xendit_webhook_token', ''));
     }
+    
 }
 ?>

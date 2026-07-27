@@ -7,11 +7,12 @@ declare(strict_types=1);
  * Copyright (c) 2013-2019 Simon Fraser University
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- * * @class ReviewReportPlugin
+ * 
+ * @class ReviewReportPlugin
  * @ingroup plugins_reports_review
  * @see ReviewReportDAO
  *
- * @brief Review report plugin
+ * @brief Review report plugin.
  */
 
 import('classes.plugins.ReportPlugin');
@@ -19,14 +20,14 @@ import('classes.plugins.ReportPlugin');
 class ReviewReportPlugin extends ReportPlugin {
     
     /**
-     * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path The path the plugin was found in
+     * Called as a plugin is registered to the registry.
+     * @param string $category
+     * @param string $path
      * @param int|null $mainContextId
-     * @return bool True if plugin initialized successfully; if false, the plugin will not be registered.
+     * @return bool
      */
     public function register(string $category, string $path, $mainContextId = null): bool {
-        $success = parent::register($category, $path, $mainContextId);
+        $success = parent::register($category, $path);
         if ($success && Config::getVar('general', 'installed')) {
             $this->import('ReviewReportDAO');
             $reviewReportDAO = new ReviewReportDAO();
@@ -37,9 +38,8 @@ class ReviewReportPlugin extends ReportPlugin {
     }
 
     /**
-     * Get the name of this plugin. The name must be unique within
-     * its category.
-     * @return string name of plugin
+     * Get the name of this plugin. The name must be unique within its category.
+     * @return string
      */
     public function getName(): string {
         return 'ReviewReportPlugin';
@@ -64,26 +64,39 @@ class ReviewReportPlugin extends ReportPlugin {
     /**
      * Display the report.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function display($args, $request) {
-        $journal = $request->getJournal();
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
-        header('content-type: text/comma-separated-values');
-        header('content-disposition: attachment; filename=reviews-' . date('Ymd') . '.csv');
+        $journal = $request->getJournal();
+        if (!$journal) {
+            return;
+        }
+
+        header('Content-Type: text/comma-separated-values');
+        header('Content-Disposition: attachment; filename=reviews-' . date('Ymd') . '.csv');
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_SUBMISSION);
 
-        $reviewReportDao = DAORegistry::getDAO('ReviewReportDAO'); /* @var $reviewReportDao ReviewReportDAO */
+        /** @var ReviewReportDAO $reviewReportDao */
+        $reviewReportDao = DAORegistry::getDAO('ReviewReportDAO');
         
-        // Modern array destructuring instead of list()
-        [$commentsIterator, $reviewsIterator] = $reviewReportDao->getReviewReport($journal->getId());
+        // Modern array destructuring
+        [$commentsIterator, $reviewsIterator] = $reviewReportDao->getReviewReport((int) $journal->getId());
 
         $comments = [];
         while ($row = $commentsIterator->next()) {
-            if (isset($comments[$row['article_id']][$row['author_id']])) {
-                $comments[$row['article_id']][$row['author_id']] .= "; " . $row['comments'];
+            $articleId = (int) $row['article_id'];
+            $authorId = (int) $row['author_id'];
+            $commentText = (string) ($row['comments'] ?? '');
+            
+            if (isset($comments[$articleId][$authorId])) {
+                $comments[$articleId][$authorId] .= "; " . $commentText;
             } else {
-                $comments[$row['article_id']][$row['author_id']] = $row['comments'];
+                $comments[$articleId][$authorId] = $commentText;
             }
         }
 
@@ -118,24 +131,25 @@ class ReviewReportPlugin extends ReportPlugin {
 
         while ($row = $reviewsIterator->next()) {
             foreach ($columns as $index => $junk) {
-                if (in_array($index, $yesNoArray)) {
-                    $columns[$index] = $yesnoMessages[$row[$index]];
-                } elseif ($index == "recommendation") {
-                    $columns[$index] = (!isset($row[$index])) ? __('common.none') : __($recommendations[$row[$index]]);
-                } elseif ($index == "comments") {
-                    if (isset($comments[$row['articleid']][$row['reviewerid']])) {
-                        $columns[$index] = $comments[$row['articleid']][$row['reviewerid']];
-                    } else {
-                        $columns[$index] = "";
-                    }
+                if (in_array($index, $yesNoArray, true)) {
+                    $columns[$index] = $yesnoMessages[(int) $row[$index]] ?? '';
+                } elseif ($index === 'recommendation') {
+                    $recValue = $row[$index] ?? null;
+                    $columns[$index] = ($recValue !== null && isset($recommendations[$recValue])) 
+                        ? __($recommendations[$recValue]) 
+                        : __('common.none');
+                } elseif ($index === 'comments') {
+                    $articleId = (int) $row['articleid'];
+                    $reviewerId = (int) $row['reviewerid'];
+                    $columns[$index] = $comments[$articleId][$reviewerId] ?? '';
                 } else {
-                    $columns[$index] = $row[$index];
+                    $columns[$index] = (string) ($row[$index] ?? '');
                 }
             }
             PKPString::fputcsv($fp, $columns);
-            unset($row);
         }
         fclose($fp);
     }
+
 }
 ?>
