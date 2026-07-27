@@ -14,7 +14,7 @@ declare(strict_types=1);
  * @brief Form for journal managers to setup the mEDRA plug-in.
  */
 
-if (!class_exists('DOIExportSettingsForm')) { // Bug #7848
+if (!class_exists('DOIExportSettingsForm')) {
     import('plugins.importexport.medra.classes.form.DOIExportSettingsForm');
 }
 
@@ -44,14 +44,14 @@ class MedraSettingsForm extends DOIExportSettingsForm {
                 return false;
             }
             return true;
-        }, array($this)));
+        }, [$this]));
 
         $this->addCheck(new FormValidatorCustom($this, 'password', 'required', 'plugins.importexport.medra.settings.form.passwordRequired', function($password, $form) {
             if ($form->getData('automaticRegistration') && empty($password)) {
                 return false;
             }
             return true;
-        }, array($this)));
+        }, [$this]));
     }
 
     /**
@@ -65,7 +65,7 @@ class MedraSettingsForm extends DOIExportSettingsForm {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -81,13 +81,13 @@ class MedraSettingsForm extends DOIExportSettingsForm {
     public function display($request = null, $template = null): void {
         $templateMgr = TemplateManager::getManager($request);
         $plugin = $this->_plugin;
-        $templateMgr->assign('unregisteredURL', $request->url(null, null, 'importexport', array('plugin', $plugin->getName(), 'all')));
+        $templateMgr->assign('unregisteredURL', $request->url(null, null, 'importexport', ['plugin', $plugin->getName(), 'all']));
 
         // Issue export options.
-        $exportIssueOptions = array(
+        $exportIssueOptions = [
             O4DOI_ISSUE_AS_WORK => __('plugins.importexport.medra.settings.form.work'),
             O4DOI_ISSUE_AS_MANIFESTATION => __('plugins.importexport.medra.settings.form.manifestation'),
-        );
+        ];
         $templateMgr->assign('exportIssueOptions', $exportIssueOptions);
 
         // Countries.
@@ -104,7 +104,7 @@ class MedraSettingsForm extends DOIExportSettingsForm {
      * @return array
      */
     public function getFormFields(): array {
-        return array(
+        return [
             'registrantName' => 'string',
             'fromCompany' => 'string',
             'fromName' => 'string',
@@ -114,7 +114,7 @@ class MedraSettingsForm extends DOIExportSettingsForm {
             'username' => 'string',
             'password' => 'string',
             'automaticRegistration' => 'bool'
-        );
+        ];
     }
 
     /**
@@ -124,7 +124,7 @@ class MedraSettingsForm extends DOIExportSettingsForm {
      * @return bool
      */
     public function isOptional($settingName): bool {
-        return in_array($settingName, array('username', 'password', 'automaticRegistration'));
+        return in_array($settingName, ['username', 'password', 'automaticRegistration']);
     }
 
     //
@@ -135,9 +135,10 @@ class MedraSettingsForm extends DOIExportSettingsForm {
      * @return array
      */
     public function _getCountries(): array {
-        $countryDao = DAORegistry::getDAO('CountryDAO'); /* @var $countryDao CountryDAO */
+        $countryDao = DAORegistry::getDAO('CountryDAO'); /** @var CountryDAO $countryDao */
         $countries = $countryDao->getCountries();
         return $countries;
     }
+
 }
 ?>

@@ -25,8 +25,8 @@ define('DOAJ_XSD_URL', 'http://doaj.org/static/doaj/doajArticles.xsd');
 
 class DOAJPlugin extends ImportExportPlugin {
 
-    /** @var object|null PubObjectCache */
-    protected $_cache;
+    /** @var PubObjectCache|null */
+    protected ?PubObjectCache $_cache = null;
 
     /**
      * Constructor
@@ -46,7 +46,7 @@ class DOAJPlugin extends ImportExportPlugin {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -55,8 +55,7 @@ class DOAJPlugin extends ImportExportPlugin {
      */
     protected function _getCache() {
         if (!$this->_cache instanceof PubObjectCache) {
-            // Instantiate the cache.
-            if (!class_exists('PubObjectCache')) { // Bug #7848
+            if (!class_exists('PubObjectCache')) {
                 $this->import('classes.PubObjectCache');
             }
             $this->_cache = new PubObjectCache();
@@ -66,9 +65,9 @@ class DOAJPlugin extends ImportExportPlugin {
 
     /**
      * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path Path to plugin
-     * @return bool True iff plugin initialized successfully
+     * @param string $category
+     * @param string $path
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
@@ -78,10 +77,11 @@ class DOAJPlugin extends ImportExportPlugin {
 
     /**
      * @see PKPPlugin::getTemplatePath()
+     * @param bool $inCore
      * @return string
      */
     public function getTemplatePath($inCore = false): string {
-        return parent::getTemplatePath($inCore) . 'templates/';
+        return parent::getTemplatePath() . 'templates/';
     }
 
     /**
@@ -112,10 +112,14 @@ class DOAJPlugin extends ImportExportPlugin {
     /**
      * Display the plugin
      * @param array $args
-     * @param object $request
+     * @param mixed $request
      */
     public function display($args, $request): void {
-        $templateMgr = TemplateManager::getManager();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        
+        $templateMgr = TemplateManager::getManager($request);
         parent::display($args, $request);
         $journal = $request->getJournal();
 
@@ -142,7 +146,7 @@ class DOAJPlugin extends ImportExportPlugin {
 
     /**
      * Export a journal's content
-     * @param object $journal
+     * @param Journal $journal
      * @param array $selectedObjects
      * @param string|null $outputFile
      * @return bool
@@ -157,13 +161,15 @@ class DOAJPlugin extends ImportExportPlugin {
         XMLCustomWriter::appendChild($doc, $journalNode);
 
         if (!empty($outputFile)) {
-            if (($h = fopen($outputFile, 'wb')) === false) return false;
+            if (($h = fopen($outputFile, 'wb')) === false) {
+                return false;
+            }
             fwrite($h, XMLCustomWriter::getXML($doc));
             fclose($h);
         } else {
             header("Content-Type: application/xml");
             header("Cache-Control: private");
-            header("Content-Disposition: attachment; filename=\"journal-" . $journal->getId() . ".xml\"");
+            header("Content-Disposition: attachment; filename=\"journal-" . (int) $journal->getId() . ".xml\"");
             XMLCustomWriter::printXML($doc);
         }
         return true;
@@ -171,36 +177,40 @@ class DOAJPlugin extends ImportExportPlugin {
 
     /**
      * Label articles (on article or issue level) with a 'doaj::registered' flag
-     * @param object $request PKPRequest
+     * @param mixed $request
      * @param array $selectedObjects
      */
     protected function _markRegistered($request, $selectedObjects): void {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $this->registerDaoHook('ArticleDAO');
 
-        // check for articles
         $selectedArticles = $selectedObjects[DOAJ_EXPORT_ARTICLES] ?? [];
         if (is_array($selectedArticles) && !empty($selectedArticles)) {
-            foreach($selectedArticles as $articleId) {
-                $article = $articleDao->getArticle($articleId);
-                $article->setData('doaj::registered', 1);
-                $articleDao->updateArticle($article);
-            }
-        }
-
-        // check for issues
-        $selectedIssues = $selectedObjects[DOAJ_EXPORT_ISSUES] ?? [];
-        if (is_array($selectedIssues) && !empty($selectedIssues)) {
-            foreach($selectedIssues as $issueId) {
-                $articles = $this->_retrieveArticlesByIssueId($issueId);
-                foreach($articles as $article) {
+            foreach ($selectedArticles as $articleId) {
+                $article = $articleDao->getArticle((int) $articleId);
+                if ($article) {
                     $article->setData('doaj::registered', 1);
                     $articleDao->updateArticle($article);
                 }
             }
         }
 
-        // show message & redirect
+        $selectedIssues = $selectedObjects[DOAJ_EXPORT_ISSUES] ?? [];
+        if (is_array($selectedIssues) && !empty($selectedIssues)) {
+            foreach ($selectedIssues as $issueId) {
+                $articles = $this->_retrieveArticlesByIssueId((int) $issueId);
+                foreach ($articles as $article) {
+                    $article->setData('doaj::registered', 1);
+                    $articleDao->updateArticle($article);
+                }
+            }
+        }
+
         $this->_sendNotification(
             $request,
             'plugins.importexport.doaj.markRegistered.success',
@@ -208,40 +218,40 @@ class DOAJPlugin extends ImportExportPlugin {
         );
         
         $action = '';
-        switch($request->getUserVar('target')) {
-            case('article'):
+        $target = (string) $request->getUserVar('target');
+        switch ($target) {
+            case 'article':
                 $action = 'articles';
                 break;
-            case('issue'):
+            case 'issue':
                 $action = 'issues';
                 break;
             default: 
-                assert(false);
+                throw new \RuntimeException('Invalid target for markRegistered.');
         }
         $request->redirect(null, null, null, ['plugin', $this->getName(), $action]);
     }
 
     /**
      * Display a list of issues for export.
-     * @param object $templateMgr TemplateManager
-     * @param object $journal Journal
+     * @param TemplateManager $templateMgr
+     * @param Journal $journal
      */
     protected function _displayIssueList($templateMgr, $journal): void {
         $this->setBreadcrumbs([], true);
 
-        // Retrieve all published issues.
         AppLocale::requireComponents([LOCALE_COMPONENT_APP_EDITOR]);
-        $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
-        $issueIterator = $issueDao->getPublishedIssues($journal->getId());
+        /** @var IssueDAO $issueDao */
+        $issueDao = DAORegistry::getDAO('IssueDAO');
+        $issueIterator = $issueDao->getPublishedIssues((int) $journal->getId());
 
-        // check whether all articles of an issue are doaj::registered or not
         $issues = [];
         while ($issue = $issueIterator->next()) {
-            $issueId = $issue->getId();
+            $issueId = (int) $issue->getId();
             $articles = $this->_retrieveArticlesByIssueId($issueId);
             $allArticlesRegistered = true;
 
-            foreach($articles as $article) {
+            foreach ($articles as $article) {
                 if (!$article->getData('doaj::registered')) {
                     $allArticlesRegistered = false;
                     break;
@@ -250,54 +260,45 @@ class DOAJPlugin extends ImportExportPlugin {
 
             $issue->setData('doaj::registered', $allArticlesRegistered);
             $issues[] = $issue;
-            unset($issue);
         }
-        unset($issueIterator);
 
-        // Instantiate issue iterator.
         import('lib.pkp.classes.core.ArrayItemIterator');
         $rangeInfo = Handler::getRangeInfo('issues');
         $iterator = new ArrayItemIterator($issues, $rangeInfo->getPage(), $rangeInfo->getCount());
 
-        // Prepare and display the issue template.
         $templateMgr->assign('issues', $iterator);
         $templateMgr->display($this->getTemplatePath() . 'issues.tpl');
     }
 
     /**
      * Display a list of articles for export.
-     * @param object $templateMgr TemplateManager
-     * @param object $journal Journal
+     * @param TemplateManager $templateMgr
+     * @param Journal $journal
      * @param bool $unregistered
      */
     protected function _displayArticleList($templateMgr, $journal, bool $unregistered = false): void {
         $this->setBreadcrumbs([], true);
 
-        if ($unregistered == false) {
-            // Retrieve all published articles.
+        if ($unregistered === false) {
             $articles = $this->_getAllPublishedArticles($journal);
         } else {
-            // Retrieve array elements without index "doaj::registered"
-            // Replaced deprecated create_function with closure
             $articles = array_filter(
                 $this->_getAllPublishedArticles($journal), 
-                function($article) {
-                    return !$article["article"]->getData("doaj::registered");
+                function($articleData) {
+                    return isset($articleData['article']) && !$articleData['article']->getData('doaj::registered');
                 }
             );
         }
         
-        // Paginate articles.
         $totalArticles = count($articles);
         $rangeInfo = Handler::getRangeInfo('articles');
-        if ($rangeInfo->isValid()) {
-            $paginatedArticles = array_slice($articles, $rangeInfo->getCount() * ($rangeInfo->getPage()-1), $rangeInfo->getCount());
+        
+        if ($rangeInfo && $rangeInfo->isValid()) {
+            $paginatedArticles = array_slice($articles, $rangeInfo->getCount() * ($rangeInfo->getPage() - 1), $rangeInfo->getCount());
             
-            // Instantiate article iterator.
             import('lib.pkp.classes.core.VirtualArrayIterator');
             $iterator = new VirtualArrayIterator($paginatedArticles, $totalArticles, $rangeInfo->getPage(), $rangeInfo->getCount());
 
-            // Prepare and display the article template.
             $templateMgr->assign('articles', $iterator);
             $templateMgr->display($this->getTemplatePath() . 'articles.tpl');
         }
@@ -305,20 +306,21 @@ class DOAJPlugin extends ImportExportPlugin {
 
     /**
      * Retrieve all published articles.
-     * @param object $journal Journal
+     * @param Journal $journal
      * @return array
      */
     protected function _getAllPublishedArticles($journal): array {
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-        $articleIterator = $publishedArticleDao->getPublishedArticlesByJournalId($journal->getId());
+        $articleIterator = $publishedArticleDao->getPublishedArticlesByJournalId((int) $journal->getId());
 
-        // Return articles from published issues only.
         $articles = [];
         while ($article = $articleIterator->next()) {
-            $articles[] = $this->_prepareArticleData($article, $journal);
-            unset($article);
+            $prepared = $this->_prepareArticleData($article, $journal);
+            if ($prepared !== null) {
+                $articles[] = $prepared;
+            }
         }
-        unset($articleIterator);
 
         return $articles;
     }
@@ -328,85 +330,79 @@ class DOAJPlugin extends ImportExportPlugin {
      *
      * The issue will be cached if it is not yet cached.
      *
-     * @param object $article Article
-     * @param object $journal Journal
-     *
-     * @return Issue
+     * @param PublishedArticle $article
+     * @param Journal $journal
+     * @return Issue|null
      */
     protected function _getArticleIssue($article, $journal) {
-        $issueId = $article->getIssueId();
-
-        // Retrieve issue if not yet cached.
+        $issueId = (int) $article->getIssueId();
         $cache = $this->_getCache();
-        if (!$cache->isCached('issues', (int) $issueId)) {
-            $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
-            $issue = $issueDao->getIssueById($issueId, $journal->getId(), true);
-            assert($issue instanceof Issue);
-            $nullVar = null;
-            $cache->add($issue, $nullVar);
-            unset($issue);
+        
+        if (!$cache->isCached('issues', $issueId)) {
+            /** @var IssueDAO $issueDao */
+            $issueDao = DAORegistry::getDAO('IssueDAO');
+            $issue = $issueDao->getIssueById($issueId, (int) $journal->getId(), true);
+            
+            if ($issue instanceof Issue) {
+                $cache->add($issue, null);
+            } else {
+                return null;
+            }
         }
 
-        return $cache->get('issues', (int) $issueId);
+        return $cache->get('issues', $issueId);
     }
 
     /**
-     * Retrieve all articles for the given issue
-     * and commit them to the cache.
+     * Retrieve all articles for the given issue and commit them to the cache.
      * @param int $issueId Issue ID
      * @return array
      */
     protected function _retrieveArticlesByIssueId($issueId): array {
-        $articlesByIssue = [];
+        $issueId = (int) $issueId;
         $cache = $this->_getCache();
-        $nullVar = null;
 
-        if (!$cache->isCached('articlesByIssue', (int) $issueId)) {
+        if (!$cache->isCached('articlesByIssue', $issueId)) {
+            /** @var PublishedArticleDAO $articleDao */
             $articleDao = DAORegistry::getDAO('PublishedArticleDAO');
             $articles = $articleDao->getPublishedArticles($issueId);
             if (!empty($articles)) {
                 foreach ($articles as $article) {
-                    $cache->add($article, $nullVar);
-                    unset($article);
+                    $cache->add($article, null);
                 }
-                $cache->markComplete('articlesByIssue', (int) $issueId);
-                $articlesByIssue = $cache->get('articlesByIssue', (int) $issueId);
+                $cache->markComplete('articlesByIssue', $issueId);
             }
         }
-        return $articlesByIssue;
+        
+        $result = $cache->get('articlesByIssue', $issueId);
+        return is_array($result) ? $result : [];
     }
 
     /**
      * Identify the issue of the given article.
-     * @param object $article PublishedArticle
-     * @param object $journal Journal
-     * @return array|null Return prepared article data or
-     * null if the article is not from a published issue.
+     * @param PublishedArticle $article
+     * @param Journal $journal
+     * @return array|null
      */
     protected function _prepareArticleData($article, $journal): ?array {
-        $nullVar = null;
-
-        // Add the article to the cache.
         $cache = $this->_getCache();
-        $cache->add($article, $nullVar);
+        $cache->add($article, null);
 
-        // Retrieve the issue.
         $issue = $this->_getArticleIssue($article, $journal);
 
-        if ($issue->getPublished()) {
+        if ($issue && $issue->getPublished()) {
             return [
                 'article' => $article,
                 'issue' => $issue
             ];
-        } else {
-            return null;
         }
+        
+        return null;
     }
 
     /**
      * Return the object types supported by this plug-in.
-     * @return array An array with object names and the
-     * corresponding export types.
+     * @return array
      */
     protected function _getAllObjectTypes(): array {
         return [
@@ -417,27 +413,31 @@ class DOAJPlugin extends ImportExportPlugin {
 
     /**
      * Process a request.
-     * @param object $request PKPRequest
-     * @param object $journal Journal
+     * @param mixed $request
+     * @param Journal $journal
      * @return mixed
      */
     protected function _process($request, $journal) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
         $objectTypes = $this->_getAllObjectTypes();
-        $target = $request->getUserVar('target');
+        $target = (string) $request->getUserVar('target');
         $selectedIds = [];
         $action = '';
         
-        switch($target) {
-            case('article'):
+        switch ($target) {
+            case 'article':
                 $action = 'articles';
                 $selectedIds = (array) $request->getUserVar('articleId');
                 break;
-            case('issue'):
+            case 'issue':
                 $action = 'issues';
                 $selectedIds = (array) $request->getUserVar('issueId');
                 break;
             default: 
-                assert(false);
+                throw new \RuntimeException('Invalid target in process.');
         }
         
         if (empty($selectedIds)) {
@@ -456,8 +456,7 @@ class DOAJPlugin extends ImportExportPlugin {
     }
 
     /**
-     * Register the hook that adds an
-     * additional field name to objects.
+     * Register the hook that adds an additional field name to objects.
      * @param string $daoName
      */
     public function registerDaoHook($daoName): void {
@@ -465,44 +464,50 @@ class DOAJPlugin extends ImportExportPlugin {
     }
 
     /**
-     * Hook callback that returns the "daoj:registered" flag
+     * Hook callback that returns the "doaj:registered" flag
      * @param string $hookName
      * @param array $args
      */
     public function _getAdditionalFieldNames($hookName, $args): void {
-        assert(count($args) == 2);
+        if (count($args) < 2) {
+            return;
+        }
         $returner =& $args[1];
-        assert(is_array($returner));
-        $returner[] = 'doaj::registered';
+        if (is_array($returner)) {
+            $returner[] = 'doaj::registered';
+        }
     }
 
     /**
      * Add a notification.
-     * @param object $request Request
-     * @param string $message An i18n key.
-     * @param int $notificationType One of the NOTIFICATION_TYPE_* constants.
-     * @param string|null $param An additional parameter for the message.
+     * @param mixed $request
+     * @param string $message
+     * @param int $notificationType
+     * @param string|null $param
      */
     protected function _sendNotification($request, $message, $notificationType, $param = null): void {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
         static $notificationManager = null;
 
-        if (is_null($notificationManager)) {
+        if ($notificationManager === null) {
             import('classes.notification.NotificationManager');
             $notificationManager = new NotificationManager();
         }
 
-        if (!is_null($param)) {
-            $params = ['param' => $param];
-        } else {
-            $params = null;
-        }
-
+        $params = $param !== null ? ['param' => $param] : null;
         $user = $request->getUser();
-        $notificationManager->createTrivialNotification(
-            $user->getId(),
-            $notificationType,
-            ['contents' => __($message, $params)]
-        );
+        
+        if ($user) {
+            $notificationManager->createTrivialNotification(
+                (int) $user->getId(),
+                $notificationType,
+                ['contents' => __($message, $params)]
+            );
+        }
     }
+
 }
 ?>

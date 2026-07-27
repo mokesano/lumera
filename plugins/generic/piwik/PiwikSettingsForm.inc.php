@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class PiwikSettingsForm
  * @ingroup plugins_generic_piwik
  *
- * @brief Form for journal managers to modify piwik plugin settings
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Form for journal managers to modify piwik plugin settings.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -21,19 +19,19 @@ import('lib.pkp.classes.form.Form');
 class PiwikSettingsForm extends Form {
 
     /** @var int */
-    protected $journalId;
+    protected $_journalId;
 
-    /** @var object */
-    protected $plugin;
+    /** @var PiwikPlugin */
+    protected $_plugin;
 
     /**
-     * Constructor
-     * @param object $plugin
+     * Constructor.
+     * @param PiwikPlugin $plugin
      * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
-        $this->journalId = $journalId;
-        $this->plugin = $plugin;
+        $this->_journalId = (int) $journalId;
+        $this->_plugin = $plugin;
 
         parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
 
@@ -42,31 +40,37 @@ class PiwikSettingsForm extends Form {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param PiwikPlugin $plugin
+     * @param int $journalId
      */
     public function PiwikSettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::PiwikSettingsForm(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Initialize form data.
+     * @see Form::initData()
+     * @return void
      */
     public function initData() {
-        $journalId = $this->journalId;
-        $plugin = $this->plugin;
-
         $this->_data = [
-            'piwikUrl' => $plugin->getSetting($journalId, 'piwikUrl'),
-            'piwikSiteId' => $plugin->getSetting($journalId, 'piwikSiteId')
+            'piwikUrl' => $this->_plugin->getSetting($this->_journalId, 'piwikUrl'),
+            'piwikSiteId' => $this->_plugin->getSetting($this->_journalId, 'piwikSiteId')
         ];
     }
 
     /**
      * Assign form data to user-submitted data.
+     * @see Form::readInputData()
+     * @return void
      */
     public function readInputData() {
         $this->readUserVars(['piwikUrl', 'piwikSiteId']);
@@ -74,14 +78,17 @@ class PiwikSettingsForm extends Form {
 
     /**
      * Save settings.
+     * @see Form::execute()
+     * @param mixed $object Ignored.
+     * @return void
      */
     public function execute($object = null) {
-        $plugin = $this->plugin;
-        $journalId = $this->journalId;
+        $piwikUrl = (string) ($this->getData('piwikUrl') ?? '');
+        $piwikSiteId = (string) ($this->getData('piwikSiteId') ?? '');
 
-        $plugin->updateSetting($journalId, 'piwikUrl', rtrim($this->getData('piwikUrl') ?? '', "/"), 'string');
-        $plugin->updateSetting($journalId, 'piwikSiteId', $this->getData('piwikSiteId'), 'int');
+        $this->_plugin->updateSetting($this->_journalId, 'piwikUrl', rtrim($piwikUrl, '/'), 'string');
+        $this->_plugin->updateSetting($this->_journalId, 'piwikSiteId', (int) $piwikSiteId, 'int');
     }
-}
 
+}
 ?>

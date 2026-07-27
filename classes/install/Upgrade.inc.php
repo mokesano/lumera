@@ -1389,47 +1389,53 @@ class Upgrade extends Installer {
     }
     
     /**
-     * [WIZDAM FRONTEDGE]
-     * Migrasi ganda untuk Queued Payments dan Completed Payments
+     * [SANGIA LUMERA]
+     * Migrasi ganda untuk Queued Payments dan Completed Payments.
+     * Migrasi (COPY, bukan move) Queued Payments dan Completed Payments ke invoices.
+     * Sengaja pakai mode COPY karena fungsi ini berjalan otomatis tanpa pengawasan
+     * admin selama proses upgrade -- aman diulang, tidak pernah menghapus data
+     * sumber. Kalau admin ingin migrasi mode Move (destruktif), itu keputusan
+     * sadar terpisah lewat tools/moveMigrateInvoices.php setelah upgrade selesai.
      */
-    public function migrateLegacyInvoicesToFrontedge($upgrade, $params) {
-        $invoiceDao = DAORegistry::getDAO('InvoiceDAO'); /** @var InvoiceDAO $invoiceDao */
+    public function migrateLegacyInvoicesToLumera($upgrade, $params) {
+        import('lib.wizdam.classes.invoice.InvoiceLegacyMigrationDAO');
+        $migrationDao = new InvoiceLegacyMigrationDAO();
         $chunkSize = 100;
         
-        error_log("[WIZDAM FRONTEDGE] Memulai Tahap 1: Ekstraksi Queued Payments...");
+        error_log("[SANGIA LUMERA] Memulai Tahap 1: Menyalin Queued Payments...");
         
-        // --- TAHAP 1: Ekstraksi Queued Payments ---
-        $offsetQueued = 0;
+        // --- TAHAP 1: Salin Queued Payments ---
+        $cursorQueued = 0;
         do {
-            $resultQueued = $invoiceDao->migrateLegacyQueuedPayments($chunkSize, $offsetQueued);
-            $offsetQueued += $chunkSize;
-            error_log("[WIZDAM] Tahap 1 - Memproses batch hingga " . $offsetQueued . " baris...");
+            $resultQueued = $migrationDao->copyLegacyQueuedPayments($chunkSize, $cursorQueued);
+            $cursorQueued = $resultQueued['next_cursor'];
+            error_log("[LUMERA] Tahap 1 - Memproses batch, cursor terakhir ID " . $cursorQueued . "...");
         } while (!$resultQueued['is_done']);
 
-        error_log("[WIZDAM FRONTEDGE] Tahap 1 Selesai. Memulai Tahap 2: Ekstraksi Completed Payments...");
+        error_log("[SANGIA LUMERA] Tahap 1 Selesai. Memulai Tahap 2: Menyalin Completed Payments...");
 
-        // --- TAHAP 2: Ekstraksi Completed Payments (Status Lunas) ---
-        $offsetCompleted = 0;
+        // --- TAHAP 2: Salin Completed Payments (Status Lunas) ---
+        $cursorCompleted = 0;
         do {
-            $resultCompleted = $invoiceDao->migrateLegacyCompletedPayments($chunkSize, $offsetCompleted);
-            $offsetCompleted += $chunkSize;
-            error_log("[WIZDAM] Tahap 2 - Memproses batch hingga " . $offsetCompleted . " baris...");
+            $resultCompleted = $migrationDao->copyLegacyCompletedPayments($chunkSize, $cursorCompleted);
+            $cursorCompleted = $resultCompleted['next_cursor'];
+            error_log("[LUMERA] Tahap 2 - Memproses batch, cursor terakhir ID " . $cursorCompleted . "...");
         } while (!$resultCompleted['is_done']);
 
-        error_log("[WIZDAM FRONTEDGE] Migrasi Invoices Selesai Total. Sistem Siap.");
+        error_log("[SANGIA LUMERA] Migrasi Invoices (COPY) Selesai Total. Data legacy tetap utuh di queued_payments/completed_payments.");
 
         return true; // Sinyal ke APP Installer bahwa rantai migrasi sukses
     }
     
     /**
-     * [WIZDAM UPGRADE HANDLER]
+     * [LUMERA UPGRADE HANDLER]
      * Dipanggil oleh dbscripts/xml/upgrade.xml untuk sinkronisasi PII & eLocator
      * @param Installer $installer
      * @param Version $version
      * @return boolean
      */
     public function syncArticleIdentifiers($installer, $version) {
-        // [WIZDAM RESOURCE] Cegah timeout dan buffer penuh saat memproses ribuan artikel
+        // [LUMERA RESOURCE] Cegah timeout dan buffer penuh saat memproses ribuan artikel
         set_time_limit(0);
         if (function_exists('ob_clean')) ob_clean();
         if (function_exists('flush')) flush();

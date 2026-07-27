@@ -11,14 +11,16 @@ declare(strict_types=1);
  * @class OJSQueuedPayment
  * @ingroup payment
  *
- * @brief Queued payment data structure for OJS
- * * MODERNIZED FOR WIZDAM FORK
+ * @brief Queued payment data structure for Lumera App
  */
 
 import('lib.pkp.classes.payment.QueuedPayment');
 
 class OJSQueuedPayment extends QueuedPayment {
     
+    /** @var QueuedPaymentDAO */
+    private QueuedPaymentDAO $queuedPaymentDao;
+
     /** @var int journal ID this payment applies to */
     public $journalId;
 
@@ -28,12 +30,15 @@ class OJSQueuedPayment extends QueuedPayment {
     /** @var string URL associated with this payment */
     public $requestUrl;
 
-    // --- [WIZDAM EDITION] MODIFIKASI ARSITEKTUR ---
-    /** @var array WIZDAM Checkout Payload (Cart Items, Promo, Billing) */
+    // [LUMERA] ARSITEKTUR ---
+    /** @var array Checkout Payload (Cart Items, Promo, Billing) */
     public $checkoutPayload = [];
 
+    /** @var int ID invoice WIZDAM yang terkait payment ini, 0 jika tidak ada */
+    public $invoiceId = 0;
+
     /**
-     * Set WIZDAM Checkout Payload
+     * Set Checkout Payload
      * @param array $payload
      */
     public function setCheckoutPayload(array $payload): void {
@@ -41,20 +46,34 @@ class OJSQueuedPayment extends QueuedPayment {
     }
 
     /**
-     * Get WIZDAM Checkout Payload
+     * Get Checkout Payload
      * @return array
      */
     public function getCheckoutPayload(): array {
         return $this->checkoutPayload;
     }
-    // --- END [WIZDAM EDITION] ---
+
+    /**
+     * Set invoice ID
+     */
+    public function setInvoiceId(int $invoiceId): void {
+        $this->invoiceId = $invoiceId;
+    }
+
+    /**
+     * Get invoices ID
+     */
+    public function getInvoiceId(): int {
+        return $this->invoiceId;
+    }
+    // --- END [LUMERA] ---
 
     /**
      * Constructor
-     * @param $amount float
-     * @param $currencyCode string
-     * @param $userId int
-     * @param $assocId int
+     * @param float $amount
+     * @param string $currencyCode
+     * @param int $userId
+     * @param int $assocId
      */
     public function __construct($amount, $currencyCode, $userId, $assocId) {
         parent::__construct($amount, $currencyCode, $userId, $assocId);
@@ -62,6 +81,10 @@ class OJSQueuedPayment extends QueuedPayment {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param float $amount
+     * @param string $currencyCode
+     * @param int $userId
+     * @param int $assocId
      */
     public function OJSQueuedPayment($amount, $currencyCode, $userId, $assocId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -84,8 +107,8 @@ class OJSQueuedPayment extends QueuedPayment {
 
     /**
      * Set the journal ID of the payment.
-     * @param $journalId int
-     * @return int New journal ID
+     * @param int $journalId
+     * @return int
      */
     public function setJournalId($journalId) {
         return $this->journalId = $journalId;
@@ -93,8 +116,8 @@ class OJSQueuedPayment extends QueuedPayment {
 
     /**
      * Set the type for this payment (PAYMENT_TYPE_...)
-     * @param $type int PAYMENT_TYPE_...
-     * @return int New payment type
+     * @param int $type
+     * @return int
      */
     public function setType($type) {
         return $this->type = $type;
@@ -102,7 +125,7 @@ class OJSQueuedPayment extends QueuedPayment {
 
     /**
      * Get the type of this payment (PAYMENT_TYPE_...)
-     * @return int PAYMENT_TYPE_...
+     * @return int
      */
     public function getType() {
         return $this->type;
@@ -115,22 +138,24 @@ class OJSQueuedPayment extends QueuedPayment {
      * @return string
      */
     public function getName() {
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($this->getJournalId());
 
         switch ($this->type) {
             case PAYMENT_TYPE_PURCHASE_SUBSCRIPTION:
             case PAYMENT_TYPE_RENEW_SUBSCRIPTION:
+                /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
                 $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
-
                 if ($institutionalSubscriptionDao->subscriptionExists($this->assocId)) {
                     $subscription = $institutionalSubscriptionDao->getSubscription($this->assocId);
                 } else {
+                    /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
                     $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
                     $subscription = $individualSubscriptionDao->getSubscription($this->assocId);
                 }
                 if (!$subscription) return __('payment.type.subscription');
-
+                /** @var SubscriptionTypeDAO $subscriptionTypeDao */
                 $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
                 $subscriptionType = $subscriptionTypeDao->getSubscriptionType($subscription->getTypeId());
 
@@ -178,6 +203,7 @@ class OJSQueuedPayment extends QueuedPayment {
                     return __('payment.type.publication');
                 }
             case PAYMENT_TYPE_GIFT:
+                /** @var GiftDAO $giftDao */
                 $giftDao = DAORegistry::getDAO('GiftDAO');
                 $gift = $giftDao->getGift($this->assocId);
 
@@ -201,22 +227,25 @@ class OJSQueuedPayment extends QueuedPayment {
      * @return string
      */
     public function getDescription() {
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($this->getJournalId());
 
         switch ($this->type) {
             case PAYMENT_TYPE_PURCHASE_SUBSCRIPTION:
             case PAYMENT_TYPE_RENEW_SUBSCRIPTION:
+                /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
                 $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
-
                 if ($institutionalSubscriptionDao->subscriptionExists($this->assocId)) {
                     $subscription = $institutionalSubscriptionDao->getSubscription($this->assocId);
                 } else {
+                    /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
                     $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
                     $subscription = $individualSubscriptionDao->getSubscription($this->assocId);
                 }
                 if (!$subscription) return __('payment.type.subscription');
 
+                /** @var SubscriptionTypeDAO $subscriptionTypeDao */
                 $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
                 $subscriptionType = $subscriptionTypeDao->getSubscriptionType($subscription->getTypeId());
                 return $subscriptionType->getSubscriptionTypeDescription();
@@ -263,6 +292,7 @@ class OJSQueuedPayment extends QueuedPayment {
                     return __('payment.type.publication');
                 }
             case PAYMENT_TYPE_GIFT:
+                /** @var GiftDAO $giftDao */
                 $giftDao = DAORegistry::getDAO('GiftDAO');
                 $gift = $giftDao->getGift($this->assocId);
 
@@ -271,6 +301,7 @@ class OJSQueuedPayment extends QueuedPayment {
                     import('classes.gift.Gift');
 
                     if ($gift->getGiftType() == GIFT_TYPE_SUBSCRIPTION) {
+                        /** @var SubscriptionTypeDAO $subscriptionTypeDao */
                         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
                         $subscriptionType = $subscriptionTypeDao->getSubscriptionType($gift->getAssocId());
 
@@ -292,8 +323,8 @@ class OJSQueuedPayment extends QueuedPayment {
 
     /**
      * Set the request URL.
-     * @param $url string
-     * @return string New URL
+     * @param string $url
+     * @return string
      */
     public function setRequestUrl($url) {
         return $this->requestUrl = $url;
@@ -306,6 +337,6 @@ class OJSQueuedPayment extends QueuedPayment {
     public function getRequestUrl() {
         return $this->requestUrl;
     }
-}
 
+}
 ?>

@@ -9,9 +9,10 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="plugins.generic.usageStats.displayName"}
-{include file="common/header.tpl"}
+	{assign var="pageTitle" value="plugins.generic.usageStats.displayName"}
+	{include file="common/header.tpl"}
 {/strip}
+
 <script type="text/javascript">
 	$(function() {ldelim}
 		// Attach the form handler.
@@ -20,7 +21,7 @@
 </script>
 
 <form class="pkp_form" id="usageStatsSettingsForm" method="post" action="{plugin_url path="save"}">
-
+	<input name="csrfToken" type="hidden" value="{$csrfToken|escape}" />
 	{include file="controllers/notification/inPlaceNotification.tpl" notificationId="usageStatsSettingsFormNotification"}
 
 	{fbvFormArea id="usageStatsLogging" title="plugins.generic.usageStats.settings.logging"}
@@ -51,4 +52,5 @@
 	{/fbvFormArea}
 	{fbvFormButtons id="usageStatsSettingsFormSubmit" submitText="common.save" hideCancel=true}
 </form>
+
 {include file="common/footer.tpl"}

@@ -46,7 +46,7 @@
                     <tr style="border-bottom: 1px solid #eee;">
                         <td style="padding: 10px;">#{$invId}</td>
                         
-                        <td style="padding: 10px;">{$invoice->getData('feeType')|escape}</td>
+                        <td style="padding: 10px;">{$invoice->getData('localizedFeeType')|escape}</td>
                         
                         <td style="padding: 10px;">{$invoice->getData('dateBilled')|date_format:"%d %b %Y"}</td>
                         

@@ -37,18 +37,19 @@ class METSExportPlugin extends ImportExportPlugin {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path Path to plugin
-     * @return bool True if plugin initialized successfully; if false, the plugin will not be registered.
+     * @param string $category
+     * @param string $path
+     * @return bool
      */
     public function register($category, $path): bool {
         $success = parent::register($category, $path);
         $this->addLocaleData();
+
         return $success;
     }
 
@@ -80,50 +81,65 @@ class METSExportPlugin extends ImportExportPlugin {
     /**
      * Display the plugin.
      * @param array $args
-     * @param object $request
+     * @param Request $request
      */
     public function display($args, $request): void {
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         parent::display($args, $request);
         
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $journal = $request->getJournal();
+
+        if (!$journal) {
+            $request->redirect(null, 'index');
+            return;
+        }
         
         $command = array_shift($args);
 
         switch ($command) {
             case 'exportIssues':
-                $issueIds = $request->getUserVar('issueId');
-                if (!isset($issueIds)) $issueIds = [];
+                $issueIds = (array) $request->getUserVar('issueId');
                 $issues = [];
                 foreach ($issueIds as $issueId) {
-                    $issue = $issueDao->getIssueById($issueId);
-                    if (!$issue) Request::redirect();
+                    $issue = $issueDao->getIssueById((int) $issueId);
+                    if (!$issue) {
+                        $request->redirect(null, null, 'index');
+                        return;
+                    }
                     $issues[] = $issue;
                 }
                 $this->exportIssues($journal, $issues);
                 break;
+                
             case 'exportIssue':
                 $issueId = array_shift($args);
-                $issue = $issueDao->getIssueById($issueId);
-                if (!$issue) Request::redirect();
-                $issues = [$issue];
-                $this->exportIssues($journal, $issues);
+                $issue = $issueDao->getIssueById((int) $issueId);
+                if (!$issue) {
+                    $request->redirect(null, null, 'index');
+                    return;
+                }
+                $this->exportIssues($journal, [$issue]);
                 break;
+                
             case 'issues':
                 // Display a list of issues for export
                 $this->setBreadcrumbs([], true);
                 AppLocale::requireComponents(LOCALE_COMPONENT_APP_EDITOR);
-                $issues = $issueDao->getIssues($journal->getId(), Handler::getRangeInfo('issues'));
+                $issues = $issueDao->getIssues((int) $journal->getId(), Handler::getRangeInfo('issues'));
 
+                /** @var SiteDAO $siteDao */
                 $siteDao = DAORegistry::getDAO('SiteDAO');
                 $site = $siteDao->getSite();
-                $organization = $site->getTitle($site->getPrimaryLocale());
+
+                $organization = $site ? $site->getTitle($site->getPrimaryLocale()) : '';
 
                 $templateMgr->assign('issues', $issues);
                 $templateMgr->assign('organization', $organization);
                 $templateMgr->display($this->getTemplatePath() . 'issues.tpl');
                 break;
+                
             default:
                 $this->setBreadcrumbs();
                 $templateMgr->display($this->getTemplatePath() . 'index.tpl');
@@ -132,7 +148,7 @@ class METSExportPlugin extends ImportExportPlugin {
 
     /**
      * Export issues to METS XML
-     * @param object $journal
+     * @param Journal $journal
      * @param array $issues
      * @return bool
      */
@@ -145,10 +161,10 @@ class METSExportPlugin extends ImportExportPlugin {
         XMLCustomWriter::setAttribute($root, 'xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
         XMLCustomWriter::setAttribute($root, 'PROFILE', 'Australian METS Profile 1.0');
         XMLCustomWriter::setAttribute($root, 'TYPE', 'journal');
-        XMLCustomWriter::setAttribute($root, 'OBJID', 'J-' . $journal->getId());
+
+        XMLCustomWriter::setAttribute($root, 'OBJID', 'J-' . (int) $journal->getId());
         XMLCustomWriter::setAttribute($root, 'xsi:schemaLocation', 'http://www.loc.gov/METS/ http://www.loc.gov/mets/mets.xsd');
         
-        // Assuming MetsExportDom methods will be refactored to public static
         $headerNode = MetsExportDom::createmetsHdr($doc);
         XMLCustomWriter::appendChild($root, $headerNode);
         
@@ -183,5 +199,6 @@ class METSExportPlugin extends ImportExportPlugin {
         
         return true;
     }
+
 }
 ?>

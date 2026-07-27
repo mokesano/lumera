@@ -11,11 +11,15 @@ declare(strict_types=1);
  * @class CounterReportPlugin
  * @ingroup plugins_reports_counter
  *
- * @brief Counter report plugin
+ * @brief Counter report plugin.
  */
 
 define('OJS_METRIC_TYPE_LEGACY_COUNTER', 'ojs::legacyCounterPlugin');
 define('COUNTER_CLASS_SUFFIX', '.inc.php');
+
+if (!defined('COUNTER_CLASS_PREFIX')) {
+    define('COUNTER_CLASS_PREFIX', 'CounterReport');
+}
 
 import('classes.plugins.ReportPlugin');
 import('plugins.reports.counter.classes.CounterReport');
@@ -23,27 +27,39 @@ import('plugins.reports.counter.classes.CounterReport');
 class CounterReportPlugin extends ReportPlugin {
 
     /**
-     * @see PKPPlugin::register($category, $path)
+     * Register the plugin.
+     * @see PKPPlugin::register()
+     * @param string $category
+     * @param string $path
+     * @param int|null $mainContextId
+     * @return bool
      */
     public function register(string $category, string $path, $mainContextId = null): bool {
-        $success = parent::register($category, $path, $mainContextId);
+        $success = parent::register($category, $path);
 
-        if($success) {
+        if ($success) {
             $this->addLocaleData();
         }
         return $success;
     }
 
     /**
-     * @see PKPPlugin::getLocaleFilename($locale)
+     * Get the locale filename.
+     * @see PKPPlugin::getLocaleFilename()
+     * @param string $locale
+     * @return array
      */
     public function getLocaleFilename($locale) {
         $localeFilenames = parent::getLocaleFilename($locale);
 
         // Add dynamic locale keys.
-        foreach (glob($this->getPluginPath() . DIRECTORY_SEPARATOR . 'locale' . DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . '*.xml') as $file) {
-            if (!in_array($file, $localeFilenames)) {
-                $localeFilenames[] = $file;
+        $globPattern = $this->getPluginPath() . DIRECTORY_SEPARATOR . 'locale' . DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . '*.xml';
+        $files = glob($globPattern);
+        if (is_array($files)) {
+            foreach ($files as $file) {
+                if (!in_array($file, $localeFilenames, true)) {
+                    $localeFilenames[] = $file;
+                }
             }
         }
 
@@ -51,35 +67,44 @@ class CounterReportPlugin extends ReportPlugin {
     }
 
     /**
+     * Get the name of this plugin.
      * @see PKPPlugin::getName()
+     * @return string
      */
     public function getName(): string {
         return 'CounterReportPlugin';
     }
 
     /**
+     * Get the display name of this plugin.
      * @see PKPPlugin::getDisplayName()
+     * @return string
      */
     public function getDisplayName(): string {
         return __('plugins.reports.counter');
     }
 
     /**
+     * Get the description of this plugin.
      * @see PKPPlugin::getDescription()
+     * @return string
      */
     public function getDescription(): string {
         return __('plugins.reports.counter.description');
     }
 
     /**
+     * Get the template path.
      * @see PKPPlugin::getTemplatePath()
+     * @param bool $inCore
+     * @return string
      */
     public function getTemplatePath($inCore = false): string {
-        return parent::getTemplatePath($inCore) . 'templates/';
+        return parent::getTemplatePath() . 'templates/';
     }      
 
     /**
-     * Get the latest counter release
+     * Get the latest counter release.
      * @return string
      */
     public function getCurrentRelease() {
@@ -87,32 +112,32 @@ class CounterReportPlugin extends ReportPlugin {
     }
     
     /**
-     * List the valid reports
+     * List the valid reports.
      * Must exist in the report path as {Report}_r{release}.inc.php
-     * @return array multidimentional array release => array( report => reportClassName )
+     * @return array
      */
     public function getValidReports() {
         $reports = [];
-        // COUNTER_CLASS_PREFIX is likely defined in CounterReport or a parent/bootstrap file. 
-        // Assuming it's available or defined in imported files.
-        // If it's a constant from CounterReport, it might need CounterReport::PREFIX, 
-        // but sticking to legacy usage patterns for global constants if they exist.
-        // Based on typical OJS counter plugin, this constant is usually 'CounterReport'.
         $prefix = $this->getReportPath() . DIRECTORY_SEPARATOR . COUNTER_CLASS_PREFIX;
         $suffix = COUNTER_CLASS_SUFFIX;
-        foreach (glob($prefix.'*'.$suffix) as $file) {
-            $report_name = substr($file, strlen($prefix), -strlen($suffix));
-            $report_class_file = substr($file, strlen($prefix), -strlen(COUNTER_CLASS_SUFFIX));
-            $reports[$report_name] = $report_class_file;
+        
+        $globPattern = $prefix . '*' . $suffix;
+        $files = glob($globPattern);
+        if (is_array($files)) {
+            foreach ($files as $file) {
+                $reportName = substr($file, strlen($prefix), -strlen($suffix));
+                $reportClassFile = substr($file, strlen($prefix), -strlen(COUNTER_CLASS_SUFFIX));
+                $reports[$reportName] = $reportClassFile;
+            }
         }
         return $reports;
     }
 
     /**
-     * Get a COUNTER Reporter Object
+     * Get a COUNTER Reporter Object.
      * Must exist in the report path as {Report}_r{release}.inc.php
-     * @param string $report Report name
-     * @param string $release release identifier
+     * @param string $report
+     * @param string $release
      * @return object|bool
      */
     public function getReporter($report, $release) {
@@ -129,15 +154,14 @@ class CounterReportPlugin extends ReportPlugin {
 
     /**
      * Get classes path for this plugin.
-     * @return string Path to plugin's classes
+     * @return string
      */
     public function getClassPath() {
         return $this->getPluginPath() . DIRECTORY_SEPARATOR . 'classes';
     }
     
-
     /**
-     * Return the report path
+     * Return the report path.
      * @return string
      */
     public function getReportPath() {
@@ -145,21 +169,25 @@ class CounterReportPlugin extends ReportPlugin {
     }
 
     /**
+     * Set the page breadcrumbs.
      * @see ReportPlugin::setBreadcrumbs()
+     * @param array $crumbs
+     * @param bool $isSubclass
      */
     public function setBreadcrumbs($crumbs = [], $isSubclass = false) {
-        $templateMgr = TemplateManager::getManager();
+        $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
         $pageCrumbs = [
             [
-                Request::url(null, 'user'),
+                $request->url(null, 'user'),
                 'navigation.user'
             ],
             [
-                Request::url(null, 'manager'),
+                $request->url(null, 'manager'),
                 'user.role.manager'
             ],
             [
-                Request::url(null, 'manager', 'statistics'),
+                $request->url(null, 'manager', 'statistics'),
                 'manager.statistics'
             ]
         ];
@@ -168,10 +196,19 @@ class CounterReportPlugin extends ReportPlugin {
     }
 
     /**
+     * Display the plugin.
      * @see ReportPlugin::display()
+     * @param array $args
+     * @param mixed $request
      */
     public function display($args, $request) {
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
         parent::display($args, $request);
+        
         // We need these constants
         import('classes.statistics.StatisticsHelper');
 
@@ -179,8 +216,9 @@ class CounterReportPlugin extends ReportPlugin {
         $available = $this->getValidReports();
         $years = $this->_getYears();
         
-        if ($request->getUserVar('type')) {
-            $type = (string) $request->getUserVar('type');
+        $type = $request->getUserVar('type');
+        if ($type) {
+            $type = (string) $type;
             $errormessage = '';
             switch ($type) {
                 case 'report':
@@ -196,24 +234,23 @@ class CounterReportPlugin extends ReportPlugin {
                     return;
                 case 'fetch':
                     // Modern COUNTER Releases
-                    // must provide a release, report, and year parameter
                     $release = (string) $request->getUserVar('release');
                     $report = (string) $request->getUserVar('report');
                     $year = (string) $request->getUserVar('year');
                     
-                    if ($release && $report && $year) {
+                    if ($release !== '' && $report !== '' && $year !== '') {
                         // release, report and year parameters must be sane
-                        if ($release == $this->getCurrentRelease() && isset($available[$report]) && in_array($year, $years)) {
+                        if ($release === $this->getCurrentRelease() && isset($available[$report]) && in_array($year, $years, true)) {
                             // try to get the report
                             $reporter = $this->getReporter($report, $release);
                             if ($reporter) {
                                 // default report parameters with a yearlong range
-                                $reportItems = $reporter->getReportItems([], [STATISTICS_DIMENSION_MONTH => ['from' => $year.'01', 'to' => $year.'12']]);
+                                $reportItems = $reporter->getReportItems([], [STATISTICS_DIMENSION_MONTH => ['from' => $year . '01', 'to' => $year . '12']]);
                                 if ($reportItems) {
                                     $xmlResult = $reporter->createXML($reportItems);
                                     if ($xmlResult) {
-                                        header('content-type: text/xml');
-                                        header('content-disposition: attachment; filename=counter-'. $release . '-' . $report . '-' . date('Ymd') . '.xml');
+                                        header('Content-Type: text/xml');
+                                        header('Content-Disposition: attachment; filename=counter-' . $release . '-' . $report . '-' . date('Ymd') . '.xml');
                                         print $xmlResult;
                                         return;
                                     } else {
@@ -226,32 +263,33 @@ class CounterReportPlugin extends ReportPlugin {
                         }
                     }
                     // fall through to default case with error message
-                    if (!$errormessage) {
+                    if ($errormessage === '') {
                         $errormessage = __('plugins.reports.counter.error.badParameters');
                     }
-                    // No break needed due to fall-through logic in legacy code, but modern standards prefer cleaner flow. 
-                    // However, we preserve the "fall through" logic to the default case for error handling.
-                    // goto default_error; // Or just let it fall through if logic dictates.
-                    
+                    // Intentional fall-through to default to display error notification
+                    // no break;
                 default:
-                    if (!$errormessage) {
+                    if ($errormessage === '') {
                         $errormessage = __('plugins.reports.counter.error.badRequest');
                     }
-                    $user = Request::getUser();
-                    import('classes.notification.NotificationManager');
-                    $notificationManager = new NotificationManager();
-                    $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_ERROR, ['contents' => $errormessage]);
+                    $user = $request->getUser();
+                    if ($user) {
+                        import('classes.notification.NotificationManager');
+                        $notificationManager = new NotificationManager();
+                        $notificationManager->createTrivialNotification((int) $user->getId(), NOTIFICATION_TYPE_ERROR, ['contents' => $errormessage]);
+                    }
             }
         }
         $legacyYears = $this->_getYears(true);
-        $templateManager = TemplateManager::getManager();
+        $templateManager = TemplateManager::getManager($request);
         krsort($available);
         $templateManager->assign('available', $available);
         $templateManager->assign('release', $this->getCurrentRelease());
         $templateManager->assign('years', $years);
-        // legacy reports are site-wide, so only site admins have access
         $templateManager->assign('showLegacy', Validation::isSiteAdmin());
-        if (!empty($legacyYears)) $templateManager->assign('legacyYears', $legacyYears);
+        if (!empty($legacyYears)) {
+            $templateManager->assign('legacyYears', $legacyYears);
+        }
         $templateManager->display($this->getTemplatePath() . 'index.tpl');
     }
 
@@ -268,13 +306,17 @@ class CounterReportPlugin extends ReportPlugin {
             $metricType = OJS_METRIC_TYPE_COUNTER;
             $filter = [STATISTICS_DIMENSION_ASSOC_TYPE => ASSOC_TYPE_GALLEY];
         }
-        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /* @var $metricsDao MetricsDAO */
+        /** @var MetricsDAO $metricsDao */
+        $metricsDao = DAORegistry::getDAO('MetricsDAO');
         $results = $metricsDao->getMetrics($metricType, [STATISTICS_DIMENSION_MONTH], $filter);
         $years = [];
-        foreach($results as $record) {
-            $year = substr($record['month'], 0, 4);
-            if (in_array($year, $years)) continue;
-            $years[] = $year;
+        if (is_array($results)) {
+            foreach ($results as $record) {
+                $year = substr((string) $record['month'], 0, 4);
+                if (!in_array($year, $years, true)) {
+                    $years[] = $year;
+                }
+            }
         }
 
         return $years;

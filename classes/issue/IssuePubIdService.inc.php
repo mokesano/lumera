@@ -18,8 +18,8 @@ class IssuePubIdService {
 
     /**
      * Get the public ID of the issue by querying active plugins.
-     * @param $issue Issue
-     * @param $pubIdType string
+     * @param Issue $issue
+     * @param string $pubIdType
      * @return string|null
      */
     public static function getPubId($issue, $pubIdType) {
@@ -33,5 +33,6 @@ class IssuePubIdService {
         }
         return null;
     }
+
 }
 ?>

@@ -6,9 +6,10 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance
+ * Distributed under the GNU GPL v3.
+ * 
  * @class PdfService
+ * 
  * @brief Wrapper independen untuk library mPDF yang murni menangani 
  * layouting dan rendering PDF. Digital signature via PHP OpenSSL native.
  */
@@ -204,5 +205,6 @@ class PdfService {
             throw new \Exception(__('document.error.pdfGenerationFailed'));
         }
     }
+
 }
 ?>

@@ -28,9 +28,9 @@ class UserImportExportPlugin extends ImportExportPlugin {
 
     /**
      * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path Path to plugin
-     * @return bool True iff plugin initialized successfully
+     * @param string $category
+     * @param string $path
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
@@ -65,7 +65,7 @@ class UserImportExportPlugin extends ImportExportPlugin {
     /**
      * Display the plugin UI.
      * @param array $args
-     * @param PKPRequest $request
+     * @param Request $request
      */
     public function display($args, $request): void {
         $templateMgr = TemplateManager::getManager($request);
@@ -87,7 +87,6 @@ class UserImportExportPlugin extends ImportExportPlugin {
 
         /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
-        
         $journal = $request->getJournal();
         if (!$journal) {
             return; 
@@ -257,8 +256,8 @@ class UserImportExportPlugin extends ImportExportPlugin {
     /**
      * Execute import/export tasks using the command-line interface.
      * @param string $scriptName
-     * @param array $args Parameters to the plugin
-     * @return bool True on success, false on failure
+     * @param array $args
+     * @return bool
      */
     public function executeCLI($scriptName, $args) {
         $command = array_shift($args);
@@ -268,14 +267,12 @@ class UserImportExportPlugin extends ImportExportPlugin {
 
         /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
-
         if (!$journalDao) {
             echo "Error: JournalDAO not found.\n";
             return false;
         }
 
         $journal = $journalDao->getJournalByPath($journalPath);
-
         if (!$journal) {
             if ($journalPath !== '') {
                 echo __('plugins.importexport.users.import.errorsOccurred') . ":\n";

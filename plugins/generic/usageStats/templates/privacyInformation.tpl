@@ -12,6 +12,7 @@
 
 {translate key="plugins.generic.usageStats.optout.description" privacyStatementUrl=$privacyStatementUrl}
 <form action="{url}" method="POST">
+	<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 	{if $hasOptedOut}
 		{translate key="plugins.generic.usageStats.optout.done"}
 		<input type="submit" name="opt-in" class="button defaultButton" value="{translate key="plugins.generic.usageStats.optin"}"/>

@@ -6,9 +6,10 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance
+ * Distributed under the GNU GPL v3.
+ * 
  * @class DiscountService
+ * 
  * @brief Layanan pengelola potongan harga/diskon berdasarkan pengaturan Jurnal.
  */
 
@@ -20,6 +21,7 @@ class DiscountService {
      * @return float
      */
     public function getFixedDiscount(int $journalId): float {
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $discount = (float) $journalSettingsDao->getSetting($journalId, 'paymentDiscount');
         return $discount > 0 ? $discount : 0.00;
@@ -36,5 +38,6 @@ class DiscountService {
         $taxableAmount = $subtotal - $discount;
         return $taxableAmount < 0 ? 0.00 : $taxableAmount;
     }
+    
 }
 ?>

@@ -7,7 +7,6 @@ declare(strict_types=1);
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
  *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance & DDD
  * @class CertificateHandler
  * @ingroup pages_document
  *
@@ -62,8 +61,8 @@ class CertificateHandler extends Handler {
      * Rute HTML: /document/certificate/[hash]-[reviewId]
      * Rute PDF:  /document/certificate/pdf-[hash]-[reviewId]
      * Validasi Keamanan URL, Ownership Validation, dan Logika Bisnis Terintegrasi.
-     * @param array $args URL arguments (mengandung hash dan reviewId)
-     * @param Request|null $request HTTP request object
+     * @param array $args
+     * @param Request|null $request
      */
     public function index(array $args = [], $request = null): void {
         $this->validate();
@@ -93,6 +92,7 @@ class CertificateHandler extends Handler {
         }
 
         // 2. Ownership Validation (Hanya Reviewer yang bersangkutan yang boleh unduh)
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
         $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
         
@@ -122,13 +122,13 @@ class CertificateHandler extends Handler {
         if ($isPdf) {
             $pdfService = new PdfService();
             // Asumsi Anda akan menambahkan fungsi generateCertificatePdf di PdfService
-            $pdfService->generateCertificatePdf($certData, $qrCodeBase64); 
+            $pdfService->generateCertificatePdf($certData, $qrCodeBase64); // Possible undefined variable '$certData'.
         } else {
             $templateMgr = TemplateManager::getManager($request);
             $pdfDownloadUrl = $request->url(null, 'document', 'certificate', ["pdf-{$providedHash}-{$reviewId}"]);
 
             $templateMgr->assign([
-                'certData' => $certData,
+                'certData' => $certData, // Possible undefined variable '$certData'.
                 'qrCodeImage' => $qrCodeBase64,
                 'pdfDownloadUrl' => $pdfDownloadUrl,
                 'pageTitle' => 'document.cert.pageTitle',
@@ -141,8 +141,8 @@ class CertificateHandler extends Handler {
 
     /**
      * Redirect to the user dashboard with an error message
-     * @param Request $request The HTTP request object
-     * @param string $localeKey The locale key for the error message
+     * @param Request $request
+     * @param string $localeKey
      */
     private function _redirectWithError($request, string $localeKey): void {
         import('classes.notification.NotificationManager');
@@ -157,5 +157,6 @@ class CertificateHandler extends Handler {
         $request->redirect(null, 'user', 'index');
         exit;
     }
+
 }
 ?>

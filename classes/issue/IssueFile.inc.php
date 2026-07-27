@@ -19,7 +19,6 @@ import('lib.pkp.classes.file.PKPFile');
 /* File content type IDs */
 define('ISSUE_FILE_PUBLIC', 0x000001);
 
-
 class IssueFile extends PKPFile {
 
     /**
@@ -54,7 +53,7 @@ class IssueFile extends PKPFile {
 
     /**
      * set ID of issue.
-     * @param $issueId int
+     * @param int $issueId
      */
     public function setIssueId($issueId) {
         return $this->setData('issueId', $issueId);
@@ -70,7 +69,7 @@ class IssueFile extends PKPFile {
 
     /**
      * set type of the file.
-     * @param $contentType string
+     * @param string $contentType
      */
     public function setContentType($contentType) {
         return $this->setData('contentType', $contentType);
@@ -78,7 +77,7 @@ class IssueFile extends PKPFile {
 
     /**
      * Get modified date of file.
-     * @return date
+     * @return mixed
      */
     public function getDateModified() {
         return $this->getData('dateModified');
@@ -86,11 +85,11 @@ class IssueFile extends PKPFile {
 
     /**
      * set modified date of file.
-     * @param $dateModified date
+     * @param mixed $dateModified date
      */
     public function setDateModified($dateModified) {
         return $this->setData('dateModified', $dateModified);
     }
-}
 
+}
 ?>

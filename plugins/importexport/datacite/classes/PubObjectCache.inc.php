@@ -12,139 +12,150 @@ declare(strict_types=1);
  * @ingroup plugins_importexport_crossref_classes
  *
  * @brief A cache for publication objects required during export.
- * * MODERNIZED FOR WIZDAM FORK
  */
-
 
 class PubObjectCache {
     
-    /** @var array */
-    public $_objectCache = [];
-
+    /** 
+     * @var array<string, array<int, mixed>|mixed> 
+     */
+    protected array $_objectCache = [];
 
     //
     // Public API
     //
     /**
      * Add a publishing object to the cache.
-     * @param $object Issue|PublishedArticle|ArticleGalley|SuppFile
-     * @param $parent PublishedArticle|null Only required when adding a galley.
+     * @param Issue|PublishedArticle|ArticleGalley|SuppFile $object
+     * @param PublishedArticle|null $parent
      */
     public function add($object, $parent) {
         if ($object instanceof Issue) {
-            $this->_insertInternally($object, 'issues', $object->getId());
+            $this->_insertInternally($object, 'issues', (int) $object->getId());
         }
         if ($object instanceof PublishedArticle) {
-            $this->_insertInternally($object, 'articles', $object->getId());
-            $this->_insertInternally($object, 'articlesByIssue', $object->getIssueId(), $object->getId());
+            $this->_insertInternally($object, 'articles', (int) $object->getId());
+            $this->_insertInternally($object, 'articlesByIssue', (int) $object->getIssueId(), (int) $object->getId());
         }
         if ($object instanceof ArticleGalley) {
-            assert($parent instanceof PublishedArticle);
-            $this->_insertInternally($object, 'galleys', $object->getId());
-            $this->_insertInternally($object, 'galleysByArticle', $object->getArticleId(), $object->getId());
-            $this->_insertInternally($object, 'galleysByIssue', $parent->getIssueId(), $object->getId());
+            if ($parent instanceof PublishedArticle) {
+                $this->_insertInternally($object, 'galleys', (int) $object->getId());
+                $this->_insertInternally($object, 'galleysByArticle', (int) $object->getArticleId(), (int) $object->getId());
+                $this->_insertInternally($object, 'galleysByIssue', (int) $parent->getIssueId(), (int) $object->getId());
+            }
         }
         if ($object instanceof SuppFile) {
-            $this->_insertInternally($object, 'suppFiles', $object->getId());
-            $this->_insertInternally($object, 'suppFilesByArticle', $object->getArticleId(), $object->getId());
+            $this->_insertInternally($object, 'suppFiles', (int) $object->getId());
+            $this->_insertInternally($object, 'suppFilesByArticle', (int) $object->getArticleId(), (int) $object->getId());
         }
     }
 
     /**
-     * Marks the given cache id "complete", i.e. it
-     * contains all child objects for the given object
-     * id.
+     * Marks the given cache id "complete", i.e. it contains all child objects 
+     * for the given object id.
      *
-     * @param $cacheId
-     * @param $objectId
+     * @param string $cacheId
+     * @param int $objectId
      */
     public function markComplete($cacheId, $objectId) {
-        assert(is_array($this->_objectCache[$cacheId][$objectId]));
-        $this->_objectCache[$cacheId][$objectId]['complete'] = true;
+        $objectId = (int) $objectId;
+        if (isset($this->_objectCache[$cacheId][$objectId]) && is_array($this->_objectCache[$cacheId][$objectId])) {
+            $this->_objectCache[$cacheId][$objectId]['complete'] = true;
 
-        // Order objects in the completed cache by ID.
-        ksort($this->_objectCache[$cacheId][$objectId]);
+            // Order objects in the completed cache by ID.
+            ksort($this->_objectCache[$cacheId][$objectId]);
+        }
     }
 
     /**
      * Retrieve (an) object(s) from the cache.
      *
-     * NB: You must check whether an object is in the cache
-     * before you try to retrieve it with this method.
+     * NB: You should check whether an object is in the cache
+     * with isCached() before you try to retrieve it with this method.
      *
-     * @param $cacheId string
-     * @param $id1 integer
-     * @param $id2 integer
-     *
+     * @param string $cacheId
+     * @param int $id1
+     * @param int|null $id2
      * @return mixed
      */
     public function get($cacheId, $id1, $id2 = null) {
-        assert($this->isCached($cacheId, $id1, $id2));
-        if (is_null($id2)) {
-            $returner = $this->_objectCache[$cacheId][$id1];
-            if (is_array($returner)) unset($returner['complete']);
-            return $returner;
+        $id1 = (int) $id1;
+        
+        if ($id2 === null) {
+            if (isset($this->_objectCache[$cacheId][$id1])) {
+                $returner = $this->_objectCache[$cacheId][$id1];
+                if (is_array($returner)) {
+                    unset($returner['complete']);
+                }
+                return $returner;
+            }
+            return null;
         } else {
-            return $this->_objectCache[$cacheId][$id1][$id2];
+            $id2 = (int) $id2;
+            if (isset($this->_objectCache[$cacheId][$id1][$id2])) {
+                return $this->_objectCache[$cacheId][$id1][$id2];
+            }
+            return null;
         }
     }
 
     /**
      * Check whether a given object is in the cache.
-     *
-     * @param $cacheId string
-     * @param $id1 integer
-     * @param $id2 integer
-     *
-     * @return boolean
+     * @param string $cacheId
+     * @param int $id1
+     * @param int|null $id2
+     * @return bool
      */
-    public function isCached($cacheId, $id1, $id2 = null) {
-        if (!isset($this->_objectCache[$cacheId])) return false;
+    public function isCached($cacheId, $id1, $id2 = null): bool {
+        if (!isset($this->_objectCache[$cacheId])) {
+            return false;
+        }
 
-        $id1 = (int)$id1;
-        if (is_null($id2)) {
-            if (!isset($this->_objectCache[$cacheId][$id1])) return false;
+        $id1 = (int) $id1;
+        if ($id2 === null) {
+            if (!isset($this->_objectCache[$cacheId][$id1])) {
+                return false;
+            }
             if (is_array($this->_objectCache[$cacheId][$id1])) {
                 return isset($this->_objectCache[$cacheId][$id1]['complete']);
-            } else {
-                return true;
             }
+            return true;
         } else {
-            $id2 = (int)$id2;
+            $id2 = (int) $id2;
             return isset($this->_objectCache[$cacheId][$id1][$id2]);
         }
     }
-
 
     //
     // Private helper methods
     //
     /**
      * Insert an object into the cache.
-     *
-     * @param $object object
-     * @param $cacheId string
-     * @param $id1 integer
-     * @param $id2 integer
+     * @param mixed $object
+     * @param string $cacheId
+     * @param int $id1
+     * @param int|null $id2
      */
     public function _insertInternally($object, $cacheId, $id1, $id2 = null) {
-        if ($this->isCached($cacheId, $id1, $id2)) return;
+        if ($this->isCached($cacheId, $id1, $id2)) {
+            return;
+        }
 
         if (!isset($this->_objectCache[$cacheId])) {
             $this->_objectCache[$cacheId] = [];
         }
 
-        $id1 = (int)$id1;
-        if (is_null($id2)) {
+        $id1 = (int) $id1;
+        if ($id2 === null) {
             $this->_objectCache[$cacheId][$id1] = $object;
         } else {
-            $id2 = (int)$id2;
+            $id2 = (int) $id2;
             if (!isset($this->_objectCache[$cacheId][$id1])) {
                 $this->_objectCache[$cacheId][$id1] = [];
             }
             $this->_objectCache[$cacheId][$id1][$id2] = $object;
         }
     }
-}
 
+}
 ?>

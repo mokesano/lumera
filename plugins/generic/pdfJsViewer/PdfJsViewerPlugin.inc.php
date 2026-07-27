@@ -10,9 +10,7 @@ declare(strict_types=1);
  *
  * @class PdfJsViewerPlugin
  *
- * @brief This plugin enables embedding of the pdf.js viewer for PDF display
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief This plugin enables embedding of the pdf.js viewer for PDF display.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -21,9 +19,9 @@ class PdfJsViewerPlugin extends GenericPlugin {
 
     /**
      * Register the plugin.
-     * @param string $category Plugin category
-     * @param string $path Plugin path
-     * @return boolean true for success
+     * @param string $category
+     * @param string $path
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         if (parent::register($category, $path)) {
@@ -55,8 +53,8 @@ class PdfJsViewerPlugin extends GenericPlugin {
 
     /**
      * Hook callback function for TemplateManager::include
-     * @param string $hookName Hook name
-     * @param array $args Hook arguments
+     * @param string $hookName
+     * @param array $args
      */
     public function _includeCallback($hookName, $args) {
         if ($this->getEnabled()) {
@@ -80,8 +78,8 @@ class PdfJsViewerPlugin extends GenericPlugin {
 
     /**
      * Hook callback function for TemplateManager::display
-     * @param string $hookName Hook name
-     * @param array $args Hook arguments
+     * @param string $hookName
+     * @param array $args
      */
     public function _displayCallback($hookName, $args) {
         if ($this->getEnabled()) {
@@ -108,5 +106,6 @@ class PdfJsViewerPlugin extends GenericPlugin {
     public function getTemplatePath(): string {
         return parent::getTemplatePath() . 'templates/';
     }
+
 }
 ?>

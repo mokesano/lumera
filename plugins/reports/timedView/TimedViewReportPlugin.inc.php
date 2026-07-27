@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @class TimedViewReportPlugin
  * @ingroup plugins_reports_timedView
  *
- * @brief Timed View report plugin
+ * @brief Timed View report plugin.
  */
 
 define('TIMED_VIEW_REPORT_YEAR_OFFSET_PAST', '-20');
@@ -23,14 +23,14 @@ import('classes.plugins.ReportPlugin');
 class TimedViewReportPlugin extends ReportPlugin {
     
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function TimedViewReportPlugin() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -44,16 +44,16 @@ class TimedViewReportPlugin extends ReportPlugin {
     }
 
     /**
-     * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path The path the plugin was found in
+     * Called as a plugin is registered to the registry.
+     * @param string $category
+     * @param string $path
      * @param int|null $mainContextId
-     * @return bool True if plugin initialized successfully; if false, the plugin will not be registered.
+     * @return bool
      */
     public function register(string $category, string $path, $mainContextId = null): bool {
-        $success = parent::register($category, $path, $mainContextId);
+        $success = parent::register($category, $path);
 
-        if($success) {
+        if ($success) {
             $this->import('TimedViewReportForm');
             $this->addLocaleData();
         }
@@ -61,9 +61,8 @@ class TimedViewReportPlugin extends ReportPlugin {
     }
 
     /**
-     * Get the name of this plugin. The name must be unique within
-     * its category.
-     * @return string name of plugin
+     * Get the name of this plugin. The name must be unique within its category.
+     * @return string
      */
     public function getName(): string {
         return 'TimedViewReportPlugin';
@@ -86,24 +85,25 @@ class TimedViewReportPlugin extends ReportPlugin {
     }
 
     /**
-     * Set the page's breadcrumbs, given the plugin's tree of items
-     * to append.
+     * Set the page's breadcrumbs, given the plugin's tree of items to append.
      * @param array $crumbs
      * @param bool $isSubclass
      */
     public function setBreadcrumbs($crumbs = [], $isSubclass = false) {
-        $templateMgr = TemplateManager::getManager();
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
         $pageCrumbs = [
             [
-                Request::url(null, 'user'),
+                $request->url(null, 'user'),
                 'navigation.user'
             ],
             [
-                Request::url(null, 'manager'),
+                $request->url(null, 'manager'),
                 'user.role.manager'
             ],
             [
-                Request::url(null, 'manager', 'statistics'),
+                $request->url(null, 'manager', 'statistics'),
                 'manager.statistics'
             ]
         ];
@@ -114,9 +114,14 @@ class TimedViewReportPlugin extends ReportPlugin {
     /**
      * Display the report.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
      */
     public function display($args, $request) {
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
         parent::display($args, $request);
         $this->setBreadcrumbs();
 
@@ -127,7 +132,7 @@ class TimedViewReportPlugin extends ReportPlugin {
             if ($form->validate()) {
                 $form->execute($request);
             } else {
-                $form->display();
+                $form->display($request);
             }
         } elseif ($request->getUserVar('clearLogs')) {
             $dateClear = date('Ymd', mktime(
@@ -136,15 +141,19 @@ class TimedViewReportPlugin extends ReportPlugin {
                 (int) $request->getUserVar('dateClearDay'), 
                 (int) $request->getUserVar('dateClearYear')
             ));
+            
             $journal = $request->getJournal();
-            $metricsDao = DAORegistry::getDAO('MetricsDAO'); /* @var $metricsDao MetricsDAO */
-            $metricsDao->purgeRecords(OJS_METRIC_TYPE_TIMED_VIEWS, $dateClear);
-            $form->display();
+            if ($journal) {
+                /** @var MetricsDAO $metricsDao */
+                $metricsDao = DAORegistry::getDAO('MetricsDAO');
+                $metricsDao->purgeRecords(OJS_METRIC_TYPE_TIMED_VIEWS, (string) $dateClear);
+            }
+            $form->display($request);
         } else {
             $form->initData();
-            $form->display();
+            $form->display($request);
         }
     }
-}
 
+}
 ?>

@@ -10,9 +10,10 @@ declare(strict_types=1);
  * @class CounterReport
  * @ingroup plugins_reports_counter
  *
- * @brief A COUNTER report, base class
+ * @brief A COUNTER report, base class.
  */
-require_once(dirname(dirname(__FILE__)).'/classes/COUNTER/COUNTER.php');
+
+require_once __DIR__ . '/../../classes/COUNTER/COUNTER.php';
 
 define('COUNTER_EXCEPTION_WARNING', 0);
 define('COUNTER_EXCEPTION_ERROR', 1);
@@ -34,25 +35,26 @@ define('COUNTER_LITERAL_PROPRIETARY', 'Proprietary');
 class CounterReport {
 
     /**
-     * @var string $_release A COUNTER release number
+     * @var string A COUNTER release number.
      */
     protected string $_release;
 
     /**
-     * @var array $_errors An array of accumulated Exceptions
+     * @var array An array of accumulated Exceptions.
      */
     protected array $_errors = [];
     
     /**
-     * Constructor
+     * Constructor.
      * @param string $release
      */
     public function __construct($release) {
-        $this->_release = $release;
+        $this->_release = (string) $release;
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $release
      */
     public function CounterReport($release) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -65,29 +67,29 @@ class CounterReport {
         call_user_func_array([$this, '__construct'], $args);
     }
     
-
     /**
-     * Get the COUNTER Release
+     * Get the COUNTER Release.
      * @return string
      */
-    public function getRelease() {
+    public function getRelease(): string {
         return $this->_release;
     }
 
     /**
-     * Get the report code
+     * Get the report code.
      * @return string
      */
-    public function getCode() {
+    public function getCode(): string {
         return substr(get_class($this), strlen(COUNTER_CLASS_PREFIX));
     }
 
     /**
-     * Get the COUNTER metric type for an Statistics file type
+     * Get the COUNTER metric type for a Statistics file type.
      * @param string $filetype
      * @return string
      */
-    public function getKeyForFiletype($filetype) {
+    public function getKeyForFiletype($filetype): string {
+        $metricTypeKey = 'other';
         switch ($filetype) {
             case STATISTICS_FILE_TYPE_HTML:
                 $metricTypeKey = 'ft_html';
@@ -103,63 +105,61 @@ class CounterReport {
     }
 
     /**
-     * Abstract method must be implemented in the child class
-     * Get the report title
+     * Abstract method must be implemented in the child class.
+     * Get the report title.
      * @return string
      */
-    public function getTitle() {
-        assert(false);
-        return '';
+    public function getTitle(): string {
+        throw new \BadMethodCallException('Must be implemented by subclass.');
     }
 
-    /*
-     * Convert an OJS metrics request to COUNTER ReportItems
-     * Abstract method must be implemented by subclass
-     * @param string|array $columns column (aggregation level) selection
-     * @param array $filters report-level filter selection
-     * @param array $orderBy order criteria
-     * @param null|DBResultRange $range paging specification
+    /**
+     * Convert an OJS metrics request to COUNTER ReportItems.
+     * Abstract method must be implemented by subclass.
+     * @param string|array $columns
+     * @param array $filters
+     * @param array $orderBy
+     * @param mixed $range
      * @see ReportPlugin::getMetrics for more details on parameters
-     * @return array COUNTER\ReportItem array
+     * @return array
      */
     public function getReportItems($columns = [], $filters = [], $orderBy = [], $range = null) {
-        assert(false);
-        return [];
+        throw new \BadMethodCallException('Must be implemented by subclass.');
     }
 
     /**
-     * Get an array of errors
+     * Get an array of errors.
      * @return array of Exceptions
      */
-    public function getErrors() {
-        return $this->_errors ? $this->_errors : [];
+    public function getErrors(): array {
+        return is_array($this->_errors) ? $this->_errors : [];
     }
 
     /**
-     * Set an errors condition; Proper Exception handling is deferred until the OJS 3.0 Release
-     * @param Exception $error
+     * Set an errors condition.
+     * @param \Exception $error
      */
-    public function setError($error) {
-        if (!$this->_errors) {
+    public function setError($error): void {
+        if (!is_array($this->_errors)) {
             $this->_errors = [];
         }
-        array_push($this->_errors, $error);
+        $this->_errors[] = $error;
     }
 
     /**
-     * Ensure that the $filters do not exceed the current Context
+     * Ensure that the $filters do not exceed the current Context.
      * @param array $filters
      * @return array
      */
-    protected function filterForContext($filters) {
-        $request = PKPApplication::getRequest();
+    protected function filterForContext(array $filters): array {
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
         $journal = $request->getJournal();
-        $journalId = $journal ? $journal->getJournalId() : '';
-        // If the request context is at the journal level, the dimension context id must be that same journal id
-        if ($journalId) {
-            if (isset($filters[STATISTICS_DIMENSION_CONTEXT_ID]) && $filters[STATISTICS_DIMENSION_CONTEXT_ID] != $journalId) {
-                // @phpstan-ignore-next-line
-                $this->setError(new Exception(__('plugins.reports.counter.generic.exception.filter'), COUNTER_EXCEPTION_WARNING | COUNTER_EXCEPTION_BAD_FILTERS));
+        $journalId = $journal ? (int) $journal->getId() : 0;
+
+        if ($journalId > 0) {
+            if (isset($filters[STATISTICS_DIMENSION_CONTEXT_ID]) && (int) $filters[STATISTICS_DIMENSION_CONTEXT_ID] !== $journalId) {
+                $this->setError(new \Exception(__('plugins.reports.counter.generic.exception.filter'), COUNTER_EXCEPTION_WARNING | COUNTER_EXCEPTION_BAD_FILTERS));
             }
             $filters[STATISTICS_DIMENSION_CONTEXT_ID] = $journalId;
         }
@@ -167,42 +167,47 @@ class CounterReport {
     }
 
     /**
-     * Given a Year-Month period and array of COUNTER\PerformanceCounters, create a COUNTER\Metric
-     * @param string $period Date in Ym format
-     * @param array $counters COUNTER\PerformanceCounter array
+     * Given a Year-Month period and array of COUNTER\PerformanceCounters, create a COUNTER\Metric.
+     * @param string $period
+     * @param array $counters
      * @return COUNTER\Metric|array
      */
-    protected function createMetricByMonth($period, $counters) {
+    protected function createMetricByMonth(string $period, array $counters) {
         $metric = [];
         try {
-            $metric = new COUNTER\Metric(
-                // Date range for JR1 is beginning of the month to end of the month
-                new COUNTER\DateRange(
-                    DateTime::createFromFormat('Ymd His', $period.'01 000000'),
-                    DateTime::createFromFormat('Ymd His', $period.date('t', strtotime(substr($period, 0, 4).'-'.substr($period, 4).'-01')).' 235959')
-                ),
-                'Requests',
-                $counters
-            );
-        } catch (Exception $e) {
-            $this->setError($e, COUNTER_EXCEPTION_ERROR | COUNTER_EXCEPTION_INTERNAL);
+            $startDate = \DateTime::createFromFormat('Ymd His', $period . '01 000000');
+            $endDateStr = $period . date('t', strtotime(substr($period, 0, 4) . '-' . substr($period, 4) . '-01')) . ' 235959';
+            $endDate = \DateTime::createFromFormat('Ymd His', $endDateStr);
+            
+            if ($startDate && $endDate) {
+                $metric = new COUNTER\Metric(
+                    // Date range for JR1 is beginning of the month to end of the month
+                    new COUNTER\DateRange($startDate, $endDate),
+                    'Requests',
+                    $counters
+                );
+            }
+        } catch (\Exception $e) {
+            $this->setError($e);
         }
         return $metric;
     }
 
     /**
-     * Construct a Reports result containing the provided performance metrics
-     * @param array $reportItems COUNTER\ReportItem
+     * Construct a Reports result containing the provided performance metrics.
+     * @param array $reportItems
      * @return string|null xml
      */
     public function createXML($reportItems) {
         $errors = $this->getErrors();
         $fatal = false;
+        
         foreach ($errors as $error) {
-            if ($error->getCode() & COUNTER_EXCEPTION_ERROR) {
+            if ($error instanceof \Exception && ($error->getCode() & COUNTER_EXCEPTION_ERROR)) {
                 $fatal = true;
             }
         }
+        
         if (!$fatal) {
             try {
                 $report = new COUNTER\Reports(
@@ -217,7 +222,7 @@ class CounterReport {
                             __('plugins.reports.counter.allCustomers')
                         ),
                         new COUNTER\Vendor(
-                            $this->getVendorID(),
+                            $this->getVendorId(),
                             $this->getVendorName(),
                             $this->getVendorContacts(),
                             $this->getVendorWebsiteUrl(),
@@ -225,9 +230,10 @@ class CounterReport {
                         )
                     )
                 );
-            } catch (Exception $e) {
-                $this->setError($e, COUNTER_EXCEPTION_ERROR | COUNTER_EXCEPTION_INTERNAL);
+            } catch (\Exception $e) {
+                $this->setError($e);
             }
+            
             if (isset($report)) {
                 return (string) $report;
             }
@@ -236,23 +242,23 @@ class CounterReport {
     }
 
     /**
-     * Get the Vendor Id
+     * Get the Vendor Id.
      * @return string
      */
-    public function getVendorId() {
+    public function getVendorId(): string {
         return (string) $this->_getVendorComponent('id');
     }
 
     /**
-     * Get the Vendor Name
+     * Get the Vendor Name.
      * @return string
      */
-    public function getVendorName() {
+    public function getVendorName(): string {
         return (string) $this->_getVendorComponent('name');
     }
 
     /**
-     * Get the Vendor Contacts
+     * Get the Vendor Contacts.
      * @return array|COUNTER\Contact
      */
     public function getVendorContacts() {
@@ -260,44 +266,45 @@ class CounterReport {
     }
 
     /**
-     * Get the Vendor Website URL
+     * Get the Vendor Website URL.
      * @return string
      */
-    public function getVendorWebsiteUrl() {
+    public function getVendorWebsiteUrl(): string {
         return (string) $this->_getVendorComponent('website');
     }
 
     /**
-     * Get the Vendor Logo URL
+     * Get the Vendor Logo URL.
      * @return string
      */
-    public function getVendorLogoUrl() {
+    public function getVendorLogoUrl(): string {
         return (string) $this->_getVendorComponent('logo');
     }
 
     /**
-     * Get the Vendor Componet by key
+     * Get the Vendor Component by key.
      * @param string $key
      * @return mixed
      */
-    public function _getVendorComponent($key) {
-        $request = PKPApplication::getRequest();
+    public function _getVendorComponent(string $key) {
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
         $site = $request->getSite();
+        
         switch ($key) {
             case 'name':
-                return $site->getLocalizedTitle();
+                return (string) $site->getLocalizedTitle();
             case 'id':
-                return $request->getBaseUrl();
+                return (string) $request->getBaseUrl();
             case 'contacts':
                 try {
-                    $contact = new COUNTER\Contact($site->getLocalizedContactName(), $site->getLocalizedContactEmail());
-                } catch (Exception $e) {
+                    return new COUNTER\Contact((string) $site->getLocalizedContactName(), (string) $site->getLocalizedContactEmail());
+                } catch (\Exception $e) {
                     $this->setError($e);
-                    $contact = [];
+                    return [];
                 }
-                return $contact;
             case 'website':
-                return $request->getBaseUrl();
+                return (string) $request->getBaseUrl();
             case 'logo':
                 return '';
             default:

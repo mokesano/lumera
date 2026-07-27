@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @class OpenAIREPlugin
  * @ingroup plugins_generic_openAIRE
  *
- * @brief OpenAIRE plugin class
+ * @brief OpenAIRE plugin class.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -19,10 +19,10 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 class OpenAIREPlugin extends GenericPlugin {
 
     /**
-     * Called as a plugin is registered to the registry
+     * Called as a plugin is registered to the registry.
      * @param string $category Name of category plugin was registered to
      * @param string $path
-     * @return boolean True if plugin initialized successfully
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
@@ -65,18 +65,17 @@ class OpenAIREPlugin extends GenericPlugin {
             HookRegistry::register('OAIDAO::_returnRecordFromRow', [$this, 'addSet']);
             HookRegistry::register('OAIDAO::_returnIdentifierFromRow', [$this, 'addSet']);
 
-             // Change Dc11Desctiption -- consider OpenAIRE elements relation, rights and date
-             // Note: 'Desctiption' typo preserved from original code for integrity
+            // Change Dc11 Description -- consider OpenAIRE elements relation, rights and date
             HookRegistry::register('Dc11SchemaArticleAdapter::extractMetadataFromDataObject', [$this, 'changeDc11Desctiption']);
 
-            // consider OpenAIRE articles in article tombstones
+            // Consider OpenAIRE articles in article tombstones
             HookRegistry::register('ArticleTombstoneManager::insertArticleTombstone', [$this, 'insertOpenAIREArticleTombstone']);
         }
         return $success;
     }
 
     /**
-     * Get display name
+     * Get display name.
      * @return string
      */
     public function getDisplayName(): string {
@@ -84,7 +83,7 @@ class OpenAIREPlugin extends GenericPlugin {
     }
 
     /**
-     * Get description
+     * Get description.
      * @return string
      */
     public function getDescription(): string {
@@ -96,9 +95,10 @@ class OpenAIREPlugin extends GenericPlugin {
      */
 
     /**
-     * Insert projectID field into author submission step 3 and metadata edit form
-     * @param mixed $hookName
-     * @param mixed $params
+     * Insert projectID field into author submission step 3 and metadata edit form.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function metadataFieldEdit($hookName, $params) {
         $smarty = $params[1];
@@ -109,9 +109,10 @@ class OpenAIREPlugin extends GenericPlugin {
     }
 
     /**
-     * Add projectID to the metadata view
-     * @param mixed $hookName
-     * @param mixed $params
+     * Add projectID to the metadata view.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function metadataFieldView($hookName, $params) {
         $smarty = $params[1];
@@ -122,63 +123,72 @@ class OpenAIREPlugin extends GenericPlugin {
     }
 
     /**
-     * Add projectID element to the article
-     * @param mixed $hookName
-     * @param mixed $params
+     * Add projectID element to the article.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function articleSubmitGetFieldNames($hookName, $params) {
         $fields =& $params[1]; // Reference needed for array modification in hook
         $fields[] = 'projectID';
+        
         return false;
     }
 
     /**
-     * Set article projectID
-     * @param mixed $hookName
-     * @param mixed $params
+     * Set article projectID.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function metadataExecute($hookName, $params) {
         $form = $params[0];
         $article = $form->getArticle();
         $formProjectID = $form->getData('projectID');
         $article->setData('projectID', $formProjectID);
+
         return false;
     }
 
     /**
-     * Add check/validation for the projectID field (= 6 numbers)
-     * @param mixed $hookName
-     * @param mixed $params
+     * Add check/validation for the projectID field (= 6 numbers).
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function addCheck($hookName, $params) {
         $form = $params[0];
-        if (get_class($form) == 'AuthorSubmitStep3Form' || get_class($form) == 'MetadataForm' ) {
+        if ($form instanceof AuthorSubmitStep3Form || $form instanceof MetadataForm) {
             $form->addCheck(new FormValidatorRegExp($form, 'projectID', 'optional', 'plugins.generic.openAIRE.projectIDValid', '/^\d{6}$/'));
         }
         return false;
     }
 
     /**
-     * Init article projectID
-     * @param mixed $hookName
-     * @param mixed $params
+     * Init article projectID.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function metadataInitData($hookName, $params) {
         $form = $params[0];
         $article = $form->getArticle();
         $articleProjectID = $article->getData('projectID');
         $form->setData('projectID', $articleProjectID);
+
         return false;
     }
 
     /**
-     * Concern projectID field in the form
-     * @param mixed $hookName
-     * @param mixed $params
+     * Concern projectID field in the form.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function metadataReadUserVars($hookName, $params) {
         $userVars =& $params[1]; // Reference needed for array modification in hook
         $userVars[] = 'projectID';
+
         return false;
     }
 
@@ -188,20 +198,23 @@ class OpenAIREPlugin extends GenericPlugin {
      */
 
     /**
-     * Add OpenAIRE set
-     * @param mixed $hookName
-     * @param mixed $params
+     * Add OpenAIRE set.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function sets($hookName, $params) {
         $sets =& $params[5]; // Reference needed for array modification in hook
-        array_push($sets, new OAISet('ec_fundedresources', 'EC_fundedresources', ''));
+        $sets[] = new OAISet('ec_fundedresources', 'EC_fundedresources', '');
+
         return false;
     }
 
     /**
-     * Get OpenAIRE records or identifiers
-     * @param mixed $hookName
-     * @param mixed $params
+     * Get OpenAIRE records or identifiers.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function recordsOrIdentifiers($hookName, $params) {
         $journalOAI = $params[0];
@@ -214,19 +227,19 @@ class OpenAIREPlugin extends GenericPlugin {
         $records =& $params[7]; // Reference needed for array output
 
         $records = [];
-        if (isset($set) && $set == 'ec_fundedresources') {
+        if ($set !== null && $set === 'ec_fundedresources') {
             /** @var OpenAIREDAO $openAIREDao */
             $openAIREDao = DAORegistry::getDAO('OpenAIREDAO');
             $openAIREDao->setOAI($journalOAI);
             
             $funcName = '';
-            if ($hookName == 'JournalOAI::records') {
+            if ($hookName === 'JournalOAI::records') {
                 $funcName = '_returnRecordFromRow';
-            } else if ($hookName == 'JournalOAI::identifiers') {
+            } elseif ($hookName === 'JournalOAI::identifiers') {
                 $funcName = '_returnIdentifierFromRow';
             }
             
-            $journalId = $journalOAI->journalId;
+            $journalId = (int) $journalOAI->journalId;
             $records = $openAIREDao->getOpenAIRERecordsOrIdentifiers([$journalId, null], $from, $until, $offset, $limit, $total, $funcName);
             return true;
         }
@@ -234,9 +247,10 @@ class OpenAIREPlugin extends GenericPlugin {
     }
 
     /**
-     * Change OAI record or identifier to consider the OpenAIRE set
-     * @param mixed $hookName
-     * @param mixed $params
+     * Change OAI record or identifier to consider the OpenAIRE set.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function addSet($hookName, $params) {
         $record = $params[0];
@@ -251,61 +265,57 @@ class OpenAIREPlugin extends GenericPlugin {
     }
 
     /**
-     * Change Dc11 Description to consider the OpenAIRE elements
-     * Note: Typo 'Desctiption' retained to match registration
-     * @param mixed $hookName
-     * @param mixed $params
+     * Change Dc11 Description to consider the OpenAIRE elements.
+     * Note: Typo 'Desctiption' retained to match registration.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function changeDc11Desctiption($hookName, $params) {
         $adapter = $params[0];
         $article = $params[1];
         $journal = $params[2];
         $issue = $params[3];
-        $dc11Description = $params[4]; // Reference needed for object modification (DC Description)
+        $dc11Description = $params[4];
 
         /** @var OpenAIREDAO $openAIREDao */
         $openAIREDao = DAORegistry::getDAO('OpenAIREDAO');
-        // [PHP 8 FIX] Handle undefined $journalOAI safely to prevent Fatal Error
-        if (isset($journalOAI)) {
-             $openAIREDao->setOAI($journalOAI);
-        }
 
-        if ($openAIREDao->isOpenAIREArticle($article->getId())) {
-
+        if ($openAIREDao->isOpenAIREArticle((int) $article->getId())) {
             // Determine OpenAIRE DC elements values
             // OpenAIRE DC Relation
-            $articleProjectID = $article->getData('projectID');
+            $articleProjectID = (string) $article->getData('projectID');
             $openAIRERelation = 'info:eu-repo/grantAgreement/EC/FP7/' . $articleProjectID;
 
             // OpenAIRE DC Rights
             $openAIRERights = 'info:eu-repo/semantics/';
             $status = '';
             
-            if ($journal->getSetting('publishingMode') == PUBLISHING_MODE_OPEN) {
+            if ($journal->getSetting('publishingMode') === PUBLISHING_MODE_OPEN) {
                 $status = 'openAccess';
-            } else if ($journal->getSetting('publishingMode') == PUBLISHING_MODE_SUBSCRIPTION) {
-                if ($issue->getAccessStatus() == 0 || $issue->getAccessStatus() == ISSUE_ACCESS_OPEN) {
+            } elseif ($journal->getSetting('publishingMode') === PUBLISHING_MODE_SUBSCRIPTION) {
+                if ($issue->getAccessStatus() === 0 || $issue->getAccessStatus() === ISSUE_ACCESS_OPEN) {
                     $status = 'openAccess';
-                } else if ($issue->getAccessStatus() == ISSUE_ACCESS_SUBSCRIPTION) {
-                    if ($article instanceof PublishedArticle && $article->getAccessStatus() == ARTICLE_ACCESS_OPEN) {
+                } elseif ($issue->getAccessStatus() === ISSUE_ACCESS_SUBSCRIPTION) {
+                    if ($article instanceof PublishedArticle && $article->getAccessStatus() === ARTICLE_ACCESS_OPEN) {
                         $status = 'openAccess';
-                    } else if ($issue->getAccessStatus() == ISSUE_ACCESS_SUBSCRIPTION && $issue->getOpenAccessDate() != NULL) {
+                    } elseif ($issue->getAccessStatus() === ISSUE_ACCESS_SUBSCRIPTION && $issue->getOpenAccessDate() !== null) {
                         $status = 'embargoedAccess';
-                    } else if ($issue->getAccessStatus() == ISSUE_ACCESS_SUBSCRIPTION && $issue->getOpenAccessDate() == NULL) {
+                    } elseif ($issue->getAccessStatus() === ISSUE_ACCESS_SUBSCRIPTION && $issue->getOpenAccessDate() === null) {
                         $status = 'closedAccess';
                     }
                 }
             }
             
-            if ($journal->getSetting('restrictSiteAccess') == 1 || $journal->getSetting('restrictArticleAccess') == 1) {
+            if ($journal->getSetting('restrictSiteAccess') === 1 || $journal->getSetting('restrictArticleAccess') === 1) {
                 $status = 'restrictedAccess';
             }
             $openAIRERights = $openAIRERights . $status;
 
             // OpenAIRE DC Date
             $openAIREDate = null;
-            if ($status == 'embargoedAccess') {
-                $openAIREDate = 'info:eu-repo/date/embargoEnd/' . date('Y-m-d', strtotime($issue->getOpenAccessDate()));
+            if ($status === 'embargoedAccess') {
+                $openAIREDate = 'info:eu-repo/date/embargoEnd/' . date('Y-m-d', strtotime((string) $issue->getOpenAccessDate()));
             }
 
             // Get current DC statements
@@ -328,18 +338,21 @@ class OpenAIREPlugin extends GenericPlugin {
             $newDCRelationStatements = ['dc:relation' => $dcRelationValues];
             $dc11Description->setStatements($newDCRelationStatements);
 
-            foreach ($dcRightsValues as $key => $value) {
-                array_unshift($value, $openAIRERights);
-                $dcRightsValues[$key] = $value;
+            if (is_array($dcRightsValues)) {
+                foreach ($dcRightsValues as $key => $value) {
+                    array_unshift($value, $openAIRERights);
+                    $dcRightsValues[$key] = $value;
+                }
             }
             
-            if (!array_key_exists($journal->getPrimaryLocale(), $dcRightsValues)) {
-                $dcRightsValues[$journal->getPrimaryLocale()] = [$openAIRERights];
+            $primaryLocale = (string) $journal->getPrimaryLocale();
+            if (!array_key_exists($primaryLocale, $dcRightsValues)) {
+                $dcRightsValues[$primaryLocale] = [$openAIRERights];
             }
             $newDCRightsStatements = ['dc:rights' => $dcRightsValues];
             $dc11Description->setStatements($newDCRightsStatements);
 
-            if ($openAIREDate != null) {
+            if ($openAIREDate !== null) {
                 array_unshift($dcDateValues, $openAIREDate);
                 $newDCDateStatements = ['dc:date' => $dcDateValues];
                 $dc11Description->setStatements($newDCDateStatements);
@@ -349,21 +362,23 @@ class OpenAIREPlugin extends GenericPlugin {
     }
 
     /**
-     * Consider the OpenAIRE set in the article tombstone
-     * @param mixed $hookName
-     * @param mixed $params
+     * Consider the OpenAIRE set in the article tombstone.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function insertOpenAIREArticleTombstone($hookName, $params) {
         $articleTombstone = $params[0];
 
         /** @var OpenAIREDAO $openAIREDao */
         $openAIREDao = DAORegistry::getDAO('OpenAIREDAO');
-        if ($openAIREDao->isOpenAIREArticle($articleTombstone->getDataObjectId())) {
+        if ($openAIREDao->isOpenAIREArticle((int) $articleTombstone->getDataObjectId())) {
             /** @var DataObjectTombstoneSettingsDAO $dataObjectTombstoneSettingsDao */
             $dataObjectTombstoneSettingsDao = DAORegistry::getDAO('DataObjectTombstoneSettingsDAO');
-            $dataObjectTombstoneSettingsDao->updateSetting($articleTombstone->getId(), 'openaire', true, 'bool');
+            $dataObjectTombstoneSettingsDao->updateSetting((int) $articleTombstone->getId(), 'openaire', true, 'bool');
         }
         return false;
     }
+    
 }
 ?>

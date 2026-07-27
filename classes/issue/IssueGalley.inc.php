@@ -27,7 +27,7 @@ class IssueGalley extends IssueFile {
     }
 
     /**
-     * Legacy Constructor Shim.
+     * [SHIM] Backward Compatibility.
      */
     public function IssueGalley() {
         trigger_error(
@@ -88,7 +88,7 @@ class IssueGalley extends IssueFile {
 
     /**
      * Set label/title.
-     * @param $label string
+     * @param string $label
      */
     public function setLabel($label) {
         return $this->setData('label', $label);
@@ -104,7 +104,7 @@ class IssueGalley extends IssueFile {
 
     /**
      * Set locale.
-     * @param $locale string
+     * @param string $locale
      */
     public function setLocale($locale) {
         return $this->setData('locale', $locale);
@@ -120,7 +120,7 @@ class IssueGalley extends IssueFile {
 
     /**
      * Set sequence order.
-     * @param $sequence float
+     * @param float $sequence
      */
     public function setSequence($sequence) {
         return $this->setData('sequence', $sequence);
@@ -144,8 +144,8 @@ class IssueGalley extends IssueFile {
 
     /**
      * Get a public ID for this galley.
-     * @param $pubIdType string One of the NLM pub-id-type values
-     * @param $preview boolean If true, generate a non-persisted preview only.
+     * @param string $pubIdType
+     * @param bool $preview
      */
     public function getPubId($pubIdType, $preview = false) {
         // If we already have an assigned ID, use it.
@@ -161,7 +161,7 @@ class IssueGalley extends IssueFile {
 
     /**
      * Get stored public ID of the galley.
-     * @param $pubIdType string
+     * @param string $pubIdType
      * @return string
      */
     public function getStoredPubId($pubIdType) {
@@ -170,8 +170,8 @@ class IssueGalley extends IssueFile {
 
     /**
      * Set stored public galley id.
-     * @param $pubIdType string
-     * @param $pubId string
+     * @param string $pubIdType
+     * @param string $pubId
      */
     public function setStoredPubId($pubIdType, $pubId) {
         return $this->setData('pub-id::'.$pubIdType, $pubId);
@@ -180,7 +180,7 @@ class IssueGalley extends IssueFile {
     /**
      * Return the "best" article ID -- If a public article ID is set,
      * use it; otherwise use the internal article Id.
-     * @param $journal Object the journal this galley is in
+     * @param Journal $journal
      * @return string
      */
     public function getBestGalleyId($journal) {
@@ -190,6 +190,6 @@ class IssueGalley extends IssueFile {
         }
         return $this->getId();
     }
-}
 
+}
 ?>

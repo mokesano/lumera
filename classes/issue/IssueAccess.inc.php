@@ -31,7 +31,7 @@ trait IssueAccess {
 
     /**
      * Set issue access status.
-     * @param $accessStatus int
+     * @param int $accessStatus
      */
     public function setAccessStatus($accessStatus) {
         return $this->setData('accessStatus', $accessStatus);
@@ -47,7 +47,7 @@ trait IssueAccess {
 
     /**
      * Set open access date.
-     * @param $openAccessDate string (date)
+     * @param string $openAccessDate (date)
      */
     public function setOpenAccessDate($openAccessDate) {
         return $this->setData('openAccessDate', $openAccessDate);

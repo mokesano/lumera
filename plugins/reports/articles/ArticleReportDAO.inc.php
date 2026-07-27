@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @class ArticleReportDAO
  * @ingroup plugins_reports_article
  *
- * @brief Article report DAO
+ * @brief Article report DAO.
  */
 
 import('classes.submission.common.Action');
@@ -46,17 +46,17 @@ class ArticleReportDAO extends DAO {
                 a.submission_progress = 0
             ORDER BY a.article_id',
             [
-                'title', // Article title
+                'title',
                 'title',
                 $locale,
-                'abstract', // Article abstract
+                'abstract',
                 'abstract',
                 $locale,
                 'title',
                 $primaryLocale,
                 'title',
                 $locale,
-                $journalId
+                (int) $journalId
             ]
         );
         $articlesReturner = new DBRowIterator($result);
@@ -87,15 +87,15 @@ class ArticleReportDAO extends DAO {
                     d.article_id = ?',
                 [
                     $row['date_decided'],
-                    $row['article_id']
+                    (int) $row['article_id']
                 ]
             );
             $decisionsReturner[] = new DBRowIterator($result);
-            unset($result);
         }
 
-        $articleDao = DAORegistry::getDAO('ArticleDAO'); /* @var $articleDao ArticleDAO */
-        $articles = $articleDao->getArticlesByJournalId($journalId);
+        /** @var ArticleDAO $articleDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO');
+        $articles = $articleDao->getArticlesByJournalId((int) $journalId);
         $authorsReturner = [];
         
         while ($article = $articles->next()) {
@@ -131,14 +131,11 @@ class ArticleReportDAO extends DAO {
                     (int) $article->getId()
                 ]
             );
-            $authorIterator = new DBRowIterator($result);
-            $authorsReturner[$article->getId()] = $authorIterator;
-            unset($authorIterator);
-            unset($article);
+            $authorsReturner[(int) $article->getId()] = new DBRowIterator($result);
         }
 
         return [$articlesReturner, $authorsReturner, $decisionsReturner];
     }
-}
 
+}
 ?>

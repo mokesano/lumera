@@ -18,13 +18,13 @@ import('lib.pkp.classes.form.Form');
 
 class QuickSubmitForm extends Form {
     
-    /** @var object */
+    /** @var Request */
     public $request;
 
     /**
      * Constructor
      * @param object $plugin
-     * @param object $request
+     * @param Request $request
      */
     public function __construct($plugin, $request) {
         parent::__construct($plugin->getTemplatePath() . 'index.tpl');
@@ -41,7 +41,7 @@ class QuickSubmitForm extends Form {
             'required', 
             'plugins.importexport.quickSubmit.submissionRequired', 
             function($tempFileId) { 
-                return $tempFileId > 0; 
+                return (int) $tempFileId > 0; 
             }
         ));
 
@@ -50,8 +50,8 @@ class QuickSubmitForm extends Form {
             'sectionId', 
             'required', 
             'author.submit.form.sectionRequired', 
-            array(DAORegistry::getDAO('SectionDAO'), 'sectionExists'), 
-            array($journal->getId())
+            [DAORegistry::getDAO('SectionDAO'), 'sectionExists'], 
+            [(int) $journal->getId()]
         ));
 
         $this->addCheck(new FormValidatorCustom(
@@ -70,12 +70,12 @@ class QuickSubmitForm extends Form {
             'required', 
             'plugins.importexport.quickSubmit.issueRequired', 
             function($destination, $form) { 
-                return $destination == 'queue' ? true : ($form->getData('issueId') > 0); 
+                return $destination === 'queue' ? true : ((int) $form->getData('issueId') > 0); 
             }, 
-            array($this)
+            [$this]
         ));
 
-        $this->addCheck(new FormValidatorArray($this, 'authors', 'required', 'author.submit.form.authorRequiredFields', array('firstName', 'lastName')));
+        $this->addCheck(new FormValidatorArray($this, 'authors', 'required', 'author.submit.form.authorRequiredFields', ['firstName', 'lastName']));
 
         $this->addCheck(new FormValidatorArrayCustom(
             $this, 
@@ -85,9 +85,9 @@ class QuickSubmitForm extends Form {
             function($email, $regExp) { 
                 return PKPString::regexp_match($regExp, $email); 
             }, 
-            array(ValidatorEmail::getRegexp()), 
+            [ValidatorEmail::getRegexp()], 
             false, 
-            array('email')
+            ['email']
         ));
 
         $this->addCheck(new FormValidatorArrayCustom(
@@ -98,9 +98,9 @@ class QuickSubmitForm extends Form {
             function($url, $regExp) { 
                 return empty($url) ? true : PKPString::regexp_match($regExp, $url); 
             }, 
-            array(ValidatorUrl::getRegexp()), 
+            [ValidatorUrl::getRegexp()], 
             false, 
-            array('url')
+            ['url']
         ));
 
         // Add ORCiD validation
@@ -114,14 +114,14 @@ class QuickSubmitForm extends Form {
                 $validator = new ValidatorORCID(); 
                 return empty($orcid) ? true : $validator->isValid($orcid); 
             }, 
-            array(), 
+            [], 
             false, 
-            array('orcid')
+            ['orcid']
         ));
 
         $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
         if (!is_array($supportedSubmissionLocales) || count($supportedSubmissionLocales) < 1) {
-            $supportedSubmissionLocales = array($journal->getPrimaryLocale());
+            $supportedSubmissionLocales = [$journal->getPrimaryLocale()];
         }
         $this->addCheck(new FormValidatorInSet($this, 'locale', 'required', 'author.submit.form.localeRequired', $supportedSubmissionLocales));
     }
@@ -137,7 +137,7 @@ class QuickSubmitForm extends Form {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -145,17 +145,17 @@ class QuickSubmitForm extends Form {
      * @return array
      */
     public function getLocaleFieldNames(): array {
-        return array('tempFileId', 'title', 'abstract', 'discipline', 'subjectClass', 'subject', 'coverageGeo', 'coverageChron', 'coverageSample', 'type', 'sponsor');
+        return ['title', 'abstract', 'discipline', 'subjectClass', 'subject', 'coverageGeo', 'coverageChron', 'coverageSample', 'type', 'sponsor'];
     }
 
     /**
      * Display the form.
-     * @param object|null $request
+     * @param Request|null $request
      * @param string|null $template
      * @return void
      */
     public function display($request = null, $template = null): void {
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($this->request);
         $request = $this->request;
         $user = $request->getUser();
         $journal = $request->getJournal();
@@ -163,20 +163,21 @@ class QuickSubmitForm extends Form {
 
         $templateMgr->assign('journal', $journal);
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
-        $sections = $sectionDao->getJournalSections($journal->getId());
-        $sectionTitles = array();
-        $sectionAbstractsRequired = array();
+        $sections = $sectionDao->getJournalSections((int) $journal->getId());
+        $sectionTitles = [];
+        $sectionAbstractsRequired = [];
         
         while ($section = $sections->next()) {
             $sectionTitles[$section->getId()] = $section->getTitle($journal->getPrimaryLocale());
             $sectionAbstractsRequired[(int) $section->getId()] = (int) (!$section->getAbstractsNotRequired());
-            unset($section);
         }
 
-        $templateMgr->assign('sectionOptions', array('0' => __('author.submit.selectSection')) + $sectionTitles);
+        $templateMgr->assign('sectionOptions', ['0' => __('author.submit.selectSection')] + $sectionTitles);
         $templateMgr->assign('sectionAbstractsRequired', $sectionAbstractsRequired);
 
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
         $templateMgr->assign('countries', $countries);
@@ -187,16 +188,17 @@ class QuickSubmitForm extends Form {
         import('classes.file.TemporaryFileManager');
         $temporaryFileManager = new TemporaryFileManager();
         $tempFileId = $this->getData('tempFileId');
-        if (isset($tempFileId[$formLocale]) && $tempFileId[$formLocale] > 0) {
-            $submissionFile = $temporaryFileManager->getFile($tempFileId[$formLocale], $user->getId());
+        
+        if (is_array($tempFileId) && isset($tempFileId[$formLocale]) && (int) $tempFileId[$formLocale] > 0) {
+            $submissionFile = $temporaryFileManager->getFile((int) $tempFileId[$formLocale], (int) $user->getId());
             $templateMgr->assign('submissionFile', $submissionFile);
         }
 
-        if ($request->getUserVar('addAuthor') || $request->getUserVar('delAuthor')  || $request->getUserVar('moveAuthor')) {
+        if ($request->getUserVar('addAuthor') || $request->getUserVar('delAuthor') || $request->getUserVar('moveAuthor')) {
             $templateMgr->assign('scrollToAuthor', true);
         }
 
-        if ($request->getUserVar('destination') == 'queue' ) {
+        if ($request->getUserVar('destination') === 'queue') {
             $templateMgr->assign('publishToIssue', false);
         } else {
             $templateMgr->assign('issueNumber', $request->getUserVar('issueId'));
@@ -205,43 +207,44 @@ class QuickSubmitForm extends Form {
 
         $templateMgr->assign('enablePageNumber', $journal->getSetting('enablePageNumber'));
 
-        // Provide available submission languages. (Convert the array
-        // of locale symbolic names xx_XX into an associative array
-        // of symbolic names => readable names.)
         $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
-        if (empty($supportedSubmissionLocales)) $supportedSubmissionLocales = array($journal->getPrimaryLocale());
+        if (empty($supportedSubmissionLocales)) {
+            $supportedSubmissionLocales = [$journal->getPrimaryLocale()];
+        }
+        
         $templateMgr->assign(
             'supportedSubmissionLocaleNames',
             array_flip(array_intersect(
                 array_flip(AppLocale::getAllLocales()),
-                $supportedSubmissionLocales
+                (array) $supportedSubmissionLocales
             ))
         );
-        parent::display();
+        
+        parent::display($request, $template);
     }
 
     /**
      * Initialize form data for a new form.
-     * @param object|null $request
      * @return void
      */
     public function initData(): void {
         $request = $this->request;
         $journal = $request->getJournal();
+
         $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
-        // Try these locales in order until we find one that's
-        // supported to use as a default.
+        $supportedSubmissionLocales = is_array($supportedSubmissionLocales) ? $supportedSubmissionLocales : [];
         $fallbackLocales = array_keys($supportedSubmissionLocales);
-        $tryLocales = array(
-            $this->getFormLocale(), // Current form locale
-            AppLocale::getLocale(), // Current UI locale
-            $journal->getPrimaryLocale(), // Journal locale
-            $supportedSubmissionLocales[array_shift($fallbackLocales)] // Fallback: first one on the list
-        );
-        $this->_data = array();
+        
+        $tryLocales = [
+            $this->getFormLocale(),
+            AppLocale::getLocale(),
+            $journal->getPrimaryLocale(),
+            !empty($fallbackLocales) ? $supportedSubmissionLocales[array_shift($fallbackLocales)] : null
+        ];
+        
+        $this->_data = [];
         foreach ($tryLocales as $locale) {
-            if (in_array($locale, $supportedSubmissionLocales)) {
-                // Found a default to use
+            if ($locale !== null && in_array($locale, $supportedSubmissionLocales, true)) {
                 $this->_data['locale'] = $locale;
                 break;
             }
@@ -253,37 +256,19 @@ class QuickSubmitForm extends Form {
      * @return void
      */
     public function readInputData(): void {
-        $this->readUserVars(
-            array(
-                'tempFileId',
-                'destination',
-                'issueId',
-                'pages',
-                'sectionId',
-                'authors',
-                'primaryContact',
-                'title',
-                'abstract',
-                'discipline',
-                'subjectClass',
-                'subject',
-                'coverageGeo',
-                'coverageChron',
-                'coverageSample',
-                'type',
-                'language',
-                'sponsor',
-                'citations',
-                'title',
-                'abstract',
-                'locale'
-            )
-        );
+        $this->readUserVars([
+            'tempFileId', 'destination', 'issueId', 'pages', 'sectionId', 'authors',
+            'primaryContact', 'title', 'abstract', 'discipline', 'subjectClass', 'subject',
+            'coverageGeo', 'coverageChron', 'coverageSample', 'type', 'language', 'sponsor',
+            'citations', 'locale'
+        ]);
 
-        $this->readUserDateVars(array('datePublished'));
+        $this->readUserDateVars(['datePublished']);
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
-        $section = $sectionDao->getSection($this->getData('sectionId'));
+        $section = $sectionDao->getSection((int) $this->getData('sectionId'));
+        
         if ($section && !$section->getAbstractsNotRequired()) {
             $this->addCheck(new FormValidatorLocale($this, 'abstract', 'required', 'author.submit.form.abstractRequired', $this->getData('locale')));
         }
@@ -293,7 +278,7 @@ class QuickSubmitForm extends Form {
     /**
      * Upload the submission file.
      * @param string $fileName
-     * @return int|false TemporaryFile ID
+     * @return int|false
      */
     public function uploadSubmissionFile($fileName) {
         import('classes.file.TemporaryFileManager');
@@ -301,13 +286,12 @@ class QuickSubmitForm extends Form {
         $request = $this->request;
         $user = $request->getUser();
 
-        $temporaryFile = $temporaryFileManager->handleUpload($fileName, $user->getId());
+        $temporaryFile = $temporaryFileManager->handleUpload($fileName, (int) $user->getId());
 
         if ($temporaryFile) {
-            return $temporaryFile->getId();
-        } else {
-            return false;
+            return (int) $temporaryFile->getId();
         }
+        return false;
     }
 
     /**
@@ -316,11 +300,13 @@ class QuickSubmitForm extends Form {
      * @return void
      */
     public function execute($object = null) {
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
+        /** @var SectionEditorSubmissionDAO $sectionEditorSubmissionDao */
         $sectionEditorSubmissionDao = DAORegistry::getDAO('SectionEditorSubmissionDAO');
 
-        // PKPApplication::getApplication() logic maintained
         $request = $this->request;
         $user = $request->getUser();
         $router = $request->getRouter();
@@ -328,26 +314,25 @@ class QuickSubmitForm extends Form {
 
         $article = new Article();
         $article->setLocale($this->getData('locale'));
-        $article->setUserId($user->getId());
-        $article->setJournalId($journal->getId());
-        $article->setSectionId($this->getData('sectionId'));
+        $article->setUserId((int) $user->getId());
+        $article->setJournalId((int) $journal->getId());
+        $article->setSectionId((int) $this->getData('sectionId'));
         $article->setLanguage($this->getData('language'));
-        $article->setTitle($this->getData('title'), null); // Localized
-        $article->setAbstract($this->getData('abstract'), null); // Localized
-        $article->setDiscipline($this->getData('discipline'), null); // Localized
-        $article->setSubjectClass($this->getData('subjectClass'), null); // Localized
-        $article->setSubject($this->getData('subject'), null); // Localized
-        $article->setCoverageGeo($this->getData('coverageGeo'), null); // Localized
-        $article->setCoverageChron($this->getData('coverageChron'), null); // Localized
-        $article->setCoverageSample($this->getData('coverageSample'), null); // Localized
-        $article->setType($this->getData('type'), null); // Localized
-        $article->setSponsor($this->getData('sponsor'), null); // Localized
+        $article->setTitle($this->getData('title'), null);
+        $article->setAbstract($this->getData('abstract'), null);
+        $article->setDiscipline($this->getData('discipline'), null);
+        $article->setSubjectClass($this->getData('subjectClass'), null);
+        $article->setSubject($this->getData('subject'), null);
+        $article->setCoverageGeo($this->getData('coverageGeo'), null);
+        $article->setCoverageChron($this->getData('coverageChron'), null);
+        $article->setCoverageSample($this->getData('coverageSample'), null);
+        $article->setType($this->getData('type'), null);
+        $article->setSponsor($this->getData('sponsor'), null);
         $article->setCitations($this->getData('citations'));
         $article->setPages($this->getData('pages'));
 
-        // Set some default values so the ArticleDAO doesn't complain when adding this article
         $article->setDateSubmitted(Core::getCurrentDate());
-        $article->setStatus($this->getData('destination') == 'queue' ? STATUS_QUEUED : STATUS_PUBLISHED);
+        $article->setStatus($this->getData('destination') === 'queue' ? STATUS_QUEUED : STATUS_PUBLISHED);
         $article->setSubmissionProgress(0);
         $article->stampStatusModified();
         $article->setCurrentRound(1);
@@ -355,121 +340,116 @@ class QuickSubmitForm extends Form {
         $article->setHideAuthor(0);
         $article->setCommentsStatus(0);
 
-        // Insert the article to get it's ID
         $articleDao->insertArticle($article);
-        $articleId = $article->getId();
+        $articleId = (int) $article->getId();
 
         // Add authors
-        $authorDao = DAORegistry::getDAO('AuthorDAO'); /* @var $authorDao AuthorDAO */
-        $authors = $this->getData('authors');
-        for ($i=0, $count=count($authors); $i < $count; $i++) {
-            if ($authors[$i]['authorId'] > 0) {
-                // Update an existing author
-                $author = $authorDao->getAuthor($authors[$i]['authorId'], $articleId);
+        /** @var AuthorDAO $authorDao */
+        $authorDao = DAORegistry::getDAO('AuthorDAO');
+        $authors = (array) $this->getData('authors');
+        
+        foreach ($authors as $i => $authorData) {
+            $authorId = (int) ($authorData['authorId'] ?? 0);
+            
+            if ($authorId > 0) {
+                $author = $authorDao->getAuthor($authorId, $articleId);
                 $isExistingAuthor = true;
             } else {
-                // Create a new author
                 $author = new Author();
                 $isExistingAuthor = false;
             }
 
-            if ($author != null) {
+            if ($author !== null) {
                 $author->setSubmissionId($articleId);
-                $author->setFirstName($authors[$i]['firstName']);
-                $author->setMiddleName($authors[$i]['middleName']);
-                $author->setLastName($authors[$i]['lastName']);
-                if (array_key_exists('affiliation', $authors[$i])) {
-                    $author->setAffiliation($authors[$i]['affiliation'], null);
+                $author->setFirstName($authorData['firstName']);
+                $author->setMiddleName($authorData['middleName'] ?? '');
+                $author->setLastName($authorData['lastName']);
+                if (array_key_exists('affiliation', $authorData)) {
+                    $author->setAffiliation($authorData['affiliation'], null);
                 }
-                $author->setCountry($authors[$i]['country']);
-                $author->setEmail($authors[$i]['email']);
-                $author->setData('orcid', $authors[$i]['orcid']);
-                $author->setUrl($authors[$i]['url']);
-                if (array_key_exists('competingInterests', $authors[$i])) {
-                    $author->setCompetingInterests($authors[$i]['competingInterests'], null);
+                $author->setCountry($authorData['country'] ?? '');
+                $author->setEmail($authorData['email']);
+                $author->setData('orcid', $authorData['orcid'] ?? '');
+                $author->setUrl($authorData['url'] ?? '');
+                if (array_key_exists('competingInterests', $authorData)) {
+                    $author->setCompetingInterests($authorData['competingInterests'], null);
                 }
-                $author->setBiography($authors[$i]['biography'], null);
-                $author->setPrimaryContact($this->getData('primaryContact') == $i ? 1 : 0);
-                $author->setSequence($authors[$i]['seq']);
+                $author->setBiography($authorData['biography'] ?? '', null);
+                $author->setPrimaryContact(((int) $this->getData('primaryContact')) === $i ? 1 : 0);
+                $author->setSequence((int) ($authorData['seq'] ?? 0));
 
-                if ($isExistingAuthor == false) {
+                if (!$isExistingAuthor) {
                     $authorDao->insertAuthor($author);
                 }
             }
         }
 
-        // Setup default copyright/license metadata after status is set and authors are attached.
         $article->initializePermissions();
         $articleDao->updateLocaleFields($article);
 
         // Add the submission files as galleys
         import('classes.file.TemporaryFileManager');
         import('classes.file.ArticleFileManager');
-        $tempFileIds = $this->getData('tempFileId');
+        $tempFileIds = (array) $this->getData('tempFileId');
         $temporaryFileManager = new TemporaryFileManager();
         $articleFileManager = new ArticleFileManager($articleId);
         $designatedPrimary = false;
         
         foreach (array_keys($tempFileIds) as $locale) {
-            $temporaryFile = $temporaryFileManager->getFile($tempFileIds[$locale], $user->getId());
-            $fileId = null;
-            if ($temporaryFile) {
-                $fileId = $articleFileManager->temporaryFileToArticleFile($temporaryFile, ARTICLE_FILE_SUBMISSION);
-                $fileType = $temporaryFile->getFileType();
+            $tempFileId = (int) ($tempFileIds[$locale] ?? 0);
+            if ($tempFileId <= 0) continue;
 
-                if (strstr($fileType, 'html')) {
-                    import('classes.article.ArticleHTMLGalley');
-                    $galley = new ArticleHTMLGalley();
-                } else {
-                    import('classes.article.ArticleGalley');
-                    $galley = new ArticleGalley();
-                }
-                $galley->setArticleId($articleId);
-                $galley->setFileId($fileId);
-                $galley->setLocale($locale);
+            $temporaryFile = $temporaryFileManager->getFile($tempFileId, (int) $user->getId());
+            if (!$temporaryFile) continue;
 
-                if ($galley->isHTMLGalley()) {
-                    $galley->setLabel('HTML');
-                } else {
-                    if (strstr($fileType, 'pdf')) {
-                        $galley->setLabel('PDF');
-                    } else if (strstr($fileType, 'postscript')) {
-                        $galley->setLabel('Postscript');
-                    } else if (strstr($fileType, 'xml')) {
-                        $galley->setLabel('XML');
-                    } else {
-                        $galley->setLabel(__('common.untitled'));
-                    }
-                }
+            $fileId = $articleFileManager->temporaryFileToArticleFile($temporaryFile, ARTICLE_FILE_SUBMISSION);
+            $fileType = $temporaryFile->getFileType();
 
-                $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
-                $galleyDao->insertGalley($galley);
+            if (str_contains($fileType, 'html')) {
+                import('classes.article.ArticleHTMLGalley');
+                $galley = new ArticleHTMLGalley();
+            } else {
+                import('classes.article.ArticleGalley');
+                $galley = new ArticleGalley();
+            }
+            
+            $galley->setArticleId($articleId);
+            $galley->setFileId($fileId);
+            $galley->setLocale($locale);
 
-                if (!$designatedPrimary) {
-                    $article->setSubmissionFileId($fileId);
-                    $article->setReviewFileId($fileId);
-                    if ($locale == $journal->getPrimaryLocale()) {
-                        // Used to make sure that *some* file
-                        // is designated Review Version, but
-                        // preferrably the primary locale.
-                        $designatedPrimary = true;
-                    }
+            if ($galley->isHTMLGalley()) {
+                $galley->setLabel('HTML');
+            } elseif (str_contains($fileType, 'pdf')) {
+                $galley->setLabel('PDF');
+            } elseif (str_contains($fileType, 'postscript')) {
+                $galley->setLabel('Postscript');
+            } elseif (str_contains($fileType, 'xml')) {
+                $galley->setLabel('XML');
+            } else {
+                $galley->setLabel(__('common.untitled'));
+            }
+
+            /** @var ArticleGalleyDAO $galleyDao */
+            $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+            $galleyDao->insertGalley($galley);
+
+            if (!$designatedPrimary) {
+                $article->setSubmissionFileId($fileId);
+                $article->setReviewFileId($fileId);
+                if ($locale === $journal->getPrimaryLocale()) {
+                    $designatedPrimary = true;
                 }
             }
 
             // Update file search index
             import('classes.search.ArticleSearchIndex');
             $articleSearchIndex = new ArticleSearchIndex();
-            if (isset($galley)) {
-                $articleSearchIndex->articleFileChanged(
-                    $galley->getArticleId(), ARTICLE_SEARCH_GALLEY_FILE, $galley->getFileId()
-                );
-            }
+            $articleSearchIndex->articleFileChanged($articleId, ARTICLE_SEARCH_GALLEY_FILE, (int) $galley->getFileId());
             $articleSearchIndex->articleChangesFinished();
         }
 
-
         // Designate this as the review version by default.
+        /** @var AuthorSubmissionDAO $authorSubmissionDao */
         $authorSubmissionDao = DAORegistry::getDAO('AuthorSubmissionDAO');
         $authorSubmission = $authorSubmissionDao->getAuthorSubmission($articleId);
         import('classes.submission.author.AuthorAction');
@@ -478,7 +458,7 @@ class QuickSubmitForm extends Form {
         // Accept the submission
         $sectionEditorSubmission = $sectionEditorSubmissionDao->getSectionEditorSubmission($articleId);
         $articleFileManager = new ArticleFileManager($articleId);
-        $sectionEditorSubmission->setReviewFile($articleFileManager->getFile($article->getSubmissionFileId()));
+        $sectionEditorSubmission->setReviewFile($articleFileManager->getFile((int) $article->getSubmissionFileId()));
         import('classes.submission.sectionEditor.SectionEditorAction');
         SectionEditorAction::recordDecision($sectionEditorSubmission, SUBMISSION_EDITOR_DECISION_ACCEPT, $this->request);
 
@@ -486,9 +466,11 @@ class QuickSubmitForm extends Form {
         $copyeditInitialSignoff = $signoffDao->build('SIGNOFF_COPYEDITING_INITIAL', ASSOC_TYPE_ARTICLE, $articleId);
         $copyeditAuthorSignoff = $signoffDao->build('SIGNOFF_COPYEDITING_AUTHOR', ASSOC_TYPE_ARTICLE, $articleId);
         $copyeditFinalSignoff = $signoffDao->build('SIGNOFF_COPYEDITING_FINAL', ASSOC_TYPE_ARTICLE, $articleId);
+        
         $copyeditInitialSignoff->setUserId(0);
-        $copyeditAuthorSignoff->setUserId($user->getId());
+        $copyeditAuthorSignoff->setUserId((int) $user->getId());
         $copyeditFinalSignoff->setUserId(0);
+        
         $signoffDao->updateObject($copyeditInitialSignoff);
         $signoffDao->updateObject($copyeditAuthorSignoff);
         $signoffDao->updateObject($copyeditFinalSignoff);
@@ -500,9 +482,11 @@ class QuickSubmitForm extends Form {
         $proofAuthorSignoff = $signoffDao->build('SIGNOFF_PROOFREADING_AUTHOR', ASSOC_TYPE_ARTICLE, $articleId);
         $proofProofreaderSignoff = $signoffDao->build('SIGNOFF_PROOFREADING_PROOFREADER', ASSOC_TYPE_ARTICLE, $articleId);
         $proofLayoutEditorSignoff = $signoffDao->build('SIGNOFF_PROOFREADING_LAYOUT', ASSOC_TYPE_ARTICLE, $articleId);
-        $proofAuthorSignoff->setUserId($user->getId());
+        
+        $proofAuthorSignoff->setUserId((int) $user->getId());
         $proofProofreaderSignoff->setUserId(0);
         $proofLayoutEditorSignoff->setUserId(0);
+        
         $signoffDao->updateObject($proofAuthorSignoff);
         $signoffDao->updateObject($proofProofreaderSignoff);
         $signoffDao->updateObject($proofLayoutEditorSignoff);
@@ -514,15 +498,17 @@ class QuickSubmitForm extends Form {
 
         // Add to end of editing queue
         import('classes.submission.editor.EditorAction');
-        if (isset($galley)) EditorAction::expediteSubmission($article, $this->request);
+        if (isset($galley)) {
+            EditorAction::expediteSubmission($article, $this->request);
+        }
 
-        if ($this->getData('destination') == "issue") {
-            // Add to an existing issue
-            $issueId = $this->getData('issueId');
+        if ($this->getData('destination') === 'issue') {
+            $issueId = (int) $this->getData('issueId'); // [WIZDAM FIX] Corrected variable assignment casting
             $this->scheduleForPublication($articleId, $issueId);
         }
 
         // Import the references list.
+        /** @var CitationDAO $citationDao */
         $citationDao = DAORegistry::getDAO('CitationDAO');
         $rawCitationList = $article->getCitations();
         $citationDao->importCitations($request, ASSOC_TYPE_ARTICLE, $articleId, $rawCitationList);
@@ -541,19 +527,23 @@ class QuickSubmitForm extends Form {
      * @return void
      */
     public function scheduleForPublication($articleId, $issueId): void {
+        /** @var SectionEditorSubmissionDAO $sectionEditorSubmissionDao */
         $sectionEditorSubmissionDao = DAORegistry::getDAO('SectionEditorSubmissionDAO');
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
 
         $request = $this->request;
         $journal = $request->getJournal();
         $submission = $sectionEditorSubmissionDao->getSectionEditorSubmission($articleId);
         $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($articleId);
-        $issue = $issueDao->getIssueById($issueId, $journal->getId());
+        $issue = $issueDao->getIssueById($issueId, (int) $journal->getId());
+        $bigNumber = defined('REALLY_BIG_NUMBER') ? REALLY_BIG_NUMBER : 999999;
 
         if ($issue) {
-            // Schedule against an issue.
             if ($publishedArticle) {
                 $publishedArticle->setIssueId($issueId);
                 $publishedArticleDao->updatePublishedArticle($publishedArticle);
@@ -562,32 +552,26 @@ class QuickSubmitForm extends Form {
                 $publishedArticle->setId($submission->getId());
                 $publishedArticle->setIssueId($issueId);
                 $publishedArticle->setDatePublished($this->getData('datePublished'));
-                $publishedArticle->setSeq(REALLY_BIG_NUMBER);
+                $publishedArticle->setSeq($bigNumber);
                 $publishedArticle->setAccessStatus(ARTICLE_ACCESS_ISSUE_DEFAULT);
 
                 $publishedArticleDao->insertPublishedArticle($publishedArticle);
+                $publishedArticleDao->resequencePublishedArticles((int) $submission->getSectionId(), $issueId);
 
-                // Resequence the articles.
-                $publishedArticleDao->resequencePublishedArticles($submission->getSectionId(), $issueId);
-
-                // If we're using custom section ordering, and if this is the first
-                // article published in a section, make sure we enter a custom ordering
-                // for it. (Default at the end of the list.)
                 if ($sectionDao->customSectionOrderingExists($issueId)) {
-                    if ($sectionDao->getCustomSectionOrder($issueId, $submission->getSectionId()) === null) {
-                        $sectionDao->insertCustomSectionOrder($issueId, $submission->getSectionId(), REALLY_BIG_NUMBER);
+                    if ($sectionDao->getCustomSectionOrder($issueId, (int) $submission->getSectionId()) === null) {
+                        $sectionDao->insertCustomSectionOrder($issueId, (int) $submission->getSectionId(), $bigNumber);
                         $sectionDao->resequenceCustomSectionOrders($issueId);
                     }
                 }
             }
         } else {
             if ($publishedArticle) {
-                // This was published elsewhere; make sure we don't
-                // mess up sequencing information.
-                $publishedArticleDao->resequencePublishedArticles($submission->getSectionId(), $publishedArticle->getIssueId());
+                $publishedArticleDao->resequencePublishedArticles((int) $submission->getSectionId(), (int) $publishedArticle->getIssueId());
                 $publishedArticleDao->deletePublishedArticleByArticleId($articleId);
             }
         }
+        
         $submission->stampStatusModified();
 
         if ($issue && $issue->getPublished()) {
@@ -600,12 +584,13 @@ class QuickSubmitForm extends Form {
         }
 
         $sectionEditorSubmissionDao->updateSectionEditorSubmission($submission);
-        // Call initialize permissions again to check if copyright year needs to be initialized.
+        
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $articleDao->getArticle($articleId);
         $article->initializePermissions();
         $articleDao->updateLocaleFields($article);
     }
-}
 
+}
 ?>

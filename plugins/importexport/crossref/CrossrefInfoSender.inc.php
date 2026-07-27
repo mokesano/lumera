@@ -12,27 +12,26 @@ declare(strict_types=1);
  * @ingroup plugins_importexport_crossref
  *
  * @brief Scheduled task to send article information to the ALM server.
- * MODERNIZED FOR WIZDAM FORK
  */
 
 import('lib.pkp.classes.scheduledTask.ScheduledTask');
 
-
 class CrossrefInfoSender extends ScheduledTask {
 
-    /** @var CrossRefExportPlugin */
-    public $_plugin;
+    /** @var CrossRefExportPlugin|null */
+    protected ?CrossRefExportPlugin $_plugin = null;
 
     /**
      * Constructor.
-     * @param $args array task arguments
+     * @param array $args
      */
     public function __construct($args) {
         PluginRegistry::loadCategory('importexport');
-        $plugin = PluginRegistry::getPlugin('importexport', 'CrossRefExportPlugin'); /* @var $plugin CrossRefExportPlugin */
+        /** @var CrossRefExportPlugin|null $plugin */
+        $plugin = PluginRegistry::getPlugin('importexport', 'CrossRefExportPlugin');
         $this->_plugin = $plugin;
 
-        if (is_a($plugin, 'CrossRefExportPlugin')) {
+        if ($plugin instanceof CrossRefExportPlugin) {
             $plugin->addLocaleData();
         }
 
@@ -41,6 +40,7 @@ class CrossrefInfoSender extends ScheduledTask {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param array $args
      */
     public function CrossrefInfoSender($args) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -50,7 +50,7 @@ class CrossrefInfoSender extends ScheduledTask {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -58,76 +58,80 @@ class CrossrefInfoSender extends ScheduledTask {
      * @see ScheduledTask::getName()
      * @return string
      */
-    public function getName() {
+    public function getName(): string {
         return __('plugins.importexport.crossref.senderTask.name');
     }
 
     /**
      * Execute the actions of this scheduled task.
      * @see ScheduledTask::executeActions()
-     * @return boolean True if the task executed successfully, false otherwise
+     * @return bool
      */
-    public function executeActions() {
-        if (!$this->_plugin) return false;
+    public function executeActions(): bool {
+        if (!$this->_plugin) {
+            return false;
+        }
 
         $plugin = $this->_plugin;
         $journals = $this->_getJournals();
-        $request = Application::getRequest();
-        $errors = array();
+        $request = Application::get()->getRequest();
+        $errors = [];
 
         foreach ($journals as $journal) {
-            // Get unregistered articles
             $unregisteredArticles = $plugin->_getUnregisteredArticles($journal);
-            $unregisteredArticlesIds = array();
+            $unregisteredArticlesIds = [];
+            
             foreach ($unregisteredArticles as $articleData) {
-                $article = $articleData['article'];
-                if (is_a($article, 'PublishedArticle') && $plugin->canBeExported($article, $errors)) {
-                    $unregisteredArticlesIds[$article->getId()] = $article;
+                $article = $articleData['article'] ?? null;
+                if ($article instanceof PublishedArticle && $plugin->canBeExported($article, $errors)) {
+                    $unregisteredArticlesIds[(int) $article->getId()] = $article;
                 }
             }
 
-            // Update the status and construct an array of an articles to be deposited
-            $toBeDepositedIds = array();
+            $toBeDepositedIds = [];
             $notify = false;
             foreach ($unregisteredArticlesIds as $id => $article) {
-                // get the current article status
                 $currentStatus = $article->getData($plugin->getDepositStatusSettingName());
-                // update the status -- some could be manually submitted
                 $plugin->updateDepositStatus($request, $journal, $article);
-                // check if the new status after the update == failed to notify the users
                 $newStatus = $article->getData($plugin->getDepositStatusSettingName());
-                // deposit only not submitted articles
                 if (!$newStatus) {
-                    array_push($toBeDepositedIds, $id);
+                    $toBeDepositedIds[] = $id;
                 }
-                if (!$notify && $newStatus == CROSSREF_STATUS_FAILED && $currentStatus != CROSSREF_STATUS_FAILED) {
+
+                if (!$notify && $newStatus === CROSSREF_STATUS_FAILED && $currentStatus !== CROSSREF_STATUS_FAILED) {
                     $notify = true;
                 }
             }
 
             if ($notify) {
+                /** @var RoleDAO $roleDao */
                 $roleDao = DAORegistry::getDAO('RoleDAO');
-                $journalManagers = $roleDao->getUsersByRoleId(ROLE_ID_JOURNAL_MANAGER, $journal->getId());
+                $journalManagers = $roleDao->getUsersByRoleId(ROLE_ID_JOURNAL_MANAGER, (int) $journal->getId());
                 import('classes.notification.NotificationManager');
                 $notificationManager = new NotificationManager();
+                
                 while ($journalManager = $journalManagers->next()) {
-                    $notificationManager->createTrivialNotification($journalManager->getId(), NOTIFICATION_TYPE_ERROR, array('contents' => __('plugins.importexport.crossref.notification.failed')));
-                    unset($journalManager);
+                    $notificationManager->createTrivialNotification(
+                        (int) $journalManager->getId(), 
+                        NOTIFICATION_TYPE_ERROR, 
+                        ['contents' => __('plugins.importexport.crossref.notification.failed')]
+                    );
                 }
             }
 
-            // If there are articles to be deposited and we want automatic deposits
-            if (count($toBeDepositedIds) && $plugin->getSetting($journal->getId(), 'automaticRegistration')) {
-                $exportSpec = array(DOI_EXPORT_ARTICLES => $toBeDepositedIds);
+            if (!empty($toBeDepositedIds) && $plugin->getSetting((int) $journal->getId(), 'automaticRegistration')) {
+                $exportSpec = [DOI_EXPORT_ARTICLES => $toBeDepositedIds];
                 $result = $plugin->registerObjects($request, $exportSpec, $journal);
+                
                 if ($result !== true) {
                     if (is_array($result)) {
-                        foreach($result as $error) {
-                            assert(is_array($error) && count($error) >= 1);
-                            $this->addExecutionLogEntry(
-                                __($error[0], array('param' => (isset($error[1]) ? $error[1] : null))),
-                                SCHEDULED_TASK_MESSAGE_TYPE_WARNING
-                            );
+                        foreach ($result as $error) {
+                            if (is_array($error) && !empty($error)) {
+                                $this->addExecutionLogEntry(
+                                    __($error[0], ['param' => $error[1] ?? null]),
+                                    SCHEDULED_TASK_MESSAGE_TYPE_WARNING
+                                );
+                            }
                         }
                     }
                 }
@@ -142,37 +146,48 @@ class CrossrefInfoSender extends ScheduledTask {
      * @see CrossrefExportPlugin::registerObjects()
      * @return array
      */
-    public function _getJournals() {
+    public function _getJournals(): array {
         $plugin = $this->_plugin;
-        $journalDao = DAORegistry::getDAO('JournalDAO'); /* @var $journalDao JournalDAO */
+        if (!$plugin) {
+            return [];
+        }
+
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
         $journalFactory = $journalDao->getJournals(true);
 
-        $journals = array();
-        while($journal = $journalFactory->next()) {
-            $journalId = $journal->getId();
-            if (!$plugin->getSetting($journalId, 'username') || !$plugin->getSetting($journalId, 'password') || !$plugin->getSetting($journalId, 'automaticRegistration')) continue;
+        $journals = [];
+        while ($journal = $journalFactory->next()) {
+            $journalId = (int) $journal->getId();
+            
+            if (!$plugin->getSetting($journalId, 'username') || 
+                !$plugin->getSetting($journalId, 'password') || 
+                !$plugin->getSetting($journalId, 'automaticRegistration')) {
+                continue;
+            }
 
             $doiPrefix = null;
             $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $journalId);
-            if (isset($pubIdPlugins['DOIPubIdPlugin'])) {
+            if (is_array($pubIdPlugins) && isset($pubIdPlugins['DOIPubIdPlugin'])) {
                 $doiPubIdPlugin = $pubIdPlugins['DOIPubIdPlugin'];
-                if (!$doiPubIdPlugin->getSetting($journalId, 'enabled')) continue;
+                if (!$doiPubIdPlugin->getSetting($journalId, 'enabled')) {
+                    continue;
+                }
                 $doiPrefix = $doiPubIdPlugin->getSetting($journalId, 'doiPrefix');
             }
 
-            if ($doiPrefix) {
+            if (!empty($doiPrefix)) {
                 $journals[] = $journal;
             } else {
                 $this->addExecutionLogEntry(
-                        __('plugins.importexport.crossref.senderTask.warning.noDOIprefix', array('path' => $journal->getPath())),
-                        SCHEDULED_TASK_MESSAGE_TYPE_WARNING
+                    __('plugins.importexport.crossref.senderTask.warning.noDOIprefix', ['path' => $journal->getPath()]),
+                    SCHEDULED_TASK_MESSAGE_TYPE_WARNING
                 );
             }
-            unset($journal);
         }
 
         return $journals;
     }
+    
 }
-
 ?>

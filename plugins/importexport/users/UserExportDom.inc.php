@@ -45,9 +45,9 @@ class UserExportDom {
 
     /**
      * Export users to XML DOM object.
-     * @param object $journal Journal object
-     * @param array $users Array of User objects
-     * @param array|null $allowedRoles Array of allowed role paths
+     * @param Journal $journal
+     * @param array $users
+     * @param array|null $allowedRoles
      * @return object DOMDocument
      */
     public function exportUsers($journal, array $users, ?array $allowedRoles = null) {

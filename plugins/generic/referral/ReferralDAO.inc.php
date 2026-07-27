@@ -13,51 +13,55 @@ declare(strict_types=1);
  * @see Referral
  *
  * @brief Operations for retrieving and modifying Referral objects.
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
  */
 
 class ReferralDAO extends DAO {
     
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ReferralDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::ReferralDAO(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Retrieve an referral by referral ID.
+     * Retrieve a referral by referral ID.
      * @param int $referralId
      * @return Referral|null
      */
     public function getReferral($referralId) {
         $result = $this->retrieve(
             'SELECT * FROM referrals WHERE referral_id = ?', 
-            (int) $referralId
+            [(int) $referralId]
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        // [SCHOLARWIZDAM LUMERA STANDARD] Using $result && !$result->EOF
+        if ($result && !$result->EOF) {
             $returner = $this->_returnReferralFromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
-     * Get a list of localized field names
+     * Get a list of localized field names.
      * @return array
      */
     public function getLocaleFieldNames() {
@@ -71,14 +75,14 @@ class ReferralDAO extends DAO {
      */
     public function _returnReferralFromRow($row) {
         $referral = new Referral();
-        $referral->setId($row['referral_id']);
-        $referral->setArticleId($row['article_id']);
-        $referral->setStatus($row['status']);
-        $referral->setURL($row['url']);
+        $referral->setId((int) $row['referral_id']);
+        $referral->setArticleId((int) $row['article_id']);
+        $referral->setStatus((int) $row['status']);
+        $referral->setURL((string) $row['url']);
         $referral->setDateAdded($this->datetimeFromDB($row['date_added']));
-        $referral->setLinkCount($row['link_count']);
+        $referral->setLinkCount((int) $row['link_count']);
 
-        $this->getDataObjectSettings('referral_settings', 'referral_id', $row['referral_id'], $referral);
+        $this->getDataObjectSettings('referral_settings', 'referral_id', (int) $row['referral_id'], $referral);
 
         return $referral;
     }
@@ -87,19 +91,27 @@ class ReferralDAO extends DAO {
      * Check if a referrer exists with the given article and URL.
      * @param int $articleId
      * @param string $url
-     * @return boolean
+     * @return bool
      */
     public function referralExistsByUrl($articleId, $url) {
         $result = $this->retrieve(
-            'SELECT COUNT(*) FROM referrals WHERE article_id = ? AND url = ?',
+            'SELECT COUNT(*) AS count FROM referrals WHERE article_id = ? AND url = ?',
             [
                 (int) $articleId,
-                $url
+                (string) $url
             ]
         );
-        $returner = isset($result->fields[0]) && $result->fields[0] != 0 ? true : false;
-
-        $result->Close();
+        
+        $returner = false;
+        // [SCHOLARWIZDAM LUMERA STANDARD] Using $result && !$result->EOF instead of $result->fields[0]
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = ((int) ($row['count'] ?? 0)) > 0;
+        }
+        
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
@@ -107,56 +119,58 @@ class ReferralDAO extends DAO {
      * Increment the referral count.
      * @param int $articleId
      * @param string $url
-     * @return int 1 iff the referral exists
+     * @return bool
      */
     public function incrementReferralCount($articleId, $url) {
         return $this->update(
             'UPDATE referrals SET link_count = link_count + 1 WHERE article_id = ? AND url = ?',
-            [(int) $articleId, $url]
+            [(int) $articleId, (string) $url]
         );
     }
 
     /**
-     * Update the localized settings for this object
+     * Update the localized settings for this object.
      * @param Referral $referral
+     * @return void
      */
     public function updateLocaleFields(&$referral) {
         $this->updateDataObjectSettings('referral_settings', $referral, [
-            'referral_id' => $referral->getId()
+            'referral_id' => (int) $referral->getId()
         ]);
     }
 
     /**
-     * Insert a new Referral or replace the Referral if it already exists
+     * Insert a new Referral or replace the Referral if it already exists.
      * @param Referral $referral
      * @return int
      */
     public function replaceReferral(&$referral) {
-        $date = trim($this->datetimeToDB($referral->getDateAdded()), "'");
-        $result = $this->replace(
+        $date = trim((string) $this->datetimeToDB($referral->getDateAdded()), "'");
+        $isNew = ($referral->getId() === null || $referral->getId() === 0);
+        $this->replace(
             'referrals',
             [
                 'status' => (int) $referral->getStatus(),
                 'article_id' => (int) $referral->getArticleId(),
-                'url' => $referral->getURL(),
+                'url' => (string) $referral->getURL(),
                 'date_added' => $date,
                 'link_count' => (int) $referral->getLinkCount(),
             ],
             ['article_id', 'url']
         );
 
-        if ($result == 2) { // ADODB magic number: 2 means successful new insert
-            $referral->setId($this->getInsertObjectId());
+        if ($isNew) {
+            $referral->setId((int) $this->getInsertObjectId());
         }
 
         $this->updateLocaleFields($referral);
-        return $referral->getId();
+        return (int) $referral->getId();
     }
 
     /**
      * Update an existing referral.
      * @param Referral $referral
-     * @return boolean
+     * @return bool
      */
     public function updateReferral(&$referral) {
         $returner = $this->update(
@@ -172,32 +186,33 @@ class ReferralDAO extends DAO {
             [
                 (int) $referral->getStatus(),
                 (int) $referral->getArticleId(),
-                $referral->getURL(),
+                (string) $referral->getURL(),
                 (int) $referral->getLinkCount(),
                 (int) $referral->getId()
             ]
         );
         $this->updateLocaleFields($referral);
-        return $returner;
+        return (bool) $returner;
     }
 
     /**
      * Delete a referral.
      * @param Referral $referral
-     * @return boolean
+     * @return bool
      */
     public function deleteReferral($referral) {
-        return $this->deleteReferralById($referral->getId());
+        return $this->deleteReferralById((int) $referral->getId());
     }
 
     /**
      * Delete a referral by referral ID.
      * @param int $referralId
-     * @return boolean
+     * @return bool
      */
     public function deleteReferralById($referralId) {
-        $this->update('DELETE FROM referral_settings WHERE referral_id = ?', (int) $referralId);
-        return $this->update('DELETE FROM referrals WHERE referral_id = ?', (int) $referralId);
+        $referralId = (int) $referralId;
+        $this->update('DELETE FROM referral_settings WHERE referral_id = ?', [$referralId]);
+        return $this->update('DELETE FROM referrals WHERE referral_id = ?', [$referralId]);
     }
 
     /**
@@ -205,12 +220,15 @@ class ReferralDAO extends DAO {
      * optionally filtering by status.
      * @param int $userId
      * @param int $journalId
-     * @param int $status
-     * @return DAOResultFactory containing matching Referrals
+     * @param int|null $status
+     * @param DBResultRange|null $rangeInfo
+     * @return DAOResultFactory
      */
     public function getByUserId($userId, $journalId, $status = null, $rangeInfo = null) {
         $params = [(int) $userId, (int) $journalId];
-        if ($status !== null) $params[] = (int) $status;
+        if ($status !== null) {
+            $params[] = (int) $status;
+        }
         
         $result = $this->retrieveRange(
             'SELECT r.*
@@ -219,7 +237,7 @@ class ReferralDAO extends DAO {
             WHERE r.article_id = a.article_id AND
                 a.user_id = ? AND
                 a.journal_id = ?' .
-                ($status !== null?' AND r.status = ?':'') . '
+                ($status !== null ? ' AND r.status = ?' : '') . '
             ORDER BY r.date_added',
             $params,
             $rangeInfo
@@ -229,10 +247,10 @@ class ReferralDAO extends DAO {
     }
 
     /**
-     * Retrieve an iterator of published referrals for a particular user article
+     * Retrieve an iterator of published referrals for a particular user article.
      * @param int $articleId
-     * @param object $rangeInfo
-     * @return DAOResultFactory containing matching Referrals
+     * @param DBResultRange|null $rangeInfo
+     * @return DAOResultFactory
      */
     public function getPublishedReferralsForArticle($articleId, $rangeInfo = null) {
         $result = $this->retrieveRange(
@@ -254,6 +272,6 @@ class ReferralDAO extends DAO {
     public function getInsertObjectId() {
         return $this->getInsertId('referrals', 'referral_id');
     }
+    
 }
-
 ?>

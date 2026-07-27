@@ -19,14 +19,15 @@ import('classes.plugins.CitationPlugin');
 class EndNoteCitationPlugin extends CitationPlugin {
     
     /**
+     * Register plugin
      * @param string $category
      * @param string $path
-     * @param int|null $mainContextId
      * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
         $this->addLocaleData();
+        
         return $success;
     }
 
@@ -40,6 +41,7 @@ class EndNoteCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get display name plugin
      * @return string
      */
     public function getDisplayName(): string {
@@ -47,6 +49,7 @@ class EndNoteCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get citation fomrat name plugin
      * @return string
      */
     public function getCitationFormatName(): string {
@@ -54,6 +57,7 @@ class EndNoteCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get description plugin
      * @return string
      */
     public function getDescription(): string {
@@ -71,6 +75,6 @@ class EndNoteCitationPlugin extends CitationPlugin {
         header('Content-Type: application/x-endnote-refer');
         echo parent::fetchCitation($article, $issue, $journal);
     }
-}
 
+}
 ?>

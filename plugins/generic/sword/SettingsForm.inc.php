@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class SettingsForm
  * @ingroup plugins_generic_sword
  *
- * @brief Form for journal managers to modify SWORD plugin settings
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Form for journal managers to modify SWORD plugin settings.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -21,19 +19,19 @@ import('lib.pkp.classes.form.Form');
 class SettingsForm extends Form {
 
     /** @var int */
-    public $journalId;
+    protected $_journalId;
 
-    /** @var object */
-    public $plugin;
+    /** @var SwordPlugin */
+    protected $_plugin;
 
     /**
      * Constructor
-     * @param object $plugin
+     * @param SwordPlugin $plugin
      * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
-        $this->journalId = $journalId;
-        $this->plugin = $plugin;
+        $this->_journalId = (int) $journalId;
+        $this->_plugin = $plugin;
 
         parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
         $this->addCheck(new FormValidatorPost($this));
@@ -41,30 +39,34 @@ class SettingsForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param SwordPlugin $plugin
+     * @param int $journalId
      */
     public function SettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::SettingsForm(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Initialize form data.
      * @see Form::initData()
+     * @return void
      */
     public function initData() {
-        $journalId = $this->journalId;
-        $plugin = $this->plugin;
-
-        $this->setData('allowAuthorSpecify', $plugin->getSetting($journalId, 'allowAuthorSpecify'));
-        $this->setData('depositPoints', $plugin->getSetting($journalId, 'depositPoints'));
+        $this->setData('allowAuthorSpecify', $this->_plugin->getSetting($this->_journalId, 'allowAuthorSpecify'));
+        $this->setData('depositPoints', $this->_plugin->getSetting($this->_journalId, 'depositPoints'));
     }
 
     /**
      * Assign form data to user-submitted data.
      * @see Form::readInputData()
+     * @return void
      */
     public function readInputData() {
         $this->readUserVars(['allowAuthorSpecify']);
@@ -72,25 +74,31 @@ class SettingsForm extends Form {
 
     /**
      * Display the form.
-     * @param PKPRequest $request
-     * @param string $template
+     * @see Form::display()
+     * @param PKPRequest|null $request
+     * @param string|null $template
+     * @return void
      */
     public function display($request = null, $template = null) {
-        $templateMgr = TemplateManager::getManager();
-        $templateMgr->assign('depositPointTypes', $this->plugin->getTypeMap());
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign('depositPointTypes', $this->_plugin->getTypeMap());
         parent::display($request, $template);
     }
 
     /**
      * Save settings.
      * @see Form::execute()
-     * @param object $object
+     * @param mixed $object Ignored.
+     * @return void
      */
     public function execute($object = null) {
-        $plugin = $this->plugin;
-        $journalId = $this->journalId;
-
-        $plugin->updateSetting($journalId, 'allowAuthorSpecify', $this->getData('allowAuthorSpecify'));
+        $this->_plugin->updateSetting($this->_journalId, 'allowAuthorSpecify', $this->getData('allowAuthorSpecify'));
     }
+
 }
 ?>

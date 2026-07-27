@@ -37,7 +37,7 @@ class EruditExportPlugin extends ImportExportPlugin {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -80,17 +80,26 @@ class EruditExportPlugin extends ImportExportPlugin {
     /**
      * Display the plugin UI.
      * @param array $args
-     * @param object $request
+     * @param mixed $request
      */
     public function display($args, $request): void {
-        $templateMgr = TemplateManager::getManager();
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
+        $templateMgr = TemplateManager::getManager($request);
         parent::display($args, $request);
 
-        $issueDao = DAORegistry::getDAO('IssueDAO');
-        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-        $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+        $issueDao = DAORegistry::getDAO('IssueDAO'); /** @var IssueDAO $issueDao */
+        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /** @var PublishedArticleDAO $publishedArticleDao */
+        $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /** @var ArticleGalleyDAO $articleGalleyDao */
 
-        $journal = Request::getJournal();
+        $journal = $request->getJournal();
+        if (!$journal) {
+            $request->redirect(null, 'index');
+            return;
+        }
         
         $command = array_shift($args);
 
@@ -99,11 +108,11 @@ class EruditExportPlugin extends ImportExportPlugin {
                 $articleId = array_shift($args);
                 $galleyId = array_shift($args);
 
-                $article = $publishedArticleDao->getPublishedArticleByArticleId($articleId);
-                $galley = $articleGalleyDao->getGalley($galleyId, $articleId);
+                $article = $publishedArticleDao->getPublishedArticleByArticleId((int) $articleId);
+                $galley = $articleGalleyDao->getGalley((int) $galleyId, (int) $articleId);
                 
                 if ($article && $galley) {
-                    $issue = $issueDao->getIssueById($article->getIssueId(), $journal->getId());
+                    $issue = $issueDao->getIssueById((int) $article->getIssueId(), (int) $journal->getId());
                     if ($issue) {
                         $this->exportArticle($journal, $issue, $article, $galley);
                         break;
@@ -116,10 +125,10 @@ class EruditExportPlugin extends ImportExportPlugin {
                 AppLocale::requireComponents(LOCALE_COMPONENT_CORE_SUBMISSION);
                 
                 $rangeInfo = Handler::getRangeInfo('articles');
-                $articleIds = $publishedArticleDao->getPublishedArticleIdsAlphabetizedByJournal($journal->getId(), false);
+                $articleIds = $publishedArticleDao->getPublishedArticleIdsAlphabetizedByJournal((int) $journal->getId(), false);
                 $totalArticles = count($articleIds);
                 
-                if ($rangeInfo->isValid()) {
+                if ($rangeInfo && $rangeInfo->isValid()) {
                     $articleIds = array_slice($articleIds, $rangeInfo->getCount() * ($rangeInfo->getPage() - 1), $rangeInfo->getCount());
                 }
                 
@@ -134,10 +143,10 @@ class EruditExportPlugin extends ImportExportPlugin {
 
     /**
      * Export article to Erudit format.
-     * @param object $journal
-     * @param object $issue
-     * @param object $article
-     * @param object $galley
+     * @param Journal $journal
+     * @param Issue $issue
+     * @param PublishedArticle $article
+     * @param ArticleGalley $galley
      * @param string|null $outputFile
      * @return bool
      */
@@ -145,12 +154,13 @@ class EruditExportPlugin extends ImportExportPlugin {
         $this->import('EruditExportDom');
         $doc = XMLCustomWriter::createDocument('article', '-//ERUDIT//Erudit Article DTD 3.0.0//EN', 'http://www.erudit.org/dtd/article/3.0.0/en/eruditarticle.dtd');
         
-        // Static call as per recent refactoring
         $articleNode = EruditExportDom::generateArticleDom($doc, $journal, $issue, $article, $galley);
         XMLCustomWriter::appendChild($doc, $articleNode);
 
         if (!empty($outputFile)) {
-            if (($h = fopen($outputFile, 'wb')) === false) return false;
+            if (($h = fopen($outputFile, 'wb')) === false) {
+                return false;
+            }
             fwrite($h, XMLCustomWriter::getXML($doc));
             fclose($h);
         } else {
@@ -173,45 +183,48 @@ class EruditExportPlugin extends ImportExportPlugin {
         $articleId = array_shift($args);
         $galleyLabel = array_shift($args);
 
-        $journalDao = DAORegistry::getDAO('JournalDAO');
-        $issueDao = DAORegistry::getDAO('IssueDAO');
-        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
+        $issueDao = DAORegistry::getDAO('IssueDAO'); /** @var IssueDAO $issueDao */
+        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /** @var PublishedArticleDAO $publishedArticleDao */
 
-        $journal = $journalDao->getJournalByPath($journalPath);
+        $journal = $journalDao->getJournalByPath((string) $journalPath);
 
         if (!$journal) {
-            if ($journalPath != '') {
+            if ($journalPath !== '') {
                 echo __('plugins.importexport.erudit.cliError') . "\n";
-                echo __('plugins.importexport.erudit.error.unknownJournal', array('journalPath' => $journalPath)) . "\n\n";
+                echo __('plugins.importexport.erudit.error.unknownJournal', ['journalPath' => $journalPath]) . "\n\n";
             }
             $this->usage($scriptName);
             return;
         }
 
-        $publishedArticle = $publishedArticleDao->getPublishedArticleByBestArticleId($journal->getId(), $articleId);
-        if ($publishedArticle == null) {
+        $publishedArticle = $publishedArticleDao->getPublishedArticleByBestArticleId((int) $journal->getId(), $articleId);
+        if ($publishedArticle === null) {
             echo __('plugins.importexport.erudit.cliError') . "\n";
-            echo __('plugins.importexport.erudit.export.error.articleNotFound', array('articleId' => $articleId)) . "\n\n";
+            echo __('plugins.importexport.erudit.export.error.articleNotFound', ['articleId' => $articleId]) . "\n\n";
             return;
         }
 
         $galley = null;
         foreach ($publishedArticle->getGalleys() as $thisGalley) {
-            if ($thisGalley->getLabel() == $galleyLabel) {
+            if ($thisGalley->getLabel() === $galleyLabel) {
                 $galley = $thisGalley;
                 break;
             }
         }
 
         if (!isset($galley)) {
-            echo __('plugins.importexport.erudit.export.error.galleyNotFound', array('galleyLabel' => $galleyLabel)) . "\n\n";
+            echo __('plugins.importexport.erudit.export.error.galleyNotFound', ['galleyLabel' => $galleyLabel]) . "\n\n";
             return;
         }
 
-        $issue = $issueDao->getIssueById($publishedArticle->getIssueId());
-        if (!$this->exportArticle($journal, $issue, $publishedArticle, $galley, $xmlFile)) {
+        $issue = $issueDao->getIssueById((int) $publishedArticle->getIssueId());
+        if ($issue && !$this->exportArticle($journal, $issue, $publishedArticle, $galley, $xmlFile)) {
             echo __('plugins.importexport.erudit.cliError') . "\n";
-            echo __('plugins.importexport.erudit.export.error.couldNotWrite', array('fileName' => $xmlFile)) . "\n\n";
+            echo __('plugins.importexport.erudit.export.error.couldNotWrite', ['fileName' => $xmlFile]) . "\n\n";
+        } elseif (!$issue) {
+            echo __('plugins.importexport.erudit.cliError') . "\n";
+            echo __('plugins.importexport.erudit.export.error.issueNotFound', ['articleId' => $articleId]) . "\n\n";
         }
     }
 
@@ -220,10 +233,11 @@ class EruditExportPlugin extends ImportExportPlugin {
      * @param string $scriptName
      */
     public function usage($scriptName): void {
-        echo __('plugins.importexport.erudit.cliUsage', array(
+        echo __('plugins.importexport.erudit.cliUsage', [
             'scriptName' => $scriptName,
             'pluginName' => $this->getName()
-        )) . "\n";
+        ]) . "\n";
     }
+
 }
 ?>

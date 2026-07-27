@@ -11,51 +11,61 @@ declare(strict_types=1);
  * @class AuthorDepositForm
  * @ingroup plugins_generic_sword
  *
- * @brief Form to perform an author's SWORD deposit(s)
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Form to perform an author's SWORD deposit(s).
  */
 
 import('lib.pkp.classes.form.Form');
 
 class AuthorDepositForm extends Form {
     
-    /** @var object */
-    public $article;
+    /** @var PublishedArticle */
+    protected $_article;
 
-    /** @var object */
-    public $swordPlugin;
+    /** @var SwordPlugin */
+    protected $_swordPlugin;
 
     /**
      * Constructor.
-     * @param object $swordPlugin
-     * @param object $article
+     * @param SwordPlugin $swordPlugin
+     * @param PublishedArticle $article
      */
     public function __construct($swordPlugin, $article) {
         parent::__construct($swordPlugin->getTemplatePath() . '/authorDepositForm.tpl');
 
-        $this->swordPlugin = $swordPlugin;
-        $this->article = $article;
+        $this->_swordPlugin = $swordPlugin;
+        $this->_article = $article;
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param SwordPlugin $swordPlugin
+     * @param PublishedArticle $article
      */
     public function AuthorDepositForm($swordPlugin, $article) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::AuthorDepositForm(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Display the form.
-     * @param PKPRequest $request
-     * @param string $template
+     * @see Form::display()
+     * @param PKPRequest|null $request
+     * @param string|null $template
+     * @return void
      */
     public function display($request = null, $template = null) {
-        $templateMgr = TemplateManager::getManager();
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
+        $templateMgr = TemplateManager::getManager($request);
 
         $depositPoints = $this->_getDepositableDepositPoints();
         // For the sake of the UI, figure out whether we're dealing with any
@@ -63,21 +73,22 @@ class AuthorDepositForm extends Form {
         $hasFlexible = false;
         if (is_array($depositPoints)) {
             foreach ($depositPoints as $depositPoint) {
-                if ($depositPoint['type'] == SWORD_DEPOSIT_TYPE_OPTIONAL_SELECTION) {
+                if ($depositPoint['type'] === SWORD_DEPOSIT_TYPE_OPTIONAL_SELECTION) {
                     $hasFlexible = true;
                 }
             }
         }
         $templateMgr->assign('depositPoints', $depositPoints);
-        $templateMgr->assign('article', $this->article);
+        $templateMgr->assign('article', $this->_article);
         $templateMgr->assign('hasFlexible', $hasFlexible);
-        $templateMgr->assign('allowAuthorSpecify', $this->swordPlugin->getSetting($this->article->getJournalId(), 'allowAuthorSpecify'));
+        $templateMgr->assign('allowAuthorSpecify', $this->_swordPlugin->getSetting((int) $this->_article->getJournalId(), 'allowAuthorSpecify'));
         parent::display($request, $template);
     }
 
     /**
      * Initialize form data from default settings.
      * @see Form::initData()
+     * @return void
      */
     public function initData() {
         $this->_data = [];
@@ -86,6 +97,7 @@ class AuthorDepositForm extends Form {
     /**
      * Assign form data to user-submitted data.
      * @see Form::readInputData()
+     * @return void
      */
     public function readInputData() {
         $this->readUserVars([
@@ -97,14 +109,21 @@ class AuthorDepositForm extends Form {
     }
 
     /**
-     * Perform SWORD deposit
-     * @param PKPRequest $request
+     * Perform SWORD deposit.
      * @see Form::execute()
+     * @param mixed $object Ignored.
+     * @return void
      */
     public function execute($object = null) {
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
         $user = $request->getUser();
+        if (!$user) {
+            return;
+        }
+
         import('classes.sword.OJSSwordDeposit');
-        $deposit = new OJSSwordDeposit($this->article);
+        $deposit = new OJSSwordDeposit($this->_article);
         $deposit->setMetadata();
         $deposit->addEditorial();
         $deposit->createPackage();
@@ -112,17 +131,21 @@ class AuthorDepositForm extends Form {
         import('classes.notification.NotificationManager');
         $notificationManager = new NotificationManager();
 
-        $allowAuthorSpecify = $this->swordPlugin->getSetting($this->article->getJournalId(), 'allowAuthorSpecify');
+        $allowAuthorSpecify = $this->_swordPlugin->getSetting((int) $this->_article->getJournalId(), 'allowAuthorSpecify');
         $authorDepositUrl = $this->getData('authorDepositUrl');
-        if ($allowAuthorSpecify && $authorDepositUrl != '') {
+        
+        if ($allowAuthorSpecify && $authorDepositUrl !== '') {
             $deposit->deposit(
-                $this->getData('authorDepositUrl'),
-                $this->getData('authorDepositUsername'),
-                $this->getData('authorDepositPassword')
+                (string) $this->getData('authorDepositUrl'),
+                (string) $this->getData('authorDepositUsername'),
+                (string) $this->getData('authorDepositPassword')
             );
 
-            $params = ['itemTitle' => $this->article->getLocalizedTitle(), 'repositoryName' => $this->getData('authorDepositUrl')];
-            $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_SWORD_DEPOSIT_COMPLETE, $params);
+            $params = [
+                'itemTitle' => $this->_article->getLocalizedTitle(), 
+                'repositoryName' => (string) $this->getData('authorDepositUrl')
+            ];
+            $notificationManager->createTrivialNotification((int) $user->getId(), NOTIFICATION_TYPE_SWORD_DEPOSIT_COMPLETE, $params);
         }
 
         $depositableDepositPoints = $this->_getDepositableDepositPoints();
@@ -130,23 +153,27 @@ class AuthorDepositForm extends Form {
         
         if (is_array($depositableDepositPoints) && is_array($depositPoints)) {
             foreach ($depositableDepositPoints as $key => $depositPoint) {
-                if (!isset($depositPoints[$key]['enabled'])) continue;
+                if (!isset($depositPoints[$key]['enabled'])) {
+                    continue;
+                }
 
-                if ($depositPoint['type'] == SWORD_DEPOSIT_TYPE_OPTIONAL_SELECTION) {
-                    $url = $depositPoints[$key]['depositPoint'];
+                if ($depositPoint['type'] === SWORD_DEPOSIT_TYPE_OPTIONAL_SELECTION) {
+                    $url = (string) $depositPoints[$key]['depositPoint'];
                 } else { // SWORD_DEPOSIT_TYPE_OPTIONAL_FIXED
-                    $url = $depositPoint['url'];
+                    $url = (string) $depositPoint['url'];
                 }
 
                 $deposit->deposit(
                     $url,
-                    $depositPoint['username'],
-                    $depositPoint['password']
+                    (string) $depositPoint['username'],
+                    (string) $depositPoint['password']
                 );
 
-                $user = $request->getUser();
-                $params = ['itemTitle' => $this->article->getLocalizedTitle(), 'repositoryName' => $depositPoint['name']];
-                $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_SWORD_DEPOSIT_COMPLETE, $params);
+                $params = [
+                    'itemTitle' => $this->_article->getLocalizedTitle(), 
+                    'repositoryName' => (string) $depositPoint['name']
+                ];
+                $notificationManager->createTrivialNotification((int) $user->getId(), NOTIFICATION_TYPE_SWORD_DEPOSIT_COMPLETE, $params);
             }
         }
 
@@ -154,41 +181,41 @@ class AuthorDepositForm extends Form {
     }
 
     /**
-     * Get list of depositable points
+     * Get list of depositable points.
      * @return array
      */
     public function _getDepositableDepositPoints() {
         import('classes.sword.OJSSwordDeposit');
-        $depositPoints = $this->swordPlugin->getSetting($this->article->getJournalId(), 'depositPoints');
+        $depositPoints = $this->_swordPlugin->getSetting((int) $this->_article->getJournalId(), 'depositPoints');
         
-        if (!is_array($depositPoints)) return [];
+        if (!is_array($depositPoints)) {
+            return [];
+        }
 
         foreach ($depositPoints as $key => $depositPoint) {
             $type = $depositPoint['type'];
-            if ($type == SWORD_DEPOSIT_TYPE_OPTIONAL_SELECTION) {
+            if ($type === SWORD_DEPOSIT_TYPE_OPTIONAL_SELECTION) {
                 // Get a list of supported deposit points
                 $client = new SWORDAPPClient();
                 $doc = $client->servicedocument(
-                    $depositPoint['url'],
-                    $depositPoint['username'],
-                    $depositPoint['password'],
+                    (string) $depositPoint['url'],
+                    (string) $depositPoint['username'],
+                    (string) $depositPoint['password'],
                     ''
                 );
                 $points = [];
-                // [PHP 8 FIX] Ensure $doc has property before iteration
+                // Ensure $doc has property before iteration
                 if (isset($doc->sac_workspaces)) {
                     foreach ($doc->sac_workspaces as $workspace) {
                         if (isset($workspace->sac_collections)) {
                             foreach ($workspace->sac_collections as $collection) {
-                                $points["$collection->sac_href"] = "$collection->sac_colltitle";
+                                $points[(string) $collection->sac_href] = (string) $collection->sac_colltitle;
                             }
                         }
                     }
                 }
-                unset($client);
-                unset($doc);
                 $depositPoints[$key]['depositPoints'] = $points;
-            } elseif ($type == SWORD_DEPOSIT_TYPE_OPTIONAL_FIXED) {
+            } elseif ($type === SWORD_DEPOSIT_TYPE_OPTIONAL_FIXED) {
                 // Don't need to do anything special
             } else {
                 unset($depositPoints[$key]);
@@ -196,5 +223,6 @@ class AuthorDepositForm extends Form {
         }
         return $depositPoints;
     }
+
 }
 ?>

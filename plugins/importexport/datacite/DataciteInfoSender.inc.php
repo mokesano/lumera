@@ -12,23 +12,22 @@ declare(strict_types=1);
  * @ingroup plugins_importexport_datacite
  *
  * @brief Scheduled task to register DOIs to the DataCite server.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('lib.pkp.classes.scheduledTask.ScheduledTask');
 
-
 class DataciteInfoSender extends ScheduledTask {
-    /** @var DataciteExportPlugin */
-    public $_plugin;
+
+    /** @var DataciteExportPlugin|null */
+    protected ?DataciteExportPlugin $_plugin = null;
 
     /**
      * Constructor.
-     * @param $args array task arguments
+     * @param array $args
      */
     public function __construct($args) {
         PluginRegistry::loadCategory('importexport');
-        $plugin = PluginRegistry::getPlugin('importexport', 'DataciteExportPlugin'); /* @var $plugin DataciteExportPlugin */
+        $plugin = PluginRegistry::getPlugin('importexport', 'DataciteExportPlugin');
         $this->_plugin = $plugin;
 
         if ($plugin instanceof DataciteExportPlugin) {
@@ -40,6 +39,7 @@ class DataciteInfoSender extends ScheduledTask {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param array $args
      */
     public function DataciteInfoSender($args) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -49,7 +49,7 @@ class DataciteInfoSender extends ScheduledTask {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -57,22 +57,27 @@ class DataciteInfoSender extends ScheduledTask {
      * @see ScheduledTask::getName()
      * @return string
      */
-    public function getName() {
+    public function getName(): string {
         return __('plugins.importexport.datacite.senderTask.name');
     }
 
     /**
      * Execute the task.
      * @see ScheduledTask::executeActions()
-     * @return boolean True if the task executed successfully, false if not.
+     * @return bool
      */
-    public function executeActions() {
-        if (!$this->_plugin) return false;
+    public function executeActions(): bool {
+        if (!$this->_plugin) {
+            return false;
+        }
 
         $plugin = $this->_plugin;
-
         $journals = $this->_getJournals();
-        $request = Application::getRequest();
+        
+        // Lumera Singleton Fallback
+        if (!$request = Application::get()->getRequest()) {
+            $request = Application::get()->getRequest();
+        }
 
         foreach ($journals as $journal) {
             $unregisteredIssues = $plugin->_getUnregisteredIssues($journal);
@@ -84,60 +89,65 @@ class DataciteInfoSender extends ScheduledTask {
             $unregisteredIssueIds = [];
             foreach ($unregisteredIssues as $issue) {
                 if ($plugin->canBeExported($issue, $errors)) {
-                    $unregisteredIssueIds[] = $issue->getId();
-                }
-            }
-            $unregisteredArticlesIds = [];
-            foreach ($unregisteredArticles as $articleData) {
-                $article = $articleData['article'];
-                if ($article instanceof PublishedArticle && $plugin->canBeExported($article, $errors)) {
-                    $unregisteredArticlesIds[] = $article->getId();
-                }
-            }
-            $unregisteredGalleyIds = [];
-            foreach ($unregisteredGalleys as $galleyData) {
-                $galley = $galleyData['galley'];
-                if ($plugin->canBeExported($galley, $errors)) {
-                    $unregisteredGalleyIds[] = $galley->getId();
-                }
-            }
-            $unregisteredSuppFileIds = [];
-            foreach ($unregisteredSuppFiles as $suppFileData) {
-                $suppFile = $suppFileData['suppFile'];
-                if ($plugin->canBeExported($suppFile, $errors)) {
-                    $unregisteredSuppFileIds[$suppFile->getId()] = $suppFile->getId();
+                    $unregisteredIssueIds[] = (int) $issue->getId();
                 }
             }
 
-            // If there are unregistered DOIs and we want automatic deposits
+            $unregisteredArticlesIds = [];
+            foreach ($unregisteredArticles as $articleData) {
+                $article = $articleData['article'] ?? null;
+                if ($article instanceof PublishedArticle && $plugin->canBeExported($article, $errors)) {
+                    $unregisteredArticlesIds[] = (int) $article->getId();
+                }
+            }
+
+            $unregisteredGalleyIds = [];
+            foreach ($unregisteredGalleys as $galleyData) {
+                $galley = $galleyData['galley'] ?? null;
+                if ($galley && $plugin->canBeExported($galley, $errors)) {
+                    $unregisteredGalleyIds[] = (int) $galley->getId();
+                }
+            }
+
+            $unregisteredSuppFileIds = [];
+            foreach ($unregisteredSuppFiles as $suppFileData) {
+                $suppFile = $suppFileData['suppFile'] ?? null;
+                if ($suppFile && $plugin->canBeExported($suppFile, $errors)) {
+                    $unregisteredSuppFileIds[] = (int) $suppFile->getId();
+                }
+            }
+
             $exportSpec = [];
             $register = false;
-            if (count($unregisteredIssueIds)) {
+
+            if (!empty($unregisteredIssueIds)) {
                 $exportSpec[DOI_EXPORT_ISSUES] = $unregisteredIssueIds;
                 $register = true;
             }
-            if (count($unregisteredArticlesIds)) {
+            if (!empty($unregisteredArticlesIds)) {
                 $exportSpec[DOI_EXPORT_ARTICLES] = $unregisteredArticlesIds;
                 $register = true;
             }
-            if (count($unregisteredGalleyIds)) {
+            if (!empty($unregisteredGalleyIds)) {
                 $exportSpec[DOI_EXPORT_GALLEYS] = $unregisteredGalleyIds;
                 $register = true;
             }
-            if (count($unregisteredSuppFileIds)) {
+            if (!empty($unregisteredSuppFileIds)) {
                 $exportSpec[DOI_EXPORT_SUPPFILES] = $unregisteredSuppFileIds;
                 $register = true;
             }
+
             if ($register) {
                 $result = $plugin->registerObjects($request, $exportSpec, $journal);
                 if ($result !== true) {
                     if (is_array($result)) {
-                        foreach($result as $error) {
-                            assert(is_array($error) && count($error) >= 1);
-                            $this->addExecutionLogEntry(
-                                __($error[0], ['param' => (isset($error[1]) ? $error[1] : null)]),
-                                SCHEDULED_TASK_MESSAGE_TYPE_WARNING
-                            );
+                        foreach ($result as $error) {
+                            if (is_array($error) && !empty($error)) {
+                                $this->addExecutionLogEntry(
+                                    __($error[0], ['param' => $error[1] ?? null]),
+                                    SCHEDULED_TASK_MESSAGE_TYPE_WARNING
+                                );
+                            }
                         }
                     }
                 }
@@ -151,24 +161,34 @@ class DataciteInfoSender extends ScheduledTask {
      * their articles DOIs sent to DataCite.
      * @return array
      */
-    public function _getJournals() {
+    public function _getJournals(): array {
         $plugin = $this->_plugin;
-        $journalDao = DAORegistry::getDAO('JournalDAO'); /* @var $journalDao JournalDAO */
+        if (!$plugin) {
+            return [];
+        }
+
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
         $journalFactory = $journalDao->getJournals(true);
 
         $journals = [];
-        while($journal = $journalFactory->next()) {
-            $journalId = $journal->getId();
-            if (!$plugin->getSetting($journalId, 'username') || !$plugin->getSetting($journalId, 'password') || !$plugin->getSetting($journalId, 'automaticRegistration')) continue;
+        while ($journal = $journalFactory->next()) {
+            $journalId = (int) $journal->getId();
+            
+            if (!$plugin->getSetting($journalId, 'username') || 
+                !$plugin->getSetting($journalId, 'password') || 
+                !$plugin->getSetting($journalId, 'automaticRegistration')) {
+                continue;
+            }
 
             $doiPrefix = null;
             $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $journalId);
-            if (isset($pubIdPlugins['DOIPubIdPlugin'])) {
+            if (is_array($pubIdPlugins) && isset($pubIdPlugins['DOIPubIdPlugin'])) {
                 $doiPubIdPlugin = $pubIdPlugins['DOIPubIdPlugin'];
                 $doiPrefix = $doiPubIdPlugin->getSetting($journalId, 'doiPrefix');
             }
 
-            if ($doiPrefix) {
+            if (!empty($doiPrefix)) {
                 $journals[] = $journal;
             } else {
                 $this->addExecutionLogEntry(
@@ -176,10 +196,10 @@ class DataciteInfoSender extends ScheduledTask {
                     SCHEDULED_TASK_MESSAGE_TYPE_WARNING
                 );
             }
-            unset($journal);
         }
 
         return $journals;
     }
+
 }
 ?>

@@ -8,29 +8,33 @@ declare(strict_types=1);
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @package plugins.generic.staticPages
  * @class StaticPage
- * * MODERNIZED FOR WIZDAM FORK
+ * @ingroup plugins_generic_staticPages
+ *
+ * @brief Represents a static page.
  */
 
 class StaticPage extends DataObject {
     
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function StaticPage() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::StaticPage(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -38,113 +42,119 @@ class StaticPage extends DataObject {
     //
 
     /**
-     * Get journal id
-     * @return string
+     * Get journal ID.
+     * @return int|null
      */
-    public function getJournalId(){
-        return $this->getData('journalId');
+    public function getJournalId() {
+        $id = $this->getData('journalId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
-     * Set journal Id
-     * @param $journalId int
+     * Set journal ID.
+     * @param int $journalId
      */
     public function setJournalId($journalId) {
-        return $this->setData('journalId', $journalId);
+        $this->setData('journalId', (int) $journalId);
     }
 
-
     /**
-     * Set page title
-     * @param string string
-     * @param locale
+     * Set page title.
+     * @param string $title
+     * @param string $locale
      */
     public function setTitle($title, $locale) {
-        return $this->setData('title', $title, $locale);
+        $this->setData('title', (string) $title, (string) $locale);
     }
 
     /**
-     * Get page title
-     * @param locale
-     * @return string
+     * Get page title.
+     * @param string $locale
+     * @return string|null
      */
     public function getTitle($locale) {
-        return $this->getData('title', $locale);
+        $title = $this->getData('title', (string) $locale);
+        return $title !== null ? (string) $title : null;
     }
 
     /**
-     * Get Localized page title
-     * @return string
+     * Get localized page title.
+     * @return string|null
      */
     public function getStaticPageTitle() {
-        return $this->getLocalizedData('title');
+        $title = $this->getLocalizedData('title');
+        return $title !== null ? (string) $title : null;
     }
 
     /**
-     * Set page content
-     * @param $content string
-     * @param locale
+     * Set page content.
+     * @param string $content
+     * @param string $locale
      */
     public function setContent($content, $locale) {
-        return $this->setData('content', $content, $locale);
+        $this->setData('content', (string) $content, (string) $locale);
     }
 
     /**
-     * Get content
-     * @param locale
-     * @return string
+     * Get page content.
+     * @param string $locale
+     * @return string|null
      */
     public function getContent($locale) {
-        return $this->getData('content', $locale);
+        $content = $this->getData('content', (string) $locale);
+        return $content !== null ? (string) $content : null;
     }
 
     /**
-     * Get "localized" content
-     * @return string
+     * Get localized page content.
+     * @return string|null
      */
     public function getStaticPageContent() {
-        return $this->getLocalizedData('content');
+        $content = $this->getLocalizedData('content');
+        return $content !== null ? (string) $content : null;
     }
 
     /**
-     * Get page path string
-     * @return string
+     * Get page path string.
+     * @return string|null
      */
     public function getPath() {
-        return $this->getData('path');
+        $path = $this->getData('path');
+        return $path !== null ? (string) $path : null;
     }
 
-     /**
-      * Set page path string
-      * @param $path string
-      */
+    /**
+     * Set page path string.
+     * @param string $path
+     */
     public function setPath($path) {
-        return $this->setData('path', $path);
+        $this->setData('path', (string) $path);
     }
 
     /**
      * Get ID of page.
-     * @deprecated since OJS 2.x. Please use getId() instead.
-     * @return int
+     * @deprecated Please use getId() instead.
+     * @return int|null
      */
     public function getStaticPageId() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error("Function '" . get_class($this) . "::" . __FUNCTION__ . "()' is deprecated. Please use 'getId()' instead.", E_USER_DEPRECATED);
         }
-        return $this->getId();
+        $id = $this->getId();
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set ID of page.
-     * @deprecated since OJS 2.x. Please use setId() instead.
-     * @param $staticPageId int
+     * @deprecated Please use setId() instead.
+     * @param int $staticPageId
      */
     public function setStaticPageId($staticPageId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error("Function '" . get_class($this) . "::" . __FUNCTION__ . "()' is deprecated. Please use 'setId()' instead.", E_USER_DEPRECATED);
         }
-        return $this->setId($staticPageId);
+        $this->setId((int) $staticPageId);
     }
-}
 
+}
 ?>

@@ -19,7 +19,7 @@ import('lib.pkp.classes.scheduledTask.ScheduledTask');
 class MedraInfoSender extends ScheduledTask {
     
     /** @var MedraExportPlugin|null */
-    protected $_plugin;
+    protected ?MedraExportPlugin $_plugin = null;
 
     /**
      * Constructor.
@@ -48,7 +48,7 @@ class MedraInfoSender extends ScheduledTask {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -66,11 +66,13 @@ class MedraInfoSender extends ScheduledTask {
      * @return bool
      */
     public function executeActions(): bool {
-        if (!$this->_plugin) return false;
+        if (!$this->_plugin) {
+            return false;
+        }
 
         $plugin = $this->_plugin;
         $journals = $this->_getJournals();
-        $request = Application::getRequest();
+        $request = Application::get()->getRequest();
 
         foreach ($journals as $journal) {
             $unregisteredIssues = $plugin->_getUnregisteredIssues($journal);
@@ -81,40 +83,37 @@ class MedraInfoSender extends ScheduledTask {
             $unregisteredIssueIds = [];
             foreach ($unregisteredIssues as $issue) {
                 if ($plugin->canBeExported($issue, $errors)) {
-                    $unregisteredIssueIds[] = $issue->getId();
+                    $unregisteredIssueIds[] = (int) $issue->getId();
                 }
             }
 
             $unregisteredArticlesIds = [];
             foreach ($unregisteredArticles as $articleData) {
-                $article = $articleData['article'];
-                // Ensure checking against PublishedArticle class
+                $article = $articleData['article'] ?? null;
                 if ($article instanceof PublishedArticle && $plugin->canBeExported($article, $errors)) {
-                    $unregisteredArticlesIds[] = $article->getId();
+                    $unregisteredArticlesIds[] = (int) $article->getId();
                 }
             }
 
             $unregisteredGalleyIds = [];
             foreach ($unregisteredGalleys as $galleyData) {
-                $galley = $galleyData['galley'];
-                if ($plugin->canBeExported($galley, $errors)) {
-                    $unregisteredGalleyIds[] = $galley->getId();
+                $galley = $galleyData['galley'] ?? null;
+                if ($galley && $plugin->canBeExported($galley, $errors)) {
+                    $unregisteredGalleyIds[] = (int) $galley->getId();
                 }
             }
 
-            // If there are unregistered DOIs and we want automatic deposits
             $exportSpec = [];
             $register = false;
-
-            if (count($unregisteredIssueIds)) {
+            if (!empty($unregisteredIssueIds)) {
                 $exportSpec[DOI_EXPORT_ISSUES] = $unregisteredIssueIds;
                 $register = true;
             }
-            if (count($unregisteredArticlesIds)) {
+            if (!empty($unregisteredArticlesIds)) {
                 $exportSpec[DOI_EXPORT_ARTICLES] = $unregisteredArticlesIds;
                 $register = true;
             }
-            if (count($unregisteredGalleyIds)) {
+            if (!empty($unregisteredGalleyIds)) {
                 $exportSpec[DOI_EXPORT_GALLEYS] = $unregisteredGalleyIds;
                 $register = true;
             }
@@ -124,11 +123,13 @@ class MedraInfoSender extends ScheduledTask {
                 if ($result !== true) {
                     if (is_array($result)) {
                         foreach ($result as $error) {
-                            assert(is_array($error) && count($error) >= 1);
-                            $this->addExecutionLogEntry(
-                                __($error[0], ['param' => ($error[1] ?? null)]),
-                                SCHEDULED_TASK_MESSAGE_TYPE_WARNING
-                            );
+                            if (is_array($error) && count($error) >= 1) {
+                                $param = $error[1] ?? null;
+                                $this->addExecutionLogEntry(
+                                    __($error[0], $param !== null ? ['param' => $param] : []),
+                                    SCHEDULED_TASK_MESSAGE_TYPE_WARNING
+                                );
+                            }
                         }
                     } else {
                         $this->addExecutionLogEntry(
@@ -149,23 +150,32 @@ class MedraInfoSender extends ScheduledTask {
      */
     protected function _getJournals(): array {
         $plugin = $this->_plugin;
-        $journalDao = DAORegistry::getDAO('JournalDAO'); /* @var $journalDao JournalDAO */
+        if (!$plugin) {
+            return [];
+        }
+
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
         $journalFactory = $journalDao->getJournals(true);
 
         $journals = [];
         while ($journal = $journalFactory->next()) {
-            $journalId = $journal->getId();
-            if (!$plugin->getSetting($journalId, 'username') || !$plugin->getSetting($journalId, 'password') || !$plugin->getSetting($journalId, 'automaticRegistration')) continue;
+            $journalId = (int) $journal->getId();
+            
+            if (!$plugin->getSetting($journalId, 'username') || 
+                !$plugin->getSetting($journalId, 'password') || 
+                !$plugin->getSetting($journalId, 'automaticRegistration')) {
+                continue;
+            }
 
             $doiPrefix = null;
             $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $journalId);
-            
-            if (isset($pubIdPlugins['DOIPubIdPlugin'])) {
+            if (is_array($pubIdPlugins) && isset($pubIdPlugins['DOIPubIdPlugin'])) {
                 $doiPubIdPlugin = $pubIdPlugins['DOIPubIdPlugin'];
                 $doiPrefix = $doiPubIdPlugin->getSetting($journalId, 'doiPrefix');
             }
 
-            if ($doiPrefix) {
+            if (!empty($doiPrefix)) {
                 $journals[] = $journal;
             } else {
                 $this->addExecutionLogEntry(
@@ -173,11 +183,10 @@ class MedraInfoSender extends ScheduledTask {
                     SCHEDULED_TASK_MESSAGE_TYPE_WARNING
                 );
             }
-            unset($journal);
         }
 
         return $journals;
     }
-}
 
+}
 ?>

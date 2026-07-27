@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class StopForumSpamSettingsForm
  * @ingroup plugins_generic_stopForumSpam
  *
- * @brief Form for journal managers to modify the Stop Forum Spam plugin settings
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Form for journal managers to modify the Stop Forum Spam plugin settings.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -21,52 +19,56 @@ import('lib.pkp.classes.form.Form');
 class StopForumSpamSettingsForm extends Form {
 
     /** @var int */
-    public $journalId;
+    protected $_journalId;
 
-    /** @var object */
-    public $plugin;
+    /** @var StopForumSpamPlugin */
+    protected $_plugin;
 
     /**
      * Constructor
-     * @param object $plugin
+     * @param StopForumSpamPlugin $plugin
      * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
-        $this->journalId = $journalId;
-        $this->plugin = $plugin;
+        $this->_journalId = (int) $journalId;
+        $this->_plugin = $plugin;
 
         parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param StopForumSpamPlugin $plugin
+     * @param int $journalId
      */
     public function StopForumSpamSettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::StopForumSpamSettingsForm(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Initialize form data.
      * @see Form::initData()
+     * @return void
      */
     public function initData() {
-        $journalId = $this->journalId;
-        $plugin = $this->plugin;
-
         $this->_data = [
-            'checkIp' => $plugin->getSetting($journalId, 'checkIp'),
-            'checkEmail' => $plugin->getSetting($journalId, 'checkEmail'),
-            'checkUsername' => $plugin->getSetting($journalId, 'checkUsername'),
+            'checkIp' => $this->_plugin->getSetting($this->_journalId, 'checkIp'),
+            'checkEmail' => $this->_plugin->getSetting($this->_journalId, 'checkEmail'),
+            'checkUsername' => $this->_plugin->getSetting($this->_journalId, 'checkUsername'),
         ];
     }
 
     /**
      * Assign form data to user-submitted data.
      * @see Form::readInputData()
+     * @return void
      */
     public function readInputData() {
         $this->readUserVars(['checkIp', 'checkEmail', 'checkUsername']);
@@ -75,18 +77,18 @@ class StopForumSpamSettingsForm extends Form {
     /**
      * Save settings.
      * @see Form::execute()
+     * @param mixed $object Ignored.
+     * @return void
      */
     public function execute($object = null) {
-        $plugin = $this->plugin;
-        $journalId = $this->journalId;
+        $checkIp = (bool) $this->getData('checkIp');
+        $checkEmail = (bool) $this->getData('checkEmail');
+        $checkUsername = (bool) $this->getData('checkUsername');
 
-        $checkIp = $this->getData('checkIp') ? true : false;
-        $checkEmail = $this->getData('checkEmail') ? true : false;
-        $checkUsername = $this->getData('checkUsername') ? true : false;
-
-        $plugin->updateSetting($journalId, 'checkIp', $checkIp, 'bool');
-        $plugin->updateSetting($journalId, 'checkEmail', $checkEmail, 'bool');
-        $plugin->updateSetting($journalId, 'checkUsername', $checkUsername, 'bool');
+        $this->_plugin->updateSetting($this->_journalId, 'checkIp', $checkIp, 'bool');
+        $this->_plugin->updateSetting($this->_journalId, 'checkEmail', $checkEmail, 'bool');
+        $this->_plugin->updateSetting($this->_journalId, 'checkUsername', $checkUsername, 'bool');
     }
+
 }
 ?>

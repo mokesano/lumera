@@ -13,13 +13,7 @@ declare(strict_types=1);
  * @ingroup plugins_paymethod_paypal
  * 
  * @extends PaymethodPlugin
- * @brief PayPal paymethod plugin class
- * 
- * [WIZDAM EDITION - API v2 SMART BUTTONS]
- * Key Features:
- * - Frontend: API v2 (Smart Buttons)
- * - Backend: IPN Handler (Legacy Support)
- * - Safety: Graceful Error Handling (No WSOD)
+ * @brief PayPal paymethod plugin class.
  */
 
 import('classes.plugins.PaymethodPlugin');
@@ -27,7 +21,7 @@ import('classes.plugins.PaymethodPlugin');
 class PayPalPlugin extends PaymethodPlugin {
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
@@ -51,7 +45,7 @@ class PayPalPlugin extends PaymethodPlugin {
     }
 
     /**
-     * Plugin Description
+     * Plugin Description.
      * @return string
      */
     public function getDescription(): string {
@@ -59,7 +53,7 @@ class PayPalPlugin extends PaymethodPlugin {
     }
 
     /**
-     * Register the plugin
+     * Register the plugin.
      * @param string $category
      * @param string $path
      * @param int|null $mainContextId
@@ -75,159 +69,158 @@ class PayPalPlugin extends PaymethodPlugin {
     }
 
     /**
-     * Get the names of form fields for settings
-     * Settings yang disimpan di Database
-     * Kita tambahkan clientId dan testMode, tapi biarkan setting lama jika ada.
+     * Get the names of form fields for settings.
+     * Settings yang disimpan di Database.
      * @return array
      */
-    public function getSettingsFormFieldNames() {
-        return array('clientId', 'testMode', 'paypalurl');
+    public function getSettingsFormFieldNames(): array {
+        return ['clientId', 'testMode', 'paypalurl'];
     }
 
     /**
-     * Cek apakah sudah dikonfigurasi
-     * @return bool
+     * Cek apakah sudah dikonfigurasi.
      * Kita return TRUE agar PaymentManager tidak memblokir halaman (WSOD).
      * Validasi sesungguhnya kita lakukan di displayPaymentForm.
+     * @return bool
      */
-    public function isConfigured() {
+    public function isConfigured(): bool {
         return true; 
     }
 
     /**
-     * TAMPILAN SETTINGS (BACKEND)
-     * Menggunakan struktur <tr> agar pas dengan tabel OJS
-     * @return string
+     * TAMPILAN SETTINGS (BACKEND).
+     * Menggunakan struktur <tr> agar pas dengan tabel OJS.
      * @param array $params
-     * @param Smarty $smarty
+     * @param object $smarty
+     * @return string
      */
     public function displayPaymentSettingsForm($params, $smarty) {
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
+        $journalId = $journal ? (int) $journal->getId() : 0;
 
-        $smarty->assign(array(
-            'clientId' => $this->getSetting($journal->getId(), 'clientId'),
-            'testMode' => $this->getSetting($journal->getId(), 'testMode')
-        ));
+        $smarty->assign([
+            'clientId' => $this->getSetting($journalId, 'clientId'),
+            'testMode' => $this->getSetting($journalId, 'testMode')
+        ]);
         
-        return $smarty->display($this->getTemplatePath() . 'settingsForm.tpl');
+        return $smarty->fetch($this->getTemplatePath() . 'settingsForm.tpl');
     }
 
     /**
-     * TAMPILAN PEMBAYARAN (FRONTEND)
-     * [MODERNISASI] Menggunakan API v2 + Anti-WSOD
-     * @return string
+     * TAMPILAN PEMBAYARAN (FRONTEND).
+     * [MODERNISASI] Menggunakan API v2 + Anti-WSOD.
      * @param int $queuedPaymentId
-     * @param QueuedPayment $queuedPayment
-     * @param Request $request
+     * @param OJSQueuedPayment $queuedPayment
+     * @param PKPRequest $request
+     * @return string
      */
     public function displayPaymentForm(int $queuedPaymentId, $queuedPayment, $request) {
+        // [WIZDAM FIX] Explicitly declare type for linter to resolve getRequestUrl() and getType()
+        /** @var OJSQueuedPayment $queuedPayment */
+        
         $templateMgr = TemplateManager::getManager();
         $journal = $request->getJournal();
         
         AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
         
         // --- 1. REAL VALIDATION HAPPENS HERE ---
-        // Ambil Client ID dari database
-        $clientId = $this->getSetting($journal->getId(), 'clientId');
+        $journalId = $journal ? (int) $journal->getId() : 0;
+        $clientId = (string) $this->getSetting($journalId, 'clientId');
 
-        // Jika Client ID kosong, set Flag Error = TRUE
-        if (empty($clientId)) {
+        if ($clientId === '') {
             $templateMgr->assign('paypalError', true);
-            // [WIZDAM FIX] Refactor hardcoded string to localized locale key
             $templateMgr->assign('message', __('plugins.paymethod.paypal.error.missingClientId'));
             
-            // [WIZDAM NOTE] JANGAN return false, tetap tampilkan template agar header/footer muncul
-            return $smarty->fetch($this->getTemplatePath() . 'settingsForm.tpl');
+            return $templateMgr->fetch($this->getTemplatePath() . 'settingsForm.tpl');
         }
 
         // --- 2. JIKA CONFIG AMAN ---
-        // Ambil nilai mentah dari database
-        $rawAmount = $queuedPayment->getAmount();
+        $rawAmount = (float) $queuedPayment->getAmount();
         
-        // Gunakan NumberFormatter bawaan PHP untuk menyesuaikan dengan Locale
         $locale = AppLocale::getLocale(); 
         $formatter = new \NumberFormatter($locale, \NumberFormatter::DECIMAL);
         $formatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 2);
         $formatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 2);
         $displayAmount = $formatter->format($rawAmount);
 
-        $params = array(
+        $params = [
             'clientId'      => $clientId,
-            'testMode'      => $this->getSetting($journal->getId(), 'testMode'),
-            'currency'      => $queuedPayment->getCurrencyCode(),
-            'amount'        => sprintf('%.2F', $rawAmount), // WAJIB: Untuk API PayPal
-            'displayAmount' => $displayAmount, // BARU: Untuk UI Smarty
-            'returnUrl'     => $queuedPayment->getRequestUrl(),
-            'itemName'      => $queuedPayment->getName(),
-            'itemDesc'      => $queuedPayment->getDescription()
-        );
+            'testMode'      => (bool) $this->getSetting($journalId, 'testMode'),
+            'currency'      => (string) $queuedPayment->getCurrencyCode(),
+            'amount'        => sprintf('%.2f', $rawAmount),
+            'displayAmount' => $displayAmount,
+            'returnUrl'     => (string) $queuedPayment->getRequestUrl(), // Linter now recognizes this
+            'itemName'      => (string) $queuedPayment->getName(),
+            'itemDesc'      => (string) $queuedPayment->getDescription()
+        ];
 
         // --- 3. [WIZDAM UX] BACA DATA INVOICE DARI DATABASE (INTEGRASI MANAGER) ---
-        $articleId = $queuedPayment->getAssocId();
+        $articleId = (int) $queuedPayment->getAssocId();
         
-        if ($articleId) {
+        if ($articleId > 0 && $journal) {
+            /** @var ArticleDAO $articleDao */
             $articleDao = DAORegistry::getDAO('ArticleDAO');
             $article = $articleDao->getArticle($articleId);
-            $journal = Request::getJournal(); // Panggil objek Jurnal untuk membaca pengaturan
             
-            if ($article && $journal) {
-                // 1. Instansiasi Formatter
-                $locale = AppLocale::getLocale();
-                $formatter = new \NumberFormatter($locale, \NumberFormatter::DECIMAL);
+            if ($article) {
                 $formatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 2);
                 $formatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 2);
 
-                // 2. Ambil nilai TOTAL AKHIR dari antrean OJS
-                $finalAmount = $queuedPayment->getAmount();
+                $finalAmount = (float) $queuedPayment->getAmount();
 
-                // 3. TARIK PENGATURAN DARI FEE PAYMENT OPTIONS & REVERSE-CALCULATION
-                // --- KOP SURAT (SITE SETTINGS) ---
+                /** @var SiteDAO $siteDao */
                 $siteDao = DAORegistry::getDAO('SiteDAO');
                 $site = $siteDao->getSite();
-                $siteTitle = $site->getLocalizedTitle();
+                $siteTitle = $site ? (string) $site->getLocalizedTitle() : '';
 
-                // --- PROFIL DITAGIHKAN KEPADA (CORRESPONDING AUTHOR) ---
+                /** @var AuthorDAO $authorDao */
                 $authorDao = DAORegistry::getDAO('AuthorDAO');
                 $authors = $authorDao->getAuthorsBySubmissionId($articleId);
                 
                 $correspondingAuthor = null;
-                foreach ($authors as $author) {
-                    if ($author->getPrimaryContact()) { // Mencari centang "Principal contact for editorial correspondence"
-                        $correspondingAuthor = $author;
-                        break;
+                if (is_array($authors)) {
+                    foreach ($authors as $author) {
+                        if ($author->getPrimaryContact()) {
+                            $correspondingAuthor = $author;
+                            break;
+                        }
                     }
                 }
 
-                // Jika tidak ada coresponden yang dicentang, ambil penulis pertama
-                if (!$correspondingAuthor && !empty($authors)) {
+                if (!$correspondingAuthor && is_array($authors) && !empty($authors)) {
                     $correspondingAuthor = $authors[0];
                 }
 
-                // Data Default dari Submitter (User yang login)
+                /** @var UserDAO $userDao */
                 $userDao = DAORegistry::getDAO('UserDAO');
-                $submitter = $userDao->getById($queuedPayment->getUserId());
+                $submitter = $userDao->getById((int) $queuedPayment->getUserId());
 
-                // Logika Penentuan Nama & Email Penagihan
                 if ($correspondingAuthor) {
-                    $billedName = $correspondingAuthor->getFullName();
-                    $billedEmail = $correspondingAuthor->getEmail();
-                    $rawAffiliation = $correspondingAuthor->getLocalizedAffiliation();
-                    $countryCode = $correspondingAuthor->getCountry();
+                    $billedName = (string) $correspondingAuthor->getFullName();
+                    $billedEmail = (string) $correspondingAuthor->getEmail();
+                    $rawAffiliation = (string) $correspondingAuthor->getLocalizedAffiliation();
+                    $countryCode = (string) $correspondingAuthor->getCountry();
+                } elseif ($submitter) {
+                    $billedName = (string) $submitter->getFullName();
+                    $billedEmail = (string) $submitter->getEmail();
+                    $rawAffiliation = (string) $submitter->getLocalizedAffiliation();
+                    $countryCode = (string) $submitter->getCountry();
                 } else {
-                    $billedName = $submitter->getFullName();
-                    $billedEmail = $submitter->getEmail();
-                    $rawAffiliation = $submitter->getLocalizedAffiliation();
-                    $countryCode = $submitter->getCountry();
+                    $billedName = '';
+                    $billedEmail = '';
+                    $rawAffiliation = '';
+                    $countryCode = '';
                 }
 
-                // Proses Multi-Afiliasi dan Negara (Sesuai permintaan sebelumnya)
-                $affiliationList = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', (string)$rawAffiliation))));
+                $affiliationList = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $rawAffiliation))));
                 
-                if (!empty($countryCode)) {
+                if ($countryCode !== '') {
+                    /** @var CountryDAO $countryDao */
                     $countryDao = DAORegistry::getDAO('CountryDAO');
-                    $countryName = $countryDao->getCountry($countryCode);
-                    if ($countryName) {
+                    $countryObj = $countryDao->getCountry($countryCode);
+                    if ($countryObj) {
+                        $countryName = is_object($countryObj) ? (string) $countryObj->getCountry() : (string) $countryObj;
                         if (empty($affiliationList)) {
                             $affiliationList[] = $countryName;
                         } else {
@@ -237,84 +230,80 @@ class PayPalPlugin extends PaymethodPlugin {
                     }
                 }
 
-                // --- TANGGAL (JATUH TEMPO +7 HARI) ---
                 $dateBilled = date('d F Y');
                 $dateDue = date('d F Y', strtotime('+7 days'));
 
-                // --- REVERSE CALCULATION (PAJAK & DISKON) ---
                 $settingTaxRate = (float) $journal->getSetting('paymentTax');
                 $taxRate = $settingTaxRate > 0 ? ($settingTaxRate / 100) : 0.00;
                 $isTaxInclusive = (bool) $journal->getSetting('paymentTaxInclusive');
                 $discount = (float) $journal->getSetting('paymentDiscount');
                 
-                // Final amount dari queue (sudah diproses createQueuedPayment)
-                $finalAmount = $queuedPayment->getAmount();
-                
-                // Hitung amount setelah discount (sebelum komponen VAT)
                 if ($isTaxInclusive) {
-                    // VAT Inclusive: finalAmount sudah merupakan amount setelah discount
                     $amountAfterDiscount = $finalAmount;
-                    // Ekstrak komponen VAT untuk display (hanya untuk transparansi)
                     $baseForVat = $amountAfterDiscount / (1 + $taxRate);
                     $tax = $amountAfterDiscount - $baseForVat;
                 } else {
-                    // VAT Exclusive: finalAmount = amountAfterDiscount + VAT
                     $amountAfterDiscount = $finalAmount / (1 + $taxRate);
                     $tax = $amountAfterDiscount * $taxRate;
                 }
                 
-                // Hitung fee asli (sebelum discount) - ini yang ditampilkan di baris Fee
                 $originalFee = $amountAfterDiscount + $discount;
-                
-                // Subtotal untuk display (amount setelah discount)
                 $subtotal = $amountAfterDiscount;
                 
-                // Assign fee berdasarkan tipe pembayaran
                 $feeSubmission  = 0.00;
                 $feeFastTrack   = 0.00;
                 $feePublication = 0.00;
                 
+                // Linter now recognizes getType() because of the @var annotation above
                 $paymentType = $queuedPayment->getType();
                 
-                if ($paymentType == 5 || $paymentType == 'PAYMENT_TYPE_SUBMISSION') {
+                if ((int) $paymentType === 5 || $paymentType === 'PAYMENT_TYPE_SUBMISSION') {
                     $feeSubmission = $originalFee;
-                } elseif ($paymentType == 6 || $paymentType == 'PAYMENT_TYPE_FASTTRACK') {
+                } elseif ((int) $paymentType === 6 || $paymentType === 'PAYMENT_TYPE_FASTTRACK') {
                     $feeFastTrack = $originalFee;
-                } elseif ($paymentType == 7 || $paymentType == 'PAYMENT_TYPE_PUBLICATION') {
+                } elseif ((int) $paymentType === 7 || $paymentType === 'PAYMENT_TYPE_PUBLICATION') {
                     $feePublication = $originalFee;
                 }
 
-                // --- BACA IDENTITAS FAKTUR DARI DATABASE ---
                 $invoiceNumber = '';
                 $invoiceCode   = '';
                 
                 $result = $articleDao->retrieve(
                     "SELECT setting_name, setting_value FROM article_settings WHERE article_id = ? AND setting_name IN ('wizdam_invoice_number', 'wizdam_invoice_code')", 
-                    array((int)$articleId)
+                    [$articleId]
                 );
                 
-                while (!$result->EOF) {
-                    $row = $result->GetRowAssoc(false);
-                    if ($row['setting_name'] == 'wizdam_invoice_number') $invoiceNumber = $row['setting_value'];
-                    if ($row['setting_name'] == 'wizdam_invoice_code')   $invoiceCode   = $row['setting_value'];
-                    $result->MoveNext();
+                if ($result) {
+                    while (!$result->EOF) {
+                        $row = $result->GetRowAssoc(false);
+                        if ($row['setting_name'] === 'wizdam_invoice_number') {
+                            $invoiceNumber = (string) $row['setting_value'];
+                        }
+                        if ($row['setting_name'] === 'wizdam_invoice_code') {
+                            $invoiceCode = (string) $row['setting_value'];
+                        }
+                        $result->MoveNext();
+                    }
+                    $result->Close();
                 }
-                $result->Close();
 
-                if (empty($invoiceNumber)) $invoiceNumber = 'INVOICE-PENDING-' . $articleId;
-                if (empty($invoiceCode))   $invoiceCode   = 'Manuscript#' . str_pad((string)$articleId, 7, '0', STR_PAD_LEFT);
+                if ($invoiceNumber === '') {
+                    $invoiceNumber = 'INVOICE-PENDING-' . $articleId;
+                }
+                if ($invoiceCode === '') {
+                    $invoiceCode = 'Manuscript#' . str_pad((string) $articleId, 7, '0', STR_PAD_LEFT);
+                }
 
-                // --- ASSIGN KE SMARTY ---
                 $templateMgr->assign('invoiceSiteTitle', $siteTitle);
                 $templateMgr->assign('invoiceBilledName', $billedName);
-                $templateMgr->assign('invoiceBilledAffiliations', $affiliationList); // Sekarang berbentuk array
+                $templateMgr->assign('invoiceBilledAffiliations', $affiliationList);
                 $templateMgr->assign('invoiceBilledEmail', $billedEmail);
                 $templateMgr->assign('invoiceDateBilled', $dateBilled);
                 $templateMgr->assign('invoiceDateDue', $dateDue);
 
                 $templateMgr->assign('invoiceArticleId', $articleId);
-                $templateMgr->assign('invoiceArticleTitle', $article->getLocalizedTitle());
-                $templateMgr->assign('invoiceAuthors', $article->getAuthorString());
+                $templateMgr->assign('invoiceArticleTitle', (string) $article->getLocalizedTitle());
+                $templateMgr->assign('invoiceAuthors', (string) $article->getAuthorString());
                 $templateMgr->assign('invoiceNumber', $invoiceNumber);
                 $templateMgr->assign('invoiceCode', $invoiceCode);
                 
@@ -324,7 +313,7 @@ class PayPalPlugin extends PaymethodPlugin {
                 $templateMgr->assign('subtotal', $formatter->format($subtotal));
                 $templateMgr->assign('discount', $formatter->format($discount));
                 
-                $templateMgr->assign('taxRateLabel', (string)$settingTaxRate);
+                $templateMgr->assign('taxRateLabel', (string) $settingTaxRate);
                 $templateMgr->assign('isTaxInclusive', $isTaxInclusive);
                 $templateMgr->assign('tax', $formatter->format($tax));
                 $templateMgr->assign('finalAmount', $formatter->format($finalAmount));
@@ -332,68 +321,75 @@ class PayPalPlugin extends PaymethodPlugin {
         }
 
         $templateMgr->assign('paypalParams', $params);
-        $templateMgr->assign('paypalError', false); // Aman
+        $templateMgr->assign('paypalError', false);
         
         return $templateMgr->display($this->getTemplatePath() . 'paymentForm.tpl');
     }
 
     /**
-     * Handle requests
+     * Handle requests.
      * @see PKPPlugin::handle()
      * @param array $args
-     * @param Request $request
+     * @param mixed $request
      * @return void
      */
     public function handle($args, $request) {
         $templateMgr = TemplateManager::getManager();
         $journal = $request->getJournal();
         
-        if (!$journal) return parent::handle($args, $request);
+        if (!$journal) {
+            return parent::handle($args, $request);
+        }
 
         import('classes.mail.MailTemplate');
         
-        $contactName = $journal->getSetting('supportName') ?: $journal->getSetting('contactName');
-        $contactEmail = $journal->getSetting('supportEmail') ?: $journal->getSetting('contactEmail');
+        $contactName = (string) ($journal->getSetting('supportName') ?: $journal->getSetting('contactName'));
+        $contactEmail = (string) ($journal->getSetting('supportEmail') ?: $journal->getSetting('contactEmail'));
 
         $mail = new MailTemplate('PAYPAL_INVESTIGATE_PAYMENT');
         $mail->setFrom($contactEmail, $contactName);
         $mail->addRecipient($contactEmail, $contactName);
 
-        $paymentStatus = $request->getUserVar('payment_status');
+        $paymentStatus = (string) $request->getUserVar('payment_status');
 
         switch (array_shift($args)) {
             case 'ipn':
                 $req = 'cmd=_notify-validate';
                 foreach ($_POST as $key => $value) {
-                    $req .= '&' . urlencode((string)$key) . '=' . urlencode((string)$value);    
+                    $req .= '&' . urlencode((string) $key) . '=' . urlencode((string) $value);    
                 }
                 
                 $ch = curl_init();
-                if ($httpProxyHost = Config::getVar('proxy', 'http_host')) {
+                $httpProxyHost = Config::getVar('proxy', 'http_host');
+                if ($httpProxyHost) {
                     curl_setopt($ch, CURLOPT_PROXY, $httpProxyHost);
                     curl_setopt($ch, CURLOPT_PROXYPORT, Config::getVar('proxy', 'http_port', '80'));
-                    if ($username = Config::getVar('proxy', 'username')) {
+                    $username = Config::getVar('proxy', 'username');
+                    if ($username) {
                         curl_setopt($ch, CURLOPT_PROXYUSERPWD, $username . ':' . Config::getVar('proxy', 'password'));
                     }
                 }
                 
-                $paypalUrl = $this->getSetting($journal->getId(), 'paypalurl');
-                if (!$paypalUrl) $paypalUrl = 'https://www.paypal.com/cgi-bin/webscr';
+                $paypalUrl = (string) $this->getSetting((int) $journal->getId(), 'paypalurl');
+                if ($paypalUrl === '') {
+                    $paypalUrl = 'https://www.paypal.com/cgi-bin/webscr';
+                }
 
                 curl_setopt($ch, CURLOPT_URL, $paypalUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_POST, 1);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array('User-Agent: PKP PayPal Service', 'Content-Type: application/x-www-form-urlencoded', 'Content-Length: ' . strlen($req)));
+                curl_setopt($ch, CURLOPT_HTTPHEADER, ['User-Agent: PKP PayPal Service', 'Content-Type: application/x-www-form-urlencoded', 'Content-Length: ' . strlen($req)]);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
-                $ret = curl_exec ($ch);
+                $ret = curl_exec($ch);
                 $curlError = curl_error($ch);
-                curl_close ($ch);
+                curl_close($ch);
 
-                if (is_string($ret) && strcmp($ret, 'VERIFIED') == 0) {
+                if (is_string($ret) && strcmp($ret, 'VERIFIED') === 0) {
                     switch ($paymentStatus) {
                         case 'Completed':
+                            /** @var PayPalDAO $payPalDao */
                             $payPalDao = DAORegistry::getDAO('PayPalDAO');
-                            $transactionId = $request->getUserVar('txn_id');
+                            $transactionId = (string) $request->getUserVar('txn_id');
                             
                             if ($payPalDao->transactionExists($transactionId)) {
                                 $this->sendInvestigateMail($mail, $journal, $_POST, "Duplicate transaction ID: $transactionId");
@@ -402,16 +398,16 @@ class PayPalPlugin extends PaymethodPlugin {
                             
                             $payPalDao->insertTransaction(
                                 $transactionId,
-                                $request->getUserVar('txn_type'),
-                                PKPString::strtolower($request->getUserVar('payer_email')),
-                                PKPString::strtolower($request->getUserVar('receiver_email')),
-                                $request->getUserVar('item_number'),
-                                $request->getUserVar('payment_date'),
-                                $request->getUserVar('payer_id'),
-                                $request->getUserVar('receiver_id')
+                                (string) $request->getUserVar('txn_type'),
+                                PKPString::strtolower((string) $request->getUserVar('payer_email')),
+                                PKPString::strtolower((string) $request->getUserVar('receiver_email')),
+                                (string) $request->getUserVar('item_number'),
+                                (string) $request->getUserVar('payment_date'),
+                                (string) $request->getUserVar('payer_id'),
+                                (string) $request->getUserVar('receiver_id')
                             );
 
-                            $queuedPaymentId = $request->getUserVar('custom');
+                            $queuedPaymentId = (int) $request->getUserVar('custom');
                             import('classes.payment.ojs.OJSPaymentManager');
                             $ojsPaymentManager = new OJSPaymentManager($request);
                             $queuedPayment = $ojsPaymentManager->getQueuedPayment($queuedPaymentId);
@@ -421,18 +417,14 @@ class PayPalPlugin extends PaymethodPlugin {
                                 exit();
                             }
 
-                            $grantedAmount = $request->getUserVar('mc_gross');
-                            $queuedAmount = $queuedPayment->getAmount();
-                            $grantedCurrency = $request->getUserVar('mc_currency');
-                            $queuedCurrency = $queuedPayment->getCurrencyCode();
-                            $grantedEmail = PKPString::strtolower($request->getUserVar('receiver_email'));
-                            // Fallback check jika selleraccount lama masih ada
-                            $queuedEmail = PKPString::strtolower($this->getSetting($journal->getId(), 'selleraccount'));
+                            $grantedAmount = (float) $request->getUserVar('mc_gross');
+                            $queuedAmount = (float) $queuedPayment->getAmount();
+                            $grantedCurrency = (string) $request->getUserVar('mc_currency');
+                            $grantedEmail = PKPString::strtolower((string) $request->getUserVar('receiver_email'));
+                            $queuedEmail = PKPString::strtolower((string) $this->getSetting((int) $journal->getId(), 'selleraccount'));
 
-                            // Note: Validasi email mungkin perlu disesuaikan jika menggunakan API v2 tanpa selleraccount setting
-                            // Tapi untuk keamanan, biarkan logika ini berjalan jika data tersedia.
-
-                            if ($queuedAmount == 0 && $grantedAmount > 0) {
+                            if ($queuedAmount === 0.0 && $grantedAmount > 0.0) {
+                                /** @var QueuedPaymentDAO $queuedPaymentDao */
                                 $queuedPaymentDao = DAORegistry::getDAO('QueuedPaymentDAO');
                                 $queuedPayment->setAmount($grantedAmount);
                                 $queuedPayment->setCurrencyCode($grantedCurrency);
@@ -460,60 +452,59 @@ class PayPalPlugin extends PaymethodPlugin {
 
             case 'cancel':
                 AppLocale::requireComponents(LOCALE_COMPONENT_CORE_COMMON, LOCALE_COMPONENT_CORE_USER, LOCALE_COMPONENT_APPLICATION_COMMON);
-                $templateMgr->assign(array(
+                $templateMgr->assign([
                     'currentUrl' => $request->url(null, 'index'),
                     'pageTitle' => 'plugins.paymethod.paypal.purchase.cancelled.title',
                     'message' => 'plugins.paymethod.paypal.purchase.cancelled',
-                    'backLink' => $request->getUserVar('ojsReturnUrl'),
+                    'backLink' => (string) $request->getUserVar('ojsReturnUrl'),
                     'backLinkLabel' => 'common.continue'
-                ));
+                ]);
                 $templateMgr->display('common/message.tpl');
                 exit();
-                break;
         }
         parent::handle($args, $request);
     }
 
-    // Helper functions (KEEP AS IS)
     /**
-     * Send Investigate Mail
+     * Send Investigate Mail.
      * @param MailTemplate $mail
      * @param Journal $journal
      * @param array $postData
      * @param string $info
      */
     private function sendInvestigateMail($mail, $journal, $postData, $info) {
-        $mail->assignParams(array(
-            'journalName' => $journal->getLocalizedTitle(),
+        $mail->assignParams([
+            'journalName' => (string) $journal->getLocalizedTitle(),
             'postInfo' => print_r($postData, true),
             'additionalInfo' => $info,
             'serverVars' => print_r($_SERVER, true)
-        ));
+        ]);
         $mail->send();
     }
 
     /**
-     * Get Plugin Path, relative to the plugins directory
-     * @return string
+     * Get Plugin Path, relative to the plugins directory.
+     * @return string|null
      */
     public function getInstallSchemaFile(): ?string {
-        return ($this->getPluginPath() . DIRECTORY_SEPARATOR . 'schema.xml');
+        return $this->getPluginPath() . DIRECTORY_SEPARATOR . 'schema.xml';
     }
 
     /**
-     * Install Email Templates File
-     * @return string
+     * Install Email Templates File.
+     * @return string|null
      */
     public function getInstallEmailTemplatesFile(): ?string {
-        return ($this->getPluginPath() . DIRECTORY_SEPARATOR . 'emailTemplates.xml');
+        return $this->getPluginPath() . DIRECTORY_SEPARATOR . 'emailTemplates.xml';
     }
 
     /**
-     * Install Locale Email Template Data File
-     * @return string
+     * Install Locale Email Template Data File.
+     * @return string|null
      */
     public function getInstallEmailTemplateDataFile(): ?string {
-        return ($this->getPluginPath() . '/locale/{$installedLocale}/emailTemplates.xml');
+        return $this->getPluginPath() . '/locale/{$installedLocale}/emailTemplates.xml';
     }
+    
 }
 ?>

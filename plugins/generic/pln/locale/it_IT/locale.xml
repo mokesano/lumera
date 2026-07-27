@@ -80,7 +80,7 @@
 	<message key="plugins.generic.pln.notifications.issn_setting">La tua rivista deve avere un ISSN definito, prima di accettare le condizioni d'uso. Puoi inserire l'ISSN nella pagina del setup della rivista. Una volta che tu abbia inserito l'ISSN, le condizioni d'uso saranno visualizzate qui sotto.</message>
 	<message key="plugins.generic.pln.notifications.tar_missing">Il sistema deve avere un eseguibile tar.</message>
 	<message key="plugins.generic.pln.notifications.archive_tar_missing">Devi installare l'estensione Archive_Tar PHP per poter abilitare la PKP PLN.</message>
-	<message key="plugins.generic.pln.notifications.php5_missing">La PKP PLN richiede PHP 5 o superiore.</message>
+	<message key="plugins.generic.pln.notifications.php_missing">La PKP PLN richiede PHP 7 o superiore.</message>
 
 	<message key="plugins.generic.pln.error.include.bagit">La libreria BagIt, già compresa in OJS, non può essere caricata, probabilmente a causa di qualche requisito mancante.</message>
 	<message key="plugins.generic.pln.error.network.servicedocument">Errore di rete {$error} connettendosi alla PLN per ricevere il service document.</message>

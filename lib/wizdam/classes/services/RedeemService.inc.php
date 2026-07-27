@@ -6,10 +6,10 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance
+ * Distributed under the GNU GPL v3.
+ * 
  * @class RedeemService
+ * 
  * @brief Layanan pengelola dompet loyalti dan penukaran poin.
  */
 
@@ -19,14 +19,25 @@ class RedeemService {
 
     private RewardPointDAO $rewardDao;
 
+    /**
+     * Contructor.
+     */
     public function __construct() {
         $this->rewardDao = new RewardPointDAO();
     }
 
+    /**
+     * Get User
+     * @param int $userId
+     */
     public function getUserBalance(int $userId): int {
         return $this->rewardDao->getBalanceByUserId($userId);
     }
 
+    /**
+     * Get Histroty
+     * @param int $userId
+     */
     public function getUserHistory(int $userId): array {
         return $this->rewardDao->getHistoryByUserId($userId);
     }
@@ -34,6 +45,9 @@ class RedeemService {
     /**
      * Logika Bisnis: Menukarkan poin menjadi Diskon/Voucher.
      * Mengamankan agar pengguna tidak bisa menukar poin melebihi saldo.
+     * @param int $userId
+     * @param int $pointsToRedeem
+     * @param int $invoiceId
      */
     public function exchangePoints(int $userId, int $pointsToRedeem, int $invoiceId = 0): bool {
         if ($pointsToRedeem <= 0) {
@@ -55,6 +69,8 @@ class RedeemService {
 
     /**
      * Disediakan untuk CartService (Integrasi Lintas Domain yang kita buat sebelumnya)
+     * @param int $userId
+     * @param float $subtotal
      */
     public function calculateApplicableDiscount(int $userId, float $subtotal): float {
         // Konversi poin ke nominal mata uang. Misal: 1 Poin = Rp 1.000 / $0.1
@@ -66,5 +82,6 @@ class RedeemService {
         
         return min($discountAmount, $subtotal);
     }
+
 }
 ?>

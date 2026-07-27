@@ -16,30 +16,31 @@
 <br />
 
 <form method="post" action="{url path='TimedViewReportPlugin'}">
+	<input name="csrfToken" type="hidden" value="{$csrfToken|escape}" />
 	{include file="common/formErrors.tpl"}
 
 	<table class="data" width="100%">
-	<tr valign="top">
-		<td width="5%">
-			<input type="checkbox" id="useTimedViewRecords" name="useTimedViewRecords" value=true />
-		</td>
-		<td width="95%">
-			<label for="useTimedViewRecords">{translate key="plugins.reports.timedView.form.useTimedViewRecords"}</label>
-		</td>		
-	</tr>
-	<tr valign="top">
-		<td class="label">{fieldLabel name="dateStart" required="true" key="manager.subscriptions.form.dateStart"}</td>
-		<td class="value" id="dateStart">{html_select_date prefix="dateStart" all_extra="class=\"selectMenu\"" start_year="$yearOffsetPast" end_year="$yearOffsetFuture" time="$dateStart"}</td>
-	</tr>
-	<tr valign="top">
-		<td class="label">{fieldLabel name="dateEnd" required="true" key="manager.subscriptions.form.dateEnd"}</td>
-		<td class="value" id="dateEnd">
-			{html_select_date prefix="dateEnd" start_year="$yearOffsetPast" all_extra="class=\"selectMenu\"" end_year="$yearOffsetFuture" time="$dateEnd"}
-			<input type="hidden" name="dateEndHour" value="23" />
-			<input type="hidden" name="dateEndMinute" value="59" />
-			<input type="hidden" name="dateEndSecond" value="59" />
-		</td>
-	</tr>
+		<tr valign="top">
+			<td width="5%">
+				<input type="checkbox" id="useTimedViewRecords" name="useTimedViewRecords" value=true />
+			</td>
+			<td width="95%">
+				<label for="useTimedViewRecords">{translate key="plugins.reports.timedView.form.useTimedViewRecords"}</label>
+			</td>		
+		</tr>
+		<tr valign="top">
+			<td class="label">{fieldLabel name="dateStart" required="true" key="manager.subscriptions.form.dateStart"}</td>
+			<td class="value" id="dateStart">{html_select_date prefix="dateStart" all_extra="class=\"selectMenu\"" start_year="$yearOffsetPast" end_year="$yearOffsetFuture" time="$dateStart"}</td>
+		</tr>
+		<tr valign="top">
+			<td class="label">{fieldLabel name="dateEnd" required="true" key="manager.subscriptions.form.dateEnd"}</td>
+			<td class="value" id="dateEnd">
+				{html_select_date prefix="dateEnd" start_year="$yearOffsetPast" all_extra="class=\"selectMenu\"" end_year="$yearOffsetFuture" time="$dateEnd"}
+				<input type="hidden" name="dateEndHour" value="23" />
+				<input type="hidden" name="dateEndMinute" value="59" />
+				<input type="hidden" name="dateEndSecond" value="59" />
+			</td>
+		</tr>
 	</table>
 
 	<p>
@@ -52,7 +53,9 @@
 <div class="separator"></div>
 
 <h3>{translate key="plugins.reports.timedView.form.clearLogs"}</h3>
+
 <form method="post" action="{url path='TimedViewReportPlugin'}">
+	<input name="csrfToken" type="hidden" value="{$csrfToken|escape}" />
 	<p>{translate key="plugins.reports.timedView.form.clearLogs.description"}</p>
 
 	{html_select_date prefix="dateClear" start_year="$yearOffsetPast" all_extra="class=\"selectMenu\"" end_year="$yearOffsetFuture" time="$dateEnd"}

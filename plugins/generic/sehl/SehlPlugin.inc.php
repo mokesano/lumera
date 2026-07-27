@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class SehlPlugin
  * @ingroup plugins_generic_sehl
  *
- * @brief Search Engine HighLighting plugin
- *
- * @edition Wizdam Edition (PHP 8.x Compatible - Security Optimized)
+ * @brief Search Engine HighLighting plugin.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -21,28 +19,32 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 class SehlPlugin extends GenericPlugin {
     
     /** @var array */
-    public $queryTerms;
+    protected $_queryTerms = [];
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
+        $this->_queryTerms = [];
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function SehlPlugin() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::SehlPlugin(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Register the plugin
+     * Register the plugin.
      * @see Plugin::register()
      * @param string $category
      * @param string $path
@@ -57,13 +59,14 @@ class SehlPlugin extends GenericPlugin {
     }
 
     /**
-     * Parse the query string.
+     * Parse the query string safely.
      * @param string $query_string
      * @return array
      */
-    public function parse_quote_string($query_string) {
+    public function parse_quote_string(string $query_string): array {
         $query_string = urldecode($query_string);
-        // SAFEGUARD 1: Batasi panjang string pencarian
+        
+        // SAFEGUARD 1: Limit search string length
         if (strlen($query_string) > 200) {
             $query_string = substr($query_string, 0, 200);
         }
@@ -71,49 +74,67 @@ class SehlPlugin extends GenericPlugin {
         $quote_flag = false;
         $word = '';
         $terms = [];
+        $len = strlen($query_string);
 
-        for ($i=0; $i<strlen($query_string); $i++) {
-            $char = substr($query_string, $i, 1);
-            if ($char == '"') {
+        for ($i = 0; $i < $len; $i++) {
+            $char = $query_string[$i]; // Faster than substr
+            if ($char === '"') {
                 $quote_flag = !$quote_flag;
             }
-            if (($char == ' ') && (!$quote_flag)) {
-                if (trim($word) !== '') {
-                    // SAFEGUARD 2: Batasi panjang satu kata (mencegah kata spam yang menempel jadi string panjang)
-                    $terms[] = substr(trim($word), 0, 30);
+            if ($char === ' ' && !$quote_flag) {
+                $trimmed = trim($word);
+                if ($trimmed !== '') {
+                    // SAFEGUARD 2: Limit single word length
+                    $terms[] = substr($trimmed, 0, 30);
                 }
                 $word = '';
             } else {
-                if ($char !== '"') $word .= $char;
+                if ($char !== '"') {
+                    $word .= $char;
+                }
             }
         }
-        if (trim($word) !== '') $terms[] = substr(trim($word), 0, 30);
         
-        // SAFEGUARD 3: Batasi maksimal jumlah terms (mencegah looping panjang di outputFilter)
+        $trimmed = trim($word);
+        if ($trimmed !== '') {
+            $terms[] = substr($trimmed, 0, 30);
+        }
+        
+        // SAFEGUARD 3: Limit maximum number of terms
         return array_slice($terms, 0, 5); 
     }
 
     /**
-     * Hook callback for TemplateManager::display
+     * Hook callback for TemplateManager::display.
      * @param string $hookName
      * @param array $args
+     * @return bool
      */
     public function displayTemplateCallback($hookName, $args) {
         $templateMgr = $args[0];
         $template = $args[1];
 
-        if ($template != 'article/article.tpl') return false;
+        if ($template !== 'article/article.tpl') {
+            return false;
+        }
 
-        $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : getenv('HTTP_REFERER');
+        $referer = $_SERVER['HTTP_REFERER'] ?? getenv('HTTP_REFERER');
+        $referer = (string) $referer;
         
-        // SAFEGUARD 4: Tolak referer kosong atau terlalu panjang (Lebih dari 500 karakter pasti bot/spam)
-        if (empty($referer) || strlen($referer) > 500) return false;
+        // SAFEGUARD 4: Reject empty or overly long referers
+        if ($referer === '' || strlen($referer) > 500) {
+            return false;
+        }
 
-        // SAFEGUARD 5: Validasi URL dasar
-        if (!filter_var($referer, FILTER_VALIDATE_URL)) return false;
+        // SAFEGUARD 5: Validate basic URL structure
+        if (!filter_var($referer, FILTER_VALIDATE_URL)) {
+            return false;
+        }
 
         $urlParts = parse_url($referer);
-        if (!isset($urlParts['query'])) return false;
+        if (!isset($urlParts['query'])) {
+            return false;
+        }
 
         $queryVariableNames = [
             'q', 'p', 'ask', 'searchfor', 'key', 'query', 'search',
@@ -121,83 +142,95 @@ class SehlPlugin extends GenericPlugin {
             'recherche', 'search_text', 'search_term', 'term',
             'terms', 'qq', 'qry_str', 'qu', 's', 'k', 't', 'va'
         ];
-        $this->queryTerms = [];
+        $this->_queryTerms = [];
 
-        // Parse query string dengan batas aman
+        // Parse query string safely
         parse_str($urlParts['query'], $parsedQuery);
         
-        foreach ($parsedQuery as $key => $val) {
-            if (in_array(strtolower($key), $queryVariableNames) && !empty($val)) {
-                // Konversi array ke string jika perlu (misal: q[]=test)
-                $valStr = is_array($val) ? implode(' ', $val) : (string)$val;
-                $newTerms = $this->parse_quote_string($valStr);
-                $this->queryTerms = array_merge($this->queryTerms, $newTerms);
+        if (is_array($parsedQuery)) {
+            foreach ($parsedQuery as $key => $val) {
+                if (in_array(strtolower((string) $key), $queryVariableNames, true) && !empty($val)) {
+                    $valStr = is_array($val) ? implode(' ', $val) : (string) $val;
+                    $newTerms = $this->parse_quote_string($valStr);
+                    $this->_queryTerms = array_merge($this->_queryTerms, $newTerms);
+                }
             }
         }
 
-        // Hapus duplikat dan kosong
-        $this->queryTerms = array_filter(array_unique($this->queryTerms));
+        // Remove duplicates and empty values
+        $this->_queryTerms = array_filter(array_unique($this->_queryTerms));
 
-        if (empty($this->queryTerms)) return false;
+        if (empty($this->_queryTerms)) {
+            return false;
+        }
 
-        $templateMgr->addStylesheet(Request::getBaseUrl() . '/' . $this->getPluginPath() . '/sehl.css');
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
+        $templateMgr->addStylesheet($request->getBaseUrl() . '/' . $this->getPluginPath() . '/sehl.css');
         $templateMgr->register_outputfilter([$this, 'outputFilter']);
 
         return false;
     }
 
     /**
-     * Smarty output filter
+     * Smarty output filter.
      * @param string $output
-     * @param Smarty $smarty
+     * @param Smarty $smarty Passed by reference
      * @return string
      */
     public function outputFilter($output, &$smarty) {
         $fromDiv = strstr($output, '<body');
-        if ($fromDiv === false) return $output;
+        if ($fromDiv === false) {
+            return $output;
+        }
 
         $endOfBodyTagOffset = strpos($fromDiv, '>');
-        if ($endOfBodyTagOffset === false) return $output;
+        if ($endOfBodyTagOffset === false) {
+            return $output;
+        }
 
         $startIndex = strlen($output) - strlen($fromDiv) + $endOfBodyTagOffset + 1;
         $scanPart = substr($output, $startIndex);
         
-        // SAFEGUARD 6: Mencegah error memory jika output halaman terlalu raksasa (misal > 2MB)
-        if (strlen($scanPart) > 2000000) return $output; 
+        // SAFEGUARD 6: Prevent memory errors on massive outputs (> 2MB)
+        if (strlen($scanPart) > 2000000) {
+            return $output;
+        } 
 
-        // Optimasi: Buat pola pencarian gabungan jika memungkinkan, 
-        // namun untuk SEHL kita gunakan preg_replace langsung yang lebih ringan
-        foreach ($this->queryTerms as $q) {
-            // Abaikan query yang kurang dari 3 huruf (mencegah highligh "di", "ke", "a")
-            if (strlen($q) < 3) continue;
+        foreach ($this->_queryTerms as $q) {
+            $q = (string) $q;
+            // Ignore queries shorter than 3 characters
+            if (strlen($q) < 3) {
+                continue;
+            }
 
             $newOutput = '';
             $pat = '/((<[^>]*>)?)([^<]*)/si';
             
-            // Lakukan match all
             preg_match_all($pat, $scanPart, $tag_matches);
+            $count = count($tag_matches[0]);
 
-            for ($i=0; $i< count($tag_matches[0]); $i++) {
+            for ($i = 0; $i < $count; $i++) {
+                $match0 = $tag_matches[0][$i];
+                $match2 = $tag_matches[2][$i];
+                $match3 = $tag_matches[3][$i];
+
                 if (
-                    (strpos($tag_matches[0][$i], '<!') !== false) ||
-                    (stripos($tag_matches[2][$i], '<textarea') !== false) ||
-                    (stripos($tag_matches[2][$i], '<script') !== false)
+                    strpos($match0, '<!') !== false ||
+                    stripos($match2, '<textarea') !== false ||
+                    stripos($match2, '<script') !== false
                 ) {
-                    $newOutput .= $tag_matches[0][$i];
+                    $newOutput .= $match0;
                 } else {
-                    $newOutput .= $tag_matches[2][$i];
-                    
-                    // SAFEGUARD 7: Penggantian preg_replace yang lebih aman (Baris 158 yang direvisi)
-                    // Menghilangkan (.*?) yang memicu Catastrophic Backtracking
-                    // Kita gunakan boundary \b (batas kata) yang jauh lebih ringan daripada \W
-                    $qSafe = preg_quote($q, '/');
-                    $textPart = $tag_matches[3][$i];
+                    $newOutput .= $match2;
+                    $textPart = $match3;
                     
                     if (trim($textPart) !== '') {
-                         // Hanya jalankan regex jika kata tersebut benar-benar ada dalam blok teks (stristr sangat cepat)
-                         if (stripos($textPart, $q) !== false) {
-                              $textPart = preg_replace('/\b(' . $qSafe . ')\b/iu', '<span class="sehl">$1</span>', $textPart);
-                         }
+                        // SAFEGUARD 7: Safe preg_replace avoiding catastrophic backtracking
+                        if (stripos($textPart, $q) !== false) {
+                            $qSafe = preg_quote($q, '/');
+                            $textPart = preg_replace('/\b(' . $qSafe . ')\b/iu', '<span class="sehl lumera">$1</span>', $textPart);
+                        }
                     }
                     $newOutput .= $textPart;
                 }
@@ -205,11 +238,11 @@ class SehlPlugin extends GenericPlugin {
             $scanPart = $newOutput;
         }
         
-        return (substr($output, 0, $startIndex) . $scanPart);
+        return substr($output, 0, $startIndex) . $scanPart;
     }
 
     /**
-     * Get display name
+     * Get display name.
      * @see Plugin::getDisplayName()
      * @return string
      */    
@@ -218,12 +251,13 @@ class SehlPlugin extends GenericPlugin {
     }
 
     /**
-     * Get description
+     * Get description.
      * @see Plugin::getDescription()
      * @return string
      */
     public function getDescription(): string {
         return __('plugins.generic.sehl.description');
     }
+    
 }
 ?>

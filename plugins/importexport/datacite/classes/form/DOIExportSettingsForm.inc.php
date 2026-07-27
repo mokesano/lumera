@@ -12,9 +12,7 @@ declare(strict_types=1);
  * @ingroup plugins_importexport_crossref_classes_form
  *
  * @brief Form base class for journal managers to setup DOI export plug-ins.
- * * MODERNIZED FOR WIZDAM FORK
  */
-
 
 import('lib.pkp.classes.form.Form');
 
@@ -24,7 +22,7 @@ class DOIExportSettingsForm extends Form {
     // Protected properties
     //
     /** @var int */
-    public $_journalId;
+    protected $_journalId;
 
     /**
      * Get the journal ID.
@@ -34,25 +32,24 @@ class DOIExportSettingsForm extends Form {
         return $this->_journalId;
     }
 
-    /** @var DoiExportPlugin */
-    public $_plugin;
+    /** @var DOIExportPlugin */
+    protected $_plugin;
 
     /**
      * Get the plugin.
-     * @return DoiExportPlugin
+     * @return DOIExportPlugin
      */
     public function getPlugIn() {
         return $this->_plugin;
     }
-
 
     //
     // Constructor
     //
     /**
      * Constructor
-     * @param $plugin DoiExportPlugin
-     * @param $journalId int
+     * @param DOIExportPlugin $plugin
+     * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
         // Configure the object.
@@ -66,6 +63,8 @@ class DOIExportSettingsForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param DOIExportPlugin $plugin
+     * @param int $journalId
      */
     public function DOIExportSettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -75,9 +74,8 @@ class DOIExportSettingsForm extends Form {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
-
 
     //
     // Implement template methods from Form
@@ -105,28 +103,27 @@ class DOIExportSettingsForm extends Form {
     /**
      * Save settings.
      * @see Form::execute()
+     * @param mixed $object
      * @return void
      */
     public function execute($object = null) {
         $plugin = $this->getPlugIn();
-        foreach($this->getFormFields() as $settingName => $settingType) {
+        foreach ($this->getFormFields() as $settingName => $settingType) {
             $plugin->updateSetting($this->getJournalId(), $settingName, $this->getData($settingName), $settingType);
         }
     }
-
 
     //
     // Protected template methods
     //
     /**
      * Get a plugin setting.
-     * @param $settingName
-     * @return mixed The setting value.
+     * @param string $settingName
+     * @return mixed
      */
     public function getSetting($settingName) {
         $plugin = $this->getPlugIn();
-        $settingValue = $plugin->getSetting($this->getJournalId(), $settingName);
-        return $settingValue;
+        return $plugin->getSetting($this->getJournalId(), $settingName);
     }
 
     /**
@@ -139,11 +136,12 @@ class DOIExportSettingsForm extends Form {
 
     /**
      * Check whether a given setting is optional.
-     * @param $settingName string
-     * @return boolean
+     * @param string $settingName
+     * @return bool
      */
     public function isOptional($settingName) {
-        return in_array($settingName, ['username', 'password']);
+        return in_array($settingName, ['username', 'password'], true);
     }
+
 }
 ?>

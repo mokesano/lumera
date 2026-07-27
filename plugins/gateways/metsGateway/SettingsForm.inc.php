@@ -19,10 +19,10 @@ import('lib.pkp.classes.form.Form');
 class SettingsForm extends Form {
 
     /** @var int */
-    public $journalId;
+    protected int $_journalId;
 
     /** @var METSGatewayPlugin */
-    public $plugin;
+    protected $_plugin;
 
     /**
      * Constructor
@@ -30,8 +30,8 @@ class SettingsForm extends Form {
      * @param int $journalId
      */
     public function __construct($plugin, int $journalId) {
-        $this->journalId = $journalId;
-        $this->plugin = $plugin;
+        $this->_journalId = $journalId;
+        $this->_plugin = $plugin;
 
         parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
         $this->addCheck(new FormValidatorPost($this));
@@ -39,6 +39,8 @@ class SettingsForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param METSGatewayPlugin $plugin
+     * @param int $journalId
      */
     public function SettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -56,20 +58,25 @@ class SettingsForm extends Form {
      * @return void
      */
     public function initData(): void {
-        $journalId = $this->journalId;
-        $plugin = $this->plugin;
+        $journalId = $this->_journalId;
+        $plugin = $this->_plugin;
 
         $organization = $plugin->getSetting($journalId, 'organization');
         if (empty($organization)) {
+            /** @var SiteDAO $siteDao */
             $siteDao = DAORegistry::getDAO('SiteDAO');
             $site = $siteDao->getSite();
-            $organization = $site->getLocalizedTitle();
+            $organization = $site ? (string) $site->getLocalizedTitle() : '';
         }
         $this->setData('organization', $organization);
 
-        $this->setData('contentWrapper', $plugin->getSetting($journalId, 'contentWrapper') ?: 'FLocat');
-        $this->setData('preservationLevel', $plugin->getSetting($journalId, 'preservationLevel') ?: '1');
-        $this->setData('exportSuppFiles', $plugin->getSetting($journalId, 'exportSuppFiles'));
+        $contentWrapper = $plugin->getSetting($journalId, 'contentWrapper');
+        $this->setData('contentWrapper', $contentWrapper !== null && $contentWrapper !== '' ? $contentWrapper : 'FLocat');
+        
+        $preservationLevel = $plugin->getSetting($journalId, 'preservationLevel');
+        $this->setData('preservationLevel', $preservationLevel !== null && $preservationLevel !== '' ? $preservationLevel : '1');
+        
+        $this->setData('exportSuppFiles', (bool) $plugin->getSetting($journalId, 'exportSuppFiles'));
     }
 
     /**
@@ -82,18 +89,18 @@ class SettingsForm extends Form {
 
     /**
      * Save settings.
-     * @param null|object $object Ignored.
+     * @param mixed $object Ignored.
      * @return void
      */
-    public function execute($object = NULL): void {
-        $plugin = $this->plugin;
-        $journalId = $this->journalId;
+    public function execute($object = null): void {
+        $plugin = $this->_plugin;
+        $journalId = $this->_journalId;
 
-        $plugin->updateSetting($journalId, 'contentWrapper', $this->getData('contentWrapper'));
+        $plugin->updateSetting($journalId, 'contentWrapper', $this->getData('contentWrapper') ?? 'FLocat');
         $plugin->updateSetting($journalId, 'organization', $this->getData('organization'));
-        $plugin->updateSetting($journalId, 'preservationLevel', $this->getData('preservationLevel'));
-        $plugin->updateSetting($journalId, 'exportSuppFiles', $this->getData('exportSuppFiles'));
+        $plugin->updateSetting($journalId, 'preservationLevel', $this->getData('preservationLevel') ?? '1');
+        $plugin->updateSetting($journalId, 'exportSuppFiles', (bool) $this->getData('exportSuppFiles'));
     }
-}
 
+}
 ?>

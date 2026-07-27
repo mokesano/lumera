@@ -25,8 +25,8 @@ class MidtransGateway implements PaymentGatewayInterface {
     
     /**
      * MidtransGateway constructor.
-     * @param string $serverKey Kunci server Midtrans Anda
-     * @param bool $isProduction Set true untuk mode produksi, false untuk sandbox
+     * @param string $serverKey
+     * @param bool $isProduction
      */
     public function __construct(string $serverKey, bool $isProduction = false) {
         Config::$serverKey = $serverKey;
@@ -37,9 +37,9 @@ class MidtransGateway implements PaymentGatewayInterface {
 
     /**
      * Mendapatkan data checkout pembayaran untuk invoice tertentu.
-     * @param Invoice $invoice Objek invoice
-     * @param array $customerData Data pelanggan
-     * @return array Data checkout pembayaran
+     * @param Invoice $invoice
+     * @param array $customerData
+     * @return array
      */
     public function getPaymentCheckoutData(Invoice $invoice, array $customerData = [], string $paymentType = 'all'): array {
         $params = [
@@ -80,8 +80,8 @@ class MidtransGateway implements PaymentGatewayInterface {
 
     /**
      * Memproses webhook dari Midtrans dan mengembalikan data status pembayaran.
-     * @param array $payload Data payload dari webhook Midtrans
-     * @return array|null Data status pembayaran atau null jika validasi gagal
+     * @param array $payload
+     * @return array|null
      */
     public function processWebhook(array $payload): ?array {
         // Pengecekan atribut wajib Midtrans

@@ -12,11 +12,9 @@ declare(strict_types=1);
  * @ingroup plugins_importexport_crossref_classes
  *
  * @brief CrossRef XML export format implementation.
- * MODERNIZED FOR WIZDAM FORK
  */
 
-
-if (!class_exists('DOIExportDom')) { // Bug #7848
+if (!class_exists('DOIExportDom')) {
     import('plugins.importexport.crossref.classes.DOIExportDom');
 }
 
@@ -29,23 +27,23 @@ define('CROSSREF_XSI_SCHEMALOCATION' , 'http://www.crossref.org/schema/4.3.6 htt
 
 class CrossRefExportDom extends DOIExportDom {
 
-    //
-    // Constructor
-    //
     /**
      * Constructor
-     * @param $request Request
-     * @param $plugin DOIExportPlugin
-     * @param $journal Journal
-     * @param $objectCache PubObjectCache
+     * @param PKPRequest $request
+     * @param DOIExportPlugin $plugin
+     * @param Journal $journal
+     * @param PubObjectCache $objectCache
      */
     public function __construct($request, $plugin, $journal, $objectCache) {
-        // Configure the DOM.
         parent::__construct($request, $plugin, $journal, $objectCache);
     }
 
     /**
      * [SHIM] Backward Compatibility
+     * @param PKPRequest $request
+     * @param DOIExportPlugin $plugin
+     * @param Journal $journal
+     * @param PubObjectCache $objectCache
      */
     public function CrossRefExportDom($request, $plugin, $journal, $objectCache) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -55,17 +53,16 @@ class CrossRefExportDom extends DOIExportDom {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
-
 
     //
     // Public methods
     //
     /**
      * Generate the CrossRef XML document.
-     * @param $objects array Array of objects to export
-     * @return XMLDocument
+     * @param array $objects Array of objects to export
+     * @return object XMLDocument
      * @see DOIExportDom::generate()
      */
     public function generate($objects) {
@@ -78,26 +75,26 @@ class CrossRefExportDom extends DOIExportDom {
 
         // Create Head Node and all parts inside it
         $head = $this->_generateHeadDom($doc, $journal);
-        // attach it to the root node
         XMLCustomWriter::appendChild($rootElement, $head);
 
-        // the body node contains everything
+        // The body node contains everything
         $bodyNode = XMLCustomWriter::createElement($doc, 'body');
         XMLCustomWriter::appendChild($rootElement, $bodyNode);
 
-        foreach($objects as $object) {
+        foreach ($objects as $object) {
             // Retrieve required publication objects.
             $pubObjects = $this->retrievePublicationObjects($object);
-            extract($pubObjects);
-            $issue = $pubObjects['issue'];
-            if (is_a($object, 'Issue')) {
-                foreach ($pubObjects['articlesByIssue'] as $article) {
-                    if ($article->getPubId('doi')) {
-                        $this->_appendArticleXML($doc, $journal, $issue, $article, $bodyNode);
+            $issue = $pubObjects['issue'] ?? null;
+            $article = $pubObjects['article'] ?? null;
+
+            if ($object instanceof Issue && $issue) {
+                $articlesByIssue = $pubObjects['articlesByIssue'] ?? [];
+                foreach ($articlesByIssue as $articleItem) {
+                    if ($articleItem->getPubId('doi')) {
+                        $this->_appendArticleXML($doc, $journal, $issue, $articleItem, $bodyNode);
                     }
                 }
-            } else {
-                $article = $pubObjects['article'];
+            } elseif ($object instanceof PublishedArticle && $article) {
                 if ($article->getPubId('doi')) {
                     $this->_appendArticleXML($doc, $journal, $issue, $article, $bodyNode);
                 }
@@ -115,7 +112,7 @@ class CrossRefExportDom extends DOIExportDom {
      * @see DOIExportDom::getRootElementName()
      * @return string
      */
-    public function getRootElementName() {
+    public function getRootElementName(): string {
         return 'doi_batch';
     }
 
@@ -124,16 +121,16 @@ class CrossRefExportDom extends DOIExportDom {
      * @see DOIExportDom::getNamespace()
      * @return string
      */
-    public function getNamespace() {
+    public function getNamespace(): string {
         return CROSSREF_XMLNS;
     }
 
     /**
      * Get the XML schema version.
-     * @see DOIExportDom::getXmlSchemaVersionn()
+     * @see DOIExportDom::getXmlSchemaVersion()
      * @return string
      */
-    public function getXmlSchemaVersion() {
+    public function getXmlSchemaVersion(): string {
         return CROSSREF_XSI_SCHEMAVERSION;
     }
 
@@ -142,45 +139,27 @@ class CrossRefExportDom extends DOIExportDom {
      * @see DOIExportDom::getXmlSchemaLocation()
      * @return string
      */
-    public function getXmlSchemaLocation() {
+    public function getXmlSchemaLocation(): string {
         return CROSSREF_XSI_SCHEMALOCATION;
     }
 
     /**
      * Retrieve the publication objects required for export.
-     * @param $object Mixed object to export
-     * @return array Associative array of publication objects
+     * @param Issue|PublishedArticle|ArticleGalley $object
+     * @return array
      * @see DOIExportDom::retrievePublicationObjects()
      */
-    public function retrievePublicationObjects($object) {
-        // Initialize local variables.
-        $nullVar = null;
-        $journal = $this->getJournal();
-        $cache = $this->getCache();
-
-        // Retrieve basic OJS objects.
+    public function retrievePublicationObjects($object): array {
+        // Retrieve basic Lumera objects.
         $publicationObjects = parent::retrievePublicationObjects($object);
 
-        // Retrieve additional related objects.
-        // For articles: no additional objects needed for CrossRef:
-        // galleys are not considered and
-        // supp files will be retrieved when crating the XML
-        // Note: article issue is already retrieved by the parent method
-        if (is_a($object, 'PublishedArticle')) {
-            $article = $publicationObjects['article'];
-        }
-
-        // For issues: Retrieve all articles of the issue:
-        if (is_a($object, 'Issue')) {
-            // Articles by issue.
-            assert(isset($publicationObjects['issue']));
-            $issue = $publicationObjects['issue'];
-            $publicationObjects['articlesByIssue'] = $this->retrieveArticlesByIssue($issue);
+        // For issues: Retrieve all articles of the issue.
+        if ($object instanceof Issue && isset($publicationObjects['issue'])) {
+            $publicationObjects['articlesByIssue'] = $this->retrieveArticlesByIssue($publicationObjects['issue']);
         }
 
         return $publicationObjects;
     }
-
 
     //
     // Private helper methods
@@ -188,34 +167,37 @@ class CrossRefExportDom extends DOIExportDom {
     /**
      * Generate the <head> tag that accompanies each submission
      * @see DOIExportDom::generateHeadDom()
-     * @param $doc XMLNode
-     * @param $journal Journal
-     * @return XMLNode
+     * @param object $doc
+     * @param Journal $journal
+     * @return object
      */
     public function _generateHeadDom($doc, $journal) {
         $head = XMLCustomWriter::createElement($doc, 'head');
 
         // DOI batch ID is a simple tracking ID: initials + timestamp
-        XMLCustomWriter::createChildWithText($doc, $head, 'doi_batch_id', $journal->getSetting('initials', $journal->getPrimaryLocale()) . '_' . time());
+        $initials = (string) $journal->getSetting('initials', $journal->getPrimaryLocale());
+        XMLCustomWriter::createChildWithText($doc, $head, 'doi_batch_id', $initials . '_' . time());
         XMLCustomWriter::createChildWithText($doc, $head, 'timestamp', (string) time());
 
-        $journalId = $journal->getId();
+        $journalId = (int) $journal->getId();
+        $plugin = $this->_plugin;
 
         /* Depositor defaults to the Journal's technical Contact */
-        $plugin = $this->_plugin;
-        $depositorName = $plugin->getSetting($journalId, 'depositorName');
-        if (empty($depositorName)) {
-            $depositorName = $journal->getSetting('supportName');
+        $depositorName = (string) $plugin->getSetting($journalId, 'depositorName');
+        if ($depositorName === '') {
+            $depositorName = (string) $journal->getSetting('supportName');
         }
-        $depositorEmail = $plugin->getSetting($journalId, 'depositorEmail');
-        if (empty($depositorEmail)) {
-            $depositorEmail = $journal->getSetting('supportEmail');
+        
+        $depositorEmail = (string) $plugin->getSetting($journalId, 'depositorEmail');
+        if ($depositorEmail === '') {
+            $depositorEmail = (string) $journal->getSetting('supportEmail');
         }
+        
         $depositorNode = $this->_generateDepositorDom($doc, $depositorName, $depositorEmail);
         XMLCustomWriter::appendChild($head, $depositorNode);
 
         /* The registrant is assumed to be the Publishing institution */
-        $publisherInstitution = $journal->getSetting('publisherInstitution');
+        $publisherInstitution = (string) $journal->getSetting('publisherInstitution');
         XMLCustomWriter::createChildWithText($doc, $head, 'registrant', $publisherInstitution);
 
         return $head;
@@ -224,10 +206,10 @@ class CrossRefExportDom extends DOIExportDom {
     /**
      * Generate depositor node
      * @see DOIExportDom::generateDepositorDom()
-     * @param $doc XMLNode
-     * @param $name string
-     * @param $email string
-     * @return XMLNode
+     * @param object $doc
+     * @param string $name
+     * @param string $email
+     * @return object
      */
     public function _generateDepositorDom($doc, $name, $email) {
         $depositor = XMLCustomWriter::createElement($doc, 'depositor');
@@ -240,14 +222,15 @@ class CrossRefExportDom extends DOIExportDom {
     /**
      * Generate and append the XML per article
      * @see DOIExportDom::appendArticleXML()
-     * @param $doc XMLNode
-     * @param $journal Journal
-     * @param $issue Issue
-     * @param $article Article
-     * @param $bodyNode XMLNode
+     * @param object $doc
+     * @param Journal $journal
+     * @param Issue $issue
+     * @param PublishedArticle $article
+     * @param object $bodyNode
      */
     public function _appendArticleXML($doc, $journal, $issue, $article, $bodyNode) {
-        $sectionId = $article->getSectionId();
+        $sectionId = (int) $article->getSectionId();
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $section = $sectionDao->getSection($sectionId);
 
@@ -269,39 +252,41 @@ class CrossRefExportDom extends DOIExportDom {
     /**
      * Generate metadata for journal - accompanies every article
      * @see DOIExportDom::generateJournalMetadataDom()
-     * @param $doc XMLNode
-     * @param $journal Journal
-     * @return XMLNode
+     * @param object $doc
+     * @param Journal $journal
+     * @return object
      */
     public function _generateJournalMetadataDom($doc, $journal) {
         $journalMetadataNode = XMLCustomWriter::createElement($doc, 'journal_metadata');
 
         /* Full Title of Journal */
-        $journalTitle = $journal->getTitle($journal->getPrimaryLocale());
+        $journalTitle = (string) $journal->getTitle($journal->getPrimaryLocale());
         // Attempt a fall back, in case the localized name is not set.
-        if ($journalTitle == '') {
-            $journalTitle = $journal->getSetting('abbreviation', $journal->getPrimaryLocale());
+        if ($journalTitle === '') {
+            $journalTitle = (string) $journal->getSetting('abbreviation', $journal->getPrimaryLocale());
         }
         XMLCustomWriter::createChildWithText($doc, $journalMetadataNode, 'full_title', $journalTitle);
 
         /* Abbreviated title - defaulting to initials if no abbreviation found */
-        if ($journal->getSetting('abbreviation', $journal->getPrimaryLocale()) != '' ) {
-            XMLCustomWriter::createChildWithText($doc, $journalMetadataNode, 'abbrev_title', $journal->getSetting('abbreviation', $journal->getPrimaryLocale()));
-        }
-        else {
-            XMLCustomWriter::createChildWithText($doc, $journalMetadataNode, 'abbrev_title', $journal->getSetting('initials', $journal->getPrimaryLocale()));
+        $abbreviation = (string) $journal->getSetting('abbreviation', $journal->getPrimaryLocale());
+        if ($abbreviation !== '') {
+            XMLCustomWriter::createChildWithText($doc, $journalMetadataNode, 'abbrev_title', $abbreviation);
+        } else {
+            $initials = (string) $journal->getSetting('initials', $journal->getPrimaryLocale());
+            XMLCustomWriter::createChildWithText($doc, $journalMetadataNode, 'abbrev_title', $initials);
         }
 
         /* Both ISSNs are permitted for CrossRef, so sending whichever one (or both) */
-        if ( $ISSN = $journal->getSetting('onlineIssn') ) {
-            $onlineISSN = XMLCustomWriter::createChildWithText($doc, $journalMetadataNode, 'issn', $ISSN);
-            XMLCustomWriter::setAttribute($onlineISSN, 'media_type', 'electronic');
+        $onlineIssn = (string) $journal->getSetting('onlineIssn');
+        if ($onlineIssn !== '') {
+            $onlineISSNNode = XMLCustomWriter::createChildWithText($doc, $journalMetadataNode, 'issn', $onlineIssn);
+            XMLCustomWriter::setAttribute($onlineISSNNode, 'media_type', 'electronic');
         }
 
-        /* Both ISSNs are permitted for CrossRef so sending whichever one (or both) */
-        if ( $ISSN = $journal->getSetting('printIssn') ) {
-            $printISSN = XMLCustomWriter::createChildWithText($doc, $journalMetadataNode, 'issn', $ISSN);
-            XMLCustomWriter::setAttribute($printISSN, 'media_type', 'print');
+        $printIssn = (string) $journal->getSetting('printIssn');
+        if ($printIssn !== '') {
+            $printISSNNode = XMLCustomWriter::createChildWithText($doc, $journalMetadataNode, 'issn', $printIssn);
+            XMLCustomWriter::setAttribute($printISSNNode, 'media_type', 'print');
         }
 
         return $journalMetadataNode;
@@ -310,12 +295,12 @@ class CrossRefExportDom extends DOIExportDom {
     /**
      * Generate journal issue tag to accompany every article
      * @see DOIExportDom::generateJournalIssueDom()
-     * @param $doc XMLNode
-     * @param $journal Journal
-     * @param $issue Issue
-     * @param $section Section
-     * @param $article Article
-     * @return XMLNode
+     * @param object $doc
+     * @param Journal $journal
+     * @param Issue $issue
+     * @param Section $section
+     * @param PublishedArticle $article
+     * @return object
      */
     public function _generateJournalIssueDom($doc, $journal, $issue, $section, $article) {
         $journalIssueNode = XMLCustomWriter::createElement($doc, 'journal_issue');
@@ -325,17 +310,23 @@ class CrossRefExportDom extends DOIExportDom {
             XMLCustomWriter::appendChild($journalIssueNode, $publicationDateNode);
         }
 
-        if ($issue->getVolume()){
+        $volume = $issue->getVolume();
+        if ($volume !== null && $volume !== '') {
             $journalVolumeNode = XMLCustomWriter::createElement($doc, 'journal_volume');
             XMLCustomWriter::appendChild($journalIssueNode, $journalVolumeNode);
-            XMLCustomWriter::createChildWithText($doc, $journalVolumeNode, 'volume', $issue->getVolume());
+            XMLCustomWriter::createChildWithText($doc, $journalVolumeNode, 'volume', (string) $volume);
         }
-        if ($issue->getNumber()) {
-            XMLCustomWriter::createChildWithText($doc, $journalIssueNode, 'issue', $issue->getNumber());
+        
+        $number = $issue->getNumber();
+        if ($number !== null && $number !== '') {
+            XMLCustomWriter::createChildWithText($doc, $journalIssueNode, 'issue', (string) $number);
         }
 
-        if ($issue->getDatePublished() && $issue->getPubId('doi')) {
-            $issueDoiNode = $this->_generateDOIdataDom($doc, $issue->getPubId('doi'), Request::url($journal->getPath(), 'issue', 'view', $issue->getBestIssueId($journal)));
+        $issueDoi = $issue->getPubId('doi');
+        if ($issue->getDatePublished() && $issueDoi) {
+            $request = $this->getRequest();
+            $issueUrl = $request->url($journal->getPath(), 'issue', 'view', [$issue->getBestIssueId($journal)]);
+            $issueDoiNode = $this->_generateDOIdataDom($doc, $issueDoi, $issueUrl);
             XMLCustomWriter::appendChild($journalIssueNode, $issueDoiNode);
         }
 
@@ -345,12 +336,12 @@ class CrossRefExportDom extends DOIExportDom {
     /**
      * Generate the journal_article node (the heart of the file).
      * @see DOIExportDom::generateJournalArticleDom()
-     * @param $doc XMLNode
-     * @param $journal Journal
-     * @param $issue Issue
-     * @param $section Section
-     * @param $article Article
-     * @return XMLNode
+     * @param object $doc
+     * @param Journal $journal
+     * @param Issue $issue
+     * @param Section $section
+     * @param PublishedArticle $article
+     * @return object
      */
     public function _generateJournalArticleDom($doc, $journal, $issue, $section, $article) {
         // Create the base node
@@ -360,59 +351,56 @@ class CrossRefExportDom extends DOIExportDom {
 
         /* Titles */
         $titlesNode = XMLCustomWriter::createElement($doc, 'titles');
-        XMLCustomWriter::createChildWithText($doc, $titlesNode, 'title', $article->getTitle($article->getLocale()));
+        XMLCustomWriter::createChildWithText($doc, $titlesNode, 'title', (string) $article->getTitle($article->getLocale()));
         XMLCustomWriter::appendChild($journalArticleNode, $titlesNode);
 
         /* AuthorList */
         $contributorsNode = XMLCustomWriter::createElement($doc, 'contributors');
         $isFirst = true;
-        foreach ($article->getAuthors() as $author) {
-            $authorNode = $this->_generateAuthorDom($doc, $author, $isFirst);
-            $isFirst = false;
-            XMLCustomWriter::appendChild($contributorsNode, $authorNode);
+        $authors = $article->getAuthors();
+        if (is_array($authors)) {
+            foreach ($authors as $author) {
+                $authorNode = $this->_generateAuthorDom($doc, $author, $isFirst);
+                $isFirst = false;
+                XMLCustomWriter::appendChild($contributorsNode, $authorNode);
+            }
         }
         XMLCustomWriter::appendChild($journalArticleNode, $contributorsNode);
 
         /* Abstracts */
-        if ($article->getAbstract($journal->getPrimaryLocale())) {
+        $abstract = $article->getAbstract($journal->getPrimaryLocale());
+        if (!empty($abstract)) {
             $abstractNode = XMLCustomWriter::createElement($doc, 'jats:abstract');
-            XMLCustomWriter::createChildWithText($doc, $abstractNode, 'jats:p', PKPString::html2utf(strip_tags($article->getAbstract($journal->getPrimaryLocale()))));
+            XMLCustomWriter::createChildWithText($doc, $abstractNode, 'jats:p', PKPString::html2utf(strip_tags((string) $abstract)));
             XMLCustomWriter::appendChild($journalArticleNode, $abstractNode);
         }
 
         /* publication date of article */
-        // if there is no article publication date, take the issue publication date
-        $datePublished = $article->getDatePublished() ? $article->getDatePublished() : $issue->getDatePublished();
+        $datePublished = $article->getDatePublished() ?: $issue->getDatePublished();
         if ($datePublished) {
             $publicationDateNode = $this->_generatePublisherDateDom($doc, $datePublished);
             XMLCustomWriter::appendChild($journalArticleNode, $publicationDateNode);
         }
 
         /* publisher_item is the article pages */
-        // CrossRef requires first_page and last_page of any contiguous range, then any other ranges go in other_pages
         $pages = $article->getPageArray();
-        if (!empty($pages)) {
+        if (is_array($pages) && !empty($pages)) {
             $firstRange = array_shift($pages);
-            $firstPage = array_shift($firstRange);
-            if (count($firstRange)) {
-                // There is a first page and last page for the first range
-                $lastPage = array_shift($firstRange);
-            } else {
-                // There is not a range in the first segment
-                $lastPage = '';
-            }
+            $firstPage = (string) array_shift($firstRange);
+            $lastPage = !empty($firstRange) ? (string) array_shift($firstRange) : '';
+            
             // CrossRef accepts no punctuation in first_page or last_page
             if ((!empty($firstPage) || $firstPage === "0") && !preg_match('/[^[:alnum:]]/', $firstPage) && !preg_match('/[^[:alnum:]]/', $lastPage)) {
                 $pageNode = XMLCustomWriter::createElement($doc, 'pages');
                 XMLCustomWriter::createChildWithText($doc, $pageNode, 'first_page', $firstPage);
-                if ($lastPage != '') {
+                if ($lastPage !== '') {
                     XMLCustomWriter::createChildWithText($doc, $pageNode, 'last_page', $lastPage);
                 }
                 $otherPages = '';
                 foreach ($pages as $range) {
-                    $otherPages .= ($otherPages ? ',' : '').implode('-', $range);
+                    $otherPages .= ($otherPages !== '' ? ',' : '') . implode('-', $range);
                 }
-                if ($otherPages != '') {
+                if ($otherPages !== '') {
                     XMLCustomWriter::createChildWithText($doc, $pageNode, 'other_pages', $otherPages);
                 }
                 XMLCustomWriter::appendChild($journalArticleNode, $pageNode);
@@ -420,20 +408,24 @@ class CrossRefExportDom extends DOIExportDom {
         }
 
         /* License URL */
-        if ($article->getLicenseUrl()) {
+        $licenseUrl = $article->getLicenseUrl();
+        if (!empty($licenseUrl)) {
             $licenseNode = XMLCustomWriter::createElement($doc, 'ai:program');
             XMLCustomWriter::setAttribute($licenseNode, 'name', 'AccessIndicators');
-            XMLCustomWriter::createChildWithText($doc, $licenseNode, 'ai:license_ref', $article->getLicenseUrl());
+            XMLCustomWriter::createChildWithText($doc, $licenseNode, 'ai:license_ref', (string) $licenseUrl);
             XMLCustomWriter::appendChild($journalArticleNode, $licenseNode);
         }
 
         // DOI data node
+        /** @var ArticleGalleyDAO $articleGalleyDao */
         $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
-        $DOIdataNode = $this->_generateDOIdataDom($doc, $article->getPubId('doi'), Request::url($journal->getPath(), 'article', 'view', $article->getBestArticleId()), $articleGalleyDao->getGalleysByArticle($article->getId()));
-
+        $request = $this->getRequest();
+        $articleUrl = $request->url($journal->getPath(), 'article', 'view', [$article->getBestArticleId()]);
+        $galleys = $articleGalleyDao->getGalleysByArticle((int) $article->getId());
+        
+        $DOIdataNode = $this->_generateDOIdataDom($doc, (string) $article->getPubId('doi'), $articleUrl, $galleys);
         XMLCustomWriter::appendChild($journalArticleNode, $DOIdataNode);
 
-        /* Component list (supplementary files) */
         $componentListNode = $this->_generateComponentListDom($doc, $journal, $article);
         if ($componentListNode) {
             XMLCustomWriter::appendChild($journalArticleNode, $componentListNode);
@@ -445,14 +437,17 @@ class CrossRefExportDom extends DOIExportDom {
     /**
      * Generate the component_list node (supplementary files).
      * @see DOIExportDom::generateComponentListDom()
-     * @param $doc XMLNode
-     * @param $journal Journal
-     * @param $article Article
-     * @return XMLNode
+     * @param object $doc
+     * @param Journal $journal
+     * @param PublishedArticle $article
+     * @return object|null
      */
     public function _generateComponentListDom($doc, $journal, $article) {
-        $componentListNode = null;
         $suppFiles = $article->getSuppFiles();
+        if (!is_array($suppFiles)) {
+            return null;
+        }
+
         $createComponentList = false;
         foreach ($suppFiles as $suppFile) {
             if ($suppFile->getPubId('doi')) {
@@ -460,36 +455,37 @@ class CrossRefExportDom extends DOIExportDom {
                 break;
             }
         }
-        if ($createComponentList) {
-            // Create the base node
-            $componentListNode = XMLCustomWriter::createElement($doc, 'component_list');
+        
+        if (!$createComponentList) {
+            return null;
+        }
 
-            // Run through supp files and add component nodes.
-            foreach($suppFiles as $suppFile) {
-                if ($suppFile->getPubId('doi')) {
+        // Create the base node
+        $componentListNode = XMLCustomWriter::createElement($doc, 'component_list');
+        $request = $this->getRequest();
 
-                    $componentNode = XMLCustomWriter::createElement($doc, 'component');
-                    XMLCustomWriter::setAttribute($componentNode, 'parent_relation', 'isPartOf');
+        // Run through supp files and add component nodes.
+        foreach ($suppFiles as $suppFile) {
+            if ($suppFile->getPubId('doi')) {
+                $componentNode = XMLCustomWriter::createElement($doc, 'component');
+                XMLCustomWriter::setAttribute($componentNode, 'parent_relation', 'isPartOf');
 
-                    /* Titles */
-                    $suppFileTitle = $suppFile->getSuppFileTitle();
-                    if (!empty($suppFileTitle)) {
-                        $titlesNode = XMLCustomWriter::createElement($doc, 'titles');
-                        XMLCustomWriter::createChildWithText($doc, $titlesNode, 'title', $suppFileTitle);
-                        XMLCustomWriter::appendChild($componentNode, $titlesNode);
-                    }
-
-                    // DOI data node
-                    $suppFileUrl = Request::url(
-                        $journal->getPath(), 'article', 'downloadSuppFile',
-                        array($article->getId(), $suppFile->getBestSuppFileId($journal))
-                    );
-                    $suppFileDoiNode = $this->_generateDOIdataDom($doc, $suppFile->getPubId('doi'), $suppFileUrl);
-                    XMLCustomWriter::appendChild($componentNode, $suppFileDoiNode);
+                /* Titles */
+                $suppFileTitle = (string) $suppFile->getSuppFileTitle();
+                if ($suppFileTitle !== '') {
+                    $titlesNode = XMLCustomWriter::createElement($doc, 'titles');
+                    XMLCustomWriter::createChildWithText($doc, $titlesNode, 'title', $suppFileTitle);
+                    XMLCustomWriter::appendChild($componentNode, $titlesNode);
                 }
 
+                // DOI data node
+                $suppFileUrl = $request->url(
+                    $journal->getPath(), 'article', 'downloadSuppFile', 
+                    [(int) $article->getId(), $suppFile->getBestSuppFileId($journal)]
+                );
+                $suppFileDoiNode = $this->_generateDOIdataDom($doc, (string) $suppFile->getPubId('doi'), $suppFileUrl);
+                XMLCustomWriter::appendChild($componentNode, $suppFileDoiNode);
                 XMLCustomWriter::appendChild($componentListNode, $componentNode);
-                unset($componentNode);
             }
         }
 
@@ -498,52 +494,59 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Generate doi_data element - this is what assigns the DOI
-     * @param $doc XMLNode
-     * @param $DOI string
-     * @param $url string
-     * @param $galleys array
+     * @param object $doc 
+     * @param string $DOI
+     * @param string $url
+     * @param array|null $galleys
+     * @return object
      */
     public function _generateDOIdataDom($doc, $DOI, $url, $galleys = null) {
         $journal = $this->getJournal();
-        $request = Application::getRequest();
+        $request = $this->getRequest();
         $DOIdataNode = XMLCustomWriter::createElement($doc, 'doi_data');
         XMLCustomWriter::createChildWithText($doc, $DOIdataNode, 'doi', $DOI);
         XMLCustomWriter::createChildWithText($doc, $DOIdataNode, 'resource', $url);
 
         /* article galleys */
-        if ($galleys) {
-            // iParadigms collection element
+        if (is_array($galleys) && !empty($galleys)) {
             foreach ($galleys as $galley) {
                 $collectionNode = XMLCustomWriter::createElement($doc, 'collection');
                 XMLCustomWriter::setAttribute($collectionNode, 'property', 'crawler-based');
                 XMLCustomWriter::appendChild($DOIdataNode, $collectionNode);
+                
                 $itemNode = XMLCustomWriter::createElement($doc, 'item');
                 XMLCustomWriter::setAttribute($itemNode, 'crawler', 'iParadigms');
                 XMLCustomWriter::appendChild($collectionNode, $itemNode);
+                
                 $resourceNode = XMLCustomWriter::createElement($doc, 'resource');
                 XMLCustomWriter::appendChild($itemNode, $resourceNode);
-                $urlNode = XMLCustomWriter::createTextNode($doc, $request->url($journal->getPath(), 'article', 'viewFile', array($galley->getArticleId(), $galley->getBestGalleyId($journal))));
+
+                $galleyUrl = $request->url($journal->getPath(), 'article', 'viewFile', [(int) $galley->getArticleId(), $galley->getBestGalleyId($journal)]);
+                $urlNode = XMLCustomWriter::createTextNode($doc, $galleyUrl);
                 XMLCustomWriter::appendChild($resourceNode, $urlNode);
             }
-            // end iParadigms
 
             // text-mining collection element
             $collectionNode = XMLCustomWriter::createElement($doc, 'collection');
             XMLCustomWriter::setAttribute($collectionNode, 'property', 'text-mining');
             XMLCustomWriter::appendChild($DOIdataNode, $collectionNode);
+            
             foreach ($galleys as $galley) {
                 $itemNode = XMLCustomWriter::createElement($doc, 'item');
                 XMLCustomWriter::appendChild($collectionNode, $itemNode);
+                
                 $resourceNode = XMLCustomWriter::createElement($doc, 'resource');
                 XMLCustomWriter::appendChild($itemNode, $resourceNode);
+                
                 $remoteGalleyURL = $galley->getRemoteURL();
-                if (!$remoteGalleyURL) {
-                    XMLCustomWriter::setAttribute($resourceNode, 'mime_type', $galley->getFileType());
+                if (empty($remoteGalleyURL)) {
+                    XMLCustomWriter::setAttribute($resourceNode, 'mime_type', (string) $galley->getFileType());
                 }
-                $urlNode = XMLCustomWriter::createTextNode($doc, $request->url($journal->getPath(), 'article', 'viewFile', array($galley->getArticleId(), $galley->getBestGalleyId($journal))));
+
+                $galleyUrl = $request->url($journal->getPath(), 'article', 'viewFile', [(int) $galley->getArticleId(), $galley->getBestGalleyId($journal)]);
+                $urlNode = XMLCustomWriter::createTextNode($doc, $galleyUrl);
                 XMLCustomWriter::appendChild($resourceNode, $urlNode);
             }
-            // end text-mining
         }
 
         return $DOIdataNode;
@@ -551,25 +554,28 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Generate author node
-     * @param $doc XMLNode
-     * @param $author Author
-     * @return XMLNode
+     * @param object $doc
+     * @param Author $author
+     * @param bool $isFirst
+     * @return object
      */
     public function _generateAuthorDom($doc, $author, $isFirst = false) {
         $authorNode = XMLCustomWriter::createElement($doc, 'person_name');
         XMLCustomWriter::setAttribute($authorNode, 'contributor_role', 'author');
-
-        /* there should only be 1 primary contact per article */
         if ($isFirst) {
             XMLCustomWriter::setAttribute($authorNode, 'sequence', 'first');
         } else {
             XMLCustomWriter::setAttribute($authorNode, 'sequence', 'additional');
         }
 
-        XMLCustomWriter::createChildWithText($doc, $authorNode, 'given_name', ucfirst($author->getFirstName()).(($author->getMiddleName())?' '.ucfirst($author->getMiddleName()):''));
-        XMLCustomWriter::createChildWithText($doc, $authorNode, 'surname', ucfirst($author->getLastName()));
-        if ($author->getData('orcid')) {
-            XMLCustomWriter::createChildWithText($doc, $authorNode, 'ORCID', $author->getData('orcid'));
+        $firstName = ucfirst((string) $author->getFirstName());
+        $middleName = $author->getMiddleName() ? ' ' . ucfirst((string) $author->getMiddleName()) : '';
+        XMLCustomWriter::createChildWithText($doc, $authorNode, 'given_name', $firstName . $middleName);
+        XMLCustomWriter::createChildWithText($doc, $authorNode, 'surname', ucfirst((string) $author->getLastName()));
+        
+        $orcid = $author->getData('orcid');
+        if (!empty($orcid)) {
+            XMLCustomWriter::createChildWithText($doc, $authorNode, 'ORCID', (string) $orcid);
         }
 
         return $authorNode;
@@ -577,20 +583,23 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Generate publisher date - order matters
-     * @param $doc XMLNode
-     * @param $pubdate string
-     * @return XMLNode
+     * @param object $doc
+     * @param string $pubdate 
+     * @return object
      */
     public function _generatePublisherDateDom($doc, $pubdate) {
         $publicationDateNode = XMLCustomWriter::createElement($doc, 'publication_date');
         XMLCustomWriter::setAttribute($publicationDateNode, 'media_type', 'online');
 
-        $parsedPubdate = strtotime($pubdate);
-        XMLCustomWriter::createChildWithText($doc, $publicationDateNode, 'month', date('m', $parsedPubdate), false);
-        XMLCustomWriter::createChildWithText($doc, $publicationDateNode, 'day', date('d', $parsedPubdate), false);
-        XMLCustomWriter::createChildWithText($doc, $publicationDateNode, 'year', date('Y', $parsedPubdate));
+        $parsedPubdate = strtotime((string) $pubdate);
+        if ($parsedPubdate !== false) {
+            XMLCustomWriter::createChildWithText($doc, $publicationDateNode, 'month', date('m', $parsedPubdate), false);
+            XMLCustomWriter::createChildWithText($doc, $publicationDateNode, 'day', date('d', $parsedPubdate), false);
+            XMLCustomWriter::createChildWithText($doc, $publicationDateNode, 'year', date('Y', $parsedPubdate));
+        }
 
         return $publicationDateNode;
     }
+    
 }
 ?>

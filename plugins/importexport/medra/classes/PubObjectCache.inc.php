@@ -37,7 +37,7 @@ class PubObjectCache {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -93,7 +93,6 @@ class PubObjectCache {
      * @param string $cacheId
      * @param int $id1
      * @param int|null $id2
-     *
      * @return mixed
      */
     public function get(string $cacheId, int $id1, ?int $id2 = null) {
@@ -162,6 +161,6 @@ class PubObjectCache {
             $this->_objectCache[$cacheId][$id1][$id2] = $object;
         }
     }
-}
 
+}
 ?>

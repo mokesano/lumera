@@ -7,8 +7,7 @@ declare(strict_types=1);
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance & DDD
+ * 
  * @class LoAHandler
  * @ingroup pages_document
  *
@@ -49,15 +48,16 @@ class LoAHandler extends Handler {
 
     /**
      * Memuat dependensi antarmuka dan Locale
+     * @param \PKPRequest|null $request
      */
     public function setupTemplate($request = null): void {
         parent::setupTemplate($request);
         AppLocale::requireComponents(
-            array(
+            [
                 LOCALE_COMPONENT_CORE_COMMON, 
                 LOCALE_COMPONENT_CORE_USER, 
                 LOCALE_COMPONENT_APPLICATION_COMMON
-            )
+            ]
         );
     }
 
@@ -65,7 +65,7 @@ class LoAHandler extends Handler {
      * SMART ROUTER: Menampilkan Web View (HTML) atau Mengunduh PDF dari LoA Privat.
      * Rute HTML: /document/loa/[hash]-[submissionId]
      * Rute PDF:  /document/loa/pdf-[hash]-[submissionId]
-     * @param array $args Argumen URL berformat hash
+     * @param array $args
      * @param Request|null $request
      */
     public function index(array $args = [], $request = null): void {
@@ -98,6 +98,7 @@ class LoAHandler extends Handler {
         }
 
         // 3. [Catatan Keamanan Terealisasi] Validasi Kepemilikan (Ownership Check)
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $articleDao->getArticle($submissionId);
         
@@ -110,7 +111,7 @@ class LoAHandler extends Handler {
 
         if ($loaData['status'] === 'PENDING_PAYMENT') {
             // [UX Fix] Arahkan ke dasbor tagihan aktif dengan notifikasi ramah
-            $this->_redirectWithError($request, 'billing.loa.pendingPaymentAlert', 'index');
+            $this->_redirectWithError($request, 'billing.loa.pendingPaymentAlert');
         }
 
         if ($loaData['status'] === 'NOT_FOUND') {
@@ -155,6 +156,8 @@ class LoAHandler extends Handler {
 
     /**
      * HELPER: Mengalihkan pengguna kembali dengan Notifikasi Error.
+     * @param Request $request
+     * @param string $localeKey
      */
     private function _redirectWithError($request, string $localeKey): void {
         import('classes.notification.NotificationManager');
@@ -173,5 +176,6 @@ class LoAHandler extends Handler {
         $request->redirect(null, 'user', 'index');
         exit;
     }
+
 }
 ?>
