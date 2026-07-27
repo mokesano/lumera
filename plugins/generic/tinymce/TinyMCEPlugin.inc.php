@@ -11,11 +11,8 @@ declare(strict_types=1);
  * @class TinyMCEPlugin
  * @ingroup plugins_generic_tinymce
  *
- * @brief TinyMCE WYSIWYG plugin for textareas - to allow cross-browser HTML editing
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief TinyMCE WYSIWYG plugin for textareas - to allow cross-browser HTML editing.
  */
-
 
 import('lib.pkp.classes.plugins.GenericPlugin');
 
@@ -26,21 +23,24 @@ define('TINYMCE_JS_PATH', TINYMCE_INSTALL_PATH . '/jscripts/tiny_mce');
 class TinyMCEPlugin extends GenericPlugin {
     
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function TinyMCEPlugin() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::TinyMCEPlugin(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -48,7 +48,7 @@ class TinyMCEPlugin extends GenericPlugin {
      * runs under both Journal and Site contexts.
      * @param string $category
      * @param string $path
-     * @return boolean
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         if (parent::register($category, $path)) {
@@ -61,18 +61,16 @@ class TinyMCEPlugin extends GenericPlugin {
     }
 
     /**
-     * Get the name of the settings file to be installed on new journal
-     * creation.
-     * @return string
+     * Get the name of the settings file to be installed on new journal creation.
+     * @return string|null
      */
     public function getContextSpecificPluginSettingsFile(): ?string {
         return $this->getPluginPath() . '/settings.xml';
     }
 
     /**
-     * Get the name of the settings file to be installed site-wide when
-     * OJS is installed.
-     * @return string
+     * Get the name of the settings file to be installed site-wide when OJS is installed.
+     * @return string|null
      */
     public function getInstallSitePluginSettingsFile(): ?string {
         return $this->getPluginPath() . '/settings.xml';
@@ -81,16 +79,16 @@ class TinyMCEPlugin extends GenericPlugin {
     /**
      * Given a $page and $op, return a list of field names for which
      * the plugin should be used.
-     * @param object $templateMgr
-     * @param string $page The requested page
-     * @param string $op The requested operation
+     * @param TemplateManager $templateMgr
+     * @param string $page
+     * @param string $op
      * @return array
      */
     public function getEnableFields($templateMgr, $page, $op) {
-        $formLocale = $templateMgr->get_template_vars('formLocale');
+        $formLocale = (string) $templateMgr->get_template_vars('formLocale');
         $fields = [];
+        
         switch ("$page/$op") {
-            // Daftarkan 'op' baru kita dan 'id' textarea kita
             case 'admin/aboutSite':
             case 'admin/saveAboutSite':
                 $fields[] = 'publisherMission';
@@ -98,42 +96,50 @@ class TinyMCEPlugin extends GenericPlugin {
                 $fields[] = 'publisherLeaderships';
                 $fields[] = 'publisherAwards';
                 break;
-            // ### AKHIR MODIFIKASI ###
+                
             case 'admin/settings':
             case 'admin/saveSettings':
                 $fields[] = 'intro';
                 $fields[] = 'aboutField';
                 break;
+                
             case 'admin/createJournal':
             case 'admin/updateJournal':
             case 'admin/editJournal':
                 $fields[] = 'description';
                 break;
+                
             case 'author/submit':
             case 'author/saveSubmit':
-                $args = Request::getRequestedArgs();
-                switch (array_shift($args)) {
-                    case 1: $fields[] = 'commentsToEditor'; break;
-                    case 3:
-                        $authors = $templateMgr->get_template_vars('authors');
-                        $count = max(1, is_array($authors) ? count($authors) : 0);
-                        for ($i=0; $i<$count; $i++) {
-                            $fields[] = "authors-$i-biography";
-                            $fields[] = "authors-$i-competingInterests";
-                        }
-                        $fields[] = 'abstract';
-                        break;
+                $request = Application::get()->getRequest();
+                $routerArgs = $request->getRequestedArgs();
+                $step = array_shift($routerArgs);
+                
+                if ($step === '1') {
+                    $fields[] = 'commentsToEditor';
+                } elseif ($step === '3') {
+                    $authors = $templateMgr->get_template_vars('authors');
+                    $count = max(1, is_array($authors) ? count($authors) : 0);
+                    for ($i = 0; $i < $count; $i++) {
+                        $fields[] = "authors-$i-biography";
+                        $fields[] = "authors-$i-competingInterests";
+                    }
+                    $fields[] = 'abstract';
                 }
                 break;
+                
             case 'author/submitSuppFile':
             case 'author/saveSubmitSuppFile':
-                $fields[] = 'description'; break;
+                $fields[] = 'description';
+                break;
+                
             case 'editor/createIssue':
             case 'editor/issueData':
             case 'editor/editIssue':
                 $fields[] = 'description';
                 $fields[] = 'coverPageDescription';
                 break;
+                
             case 'author/viewCopyeditComments':
             case 'author/postCopyeditComment':
             case 'author/viewLayoutComments':
@@ -182,22 +188,25 @@ class TinyMCEPlugin extends GenericPlugin {
             case 'layoutEditor/saveComment':
                 $fields[] = 'comments';
                 break;
+                
             case 'manager/createAnnouncement':
             case 'manager/editAnnouncement':
             case 'manager/updateAnnouncement':
                 $fields[] = 'descriptionShort';
                 $fields[] = 'description';
                 break;
+                
             case 'manager/importexport':
                 $authors = $templateMgr->get_template_vars('authors');
-                $authorsCount = (is_array($authors) ? count($authors) : 0);
+                $authorsCount = is_array($authors) ? count($authors) : 0;
                 $count = max(1, $authorsCount);
-                for ($i=0; $i<$count; $i++) {
+                for ($i = 0; $i < $count; $i++) {
                     $fields[] = "authors-$i-biography";
                     $fields[] = "authors-$i-competingInterests";
                 }
                 $fields[] = 'abstract';
                 break;
+                
             case 'manager/payments':
                 $fields[] = 'submissionFeeDescription';
                 $fields[] = 'fastTrackFeeDescription';
@@ -208,9 +217,11 @@ class TinyMCEPlugin extends GenericPlugin {
                 $fields[] = 'membershipFeeDescription';
                 $fields[] = 'donationFeeDescription';
                 break;
+                
             case 'user/profile':
             case 'user/register':
             case 'user/saveProfile':
+            case 'user/update-profile':
             case 'subscriptionManager/createUser':
             case 'subscriptionManager/updateUser':
             case 'manager/createUser':
@@ -219,77 +230,81 @@ class TinyMCEPlugin extends GenericPlugin {
                 $fields[] = 'mailingAddress';
                 $fields[] = 'biography';
                 break;
+                
             case 'manager/editReviewForm':
             case 'manager/updateReviewForm':
             case 'manager/createReviewForm':
                 $fields[] = 'description';
                 break;
+                
             case 'manager/editReviewFormElement':
             case 'manager/updateReviewFormElement':
             case 'manager/createReviewFormElement':
                 $fields[] = 'question';
                 break;
+                
             case 'manager/editSection':
             case 'manager/updateSection':
             case 'manager/createSection':
                 $fields[] = 'policy';
                 break;
+                
             case 'manager/setup':
             case 'manager/saveSetup':
-                $args = Request::getRequestedArgs();
-                switch (array_shift($args)) {
-                    case 1:
-                        $fields[] = 'mailingAddress';
-                        $fields[] = 'contactMailingAddress';
-                        $fields[] = 'publisherNote';
-                        $fields[] = 'sponsorNote';
-                        $fields[] = 'contributorNote';
-                        $fields[] = 'history';
-                        break;
-                    case 2:
-                        $fields[] = 'focusScopeDesc';
-                        $fields[] = 'reviewPolicy';
-                        $fields[] = 'reviewGuidelines';
-                        $fields[] = 'privacyStatement';
-                        $customAboutItems = $templateMgr->get_template_vars('customAboutItems');
-                        $count = max(1, isset($customAboutItems[$formLocale]) && is_array($customAboutItems[$formLocale]) ? count($customAboutItems[$formLocale]) : 0);
-                        for ($i=0; $i<$count; $i++) {
-                            // 1 extra in case of new field
-                            $fields[] = "customAboutItems-$i-content";
-                        }
-                        $fields[] = 'lockssLicense';
-                        break;
-                    case 3:
-                        $fields[] = 'authorGuidelines';
-                        $submissionChecklist = $templateMgr->get_template_vars('submissionChecklist');
-                        $count = max(1, isset($submissionChecklist[$formLocale]) && is_array($submissionChecklist[$formLocale]) ? count($submissionChecklist[$formLocale]) : 0);
-                        for ($i=0; $i<$count; $i++) {
-                            $fields[] = "submissionChecklist-$i";
-                        }
-                        $fields[] = 'copyrightNotice';
-                        $fields[] = 'competingInterestGuidelines';
-                        break;
-                    case 4:
-                        $fields[] = 'openAccessPolicy';
-                        $fields[] = 'pubFreqPolicy';
-                        $fields[] = 'announcementsIntroduction';
-                        $fields[] = 'copyeditInstructions';
-                        $fields[] = 'layoutInstructions';
-                        $fields[] = 'refLinkInstructions';
-                        $fields[] = 'proofInstructions';
-                        break;
-                    case 5:
-                        $fields[] = 'description';
-                        $fields[] = 'additionalHomeContent';
-                        $fields[] = 'journalPageHeader';
-                        $fields[] = 'journalPageFooter';
-                        $fields[] = 'readerInformation';
-                        $fields[] = 'librarianInformation';
-                        $fields[] = 'authorInformation';
-                        break;
+                $request = Application::get()->getRequest();
+                $routerArgs = $request->getRequestedArgs(); // DEPRECATED
+                $step = array_shift($routerArgs);
+                
+                if ($step === '1') {
+                    $fields[] = 'mailingAddress';
+                    $fields[] = 'contactMailingAddress';
+                    $fields[] = 'publisherNote';
+                    $fields[] = 'sponsorNote';
+                    $fields[] = 'contributorNote';
+                    $fields[] = 'history';
+                } elseif ($step === '2') {
+                    $fields[] = 'focusScopeDesc';
+                    $fields[] = 'reviewPolicy';
+                    $fields[] = 'reviewGuidelines';
+                    $fields[] = 'privacyStatement';
+                    $customAboutItems = $templateMgr->get_template_vars('customAboutItems');
+                    $count = max(1, isset($customAboutItems[$formLocale]) && is_array($customAboutItems[$formLocale]) ? count($customAboutItems[$formLocale]) : 0);
+                    for ($i = 0; $i < $count; $i++) {
+                        $fields[] = "customAboutItems-$i-content";
+                    }
+                    $fields[] = 'lockssLicense';
+                } elseif ($step === '3') {
+                    $fields[] = 'authorGuidelines';
+                    $submissionChecklist = $templateMgr->get_template_vars('submissionChecklist');
+                    $count = max(1, isset($submissionChecklist[$formLocale]) && is_array($submissionChecklist[$formLocale]) ? count($submissionChecklist[$formLocale]) : 0);
+                    for ($i = 0; $i < $count; $i++) {
+                        $fields[] = "submissionChecklist-$i";
+                    }
+                    $fields[] = 'copyrightNotice';
+                    $fields[] = 'competingInterestGuidelines';
+                } elseif ($step === '4') {
+                    $fields[] = 'openAccessPolicy';
+                    $fields[] = 'pubFreqPolicy';
+                    $fields[] = 'announcementsIntroduction';
+                    $fields[] = 'copyeditInstructions';
+                    $fields[] = 'layoutInstructions';
+                    $fields[] = 'refLinkInstructions';
+                    $fields[] = 'proofInstructions';
+                } elseif ($step === '5') {
+                    $fields[] = 'description';
+                    $fields[] = 'additionalHomeContent';
+                    $fields[] = 'journalPageHeader';
+                    $fields[] = 'journalPageFooter';
+                    $fields[] = 'readerInformation';
+                    $fields[] = 'librarianInformation';
+                    $fields[] = 'authorInformation';
                 }
                 break;
-            case 'reviewer/submission': $fields[] = 'competingInterests'; break;
+                
+            case 'reviewer/submission':
+                $fields[] = 'competingInterests';
+                break;
+                
             case 'reviewer/viewPeerReviewComments':
             case 'reviewer/postPeerReviewComment':
             case 'editor/viewPeerReviewComments':
@@ -301,6 +316,7 @@ class TinyMCEPlugin extends GenericPlugin {
                 $fields[] = 'authorComments';
                 $fields[] = 'comments';
                 break;
+                
             case 'rtadmin/editContext':
             case 'rtadmin/editSearch':
             case 'rtadmin/editVersion':
@@ -309,15 +325,18 @@ class TinyMCEPlugin extends GenericPlugin {
             case 'rtadmin/createVersion':
                 $fields[] = 'description';
                 break;
+                
             case 'editor/createReviewer':
             case 'sectionEditor/createReviewer':
                 $fields[] = 'mailingAddress';
                 $fields[] = 'biography';
                 break;
+                
             case 'editor/submissionNotes':
             case 'sectionEditor/submissionNotes':
                 $fields[] = 'note';
                 break;
+                
             case 'author/viewMetadata':
             case 'sectionEditor/viewMetadata':
             case 'editor/viewMetadata':
@@ -328,18 +347,20 @@ class TinyMCEPlugin extends GenericPlugin {
             case 'copyeditor/saveMetadata':
                 $authors = $templateMgr->get_template_vars('authors');
                 $count = max(1, is_array($authors) ? count($authors) : 0);
-                for ($i=0; $i<$count; $i++) {
+                for ($i = 0; $i < $count; $i++) {
                     $fields[] = "authors-$i-biography";
                     $fields[] = "authors-$i-competingInterests";
                 }
                 $fields[] = 'abstract';
                 break;
+                
             case 'sectionEditor/editSuppFile':
             case 'editor/editSuppFile':
             case 'sectionEditor/saveSuppFile':
             case 'editor/saveSuppFile':
                 $fields[] = 'description';
                 break;
+                
             case 'subscriptionManager/editSubscription':
             case 'subscriptionManager/createSubscription':
             case 'subscriptionManager/updateSubscription':
@@ -348,6 +369,7 @@ class TinyMCEPlugin extends GenericPlugin {
             case 'manager/updateSubscription':
                 $fields[] = 'notes';
                 break;
+                
             case 'manager/subscriptionPolicies':
             case 'manager/saveSubscriptionPolicies':
             case 'subscriptionManager/subscriptionPolicies':
@@ -357,62 +379,77 @@ class TinyMCEPlugin extends GenericPlugin {
                 $fields[] = 'delayedOpenAccessPolicy';
                 $fields[] = 'authorSelfArchivePolicy';
                 break;
+                
             case 'manager/editSubscriptionType':
             case 'manager/createSubscriptionType':
             case 'manager/updateSubscriptionType':
                 $fields[] = 'description';
                 break;
-            case 'comment/add': $fields[] = 'commentBody'; break;
+                
+            case 'comment/add':
+                $fields[] = 'commentBody';
+                break;
         }
+        
         HookRegistry::dispatch('TinyMCEPlugin::getEnableFields', [&$this, &$fields]);
         return $fields;
     }
 
     /**
-     * Hook callback function for TemplateManager::display
+     * Hook callback function for TemplateManager::display.
      * @param string $hookName
      * @param array $args
-     * @return boolean
+     * @return bool
      */
     public function callback($hookName, $args) {
-        // Only pages requests interest us here
-        $request = Registry::get('request');
-        if (!($request->getRouter() instanceof PKPPageRouter)) return null;
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
+        $router = $request->getRouter();
+        
+        // Only page requests interest us here
+        if (!($router instanceof PKPPageRouter)) {
+            return false;
+        }
 
         $templateManager = $args[0];
 
-        $page = Request::getRequestedPage();
-        $op = Request::getRequestedOp();
+        /** @var PKPPageRouter $router */
+        $page = $router->getRequestedPage($request);
+        $op = $router->getRequestedOp($request);
+        
         $enableFields = $this->getEnableFields($templateManager, $page, $op);
 
         if (!empty($enableFields)) {
-            $baseUrl = $templateManager->get_template_vars('baseUrl');
-            $additionalHeadData = $templateManager->get_template_vars('additionalHeadData');
-            $enableFields = join(',', $enableFields);
+            $baseUrl = (string) $templateManager->get_template_vars('baseUrl');
+            $additionalHeadData = (string) $templateManager->get_template_vars('additionalHeadData');
+            $enableFieldsStr = implode(',', $enableFields);
+            
             $allLocales = AppLocale::getAllLocales();
             $localeList = [];
             foreach ($allLocales as $key => $locale) {
                 $localeList[] = PKPString::substr($key, 0, 2);
             }
 
+            $isLoggedIn = Validation::isLoggedIn() ? 'jbimages,' : '';
+            
             $tinymceScript = '
-            <script language="javascript" type="text/javascript" src="'.$baseUrl.'/'.TINYMCE_JS_PATH.'/tiny_mce_gzip.js"></script>
-            <script language="javascript" type="text/javascript">
+            <script type="text/javascript" src="'.$baseUrl.'/'.TINYMCE_JS_PATH.'/tiny_mce_gzip.js"></script>
+            <script type="text/javascript">
                 tinyMCE_GZ.init({
-                    relative_urls : "false",
-                    plugins : "paste,'.(Validation::isLoggedIn() ? 'jbimages,' : '').'fullscreen",
+                    relative_urls : false,
+                    plugins : "paste,' . $isLoggedIn . 'fullscreen",
                     themes : "advanced",
-                    languages : "' . join(',', $localeList) . '",
+                    languages : "' . implode(',', $localeList) . '",
                     disk_cache : true
                 });
             </script>
-            <script language="javascript" type="text/javascript">
+            <script type="text/javascript">
                 tinyMCE.init({
                     entity_encoding : "raw",
-                    plugins : "paste,'.(Validation::isLoggedIn() ? 'jbimages,' : '').'fullscreen",
+                    plugins : "paste,' . $isLoggedIn . 'fullscreen",
                     mode : "exact",
                     language : "' . PKPString::substr(AppLocale::getLocale(), 0, 2) . '",
-                    elements : "' . $enableFields . '",
+                    elements : "' . $enableFieldsStr . '",
                     relative_urls : false,
                     forced_root_block : false,
                     paste_auto_cleanup_on_paste : true,
@@ -424,13 +461,13 @@ class TinyMCEPlugin extends GenericPlugin {
                 });
             </script>';
 
-            $templateManager->assign('additionalHeadData', $additionalHeadData."\n".$tinymceScript);
+            $templateManager->assign('additionalHeadData', $additionalHeadData . "\n" . $tinymceScript);
         }
         return false;
     }
 
     /**
-     * Get the display name of this plugin
+     * Get the display name of this plugin.
      * @return string
      */
     public function getDisplayName(): string {
@@ -438,35 +475,39 @@ class TinyMCEPlugin extends GenericPlugin {
     }
 
     /**
-     * Get the description of this plugin
+     * Get the description of this plugin.
      * @return string
      */
     public function getDescription(): string {
-        if ($this->isMCEInstalled()) return __('plugins.generic.tinymce.description');
+        if ($this->isMCEInstalled()) {
+            return __('plugins.generic.tinymce.description');
+        }
         return __('plugins.generic.tinymce.descriptionDisabled', ['tinyMcePath' => TINYMCE_INSTALL_PATH]);
     }
 
     /**
-     * Check whether or not the TinyMCE library is installed
-     * @return boolean
+     * Check whether or not the TinyMCE library is installed.
+     * @return bool
      */
-    public function isMCEInstalled() {
-        return file_exists(str_replace('/', DIRECTORY_SEPARATOR, TINYMCE_JS_PATH) . DIRECTORY_SEPARATOR. 'tiny_mce.js');
+    public function isMCEInstalled(): bool {
+        return file_exists(str_replace('/', DIRECTORY_SEPARATOR, TINYMCE_JS_PATH) . DIRECTORY_SEPARATOR . 'tiny_mce.js');
     }
 
     /**
-     * Get a list of available management verbs for this plugin
+     * Get a list of available management verbs for this plugin.
+     * @param array $verbs
+     * @param mixed $request
      * @return array
      */
-   public function getManagementVerbs(array $verbs = [], $request = null): array { 
+    public function getManagementVerbs(array $verbs = [], $request = null): array { 
+        $verbs = []; 
         
-       $verbs = []; // Logika plugin ini 'mengganti'
-       
-       if ($this->isMCEInstalled()) {
-           $verbs = parent::getManagementVerbs($verbs, $request); 
-       }
-       
-       return $verbs;
-   }
+        if ($this->isMCEInstalled()) {
+            $verbs = parent::getManagementVerbs($verbs, $request); 
+        }
+        
+        return $verbs;
+    }
+
 }
 ?>

@@ -14,7 +14,7 @@ declare(strict_types=1);
  * @brief mEDRA Onix for DOI (O4DOI) export/registration plugin.
  */
 
-if (!class_exists('DOIExportPlugin')) { // Bug #7848
+if (!class_exists('DOIExportPlugin')) {
     import('plugins.importexport.medra.classes.DOIExportPlugin');
 }
 
@@ -44,7 +44,7 @@ class MedraExportPlugin extends DOIExportPlugin {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -78,7 +78,6 @@ class MedraExportPlugin extends DOIExportPlugin {
         return __('plugins.importexport.medra.description');
     }
 
-
     //
     // Implement template methods from DOIExportPlugin
     //
@@ -103,26 +102,32 @@ class MedraExportPlugin extends DOIExportPlugin {
     /**
      * Generate export files for the given objects.
      * @see DOIExportPlugin::generateExportFiles()
-     * @param object $request
+     * @param PKPRequest $request
      * @param mixed $exportType
      * @param array $objects
      * @param string $targetPath
-     * @param object $journal
+     * @param Journal $journal
      * @param array|null $errors
      * @return array|false
      */
     public function generateExportFiles($request, $exportType, $objects, $targetPath, $journal, &$errors) {
-        assert(count($objects) >= 1);
+        if (empty($objects)) {
+            return false;
+        }
 
         // Identify the O4DOI schema to export.
-        $exportIssuesAs = $this->getSetting($journal->getId(), 'exportIssuesAs');
+        $exportIssuesAs = $this->getSetting((int) $journal->getId(), 'exportIssuesAs');
         $schema = $this->_identifyO4DOISchema($exportType, $journal, $exportIssuesAs);
-        assert(!is_null($schema));
+        
+        if ($schema === null) {
+            return false;
+        }
 
         // Create the XML DOM and document.
         $this->import('classes.O4DOIExportDom');
         $dom = new O4DOIExportDom($request, $this, $schema, $journal, $this->getCache(), $exportIssuesAs);
         $doc = $dom->generate($objects);
+        
         if ($doc === false) {
             $errors = $dom->getErrors();
             return false;
@@ -132,48 +137,48 @@ class MedraExportPlugin extends DOIExportPlugin {
         $exportFileName = $this->getTargetFileName($targetPath, $exportType);
         file_put_contents($exportFileName, XMLCustomWriter::getXML($doc));
         
-        // Remove reference (&) in array value as objects are passed by reference by default
-        $generatedFiles = [$exportFileName => $objects];
-        return $generatedFiles;
+        return [$exportFileName => $objects];
     }
 
     /**
      * Register DOIs with the DOI registration agency.
      * @see DOIExportPlugin::registerDoi()
-     * @param object $request
-     * @param object $journal
+     * @param PKPRequest $request
+     * @param Journal $journal
      * @param array $objects
      * @param string $file
      * @return bool|array
      */
     public function registerDoi($request, $journal, $objects, $file) {
-        // Use a different endpoint for testing and
-        // production.
+        // Use a different endpoint for testing and production.
         $this->import('classes.MedraWebservice');
-        $endpoint = ($this->isTestMode($request) ? MEDRA_WS_ENDPOINT_DEV : MEDRA_WS_ENDPOINT);
+        $endpoint = $this->isTestMode($request) ? MEDRA_WS_ENDPOINT_DEV : MEDRA_WS_ENDPOINT;
 
         // Get credentials.
-        $username = $this->getSetting($journal->getId(), 'username');
-        $password = $this->getSetting($journal->getId(), 'password');
+        $username = $this->getSetting((int) $journal->getId(), 'username');
+        $password = $this->getSetting((int) $journal->getId(), 'password');
 
         // Retrieve the XML.
-        assert(is_readable($file));
+        if (!is_readable($file)) {
+            return [['plugins.importexport.common.register.error.mdsError', 'File not readable']];
+        }
+        
         $xml = file_get_contents($file);
-        assert($xml !== false && !empty($xml));
+        if ($xml === false || empty($xml)) {
+            return [['plugins.importexport.common.register.error.mdsError', 'Empty XML file']];
+        }
 
         // Instantiate the mEDRA web service wrapper.
-        $ws = new MedraWebservice($endpoint, $username, $password);
+        $ws = new MedraWebservice($endpoint, (string) $username, (string) $password);
 
         // Register the XML with mEDRA.
         $result = $ws->upload($xml);
 
         if ($result === true) {
-            // Mark all objects as registered.
-            foreach($objects as $object) {
+            foreach ($objects as $object) {
                 $this->markRegistered($request, $object, MEDRA_WS_TESTPREFIX);
             }
         } else {
-            // Handle errors.
             if (is_string($result)) {
                 $result = [
                     ['plugins.importexport.common.register.error.mdsError', $result]
@@ -204,19 +209,18 @@ class MedraExportPlugin extends DOIExportPlugin {
     //
     /**
      * Determine the O4DOI export schema.
-     *
-     * @param int $exportType One of the DOI_EXPORT_* constants.
-     * @param object $journal Journal
-     * @param int|null $exportIssuesAs Whether issues are exported as work
-     * or as manifestation. One of the O4DOI_* schema constants.
-     *
-     * @return int|null One of the O4DOI_* schema constants.
+     * @param int $exportType
+     * @param Journal $journal
+     * @param int|null $exportIssuesAs
+     * @return int|null
      */
     private function _identifyO4DOISchema($exportType, $journal, $exportIssuesAs) {
         switch ($exportType) {
             case DOI_EXPORT_ISSUES:
-                assert($exportIssuesAs == O4DOI_ISSUE_AS_WORK || $exportIssuesAs == O4DOI_ISSUE_AS_MANIFESTATION);
-                return (int) $exportIssuesAs;
+                if ($exportIssuesAs === O4DOI_ISSUE_AS_WORK || $exportIssuesAs === O4DOI_ISSUE_AS_MANIFESTATION) {
+                    return (int) $exportIssuesAs;
+                }
+                return null;
 
             case DOI_EXPORT_ARTICLES:
                 return O4DOI_ARTICLE_AS_WORK;
@@ -227,6 +231,6 @@ class MedraExportPlugin extends DOIExportPlugin {
 
         return null;
     }
+    
 }
-
 ?>

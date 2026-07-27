@@ -42,7 +42,7 @@ class SwordPlugin extends GenericPlugin {
             trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::SwordPlugin(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -55,9 +55,9 @@ class SwordPlugin extends GenericPlugin {
 
     /**
      * Determine whether or not this plugin is supported.
-     * @return boolean
+     * @return bool
      */
-    public function getSupported() {
+    public function getSupported(): bool {
         return class_exists('ZipArchive');
     }
 
@@ -66,15 +66,14 @@ class SwordPlugin extends GenericPlugin {
      * @return string
      */
     public function getDescription(): string {
-        if ($this->getSupported()) return __('plugins.generic.sword.description');
-        return __('plugins.generic.sword.descriptionUnsupported');
+        return $this->getSupported() ? __('plugins.generic.sword.description') : __('plugins.generic.sword.descriptionUnsupported');
     }
 
     /**
      * Register the plugin
      * @param string $category
      * @param string $path
-     * @return boolean
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         if (parent::register($category, $path)) {
@@ -91,12 +90,15 @@ class SwordPlugin extends GenericPlugin {
 
     /**
      * Check whether or not this plugin is enabled
-     * @param PKPRequest $request
-     * @return boolean
+     * @param PKPRequest|null $request
+     * @return bool
      */
     public function getEnabled($request = null): bool {
-        $journal = Request::getJournal();
-        $journalId = $journal ? $journal->getId() : 0;
+        // [WIZDAM FIX] Avoid deprecated static Request:: call
+        $req = $request ?? Application::get()->getRequest();
+        $journal = $req->getJournal();
+        $journalId = $journal ? (int) $journal->getId() : 0;
+
         return (bool) $this->getSetting($journalId, 'enabled');
     }
 
@@ -106,23 +108,17 @@ class SwordPlugin extends GenericPlugin {
      * have layout tasks performed on it.
      * @param string $hookName
      * @param array $args
+     * @return bool
      */
     public function callbackLoadCategory($hookName, $args) {
         $category = $args[0];
-        $plugins = $args[1];
 
-        switch ($category) {
-            case 'importexport':
-                $this->import('SwordImportExportPlugin');
-                $plugin = new SwordImportExportPlugin();
-                
-                // [FIX] Set nama parent TERLEBIH DAHULU sebelum memanggil getPluginPath()
-                $plugin->parentPluginName = $this->getName(); 
-                
-                // [FIX] Baru kemudian panggil getPluginPath()
-                $args[1][$plugin->getSeq()][$plugin->getPluginPath()] = $plugin;
-                
-                return true;
+        if ($category === 'importexport') {
+            $this->import('SwordImportExportPlugin');
+            $plugin = new SwordImportExportPlugin();
+            $plugin->parentPluginName = $this->getName();
+            $args[1][$plugin->getSeq()][$plugin->getPluginPath()] = $plugin;
+            return true;
         }
         return false;
     }
@@ -148,6 +144,7 @@ class SwordPlugin extends GenericPlugin {
      * deposits and notify the author of optional deposits.
      * @param string $hookName
      * @param array $args
+     * @return bool
      */
     public function callbackAuthorDeposits($hookName, $args) {
         $sectionEditorSubmission = $args[0];
@@ -155,27 +152,47 @@ class SwordPlugin extends GenericPlugin {
 
         // Determine if the most recent decision was an "Accept"
         $decisions = $sectionEditorSubmission->getDecisions();
-        $decisions = array_pop($decisions); // Rounds
-        $decision = array_pop($decisions);
-        $decisionConst = $decision ? $decision['decision'] : null;
-        if ($decisionConst != SUBMISSION_EDITOR_DECISION_ACCEPT) return false;
+        if (empty($decisions)) {
+            return false;
+        }
+        
+        $lastRound = array_pop($decisions);
+        if (empty($lastRound)) {
+            return false;
+        }
+        
+        $decision = array_pop($lastRound);
+        $decisionConst = $decision['decision'] ?? null;
+        
+        if ($decisionConst !== SUBMISSION_EDITOR_DECISION_ACCEPT) {
+            return false;
+        }
 
         // The most recent decision was an "Accept"; perform auto deposits.
-        $journal = Request::getJournal();
-        $depositPoints = $this->getSetting($journal->getId(), 'depositPoints');
-        import('classes.sword.OJSSwordDeposit');
+        $journal = $request->getJournal();
+        if (!$journal) {
+            return false;
+        }
 
+        $journalId = (int) $journal->getId();
+        $depositPoints = $this->getSetting($journalId, 'depositPoints');
+        
+        import('classes.sword.OJSSwordDeposit');
         import('classes.notification.NotificationManager');
         $notificationManager = new NotificationManager();
 
-        $sendDepositNotification = $this->getSetting($journal->getId(), 'allowAuthorSpecify') ? true : false;
+        $sendDepositNotification = (bool) $this->getSetting($journalId, 'allowAuthorSpecify');
         
         if (is_array($depositPoints)) {
             foreach ($depositPoints as $depositPoint) {
-                $depositType = $depositPoint['type'];
+                $depositType = (int) ($depositPoint['type'] ?? 0);
 
-                if ($depositType == SWORD_DEPOSIT_TYPE_OPTIONAL_SELECTION || $depositType == SWORD_DEPOSIT_TYPE_OPTIONAL_FIXED) $sendDepositNotification = true;
-                if ($depositType != SWORD_DEPOSIT_TYPE_AUTOMATIC) continue;
+                if ($depositType === SWORD_DEPOSIT_TYPE_OPTIONAL_SELECTION || $depositType === SWORD_DEPOSIT_TYPE_OPTIONAL_FIXED) {
+                    $sendDepositNotification = true;
+                }
+                if ($depositType !== SWORD_DEPOSIT_TYPE_AUTOMATIC) {
+                    continue;
+                }
 
                 // For each automatic deposit point, perform a deposit.
                 $deposit = new OJSSwordDeposit($sectionEditorSubmission);
@@ -183,25 +200,38 @@ class SwordPlugin extends GenericPlugin {
                 $deposit->addEditorial();
                 $deposit->createPackage();
                 $deposit->deposit(
-                    $depositPoint['url'],
-                    $depositPoint['username'],
-                    $depositPoint['password']
+                    (string) ($depositPoint['url'] ?? ''),
+                    (string) ($depositPoint['username'] ?? ''),
+                    (string) ($depositPoint['password'] ?? '')
                 );
                 $deposit->cleanup();
                 unset($deposit);
 
                 $user = $request->getUser();
-                $params = ['itemTitle' => $sectionEditorSubmission->getLocalizedTitle(), 'repositoryName' => $depositPoint['name']];
-                $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_SWORD_AUTO_DEPOSIT_COMPLETE, $params);
+                if ($user) {
+                    $params = [
+                        'itemTitle' => $sectionEditorSubmission->getLocalizedTitle(),
+                        'repositoryName' => (string) ($depositPoint['name'] ?? '')
+                    ];
+                    $notificationManager->createTrivialNotification(
+                        (int) $user->getId(), 
+                        NOTIFICATION_TYPE_SWORD_AUTO_DEPOSIT_COMPLETE, 
+                        $params
+                    );
+                }
             }
         }
 
         if ($sendDepositNotification) {
             $submittingUser = $sectionEditorSubmission->getUser();
+            if (!$submittingUser) {
+                return false;
+            }
 
             import('classes.mail.ArticleMailTemplate');
-            $contactName = $journal->getSetting('contactName');
-            $contactEmail = $journal->getSetting('contactEmail');
+            $contactName = (string) $journal->getSetting('contactName');
+            $contactEmail = (string) $journal->getSetting('contactEmail');
+            
             $mail = new ArticleMailTemplate($sectionEditorSubmission, 'SWORD_DEPOSIT_NOTIFICATION', null, null, $journal, true, true);
             $mail->setFrom($contactEmail, $contactName);
             $mail->addRecipient($submittingUser->getEmail(), $submittingUser->getFullName());
@@ -209,8 +239,8 @@ class SwordPlugin extends GenericPlugin {
             $mail->assignParams([
                 'journalName' => $journal->getLocalizedTitle(),
                 'articleTitle' => $sectionEditorSubmission->getLocalizedTitle(),
-                'swordDepositUrl' => Request::url(
-                    null, 'sword', 'index', $sectionEditorSubmission->getId()
+                'swordDepositUrl' => $request->url(
+                    null, 'sword', 'index', [(int) $sectionEditorSubmission->getId()]
                 )
             ]);
 
@@ -224,13 +254,16 @@ class SwordPlugin extends GenericPlugin {
      * Hook registry function to provide notification messages for SWORD notifications
      * @param string $hookName
      * @param array $args
+     * @return bool
      */
     public function callbackNotificationContents($hookName, $args) {
         $notification = $args[0];
-        $message =& $args[1]; // Message is passed by reference to be modified
+        $message =& $args[1]; // Passed by reference
 
         $type = $notification->getType();
-        assert(isset($type));
+        if (!isset($type)) {
+            return false;
+        }
 
         import('classes.notification.NotificationManager');
         $notificationManager = new NotificationManager();
@@ -239,25 +272,30 @@ class SwordPlugin extends GenericPlugin {
             case NOTIFICATION_TYPE_SWORD_DEPOSIT_COMPLETE:
                 /** @var NotificationSettingsDAO $notificationSettingsDao */
                 $notificationSettingsDao = DAORegistry::getDAO('NotificationSettingsDAO');
-                $params = $notificationSettingsDao->getNotificationSettings($notification->getId());
-                $message = __('plugins.generic.sword.depositComplete', $notificationManager->getParamsForCurrentLocale($params));
+                $params = $notificationSettingsDao->getNotificationSettings((int) $notification->getId());
+                // [WIZDAM FIX] Casting pada body pesan untuk menjamin tipe string dan mencegah warning
+                $message = (string) __('plugins.generic.sword.depositComplete', $notificationManager->getParamsForCurrentLocale(is_array($params) ? $params : []));
                 break;
             case NOTIFICATION_TYPE_SWORD_AUTO_DEPOSIT_COMPLETE:
                 /** @var NotificationSettingsDAO $notificationSettingsDao */
                 $notificationSettingsDao = DAORegistry::getDAO('NotificationSettingsDAO');
-                $params = $notificationSettingsDao->getNotificationSettings($notification->getId());
-                $message = __('plugins.generic.sword.automaticDepositComplete', $notificationManager->getParamsForCurrentLocale($params));
+                $params = $notificationSettingsDao->getNotificationSettings((int) $notification->getId());
+                // [WIZDAM FIX] Casting pada body pesan untuk menjamin tipe string dan mencegah warning
+                $message = (string) __('plugins.generic.sword.automaticDepositComplete', $notificationManager->getParamsForCurrentLocale(is_array($params) ? $params : []));
                 break;
             case NOTIFICATION_TYPE_SWORD_ENABLED:
-                $message = __('plugins.generic.sword.enabled');
+                $message = (string) __('plugins.generic.sword.enabled');
                 break;
         }
+        
+        return false;
     }
 
     /**
      * Display verbs for the management interface.
      * @param array $verbs
-     * @param PKPRequest $request
+     * @param PKPRequest|null $request
+     * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs($verbs, $request);
@@ -278,65 +316,76 @@ class SwordPlugin extends GenericPlugin {
      * @param array $args
      * @param string|null $message
      * @param array|null $messageParams
+     * @param PKPRequest|null $request
      * @return bool
      */
     public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
-        if (!parent::manage($verb, $args, $message, $messageParams)) return false;
+        if (!parent::manage($verb, $args, $message, $messageParams, $request)) {
+            return false;
+        }
 
-        if (!$request) $request = Registry::get('request');
+        // [WIZDAM FIX] Replace deprecated Registry::get('request')
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         switch ($verb) {
             case 'settings':
-                AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON,  LOCALE_COMPONENT_CORE_MANAGER);
-                $templateMgr = TemplateManager::getManager();
+                AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON, LOCALE_COMPONENT_CORE_MANAGER);
+                $templateMgr = TemplateManager::getManager($request);
                 $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
                 $journal = $request->getJournal();
+                if (!$journal) return false;
 
                 $this->import('SettingsForm');
-                $form = new SettingsForm($this, $journal->getId());
+                $form = new SettingsForm($this, (int) $journal->getId());
 
-                // [WIZDAM] Tangkap aksi Cancel secara eksplisit
                 if ($request->getUserVar('cancel')) {
-                    $request->redirect(null, 'manager', 'plugins', $this->getCategory());
+                    $request->redirect(null, 'manager', 'plugins', [$this->getCategory()]);
                 } elseif ($request->getUserVar('save')) {
                     $form->readInputData();
                     if ($form->validate()) {
                         $form->execute();
-                        $request->redirect(null, 'manager', 'plugins', $this->getCategory());
+                        $request->redirect(null, 'manager', 'plugins', [$this->getCategory()]);
                     } else {
-                        $form->display();
+                        $form->display($request);
                     }
                 } else {
                     $form->initData();
-                    $form->display();
+                    $form->display($request);
                 }
                 break;
 
             case 'enable':
                 $journal = $request->getJournal();
-                $this->updateSetting($journal->getId(), 'enabled', true);
-                $message = NOTIFICATION_TYPE_SWORD_ENABLED;
+                if ($journal) {
+                    $this->updateSetting((int) $journal->getId(), 'enabled', true);
+                    $message = (string) NOTIFICATION_TYPE_SWORD_ENABLED;
+                }
                 return false;
 
             case 'disable':
                 $journal = $request->getJournal();
-                $this->updateSetting($journal->getId(), 'enabled', false);
-                $message = NOTIFICATION_TYPE_PLUGIN_DISABLED;
-                $messageParams = ['pluginName' => $this->getDisplayName()];
+                if ($journal) {
+                    $this->updateSetting((int) $journal->getId(), 'enabled', false);
+                    $message = (string) NOTIFICATION_TYPE_PLUGIN_DISABLED;
+                    $messageParams = ['pluginName' => $this->getDisplayName()];
+                }
                 return false;
 
             case 'createDepositPoint':
             case 'editDepositPoint':
                 $journal = $request->getJournal();
-                $templateMgr = TemplateManager::getManager();
+                if (!$journal) return false;
+                
+                $templateMgr = TemplateManager::getManager($request);
                 $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
 
                 $depositPointId = array_shift($args);
-                if ($depositPointId == '') $depositPointId = null;
-                else $depositPointId = (int) $depositPointId;
+                $depositPointId = $depositPointId === '' ? null : (int) $depositPointId;
                 
                 $this->import('DepositPointForm');
-                $form = new DepositPointForm($this, $journal->getId(), $depositPointId);
+                $form = new DepositPointForm($this, (int) $journal->getId(), $depositPointId);
 
                 if ($request->getUserVar('cancel')) {
                     $request->redirect(null, 'manager', 'plugin', [$this->getCategory(), $this->getName(), 'settings']);
@@ -346,26 +395,28 @@ class SwordPlugin extends GenericPlugin {
                         $form->execute();
                         $request->redirect(null, 'manager', 'plugin', [$this->getCategory(), $this->getName(), 'settings']);
                     } else {
-                        $form->display();
+                        $form->display($request);
                     }
                 } else {
                     $form->initData();
-                    $form->display();
+                    $form->display($request);
                 }
                 break;
 
             case 'deleteDepositPoint':
                 $journal = $request->getJournal();
-                $journalId = $journal->getId();
-                $depositPointId = (int) array_shift($args);
-                $depositPoints = $this->getSetting($journalId, 'depositPoints');
-                
-                if (isset($depositPoints[$depositPointId])) {
-                    unset($depositPoints[$depositPointId]);
-                    $this->updateSetting($journalId, 'depositPoints', $depositPoints);
-                }
+                if ($journal) {
+                    $journalId = (int) $journal->getId();
+                    $depositPointId = (int) array_shift($args);
+                    $depositPoints = $this->getSetting($journalId, 'depositPoints');
+                    
+                    if (is_array($depositPoints) && isset($depositPoints[$depositPointId])) {
+                        unset($depositPoints[$depositPointId]);
+                        $this->updateSetting($journalId, 'depositPoints', $depositPoints);
+                    }
 
-                $request->redirect(null, 'manager', 'plugin', [$this->getCategory(), $this->getName(), 'settings']);
+                    $request->redirect(null, 'manager', 'plugin', [$this->getCategory(), $this->getName(), 'settings']);
+                }
                 break;
         }
 
@@ -376,7 +427,7 @@ class SwordPlugin extends GenericPlugin {
      * Get Type Map
      * @return array
      */
-    public function getTypeMap() {
+    public function getTypeMap(): array {
         return [
             SWORD_DEPOSIT_TYPE_AUTOMATIC => 'plugins.generic.sword.depositPoints.type.automatic',
             SWORD_DEPOSIT_TYPE_OPTIONAL_SELECTION => 'plugins.generic.sword.depositPoints.type.optionalSelection',
@@ -387,18 +438,18 @@ class SwordPlugin extends GenericPlugin {
 
     /**
      * Get install email templates file
-     * @return string
+     * @return string|null
      */
     public function getInstallEmailTemplatesFile(): ?string {
-        return ($this->getPluginPath() . DIRECTORY_SEPARATOR . 'emailTemplates.xml');
+        return $this->getPluginPath() . DIRECTORY_SEPARATOR . 'emailTemplates.xml';
     }
 
     /**
      * Get install email template data file
-     * @return string
+     * @return string|null
      */
     public function getInstallEmailTemplateDataFile(): ?string {
-        return ($this->getPluginPath() . '/locale/{$installedLocale}/emailTemplates.xml');
+        return $this->getPluginPath() . '/locale/{$installedLocale}/emailTemplates.xml';
     }
     
 }

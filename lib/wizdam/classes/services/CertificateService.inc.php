@@ -6,9 +6,10 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance & DDD
+ * Distributed under the GNU GPL v3.
+ * 
  * @class CertificateService
+ * 
  * @brief Layanan penyedia data untuk penerbitan Sertifikat (Reviewer, Author, dll).
  */
 
@@ -16,14 +17,18 @@ class CertificateService {
 
     /**
      * Mengambil data lengkap Sertifikat Reviewer berdasarkan ID Penugasan.
-     * @param int $reviewId ID dari tabel review_assignments
+     * @param int $reviewId
      * @return array
-     * @throws \Exception Jika data tidak ditemukan
+     * @throws \Exception
      */
     public function getReviewerCertificateData(int $reviewId): array {
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
@@ -54,5 +59,6 @@ class CertificateService {
             'certificateNumber' => 'CERT-REV-' . date('Y', strtotime($reviewAssignment->getDateCompleted())) . '-' . str_pad((string)$reviewId, 5, '0', STR_PAD_LEFT)
         ];
     }
+    
 }
 ?>

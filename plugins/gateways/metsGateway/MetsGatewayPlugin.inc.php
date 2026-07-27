@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class METSGatewayPlugin
  * @ingroup plugins
  *
- * @brief A plugin to allow exposure of Journals in METS format for web service access
- * * [WIZDAM EDITION v3.4] Refactored for PHP 8.x Strict Compliance
+ * @brief A plugin to allow exposure of Journals in METS format for web service access.
  */
 
 import('classes.plugins.GatewayPlugin');
@@ -25,21 +24,21 @@ class METSGatewayPlugin extends GatewayPlugin {
 
     /**
      * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path The path the plugin was found in
+     * @param string $category
+     * @param string $path
      * @param int|null $mainContextId
-     * @return bool True iff plugin initialized successfully; if false, the plugin will not be registered.
+     * @return bool
      */
     public function register(string $category, string $path, $mainContextId = null): bool {
-        $success = parent::register($category, $path, $mainContextId);
+        $success = parent::register($category, $path);
         $this->addLocaleData();
+
         return $success;
     }
 
     /**
-     * Get the name of this plugin. The name must be unique within
-     * its category.
-     * @return string name of plugin
+     * Get the name of this plugin. The name must be unique within its category.
+     * @return string
      */
     public function getName(): string {
         return 'METSGatewayPlugin';
@@ -68,12 +67,11 @@ class METSGatewayPlugin extends GatewayPlugin {
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs();
         if (!$this->getEnabled()) return $verbs;
-        
-        // [MODERNISASI] Array short syntax
         $verbs[] = [
             'settings', 
             __('plugins.gateways.metsGateway.settings')
         ];
+        
         return $verbs;
     }
 
@@ -82,15 +80,14 @@ class METSGatewayPlugin extends GatewayPlugin {
      * @param array $args
      * @param string|null $message
      * @param array|null $messageParams
-     * @param PKPRequest|null $request
+     * @param Request|null $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message = NULL, $messageParams = NULL, $request = NULL): bool {
+    public function manage(string $verb, array $args, ?string &$message = NULL, ?array &$messageParams = NULL, $request = NULL): bool {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
-        // [WIZDAM FIX] Ganti $plugin yang tidak terdefinisi dengan $this
-        if (parent::manage($verb, $args, $message, $messageParams, $this, $request)) return true;
+        if (parent::manage($verb, $args, $message, $messageParams, $request)) return true;
         
         if (!$this->getEnabled()) return false;
         
@@ -102,7 +99,6 @@ class METSGatewayPlugin extends GatewayPlugin {
                     fatalError('Journal context not found.', 404);
                 }
 
-                // [FIX CRITICAL] Force Integer Cast untuk Strict Typing Constructor
                 $journalId = (int) $journal->getId();
 
                 $this->import('SettingsForm');
@@ -112,7 +108,6 @@ class METSGatewayPlugin extends GatewayPlugin {
                     $form->readInputData();
                     if ($form->validate()) {
                         $form->execute($request);
-                        // [MODERNISASI] Gunakan $request->redirect
                         $request->redirect(null, 'manager', 'plugin', ['gateways', $this->getName(), 'settings']);
                     } else {
                         $form->display();
@@ -131,11 +126,11 @@ class METSGatewayPlugin extends GatewayPlugin {
     /**
      * Handle fetch requests for this plugin.
      * @param array $args
-     * @param PKPRequest|null $request
+     * @param Request|null $request
      * @return bool
      */
     public function fetch($args, $request = null) {
-        // [WIZDAM] Singleton Fallback
+        // Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
         if (!$this->getEnabled()) {
@@ -152,12 +147,11 @@ class METSGatewayPlugin extends GatewayPlugin {
                 fatalError('Journal not found', 404);
             }
 
-            $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
+            $issueDao = DAORegistry::getDAO('IssueDAO'); /** @var IssueDAO $issueDao */
             $issueId = array_shift($args);
             
             if (!$issueId) {
                 // Assuming Handler class is available globally or imported
-                // [MODERNISASI] Casting Journal ID
                 $issuesResultSet = $issueDao->getIssues((int) $journal->getId(), Handler::getRangeInfo('issues'));
                 $issues = [];
 
@@ -182,7 +176,6 @@ class METSGatewayPlugin extends GatewayPlugin {
 
             } else {
                 $issues = [];
-                // [MODERNISASI] Casting Issue ID dan Journal ID
                 $issues[] = $issueDao->getIssueById((int) $issueId, (int) $journal->getId(), true);
                 
                 if (empty($issues) || !$issues[0]) {
@@ -195,8 +188,7 @@ class METSGatewayPlugin extends GatewayPlugin {
             }
         }
 
-        // Failure.
-        // [MODERNISASI] Wizdam Protocol v3.4: Strict Error Handling
+        // Failure: Lumera Protocol v3.4: Strict Error Handling
         header("HTTP/1.0 500 Internal Server Error");
         AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
         
@@ -209,14 +201,13 @@ class METSGatewayPlugin extends GatewayPlugin {
     /**
      * @param Journal $journal
      * @param array $issues
-     * @param PKPRequest|null $request
+     * @param Request|null $request
      * @return bool
      */
     public function exportIssues($journal, $issues, $request = null) {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
-        // Mengutamakan objek Journal yang dipassing, backup ke Request jika perlu
         $this->journalId = (int) $journal->getId();
 
         $this->import('MetsExportDom');
@@ -243,7 +234,6 @@ class METSGatewayPlugin extends GatewayPlugin {
         XMLCustomWriter::setAttribute($fileGrpDerivative, 'USE', 'derivative');
         
         foreach ($issues as $issue) {
-            // Pastikan issue valid sebelum diproses
             if ($issue) {
                 MetsExportDom::generateIssueDmdSecDom($doc, $root, $issue, $journal);
                 MetsExportDom::generateIssueFileSecDom($doc, $fileGrpOriginal, $issue);
@@ -264,5 +254,6 @@ class METSGatewayPlugin extends GatewayPlugin {
         XMLCustomWriter::printXML($doc);
         return true;
     }
+
 }
 ?>

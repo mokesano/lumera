@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see EditAssignmentDAO
  *
  * @brief Describes edit assignment properties.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 class EditAssignment extends DataObject {
@@ -244,7 +242,6 @@ class EditAssignment extends DataObject {
         if ($this->getData('editorInitials')) {
             return $this->getData('editorInitials');
         } else {
-            // [WIZDAM] Safety casting for substr in PHP 8
             $firstName = (string) $this->getEditorFirstName();
             $lastName = (string) $this->getEditorLastName();
             return substr($firstName, 0, 1) . substr($lastName, 0, 1);
@@ -274,5 +271,6 @@ class EditAssignment extends DataObject {
     public function setEditorEmail($editorEmail) {
         return $this->setData('editorEmail', $editorEmail);
     }
+    
 }
 ?>

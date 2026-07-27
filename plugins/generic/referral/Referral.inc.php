@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see ReferralDAO
  *
  * @brief Basic class describing a referral.
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
  */
 
 define('REFERRAL_STATUS_NEW',        0x00000001);
@@ -38,7 +36,7 @@ class Referral extends DataObject {
             trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::Referral(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -163,6 +161,6 @@ class Referral extends DataObject {
     public function setLinkCount($linkCount) {
         return $this->setData('linkCount', $linkCount);
     }
-}
 
+}
 ?>

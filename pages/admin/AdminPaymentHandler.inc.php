@@ -4,8 +4,12 @@ declare(strict_types=1);
 /**
  * @file pages/checkout/AdminPaymentHandler.inc.php
  *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
  * @class AdminPaymentHandler
+ * 
  * @brief Handler khusus untuk Site Administrator mengelola Payment Gateway.
  */
 
@@ -33,12 +37,12 @@ class AdminPaymentHandler extends Handler {
         // Pastikan komponen bahasa dimuat (sesuaikan LOCALE_COMPONENT) 
         // Jika Wizdam Frontedge memiliki custom dictionary)
         AppLocale::requireComponents(
-            array(
+            [
                 LOCALE_COMPONENT_CORE_COMMON, 
                 LOCALE_COMPONENT_CORE_USER, 
                 LOCALE_COMPONENT_APPLICATION_COMMON, 
                 LOCALE_COMPONENT_APP_PAYMENT
-            )
+            ]
         );
     }
 
@@ -87,5 +91,6 @@ class AdminPaymentHandler extends Handler {
             $settingsForm->display();
         }
     }
+    
 }
 ?>

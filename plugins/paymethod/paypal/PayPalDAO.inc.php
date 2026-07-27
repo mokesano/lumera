@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_paymethod_paypal
  *
  * @brief Operations for retrieving and modifying Transactions objects.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 import('lib.pkp.classes.db.DAO');
@@ -27,7 +26,7 @@ class PayPalDAO extends DAO {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function PayPalDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -37,21 +36,22 @@ class PayPalDAO extends DAO {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Insert a payment into the payments table
-     * @param $txnId string
-     * @param $txnType string
-     * @param $payerEmail string
-     * @param $receiverEmail string
-     * @param $itemNumber string
-     * @param $paymentDate datetime
-     * @param $payerId string
-     * @param $receiverId string
+     * Insert a payment into the payments table.
+     * @param string $txnId
+     * @param string $txnType
+     * @param string $payerEmail
+     * @param string $receiverEmail
+     * @param string $itemNumber
+     * @param string $paymentDate
+     * @param string $payerId
+     * @param string $receiverId
+     * @return bool
      */
-     public function insertTransaction($txnId, $txnType, $payerEmail, $receiverEmail, $itemNumber, $paymentDate, $payerId, $receiverId) {
+    public function insertTransaction($txnId, $txnType, $payerEmail, $receiverEmail, $itemNumber, $paymentDate, $payerId, $receiverId): bool {
         $this->update(
             sprintf(
                 'INSERT INTO paypal_transactions (
@@ -69,36 +69,40 @@ class PayPalDAO extends DAO {
                 $this->datetimeToDB($paymentDate)
             ),
             [
-                $txnId,
-                $txnType,
-                $payerEmail,
-                $receiverEmail,
-                $itemNumber,
-                $payerId,
-                $receiverId
+                (string) $txnId,
+                (string) $txnType,
+                (string) $payerEmail,
+                (string) $receiverEmail,
+                (string) $itemNumber,
+                (string) $payerId,
+                (string) $receiverId
             ]
         );
 
         return true;
-     }
+    }
 
     /**
      * Check whether a given transaction exists.
-     * @param $txnId string
-     * @return boolean
+     * @param string $txnId
+     * @return bool
      */
-    public function transactionExists($txnId) {
+    public function transactionExists($txnId): bool {
         $result = $this->retrieve(
-            'SELECT count(*) FROM paypal_transactions WHERE txn_id = ?',
-            [$txnId]
+            'SELECT count(*) AS count FROM paypal_transactions WHERE txn_id = ?',
+            [(string) $txnId]
         );
 
         $returner = false;
-        if (isset($result->fields[0]) && $result->fields[0] >= 1) $returner = true;
 
-        $result->Close();
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = ((int) ($row['count'] ?? 0) >= 1);
+            $result->Close();
+        }
+        
         return $returner;
     }
+    
 }
-
 ?>

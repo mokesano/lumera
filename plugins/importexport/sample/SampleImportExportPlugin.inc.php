@@ -41,10 +41,9 @@ class SampleImportExportPlugin extends ImportExportPlugin {
 
     /**
      * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path Path to plugin
-     * @return bool True iff plugin initialized successfully; if false,
-     * the plugin will not be registered.
+     * @param string $category
+     * @param string $path
+     * @return bool 
      */
     public function register($category, $path): bool {
         $success = parent::register($category, $path);
@@ -89,7 +88,7 @@ class SampleImportExportPlugin extends ImportExportPlugin {
     /**
      * Display the plugin.
      * @param array $args
-     * @param PKPRequest $request
+     * @param Request $request
      */
     public function display($args, $request): void {
         parent::display($args, $request);
@@ -103,6 +102,7 @@ class SampleImportExportPlugin extends ImportExportPlugin {
             default:
                 // Display a list of issues for export
                 $journal = $request->getJournal();
+                /** @var IssueDAO $issueDao */
                 $issueDao = DAORegistry::getDAO('IssueDAO');
                 $issues = $issueDao->getIssues($journal->getId(), Handler::getRangeInfo('issues'));
 
@@ -115,7 +115,7 @@ class SampleImportExportPlugin extends ImportExportPlugin {
     /**
      * Execute import/export tasks using the command-line interface.
      * @param string $scriptName
-     * @param array $args Parameters to the plugin
+     * @param array $args
      */
     public function executeCLI($scriptName, $args): void {
         $this->usage($scriptName);
@@ -129,6 +129,6 @@ class SampleImportExportPlugin extends ImportExportPlugin {
         echo "USAGE NOT AVAILABLE.\n"
             . "This is a sample plugin and does not actually perform a function.\n";
     }
+    
 }
-
 ?>

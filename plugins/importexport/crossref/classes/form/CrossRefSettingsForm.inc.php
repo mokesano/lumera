@@ -12,11 +12,9 @@ declare(strict_types=1);
  * @ingroup plugins_importexport_crossref_classes_form
  *
  * @brief Form for journal managers to setup the CrossRef plug-in.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
-
-if (!class_exists('DOIExportSettingsForm')) { // Bug #7848
+if (!class_exists('DOIExportSettingsForm')) {
     import('plugins.importexport.crossref.classes.form.DOIExportSettingsForm');
 }
 
@@ -27,12 +25,11 @@ class CrossRefSettingsForm extends DOIExportSettingsForm {
     //
     /**
      * Constructor
-     * @param $plugin CrossRefExportPlugin
-     * @param $journalId integer
+     * @param CrossRefExportPlugin $plugin
+     * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
-        // Configure the object.
-        parent::__construct($plugin, $journalId);
+        parent::__construct($plugin, (int) $journalId);
 
         // Add form validation checks.
         $this->addCheck(new FormValidator($this, 'depositorName', 'required', 'plugins.importexport.crossref.settings.form.depositorNameRequired'));
@@ -41,6 +38,8 @@ class CrossRefSettingsForm extends DOIExportSettingsForm {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param CrossRefExportPlugin $plugin
+     * @param int $journalId
      */
     public function CrossRefSettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -50,20 +49,28 @@ class CrossRefSettingsForm extends DOIExportSettingsForm {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Display the form.
      * @see Form::display()
-     * @param $request PKPRequest
-     * @param $template string
+     * @param PKPRequest|null $request
+     * @param string|null $template
      * @return void
      */
     public function display($request = null, $template = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
         $templateMgr = TemplateManager::getManager($request);
         $plugin = $this->_plugin;
-        $templateMgr->assign('unregisteredURL', $request->url(null, null, 'importexport', ['plugin', $plugin->getName(), 'articles']));
+        
+        if ($plugin) {
+            $templateMgr->assign('unregisteredURL', $request->url(null, null, 'importexport', ['plugin', $plugin->getName(), 'articles']));
+        }
+        
         parent::display($request, $template);
     }
 
@@ -88,12 +95,12 @@ class CrossRefSettingsForm extends DOIExportSettingsForm {
     /**
      * Determine if a setting is optional.
      * @see DOIExportSettingsForm::isOptional()
-     * @param $settingName string
+     * @param string $settingName
      * @return bool
      */
     public function isOptional($settingName) {
-        return in_array($settingName, ['username', 'password', 'automaticRegistration']);
+        return in_array($settingName, ['username', 'password', 'automaticRegistration'], true);
     }
-}
 
+}
 ?>

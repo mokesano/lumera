@@ -17,7 +17,6 @@ declare(strict_types=1);
  * @brief Wrapper for the CrossRef export plugin.
  */
 
-
 require_once('CrossRefExportPlugin.inc.php');
 
 return new CrossRefExportPlugin();

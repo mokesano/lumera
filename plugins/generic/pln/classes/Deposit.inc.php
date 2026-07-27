@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class Deposit
  * @ingroup plugins_generic_pln
  *
- * @brief Container for deposit objects that are submitted to a PLN
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Container for deposit objects that are submitted to a PLN.
  */
 
 class Deposit extends DataObject {
@@ -31,6 +29,7 @@ class Deposit extends DataObject {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param string $uuid
      */
     public function Deposit($uuid) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -42,7 +41,7 @@ class Deposit extends DataObject {
     
     /**
      * Get the type of deposit objects in this deposit.
-     * @return string One of PLN_PLUGIN_DEPOSIT_SUPPORTED_OBJECTS
+     * @return string
      */
     public function getObjectType() {
         $depositObjects = $this->getDepositObjects();
@@ -59,6 +58,7 @@ class Deposit extends DataObject {
      * @return DAOResultFactory
      */
     public function getDepositObjects() {
+        /** @var DepositObjectDAO $depositObjectDao */
         $depositObjectDao = DAORegistry::getDAO('DepositObjectDAO');
         return $depositObjectDao->getByDepositId($this->getJournalId(), $this->getId());
     }
@@ -390,5 +390,4 @@ class Deposit extends DataObject {
     }
 
 }
-
 ?>

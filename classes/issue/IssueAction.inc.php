@@ -40,13 +40,15 @@ class IssueAction {
 
     /**
      * Smarty usage: {print_issue_id articleId="$articleId"}
-     *
      * Custom Smarty function for printing the issue id
+     * @param mixed $params
+     * @param mixed $smarty
      * @return string
      */
     public static function smartyPrintIssueId($params, $smarty) {
         if (isset($params) && !empty($params)) {
             if (isset($params['articleId'])) {
+                /** @var IssueDAO $issueDao */
                 $issueDao = DAORegistry::getDAO('IssueDAO');
                 $issue = $issueDao->getIssueByArticleId($params['articleId']);
                 if ($issue != null) {
@@ -59,8 +61,8 @@ class IssueAction {
 
     /**
      * Checks if subscription is required for viewing the issue
-     * @param $issue Issue
-     * @param $journal Journal
+     * @param Issue $issue
+     * @param Journal|null $journal
      * @return bool
      */
     public static function subscriptionRequired($issue, $journal = null) {
@@ -72,6 +74,7 @@ class IssueAction {
             $journal = Request::getJournal();
         }
         if (!$journal || $journal->getId() !== $issue->getJournalId()) {
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journal = $journalDao->getById($issue->getJournalId());
         }
@@ -91,8 +94,8 @@ class IssueAction {
     /**
      * Checks if this user is granted reader access to pre-publication articles
      * based on their roles in the journal (i.e. Manager, Editor, etc).
-     * @param $journal object
-     * @param $article object
+     * @param Journal $journal object
+     * @param Article $article object
      * @return bool
      */
     public static function allowedPrePublicationAccess($journal, $article) {
@@ -100,11 +103,12 @@ class IssueAction {
 
         $user = Request::getUser();
         if ($user && $journal) {
-            $journalId = $journal->getId();
-            $userId = $user->getId();
+            $journalId = (int) $journal->getId();
+            $userId = (int) $user->getId();
 
             if (Validation::isAuthor($journalId)) {
                 if ($article && $article->getUserId() == $userId) return true;
+                /** @var PublishedArticleDAO $publishedArticleDao */
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                 $publishedArticle = null;
                 if ($article) {
@@ -119,7 +123,7 @@ class IssueAction {
     /**
      * Checks if this user is granted access to pre-publication issue galleys
      * based on their roles in the journal (i.e. Manager, Editor, etc).
-     * @param $journal object
+     * @param Journal $journal object
      * @return bool
      */
     public static function allowedIssuePrePublicationAccess($journal) {
@@ -128,11 +132,14 @@ class IssueAction {
 
     /**
      * Checks if user has subscription
+     * @param Journal $journal
      * @return bool
      */
     public static function subscribedUser($journal, $issueId = null, $articleId = null) {
         $user = Request::getUser();
+        /** @var IndividualSubscriptionDAO $subscriptionDao */
         $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($articleId, null, true);
         $result = false;
@@ -154,6 +161,7 @@ class IssueAction {
                         $result = $subscriptionDao->isValidIndividualSubscription($user->getId(), $journal->getId(), SUBSCRIPTION_DATE_END, $publishedArticle->getDatePublished());
                     }
                 } else if (isset($issueId)) {
+                    /** @var IssueDAO $issueDao */
                     $issueDao = DAORegistry::getDAO('IssueDAO');
                     $issue = $issueDao->getIssueById($issueId);
                     if (isset($issue) && $issue->getPublished()) {
@@ -164,15 +172,17 @@ class IssueAction {
             }
         }
         
-        HookRegistry::dispatch('IssueAction::subscribedUser', array(&$journal, &$result, &$issue, &$publishedArticle));
+        HookRegistry::dispatch('IssueAction::subscribedUser', [&$journal, &$result, &$issue, &$publishedArticle]);
         return $result;
     }
 
     /**
      * Checks if remote client domain or ip is allowed
+     * @param Journal $journal
      * @return bool
      */
     public static function subscribedDomain($journal, $issueId = null, $articleId = null) {
+        /** @var InstitutionalSubscriptionDAO $subscriptionDao */
         $subscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
         $result = false;
         if (isset($journal)) {
@@ -182,6 +192,7 @@ class IssueAction {
             // that was valid during publication date of requested content
             if (!$result && $journal->getSetting('subscriptionExpiryPartial')) {
                 if (isset($articleId)) {
+                    /** @var PublishedArticleDAO $publishedArticleDao */
                     $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                     $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($articleId, null, true);
                     if (isset($publishedArticle)) {
@@ -189,6 +200,7 @@ class IssueAction {
                         $result = $subscriptionDao->isValidInstitutionalSubscription(Request::getRemoteDomain(), Request::getRemoteAddr(), $journal->getId(), SUBSCRIPTION_DATE_END, $publishedArticle->getDatePublished());
                     }
                 } else if (isset($issueId)) {
+                    /** @var IssueDAO $issueDao */
                     $issueDao = DAORegistry::getDAO('IssueDAO');
                     $issue = $issueDao->getIssueById($issueId);
                     if (isset($issue) && $issue->getPublished()) {
@@ -199,7 +211,7 @@ class IssueAction {
             }
         }
         
-        HookRegistry::dispatch('IssueAction::subscribedDomain', array(&$journal, &$result));
+        HookRegistry::dispatch('IssueAction::subscribedDomain', [&$journal, &$result]);
         return $result;
     }
 
@@ -208,11 +220,12 @@ class IssueAction {
      * @return array
      */
     public static function getIssueOptions() {
-        $issueOptions = array();
+        $issueOptions = [];
 
         $journal = Request::getJournal();
-        $journalId = $journal->getId();
+        $journalId = (int) $journal->getId();
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
 
         $issueOptions['-100'] =  '------    ' . __('editor.issues.futureIssues') . '    ------';
@@ -241,16 +254,17 @@ class IssueAction {
     /**
      * Checks if this user is granted access to pre-publication galleys based on role
      * based on their roles in the journal (i.e. Manager, Editor, etc).
-     * @param $journal object
+     * @param Journal $journal object
      * @return bool
      */
     public static function _roleAllowedPrePublicationAccess($journal) {
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $user = Request::getUser();
         if ($user && $journal) {
-            $journalId = $journal->getId();
-            $userId = $user->getId();
-            $subscriptionAssumedRoles = array(
+            $journalId = (int) $journal->getId();
+            $userId = (int) $user->getId();
+            $subscriptionAssumedRoles = [
                 ROLE_ID_JOURNAL_MANAGER,
                 ROLE_ID_EDITOR,
                 ROLE_ID_SECTION_EDITOR,
@@ -258,7 +272,7 @@ class IssueAction {
                 ROLE_ID_COPYEDITOR,
                 ROLE_ID_PROOFREADER,
                 ROLE_ID_SUBSCRIPTION_MANAGER
-            );
+            ];
 
             $roles = $roleDao->getRolesByUserId($userId, $journalId);
             foreach ($roles as $role) {

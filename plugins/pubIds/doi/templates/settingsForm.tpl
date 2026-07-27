@@ -9,9 +9,10 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="plugins.pubIds.doi.manager.settings.doiSettings"}
-{include file="common/header.tpl"}
+	{assign var="pageTitle" value="plugins.pubIds.doi.manager.settings.doiSettings"}
+	{include file="common/header.tpl"}
 {/strip}
+
 <div id="doiSettings">
 	<div id="description">{translate key="plugins.pubIds.doi.manager.settings.description"}</div>
 
@@ -136,4 +137,5 @@
 
 	<p><span class="formRequired">{translate key="common.requiredField"}</span></p>
 </div>
+
 {include file="common/footer.tpl"}

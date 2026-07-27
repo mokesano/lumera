@@ -8,10 +8,10 @@ declare(strict_types=1);
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @class upgradeTool
+ * @class UpgradeTool
  * @ingroup tools
  *
- * @brief CLI tool for upgrading Lumera.
+ * @brief CLI tool for upgrading Sangia Lumera Apps.
  * [LUMERA] Upgrade Tool Implementation.
  */
 
@@ -19,7 +19,7 @@ require(__DIR__ . '/bootstrap.inc.php');
 
 import('lib.pkp.classes.cliTool.UpgradeTool');
 
-class OJSUpgradeTool extends UpgradeTool {
+class AppUpgradeTool extends UpgradeTool {
 
     /**
      * Constructor
@@ -31,7 +31,7 @@ class OJSUpgradeTool extends UpgradeTool {
     /**
      * [SHIM] Backward Compatibility
      */
-    public function OJSUpgradeTool($argv = []) {
+    public function AppUpgradeTool($argv = []) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'. Please refactor to parent::__construct().",
@@ -45,5 +45,5 @@ class OJSUpgradeTool extends UpgradeTool {
 }
 
 // [LUMERA] Safe instantiation
-$tool = new OJSUpgradeTool($argv ?? []);
+$tool = new AppUpgradeTool($argv ?? []);
 $tool->execute();

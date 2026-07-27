@@ -9,15 +9,17 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="plugins.generic.pln.status_page"}
-{include file="common/header.tpl"}
+	{assign var="pageTitle" value="plugins.generic.pln.status_page"}
+	{include file="common/header.tpl"}
 {/strip}
 
 {translate|assign:"confirmReset" key="plugins.generic.pln.status.confirmReset"}
 <div id="plnStatus">
 	<h3>{translate key="plugins.generic.pln.status.deposits"}</h3>
 	<p>{translate key="plugins.generic.pln.status.network_status" networkStatusMessage=$networkStatusMessage}</p>
+	
 	<form class="pkp_form" id="plnStatusForm" method="post" action="{plugin_url path="status"}">
+		<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 		<table>
 			<tr>
 				<th>{translate key="common.id"}</th>
@@ -54,7 +56,7 @@
 			{/if}
 		</table>
 	</form>
-		<p>{translate key='plugins.generic.pln.status.docs' statusDocsUrl=$plnStatusDocs}</p>
+	<p>{translate key='plugins.generic.pln.status.docs' statusDocsUrl=$plnStatusDocs}</p>
 </div>
 
 {include file="common/footer.tpl"}

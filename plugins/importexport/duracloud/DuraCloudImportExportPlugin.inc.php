@@ -36,18 +36,19 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path Path to plugin
-     * @return bool True iff plugin initialized successfully
+     * @param string $category
+     * @param string $path
+     * @return bool
      */
     public function register($category, $path): bool {
         $success = parent::register($category, $path);
         $this->addLocaleData();
+
         return $success;
     }
 
@@ -79,26 +80,33 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
     /**
      * Display the plugin UI.
      * @param array $args
-     * @param object $request
+     * @param PKPRequest $request
      */
     public function display($args, $request): void {
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         parent::display($args, $request);
 
         // Load the DuraCloud-PHP library.
         require_once('lib/DuraCloud-PHP/DuraCloudPHP.inc.php');
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
 
         $journal = $request->getJournal();
         $user = $request->getUser();
+        
+        // [WIZDAM FIX] Null safety: Redirect if no journal context exists
+        if (!$journal) {
+            $request->redirect(null, 'index');
+            return;
+        }
         
         $command = array_shift($args);
 
         switch ($command) {
             case 'importIssue':
                 $contentId = array_shift($args);
-                $issue = $this->importIssue($user, $journal, $contentId);
+                $issue = $this->importIssue($user, $journal, (string) $contentId);
                 $templateMgr->assign('results', [$contentId => $issue]);
                 $templateMgr->display($this->getTemplatePath() . 'importResults.tpl');
                 return;
@@ -110,12 +118,14 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
                 return;
 
             case 'exportIssues':
-                $issueIds = $request->getUserVar('issueId');
-                if (!isset($issueIds)) $issueIds = [];
+                $issueIds = (array) $request->getUserVar('issueId');
                 $issues = [];
                 foreach ($issueIds as $issueId) {
-                    $issue = $issueDao->getIssueById($issueId, $journal->getId());
-                    if (!$issue) $request->redirect();
+                    $issue = $issueDao->getIssueById((int) $issueId, (int) $journal->getId());
+                    if (!$issue) {
+                        $request->redirect(null, null, 'index');
+                        return;
+                    }
                     $issues[$issue->getId()] = $issue;
                 }
                 $results = $this->exportIssues($journal, $issues);
@@ -126,8 +136,11 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
 
             case 'exportIssue':
                 $issueId = array_shift($args);
-                $issue = $issueDao->getIssueById($issueId, $journal->getId());
-                if (!$issue) $request->redirect();
+                $issue = $issueDao->getIssueById((int) $issueId, (int) $journal->getId());
+                if (!$issue) {
+                    $request->redirect(null, null, 'index');
+                    return;
+                }
                 $results = [$issue->getId() => $this->exportIssue($journal, $issue)];
                 $templateMgr->assign('results', $results);
                 $templateMgr->assign('issues', [$issue->getId() => $issue]);
@@ -138,7 +151,7 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
                 // Display a list of issues for export
                 $this->setBreadcrumbs([], true);
                 AppLocale::requireComponents(LOCALE_COMPONENT_APP_EDITOR);
-                $issues = $issueDao->getIssues($journal->getId(), Handler::getRangeInfo('issues'));
+                $issues = $issueDao->getIssues((int) $journal->getId(), Handler::getRangeInfo('issues'));
 
                 $templateMgr->assign('issues', $issues);
                 $templateMgr->display($this->getTemplatePath() . 'exportableIssues.tpl');
@@ -158,9 +171,9 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
                 $duraCloudLoginForm = new DuraCloudLoginForm($this);
                 $duraCloudLoginForm->readInputData();
                 if ($duraCloudLoginForm->validate()) {
-                    $duraCloudLoginForm->execute(); // execute() no longer takes params in standard Form
+                    $duraCloudLoginForm->execute();
                 }
-                $duraCloudLoginForm->display(); // display() no longer takes params in standard Form, but kept compatible with updated DuraCloudLoginForm
+                $duraCloudLoginForm->display($request);
                 return;
 
             case 'signOut':
@@ -168,7 +181,7 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
                 break;
 
             case 'selectSpace':
-                $this->setDuraCloudSpace($request->getUserVar('duracloudSpace'));
+                $this->setDuraCloudSpace((string) $request->getUserVar('duracloudSpace'));
                 break;
         }
 
@@ -176,31 +189,42 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
         $this->setBreadcrumbs();
         $this->import('DuraCloudLoginForm');
         $duraCloudLoginForm = new DuraCloudLoginForm($this);
-        $duraCloudLoginForm->display();
+        $duraCloudLoginForm->display($request);
     }
 
     /**
      * Get the native import/export plugin.
-     * @return object NativeImportExportPlugin
+     * @return NativeImportExportPlugin|null
      */
     public function getNativeImportExportPlugin() {
-        // Get the native import/export plugin.
-        return PluginRegistry::getPlugin('importexport', 'NativeImportExportPlugin');
+        // [WIZDAM FIX] Type narrowing: Beritahu VS Code bahwa ini adalah NativeImportExportPlugin
+        /** @var NativeImportExportPlugin|null $plugin */
+        $plugin = PluginRegistry::getPlugin('importexport', 'NativeImportExportPlugin');
+        return $plugin;
     }
 
     /**
      * Store an issue in DuraCloud.
-     * @param object $journal Journal
-     * @param object $issue Issue
-     * @return string|false location iff success; false otherwise
+     * @param Journal $journal 
+     * @param Issue $issue 
+     * @return string|false
      */
     public function exportIssue($journal, $issue) {
-        // Export the native XML to a file.
+        // [WIZDAM FIX] Type narrowing untuk menghilangkan warning Undefined method
+        /** @var NativeImportExportPlugin $nativeImportExportPlugin */
         $nativeImportExportPlugin = $this->getNativeImportExportPlugin();
-        $filename = tempnam('duracloud', 'dcissue');
+        
+        if (!$nativeImportExportPlugin) {
+            return false;
+        }
+        
+        $filename = tempnam(sys_get_temp_dir(), 'dcissue');
+        if (!$filename) {
+            return false;
+        }
+        
         $nativeImportExportPlugin->exportIssue($journal, $issue, $filename);
 
-        // Store the file in DuraCloud.
         $dcc = $this->getDuraCloudConnection();
         $ds = new DuraStore($dcc);
         $descriptor = new DuraCloudContentDescriptor([
@@ -210,22 +234,24 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
             'num_articles' => $issue->getNumArticles()
         ]);
         $content = new DuraCloudFileContent($descriptor);
+        
         $fp = fopen($filename, 'r');
-        $content->setResource($fp);
-        $location = $ds->storeContent($this->getDuraCloudSpace(), 'issue-' . $issue->getId(), $content);
+        $location = false;
+        if ($fp) {
+            $content->setResource($fp);
+            $location = $ds->storeContent($this->getDuraCloudSpace(), 'issue-' . $issue->getId(), $content);
+            fclose($fp);
+        }
 
-        // Clean up temporary file
-        if ($fp) fclose($fp); // Ensure file is closed before unlink
         unlink($filename);
-
         return $location;
     }
 
     /**
      * Store several issues in DuraCloud.
-     * @param object $journal Journal
-     * @param array $issues Array of Issue objects
-     * @return array of results for each issue (see exportIssue)
+     * @param Journal $journal
+     * @param array $issues
+     * @return array
      */
     public function exportIssues($journal, array $issues): array {
         $results = [];
@@ -237,70 +263,81 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
 
     /**
      * Import an issue from DuraCloud.
-     * @param object $user User
-     * @param object $journal Journal
+     * @param User $user
+     * @param Journal $journal
      * @param string $contentId
-     * @return object|false Issue iff success; false otherwise
+     * @return object|false
      */
     public function importIssue($user, $journal, $contentId) {
-        // Get the file from DuraCloud.
         $dcc = $this->getDuraCloudConnection();
         $ds = new DuraStore($dcc);
         $content = $ds->getContent($this->getDuraCloudSpace(), $contentId);
-        if (!$content) return false;
+        if (!$content) {
+            return false;
+        }
 
-        // Get and reset the resource
         $fp = $content->getResource();
-        fseek($fp, 0);
+        if ($fp) {
+            fseek($fp, 0);
+        }
 
-        // Parse the document
+        // [WIZDAM FIX] Type narrowing untuk menghilangkan warning Undefined method
+        /** @var NativeImportExportPlugin $nativeImportExportPlugin */
         $nativeImportExportPlugin = $this->getNativeImportExportPlugin();
-        $doc = $nativeImportExportPlugin->getDocument($fp); // Assuming getDocument handles resource or path, refactoring might be needed in NativeImportExportPlugin if it expects string path only
+        
+        if (!$nativeImportExportPlugin) {
+            return false;
+        }
 
-        // Note: NativeImportExportPlugin::getDocument typically expects a file path string. 
-        // If it strictly requires a path, we might need to save $fp to a temp file here.
-        // Assuming for now it works or has been adapted.
+        $doc = $nativeImportExportPlugin->getDocument($fp);
 
-        // Import the issue
         $nativeImportExportPlugin->import('NativeImportDom');
         $dependentItems = [];
         $errors = [];
         $issue = null;
-        if (!NativeImportDom::importIssue($journal, $doc, $issue, $errors, $user, false, $dependentItems)) return false;
+        
+        if (!NativeImportDom::importIssue($journal, $doc, $issue, $errors, $user, false, $dependentItems)) {
+            return false;
+        }
 
         return $issue;
     }
 
     /**
      * Import issues from DuraCloud.
-     * @param object $user User
-     * @param object $journal Journal
+     * @param User $user
+     * @param Journal $journal
      * @param array $contentIds
-     * @return array with result for each contentId (see importIssue)
+     * @return array
      */
     public function importIssues($user, $journal, array $contentIds): array {
-        // Get the file from DuraCloud.
         $dcc = $this->getDuraCloudConnection();
         $ds = new DuraStore($dcc);
         $result = [];
         $errors = [];
+        
+        // [WIZDAM FIX] Type narrowing untuk menghilangkan warning Undefined method
+        /** @var NativeImportExportPlugin $nativeImportExportPlugin */
         $nativeImportExportPlugin = $this->getNativeImportExportPlugin();
 
+        if (!$nativeImportExportPlugin) {
+            return $result;
+        }
+
         foreach ($contentIds as $contentId) {
-            $content = $ds->getContent($this->getDuraCloudSpace(), $contentId);
+            $content = $ds->getContent($this->getDuraCloudSpace(), (string) $contentId);
             if (!$content) {
                 $result[$contentId] = false;
                 continue;
             }
 
-            // Get and reset the resource
             $fp = $content->getResource();
-            fseek($fp, 0);
+            if ($fp) {
+                fseek($fp, 0);
+            }
 
-            // Parse the document
             $doc = $nativeImportExportPlugin->getDocument($fp);
 
-            // Import the issue
             $nativeImportExportPlugin->import('NativeImportDom');
             $issue = null;
             $dependentItems = [];
@@ -314,30 +351,30 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
     /**
      * Execute import/export tasks using the command-line interface.
      * @param string $scriptName
-     * @param array $args Parameters to the plugin
+     * @param array $args
      */
     public function executeCLI($scriptName, $args) {
-        // First, DuraCloud access info
         $baseUrl = array_shift($args);
         $username = array_shift($args);
         $password = array_shift($args);
 
-        // Load the DuraCloud-PHP library.
         require_once('lib/DuraCloud-PHP/DuraCloudPHP.inc.php');
 
-        // Context and commands
         $journalPath = array_shift($args);
         $spaceId = array_shift($args);
         $command = array_shift($args);
 
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $journal = $journalDao->getJournalByPath($journalPath);
 
         if (!$journal) {
-            if ($journalPath != '') {
+            if ($journalPath !== '') {
                 echo __('plugins.importexport.duracloud.cliError') . "\n";
                 echo __('plugins.importexport.duracloud.error.unknownJournal', ['journalPath' => $journalPath]) . "\n";
                 return;
@@ -349,10 +386,9 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
         $this->storeDuraCloudConfiguration($baseUrl, $username, $password);
         $this->setDuraCloudSpace($spaceId);
         
-        // Verify that the configuration and space ID are valid
         $dcc = $this->getDuraCloudConnection();
         $ds = new DuraStore($dcc);
-        $metadata = null; // Passed by reference
+        $metadata = null;
         if ($ds->getSpace($spaceId, $metadata) === false) {
             echo __('plugins.importexport.duracloud.cliError') . "\n";
             echo __('plugins.importexport.duracloud.configuration.credentialsInvalid') . "\n";
@@ -365,7 +401,7 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
                 $user = $userDao->getByUsername($userName);
 
                 if (!$user) {
-                    if ($userName != '') {
+                    if ($userName !== '') {
                         echo __('plugins.importexport.duracloud.cliError') . "\n";
                         echo __('plugins.importexport.duracloud.error.unknownUser', ['userName' => $userName]) . "\n\n";
                     }
@@ -376,24 +412,29 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
                 $results = $this->importIssues($user, $journal, $args);
                 AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
                 foreach ($results as $id => $result) {
-                    echo "    $id: " . ($result ? $result->getIssueIdentification() : '') . "\n";
+                    $issueIden = $result ? $result->getIssueIdentification() : '';
+                    echo "    $id: $issueIden\n";
                 }
                 return;
 
             case 'exportIssues':
                 $issues = [];
                 foreach ($args as $issueId) {
-                    $issue = $issueDao->getIssueById($issueId, $journal->getId());
+                    $issue = $issueDao->getIssueById((int) $issueId, (int) $journal->getId());
                     if ($issue) {
                         $issues[$issue->getId()] = $issue;
                     }
                 }
+                
+                // [WIZDAM] $this merujuk ke DuraCloudImportExportPlugin yang memiliki method exportIssues
                 $results = $this->exportIssues($journal, $issues);
+                
                 foreach ($results as $id => $result) {
                     echo "    $id: $result\n";
                 }
                 return;
         }
+        
         $this->usage($scriptName);
     }
 
@@ -414,7 +455,7 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
      * @param string|null $username
      * @param string|null $password
      */
-    public function storeDuraCloudConfiguration($url, $username, $password): void {
+    public function storeDuraCloudConfiguration(?string $url, ?string $username, ?string $password): void {
         $sessionManager = SessionManager::getManager();
         $session = $sessionManager->getUserSession();
         $session->setSessionVar('duracloudUrl', $url);
@@ -426,7 +467,7 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
      * Store the DuraCloud space to be used for this session.
      * @param string $space
      */
-    public function setDuraCloudSpace($space): void {
+    public function setDuraCloudSpace(string $space): void {
         $sessionManager = SessionManager::getManager();
         $session = $sessionManager->getUserSession();
         $session->setSessionVar('duracloudSpace', $space);
@@ -496,9 +537,9 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
 
     /**
      * Get a list of importable issues from the DuraSpace instance.
-     * @return array(contentId => issueIdentification)
+     * @return array
      */
-    public function getImportableIssues() {
+    public function getImportableIssues(): array {
         $dcc = $this->getDuraCloudConnection();
         $duraStore = new DuraStore($dcc);
         $spaceId = $this->getDuraCloudSpace();
@@ -506,27 +547,30 @@ class DuraCloudImportExportPlugin extends ImportExportPlugin {
         $metadata = null;
         $contents = $duraStore->getSpace($spaceId, $metadata, null, 'issue-');
         
-        if (!$contents) return $contents;
+        if (!$contents) {
+            return [];
+        }
 
         $returner = [];
         foreach ($contents as $contentId) {
             $content = $duraStore->getContent($spaceId, $contentId);
-            if (!$content) continue; // Could not fetch content
+            if (!$content) continue;
 
             $descriptor = $content->getDescriptor();
-            if (!$descriptor) continue; // Could not get descriptor
+            if (!$descriptor) continue;
 
             $metadata = $descriptor->getMetadata();
-            if (!$metadata) continue; // Could not get metadata
+            if (!$metadata) continue;
 
-            if (!isset($metadata['creator']) || $metadata['creator'] != $this->getName()) continue; // Not created by this plugin
+            if (!isset($metadata['creator']) || $metadata['creator'] != $this->getName()) continue;
 
-            if (!isset($metadata['identification'])) continue; // Could not get identification
+            if (!isset($metadata['identification'])) continue;
 
             $returner[$contentId] = $metadata;
         }
 
         return $returner;
     }
+
 }
 ?>

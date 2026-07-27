@@ -80,8 +80,13 @@ class BillingHandler extends Handler {
         if (!$request) $request = Application::get()->getRequest();
         $user = $request->getUser();
 
-        // Mengambil tagihan dengan status aktif
         $invoices = $this->invoiceService->getUserInvoices((int) $user->getId(), 'active');
+
+        // [FIX] Sisipkan label fee type yang sudah diterjemahkan, supaya
+        // billing/index.tpl tidak lagi mencetak enum mentah (PUBLICATION/7/dst).
+        foreach ($invoices as $invoice) {
+            $invoice->setData('localizedFeeType', $this->invoiceService->getLocalizedFeeName($invoice->getFeeType()));
+        }
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign([
@@ -107,8 +112,12 @@ class BillingHandler extends Handler {
         if (!$request) $request = Application::get()->getRequest();
         $user = $request->getUser();
 
-        // Mengambil tagihan yang sudah masuk riwayat (selesai/batal)
         $invoices = $this->invoiceService->getUserInvoices((int) $user->getId(), 'history');
+
+        // [FIX] Sama seperti index() di atas.
+        foreach ($invoices as $invoice) {
+            $invoice->setData('localizedFeeType', $this->invoiceService->getLocalizedFeeName($invoice->getFeeType()));
+        }
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign([

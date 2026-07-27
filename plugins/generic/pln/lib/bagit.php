@@ -30,12 +30,10 @@ declare(strict_types=1);
  * @edition Wizdam Edition (PHP 8.x Compatible)
  */
 
-
 require_once 'Archive/Tar.php';
 require_once 'bagit_fetch.php';
 require_once 'bagit_manifest.php';
 require_once 'bagit_utils.php';
-
 
 /**
  * This is a class for all bag exceptions.
@@ -44,7 +42,6 @@ class BagItException extends Exception
 {
 
 }
-
 
 /**
  * This is the main class for interacting with a bag.
@@ -496,7 +493,7 @@ class BagIt
 
     /**
      * This returns the value for a key from bagInfoData.
-     * * @param string $key This is the key to get the value associated with.
+     * @param string $key This is the key to get the value associated with.
      *
      * @return string|null
      * @author Eric Rochester <erochest@virginia.edu>
@@ -736,6 +733,5 @@ class BagIt
  * c-hanging-comment-ender-p: nil
  * End:
  */
-
 
 ?>

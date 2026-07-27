@@ -17,6 +17,7 @@ declare(strict_types=1);
  * sites/systems.
  */
 
+/** @var string $op */
 switch ($op) {
 	case 'plugin':
 		define('HANDLER_CLASS', 'PaymentHandler');

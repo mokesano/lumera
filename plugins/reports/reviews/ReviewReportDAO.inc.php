@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @ingroup plugins_reports_review
  * @see ReviewReportPlugin
  *
- * @brief Review report DAO
+ * @brief Review report DAO.
  */
 
 import('classes.article.ArticleComment');
@@ -60,23 +60,23 @@ class ReviewReportDAO extends DAO {
                 (r.cancelled=1) AS cancelled,
                 r.recommendation AS recommendation
             FROM review_assignments r
-                LEFT JOIN articles a ON r.submission_id = a.article_id
+                LEFT JOIN articles a ON r.article_id = a.article_id
                 LEFT JOIN article_settings asl ON (a.article_id=asl.article_id AND asl.locale=? AND asl.setting_name=?)
                 LEFT JOIN article_settings aspl ON (a.article_id=aspl.article_id AND aspl.locale=a.locale AND aspl.setting_name=?),
                 users u
             WHERE u.user_id=r.reviewer_id AND a.journal_id= ?
             ORDER BY article',
             [
-                $locale, // Article title
+                (string) $locale,
                 'title',
                 'title',
-                $journalId
+                (int) $journalId
             ]
         );
         $reviewsReturner = new DBRowIterator($result);
 
         return [$commentsReturner, $reviewsReturner];
     }
-}
 
+}
 ?>

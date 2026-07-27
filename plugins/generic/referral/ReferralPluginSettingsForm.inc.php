@@ -11,9 +11,7 @@ declare(strict_types=1);
  * @class ReferralPluginSettingsForm
  * @ingroup plugins_generic_referral
  *
- * @brief Form for journal managers to modify referral plugin settings
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Form for journal managers to modify referral plugin settings.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -21,63 +19,69 @@ import('lib.pkp.classes.form.Form');
 class ReferralPluginSettingsForm extends Form {
 
     /** @var int */
-    public $journalId;
+    protected $_journalId;
 
-    /** @var object */
-    public $plugin;
+    /** @var ReferralPlugin */
+    protected $_plugin;
 
     /**
-     * Constructor
-     * @param object $plugin
+     * Constructor.
+     * @param ReferralPlugin $plugin
      * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
-        $this->journalId = $journalId;
-        $this->plugin = $plugin;
+        $this->_journalId = (int) $journalId;
+        $this->_plugin = $plugin;
 
         parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param ReferralPlugin $plugin
+     * @param int $journalId
      */
     public function ReferralPluginSettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::ReferralPluginSettingsForm(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Initialize form data.
+     * @see Form::initData()
+     * @return void
      */
     public function initData() {
-        $journalId = $this->journalId;
-        $plugin = $this->plugin;
-
         $this->_data = [
-            'exclusions' => $plugin->getSetting($journalId, 'exclusions')
+            'exclusions' => $this->_plugin->getSetting($this->_journalId, 'exclusions')
         ];
     }
 
     /**
      * Assign form data to user-submitted data.
+     * @see Form::readInputData()
+     * @return void
      */
     public function readInputData() {
         $this->readUserVars(['exclusions']);
     }
 
     /**
-     * Save settings. 
+     * Save settings.
+     * @see Form::execute()
+     * @param mixed $object Ignored.
+     * @return void
      */
     public function execute($object = null) {
-        $plugin = $this->plugin;
-        $journalId = $this->journalId;
-
-        // [PHP 8 FIX] Handle null data before trim
-        $plugin->updateSetting($journalId, 'exclusions', trim($this->getData('exclusions') ?? ''), 'string');
+        $exclusions = (string) ($this->getData('exclusions') ?? '');
+        $this->_plugin->updateSetting($this->_journalId, 'exclusions', trim($exclusions), 'string');
     }
-}
 
+}
 ?>

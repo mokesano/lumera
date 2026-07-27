@@ -9,6 +9,9 @@ declare(strict_types=1);
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @class TimedViewReportForm
+ * @ingroup plugins_generic_timedView
+ *
+ * @brief Form for generating the timed view report.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -16,7 +19,7 @@ import('lib.pkp.classes.form.Form');
 class TimedViewReportForm extends Form {
 
     /**
-     * Constructor
+     * Constructor.
      * @param object $plugin
      */
     public function __construct($plugin) {
@@ -32,7 +35,7 @@ class TimedViewReportForm extends Form {
             function($dateStartYear) {
                 $minYear = (int) date('Y') + TIMED_VIEW_REPORT_YEAR_OFFSET_PAST;
                 $maxYear = (int) date('Y') + TIMED_VIEW_REPORT_YEAR_OFFSET_FUTURE;
-                return ($dateStartYear >= $minYear && $dateStartYear <= $maxYear);
+                return ((int) $dateStartYear >= $minYear && (int) $dateStartYear <= $maxYear);
             }
         ));
 
@@ -43,7 +46,7 @@ class TimedViewReportForm extends Form {
             'required', 
             'plugins.reports.timedView.form.dateStartValid', 
             function($dateStartMonth) {
-                return ($dateStartMonth >= 1 && $dateStartMonth <= 12);
+                return ((int) $dateStartMonth >= 1 && (int) $dateStartMonth <= 12);
             }
         ));
 
@@ -54,7 +57,7 @@ class TimedViewReportForm extends Form {
             'required', 
             'plugins.reports.timedView.form.dateStartValid', 
             function($dateStartDay) {
-                return ($dateStartDay >= 1 && $dateStartDay <= 31);
+                return ((int) $dateStartDay >= 1 && (int) $dateStartDay <= 31);
             }
         ));
 
@@ -68,7 +71,7 @@ class TimedViewReportForm extends Form {
             function($dateEndYear) {
                 $minYear = (int) date('Y') + TIMED_VIEW_REPORT_YEAR_OFFSET_PAST;
                 $maxYear = (int) date('Y') + TIMED_VIEW_REPORT_YEAR_OFFSET_FUTURE;
-                return ($dateEndYear >= $minYear && $dateEndYear <= $maxYear);
+                return ((int) $dateEndYear >= $minYear && (int) $dateEndYear <= $maxYear);
             }
         ));
 
@@ -79,7 +82,7 @@ class TimedViewReportForm extends Form {
             'required', 
             'plugins.reports.timedView.form.dateEndValid', 
             function($dateEndMonth) {
-                return ($dateEndMonth >= 1 && $dateEndMonth <= 12);
+                return ((int) $dateEndMonth >= 1 && (int) $dateEndMonth <= 12);
             }
         ));
 
@@ -90,7 +93,7 @@ class TimedViewReportForm extends Form {
             'required', 
             'plugins.reports.timedView.form.dateEndValid', 
             function($dateEndDay) {
-                return ($dateEndDay >= 1 && $dateEndDay <= 31);
+                return ((int) $dateEndDay >= 1 && (int) $dateEndDay <= 31);
             }
         ));
 
@@ -98,7 +101,8 @@ class TimedViewReportForm extends Form {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param object $plugin
      */
     public function TimedViewReportForm($plugin) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -113,12 +117,17 @@ class TimedViewReportForm extends Form {
 
     /**
      * Display the form.
-     * @param PKPRequest|null $request
+     * @see Form::display()
+     * @param mixed $request
      * @param string|null $template
      */
     public function display($request = null, $template = null) {
-        $templateMgr = TemplateManager::getManager();
-        
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('yearOffsetPast', TIMED_VIEW_REPORT_YEAR_OFFSET_PAST);
         $templateMgr->assign('yearOffsetFuture', TIMED_VIEW_REPORT_YEAR_OFFSET_FUTURE);
 
@@ -127,53 +136,56 @@ class TimedViewReportForm extends Form {
 
     /**
      * Assign form data to user-submitted data.
+     * @see Form::readInputData()
      */
     public function readInputData() {
         $this->readUserVars(['dateStartYear', 'dateStartMonth', 'dateStartDay', 'dateEndYear', 'dateEndMonth', 'dateEndDay', 'useTimedViewRecords']);
 
-        $this->_data['dateStart'] = date('Ymd', mktime(0, 0, 0, (int) $this->_data['dateStartMonth'], (int) $this->_data['dateStartDay'], (int) $this->_data['dateStartYear']));
-        $this->_data['dateEnd'] = date('Ymd', mktime(0, 0, 0, (int) $this->_data['dateEndMonth'], (int) $this->_data['dateEndDay'], (int) $this->_data['dateEndYear']));
+        $this->_data['dateStart'] = date('Ymd', mktime(0, 0, 0, (int) ($this->_data['dateStartMonth'] ?? 1), (int) ($this->_data['dateStartDay'] ?? 1), (int) ($this->_data['dateStartYear'] ?? date('Y'))));
+        $this->_data['dateEnd'] = date('Ymd', mktime(0, 0, 0, (int) ($this->_data['dateEndMonth'] ?? 1), (int) ($this->_data['dateEndDay'] ?? 1), (int) ($this->_data['dateEndYear'] ?? date('Y'))));
     }
 
     /**
-     * Save subscription.
-     * @param object|null $object
+     * Save subscription and generate report.
+     * @see Form::execute()
+     * @param mixed $object Ignored.
      */
     public function execute($object = null) {
+        // Lumera Singleton Fallback
         $request = Application::get()->getRequest();
-        $router = $request->getRouter();
-        $journal = $router->getContext($request);
-        $journalId = $journal->getId();
-
-        $dateStart = $this->getData('dateStart');
-        $dateEnd = $this->getData('dateEnd');
-        if ($this->getData('useTimedViewRecords')) {
-            $metricType = OJS_METRIC_TYPE_TIMED_VIEWS;
-        } else {
-            $metricType = OJS_METRIC_TYPE_COUNTER;
+        $journal = $request->getJournal();
+        
+        if (!$journal) {
+            return;
         }
+        $journalId = (int) $journal->getId();
+
+        $dateStart = (string) $this->getData('dateStart');
+        $dateEnd = (string) $this->getData('dateEnd');
+        $metricType = $this->getData('useTimedViewRecords') ? OJS_METRIC_TYPE_TIMED_VIEWS : OJS_METRIC_TYPE_COUNTER;
 
         import('lib.pkp.classes.db.DBResultRange');
         $dbResultRange = new DBResultRange(STATISTICS_MAX_ROWS);
 
-        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /* @var $metricsDao MetricsDAO */
+        /** @var MetricsDAO $metricsDao */
+        $metricsDao = DAORegistry::getDAO('MetricsDAO');
         $columns = [STATISTICS_DIMENSION_ASSOC_ID, STATISTICS_DIMENSION_ASSOC_TYPE, STATISTICS_DIMENSION_SUBMISSION_ID];
         $filter = [
             STATISTICS_DIMENSION_ASSOC_TYPE => [ASSOC_TYPE_ARTICLE, ASSOC_TYPE_GALLEY],
             STATISTICS_DIMENSION_CONTEXT_ID => $journalId
         ];
-        if ($dateStart && $dateEnd) {
+        if ($dateStart !== '' && $dateEnd !== '') {
             $filter[STATISTICS_DIMENSION_DAY] = ['from' => $dateStart, 'to' => $dateEnd];
         }
 
-        // Need to consider paging of stats records for databases with
-        // large amount of statistics data.
         $allReportStats = [];
 
-        // While we still have stats records about article abstract views,
-        // keep adding them to the total.
+        // Paginate stats records for databases with large amounts of statistics data.
         while (true) {
-            $reportStats = $metricsDao->getMetrics($metricType, $columns, $filter,
+            $reportStats = $metricsDao->getMetrics(
+                $metricType, 
+                $columns, 
+                $filter,
                 [
                     STATISTICS_DIMENSION_SUBMISSION_ID => STATISTICS_ORDER_ASC,
                     STATISTICS_DIMENSION_ASSOC_TYPE => STATISTICS_ORDER_ASC
@@ -181,110 +193,108 @@ class TimedViewReportForm extends Form {
                 $dbResultRange
             );
 
+            if (empty($reportStats)) {
+                break;
+            }
+
             $allReportStats = array_merge($allReportStats, $reportStats);
             $dbResultRange->setPage($dbResultRange->getPage() + 1);
 
-            // It means we don't have more pages to fetch.
-            if (count($reportStats) < $dbResultRange->getCount()) break;
+            if (count($reportStats) < $dbResultRange->getCount()) {
+                break;
+            }
         }
 
         // Format stats and retrieve submission and galleys info.
-        list($articleData, $galleyLabels, $galleyViews) = $this->_formatStats($allReportStats);
+        [$articleData, $galleyLabels, $galleyViews] = $this->_formatStats($allReportStats);
         $this->_buildReport($articleData, $galleyLabels, $galleyViews);
     }
 
     /**
-     * Return report statistics already formatted in columns
-     * to generate the report.
-     * @param array $reportStats All metric records retrieved with MetricsDAO::getMetrics()
+     * Return report statistics already formatted in columns to generate the report.
+     * @param array $reportStats
      * @return array
      */
     public function _formatStats($reportStats) {
-        $articleData = $galleyLabels = $galleyViews = [];
+        $articleData = [];
+        $galleyLabels = [];
+        $galleyViews = [];
 
-        $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
-        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /* @var $publishedArticleDao PublishedArticleDAO */
-        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /* @var $galleyDao ArticleGalleyDAO */
+        /** @var IssueDAO $issueDao */
+        $issueDao = DAORegistry::getDAO('IssueDAO');
+        /** @var PublishedArticleDAO $publishedArticleDao */
+        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+        /** @var ArticleGalleyDAO $galleyDao */
+        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
 
-        // Use array_values to ensure numerical indexing for the for-loop
-        $reportStats = array_values($reportStats);
-        $count = count($reportStats);
+        $currentArticleId = null;
+        $galleyViewTotal = 0;
 
-        for ($i = 0; $i < $count; $i++) {
-            $record = $reportStats[$i];
-            $articleId = $record[STATISTICS_DIMENSION_SUBMISSION_ID];
+        foreach ($reportStats as $record) {
+            $articleId = (int) $record[STATISTICS_DIMENSION_SUBMISSION_ID];
+            $assocType = (int) $record[STATISTICS_DIMENSION_ASSOC_TYPE];
 
-            // Retrieve article and galleys data related to the
-            // working article id.
-            $assocType = $record[STATISTICS_DIMENSION_ASSOC_TYPE];
+            // Initialize data when encountering a new article
+            if ($currentArticleId !== $articleId) {
+                if ($currentArticleId !== null && isset($articleData[$currentArticleId])) {
+                    $articleData[$currentArticleId]['galleyViews'] = $galleyViewTotal;
+                }
+                
+                $currentArticleId = $articleId;
+                $galleyViewTotal = 0;
 
-            // Retrieve article data, if it wasn't before.
-            if (!isset($articleData[$articleId])) {
                 $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($articleId, null, true);
-                if (!$publishedArticle) continue;
-                $issueId = $publishedArticle->getIssueId();
+                if (!$publishedArticle) {
+                    $currentArticleId = null; // Skip invalid records
+                    continue;
+                }
+                
+                $issueId = (int) $publishedArticle->getIssueId();
                 $issue = $issueDao->getIssueById($issueId, null, true);
 
-                if ($assocType == ASSOC_TYPE_ARTICLE) {
-                    $abstractViews = $record[STATISTICS_METRIC];
-                } else {
-                    $abstractViews = '';
-                }
-
                 $articleData[$articleId] = [
-                    'id' => $articleId,
-                    'title' => $publishedArticle->getLocalizedTitle(),
-                    'issue' => $issue->getIssueIdentification(),
-                    'datePublished' => $publishedArticle->getDatePublished(),
-                    'totalAbstractViews' => $abstractViews
+                    'id' => (string) $articleId,
+                    'title' => (string) $publishedArticle->getLocalizedTitle(),
+                    'issue' => $issue ? (string) $issue->getIssueIdentification() : '',
+                    'datePublished' => (string) $publishedArticle->getDatePublished(),
+                    'totalAbstractViews' => '',
+                    'galleyViews' => 0
                 ];
             }
 
-            // Retrieve galley data.
-            if ($assocType == ASSOC_TYPE_GALLEY) {
-                if (!isset($galleyViews[$articleId])) {
-                    $galleyViews[$articleId] = [];
-                }
-                $galleyId = $record[STATISTICS_DIMENSION_ASSOC_ID];
+            // Update abstract views if this record is for the article
+            if ($assocType === ASSOC_TYPE_ARTICLE) {
+                $articleData[$articleId]['totalAbstractViews'] = (int) $record[STATISTICS_METRIC];
+            }
+
+            // Retrieve galley data
+            if ($assocType === ASSOC_TYPE_GALLEY) {
+                $galleyId = (int) $record[STATISTICS_DIMENSION_ASSOC_ID];
                 $galley = $galleyDao->getGalley($galleyId, null, true);
+                
                 if ($galley) {
-                    $label = $galley->getLabel();
-                    $idx = array_search($label, $galleyLabels);
+                    $label = (string) $galley->getLabel();
+                    $idx = array_search($label, $galleyLabels, true);
                     if ($idx === false) {
                         $idx = count($galleyLabels);
                         $galleyLabels[] = $label;
                     }
 
-                    // Make sure the array is the same size as in previous iterations
+                    if (!isset($galleyViews[$articleId])) {
+                        $galleyViews[$articleId] = [];
+                    }
                     $galleyViews[$articleId] = array_pad($galleyViews[$articleId], count($galleyLabels), '');
 
-                    $views = $record[STATISTICS_METRIC];
+                    $views = (int) $record[STATISTICS_METRIC];
                     $galleyViews[$articleId][$idx] = $views;
-                    
-                    if (!isset($galleyViewTotal)) $galleyViewTotal = 0;
                     $galleyViewTotal += $views;
                 }
             }
+        }
 
-            // Peek next record to see if article changes
-            $nextRecord = ($i + 1 < $count) ? $reportStats[$i + 1] : null;
-            if ($nextRecord) {
-                $nextArticleId = $nextRecord[STATISTICS_DIMENSION_SUBMISSION_ID];
-            } else {
-                $nextArticleId = null;
-            }
-
-            if ($nextArticleId != $articleId) {
-                // Finished getting data for all objects related to the
-                // working article id.
-                // Add the galleys total downloads.
-                if (isset($articleData[$articleId]) && isset($galleyViewTotal)) {
-                    $articleData[$articleId]['galleyViews'] = $galleyViewTotal;
-                }
-
-                // Clean up.
-                unset($galleyViewTotal);
-            }
+        // Finalize the last article
+        if ($currentArticleId !== null && isset($articleData[$currentArticleId])) {
+            $articleData[$currentArticleId]['galleyViews'] = $galleyViewTotal;
         }
 
         return [$articleData, $galleyLabels, $galleyViews];
@@ -292,14 +302,16 @@ class TimedViewReportForm extends Form {
 
     /**
      * Build the report using the passed data.
-     * @param array $articleData Title, journal, data, abstract views, etc.
-     * @param array $galleyLabels All galley labels to be used as columns.
-     * @param array $galleyViews All galley views per label.
+     * @param array $articleData
+     * @param array $galleyLabels
+     * @param array $galleyViews
      */
     public function _buildReport($articleData, $galleyLabels, $galleyViews) {
-        header('content-type: text/comma-separated-values');
-        header('content-disposition: attachment; filename=report.csv');
+        header('Content-Type: text/comma-separated-values');
+        header('Content-Disposition: attachment; filename=report.csv');
+        
         $fp = fopen('php://output', 'wt');
+        
         $reportColumns = [
             __('plugins.reports.timedView.report.articleId'),
             __('plugins.reports.timedView.report.articleTitle'),
@@ -309,18 +321,31 @@ class TimedViewReportForm extends Form {
             __('plugins.reports.timedView.report.galleyViews'),
         ];
 
-        fputcsv($fp, array_merge($reportColumns, $galleyLabels));
+        PKPString::fputcsv($fp, array_merge($reportColumns, $galleyLabels));
 
-        $dateFormatShort = Config::getVar('general', 'date_format_short');
+        $galleyCount = count($galleyLabels);
         foreach ($articleData as $articleId => $article) {
+            $row = [
+                $article['id'],
+                $article['title'],
+                $article['issue'],
+                $article['datePublished'],
+                $article['totalAbstractViews'],
+                $article['galleyViews']
+            ];
+
             if (isset($galleyViews[$articleId])) {
-                fputcsv($fp, array_merge($articleData[$articleId], $galleyViews[$articleId]));
+                $row = array_merge($row, $galleyViews[$articleId]);
             } else {
-                fputcsv($fp, $articleData[$articleId]);
+                // Pad with empty strings to maintain CSV column alignment
+                $row = array_merge($row, array_fill(0, $galleyCount, ''));
             }
+            
+            PKPString::fputcsv($fp, $row);
         }
 
         fclose($fp);
     }
+
 }
 ?>

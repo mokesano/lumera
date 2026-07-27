@@ -6,22 +6,22 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3.
  *
  * @class CheckoutService
  * 
  * @brief Domain-Driven Design: Menangani siklus 3-Tahap Checkout sebelum Tagihan (Invoice) resmi diterbitkan.
- * 
  * Menggunakan tabel 'queued_payments' sebagai pangkalan data keranjang sementara (Stateful Cart).
  */
 
-import('classes.payment.ojs.OJSQueuedPayment');
+import('lib.wizdam.classes.checkout.CheckoutSession');
+import('lib.wizdam.classes.checkout.CheckoutSessionDAO');
 import('lib.wizdam.classes.services.InvoiceService');
 
 class CheckoutService {
 
-    /** @var QueuedPaymentDAO */
-    private $queuedPaymentDao;
+    /** @var CheckoutSessionDAO */
+    private CheckoutSessionDAO $sessionDao;
 
     /** @var InvoiceService */
     private InvoiceService $invoiceService;
@@ -30,7 +30,7 @@ class CheckoutService {
      * Constructor
      */
     public function __construct() {
-        $this->queuedPaymentDao = DAORegistry::getDAO('QueuedPaymentDAO');
+        $this->sessionDao = DAORegistry::getDAO('CheckoutSessionDAO');
         $this->invoiceService = new InvoiceService();
     }
 
@@ -40,86 +40,62 @@ class CheckoutService {
 
     /**
      * Membuat atau mengambil keranjang sementara di tabel queued_payments.
-     * @param int $journalId ID jurnal terkait
-     * @param int $userId ID pengguna yang melakukan checkout
-     * @param int $articleId ID naskah/artikel yang sedang diproses
-     * @param string $baseFeeType Tipe biaya dasar (misal: 'SUBMISSION_FEE', 'PUBLICATION_FEE')
-     * @param float $baseAmount Jumlah biaya dasar
-     * @param string $currencyCode Kode mata uang (misal: 'USD', 'IDR')
-     * @return int ID dari keranjang yang sudah dibuat atau ditemukan
+     * @param int $publisherOrJournalId
+     * @param int $userId
+     * @param int $articleId
+     * @param string $baseFeeType
+     * @param float $baseAmount
+     * @param string $currencyCode
+     * @return int
      */
-    public function initCart(
-        int $publisherOrJournalId, 
-        int $userId, 
-        int $articleId, 
-        string $baseFeeType, 
-        float $baseAmount, 
-        string $currencyCode
-    ): int {
+    public function initCart(int $publisherOrJournalId, int $userId, int $articleId, string $baseFeeType, float $baseAmount, string $currencyCode): int {
         $request = Application::get()->getRequest();
         $session = $request->getSession();
-        
-        // Tracking ID keranjang user untuk sesi ini
-        $cartKey = "wizdam_cart_{$baseFeeType}_{$articleId}";
-        $queuedPaymentId = (int) $session->getSessionVar($cartKey);
 
-        // 1. Validasi keranjang yang menggantung (Abandoned Cart) di Database
-        if ($queuedPaymentId > 0) {
-            $existingPayment = $this->queuedPaymentDao->getQueuedPayment($queuedPaymentId);
-            if ($existingPayment) {
-                return $queuedPaymentId; // Gunakan keranjang yang sudah ada di DB
-            }
+        $cartKey = "checkout_{$baseFeeType}_{$articleId}";
+        $sessionId = (int) $session->getSessionVar($cartKey);
+
+        if ($sessionId > 0) {
+            $existing = $this->sessionDao->getSession($sessionId);
+            if ($existing) return $sessionId;
         }
 
-        // 2. Buat Record Baru menggunakan Objek yang sudah kita modifikasi
-        $payment = new OJSQueuedPayment($baseAmount, $currencyCode, $userId, $articleId);
-        
-        $payment->setJournalId($publisherOrJournalId);
-        $payment->setType($baseFeeType);
-        
-        // 3. Susun rincian 3-Tahap
-        $payload = [
-            'base_item' => [
-                'type' => $baseFeeType,
-                'amount' => $baseAmount
-            ],
-            'additional_items' => [], 
+        $checkoutSession = new CheckoutSession($baseAmount, $currencyCode, $userId, $articleId);
+        $checkoutSession->setJournalId($publisherOrJournalId);
+        $checkoutSession->setType($baseFeeType);
+        $checkoutSession->setCheckoutPayload([
+            'base_item' => ['type' => $baseFeeType, 'amount' => $baseAmount],
+            'additional_items' => [],
             'promo_code' => null,
             'discount_amount' => 0.0,
-            'billing_address' => []   
-        ];
-        
-        // Suntikkan array ke properti baru yang kita buat di OJSQueuedPayment
-        $payment->setCheckoutPayload($payload);
-        
-        // 4. Simpan ke database (DAO akan melakukan serialize seluruh objek termasuk payload)
-        $newQueuedPaymentId = (int) $this->queuedPaymentDao->insertQueuedPayment($payment);
+            'billing_address' => []
+        ]);
 
-        // 5. Catat kunci pelacakan
-        $session->setSessionVar($cartKey, $newQueuedPaymentId);
+        $newSessionId = $this->sessionDao->insertSession($checkoutSession);
+        $session->setSessionVar($cartKey, $newSessionId);
 
-        return $newQueuedPaymentId;
+        return $newSessionId;
     }
 
     /**
      * Memperbarui rincian di dalam keranjang (Exp: Fast-Track or Promo)
-     * @param int $queuedPaymentId ID keranjang yang ingin diperbarui
-     * @param array $additionalItems Array item tambahan yang ingin ditambahkan
-     * @param string|null $promoCode Kode promo yang diterapkan (jika ada)
-     * @param float $discountAmount Jumlah diskon yang diterapkan (jika ada)
-     * @return bool True pembaruan berhasil, False keranjang tidak ditemukan
+     * @param int $queuedPaymentId
+     * @param array $additionalItems
+     * @param string|null $promoCode
+     * @param float $discountAmount
+     * @return bool
      */
     public function updateCartItems(int $queuedPaymentId, array $additionalItems, ?string $promoCode, float $discountAmount): bool {
-        $payment = $this->queuedPaymentDao->getQueuedPayment($queuedPaymentId);
-        if (!$payment) return false;
+        $checkoutSession = $this->sessionDao->getSession($queuedPaymentId);
+        if (!$checkoutSession) return false;
 
-        $payload = $payment->getCheckoutPayload();
+        $payload = $checkoutSession->getCheckoutPayload();
         $payload['additional_items'] = $additionalItems;
         $payload['promo_code'] = $promoCode;
         $payload['discount_amount'] = $discountAmount;
 
-        $payment->setCheckoutPayload($payload);
-        $this->queuedPaymentDao->updateQueuedPayment($queuedPaymentId, $payment);
+        $checkoutSession->setCheckoutPayload($payload);
+        $this->sessionDao->updateSession($queuedPaymentId, $checkoutSession);
         return true;
     }
 
@@ -129,21 +105,15 @@ class CheckoutService {
 
     /**
      * Menyimpan alamat penagihan institusi/pribadi dalam payload keranjang.
-     * @param int $queuedPaymentId ID keranjang yang ingin diperbarui
-     * @param array $billingData Array data alamat penagihan (format: ['name
-     * @param string $name Nama lengkap untuk tagihan
-     * @param string $institution Nama institusi (jika ada)
-     * @param string $address Alamat lengkap
-     * @param string $city Kota
-     * @param string $country Negara
-     * @param string $postal_code Kode pos
-     * @return bool True jika pembaruan berhasil, False jika keranjang tidak ditemukan
+     * @param int $queuedPaymentId
+     * @param array $billingData
+     * @return bool
      */
     public function updateBillingAddress(int $queuedPaymentId, array $billingData): bool {
-        $payment = $this->queuedPaymentDao->getQueuedPayment($queuedPaymentId);
-        if (!$payment) return false;
+        $checkoutSession = $this->sessionDao->getSession($queuedPaymentId);
+        if (!$checkoutSession) return false;
 
-        $payload = $payment->getCheckoutPayload();
+        $payload = $checkoutSession->getCheckoutPayload();
         $payload['billing_address'] = [
             'name'        => $billingData['name'] ?? '',
             'institution' => $billingData['institution'] ?? '',
@@ -153,8 +123,8 @@ class CheckoutService {
             'postal_code' => $billingData['postal_code'] ?? '',
         ];
 
-        $payment->setCheckoutPayload($payload);
-        $this->queuedPaymentDao->updateQueuedPayment($queuedPaymentId, $payment);
+        $checkoutSession->setCheckoutPayload($payload);
+        $this->sessionDao->updateSession($queuedPaymentId, $checkoutSession);
         return true;
     }
 
@@ -164,17 +134,16 @@ class CheckoutService {
 
     /**
      * Menghitung total keranjang secara real-time berdasarkan isi payload.
-     * @param int $queuedPaymentId ID keranjang yang ingin dihitung
-     * @return array Rincian subtotal, diskon, pajak, dan total akhir
+     * @param int $queuedPaymentId
+     * @return array
      */
     public function calculateCartSummary(int $queuedPaymentId): array {
-        $payment = $this->queuedPaymentDao->getQueuedPayment($queuedPaymentId);
-        if (!$payment) throw new \Exception('Keranjang tidak ditemukan.');
+        $checkoutSession = $this->sessionDao->getSession($queuedPaymentId);
+        if (!$checkoutSession) throw new \Exception('Keranjang tidak ditemukan.');
 
-        $payload = $payment->getCheckoutPayload();
-        $baseAmount = (float) ($payload['base_item']['amount'] ?? $payment->getAmount());
+        $payload = $checkoutSession->getCheckoutPayload();
+        $baseAmount = (float) ($payload['base_item']['amount'] ?? $checkoutSession->getAmount());
         $additionalAmount = 0.0;
-        
         foreach (($payload['additional_items'] ?? []) as $item) {
             $additionalAmount += (float) ($item['amount'] ?? 0);
         }
@@ -182,19 +151,18 @@ class CheckoutService {
         $subtotal = $baseAmount + $additionalAmount;
         $discount = (float) ($payload['discount_amount'] ?? 0);
         $taxableAmount = max(0, $subtotal - $discount);
-        
+
         $settingTaxRate = 0;
         $isTaxInclusive = false;
-
-        if ($payment->getJournalId() > 0) {
+        if ($checkoutSession->getJournalId() > 0) {
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
-            $journal = $journalDao->getById($payment->getJournalId());
+            $journal = $journalDao->getById($checkoutSession->getJournalId());
             if ($journal) {
                 $settingTaxRate = (float) $journal->getSetting('paymentTax');
                 $isTaxInclusive = (bool) $journal->getSetting('paymentTaxInclusive');
             }
         }
-        
         $taxRate = $settingTaxRate > 0 ? ($settingTaxRate / 100) : 0.00;
 
         if ($isTaxInclusive) {
@@ -216,7 +184,7 @@ class CheckoutService {
             'tax_rate'         => $settingTaxRate,
             'is_tax_inclusive' => $isTaxInclusive,
             'grand_total'      => $grandTotal,
-            'currency'         => $payment->getCurrencyCode(),
+            'currency'         => $checkoutSession->getCurrencyCode(),
             'billing_address'  => $payload['billing_address'] ?? []
         ];
     }
@@ -228,36 +196,34 @@ class CheckoutService {
     /**
      * Krusial! Mengubah status keranjang sementara menjadi Invoice Resmi.
      * Memanggil InvoiceService untuk mencetak Invoice Number permanen.
-     * @param int $queuedPaymentId ID keranjang yang akan difinalisasi
-     * @return \Invoice Objek Invoice yang sudah tercetak
+     * @param int $queuedPaymentId
+     * @return \Invoice
      */
     public function finalizeCheckout(int $queuedPaymentId): \Invoice {
-        $payment = $this->queuedPaymentDao->getQueuedPayment($queuedPaymentId);
-        if (!$payment) throw new \Exception(__('checkout.error.cartNotFound'));
+        $checkoutSession = $this->sessionDao->getSession($queuedPaymentId);
+        if (!$checkoutSession) throw new \Exception(__('checkout.error.cartNotFound'));
 
         $summary = $this->calculateCartSummary($queuedPaymentId);
-        $payload = $payment->getCheckoutPayload();
-        
+        $payload = $checkoutSession->getCheckoutPayload();
         $hasAdditional = !empty($payload['additional_items']);
-        $finalFeeType = $hasAdditional ? 'BUNDLE_PAYMENT' : $payment->getType();
+        $finalFeeType = $hasAdditional ? 'BUNDLE_PAYMENT' : $checkoutSession->getType();
 
-        // 1. DATABASE HIT: Cetak Invoice Permanen WIZDAM
         $invoice = $this->invoiceService->generateInvoice(
-            (int) $payment->getJournalId(),
-            (int) $payment->getUserId(),
-            (int) $payment->getAssocId(),
+            (int) $checkoutSession->getJournalId(),
+            (int) $checkoutSession->getUserId(),
+            (int) $checkoutSession->getAssocId(),
             $finalFeeType,
             (float) $summary['grand_total'],
             $summary['currency']
         );
-        
-        // 2. Bersihkan antrean karena transaksi sudah final
-        $this->queuedPaymentDao->deleteQueuedPayment($queuedPaymentId);
-        
+
+        $this->sessionDao->deleteSession($queuedPaymentId);
+
         $request = Application::get()->getRequest();
-        $request->getSession()->unsetSessionVar("wizdam_cart_{$payment->getType()}_{$payment->getAssocId()}");
+        $request->getSession()->unsetSessionVar("checkout_{$checkoutSession->getType()}_{$checkoutSession->getAssocId()}");
 
         return $invoice;
     }
+
 }
 ?>
