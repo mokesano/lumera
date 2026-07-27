@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_objectsForReview_tasks
  *
  * @brief Class to perform automated reminders for object reviewers.
- * [WIZDAM EDITION] Modernized. PHP 8 Safe. Resource Optimized.
  */
 
 import('lib.pkp.classes.scheduledTask.ScheduledTask');
@@ -20,67 +19,83 @@ import('lib.pkp.classes.scheduledTask.ScheduledTask');
 class ObjectsForReviewReminder extends ScheduledTask {
     
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ObjectsForReviewReminder() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::ObjectsForReviewReminder(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
                 E_USER_DEPRECATED
             );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Get the name of this scheduled task
+     * Get the name of this scheduled task.
      * @see ScheduledTask::getName()
+     * @return string
      */
     public function getName() {
         return __('plugins.generic.objectsForReview.reminderTask.name');
     }
 
     /**
-     * Send email to object for review author
-     * @param $ofrAssignment ObjectForReviewAssignment
-     * @param $journal Journal
-     * @param $emailKey string
+     * Send email to object for review author.
+     * @param ObjectForReviewAssignment $ofrAssignment
+     * @param Journal $journal
+     * @param string $emailKey
+     * @return void
      */
     public function sendReminder($ofrAssignment, $journal, $emailKey) {
-        $journalId = $journal->getId();
+        $journalId = (int) $journal->getId();
 
-        // [MODERNISASI] Hapus &
         $author = $ofrAssignment->getUser();
         $objectForReview = $ofrAssignment->getObjectForReview();
         $editor = $objectForReview->getEditor();
 
-        $paramArray = array(
-            'authorName' => strip_tags($author->getFullName()),
-            'objectForReviewTitle' => '"' . strip_tags($objectForReview->getTitle()) . '"',
-            'objectForReviewDueDate' => date('l, F j, Y', strtotime($ofrAssignment->getDateDue())),
-            'submissionUrl' => Request::url($journal->getPath(), 'author', 'submit'),
-            'editorialContactSignature' => strip_tags($editor->getContactSignature())
-        );
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
+
+        $paramArray = [
+            'authorName' => strip_tags((string) $author->getFullName()),
+            'objectForReviewTitle' => '"' . strip_tags((string) $objectForReview->getTitle()) . '"',
+            'objectForReviewDueDate' => date('l, F j, Y', strtotime((string) $ofrAssignment->getDateDue())),
+            'submissionUrl' => $request->url($journal->getPath(), 'author', 'submit'),
+            'editorialContactSignature' => strip_tags((string) $editor->getContactSignature())
+        ];
 
         import('classes.mail.MailTemplate');
         $mail = new MailTemplate($emailKey);
-        $mail->setFrom($editor->getEmail(), $editor->getFullName());
-        $mail->addRecipient($author->getEmail(), $author->getFullName());
-        $mail->setSubject($mail->getSubject($journal->getPrimaryLocale()));
-        $mail->setBody($mail->getBody($journal->getPrimaryLocale()));
+        $mail->setFrom((string) $editor->getEmail(), (string) $editor->getFullName());
+        $mail->addRecipient((string) $author->getEmail(), (string) $author->getFullName());
+        
+        // MailTemplate handles locale internally based on the journal context.
+        $mail->setSubject($mail->getSubject());
+        $mail->setBody($mail->getBody());
+        
         $mail->assignParams($paramArray);
         $mail->send();
 
-        $ofrAssignment->setDateReminded(Core::getCurrentDate());
+        $currentDate = Core::getCurrentDate();
         
-        // [MODERNISASI] Hapus &
+        // [WIZDAM FIX] Use specific date setters based on the email key, 
+        // as generic 'setDateReminded' does not exist in ObjectForReviewAssignment.
+        if ($emailKey === 'OFR_REVIEW_REMINDER') {
+            $ofrAssignment->setDateRemindedBefore($currentDate);
+        } elseif ($emailKey === 'OFR_REVIEW_REMINDER_LATE') {
+            $ofrAssignment->setDateRemindedAfter($currentDate);
+        }
+        
+        /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
         $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
         $ofrAssignmentDao->updateObject($ofrAssignment);
     }
@@ -88,62 +103,65 @@ class ObjectsForReviewReminder extends ScheduledTask {
     /**
      * Cron callback to send reminders for object for review assignments.
      * @see ScheduledTask::executeActions()
+     * @return bool
      */
     public function executeActions() {
         // [WIZDAM RESOURCE] Prevent timeout on heavy cron jobs
         set_time_limit(0);
 
-        // [MODERNISASI] Hapus &
+        // [WIZDAM FIX] Explicit type annotation to resolve "Undefined method 'registerDAOs'"
+        /** @var ObjectsForReviewPlugin $ofrPlugin */
         $ofrPlugin = PluginRegistry::getPlugin('generic', 'objectsforreviewplugin');
         
         if ($ofrPlugin) {
             $ofrPluginName = $ofrPlugin->getName();
-            // Get all journals
+            
+            /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
             $journals = $journalDao->getJournals(true);
             
-            // Register the plugin DAOs and get the others
             $ofrPlugin->registerDAOs();
+            
+            /** @var PluginSettingsDAO $pluginSettingsDao */
             $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
+            /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
             $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
             
-            // For all journals
-            // [MODERNISASI] Hapus & pada loop
             while ($journal = $journals->next()) {
-                $journalId = $journal->getId();
-                // If the plugin is enabled
+                $journalId = (int) $journal->getId();
+                
                 $pluginEnabled = $pluginSettingsDao->getSetting($journalId, $ofrPluginName, 'enabled');
                 if ($pluginEnabled) {
-                    // Get plugin reminder settings
                     $enableDueReminderBefore = $pluginSettingsDao->getSetting($journalId, $ofrPluginName, 'enableDueReminderBefore');
                     $enableDueReminderAfter = $pluginSettingsDao->getSetting($journalId, $ofrPluginName, 'enableDueReminderAfter');
-                    $beforeDays = $pluginSettingsDao->getSetting($journalId, $ofrPluginName, 'numDaysBeforeDueReminder');
-                    $afterDays = $pluginSettingsDao->getSetting($journalId, $ofrPluginName, 'numDaysAfterDueReminder');
+                    $beforeDays = (int) $pluginSettingsDao->getSetting($journalId, $ofrPluginName, 'numDaysBeforeDueReminder');
+                    $afterDays = (int) $pluginSettingsDao->getSetting($journalId, $ofrPluginName, 'numDaysAfterDueReminder');
                     
-                    // If a reminder is set
                     if (($enableDueReminderBefore && $beforeDays > 0) || ($enableDueReminderAfter && $afterDays > 0)) {
-                        // Retrieve all incomplete object for review assignments
-                        // [MODERNISASI] Hapus &
                         $incompleteAssignments = $ofrAssignmentDao->getIncompleteAssignmentsByContextId($journalId);
                         
                         foreach ($incompleteAssignments as $incompleteAssignment) {
-                            if ($incompleteAssignment->getDateDue() != null) {
-                                $dueDate = strtotime($incompleteAssignment->getDateDue());
+                            $dateDue = $incompleteAssignment->getDateDue();
+                            if ($dateDue !== null) {
+                                $dueDate = strtotime((string) $dateDue);
+                                
+                                $dateRemindedBefore = $incompleteAssignment->getDateRemindedBefore();
+                                $dateRemindedAfter = $incompleteAssignment->getDateRemindedAfter();
                                 
                                 // Remind before:
                                 // If there hasn't been any such reminder, this option is set and due date is in the future
-                                if ($incompleteAssignment->getDateRemindedBefore() == null && $enableDueReminderBefore == 1 && time() < $dueDate) {
+                                if ($dateRemindedBefore === null && $enableDueReminderBefore == 1 && time() < $dueDate) {
                                     $nowToDueDate = $dueDate - time();
-                                    if ($nowToDueDate < 60 * 60 * 24 * $beforeDays) {
+                                    if ($nowToDueDate < (60 * 60 * 24 * $beforeDays)) {
                                         $this->sendReminder($incompleteAssignment, $journal, 'OFR_REVIEW_REMINDER');
                                     }
                                 }
                                 
                                 // Remind after:
                                 // If there hasn't been any such reminder, this option is set and due date is in the past
-                                if ($incompleteAssignment->getDateRemindedAfter() == null && $enableDueReminderAfter == 1 && time() > $dueDate) {
+                                if ($dateRemindedAfter === null && $enableDueReminderAfter == 1 && time() > $dueDate) {
                                     $dueDateToNow = time() - $dueDate;
-                                    if ($dueDateToNow > 60 * 60 * 24 * $afterDays) {
+                                    if ($dueDateToNow > (60 * 60 * 24 * $afterDays)) {
                                         $this->sendReminder($incompleteAssignment, $journal, 'OFR_REVIEW_REMINDER_LATE');
                                     }
                                 }
@@ -151,12 +169,12 @@ class ObjectsForReviewReminder extends ScheduledTask {
                         }
                     }
                 }
-                unset($journal);
             }
             return true;
-        } else {
-            return false;
         }
+        
+        return false;
     }
+    
 }
 ?>
