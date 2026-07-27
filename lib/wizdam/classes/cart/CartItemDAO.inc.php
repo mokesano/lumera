@@ -6,10 +6,10 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance
+ * Distributed under the GNU GPL v3.
+ * 
  * @class CartItemDAO
+ * 
  * @brief Data Access Object untuk operasi tabel cart_items (MyISAM).
  * Terisolasi di dalam direktori Wizdam Frontedge.
  */
@@ -27,10 +27,10 @@ class CartItemDAO extends DAO {
 
     /**
      * Periksa apakah item sudah ada di keranjang untuk pengguna tertentu.
-     * @param int $userId ID pengguna
-     * @param string $itemType Tipe item (misalnya 'article', 'issue')
-     * @param int $itemReferenceId ID referensi item (misalnya article_id, issue_id)
-     * @return array|null Mengembalikan array dengan 'cart_item_id' dan 'quantity' jika item ditemukan, atau null jika tidak ditemukan.
+     * @param int $userId
+     * @param string $itemType
+     * @param int $itemReferenceId
+     * @return array|null
      */
     public function checkItemExists(int $userId, string $itemType, int $itemReferenceId): ?array {
         $result = $this->retrieve(
@@ -50,9 +50,9 @@ class CartItemDAO extends DAO {
 
     /**
      * Perbarui kuantitas item di keranjang.
-     * @param int $cartItemId ID item keranjang
-     * @param int $newQuantity Kuantitas baru
-     * @return bool Mengembalikan true jika pembaruan berhasil, false jika gagal.
+     * @param int $cartItemId
+     * @param int $newQuantity
+     * @return bool
      */
     public function updateQuantity(int $cartItemId, int $newQuantity): bool {
         return (bool) $this->update(
@@ -63,13 +63,13 @@ class CartItemDAO extends DAO {
 
     /**
      * Masukkan item baru ke dalam keranjang.
-     * @param int $userId ID pengguna
-     * @param string $itemType Tipe item (misalnya 'article', 'issue')
-     * @param int $itemReferenceId ID referensi item (misalnya article_id, issue_id)
-     * @param string $itemTitle Judul item
-     * @param float $unitPrice Harga per unit
-     * @param int $quantity Kuantitas
-     * @return bool Mengembalikan true jika penyisipan berhasil, false jika gagal.
+     * @param int $userId
+     * @param string $itemType
+     * @param int $itemReferenceId
+     * @param string $itemTitle
+     * @param float $unitPrice
+     * @param int $quantity
+     * @return bool
      */
     public function insertCartItem(int $userId, string $itemType, int $itemReferenceId, string $itemTitle, float $unitPrice, int $quantity): bool {
         return (bool) $this->update(
@@ -82,8 +82,8 @@ class CartItemDAO extends DAO {
 
     /**
      * Ambil semua item keranjang untuk pengguna tertentu, diurutkan berdasarkan tanggal penambahan.
-     * @param int $userId ID pengguna
-     * @return array Mengembalikan array item keranjang, setiap item adalah array asosiatif dengan kolom dari tabel cart_items.
+     * @param int $userId
+     * @return array
      */
     public function getItemsByUserId(int $userId): array {
         $result = $this->retrieve(
@@ -103,9 +103,9 @@ class CartItemDAO extends DAO {
 
     /**
      * Hapus item dari keranjang berdasarkan ID item keranjang dan ID pengguna.
-     * @param int $userId ID pengguna
-     * @param int $cartItemId ID item keranjang
-     * @return bool Mengembalikan true jika penghapusan berhasil, false jika gagal.
+     * @param int $userId
+     * @param int $cartItemId
+     * @return bool
      */
     public function deleteItem(int $userId, int $cartItemId): bool {
         return (bool) $this->update(
@@ -116,8 +116,8 @@ class CartItemDAO extends DAO {
 
     /**
      * Hapus semua item dari keranjang untuk pengguna tertentu.
-     * @param int $userId ID pengguna
-     * @return bool Mengembalikan true jika penghapusan berhasil, false jika gagal.
+     * @param int $userId
+     * @return bool
      */
     public function deleteItemsByUserId(int $userId): bool {
         return (bool) $this->update(
@@ -125,5 +125,6 @@ class CartItemDAO extends DAO {
             [$userId]
         );
     }
+    
 }
 ?>

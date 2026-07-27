@@ -84,7 +84,7 @@
 	{if $isAuthor && !in_array($objectForReview->getId(), $authorAssignments)}
 		<br />
 		<br />
-		<a href="{url page="author" op="requestObjectForReview" path=$objectForReview->getId()}" class="action">{translate key="plugins.generic.objectsForReview.author.requestObjectForReview}</a>
+		<a href="{url page="author" op="requestObjectForReview" path=$objectForReview->getId()}" class="action">{translate key="plugins.generic.objectsForReview.author.requestObjectForReview"}</a>
 		<br />
 		<br />
 	{/if}

@@ -26,14 +26,14 @@ define('MEDRA_WS_RESPONSE_OK', 200);
 class MedraWebservice {
 
     /** @var string HTTP authentication credentials. */
-    protected $_auth;
+    protected string $_auth;
 
     /** @var string The mEDRA web service endpoint. */
-    protected $_endpoint;
+    protected string $_endpoint;
 
     /**
      * Constructor
-     * @param string $endpoint The mEDRA web service endpoint.
+     * @param string $endpoint
      * @param string $login
      * @param string $password
      */
@@ -53,7 +53,7 @@ class MedraWebservice {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -68,6 +68,7 @@ class MedraWebservice {
         $attachmentId = $this->_getContentId('metadata');
         $attachment = [$attachmentId => $xml];
         $arg = "<med:contentID href=\"$attachmentId\" />";
+        
         return $this->_doRequest('upload', $arg, $attachment);
     }
 
@@ -79,6 +80,7 @@ class MedraWebservice {
     public function viewMetadata(string $doi) {
         $doi = $this->_escapeXmlEntities($doi);
         $arg = "<med:doi>$doi</med:doi>";
+
         return $this->_doRequest('viewMetadata', $arg);
     }
 
@@ -90,7 +92,7 @@ class MedraWebservice {
      * @param string $action
      * @param string $arg
      * @param array|null $attachment
-     * @return bool|string True for success, an error message otherwise.
+     * @return bool|string
      */
     protected function _doRequest(string $action, string $arg, ?array $attachment = null) {
         // Build the multipart SOAP message from scratch.
@@ -104,13 +106,16 @@ class MedraWebservice {
             '</SOAP-ENV:Envelope>';
 
         $soapMessageId = $this->_getContentId($action);
-        if ($attachment) {
-            assert(count($attachment) == 1);
+        if ($attachment !== null) {
+            if (count($attachment) !== 1) {
+                throw new \RuntimeException('Attachment array must contain exactly one element.');
+            }
+            $attachmentKey = (string) key($attachment);
             $request =
                 "--MIME_boundary\r\n" .
                 $this->_getMimePart($soapMessageId, $soapMessage) .
                 "--MIME_boundary\r\n" .
-                $this->_getMimePart((string) key($attachment), current($attachment)) .
+                $this->_getMimePart($attachmentKey, current($attachment)) .
                 "--MIME_boundary--\r\n";
             $contentType = 'multipart/related; type="text/xml"; boundary="MIME_boundary"';
         } else {
@@ -120,10 +125,12 @@ class MedraWebservice {
 
         // Prepare HTTP session.
         $curlCh = curl_init();
-        if ($httpProxyHost = Config::getVar('proxy', 'http_host')) {
+        $httpProxyHost = Config::getVar('proxy', 'http_host');
+        if (!empty($httpProxyHost)) {
             curl_setopt($curlCh, CURLOPT_PROXY, $httpProxyHost);
             curl_setopt($curlCh, CURLOPT_PROXYPORT, Config::getVar('proxy', 'http_port', '80'));
-            if ($username = Config::getVar('proxy', 'username')) {
+            $username = Config::getVar('proxy', 'username');
+            if (!empty($username)) {
                 curl_setopt($curlCh, CURLOPT_PROXYUSERPWD, $username . ':' . Config::getVar('proxy', 'password'));
             }
         }
@@ -142,7 +149,7 @@ class MedraWebservice {
         $extraHeaders = [
             'SOAPAction: "' . $action . '"',
             'Content-Type: ' . $contentType,
-            'UserAgent: OJS-mEDRA'
+            'UserAgent: Lumera-mEDRA'
         ];
         curl_setopt($curlCh, CURLOPT_HTTPHEADER, $extraHeaders);
         curl_setopt($curlCh, CURLOPT_POSTFIELDS, $request);
@@ -151,36 +158,35 @@ class MedraWebservice {
         $response = curl_exec($curlCh);
         $status = curl_getinfo($curlCh, CURLINFO_HTTP_CODE);
 
-        // We do not localize our error messages as they are all
-        // fatal errors anyway and must be analyzed by technical staff.
         if ($response === false) {
-            $result = 'OJS-mEDRA: Expected string response.';
+            $result = 'Lumera-mEDRA: Expected string response.';
         }
 
-        if ($result === true && $status != MEDRA_WS_RESPONSE_OK) {
-            $result = 'OJS-mEDRA: Expected ' . MEDRA_WS_RESPONSE_OK . ' response code, got ' . $status . ' instead.';
+        if ($result === true && $status !== MEDRA_WS_RESPONSE_OK) {
+            $result = 'Lumera-mEDRA: Expected ' . MEDRA_WS_RESPONSE_OK . ' response code, got ' . $status . ' instead.';
         }
 
         curl_close($curlCh);
 
-        // Check SOAP response by simple string manipulation rather
-        // than instantiating a DOM.
+        // Check SOAP response by simple string manipulation rather than instantiating a DOM.
         if (is_string($response)) {
             $matches = [];
             PKPString::regexp_match_get('#<faultstring>([^<]*)</faultstring>#', $response, $matches);
             if (empty($matches)) {
-                if ($attachment) {
-                    assert(PKPString::regexp_match('#<returnCode>success</returnCode>#', $response));
+                if ($attachment !== null) {
+                    if (!PKPString::regexp_match('#<returnCode>success</returnCode>#', $response)) {
+                        throw new \RuntimeException('mEDRA upload response did not contain success returnCode.');
+                    }
                 } else {
                     $parts = explode("\r\n\r\n", $response);
                     $result = array_pop($parts);
-                    $result = PKPString::regexp_replace('/>[^>]*$/', '>', $result);
+                    $result = PKPString::regexp_replace('/>[^>]*$/', '>', (string) $result);
                 }
             } else {
                 $result = 'mEDRA: ' . $status . ' - ' . $matches[1];
             }
         } else {
-            $result = 'OJS-mEDRA: Expected string response.';
+            $result = 'Lumera-mEDRA: Expected string response.';
         }
 
         return $result;
@@ -206,7 +212,7 @@ class MedraWebservice {
      * @return string
      */
     protected function _getContentId(string $prefix): string {
-        return $prefix . md5(uniqid()) . '@medra.org';
+        return $prefix . md5(uniqid('', true)) . '@medra.org';
     }
 
     /**
@@ -217,6 +223,6 @@ class MedraWebservice {
     protected function _escapeXmlEntities(string $string): string {
         return XMLNode::xmlentities($string);
     }
-}
 
+}
 ?>

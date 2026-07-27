@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class MetsExportDom
  * @ingroup GatewayPlugin
  *
- * @brief MetsExportDom export plugin DOM functions for export
- * [WIZDAM EDITION] Refactored for PHP 7.4/8.0+ (Static Methods, Strict Types, XML DOM)
+ * @brief MetsExportDom export plugin DOM functions for export.
  */
 
 import('lib.pkp.classes.xml.XMLCustomWriter');
@@ -53,8 +52,9 @@ class MetsExportDom {
         XMLCustomWriter::setAttribute($pDiv, 'TYPE', 'issue');
         XMLCustomWriter::setAttribute($pDiv, 'DMDID', 'I-' . $issue->getId());
         
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
-        $sectionArray = $sectionDao->getSectionsForIssue($issue->getId());
+        $sectionArray = $sectionDao->getSectionsForIssue((int) $issue->getId());
         
         foreach ($sectionArray as $section) {
             self::generateSectionDiv($doc, $pDiv, $section, $issue);
@@ -75,8 +75,9 @@ class MetsExportDom {
         XMLCustomWriter::setAttribute($pDiv, 'TYPE', 'section');
         XMLCustomWriter::setAttribute($pDiv, 'DMDID', 'S-' . $section->getId());
         
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-        $publishedArticleArray = $publishedArticleDao->getPublishedArticlesBySectionId($section->getId(), $issue->getId());
+        $publishedArticleArray = $publishedArticleDao->getPublishedArticlesBySectionId((int) $section->getId(), (int) $issue->getId());
         
         foreach ($publishedArticleArray as $publishedArticle) {
             self::generateArticleDiv($doc, $pDiv, $publishedArticle, $issue);
@@ -97,8 +98,9 @@ class MetsExportDom {
         XMLCustomWriter::setAttribute($pDiv, 'TYPE', 'article');
         XMLCustomWriter::setAttribute($pDiv, 'DMDID', 'A-' . $article->getId());
         
+        /** @var ArticleGalleyDAO $articleGalleyDao */
         $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
-        $galleysArray = $articleGalleyDao->getGalleysByArticle($article->getId());
+        $galleysArray = $articleGalleyDao->getGalleysByArticle((int) $article->getId());
         
         foreach ($galleysArray as $galley) {
             self::generateArticleFileDiv($doc, $pDiv, $galley);
@@ -111,8 +113,9 @@ class MetsExportDom {
             }
         }
         
+        /** @var SuppFileDAO $suppFileDao */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
-        $suppFilesArray = $suppFileDao->getSuppFilesByArticle($article->getId());
+        $suppFilesArray = $suppFileDao->getSuppFilesByArticle((int) $article->getId());
         
         foreach ($suppFilesArray as $suppFile) {
             self::generateArticleSuppFilesDiv($doc, $pDiv, $suppFile);
@@ -180,9 +183,8 @@ class MetsExportDom {
         
         $mods = XMLCustomWriter::createElement($doc, 'mods:mods');
         XMLCustomWriter::setAttribute($mods, 'xmlns:mods', 'http://www.loc.gov/mods/v3');
-        
-        // Handle Schema Location safely
-        $existingSchema = $root->getAttribute('xsi:schemaLocation');
+
+        $existingSchema = (string) $root->getAttribute('xsi:schemaLocation');
         $newSchema = str_replace(
             ' http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-0.xsd',
             '',
@@ -219,8 +221,7 @@ class MetsExportDom {
         $mods = XMLCustomWriter::createElement($doc, 'mods:mods');
         XMLCustomWriter::setAttribute($mods, 'xmlns:mods', 'http://www.loc.gov/mods/v3');
         
-        // Schema Location Logic
-        $existingSchema = $root->getAttribute('xsi:schemaLocation');
+        $existingSchema = (string) $root->getAttribute('xsi:schemaLocation');
         $newSchema = str_replace(
             ' http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-0.xsd',
             '',
@@ -232,24 +233,28 @@ class MetsExportDom {
         XMLCustomWriter::createChildWithText($doc, $titleInfo, 'mods:title', $issue->getTitle($journal->getPrimaryLocale()));
         XMLCustomWriter::appendChild($mods, $titleInfo);
 
-        if ($issue->getDescription($journal->getPrimaryLocale()) != '') {
-            $modsAbstract = XMLCustomWriter::createChildWithText($doc, $titleInfo, 'mods:abstract', $issue->getDescription($journal->getPrimaryLocale()));
+        $description = $issue->getDescription($journal->getPrimaryLocale());
+        if ($description !== '') {
+            $modsAbstract = XMLCustomWriter::createChildWithText($doc, $titleInfo, 'mods:abstract', $description);
             XMLCustomWriter::appendChild($mods, $modsAbstract);
         }
 
         XMLCustomWriter::createChildWithText($doc, $mods, 'mods:genre', 'issue');
         
         import('classes.config.Config');
-        $base_url = Config::getVar('general', 'base_url');
+        $base_url = (string) Config::getVar('general', 'base_url');
         $url = $base_url . '/index.php/' . $journal->getPath() . '/issue/view/' . $issue->getId();
         
         $modsIdentifier = XMLCustomWriter::createChildWithText($doc, $mods, 'mods:identifier', $url);
         XMLCustomWriter::setAttribute($modsIdentifier, 'type', 'uri');
         
         $modsOriginInfo = XMLCustomWriter::createElement($doc, 'mods:originInfo');
-        if ($issue->getDatePublished()) {
-            $timeIssued = date("Y-m-dTH:i:sP", strtotime($issue->getDatePublished()));
-            XMLCustomWriter::createChildWithText($doc, $modsOriginInfo, 'mods:dateIssued', $timeIssued);
+        $datePublished = $issue->getDatePublished();
+        if ($datePublished) {
+            $timestamp = strtotime((string) $datePublished);
+            if ($timestamp !== false) {
+                XMLCustomWriter::createChildWithText($doc, $modsOriginInfo, 'mods:dateIssued', date("Y-m-d\TH:i:sP", $timestamp));
+            }
         }
         XMLCustomWriter::appendChild($mods, $modsOriginInfo);
         
@@ -267,15 +272,15 @@ class MetsExportDom {
         $modsPart = XMLCustomWriter::createElement($doc, 'mods:part');
         $modsVolumDetail = XMLCustomWriter::createElement($doc, 'mods:detail');
         XMLCustomWriter::setAttribute($modsVolumDetail, 'type', 'volume');
-        XMLCustomWriter::createChildWithText($doc, $modsVolumDetail, 'mods:number', $issue->getVolume());
+        XMLCustomWriter::createChildWithText($doc, $modsVolumDetail, 'mods:number', (string) $issue->getVolume());
         
         $modsIssueDetail = XMLCustomWriter::createElement($doc, 'mods:detail');
         XMLCustomWriter::setAttribute($modsIssueDetail, 'type', 'issue');
-        XMLCustomWriter::createChildWithText($doc, $modsIssueDetail, 'mods:number', $issue->getNumber());
+        XMLCustomWriter::createChildWithText($doc, $modsIssueDetail, 'mods:number', (string) $issue->getNumber());
         
         XMLCustomWriter::appendChild($modsPart, $modsVolumDetail);
         XMLCustomWriter::appendChild($modsPart, $modsIssueDetail);
-        XMLCustomWriter::createChildWithText($doc, $modsPart, 'mods:date', $issue->getYear());
+        XMLCustomWriter::createChildWithText($doc, $modsPart, 'mods:date', (string) $issue->getYear());
         
         XMLCustomWriter::appendChild($modsRelatedItem, $modsPart);
         XMLCustomWriter::appendChild($mods, $modsRelatedItem);
@@ -284,8 +289,9 @@ class MetsExportDom {
         XMLCustomWriter::appendChild($mdWrap, $xmlData);
         XMLCustomWriter::appendChild($root, $dmdSec);
         
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
-        $sectionArray = $sectionDao->getSectionsForIssue($issue->getId());
+        $sectionArray = $sectionDao->getSectionsForIssue((int) $issue->getId());
         
         foreach ($sectionArray as $section) {
             self::generateSectionDmdSecDom($doc, $root, $section, $issue, $journal);
@@ -311,7 +317,7 @@ class MetsExportDom {
         $mods = XMLCustomWriter::createElement($doc, 'mods:mods');
         XMLCustomWriter::setAttribute($mods, 'xmlns:mods', 'http://www.loc.gov/mods/v3');
         
-        $existingSchema = $root->getAttribute('xsi:schemaLocation');
+        $existingSchema = (string) $root->getAttribute('xsi:schemaLocation');
         $newSchema = str_replace(
             ' http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-0.xsd',
             '',
@@ -323,9 +329,10 @@ class MetsExportDom {
         XMLCustomWriter::createChildWithText($doc, $titleInfo, 'mods:title', $section->getTitle($journal->getPrimaryLocale()));
         XMLCustomWriter::appendChild($mods, $titleInfo);
         
-        if ($section->getAbbrev($journal->getPrimaryLocale()) != '') {
+        $abbrev = $section->getAbbrev($journal->getPrimaryLocale());
+        if ($abbrev !== '') {
             $titleInfoAlt = XMLCustomWriter::createElement($doc, 'mods:titleInfo');
-            XMLCustomWriter::createChildWithText($doc, $titleInfoAlt, 'mods:title', $section->getAbbrev($journal->getPrimaryLocale()));
+            XMLCustomWriter::createChildWithText($doc, $titleInfoAlt, 'mods:title', $abbrev);
             XMLCustomWriter::setAttribute($titleInfoAlt, 'type', 'abbreviated');
             XMLCustomWriter::appendChild($mods, $titleInfoAlt);
         }
@@ -336,8 +343,9 @@ class MetsExportDom {
         XMLCustomWriter::appendChild($mdWrap, $xmlData);
         XMLCustomWriter::appendChild($root, $dmdSec);
         
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-        $publishedArticleArray = $publishedArticleDao->getPublishedArticlesBySectionId($section->getId(), $issue->getId());
+        $publishedArticleArray = $publishedArticleDao->getPublishedArticlesBySectionId((int) $section->getId(), (int) $issue->getId());
         
         foreach ($publishedArticleArray as $publishedArticle) {
             self::generateArticleDmdSecDom($doc, $root, $publishedArticle, $issue, $journal);
@@ -363,7 +371,7 @@ class MetsExportDom {
         $mods = XMLCustomWriter::createElement($doc, 'mods:mods');
         XMLCustomWriter::setAttribute($mods, 'xmlns:mods', 'http://www.loc.gov/mods/v3');
         
-        $existingSchema = $root->getAttribute('xsi:schemaLocation');
+        $existingSchema = (string) $root->getAttribute('xsi:schemaLocation');
         $newSchema = str_replace(
             ' http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-0.xsd',
             '',
@@ -372,18 +380,25 @@ class MetsExportDom {
         XMLCustomWriter::setAttribute($root, 'xsi:schemaLocation', $newSchema);
 
         $primaryLocale = $journal->getPrimaryLocale();
-        foreach ($article->getTitle(null) as $locale => $title) {
+        $titles = $article->getTitle(null);
+        $titlesArray = is_array($titles) ? $titles : (is_string($titles) ? [$article->getLocale() => $titles] : []);
+        
+        foreach ($titlesArray as $locale => $title) {
             $titleInfo = XMLCustomWriter::createElement($doc, 'mods:titleInfo');
-            XMLCustomWriter::createChildWithText($doc, $titleInfo, 'mods:title', $title);
-            if ($locale != $primaryLocale) XMLCustomWriter::setAttribute($titleInfo, 'type', 'alternative');
+            XMLCustomWriter::createChildWithText($doc, $titleInfo, 'mods:title', (string) $title);
+            if ($locale !== $primaryLocale) {
+                XMLCustomWriter::setAttribute($titleInfo, 'type', 'alternative');
+            }
             XMLCustomWriter::appendChild($mods, $titleInfo);
         }
 
         $abstracts = $article->getAbstract(null);
         if (is_array($abstracts)) {
             foreach ($abstracts as $locale => $abstract) {
-                XMLCustomWriter::createChildWithText($doc, $mods, 'mods:abstract', $abstract);
+                XMLCustomWriter::createChildWithText($doc, $mods, 'mods:abstract', (string) $abstract);
             }
+        } elseif (is_string($abstracts) && $abstracts !== '') {
+            XMLCustomWriter::createChildWithText($doc, $mods, 'mods:abstract', $abstracts);
         }
 
         $authorsArray = $article->getAuthors();
@@ -394,59 +409,69 @@ class MetsExportDom {
 
         XMLCustomWriter::createChildWithText($doc, $mods, 'mods:genre', 'article');
         
-        if ($issue->getDatePublished()) {
-            $timeIssued = date("Y-m-dTH:i:sP", strtotime($issue->getDatePublished()));
-            $originInfo = XMLCustomWriter::createElement($doc, 'mods:originInfo');
-            XMLCustomWriter::createChildWithText($doc, $originInfo, 'mods:dateIssued', $timeIssued);
-            XMLCustomWriter::appendChild($mods, $originInfo);
+        $datePublished = $issue->getDatePublished();
+        if ($datePublished) {
+            $timestamp = strtotime((string) $datePublished);
+            if ($timestamp !== false) {
+                $originInfo = XMLCustomWriter::createElement($doc, 'mods:originInfo');
+                XMLCustomWriter::createChildWithText($doc, $originInfo, 'mods:dateIssued', date("Y-m-d\TH:i:sP", $timestamp));
+                XMLCustomWriter::appendChild($mods, $originInfo);
+            }
         }
 
-        if ($article->getDiscipline($article->getLocale()) != '') {
+        $discipline = $article->getDiscipline($article->getLocale());
+        if ($discipline !== '') {
             $modsSubject = XMLCustomWriter::createElement($doc, 'mods:subject');
-            $disciplineArray = explode(';', $article->getDiscipline($article->getLocale()));
-            foreach ($disciplineArray as $discipline) {
-                XMLCustomWriter::createChildWithText($doc, $modsSubject, 'mods:topic', $discipline);
+            $disciplineArray = explode(';', (string) $discipline);
+            foreach ($disciplineArray as $disciplineItem) {
+                XMLCustomWriter::createChildWithText($doc, $modsSubject, 'mods:topic', trim($disciplineItem));
             }
             XMLCustomWriter::appendChild($mods, $modsSubject);
         }
 
-        if ($article->getSubject($article->getLocale()) != '') {
+        $subject = $article->getSubject($article->getLocale());
+        if ($subject !== '') {
             $modsSubject = XMLCustomWriter::createElement($doc, 'mods:subject');
-            XMLCustomWriter::createChildWithText($doc, $modsSubject, 'mods:topic', $article->getSubject($article->getLocale()));
-            if ($article->getSubjectClass($article->getLocale()) != '') {
-                XMLCustomWriter::setAttribute($modsSubject, 'authority', $article->getSubjectClass($article->getLocale()));
+            XMLCustomWriter::createChildWithText($doc, $modsSubject, 'mods:topic', $subject);
+            $subjectClass = $article->getSubjectClass($article->getLocale());
+            if ($subjectClass !== '') {
+                XMLCustomWriter::setAttribute($modsSubject, 'authority', $subjectClass);
             }
             XMLCustomWriter::appendChild($mods, $modsSubject);
         }
 
-        if ($article->getCoverageGeo($article->getLocale()) != '') {
+        $coverageGeo = $article->getCoverageGeo($article->getLocale());
+        if ($coverageGeo !== '') {
             $modsSubject = XMLCustomWriter::createElement($doc, 'mods:subject');
-            $coverageArray = explode(";", $article->getCoverageGeo($article->getLocale()));
+            $coverageArray = explode(";", (string) $coverageGeo);
             foreach ($coverageArray as $coverage) {
-                XMLCustomWriter::createChildWithText($doc, $modsSubject, 'mods:geographic', $coverage);
+                XMLCustomWriter::createChildWithText($doc, $modsSubject, 'mods:geographic', trim($coverage));
             }
             XMLCustomWriter::appendChild($mods, $modsSubject);
         }
 
-        if ($article->getCoverageChron($article->getLocale()) != '') {
+        $coverageChron = $article->getCoverageChron($article->getLocale());
+        if ($coverageChron !== '') {
             $modsSubject = XMLCustomWriter::createElement($doc, 'mods:subject');
-            $coverageArray = explode(";", $article->getCoverageChron($article->getLocale()));
+            $coverageArray = explode(";", (string) $coverageChron);
             foreach ($coverageArray as $coverage) {
-                XMLCustomWriter::createChildWithText($doc, $modsSubject, 'mods:temporal', $coverage);
+                XMLCustomWriter::createChildWithText($doc, $modsSubject, 'mods:temporal', trim($coverage));
             }
             XMLCustomWriter::appendChild($mods, $modsSubject);
         }
 
-        if ($article->getType($article->getLocale()) != '') {
+        $type = $article->getType($article->getLocale());
+        if ($type !== '') {
             $modsSubject = XMLCustomWriter::createElement($doc, 'mods:subject');
-            XMLCustomWriter::createChildWithText($doc, $modsSubject, 'mods:genre', $article->getType($article->getLocale()));
+            XMLCustomWriter::createChildWithText($doc, $modsSubject, 'mods:genre', $type);
             XMLCustomWriter::appendChild($mods, $modsSubject);
         }
 
-        if ($article->getSponsor($article->getLocale()) != '') {
+        $sponsor = $article->getSponsor($article->getLocale());
+        if ($sponsor !== '') {
             $presenterNode = XMLCustomWriter::createElement($doc, 'mods:name');
             XMLCustomWriter::setAttribute($presenterNode, 'type', 'corporate');
-            XMLCustomWriter::createChildWithText($doc, $presenterNode, 'mods:namePart', $article->getSponsor($article->getLocale()));
+            XMLCustomWriter::createChildWithText($doc, $presenterNode, 'mods:namePart', $sponsor);
             $role = XMLCustomWriter::createElement($doc, 'mods:role');
             $roleTerm = XMLCustomWriter::createChildWithText($doc, $role, 'mods:roleTerm', 'sponsor');
             XMLCustomWriter::setAttribute($roleTerm, 'type', 'text');
@@ -454,8 +479,9 @@ class MetsExportDom {
             XMLCustomWriter::appendChild($mods, $presenterNode);
         }
 
-        if ($article->getLanguage() != '') {
-            XMLCustomWriter::createChildWithText($doc, $mods, 'mods:language', $article->getLanguage());
+        $language = $article->getLanguage();
+        if ($language !== '') {
+            XMLCustomWriter::createChildWithText($doc, $mods, 'mods:language', $language);
         }
 
         XMLCustomWriter::appendChild($xmlData, $mods);
@@ -463,8 +489,9 @@ class MetsExportDom {
         XMLCustomWriter::appendChild($mdWrap, $xmlData);
         XMLCustomWriter::appendChild($root, $dmdSec);
         
+        /** @var SuppFileDAO $suppFileDao */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
-        $suppFilesArray = $suppFileDao->getSuppFilesByArticle($article->getId());
+        $suppFilesArray = $suppFileDao->getSuppFilesByArticle((int) $article->getId());
         
         foreach ($suppFilesArray as $suppFile) {
             self::generateArticleSuppFilesDmdSecDom($doc, $root, $suppFile);
@@ -488,7 +515,7 @@ class MetsExportDom {
         $mods = XMLCustomWriter::createElement($doc, 'mods:mods');
         XMLCustomWriter::setAttribute($mods, 'xmlns:mods', 'http://www.loc.gov/mods/v3');
         
-        $existingSchema = $root->getAttribute('xsi:schemaLocation');
+        $existingSchema = (string) $root->getAttribute('xsi:schemaLocation');
         $newSchema = str_replace(
             ' http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-0.xsd',
             '',
@@ -496,16 +523,20 @@ class MetsExportDom {
         ) . ' http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-0.xsd';
         XMLCustomWriter::setAttribute($root, 'xsi:schemaLocation', $newSchema);
 
-        foreach ($suppFile->getTitle(null) as $locale => $title) {
+        $titles = $suppFile->getTitle(null);
+        $titlesArray = is_array($titles) ? $titles : (is_string($titles) ? ['default' => $titles] : []);
+        foreach ($titlesArray as $locale => $title) {
             $titleInfo = XMLCustomWriter::createElement($doc, 'mods:titleInfo');
-            XMLCustomWriter::createChildWithText($doc, $titleInfo, 'mods:title', $title);
+            XMLCustomWriter::createChildWithText($doc, $titleInfo, 'mods:title', (string) $title);
             XMLCustomWriter::appendChild($mods, $titleInfo);
         }
         
-        foreach ($suppFile->getCreator(null) as $locale => $creator) {
+        $creators = $suppFile->getCreator(null);
+        $creatorsArray = is_array($creators) ? $creators : (is_string($creators) ? ['default' => $creators] : []);
+        foreach ($creatorsArray as $locale => $creator) {
             $creatorNode = XMLCustomWriter::createElement($doc, 'mods:name');
             XMLCustomWriter::setAttribute($creatorNode, 'type', 'personal');
-            XMLCustomWriter::createChildWithText($doc, $creatorNode, 'mods:namePart', $creator);
+            XMLCustomWriter::createChildWithText($doc, $creatorNode, 'mods:namePart', (string) $creator);
             $role = XMLCustomWriter::createElement($doc, 'mods:role');
             $roleTerm = XMLCustomWriter::createChildWithText($doc, $role, 'mods:roleTerm', 'creator');
             XMLCustomWriter::setAttribute($roleTerm, 'type', 'text');
@@ -513,36 +544,48 @@ class MetsExportDom {
             XMLCustomWriter::appendChild($mods, $creatorNode);
         }
         
-        foreach ($suppFile->getDescription(null) as $locale => $description) {
-            XMLCustomWriter::createChildWithText($doc, $mods, 'mods:abstract', $description);
+        $descriptions = $suppFile->getDescription(null);
+        $descriptionsArray = is_array($descriptions) ? $descriptions : (is_string($descriptions) ? ['default' => $descriptions] : []);
+        foreach ($descriptionsArray as $locale => $description) {
+            XMLCustomWriter::createChildWithText($doc, $mods, 'mods:abstract', (string) $description);
         }
         
-        if ($suppFile->getDateCreated()) {
-            $originInfo = XMLCustomWriter::createElement($doc, 'mods:originInfo');
-            $timeIssued = date("Y-m-dTH:i:sP", strtotime($suppFile->getDateCreated()));
-            XMLCustomWriter::createChildWithText($doc, $originInfo, 'mods:dateCreated', $timeIssued);
-            XMLCustomWriter::appendChild($mods, $originInfo);
+        $dateCreated = $suppFile->getDateCreated();
+        if ($dateCreated) {
+            $timestamp = strtotime((string) $dateCreated);
+            if ($timestamp !== false) {
+                $originInfo = XMLCustomWriter::createElement($doc, 'mods:originInfo');
+                XMLCustomWriter::createChildWithText($doc, $originInfo, 'mods:dateCreated', date("Y-m-d\TH:i:sP", $timestamp));
+                XMLCustomWriter::appendChild($mods, $originInfo);
+            }
         }
         
         XMLCustomWriter::createChildWithText($doc, $mods, 'mods:genre', 'additional material');
-        if ($suppFile->getType() != '') {
-            XMLCustomWriter::createChildWithText($doc, $mods, 'mods:genre', $suppFile->getType());
+        $type = $suppFile->getType();
+        if ($type !== '') {
+            XMLCustomWriter::createChildWithText($doc, $mods, 'mods:genre', $type);
         }
         
-        foreach ($suppFile->getTypeOther(null) as $locale => $typeOther) {
-            XMLCustomWriter::createChildWithText($doc, $mods, 'mods:genre', $typeOther);
+        $typeOthers = $suppFile->getTypeOther(null);
+        $typeOthersArray = is_array($typeOthers) ? $typeOthers : (is_string($typeOthers) ? ['default' => $typeOthers] : []);
+        foreach ($typeOthersArray as $locale => $typeOther) {
+            XMLCustomWriter::createChildWithText($doc, $mods, 'mods:genre', (string) $typeOther);
         }
         
-        foreach ($suppFile->getSubject(null) as $locale => $subject) {
+        $subjects = $suppFile->getSubject(null);
+        $subjectsArray = is_array($subjects) ? $subjects : (is_string($subjects) ? ['default' => $subjects] : []);
+        foreach ($subjectsArray as $locale => $subject) {
             $subjNode = XMLCustomWriter::createElement($doc, 'mods:subject');
-            XMLCustomWriter::createChildWithText($doc, $subjNode, 'mods:topic', $subject);
+            XMLCustomWriter::createChildWithText($doc, $subjNode, 'mods:topic', (string) $subject);
             XMLCustomWriter::appendChild($mods, $subjNode);
         }
         
-        foreach ($suppFile->getSponsor(null) as $locale => $sponsor) {
+        $sponsors = $suppFile->getSponsor(null);
+        $sponsorsArray = is_array($sponsors) ? $sponsors : (is_string($sponsors) ? ['default' => $sponsors] : []);
+        foreach ($sponsorsArray as $locale => $sponsor) {
             $presenterNode = XMLCustomWriter::createElement($doc, 'mods:name');
             XMLCustomWriter::setAttribute($presenterNode, 'type', 'corporate');
-            XMLCustomWriter::createChildWithText($doc, $presenterNode, 'mods:namePart', $sponsor);
+            XMLCustomWriter::createChildWithText($doc, $presenterNode, 'mods:namePart', (string) $sponsor);
             $role = XMLCustomWriter::createElement($doc, 'mods:role');
             $roleTerm = XMLCustomWriter::createChildWithText($doc, $role, 'mods:roleTerm', 'sponsor');
             XMLCustomWriter::setAttribute($roleTerm, 'type', 'text');
@@ -550,10 +593,12 @@ class MetsExportDom {
             XMLCustomWriter::appendChild($mods, $presenterNode);
         }
         
-        foreach ($suppFile->getPublisher(null) as $locale => $publisher) {
+        $publishers = $suppFile->getPublisher(null);
+        $publishersArray = is_array($publishers) ? $publishers : (is_string($publishers) ? ['default' => $publishers] : []);
+        foreach ($publishersArray as $locale => $publisher) {
             $presenterNode = XMLCustomWriter::createElement($doc, 'mods:name');
             XMLCustomWriter::setAttribute($presenterNode, 'type', 'corporate');
-            XMLCustomWriter::createChildWithText($doc, $presenterNode, 'mods:namePart', $publisher);
+            XMLCustomWriter::createChildWithText($doc, $presenterNode, 'mods:namePart', (string) $publisher);
             $role = XMLCustomWriter::createElement($doc, 'mods:role');
             $roleTerm = XMLCustomWriter::createChildWithText($doc, $role, 'mods:roleTerm', 'publisher');
             XMLCustomWriter::setAttribute($roleTerm, 'type', 'text');
@@ -561,8 +606,9 @@ class MetsExportDom {
             XMLCustomWriter::appendChild($mods, $presenterNode);
         }
         
-        if ($suppFile->getLanguage() != '') {
-            XMLCustomWriter::createChildWithText($doc, $mods, 'mods:language', $suppFile->getLanguage());
+        $language = $suppFile->getLanguage();
+        if ($language !== '') {
+            XMLCustomWriter::createChildWithText($doc, $mods, 'mods:language', $language);
         }
         
         XMLCustomWriter::appendChild($xmlData, $mods);
@@ -579,8 +625,9 @@ class MetsExportDom {
      * @param Journal $journal
      */
     public static function generateIssueFileSecDom(DOMDocument $doc, DOMElement $root, Issue $issue, Journal $journal): void {
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-        $publishedArticleArray = $publishedArticleDao->getPublishedArticles($issue->getId());
+        $publishedArticleArray = $publishedArticleDao->getPublishedArticles((int) $issue->getId());
         
         foreach ($publishedArticleArray as $publishedArticle) {
             self::generateArticleFilesDom($doc, $root, $publishedArticle, $issue, $journal);
@@ -595,8 +642,9 @@ class MetsExportDom {
      * @param Journal $journal
      */
     public static function generateIssueHtmlGalleyFileSecDom(DOMDocument $doc, DOMElement $root, Issue $issue, Journal $journal): void {
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-        $publishedArticleArray = $publishedArticleDao->getPublishedArticles($issue->getId());
+        $publishedArticleArray = $publishedArticleDao->getPublishedArticles((int) $issue->getId());
         
         foreach ($publishedArticleArray as $publishedArticle) {
             self::generateArticleHtmlGalleyFilesDom($doc, $root, $publishedArticle, $issue, $journal);
@@ -612,8 +660,9 @@ class MetsExportDom {
      * @param Journal $journal
      */
     public static function generateArticleFilesDom(DOMDocument $doc, DOMElement $root, $article, Issue $issue, Journal $journal): void {
+        /** @var ArticleGalleyDAO $articleGalleyDao */
         $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
-        $galleysArray = $articleGalleyDao->getGalleysByArticle($article->getId());
+        $galleysArray = $articleGalleyDao->getGalleysByArticle((int) $article->getId());
         
         foreach ($galleysArray as $galley) {
             if (!$galley->isHTMLGalley()) {
@@ -621,8 +670,9 @@ class MetsExportDom {
             }
         }
         
+        /** @var SuppFileDAO $suppFileDao */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
-        $suppFilesArray = $suppFileDao->getSuppFilesByArticle($article->getId());
+        $suppFilesArray = $suppFileDao->getSuppFilesByArticle((int) $article->getId());
         
         foreach ($suppFilesArray as $suppFile) {
             self::generateArticleSuppFileDom($doc, $root, $article, $suppFile, $journal);
@@ -638,8 +688,9 @@ class MetsExportDom {
      * @param Journal $journal
      */
     public static function generateArticleHtmlGalleyFilesDom(DOMDocument $doc, DOMElement $root, $article, Issue $issue, Journal $journal): void {
+        /** @var ArticleGalleyDAO $articleGalleyDao */
         $articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
-        $galleysArray = $articleGalleyDao->getGalleysByArticle($article->getId());
+        $galleysArray = $articleGalleyDao->getGalleysByArticle((int) $article->getId());
         
         foreach ($galleysArray as $galley) {
             if ($galley->isHTMLGalley()) {
@@ -665,31 +716,33 @@ class MetsExportDom {
     public static function generateArticleHtmlGalleyImageFileDom(DOMDocument $doc, DOMElement $root, $article, $galley, $imageFile, $useAttribute, Journal $journal): void {
         import('classes.file.PublicFileManager');
         import('lib.pkp.classes.file.FileManager');
+
+        $request = Application::get()->getRequest();
+        $contentWrapper = $request->getUserVar('contentWrapper');
         
         $fileManager = new FileManager();
-        $contentWrapper = Request::getUserVar('contentWrapper');
         $mfile = XMLCustomWriter::createElement($doc, 'METS:file');
         $filePath = self::getPublicFilePath($imageFile, '/public/', $journal);
 
         $chkmd5return = file_exists($filePath) ? md5_file($filePath) : '';
         XMLCustomWriter::setAttribute($mfile, 'ID', 'F' . $imageFile->getFileId() . '-A' . $article->getId());
-        if ($useAttribute != null) {
+        if ($useAttribute !== null) {
             XMLCustomWriter::setAttribute($mfile, 'USE', $useAttribute);
         }
-        XMLCustomWriter::setAttribute($mfile, 'SIZE', $imageFile->getFileSize());
-        XMLCustomWriter::setAttribute($mfile, 'MIMETYPE', $imageFile->getFileType());
-        XMLCustomWriter::setAttribute($mfile, 'OWNERID', $imageFile->getOriginalFileName());
+        XMLCustomWriter::setAttribute($mfile, 'SIZE', (string) $imageFile->getFileSize());
+        XMLCustomWriter::setAttribute($mfile, 'MIMETYPE', (string) $imageFile->getFileType());
+        XMLCustomWriter::setAttribute($mfile, 'OWNERID', (string) $imageFile->getOriginalFileName());
         XMLCustomWriter::setAttribute($mfile, 'CHECKSUM', $chkmd5return);
         XMLCustomWriter::setAttribute($mfile, 'CHECKSUMTYPE', 'MD5');
         
-        if ($contentWrapper == 'FContent') {
+        if ($contentWrapper === 'FContent') {
             $fileContent = $fileManager->readFile($filePath);
             $fContent = XMLCustomWriter::createElement($doc, 'METS:FContent');
-            XMLCustomWriter::createChildWithText($doc, $fContent, 'METS:binData', base64_encode((string)$fileContent));
+            XMLCustomWriter::createChildWithText($doc, $fContent, 'METS:binData', base64_encode((string) $fileContent));
             XMLCustomWriter::appendChild($mfile, $fContent);
         } else {
             $fLocat = XMLCustomWriter::createElement($doc, 'METS:FLocat');
-            $fileUrl = Request::url(null, 'article', 'viewFile', array($article->getId(), $galley->getBestGalleyId($journal), $imageFile->getFileId()));
+            $fileUrl = $request->url(null, 'article', 'viewFile', [(int) $article->getId(), $galley->getBestGalleyId($journal), (int) $imageFile->getFileId()]);
             XMLCustomWriter::setAttribute($fLocat, 'xlink:href', $fileUrl);
             XMLCustomWriter::setAttribute($fLocat, 'LOCTYPE', 'URL');
             XMLCustomWriter::appendChild($mfile, $fLocat);
@@ -710,31 +763,33 @@ class MetsExportDom {
     public static function generateArticleFileDom(DOMDocument $doc, DOMElement $root, $article, $galleyFile, $useAttribute, Journal $journal): void {
         import('classes.file.PublicFileManager');
         import('lib.pkp.classes.file.FileManager');
+
+        $request = Application::get()->getRequest();
+        $contentWrapper = $request->getUserVar('contentWrapper');
         
         $fileManager = new FileManager();
-        $contentWrapper = Request::getUserVar('contentWrapper');
         $mfile = XMLCustomWriter::createElement($doc, 'METS:file');
         $filePath = self::getPublicFilePath($galleyFile, '/public/', $journal);
         
         $chkmd5return = file_exists($filePath) ? md5_file($filePath) : '';
         XMLCustomWriter::setAttribute($mfile, 'ID', 'F' . $galleyFile->getFileId() . '-A' . $galleyFile->getArticleId());
-        if ($useAttribute != null) {
+        if ($useAttribute !== null) {
             XMLCustomWriter::setAttribute($mfile, 'USE', $useAttribute);
         }
-        XMLCustomWriter::setAttribute($mfile, 'SIZE', $galleyFile->getFileSize());
-        XMLCustomWriter::setAttribute($mfile, 'MIMETYPE', $galleyFile->getFileType());
-        XMLCustomWriter::setAttribute($mfile, 'OWNERID', $galleyFile->getFileName());
+        XMLCustomWriter::setAttribute($mfile, 'SIZE', (string) $galleyFile->getFileSize());
+        XMLCustomWriter::setAttribute($mfile, 'MIMETYPE', (string) $galleyFile->getFileType());
+        XMLCustomWriter::setAttribute($mfile, 'OWNERID', (string) $galleyFile->getFileName());
         XMLCustomWriter::setAttribute($mfile, 'CHECKSUM', $chkmd5return);
         XMLCustomWriter::setAttribute($mfile, 'CHECKSUMTYPE', 'MD5');
         
-        if ($contentWrapper == 'FContent') {
+        if ($contentWrapper === 'FContent') {
             $fileContent = $fileManager->readFile($filePath);
             $fContent = XMLCustomWriter::createElement($doc, 'METS:FContent');
-            XMLCustomWriter::createChildWithText($doc, $fContent, 'METS:binData', base64_encode((string)$fileContent));
+            XMLCustomWriter::createChildWithText($doc, $fContent, 'METS:binData', base64_encode((string) $fileContent));
             XMLCustomWriter::appendChild($mfile, $fContent);
         } else {
             $fLocat = XMLCustomWriter::createElement($doc, 'METS:FLocat');
-            $fileUrl = Request::url(null, 'article', 'viewFile', array($article->getId(), $galleyFile->getBestGalleyId($journal)));
+            $fileUrl = $request->url(null, 'article', 'viewFile', [(int) $article->getId(), $galleyFile->getBestGalleyId($journal)]);
             XMLCustomWriter::setAttribute($fLocat, 'xlink:href', $fileUrl);
             XMLCustomWriter::setAttribute($fLocat, 'LOCTYPE', 'URL');
             XMLCustomWriter::appendChild($mfile, $fLocat);
@@ -754,33 +809,36 @@ class MetsExportDom {
     public static function generateArticleSuppFileDom(DOMDocument $doc, DOMElement $root, $article, SuppFile $suppFile, Journal $journal): void {
         import('classes.file.PublicFileManager');
         import('lib.pkp.classes.file.FileManager');
+
+        $request = Application::get()->getRequest();
+        $contentWrapper = $request->getUserVar('contentWrapper');
         
         $fileManager = new FileManager();
-        $contentWrapper = Request::getUserVar('contentWrapper');
         $mfile = XMLCustomWriter::createElement($doc, 'METS:file');
         $filePath = self::getPublicFilePath($suppFile, '/supp/', $journal);
         
         $chkmd5return = file_exists($filePath) ? md5_file($filePath) : '';
         XMLCustomWriter::setAttribute($mfile, 'ID', 'SF' . $suppFile->getFileId() . '-A' . $suppFile->getArticleId());
-        XMLCustomWriter::setAttribute($mfile, 'SIZE', $suppFile->getFileSize());
-        XMLCustomWriter::setAttribute($mfile, 'MIMETYPE', $suppFile->getFileType());
-        XMLCustomWriter::setAttribute($mfile, 'OWNERID', $suppFile->getFileName());
+        XMLCustomWriter::setAttribute($mfile, 'SIZE', (string) $suppFile->getFileSize());
+        XMLCustomWriter::setAttribute($mfile, 'MIMETYPE', (string) $suppFile->getFileType());
+        XMLCustomWriter::setAttribute($mfile, 'OWNERID', (string) $suppFile->getFileName());
         XMLCustomWriter::setAttribute($mfile, 'CHECKSUM', $chkmd5return);
         XMLCustomWriter::setAttribute($mfile, 'CHECKSUMTYPE', 'MD5');
         
-        if ($contentWrapper == 'FContent') {
+        if ($contentWrapper === 'FContent') {
             $fileContent = $fileManager->readFile($filePath);
             $fContent = XMLCustomWriter::createElement($doc, 'METS:FContent');
-            XMLCustomWriter::createChildWithText($doc, $fContent, 'METS:binData', base64_encode((string)$fileContent));
+            XMLCustomWriter::createChildWithText($doc, $fContent, 'METS:binData', base64_encode((string) $fileContent));
             XMLCustomWriter::appendChild($mfile, $fContent);
         } else {
             $fLocat = XMLCustomWriter::createElement($doc, 'METS:FLocat');
-            XMLCustomWriter::setAttribute($fLocat, 'xlink:href', Request::url(
+            $fileUrl = $request->url(
                 $journal->getPath(),
                 'article',
                 'downloadSuppFile',
-                array($suppFile->getArticleId(), $suppFile->getId())
-            ));
+                [(int) $suppFile->getArticleId(), (int) $suppFile->getId()]
+            );
+            XMLCustomWriter::setAttribute($fLocat, 'xlink:href', $fileUrl);
             XMLCustomWriter::setAttribute($fLocat, 'LOCTYPE', 'URL');
             XMLCustomWriter::appendChild($mfile, $fLocat);
         }
@@ -796,11 +854,12 @@ class MetsExportDom {
     public static function generateAuthorDom(DOMDocument $doc, Author $author): DOMElement {
         $presenterNode = XMLCustomWriter::createElement($doc, 'mods:name');
         XMLCustomWriter::setAttribute($presenterNode, 'type', 'personal');
-        
-        $fNameNode = XMLCustomWriter::createChildWithText($doc, $presenterNode, 'mods:namePart', $author->getFirstName() . ' ' . $author->getMiddleName());
+
+        $givenName = trim((string) $author->getFirstName() . ' ' . (string) $author->getMiddleName());
+        $fNameNode = XMLCustomWriter::createChildWithText($doc, $presenterNode, 'mods:namePart', $givenName);
         XMLCustomWriter::setAttribute($fNameNode, 'type', 'given');
         
-        $lNameNode = XMLCustomWriter::createChildWithText($doc, $presenterNode, 'mods:namePart', $author->getLastName());
+        $lNameNode = XMLCustomWriter::createChildWithText($doc, $presenterNode, 'mods:namePart', (string) $author->getLastName());
         XMLCustomWriter::setAttribute($lNameNode, 'type', 'family');
         
         $role = XMLCustomWriter::createElement($doc, 'mods:role');
@@ -830,7 +889,7 @@ class MetsExportDom {
         $pObject = XMLCustomWriter::createElement($doc, 'premis:object');
         XMLCustomWriter::setAttribute($pObject, 'xmlns:premis', 'http://www.loc.gov/standards/premis/v1');
         
-        $existingSchema = $root->getAttribute('xsi:schemaLocation');
+        $existingSchema = (string) $root->getAttribute('xsi:schemaLocation');
         $newSchema = str_replace(
             ' http://www.loc.gov/standards/premis/v1 http://www.loc.gov/standards/premis/v1/PREMIS-v1-1.xsd',
             '',
@@ -842,9 +901,10 @@ class MetsExportDom {
         XMLCustomWriter::createChildWithText($doc, $objectIdentifier, 'premis:objectIdentifierType', 'internal');
         XMLCustomWriter::createChildWithText($doc, $objectIdentifier, 'premis:objectIdentifierValue', 'J-' . $journal->getId());
         XMLCustomWriter::appendChild($pObject, $objectIdentifier);
-        
-        $preservationLevel = Request::getUserVar('preservationLevel');
-        if ($preservationLevel == '') {
+
+        $request = Application::get()->getRequest();
+        $preservationLevel = $request->getUserVar('preservationLevel');
+        if ($preservationLevel === '') {
             $preservationLevel = '1';
         }
         XMLCustomWriter::createChildWithText($doc, $pObject, 'premis:preservationLevel', 'level ' . $preservationLevel);
@@ -871,14 +931,16 @@ class MetsExportDom {
         $agentNode = XMLCustomWriter::createElement($doc, 'METS:agent');
         XMLCustomWriter::setAttribute($agentNode, 'ROLE', 'DISSEMINATOR');
         XMLCustomWriter::setAttribute($agentNode, 'TYPE', 'ORGANIZATION');
-        
-        $organization = Request::getUserVar('organization');
-        if ($organization == '') {
+
+        $request = Application::get()->getRequest();
+        $organization = $request->getUserVar('organization');
+        if ($organization === '') {
+            /** @var SiteDAO $siteDao */
             $siteDao = DAORegistry::getDAO('SiteDAO');
             $site = $siteDao->getSite();
             $organization = $site->getTitle($site->getPrimaryLocale());
         }
-        XMLCustomWriter::createChildWithText($doc, $agentNode, 'METS:name', $organization, false);
+        XMLCustomWriter::createChildWithText($doc, $agentNode, 'METS:name', (string) $organization, false);
         XMLCustomWriter::appendChild($root, $agentNode);
         
         $agentNode2 = XMLCustomWriter::createElement($doc, 'METS:agent');
@@ -895,6 +957,7 @@ class MetsExportDom {
      * @return string
      */
     public static function getCreatorString(): string {
+        /** @var VersionDAO $versionDao */
         $versionDao = DAORegistry::getDAO('VersionDAO');
         $cVersion = $versionDao->getCurrentVersion();
         return sprintf('Lumera v%d.%d.%d build %d', $cVersion->getMajor(), $cVersion->getMinor(), $cVersion->getRevision(), $cVersion->getBuild());
@@ -914,5 +977,6 @@ class MetsExportDom {
             $file->getArticleId() . '/' . $pathComponent .
             '/' . $file->getFileName();
     }
+    
 }
 ?>

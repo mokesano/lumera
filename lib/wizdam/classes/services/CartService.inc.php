@@ -6,10 +6,10 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance & DDD
+ * Distributed under the GNU GPL v3.
+ * 
  * @class CartService
+ * 
  * @brief Layanan pengelola keranjang belanja (B2C) yang mengorkestrasi logika 
  * database dan kalkulasi finansial melalui Service Layer terkait.
  */
@@ -40,6 +40,12 @@ class CartService {
     /**
      * Menambahkan item ke dalam keranjang pengguna.
      * Mencegah duplikasi dengan mengecek database terlebih dahulu.
+     * @param int $userId
+     * @param string $itemType
+     * @param int $itemReferenceId
+     * @param string $itemTitle
+     * @param float $unitPrice
+     * @param int $quantity
      */
     public function addItem(int $userId, string $itemType, int $itemReferenceId, string $itemTitle, float $unitPrice, int $quantity = 1): bool {
         $existingItem = $this->cartDao->checkItemExists($userId, $itemType, $itemReferenceId);
@@ -54,6 +60,7 @@ class CartService {
 
     /**
      * Mengambil seluruh isi keranjang milik seorang pengguna.
+     * @param int $userId
      */
     public function getUserCart(int $userId): array {
         return $this->cartDao->getItemsByUserId($userId);
@@ -61,6 +68,8 @@ class CartService {
 
     /**
      * Menghapus satu baris item dari keranjang.
+     * @param int $userId
+     * @param int $cartItemId
      */
     public function removeItem(int $userId, int $cartItemId): bool {
         return $this->cartDao->deleteItem($userId, $cartItemId);
@@ -68,6 +77,7 @@ class CartService {
 
     /**
      * Mengosongkan seluruh keranjang (Dijalankan pasca-checkout).
+     * @param int $userId
      */
     public function clearCart(int $userId): bool {
         return $this->cartDao->deleteItemsByUserId($userId);
@@ -76,6 +86,8 @@ class CartService {
     /**
      * Menghitung ringkasan keranjang dengan mendelegasikan tugas finansial ke service terkait,
      * serta menggunakan format Locale dinamis.
+     * @param array $cartItems
+     * @param int $journalId
      */
     public function calculateSummary(array $cartItems, int $journalId): array {
         $subtotal = 0.0;
@@ -92,6 +104,7 @@ class CartService {
         $taxResult = $this->taxVatService->calculateTaxAndTotal($journalId, $taxableSubtotal);
     
         // 3. Persiapkan Currency
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $currencyCode = $journalSettingsDao->getSetting($journalId, 'currency') ?: 'USD';
     
@@ -110,6 +123,9 @@ class CartService {
 
     /**
      * Helper Privat: Memformat angka sesuai dengan standar Locale global yang aktif.
+     * @param float $amount
+     * @param string $currencyCode
+     * @param string $locale
      */
     private function _formatCurrency(float $amount, string $currencyCode, string $locale): string {
         // 1. Prioritas Utama: Gunakan ekstensi Intl PHP (Standar Emas Globalisasi)
@@ -140,5 +156,6 @@ class CartService {
             return $currencyCode . ' ' . number_format($amount, 2, '.', ',');
         }
     }
+    
 }
 ?>

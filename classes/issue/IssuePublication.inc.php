@@ -31,7 +31,7 @@ trait IssuePublication {
 
     /**
      * Set published
-     * @param $published int
+     * @param int $published
      */
     public function setPublished($published) {
         return $this->setData('published', $published);
@@ -47,7 +47,7 @@ trait IssuePublication {
 
     /**
      * Set current
-     * @param $current int
+     * @param int $current
      */
     public function setCurrent($current) {
         return $this->setData('current', $current);
@@ -63,7 +63,7 @@ trait IssuePublication {
 
     /**
      * Set date published
-     * @param $datePublished string (date)
+     * @param string $datePublished (date)
      */
     public function setDatePublished($datePublished) {
         return $this->setData('datePublished', $datePublished);
@@ -79,7 +79,7 @@ trait IssuePublication {
 
     /**
      * Set date the users were last notified
-     * @param $dateNotified string (date)
+     * @param string $dateNotified (date)
      */
     public function setDateNotified($dateNotified) {
         return $this->setData('dateNotified', $dateNotified);
@@ -95,7 +95,7 @@ trait IssuePublication {
 
     /**
      * Set date the issue was last modified
-     * @param $lastModified string (date)
+     * @param string $lastModified (date)
      */
     public function setLastModified($lastModified) {
         return $this->setData('lastModified', $lastModified);
@@ -107,5 +107,6 @@ trait IssuePublication {
     public function stampModified() {
         return $this->setLastModified(Core::getCurrentDate());
     }
+    
 }
 ?>

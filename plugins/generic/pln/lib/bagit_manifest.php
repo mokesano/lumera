@@ -27,8 +27,7 @@ declare(strict_types=1);
  * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache 2.0
  * @version   0.2.1
  * @link      https://github.com/erochest/BagItPHP
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * 
  */
 
 /**
@@ -119,13 +118,16 @@ class BagItManifest
 
     /**
      * [SHIM] Backward Compatibility
+     * @param string $fileName
+     * @param string $pathPrefix
+     * @param string $fileEncoding
      */
     public function BagItManifest($fileName, $pathPrefix='', $fileEncoding='UTF-8') {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::BagItManifest(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**

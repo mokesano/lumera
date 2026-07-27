@@ -38,6 +38,8 @@ class CustomThemeSettingsForm extends Form
 
     /**
      * Display the form
+     * @param Request $request
+     * @param TemplateManager $template
      */
     public function display($request = null, $template = null)
     {
@@ -45,7 +47,12 @@ class CustomThemeSettingsForm extends Form
         
         // Add JS and CSS
         $additionalHeadData = $templateMgr->get_template_vars('additionalHeadData');
+        if (is_array($additionalHeadData)) {
+            $additionalHeadData = implode("\n", $additionalHeadData);
+        }
+        $additionalHeadData = (string) $additionalHeadData;
         $additionalHeadData .= '<script type="text/javascript" src="' . Request::getBaseUrl() . '/plugins/themes/custom/picker.js"></script>' . "\n";
+
         $templateMgr->addStyleSheet(Request::getBaseUrl() . '/plugins/themes/custom/picker.css');
         $templateMgr->assign('additionalHeadData', $additionalHeadData);
 
@@ -168,7 +175,9 @@ class CustomThemeSettingsForm extends Form
 
     /**
      * Evaluate whether a path is writable
-     * Check if the filename provided (or the parent directory, if the filename does not exist) can be written
+     * Check if the filename provided (or the parent directory, 
+     * if the filename does not exist) can be written
+     * @param string $filename
      */
     protected function isWritable(string $filename): bool
     {
@@ -179,5 +188,6 @@ class CustomThemeSettingsForm extends Form
         }
         return false;
     }
+
 }
 ?>

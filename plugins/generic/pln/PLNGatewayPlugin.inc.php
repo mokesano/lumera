@@ -76,6 +76,7 @@ class PLNGatewayPlugin extends GatewayPlugin {
 	 */
 	public function getPLNPlugin() {
 		$plugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
+
 		return $plugin;
 	}
 
@@ -84,6 +85,7 @@ class PLNGatewayPlugin extends GatewayPlugin {
 	 */
 	public function getPluginPath(): string {
 		$plugin = $this->getPLNPlugin();
+
 		return $plugin->getPluginPath();
 	}
 
@@ -93,6 +95,7 @@ class PLNGatewayPlugin extends GatewayPlugin {
 	 */
 	public function getTemplatePath(): string {
 		$plugin = $this->getPLNPlugin();
+
 		return $plugin->getTemplatePath();
 	}
 
@@ -103,6 +106,7 @@ class PLNGatewayPlugin extends GatewayPlugin {
 	 */
 	public function getEnabled(): bool {
 		$plugin = $this->getPLNPlugin();
+
 		return $plugin->getEnabled(); // Should always be true anyway if this is loaded
 	}
 
@@ -132,7 +136,7 @@ class PLNGatewayPlugin extends GatewayPlugin {
 
 		$templateMgr->assign('pluginVersion', $pluginVersion);
 
-		$terms = array();
+		$terms = [];
 		$termsAccepted = $plugin->termsAgreed($journal->getId());
 		if ($termsAccepted) {
 			$templateMgr->assign('termsAccepted', 'yes');
@@ -149,25 +153,25 @@ class PLNGatewayPlugin extends GatewayPlugin {
 			$versionArray = curl_version();
 			$curlVersion = $versionArray['version'];
 		}		
-		$prerequisites = array(
+		$prerequisites = [
 			'phpVersion' => PHP_VERSION,
 			'curlVersion' => $curlVersion,
 			'zipInstalled' => class_exists('ZipArchive') ? 'yes' : 'no',
 			'tarInstalled' => class_exists('Archive_Tar') ? 'yes' : 'no',
 			'acron' => isset($products['acron']) ? 'yes' : 'no',
 			'tasks' => Config::getVar('general', 'scheduled_tasks', false) ? 'yes' : 'no',
-		);
+		];
 		$templateMgr->assign('prerequisites', $prerequisites);
 
 		$termKeys = array_keys($terms);
-		$termsDisplay = array();
+		$termsDisplay = [];
 		foreach ($termKeys as $key) {
-			$termsDisplay[] = array(
+			$termsDisplay[] = [
 				'key' => $key,
 				'term' => $terms[$key]['term'],
 				'updated' => $terms[$key]['updated'],
 				'accepted' => $termsAgreement[$key]
-			);
+			];
 		}
 		$templateMgr->assign('termsDisplay', new ArrayItemIterator($termsDisplay));
 

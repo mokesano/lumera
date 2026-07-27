@@ -19,7 +19,7 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 class WebFeedPlugin extends GenericPlugin {
 
     /**
-     * Get the display name of this plugin
+     * Get the display name of this plugin.
      * @return string
      */
     public function getDisplayName(): string {
@@ -27,7 +27,7 @@ class WebFeedPlugin extends GenericPlugin {
     }
 
     /**
-     * Get the description of this plugin
+     * Get the description of this plugin.
      * @return string
      */
     public function getDescription(): string {
@@ -42,20 +42,18 @@ class WebFeedPlugin extends GenericPlugin {
      */
     public function register(string $category, string $path): bool {
         if (parent::register($category, $path)) {
-
             if ($this->getEnabled()) {
                 HookRegistry::register('TemplateManager::display', [$this, 'callbackAddLinks']);
                 HookRegistry::register('PluginRegistry::loadCategory', [$this, 'callbackLoadCategory']);
                 HookRegistry::register('LoadHandler', [$this, 'callbackHandleShortURL']);
             }
-
             return true;
         }
         return false;
     }
 
     /**
-     * Settings for new context creation
+     * Settings for new context creation.
      * @return string|null
      */
     public function getContextSpecificPluginSettingsFile(): ?string {
@@ -91,43 +89,48 @@ class WebFeedPlugin extends GenericPlugin {
     }
 
     /**
-     * Insert RSS/Atom headers into <head>
+     * Insert RSS/Atom headers into <head>.
      * @param string $hookName
      * @param array $args
      * @return bool
      */
     public function callbackAddLinks($hookName, $args) {
+        if (!$this->getEnabled()) {
+            return false;
+        }
 
-        if (!$this->getEnabled()) return false;
-
-        $request = Application::getRequest();
-        if (!is_a($request->getRouter(), 'PKPPageRouter')) return false;
+        $request = Application::get()->getRequest();
+        $router = $request->getRouter();
+        if (!($router instanceof PKPPageRouter)) {
+            return false;
+        }
 
         $templateManager = $args[0];
-
         $currentJournal = $templateManager->get_template_vars('currentJournal');
-        if (!$currentJournal) return false;
+        if (!$currentJournal) {
+            return false;
+        }
 
-        $requestedPage = $request->getRequestedPage();
+        $requestedPage = $router->getRequestedPage($request);
 
         /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
-        $currentIssue = $issueDao->getCurrentIssue($currentJournal->getId(), true);
+        $currentIssue = $issueDao->getCurrentIssue((int) $currentJournal->getId(), true);
 
-        $displayPage = $this->getSetting($currentJournal->getId(), 'displayPage');
-        $journalTitle = $this->sanitize($currentJournal->getLocalizedTitle());
+        $journalId = (int) $currentJournal->getId();
+        $displayPage = (string) $this->getSetting($journalId, 'displayPage');
+        $journalTitle = $this->sanitize((string) $currentJournal->getLocalizedTitle());
 
         if (
             $currentIssue &&
             (
                 $displayPage === 'all'
-                || ($displayPage === 'homepage' &&
-                    (empty($requestedPage) || $requestedPage === 'index' || $requestedPage === 'issue'))
+                || ($displayPage === 'homepage' && (empty($requestedPage) || $requestedPage === 'index' || $requestedPage === 'issue'))
                 || ($displayPage === 'issue' && $displayPage === $requestedPage)
             )
         ) {
-            $additionalHeadData = $templateManager->get_template_vars('additionalHeadData');
-            $baseUrl = rtrim($currentJournal->getUrl(), '/');
+            $additionalHeadData = (string) $templateManager->get_template_vars('additionalHeadData');
+            $baseUrl = rtrim((string) $currentJournal->getUrl(), '/');
 
             $feedUrl1 = '<link rel="alternate" type="application/atom+xml" title="' . $journalTitle .
                         ' (atom+xml)" href="' . $baseUrl . '/gateway/plugin/WebFeedGatewayPlugin/atom" />';
@@ -145,51 +148,51 @@ class WebFeedPlugin extends GenericPlugin {
     }
 
     /**
-     * Support short URLs (journal/feed/atom)
+     * Support short URLs (journal/feed/atom).
      * @param string $hookName
      * @param array $args
      * @return bool
      */
     public function callbackHandleShortURL($hookName, $args) {
-
-        if (!$this->getEnabled()) return false;
+        if (!$this->getEnabled()) {
+            return false;
+        }
 
         $page = $args[0];
         $op   = $args[1];
 
-        if ($page !== 'feed') return false;
+        if ($page !== 'feed') {
+            return false;
+        }
 
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
+
+        // [WIZDAM] Replace deprecated static Request::redirect with instance method
         switch ($op) {
             case 'atom':
-                Request::redirect(null, 'gateway', 'plugin',
-                    ['WebFeedGatewayPlugin', 'atom']);
+                $request->redirect(null, 'gateway', 'plugin', ['WebFeedGatewayPlugin', 'atom']);
                 break;
-
             case 'rss':
-                Request::redirect(null, 'gateway', 'plugin',
-                    ['WebFeedGatewayPlugin', 'rss']);
+                $request->redirect(null, 'gateway', 'plugin', ['WebFeedGatewayPlugin', 'rss']);
                 break;
-
             case 'rss2':
-                Request::redirect(null, 'gateway', 'plugin',
-                    ['WebFeedGatewayPlugin', 'rss2']);
+                $request->redirect(null, 'gateway', 'plugin', ['WebFeedGatewayPlugin', 'rss2']);
                 break;
-
             default:
-                Request::redirect(null, 'index');
+                $request->redirect(null, 'index');
         }
 
         return false;
     }
 
     /**
-     * Management verbs
+     * Management verbs.
      * @param array $verbs
-     * @param null $request
+     * @param mixed $request
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
-
         $verbs = parent::getManagementVerbs($verbs, $request);
 
         if ($this->getEnabled($request)) {
@@ -200,35 +203,41 @@ class WebFeedPlugin extends GenericPlugin {
     }
 
     /**
-     * Manage function
+     * Manage function.
      * @param string $verb
      * @param array $args
-     * @param string $message
-     * @param array $messageParams
-     * @param null $request
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param mixed $request
      * @return bool
      */
     public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
+        if (!parent::manage($verb, $args, $message, $messageParams, $request)) {
+            return false;
+        }
 
-        if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
-
-        if (!$request) $request = Application::getRequest();
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         switch ($verb) {
-
             case 'settings':
                 $journal = $request->getJournal();
+                if (!$journal) {
+                    return false;
+                }
 
                 AppLocale::requireComponents(
                     LOCALE_COMPONENT_APPLICATION_COMMON,
                     LOCALE_COMPONENT_CORE_MANAGER
                 );
 
-                $templateMgr = TemplateManager::getManager();
+                $templateMgr = TemplateManager::getManager($request);
                 $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
 
                 $this->import('SettingsForm');
-                $form = new SettingsForm($this, $journal->getId());
+                $form = new SettingsForm($this, (int) $journal->getId());
 
                 if ($request->getUserVar('save')) {
                     $form->readInputData();
@@ -240,24 +249,22 @@ class WebFeedPlugin extends GenericPlugin {
                 }
 
                 $form->initData();
-                $form->display();
+                $form->display($request);
                 return true;
 
             default:
-                // Unknown management verb
-                assert(false);
-                return false;
+                throw new \BadMethodCallException('Unknown management verb');
         }
     }
 
     /**
-     * Clean the journal title
+     * Clean the journal title.
      * @param string $string
      * @return string
      */
-    public function sanitize($string) {
-        return htmlspecialchars(strip_tags($string));
+    public function sanitize($string): string {
+        return htmlspecialchars(strip_tags((string) $string), ENT_QUOTES, 'UTF-8');
     }
-    
+
 }
 ?>

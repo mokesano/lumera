@@ -8,10 +8,10 @@ declare(strict_types=1);
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @class installTool
+ * @class InstallTool
  * @ingroup tools
  *
- * @brief CLI tool for installing OJS.
+ * @brief CLI tool for installing Sangia Lumera Apps.
  * [LUMERA] Modernized CLI Installer Child.
  */
 
@@ -19,7 +19,7 @@ require(__DIR__ . '/bootstrap.inc.php');
 
 import('lib.pkp.classes.cliTool.InstallTool');
 
-class OJSInstallTool extends InstallTool {
+class AppInstallTool extends InstallTool {
 
     /**
      * Constructor.
@@ -32,7 +32,7 @@ class OJSInstallTool extends InstallTool {
     /**
      * [SHIM] Backward Compatibility
      */
-    public function OJSInstallTool($argv = []) {
+    public function AppInstallTool($argv = []) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
@@ -65,5 +65,5 @@ class OJSInstallTool extends InstallTool {
 }
 
 // [LUMERA] Safe instantiation
-$tool = new OJSInstallTool($argv ?? []);
+$tool = new AppInstallTool($argv ?? []);
 $tool->execute();

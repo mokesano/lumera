@@ -82,7 +82,7 @@
 	<message key="plugins.generic.pln.notifications.issn_setting">Ihre Zeitschrift muss über eine ISSN verfügen, bevor Sie den Nutzungsbedingungen zustimmen können. Sie können die ISSN im Setup der Zeitschrift eingeben. Sobald die ISSN der Zeitschrift eingegeben ist, werden die Nutzungsbedingungen unten angezeigt.</message>
 	<message key="plugins.generic.pln.notifications.tar_missing">Ihr System muss über ein tar-Programm verfügen.</message>
 	<message key="plugins.generic.pln.notifications.archive_tar_missing">Die Archive_Tar-PHP-Erweiterung muss installiert werden, bevor das PKP PLN aktiviert werden kann.</message>
-	<message key="plugins.generic.pln.notifications.php5_missing">PKP PLN benötigt eine PHP-Version 5 oder höher.</message>
+	<message key="plugins.generic.pln.notifications.php_missing">PKP PLN benötigt eine PHP-Version 7 oder höher.</message>
 
 	<message key="plugins.generic.pln.error.include.bagit">Die in OJS enthaltene BagIt-Bibliothek kann nicht geladen werden, vermutlich aufgrund nicht erfüllter Grundvoraussetzungen.</message>
 	<message key="plugins.generic.pln.error.network.servicedocument">Netzwerk-Fehler {$error} beim Versuch, das Service-Dokument vom PLN zu holen.</message>

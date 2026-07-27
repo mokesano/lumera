@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class AnnouncementFeedGatewayPlugin
  * @ingroup plugins_generic_announcementFeed
  *
- * @brief Gateway component of announcement feed plugin
- * [WIZDAM EDITION] Modernized. PHP 8 Safe.
+ * @brief Gateway component of announcement feed plugin.
  */
 
 import('classes.plugins.GatewayPlugin');
@@ -24,6 +23,7 @@ class AnnouncementFeedGatewayPlugin extends GatewayPlugin {
 
     /**
      * Constructor
+     * @param string $parentPluginName
      */
     public function __construct($parentPluginName) {
         parent::__construct();
@@ -32,6 +32,7 @@ class AnnouncementFeedGatewayPlugin extends GatewayPlugin {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param string $parentPluginName
      */
     public function AnnouncementFeedGatewayPlugin($parentPluginName) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -104,7 +105,7 @@ class AnnouncementFeedGatewayPlugin extends GatewayPlugin {
 
     /**
      * Get whether or not this plugin is enabled.
-     * @return string
+     * @return bool
      */
     public function getEnabled(): bool {
         $plugin = $this->getAnnouncementFeedPlugin();
@@ -116,17 +117,15 @@ class AnnouncementFeedGatewayPlugin extends GatewayPlugin {
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
-        return array();
+        return [];
     }
 
     /**
      * Handle fetch requests for this plugin.
-     * @param $args array
-     * @param $request PKPRequest
+     * @param array $args
+     * @param Request $request
      */
     public function fetch($args, $request = null) {
-        // Make sure we're within a Journal context
-        // [WIZDAM] Prioritaskan inject $request
         $journal = ($request) ? $request->getJournal() : Request::getJournal();
         
         if (!$journal) return false;
@@ -139,22 +138,23 @@ class AnnouncementFeedGatewayPlugin extends GatewayPlugin {
 
         // Make sure the feed type is specified and valid
         $type = array_shift($args);
-        $typeMap = array(
+        $typeMap = [
             'rss' => 'rss.tpl',
             'rss2' => 'rss2.tpl',
             'atom' => 'atom.tpl'
-        );
-        $mimeTypeMap = array(
+        ];
+        $mimeTypeMap = [
             'rss' => 'application/rdf+xml',
             'rss2' => 'application/rss+xml',
             'atom' => 'application/atom+xml'
-        );
+        ];
         if (!isset($typeMap[$type])) return false;
 
         // Get limit setting, if any 
         $limitRecentItems = $announcementFeedPlugin->getSetting($journal->getId(), 'limitRecentItems');
         $recentItems = (int) $announcementFeedPlugin->getSetting($journal->getId(), 'recentItems');
 
+        /** @var AnnouncementDAO $announcementDao */
         $announcementDao = DAORegistry::getDAO('AnnouncementDAO');
         $journalId = $journal->getId();
         
@@ -187,6 +187,7 @@ class AnnouncementFeedGatewayPlugin extends GatewayPlugin {
             }
         }
 
+        /** @var VersionDAO $versionDao */
         $versionDao = DAORegistry::getDAO('VersionDAO');
         $version = $versionDao->getCurrentVersion();
 
@@ -194,8 +195,6 @@ class AnnouncementFeedGatewayPlugin extends GatewayPlugin {
         $templateMgr->assign('ojsVersion', $version->getVersionString());
         $templateMgr->assign('selfUrl', Request::getCompleteUrl()); 
         $templateMgr->assign('dateUpdated', $dateUpdated);
-        
-        // [MODERNISASI] Gunakan assign untuk array
         $templateMgr->assign('announcements', $announcements->toArray());
         $templateMgr->assign('journal', $journal);
 
@@ -203,6 +202,6 @@ class AnnouncementFeedGatewayPlugin extends GatewayPlugin {
 
         return true;
     }
-}
 
+}
 ?>

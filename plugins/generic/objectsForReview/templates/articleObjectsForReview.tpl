@@ -10,6 +10,7 @@
  *}
 
 <div class="separator"></div>
+
 <div id="objectsForReviewListing">
 	<h3>{translate key="plugins.generic.objectsForReview.public.articleObjectsForReview"}</h3>
 	{foreach from=$objectsForReview item=objectForReview name=objectsForReview}
@@ -22,4 +23,3 @@
 		</div>
 	{/foreach}
 </div>
-

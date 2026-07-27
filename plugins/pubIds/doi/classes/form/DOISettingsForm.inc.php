@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @class DOISettingsForm
  * @ingroup plugins_pubIds_doi
  *
- * @brief Form for journal managers to setup DOI plugin
+ * @brief Form for journal managers to setup DOI plugin.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -47,7 +47,7 @@ class DOISettingsForm extends Form {
     // Constructor
     //
     /**
-     * Constructor
+     * Constructor.
      * @param DOIPubIdPlugin $plugin
      * @param int $journalId
      */
@@ -88,8 +88,8 @@ class DOISettingsForm extends Form {
             'required',
             'plugins.pubIds.doi.manager.settings.doiIssueSuffixPatternRequired',
             function($doiIssueSuffixPattern, $form) {
-                if ($form->getData('doiSuffix') == 'pattern' && $form->getData('enableIssueDoi')) {
-                    return $doiIssueSuffixPattern != '';
+                if ($form->getData('doiSuffix') === 'pattern' && $form->getData('enableIssueDoi')) {
+                    return $doiIssueSuffixPattern !== '';
                 }
                 return true;
             },
@@ -103,8 +103,8 @@ class DOISettingsForm extends Form {
             'required',
             'plugins.pubIds.doi.manager.settings.doiArticleSuffixPatternRequired',
             function($doiArticleSuffixPattern, $form) {
-                if ($form->getData('doiSuffix') == 'pattern' && $form->getData('enableArticleDoi')) {
-                    return $doiArticleSuffixPattern != '';
+                if ($form->getData('doiSuffix') === 'pattern' && $form->getData('enableArticleDoi')) {
+                    return $doiArticleSuffixPattern !== '';
                 }
                 return true;
             },
@@ -118,8 +118,8 @@ class DOISettingsForm extends Form {
             'required',
             'plugins.pubIds.doi.manager.settings.doiGalleySuffixPatternRequired',
             function($doiGalleySuffixPattern, $form) {
-                if ($form->getData('doiSuffix') == 'pattern' && $form->getData('enableGalleyDoi')) {
-                    return $doiGalleySuffixPattern != '';
+                if ($form->getData('doiSuffix') === 'pattern' && $form->getData('enableGalleyDoi')) {
+                    return $doiGalleySuffixPattern !== '';
                 }
                 return true;
             },
@@ -133,8 +133,8 @@ class DOISettingsForm extends Form {
             'required',
             'plugins.pubIds.doi.manager.settings.doiSuppFileSuffixPatternRequired',
             function($doiSuppFileSuffixPattern, $form) {
-                if ($form->getData('doiSuffix') == 'pattern' && $form->getData('enableSuppFileDoi')) {
-                    return $doiSuppFileSuffixPattern != '';
+                if ($form->getData('doiSuffix') === 'pattern' && $form->getData('enableSuppFileDoi')) {
+                    return $doiSuppFileSuffixPattern !== '';
                 }
                 return true;
             },
@@ -145,9 +145,11 @@ class DOISettingsForm extends Form {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param DOIPubIdPlugin $plugin
+     * @param int $journalId
      */
-    public function DOISettingsForm() {
+    public function DOISettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
@@ -155,37 +157,44 @@ class DOISettingsForm extends Form {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
     // Implement template methods from Form
     //
     /**
+     * Initialize form data.
      * @see Form::initData()
+     * @return void
      */
     public function initData() {
         $journalId = $this->_getJournalId();
         $plugin = $this->_getPlugin();
-        foreach($this->_getFormFields() as $fieldName => $fieldType) {
+        foreach ($this->_getFormFields() as $fieldName => $fieldType) {
             $this->setData($fieldName, $plugin->getSetting($journalId, $fieldName));
         }
     }
 
     /**
+     * Assign form data to user-submitted data.
      * @see Form::readInputData()
+     * @return void
      */
     public function readInputData() {
         $this->readUserVars(array_keys($this->_getFormFields()));
     }
 
     /**
+     * Save settings.
      * @see Form::execute()
+     * @param mixed $object Ignored.
+     * @return void
      */
-    public function execute($object = NULL) {
+    public function execute($object = null) {
         $plugin = $this->_getPlugin();
         $journalId = $this->_getJournalId();
-        foreach($this->_getFormFields() as $fieldName => $fieldType) {
+        foreach ($this->_getFormFields() as $fieldName => $fieldType) {
             $plugin->updateSetting($journalId, $fieldName, $this->getData($fieldName), $fieldType);
         }
     }
@@ -194,7 +203,7 @@ class DOISettingsForm extends Form {
     // Private helper methods
     //
     /**
-     * Get all form fields and their types
+     * Get all form fields and their types.
      * @return array
      */
     private function _getFormFields(): array {
@@ -211,6 +220,6 @@ class DOISettingsForm extends Form {
             'doiSuppFileSuffixPattern' => 'string'
         ];
     }
-}
 
+}
 ?>

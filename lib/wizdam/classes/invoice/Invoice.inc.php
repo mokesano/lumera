@@ -6,10 +6,10 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * Distributed under the GNU GPL v3.
+ * 
  * @class Invoice
+ * 
  * @brief Data Object yang merepresentasikan satu entitas Tagihan (Global Level).
  */
 
@@ -157,14 +157,11 @@ class Invoice extends DataObject {
 
     /**
      * Memeriksa apakah tagihan sudah dibayar lunas
-     * @return bool true jika tagihan sudah dibayar lunas
+     * @return bool
      */
     public function isPaid(): bool {
-        // Jika ini adalah legacy payment dari OJS, biasanya dianggap lunas (karena masuk ke completed_payments)
-        if ($this->isLegacy()) {
-            return true; 
-        }
-        return $this->getStatus() === 'PAID';
+        return $this->getStatus() === self::STATUS_PAID;
     }
+
 }
 ?>

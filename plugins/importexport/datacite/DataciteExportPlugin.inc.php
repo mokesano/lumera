@@ -12,11 +12,9 @@ declare(strict_types=1);
  * @ingroup plugins_importexport_datacite
  *
  * @brief DataCite export/registration plugin.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
-
-if (!class_exists('DOIExportPlugin')) { // Bug #7848
+if (!class_exists('DOIExportPlugin')) {
     import('plugins.importexport.datacite.classes.DOIExportPlugin');
 }
 
@@ -47,53 +45,64 @@ class DataciteExportPlugin extends DOIExportPlugin {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
     // Implement template methods from ImportExportPlugin
     //
     /**
+     * Get the name of this plugin.
      * @see ImportExportPlugin::getName()
+     * @return string
      */
     public function getName(): string {
         return 'DataciteExportPlugin';
     }
 
     /**
+     * Get the display name of this plugin.
      * @see ImportExportPlugin::getDisplayName()
+     * @return string
      */
     public function getDisplayName(): string {
         return __('plugins.importexport.datacite.displayName');
     }
 
     /**
+     * Get the description of this plugin.
      * @see ImportExportPlugin::getDescription()
+     * @return string
      */
     public function getDescription(): string {
         return __('plugins.importexport.datacite.description');
     }
 
-
     //
     // Implement template methods from DOIExportPlugin
     //
     /**
+     * Get the plugin ID.
      * @see DOIExportPlugin::getPluginId()
+     * @return string
      */
     public function getPluginId(): string {
         return 'datacite';
     }
 
     /**
+     * Get the class name of the settings form.
      * @see DOIExportPlugin::getSettingsFormClassName()
+     * @return string
      */
     public function getSettingsFormClassName(): string {
         return 'DataciteSettingsForm';
     }
 
     /**
+     * Get all object types that can be exported/registered via this plugin.
      * @see DOIExportPlugin::getAllObjectTypes()
+     * @return array
      */
     public function getAllObjectTypes(): array {
         $objectTypes = parent::getAllObjectTypes();
@@ -102,189 +111,212 @@ class DataciteExportPlugin extends DOIExportPlugin {
     }
 
     /**
+     * Display a list of all yet unregistered objects.
      * @see DOIExportPlugin::displayAllUnregisteredObjects()
+     * @param TemplateManager $templateMgr
+     * @param Journal $journal
+     * @return void
      */
     public function displayAllUnregisteredObjects($templateMgr, $journal): void {
-        // Prepare information specific to this plug-in.
         $templateMgr->assign('suppFiles', $this->_getUnregisteredSuppFiles($journal));
         parent::displayAllUnregisteredObjects($templateMgr, $journal);
     }
 
     /**
+     * Get a string representation of the object.
      * @see DOIExportPlugin::getObjectName()
+     * @param int $exportType
+     * @return string
      */
     public function getObjectName($exportType): string {
-        if ($exportType == DOI_EXPORT_SUPPFILES) {
+        if ($exportType === DOI_EXPORT_SUPPFILES) {
             return 'supp-file';
-        } else {
-            return parent::getObjectName($exportType);
         }
+        return parent::getObjectName($exportType);
     }
 
     /**
+     * Display a list of supplementary files for export.
      * @see DOIExportPlugin::displaySuppFileList()
+     * @param TemplateManager $templateMgr
+     * @param Journal $journal
+     * @return void
      */
     public function displaySuppFileList($templateMgr, $journal): void {
         $this->setBreadcrumbs([], true);
 
-        // Retrieve all published articles.
         $allArticles = $this->getAllPublishedArticles($journal);
 
-        // Retrieve supp file data.
         $this->registerDaoHook('SuppFileDAO');
-        $suppFileDao = DAORegistry::getDAO('SuppFileDAO'); /* @var $suppFileDao SuppFileDAO */
+        /** @var SuppFileDAO $suppFileDao */
+        $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
         $suppFiles = [];
-        foreach($allArticles as $article) {
-            // Retrieve supp files for the article.
-            $articleSuppFiles = $suppFileDao->getSuppFilesByArticle($article->getId());
-
-            // Filter only supp files that have a DOI assigned.
+        
+        foreach ($allArticles as $article) {
+            $articleSuppFiles = $suppFileDao->getSuppFilesByArticle((int) $article->getId());
             foreach ($articleSuppFiles as $suppFile) {
                 if ($suppFile->getPubId('doi')) {
                     $suppFiles[] = $suppFile;
                 }
-                unset($suppFile);
             }
-            unset($article, $articleSuppFiles);
         }
-        unset($allArticles);
 
-        // Paginate supp files.
         $totalSuppFiles = count($suppFiles);
         $rangeInfo = Handler::getRangeInfo('suppFiles');
-        if ($rangeInfo->isValid()) {
-            $suppFiles = array_slice($suppFiles, $rangeInfo->getCount() * ($rangeInfo->getPage()-1), $rangeInfo->getCount());
+        
+        if ($rangeInfo && $rangeInfo->isValid()) {
+            $suppFiles = array_slice($suppFiles, $rangeInfo->getCount() * ($rangeInfo->getPage() - 1), $rangeInfo->getCount());
         }
 
-        // Retrieve supp file data.
         $suppFileData = [];
-        foreach($suppFiles as $suppFile) {
+        foreach ($suppFiles as $suppFile) {
             $preparedSuppFile = $this->_prepareSuppFileData($suppFile, $journal);
-            // As we select only published articles, we should always
-            // get data back here.
-            assert(is_array($preparedSuppFile));
             if (is_array($preparedSuppFile)) {
                 $suppFileData[] = $preparedSuppFile;
             }
-            unset($suppFile, $preparedSuppFile);
         }
-        unset($suppFiles);
 
-        // Instantiate supp file iterator.
         import('lib.pkp.classes.core.VirtualArrayIterator');
         $iterator = new VirtualArrayIterator($suppFileData, $totalSuppFiles, $rangeInfo->getPage(), $rangeInfo->getCount());
 
-        // Prepare and display the supp file template.
         $templateMgr->assign('suppFiles', $iterator);
         $templateMgr->display($this->getTemplatePath() . 'suppFiles.tpl');
     }
 
     /**
+     * Generate export files for the given objects.
      * @see DOIExportPlugin::generateExportFiles()
+     * @param mixed $request
+     * @param int $exportType
+     * @param array $objects
+     * @param string $targetPath
+     * @param Journal $journal
+     * @param array $errors
+     * @return array|bool
      */
     public function generateExportFiles($request, $exportType, $objects, $targetPath, $journal, &$errors) {
-        // Additional locale file.
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        
         AppLocale::requireComponents([LOCALE_COMPONENT_APP_EDITOR]);
 
-        // Export objects one by one (DataCite does not allow
-        // multiple objects per file).
         $this->import('classes.DataciteExportDom');
         $exportFiles = [];
-        foreach($objects as $object) {
-            // Generate the export XML.
+        
+        foreach ($objects as $object) {
             $dom = new DataciteExportDom($request, $this, $journal, $this->getCache());
             $doc = $dom->generate($object);
+            
             if ($doc === false) {
                 $this->cleanTmpfiles($targetPath, array_keys($exportFiles));
                 $errors = $dom->getErrors();
                 return false;
             }
 
-            // Write the result.
-            $exportFile = $this->getTargetFileName($targetPath, $exportType, $object->getId());
+            $exportFile = $this->getTargetFileName($targetPath, $exportType, (int) $object->getId());
             file_put_contents($exportFile, XMLCustomWriter::getXML($doc));
+            
             $fileManager = new FileManager();
             $fileManager->setMode($exportFile, FILE_MODE_MASK);
-            $exportFiles[$exportFile] = [&$object];
-            unset($object);
+            $exportFiles[$exportFile] = [$object];
         }
 
         return $exportFiles;
     }
 
     /**
+     * Register DOIs with the DOI registration agency.
      * @see DOIExportPlugin::registerDoi()
+     * @param mixed $request
+     * @param Journal $journal
+     * @param array $objects
+     * @param string $file
+     * @return bool|array
      */
     public function registerDoi($request, $journal, $objects, $file) {
-        // DataCite should always export exactly
-        // one object per meta-data file.
-        assert(count($objects) == 1);
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
+        if (count($objects) !== 1) {
+            return [['plugins.importexport.common.register.error.mdsError', 'DataCite requires exactly one object per file.']];
+        }
         $object = $objects[0];
 
-        // Get the DOI and the URL for the object.
         $doi = $object->getPubId('doi');
-        assert(!empty($doi));
+        if (empty($doi)) {
+            return [['plugins.importexport.common.register.error.mdsError', 'No DOI assigned to object.']];
+        }
+        
         if ($this->isTestMode($request)) {
             $doi = PKPString::regexp_replace('#^[^/]+/#', DATACITE_API_TESTPREFIX . '/', $doi);
         }
+        
         $url = $this->_getObjectUrl($request, $journal, $object);
-        assert(!empty($url));
+        if (empty($url)) {
+            return [['plugins.importexport.common.register.error.mdsError', 'Could not determine object URL.']];
+        }
 
-        // Prepare HTTP session.
         $curlCh = curl_init();
-        if ($httpProxyHost = Config::getVar('proxy', 'http_host')) {
-            curl_setopt($curlCh, CURLOPT_PROXY, $httpProxyHost);
+        $proxyHost = Config::getVar('proxy', 'http_host');
+        if ($proxyHost) {
+            curl_setopt($curlCh, CURLOPT_PROXY, $proxyHost);
             curl_setopt($curlCh, CURLOPT_PROXYPORT, Config::getVar('proxy', 'http_port', '80'));
-            if ($username = Config::getVar('proxy', 'username')) {
-                curl_setopt($curlCh, CURLOPT_PROXYUSERPWD, $username . ':' . Config::getVar('proxy', 'password'));
+            
+            $proxyUsername = Config::getVar('proxy', 'username');
+            if ($proxyUsername) {
+                $proxyPassword = Config::getVar('proxy', 'password');
+                curl_setopt($curlCh, CURLOPT_PROXYUSERPWD, $proxyUsername . ':' . $proxyPassword);
             }
         }
         curl_setopt($curlCh, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curlCh, CURLOPT_POST, true);
 
-        // Set up basic authentication.
-        $username = $this->getSetting($journal->getId(), 'username');
-        $password = $this->getSetting($journal->getId(), 'password');
+        $crossrefUsername = (string) $this->getSetting((int) $journal->getId(), 'username');
+        $crossrefPassword = (string) $this->getSetting((int) $journal->getId(), 'password');
         curl_setopt($curlCh, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_setopt($curlCh, CURLOPT_USERPWD, "$username:$password");
-
-        // Set up SSL.
+        curl_setopt($curlCh, CURLOPT_USERPWD, "$crossrefUsername:$crossrefPassword");
         curl_setopt($curlCh, CURLOPT_SSL_VERIFYPEER, false);
 
-        // Transmit meta-data.
-        assert(is_readable($file));
+        if (!is_readable($file)) {
+            return [['plugins.importexport.common.register.error.mdsError', 'File is not readable.']];
+        }
+        
         $payload = file_get_contents($file);
-        assert($payload !== false && !empty($payload));
+        if ($payload === false || empty($payload)) {
+            return [['plugins.importexport.common.register.error.mdsError', 'File is empty or unreadable.']];
+        }
+
         curl_setopt($curlCh, CURLOPT_URL, DATACITE_API_URL . 'metadata');
-        curl_setopt($curlCh, CURLOPT_HTTPHEADER, array('Content-Type: application/xml;charset=UTF-8'));
+        curl_setopt($curlCh, CURLOPT_HTTPHEADER, ['Content-Type: application/xml;charset=UTF-8']);
         curl_setopt($curlCh, CURLOPT_POSTFIELDS, $payload);
 
         $result = true;
         $response = curl_exec($curlCh);
+        
         if ($response === false) {
-            $result = array(array('plugins.importexport.common.register.error.mdsError', 'No response from server.'));
+            $result = [['plugins.importexport.common.register.error.mdsError', 'No response from server.']];
         } else {
             $status = curl_getinfo($curlCh, CURLINFO_HTTP_CODE);
-            if ($status != DATACITE_API_RESPONSE_OK) {
-                $result = array(array('plugins.importexport.common.register.error.mdsError', "$status - $response"));
+            if ($status !== DATACITE_API_RESPONSE_OK) {
+                $result = [['plugins.importexport.common.register.error.mdsError', "$status - $response"]];
             }
         }
 
-        // Mint a DOI.
         if ($result === true) {
             $payload = "doi=$doi\nurl=$url";
-
             curl_setopt($curlCh, CURLOPT_URL, DATACITE_API_URL . 'doi');
-            curl_setopt($curlCh, CURLOPT_HTTPHEADER, array('Content-Type: text/plain;charset=UTF-8'));
+            curl_setopt($curlCh, CURLOPT_HTTPHEADER, ['Content-Type: text/plain;charset=UTF-8']);
             curl_setopt($curlCh, CURLOPT_POSTFIELDS, $payload);
 
             $response = curl_exec($curlCh);
             if ($response === false) {
-                $result = array(array('plugins.importexport.common.register.error.mdsError', 'No response from server.'));
+                $result = [['plugins.importexport.common.register.error.mdsError', 'No response from server.']];
             } else {
                 $status = curl_getinfo($curlCh, CURLINFO_HTTP_CODE);
-                if ($status != DATACITE_API_RESPONSE_OK) {
-                    $result = array(array('plugins.importexport.common.register.error.mdsError', "$status - $response"));
+                if ($status !== DATACITE_API_RESPONSE_OK) {
+                    $result = [['plugins.importexport.common.register.error.mdsError', "$status - $response"]];
                 }
             }
         }
@@ -292,7 +324,6 @@ class DataciteExportPlugin extends DOIExportPlugin {
         curl_close($curlCh);
 
         if ($result === true) {
-            // Mark the object as registered.
             $this->markRegistered($request, $object, DATACITE_API_TESTPREFIX);
         }
 
@@ -300,133 +331,132 @@ class DataciteExportPlugin extends DOIExportPlugin {
     }
 
     /**
+     * Identify DAO and DAO method to extract objects.
      * @see DOIExportPlugin::getDaoName()
+     * @param int $exportType
+     * @return array
      */
     public function getDaoName($exportType): array {
-        if ($exportType == DOI_EXPORT_SUPPFILES) {
-            return array('SuppFileDAO', 'getSuppFile');
-        } else {
-            return parent::getDaoName($exportType);
+        if ($exportType === DOI_EXPORT_SUPPFILES) {
+            return ['SuppFileDAO', 'getSuppFile'];
         }
+        return parent::getDaoName($exportType);
     }
 
     /**
+     * Return a translation key for the "object not found" error.
      * @see DOIExportPlugin::getObjectNotFoundErrorKey()
+     * @param int $exportType
+     * @return string
      */
     public function getObjectNotFoundErrorKey($exportType): string {
-        if ($exportType == DOI_EXPORT_SUPPFILES) {
+        if ($exportType === DOI_EXPORT_SUPPFILES) {
             return 'plugins.importexport.datacite.export.error.suppFileNotFound';
-        } else {
-            return parent::getObjectNotFoundErrorKey($exportType);
         }
+        return parent::getObjectNotFoundErrorKey($exportType);
     }
 
     /**
+     * Add scheduled tasks to the system cron tab.
      * @see AcronPlugin::parseCronTab()
+     * @param string $hookName
+     * @param array $args
+     * @return bool
      */
-    public function callbackParseCronTab($hookName, $args) {
+    public function callbackParseCronTab($hookName, $args): bool {
         $taskFilesPath =& $args[0];
         $taskFilesPath[] = $this->getPluginPath() . DIRECTORY_SEPARATOR . 'scheduledTasks.xml';
-
         return false;
     }
-
 
     //
     // Private helper methods
     //
     /**
      * Retrieve all unregistered supplementary files and their corresponding issues and articles.
-     * @param $journal Journal
+     * @param Journal $journal
      * @return array
      */
-    public function _getUnregisteredSuppFiles($journal) {
-        // Retrieve all supp files that have not yet been registered.
-        $suppFileDao = DAORegistry::getDAO('SuppFileDAO'); /* @var $suppFileDao SuppFileDAO */
-        $suppFiles = $suppFileDao->getSuppFilesBySetting($this->getPluginId(). '::' . DOI_EXPORT_REGDOI, null, null, $journal->getId());
+    public function _getUnregisteredSuppFiles($journal): array {
+        /** @var SuppFileDAO $suppFileDao */
+        $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
+        $suppFiles = $suppFileDao->getSuppFilesBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, null, (int) $journal->getId());
 
-        // Retrieve issues and articles for supp files.
         $suppFileData = [];
         foreach ($suppFiles as $suppFile) {
             $preparedSuppFile = $this->_prepareSuppFileData($suppFile, $journal);
             if (is_array($preparedSuppFile)) {
                 $suppFileData[] = $preparedSuppFile;
             }
-            unset($suppFile, $preparedSuppFile);
         }
         return $suppFileData;
     }
 
     /**
      * Identify published article and issue of the given supp file.
-     * @param $suppFile SuppFile
-     * @param $journal Journal
-     * @return array|null An array with article and issue of the given
-     * suppl file. Null will be returned if one of these objects
-     * cannot be identified (e.g. when the supp file belongs
-     * to an unpublished article).
+     * @param SuppFile $suppFile
+     * @param Journal $journal
+     * @return array|null
      */
-    public function _prepareSuppFileData($suppFile, $journal) {
-        // Retrieve article and issue for the supp file.
+    public function _prepareSuppFileData($suppFile, $journal): ?array {
         $suppFileData = $this->prepareArticleFileData($suppFile, $journal);
         if (!is_array($suppFileData)) {
-            $nullVar = null;
-            return $nullVar;
+            return null;
         }
 
-        // Add the supp file itself.
         $suppFileData['suppFile'] = $suppFile;
-
         return $suppFileData;
     }
 
     /**
      * Get the canonical URL of an object.
-     * @param $request Request
-     * @param $journal Journal
-     * @param $object Issue|PublishedArticle|ArticleGalley|SuppFile
+     * @param mixed $request
+     * @param Journal $journal
+     * @param Issue|PublishedArticle|ArticleGalley|SuppFile $object
+     * @return string|null
      */
     public function _getObjectUrl($request, $journal, $object) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         $router = $request->getRouter();
+        $article = null;
 
-        // Retrieve the article of article files.
         if ($object instanceof ArticleFile) {
-            $articleId = $object->getArticleId();
-            $cache = $this->getCache();
-            if ($cache->isCached('articles', $articleId)) {
-                $article = $cache->get('articles', $articleId);
-            } else {
-                $articleDao = DAORegistry::getDAO('PublishedArticleDAO'); /* @var $articleDao PublishedArticleDAO */
-                $article = $articleDao->getPublishedArticleByArticleId($articleId, $journal->getId(), true);
+            $articleData = $this->prepareArticleFileData($object, $journal);
+            if (is_array($articleData) && isset($articleData['article'])) {
+                $article = $articleData['article'];
             }
-            assert($article instanceof PublishedArticle);
         }
 
         $url = null;
         switch (true) {
             case $object instanceof Issue:
-                $url = $router->url($request, $journal->getPath(), 'issue', 'view', $object->getBestIssueId($journal));
+                $url = $router->url($request, $journal->getPath(), 'issue', 'view', [$object->getBestIssueId($journal)]);
                 break;
 
             case $object instanceof PublishedArticle:
-                $url = $router->url($request, $journal->getPath(), 'article', 'view', $object->getBestArticleId($journal));
+                $url = $router->url($request, $journal->getPath(), 'article', 'view', [$object->getBestArticleId($journal)]);
                 break;
 
             case $object instanceof ArticleGalley:
-                $url = $router->url($request, $journal->getPath(), 'article', 'view', array($article->getBestArticleId($journal), $object->getBestGalleyId($journal)));
+                if ($article instanceof PublishedArticle) {
+                    $url = $router->url($request, $journal->getPath(), 'article', 'view', [(int) $article->getBestArticleId($journal), $object->getBestGalleyId($journal)]);
+                }
                 break;
 
             case $object instanceof SuppFile:
-                $url = $router->url($request, $journal->getPath(), 'article', 'downloadSuppFile', array($article->getBestArticleId($journal), $object->getBestSuppFileId($journal)));
+                if ($article instanceof PublishedArticle) {
+                    $url = $router->url($request, $journal->getPath(), 'article', 'downloadSuppFile', [(int) $article->getBestArticleId($journal), $object->getBestSuppFileId($journal)]);
+                }
                 break;
         }
 
-        if ($this->isTestMode($request)) {
-            // Change server domain for testing.
+        if ($url && $this->isTestMode($request)) {
             $url = PKPString::regexp_replace('#://[^\s]+/index.php#', '://example.com/index.php', $url);
         }
         return $url;
     }
-}
 
+}
 ?>

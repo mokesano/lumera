@@ -17,7 +17,9 @@
 		$('#submit').pkpHandler('$.pkp.controllers.form.FormHandler');
 	{rdelim});
 </script>
+
 <form class="pkp_form" method="post" id="submit" action="{url op="selectObjectForReviewSubmission" path=$assignmentId returnPage=$returnPage}">
+	<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 	<select name="searchField" size="1" class="selectMenu">
 		{html_options_translate options=$searchFieldOptions selected=$searchField}
 	</select>
@@ -46,33 +48,33 @@
 	<tr>
 		<td colspan="5" class="headseparator">&nbsp;</td>
 	</tr>
-{iterate from=submissions item=submission}
-	<tr valign="top">
-		<td>{$submission->getId()}</td>
-		<td>{$submission->getSectionAbbrev()|escape}</td>
-		<td>{$submission->getAuthorString(true)|truncate:40:"..."|escape}</td>
-		<td><a href="{url page="editor" op="submission" path=$submission->getId()}" class="action">{$submission->getLocalizedTitle()|strip_tags|truncate:60:"..."}</a></td>
-		<td align="right" class="nowrap">
-			<a href="{url op="assignObjectForReviewSubmission" path=$assignmentId objectId=$objectId submissionId=$submission->getId() returnPage=$returnPage}" class="action">{translate key="plugins.generic.objectsForReview.editor.select"}</a>
-	</td>
-	</tr>
-	<tr>
-		<td colspan="5" class="{if $submissions->eof()}end{/if}separator">&nbsp;</td>
-	</tr>
-{/iterate}
-{if $submissions->wasEmpty()}
-	<tr>
-		<td colspan="5" class="nodata">{translate key="editor.submissions.noSubmissions"}</td>
-	</tr>
-	<tr>
-		<td colspan="5" class="endseparator">&nbsp;</td>
-	</tr>
-{else}
-	<tr>
-		<td colspan="4" align="left">{page_info iterator=$submissions}</td>
-		<td align="right">{page_links anchor="submissions" name="submissions" iterator=$submissions searchField=$searchField searchMatch=$searchMatch search=$search}</td>
-	</tr>
-{/if}
+	{iterate from=submissions item=submission}
+		<tr valign="top">
+			<td>{$submission->getId()}</td>
+			<td>{$submission->getSectionAbbrev()|escape}</td>
+			<td>{$submission->getAuthorString(true)|truncate:40:"..."|escape}</td>
+			<td><a href="{url page="editor" op="submission" path=$submission->getId()}" class="action">{$submission->getLocalizedTitle()|strip_tags|truncate:60:"..."}</a></td>
+			<td align="right" class="nowrap">
+				<a href="{url op="assignObjectForReviewSubmission" path=$assignmentId objectId=$objectId submissionId=$submission->getId() returnPage=$returnPage}" class="action">{translate key="plugins.generic.objectsForReview.editor.select"}</a>
+		</td>
+		</tr>
+		<tr>
+			<td colspan="5" class="{if $submissions->eof()}end{/if}separator">&nbsp;</td>
+		</tr>
+	{/iterate}
+	{if $submissions->wasEmpty()}
+		<tr>
+			<td colspan="5" class="nodata">{translate key="editor.submissions.noSubmissions"}</td>
+		</tr>
+		<tr>
+			<td colspan="5" class="endseparator">&nbsp;</td>
+		</tr>
+	{else}
+		<tr>
+			<td colspan="4" align="left">{page_info iterator=$submissions}</td>
+			<td align="right">{page_links anchor="submissions" name="submissions" iterator=$submissions searchField=$searchField searchMatch=$searchMatch search=$search}</td>
+		</tr>
+	{/if}
 </table>
 
 {include file="common/footer.tpl"}

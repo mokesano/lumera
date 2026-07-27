@@ -7,9 +7,9 @@ declare(strict_types=1);
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION]
+ * 
  * @class XenditGateway
+ * 
  * @brief Adapter spesifik untuk Xendit PHP Library (v7.0.0+)
  */
 
@@ -30,8 +30,8 @@ class XenditGateway implements PaymentGatewayInterface {
 
     /**
      * Constructor: Inisialisasi API Key dan Webhook Token
-     * @param string $apiKey API Key dari Xendit Dashboard
-     * @param string $webhookToken (Optional)
+     * @param string $apiKey
+     * @param string $webhookToken
      * @throws \RuntimeException
      */
     public function __construct(string $apiKey, string $webhookToken = '') {
@@ -43,8 +43,8 @@ class XenditGateway implements PaymentGatewayInterface {
     /**
      * Buat URL pembayaran untuk invoice tertentu
      * @param Invoice $invoice
-     * @param array $customerData (Optional) Data tambahan seperti email, nama depan, dll.
-     * @return string URL pembayaran yang dapat digunakan pelanggan
+     * @param array $customerData
+     * @return array
      * @throws \RuntimeException
      */
     public function getPaymentCheckoutData(Invoice $invoice, array $customerData = [], string $paymentType = 'all'): array {
@@ -83,8 +83,8 @@ class XenditGateway implements PaymentGatewayInterface {
 
     /**
      * Proses webhook callback dari Xendit
-     * @param array $payload Data mentah dari webhook
-     * @return array|null Array dengan 'invoiceId', 'status', dan 'method' atau null jika invalid
+     * @param array $payload
+     * @return array|null
      */
     public function processWebhook(array $payload): ?array {
         // [SECURITY SHIELD] Validasi Xendit Callback Token dari HTTP Header
@@ -119,5 +119,6 @@ class XenditGateway implements PaymentGatewayInterface {
             'method' => 'Xendit - ' . ($payload['payment_method'] ?? 'Unknown')
         ];
     }
+    
 }
 ?>

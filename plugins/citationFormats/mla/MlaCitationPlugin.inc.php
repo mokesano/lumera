@@ -19,14 +19,15 @@ import('classes.plugins.CitationPlugin');
 class MlaCitationPlugin extends CitationPlugin {
     
     /**
+     * Register plugin
      * @param string $category
      * @param string $path
-     * @param int|null $mainContextId
      * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
         $this->addLocaleData();
+
         return $success;
     }
 
@@ -40,6 +41,7 @@ class MlaCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get display name of plugin
      * @return string
      */
     public function getDisplayName(): string {
@@ -47,6 +49,7 @@ class MlaCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get citation format name plugin
      * @return string
      */
     public function getCitationFormatName(): string {
@@ -54,6 +57,7 @@ class MlaCitationPlugin extends CitationPlugin {
     }
 
     /**
+     * Get description plugin
      * @return string
      */
     public function getDescription(): string {
@@ -61,5 +65,4 @@ class MlaCitationPlugin extends CitationPlugin {
     }
 
 }
-
 ?>

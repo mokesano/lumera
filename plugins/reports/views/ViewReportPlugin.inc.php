@@ -22,13 +22,13 @@ class ViewReportPlugin extends ReportPlugin {
     
     /**
      * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path The path the plugin was found in
+     * @param string $category
+     * @param string $path
      * @param int|null $mainContextId
-     * @return bool True if plugin initialized successfully; if false, the plugin will not be registered.
+     * @return bool
      */
     public function register(string $category, string $path, $mainContextId = null): bool {
-        $success = parent::register($category, $path, $mainContextId);
+        $success = parent::register($category, $path);
         $this->addLocaleData();
         return $success;
     }
@@ -66,10 +66,10 @@ class ViewReportPlugin extends ReportPlugin {
     public function display($args, $request) {
         $journal = $request->getJournal();
 
-        $issueDao = DAORegistry::getDAO('IssueDAO'); /* @var $issueDao IssueDAO */
-        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /* @var $publishedArticleDao PublishedArticleDAO */
-        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /* @var $galleyDao ArticleGalleyDAO */
-        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /* @var $metricsDao MetricsDAO */
+        $issueDao = DAORegistry::getDAO('IssueDAO'); /** @var IssueDAO $issueDao */
+        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /** @var PublishedArticleDAO $publishedArticleDao */
+        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); /** @var ArticleGalleyDAO $galleyDao */
+        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /** @var MetricsDAO $metricsDao */
 
         $columns = [
             __('plugins.reports.views.articleId'),
@@ -234,5 +234,6 @@ class ViewReportPlugin extends ReportPlugin {
 
         fclose($fp);
     }
+    
 }
 ?>

@@ -85,7 +85,7 @@
     <message key="plugins.generic.pln.notifications.issn_setting">ينبغي أن يكون لمجلتك رمز ISSN قبل أن يتسنى لك الموافقة على شروط الخدمة. بإمكانك إدخال رمز ISSN في صفحة إعدادات المجلة. بمجرد إدخال هذا الرمز، ستظهر لك شروط الخدمة أدناه.</message>
     <message key="plugins.generic.pln.notifications.tar_missing">ينبغي أن تكون لنظامك القدرة على تشغيل ملفات مضغوطة بصيغة tar.</message>
     <message key="plugins.generic.pln.notifications.archive_tar_missing">ينبغي تنصيب إضافة ضغط الملفات بصيغة Tar والخاصة ببيئة PHP قبل أن يتسنى تمكين وظيفة PLN الخاصة بمشروع المعرفة العامة.</message>
-    <message key="plugins.generic.pln.notifications.php5_missing">إن إضافة PLN تتطلب توافر بيئة PHP بنسخته الخامسة أو أعلى.</message>
+    <message key="plugins.generic.pln.notifications.php_missing">إن إضافة PLN تتطلب توافر بيئة PHP بنسخته الخامسة أو أعلى.</message>
 
     <message key="plugins.generic.pln.error.network.servicedocument">خطأ في الشبكة: {$error} عند الاتصال بـ PLN للحصول على مستند الخدمة.</message>
     <message key="plugins.generic.pln.error.network.deposit">خطأ في الشبكة: {$error} عند الاتصال بـ PLN لإرسال الإيداع.</message>

@@ -10,18 +10,18 @@ declare(strict_types=1);
  * @class LegacyJR1
  * @ingroup plugins_reports_counter
  *
- * @brief The Legacy COUNTER JR1 (r3) report
+ * @brief The Legacy COUNTER JR1 (r3) report.
  */
 
 class LegacyJR1 {
 
     /**
-     * @var string $_templatePath The location of the reportxml template
+     * @var string The location of the reportxml template.
      */
     private string $_templatePath;
 
     /**
-     * Constructor
+     * Constructor.
      * @param string $templatePath
      */
     public function __construct(string $templatePath) {
@@ -29,7 +29,8 @@ class LegacyJR1 {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $templatePath
      */
     public function LegacyJR1($templatePath) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -43,13 +44,19 @@ class LegacyJR1 {
     }
 
     /**
-     * Display the JR1 (R3) report
-     * @param PKPRequest $request
+     * Display the JR1 (R3) report.
+     * @param PKPRequest|null $request
      */
     public function display($request) {
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
         $oldStats = (bool) $request->getUserVar('useOldCounterStats');
         $year = (string) $request->getUserVar('year');
         $type = (string) $request->getUserVar('type');
+        
         switch ($type) {
             case 'report':
                 $this->_report($request, $year, $oldStats);
@@ -68,10 +75,10 @@ class LegacyJR1 {
      */
     private function _report($request, string $year, bool $useLegacyStats) {
         $journal = $request->getJournal();
-        list($begin, $end) = $this->_getLimitDates($year);
+        [$begin, $end] = $this->_getLimitDates($year);
 
-        header('content-type: text/comma-separated-values');
-        header('content-disposition: attachment; filename=counter-' . date('Ymd') . '.csv');
+        header('Content-Type: text/comma-separated-values');
+        header('Content-Disposition: attachment; filename=counter-' . date('Ymd') . '.csv');
 
         $fp = fopen('php://output', 'wt');
         PKPString::fputcsv($fp, [__('plugins.reports.counter.1a.title1')]);
@@ -79,7 +86,7 @@ class LegacyJR1 {
         PKPString::fputcsv($fp, []); // FIXME: Criteria should be here?
         PKPString::fputcsv($fp, [__('plugins.reports.counter.1a.dateRun')]);
         // strftime is deprecated in PHP 8.1, replaced with date()
-        PKPString::fputcsv($fp, [date("Y-m-d")]);
+        PKPString::fputcsv($fp, [date('Y-m-d')]);
 
         $cols = [
             '',
@@ -89,7 +96,7 @@ class LegacyJR1 {
             __('plugins.reports.counter.1a.onlineIssn')
         ];
         
-        for ($i=1; $i<=12; $i++) {
+        for ($i = 1; $i <= 12; $i++) {
             $time = strtotime($year . '-' . $i . '-01');
             // strftime is deprecated. %b -> M (Short month name)
             $cols[] = date('M-Y', $time);
@@ -113,14 +120,17 @@ class LegacyJR1 {
         fputcsv($fp, $cols);
 
         // Get statistics from the log.
-        $journalDao = DAORegistry::getDAO('JournalDAO'); /* @var $journalDao JournalDAO */
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
         $journalIds = $this->_getJournalIds($useLegacyStats);
         
         foreach ($journalIds as $journalId) {
-            $journal = $journalDao->getById($journalId);
-            if (!$journal) continue;
+            $journal = $journalDao->getById((int) $journalId);
+            if (!$journal) {
+                continue;
+            }
             
-            $entries = $this->_getMonthlyLogRange($journalId, $begin, $end, $useLegacyStats);
+            $entries = $this->_getMonthlyLogRange((int) $journalId, $begin, $end, $useLegacyStats);
             $cols = [
                 $journal->getLocalizedTitle(),
                 $journal->getSetting('publisherInstitution'),
@@ -130,14 +140,13 @@ class LegacyJR1 {
             ];
             $this->_formColumns($cols, $entries);
             fputcsv($fp, $cols);
-            unset($journal, $entry);
         }
 
         fclose($fp);
     }
 
     /**
-     * Internal function to form some of the CSV columns
+     * Internal function to form some of the CSV columns.
      * @param array $cols by reference (modified in place)
      * @param array $entries
      */
@@ -150,13 +159,13 @@ class LegacyJR1 {
         for ($i = 1; $i <= 12; $i++) {
             $currTotal = 0;
             foreach ($entries as $entry) {
-                $month = (int) substr($entry[STATISTICS_DIMENSION_MONTH], 4, 2);
-                if ($i == $month) {
-                    $metric = $entry[STATISTICS_METRIC];
+                $month = (int) substr((string) $entry[STATISTICS_DIMENSION_MONTH], 4, 2);
+                if ($i === $month) {
+                    $metric = (int) $entry[STATISTICS_METRIC];
                     $currTotal += $metric;
-                    if ($entry[STATISTICS_DIMENSION_FILE_TYPE] == STATISTICS_FILE_TYPE_HTML) {
+                    if ($entry[STATISTICS_DIMENSION_FILE_TYPE] === STATISTICS_FILE_TYPE_HTML) {
                         $htmlTotal += $metric;
-                    } elseif ($entry[STATISTICS_DIMENSION_FILE_TYPE] == STATISTICS_FILE_TYPE_PDF) {
+                    } elseif ($entry[STATISTICS_DIMENSION_FILE_TYPE] === STATISTICS_FILE_TYPE_PDF) {
                         $pdfTotal += $metric;
                     }
                 }
@@ -170,7 +179,7 @@ class LegacyJR1 {
     }
 
     /**
-     * Internal function to assign information for the Counter part of a report
+     * Internal function to assign information for the Counter part of a report.
      * @param PKPTemplateManager $templateManager
      * @param string $begin
      * @param string $end
@@ -178,21 +187,25 @@ class LegacyJR1 {
      */
     private function _assignTemplateCounterXML($templateManager, string $begin, string $end = '', bool $useLegacyStats = false) {
         $request = Application::get()->getRequest();
-        $journal = $request->getJournal();
 
-        $journalDao = DAORegistry::getDAO('JournalDAO'); /* @var $journalDao JournalDAO */
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
         $journalIds = $this->_getJournalIds($useLegacyStats);
 
-        if ($end == '') $end = $begin;
+        if ($end === '') {
+            $end = $begin;
+        }
 
         $journalsArray = [];
         $i = 0;
 
         foreach ($journalIds as $journalId) {
-            $journal = $journalDao->getById($journalId);
-            if (!$journal) continue;
+            $journal = $journalDao->getById((int) $journalId);
+            if (!$journal) {
+                continue;
+            }
             
-            $entries = $this->_getMonthlyLogRange($journalId, $begin, $end, $useLegacyStats);
+            $entries = $this->_getMonthlyLogRange((int) $journalId, $begin, $end, $useLegacyStats);
 
             $journalsArray[$i]['entries'] = $this->_arrangeEntries($entries);
             $journalsArray[$i]['journalTitle'] = $journal->getLocalizedTitle();
@@ -202,47 +215,46 @@ class LegacyJR1 {
             $i++;
         }
 
-        $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO'); /* @var $siteSettingsDao SiteSettingsDAO */
+        /** @var SiteSettingsDAO $siteSettingsDao */
+        $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO');
         $siteTitle = $siteSettingsDao->getSetting('title', AppLocale::getLocale());
 
-        $base_url = Config::getVar('general','base_url');
+        $base_url = (string) Config::getVar('general', 'base_url');
 
         $reqUser = $request->getUser();
         if ($reqUser) {
             $templateManager->assign('reqUserName', $reqUser->getUsername());
-            $templateManager->assign('reqUserId', $reqUser->getUserId());
+            $templateManager->assign('reqUserId', (int) $reqUser->getId());
         } else {
             $templateManager->assign('reqUserName', __('plugins.reports.counter.1a.anonymous'));
             $templateManager->assign('reqUserId', '');
         }
 
         $templateManager->assign('journalsArray', $journalsArray);
-
         $templateManager->assign('siteTitle', $siteTitle);
         $templateManager->assign('base_url', $base_url);
     }
 
     /**
-     * Internal function to collect structures for output
+     * Internal function to collect structures for output.
      * @param array $entries
      * @return array
      */
     private function _arrangeEntries(array $entries): array {
         $ret = [];
-
         $i = 0;
 
         foreach ($entries as $entry) {
-            $year = (int) substr($entry['month'], 0, 4);
-            $month = (int) substr($entry['month'], 4, 2);
-            $start = date("Y-m-d", mktime(0, 0, 0, $month, 1, $year));
-            $end = date("Y-m-t", mktime(0, 0, 0, $month, 1, $year));
+            $year = (int) substr((string) $entry['month'], 0, 4);
+            $month = (int) substr((string) $entry['month'], 4, 2);
+            $start = date('Y-m-d', mktime(0, 0, 0, $month, 1, $year));
+            $end = date('Y-m-t', mktime(0, 0, 0, $month, 1, $year));
 
             $rangeExists = false;
             $workingKey = null;
             
             foreach ($ret as $key => $record) {
-                if ($record['start'] == $start && $record['end'] == $end) {
+                if ($record['start'] === $start && $record['end'] === $end) {
                     $rangeExists = true;
                     $workingKey = $key;
                     break;
@@ -257,17 +269,13 @@ class LegacyJR1 {
                 $ret[$workingKey]['end'] = $end;
             }
 
-            if (array_key_exists('count_total', $ret[$workingKey])) {
-                $totalCount = $ret[$workingKey]['count_total'];
-            } else {
-                $totalCount = 0;
-            }
-            $ret[$workingKey]['count_total'] = $entry[STATISTICS_METRIC] + $totalCount;
+            $totalCount = $ret[$workingKey]['count_total'] ?? 0;
+            $ret[$workingKey]['count_total'] = (int) $entry[STATISTICS_METRIC] + $totalCount;
             
-            if ($entry[STATISTICS_DIMENSION_FILE_TYPE] == STATISTICS_FILE_TYPE_HTML) {
-                $ret[$workingKey]['count_html'] = $entry[STATISTICS_METRIC];
-            } elseif ($entry[STATISTICS_DIMENSION_FILE_TYPE] == STATISTICS_FILE_TYPE_PDF) {
-                $ret[$workingKey]['count_pdf'] = $entry[STATISTICS_METRIC];
+            if ($entry[STATISTICS_DIMENSION_FILE_TYPE] === STATISTICS_FILE_TYPE_HTML) {
+                $ret[$workingKey]['count_html'] = (int) $entry[STATISTICS_METRIC];
+            } elseif ($entry[STATISTICS_DIMENSION_FILE_TYPE] === STATISTICS_FILE_TYPE_PDF) {
+                $ret[$workingKey]['count_pdf'] = (int) $entry[STATISTICS_METRIC];
             }
         }
 
@@ -275,14 +283,13 @@ class LegacyJR1 {
     }
 
     /**
-     * Return the begin and end dates
-     * based on the passed year.
+     * Return the begin and end dates based on the passed year.
      * @param string $year
      * @return array
      */
     private function _getLimitDates(string $year): array {
-        $begin = "$year-01-01";
-        $end = "$year-12-01";
+        $begin = $year . '-01-01';
+        $end = $year . '-12-01';
 
         return [$begin, $end];
     }
@@ -293,7 +300,8 @@ class LegacyJR1 {
      * @return array
      */
     private function _getJournalIds(bool $useLegacyStats = false): array {
-        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /* @var $metricsDao MetricsDAO */
+        /** @var MetricsDAO $metricsDao */
+        $metricsDao = DAORegistry::getDAO('MetricsDAO');
         if ($useLegacyStats) {
             $results = $metricsDao->getMetrics(OJS_METRIC_TYPE_LEGACY_COUNTER, [STATISTICS_DIMENSION_ASSOC_ID]);
             $fieldId = STATISTICS_DIMENSION_ASSOC_ID;
@@ -303,8 +311,10 @@ class LegacyJR1 {
             $fieldId = STATISTICS_DIMENSION_CONTEXT_ID;
         }
         $journalIds = [];
-        foreach($results as $record) {
-            $journalIds[] = $record[$fieldId];
+        if (is_array($results)) {
+            foreach ($results as $record) {
+                $journalIds[] = (int) $record[$fieldId];
+            }
         }
         return $journalIds;
     }
@@ -321,7 +331,8 @@ class LegacyJR1 {
         $begin = date('Ym', strtotime($begin));
         $end = date('Ym', strtotime($end));
 
-        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /* @var $metricsDao MetricsDAO */
+        /** @var MetricsDAO $metricsDao */
+        $metricsDao = DAORegistry::getDAO('MetricsDAO');
         $columns = [STATISTICS_DIMENSION_MONTH, STATISTICS_DIMENSION_FILE_TYPE];
         $filter = [
             STATISTICS_DIMENSION_MONTH => ['from' => $begin, 'to' => $end]
@@ -336,13 +347,13 @@ class LegacyJR1 {
             $filter[STATISTICS_DIMENSION_ASSOC_TYPE] = ASSOC_TYPE_GALLEY;
         }
 
-        if ($journalId) {
+        if ($journalId !== null) {
             $columns[] = $dimension;
-            $filter[$dimension] = $journalId;
+            $filter[$dimension] = (int) $journalId;
         }
 
         $results = $metricsDao->getMetrics($metricType, $columns, $filter);
-        return $results;
+        return is_array($results) ? $results : [];
     }
 
     /**
@@ -357,14 +368,14 @@ class LegacyJR1 {
     }
 
     /**
-     * Counter report in XML
+     * Counter report in XML.
      * @param PKPRequest $request
      * @param string $year
      * @param bool $useLegacyStats
      */
     private function _reportXML($request, string $year, bool $useLegacyStats) {
         $templateManager = TemplateManager::getManager();
-        list($begin, $end) = $this->_getLimitDates($year);
+        [$begin, $end] = $this->_getLimitDates($year);
 
         $this->_assignTemplateCounterXML($templateManager, $begin, $end, $useLegacyStats);
         $templateManager->display($this->_templatePath . 'reportxml.tpl', 'text/xml');

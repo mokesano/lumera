@@ -9,13 +9,14 @@
  *
  *}
 <form name="filterForm" action="#">
-<ul class="filter">
-	<li>{translate key="editor.submissions.assignedTo"}: <select name="filterEditor" onchange="location.href='{url|escape path=$returnPage searchField=$searchField searchMatch=$searchMatch search=$search filterEditor="EDITOR" filterType="TYPE" sort=$sort sortDirection=$sortDirection escape=false}'.replace('EDITOR', this.options[this.selectedIndex].value).replace('TYPE', document.forms.filterForm.elements.filterType.value)" size="1" class="selectMenu">{html_options options=$editorOptions selected=$filterEditor}</select></li>
-	<li>{translate key="plugins.generic.objectsForReview.editor.objectType"}: <select name="filterType" onchange="location.href='{url|escape path=$returnPage searchField=$searchField searchMatch=$searchMatch search=$search filterEditor="EDITOR" filterType="TYPE" sort=$sort sortDirection=$sortDirection escape=false}'.replace('TYPE', this.options[this.selectedIndex].value).replace('EDITOR', document.forms.filterForm.elements.filterEditor.value)" size="1" class="selectMenu">{html_options options=$filterTypeOptions selected=$filterType}</select></li>
-</ul>
+	<ul class="filter">
+		<li>{translate key="editor.submissions.assignedTo"}: <select name="filterEditor" onchange="location.href='{url|escape path=$returnPage searchField=$searchField searchMatch=$searchMatch search=$search filterEditor="EDITOR" filterType="TYPE" sort=$sort sortDirection=$sortDirection escape=false}'.replace('EDITOR', this.options[this.selectedIndex].value).replace('TYPE', document.forms.filterForm.elements.filterType.value)" size="1" class="selectMenu">{html_options options=$editorOptions selected=$filterEditor}</select></li>
+		<li>{translate key="plugins.generic.objectsForReview.editor.objectType"}: <select name="filterType" onchange="location.href='{url|escape path=$returnPage searchField=$searchField searchMatch=$searchMatch search=$search filterEditor="EDITOR" filterType="TYPE" sort=$sort sortDirection=$sortDirection escape=false}'.replace('TYPE', this.options[this.selectedIndex].value).replace('EDITOR', document.forms.filterForm.elements.filterEditor.value)" size="1" class="selectMenu">{html_options options=$filterTypeOptions selected=$filterType}</select></li>
+	</ul>
 </form>
 
 <form method="get" action="{url op="objectsForReview" path=$returnPage}">
+	<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 	<input type="hidden" name="filterEditor" value="{$filterEditor|escape}" />
 	<input type="hidden" name="filterType" value="{$filterType|escape}" />
 	<input type="hidden" name="sort" value="{$sort|escape}" />
@@ -51,48 +52,48 @@
 	<tr>
 		<td colspan="{$colspan}" class="headseparator">&nbsp;</td>
 	</tr>
-{iterate from=objectsForReview item=objectForReview}
-{assign var=reviewObjectType value=$objectForReview->getReviewObjectType()}
-	<tr valign="top">
-		<td><a href="{url op="editObjectForReview" path=$objectForReview->getId() reviewObjectTypeId=$objectForReview->getReviewObjectTypeId()}" class="action">{$objectForReview->getTitle()|escape|truncate:40:"..."}</a></td>
-		<td>{$reviewObjectType->getLocalizedName()|escape}</td>
-		<td>{$objectForReview->getDateCreated()|date_format:$dateFormatTrunc}</td>
-		<td>{$objectForReview->getEditorInitials()|escape}</td>
-		{assign var=statusString value=$objectForReview->getStatusString()}
-		<td>{translate key=$statusString}</td>
-		<td align="right">
-		{if $objectForReview->getAvailable()}
-			{if $mode == $smarty.const.OFR_MODE_FULL}
-				<a href="{url op="selectObjectForReviewAuthor" path=$objectForReview->getId()}" class="action">{translate key="plugins.generic.objectsForReview.editor.assignObjectReviewer"}</a> |
-			{else}
-				<a href="{url op="selectObjectForReviewSubmission" objectId=$objectForReview->getId() returnPage='all'}" class="action">{translate key="plugins.generic.objectsForReview.editor.select"}</a> |
+	{iterate from=objectsForReview item=objectForReview}
+	{assign var=reviewObjectType value=$objectForReview->getReviewObjectType()}
+		<tr valign="top">
+			<td><a href="{url op="editObjectForReview" path=$objectForReview->getId() reviewObjectTypeId=$objectForReview->getReviewObjectTypeId()}" class="action">{$objectForReview->getTitle()|escape|truncate:40:"..."}</a></td>
+			<td>{$reviewObjectType->getLocalizedName()|escape}</td>
+			<td>{$objectForReview->getDateCreated()|date_format:$dateFormatTrunc}</td>
+			<td>{$objectForReview->getEditorInitials()|escape}</td>
+			{assign var=statusString value=$objectForReview->getStatusString()}
+			<td>{translate key=$statusString}</td>
+			<td align="right">
+			{if $objectForReview->getAvailable()}
+				{if $mode == $smarty.const.OFR_MODE_FULL}
+					<a href="{url op="selectObjectForReviewAuthor" path=$objectForReview->getId()}" class="action">{translate key="plugins.generic.objectsForReview.editor.assignObjectReviewer"}</a> |
+				{else}
+					<a href="{url op="selectObjectForReviewSubmission" objectId=$objectForReview->getId() returnPage='all'}" class="action">{translate key="plugins.generic.objectsForReview.editor.select"}</a> |
+				{/if}
 			{/if}
-		{/if}
-			<a href="{url op="deleteObjectForReview" path=$objectForReview->getId()}" class="action" onclick="return confirm('{translate|escape:"jsparam" key="plugins.generic.objectsForReview.editor.objectForReview.confirmDelete"}')">{translate key="plugins.generic.objectsForReview.editor.objectForReview.delete"}</a>
-		</td>
-	</tr>
-	<tr>
-		<td colspan="{$colspan}" class="{if $objectsForReview->eof()}end{/if}separator">&nbsp;</td>
-	</tr>
-{/iterate}
-{if $objectsForReview->wasEmpty() and $search != ""}
-	<tr>
-		<td colspan="{$colspan}" class="nodata">{translate key="plugins.generic.objectsForReview.search.noResults"}</td>
-	</tr>
-	<tr>
-		<td colspan="{$colspan}" class="endseparator">&nbsp;</td>
-	</tr>
-{elseif $objectsForReview->wasEmpty()}
-	<tr>
-		<td colspan="{$colspan}" class="nodata">{translate key="plugins.generic.objectsForReview.objectsForReview.noneCreated"}</td>
-	</tr>
-	<tr>
-		<td colspan="{$colspan}" class="endseparator">&nbsp;</td>
-	</tr>
-{else}
-	<tr>
-		<td colspan="{$colspanPage}" align="left">{page_info iterator=$objectsForReview}</td>
-		<td colspan="{$colspanPage}" align="right">{page_links anchor="objectsForReview" name="objectsForReview" iterator=$objectsForReview sort=$sort sortDirection=$sortDirection filterEditor=$filterEditor filterType=$filterType searchField=$searchField searchMatch=$searchMatch search=$search}</td>
-	</tr>
-{/if}
+				<a href="{url op="deleteObjectForReview" path=$objectForReview->getId()}" class="action" onclick="return confirm('{translate|escape:"jsparam" key="plugins.generic.objectsForReview.editor.objectForReview.confirmDelete"}')">{translate key="plugins.generic.objectsForReview.editor.objectForReview.delete"}</a>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="{$colspan}" class="{if $objectsForReview->eof()}end{/if}separator">&nbsp;</td>
+		</tr>
+	{/iterate}
+	{if $objectsForReview->wasEmpty() and $search != ""}
+		<tr>
+			<td colspan="{$colspan}" class="nodata">{translate key="plugins.generic.objectsForReview.search.noResults"}</td>
+		</tr>
+		<tr>
+			<td colspan="{$colspan}" class="endseparator">&nbsp;</td>
+		</tr>
+	{elseif $objectsForReview->wasEmpty()}
+		<tr>
+			<td colspan="{$colspan}" class="nodata">{translate key="plugins.generic.objectsForReview.objectsForReview.noneCreated"}</td>
+		</tr>
+		<tr>
+			<td colspan="{$colspan}" class="endseparator">&nbsp;</td>
+		</tr>
+	{else}
+		<tr>
+			<td colspan="{$colspanPage}" align="left">{page_info iterator=$objectsForReview}</td>
+			<td colspan="{$colspanPage}" align="right">{page_links anchor="objectsForReview" name="objectsForReview" iterator=$objectsForReview sort=$sort sortDirection=$sortDirection filterEditor=$filterEditor filterType=$filterType searchField=$searchField searchMatch=$searchMatch search=$search}</td>
+		</tr>
+	{/if}
 </table>

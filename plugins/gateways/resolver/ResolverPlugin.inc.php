@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @class ResolverPlugin
  * @ingroup plugins_gateways_resolver
  *
- * @brief Simple resolver gateway plugin
+ * @brief Simple resolver gateway plugin.
  */
 
 import('classes.plugins.GatewayPlugin');
@@ -19,14 +19,14 @@ import('classes.plugins.GatewayPlugin');
 class ResolverPlugin extends GatewayPlugin {
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ResolverPlugin() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -40,10 +40,10 @@ class ResolverPlugin extends GatewayPlugin {
     }
 
     /**
-     * Called as a plugin is registered to the registry
-     * @param string $category Name of category plugin was registered to
-     * @param string $path Path to plugin
-     * @return bool True iff plugin initialized successfully
+     * Called as a plugin is registered to the registry.
+     * @param string $category
+     * @param string $path
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
@@ -52,18 +52,16 @@ class ResolverPlugin extends GatewayPlugin {
     }
 
     /**
-     * Get the name of the settings file to be installed on new journal
-     * creation.
-     * @return string
+     * Get the name of the settings file to be installed on new journal creation.
+     * @return string|null
      */
     public function getContextSpecificPluginSettingsFile(): ?string {
         return $this->getPluginPath() . '/settings.xml';
     }
 
     /**
-     * Get the name of this plugin. The name must be unique within
-     * its category.
-     * @return string name of plugin
+     * Get the name of this plugin. The name must be unique within its category.
+     * @return string
      */
     public function getName(): string {
         return 'ResolverPlugin';
@@ -88,7 +86,8 @@ class ResolverPlugin extends GatewayPlugin {
     /**
      * Handle fetch requests for this plugin.
      * @param array $args
-     * @param Request $request
+     * @param mixed $request
+     * @return bool|void
      */
     public function fetch($args, $request) {
         if (!$this->getEnabled()) {
@@ -100,53 +99,68 @@ class ResolverPlugin extends GatewayPlugin {
             case 'doi':
                 $doi = implode('/', $args);
                 $journal = $request->getJournal();
-                $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO'); /* @var $publishedArticleDao PublishedArticleDAO */
-                $article = $publishedArticleDao->getPublishedArticleByPubId('doi', $doi, $journal ? $journal->getId() : null);
-                if($article instanceof PublishedArticle) {
+                /** @var PublishedArticleDAO $publishedArticleDao */
+                $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+                $article = $publishedArticleDao->getPublishedArticleByPubId('doi', $doi, $journal ? (int) $journal->getId() : null);
+                if ($article instanceof PublishedArticle) {
                     $request->redirect(null, 'article', 'view', $article->getBestArticleId());
                 }
                 break;
+                
             case 'vnp': // Volume, number, page
             case 'ynp': // Volume, number, year, page
                 // This can only be used from within a journal context
-                $journal = Request::getJournal();
-                if (!$journal) break;
+                $journal = $request->getJournal();
+                if (!$journal) {
+                    break;
+                }
 
                 $volume = null;
                 $year = null;
 
-                if ($scheme == 'vnp') {
+                if ($scheme === 'vnp') {
                     $volume = (int) array_shift($args);
-                } elseif ($scheme == 'ynp') {
+                } elseif ($scheme === 'ynp') {
                     $year = (int) array_shift($args);
                 }
-                $number = array_shift($args);
+                $number = (string) array_shift($args);
                 $page = (int) array_shift($args);
 
+                /** @var IssueDAO $issueDao */
                 $issueDao = DAORegistry::getDAO('IssueDAO');
-                $issues = $issueDao->getPublishedIssuesByNumber($journal->getId(), $volume, $number, $year);
+                $issues = $issueDao->getPublishedIssuesByNumber((int) $journal->getId(), $volume, $number, $year);
 
                 // Ensure only one issue matched, and fetch it.
                 $issue = $issues->next();
-                if (!$issue || $issues->next()) break;
-                unset($issues);
-
-                $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-                $articles = $publishedArticleDao->getPublishedArticles($issue->getId());
-                foreach ($articles as $article) {
-                    // Look for the correct page in the list of articles.
-                    $matches = null;
-                    if (PKPString::regexp_match_get('/^[Pp][Pp]?[.]?[ ]?(\d+)$/', $article->getPages(), $matches)) {
-                        $matchedPage = (int) $matches[1];
-                        if ($page == $matchedPage) Request::redirect(null, 'article', 'view', $article->getBestArticleId());
-                    }
-                    if (PKPString::regexp_match_get('/^[Pp][Pp]?[.]?[ ]?(\d+)[ ]?-[ ]?([Pp][Pp]?[.]?[ ]?)?(\d+)$/', $article->getPages(), $matches)) {
-                        $matchedPageFrom = (int) $matches[1];
-                        $matchedPageTo = (int) $matches[3];
-                        if ($page >= $matchedPageFrom && ($page < $matchedPageTo || ($page == $matchedPageTo && $matchedPageFrom == $matchedPageTo))) Request::redirect(null, 'article', 'view', $article->getBestArticleId());
-                    }
-                    unset($article);
+                if (!$issue || $issues->next()) {
+                    break;
                 }
+
+                /** @var PublishedArticleDAO $publishedArticleDao */
+                $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+                $articles = $publishedArticleDao->getPublishedArticles((int) $issue->getId());
+                
+                foreach ($articles as $article) {
+                    $matches = null;
+                    if (PKPString::regexp_match_get('/^[Pp][Pp]?[.]?[ ]?(\d+)$/', (string) $article->getPages(), $matches)) {
+                        if (is_array($matches) && isset($matches[1])) {
+                            $matchedPage = (int) $matches[1];
+                            if ($page === $matchedPage) {
+                                $request->redirect(null, 'article', 'view', $article->getBestArticleId());
+                            }
+                        }
+                    }
+                    if (PKPString::regexp_match_get('/^[Pp][Pp]?[.]?[ ]?(\d+)[ ]?-[ ]?([Pp][Pp]?[.]?[ ]?)?(\d+)$/', (string) $article->getPages(), $matches)) {
+                        if (is_array($matches) && isset($matches[1], $matches[3])) {
+                            $matchedPageFrom = (int) $matches[1];
+                            $matchedPageTo = (int) $matches[3];
+                            if ($page >= $matchedPageFrom && ($page < $matchedPageTo || ($page === $matchedPageTo && $matchedPageFrom === $matchedPageTo))) {
+                                $request->redirect(null, 'article', 'view', $article->getBestArticleId());
+                            }
+                        }
+                    }
+                }
+                break;
         }
 
         // Failure.
@@ -160,7 +174,7 @@ class ResolverPlugin extends GatewayPlugin {
 
     /**
      * Sanitize string for CSV output.
-     * @param string $string
+     * @param mixed $string
      * @return string
      */
     public function sanitize($string): string {
@@ -171,58 +185,79 @@ class ResolverPlugin extends GatewayPlugin {
      * Export holdings data.
      */
     public function exportHoldings() {
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
+        
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $journals = $journalDao->getJournals(true);
-        header('content-type: text/plain');
-        header('content-disposition: attachment; filename=holdings.txt');
+
+        header('Content-Type: text/plain');
+        header('Content-Disposition: attachment; filename=holdings.txt');
         echo "title\tissn\te_issn\tstart_date\tend_date\tembargo_months\tembargo_days\tjournal_url\tvol_start\tvol_end\tiss_start\tiss_end\n";
+        
         while ($journal = $journals->next()) {
-            $issues = $issueDao->getPublishedIssues($journal->getId());
+            $issues = $issueDao->getPublishedIssues((int) $journal->getId());
             $startDate = null;
             $endDate = null;
             $startNumber = null;
             $endNumber = null;
             $startVolume = null;
             $endVolume = null;
+            
             while ($issue = $issues->next()) {
                 $datePublished = $issue->getDatePublished();
-                if ($datePublished !== null) $datePublished = strtotime($datePublished);
-                if ($startDate === null || $startDate > $datePublished) $startDate = $datePublished;
-                if ($endDate === null || $endDate < $datePublished) $endDate = $datePublished;
-                $volume = $issue->getVolume();
-                if ($startVolume === null || $startVolume > $volume) $startVolume = $volume;
-                if ($endVolume === null || $endVolume < $volume) $endVolume = $volume;
-                $number = $issue->getNumber();
-                if ($startNumber === null || $startNumber > $number) $startNumber = $number;
-                if ($endNumber === null || $endNumber < $number) $endNumber = $number;
-                unset($issue);
+                $timestamp = $datePublished !== null ? strtotime((string) $datePublished) : null;
+                
+                if ($startDate === null || ($timestamp !== null && $startDate > $timestamp)) {
+                    $startDate = $timestamp;
+                }
+                if ($endDate === null || ($timestamp !== null && $endDate < $timestamp)) {
+                    $endDate = $timestamp;
+                }
+                
+                $volume = (int) $issue->getVolume();
+                if ($startVolume === null || $startVolume > $volume) {
+                    $startVolume = $volume;
+                }
+                if ($endVolume === null || $endVolume < $volume) {
+                    $endVolume = $volume;
+                }
+                
+                $number = (int) $issue->getNumber();
+                if ($startNumber === null || $startNumber > $number) {
+                    $startNumber = $number;
+                }
+                if ($endNumber === null || $endNumber < $number) {
+                    $endNumber = $number;
+                }
             }
-            unset($issues);
 
             echo $this->sanitize($journal->getLocalizedTitle()) . "\t";
-            echo $this->sanitize($journal->getSetting('printIssn')) . "\t";
-            echo $this->sanitize($journal->getSetting('onlineIssn')) . "\t";
-            echo $this->sanitize($startDate === null ? '' : strftime('%Y-%m-%d', $startDate)) . "\t"; // start_date
-            echo $this->sanitize($endDate === null ? '' : strftime('%Y-%m-%d', $endDate)) . "\t"; // end_date
+            echo $this->sanitize((string) $journal->getSetting('printIssn')) . "\t";
+            echo $this->sanitize((string) $journal->getSetting('onlineIssn')) . "\t";
+            echo $this->sanitize($startDate === null ? '' : date('Y-m-d', $startDate)) . "\t"; // start_date
+            echo $this->sanitize($endDate === null ? '' : date('Y-m-d', $endDate)) . "\t"; // end_date
             echo $this->sanitize('') . "\t"; // embargo_months
             echo $this->sanitize('') . "\t"; // embargo_days
-            echo Request::url($journal->getPath()) . "\t"; // journal_url
-            echo $this->sanitize($startVolume) . "\t"; // vol_start
-            echo $this->sanitize($endVolume) . "\t"; // vol_end
-            echo $this->sanitize($startNumber) . "\t"; // iss_start
-            echo $this->sanitize($endNumber) . "\n"; // iss_end
-
-            unset($journal);
+            echo $request->url($journal->getPath()) . "\t"; // journal_url
+            echo $this->sanitize((string) $startVolume) . "\t"; // vol_start
+            echo $this->sanitize((string) $endVolume) . "\t"; // vol_end
+            echo $this->sanitize((string) $startNumber) . "\t"; // iss_start
+            echo $this->sanitize((string) $endNumber) . "\n"; // iss_end
         }
     }
 
     /**
      * Get management verbs.
+     * @param array $verbs
+     * @param mixed $request
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
-        $verbs = parent::getManagementVerbs();
+        $verbs = parent::getManagementVerbs($verbs, $request);
         if (Validation::isSiteAdmin() && $this->getEnabled()) {
             $verbs[] = [
                 'exportHoldings',
@@ -238,11 +273,10 @@ class ResolverPlugin extends GatewayPlugin {
      * @param array $args
      * @param string|null $message DEPRECATED (use NotificationManager)
      * @param array|null $messageParams DEPRECATED
-     * @param object|null $plugin
-     * @param object|null $request
+     * @param mixed $request
      * @return bool
      */
-    public function manage(string $verb, array $args, string $message = null, $messageParams = null, $plugin = null, $request = null): bool {
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         switch ($verb) {
             case 'exportHoldings':
                 if (Validation::isSiteAdmin() && $this->getEnabled()) {
@@ -251,8 +285,8 @@ class ResolverPlugin extends GatewayPlugin {
                 }
                 break;
         }
-        return parent::manage($verb, $args);
+        return parent::manage($verb, $args, $message, $messageParams, $request);
     }
-}
 
+}
 ?>

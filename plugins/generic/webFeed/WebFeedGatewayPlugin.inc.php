@@ -39,12 +39,12 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Hide this plugin from the management interface (it's subsidiary)
-     * @return boolean
+     * Hide this plugin from the management interface (it's subsidiary).
+     * @return bool
      */
     public function getHideManagement(): bool {
         return true;
@@ -59,7 +59,7 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
     }
 
     /**
-     * Get display name
+     * Get display name.
      * @return string
      */
     public function getDisplayName(): string {
@@ -67,7 +67,7 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
     }
 
     /**
-     * Get description
+     * Get description.
      * @return string
      */
     public function getDescription(): string {
@@ -75,12 +75,11 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
     }
 
     /**
-     * Get the web feed plugin
-     * @return object
+     * Get the web feed plugin.
+     * @return GatewayPlugin|null
      */
     public function getWebFeedPlugin() {
-        $plugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
-        return $plugin;
+        return PluginRegistry::getPlugin('generic', $this->parentPluginName);
     }
 
     /**
@@ -89,7 +88,7 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
      */
     public function getPluginPath(): string {
         $plugin = $this->getWebFeedPlugin();
-        return $plugin->getPluginPath();
+        return $plugin ? $plugin->getPluginPath() : '';
     }
 
     /**
@@ -98,7 +97,7 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
      */
     public function getTemplatePath(): string {
         $plugin = $this->getWebFeedPlugin();
-        return $plugin->getTemplatePath() . 'templates/';
+        return $plugin ? $plugin->getTemplatePath() . 'templates/' : '';
     }
 
     /**
@@ -107,11 +106,13 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
      */
     public function getEnabled(): bool {
         $plugin = $this->getWebFeedPlugin();
-        return $plugin->getEnabled();
+        return $plugin ? $plugin->getEnabled() : false;
     }
 
     /**
      * Get the management verbs for this plugin (overridden to none).
+     * @param array $verbs
+     * @param Request $request
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
@@ -121,65 +122,87 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
     /**
      * Handle fetch requests for this plugin.
      * @param array $args
-     * @param PKPRequest $request
-     * @return boolean
+     * @param Request $request
+     * @return bool
      */
     public function fetch($args, $request = null) {
-        if (!$request) $request = Application::getRequest();
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
         AppLocale::requireComponents([LOCALE_COMPONENT_APPLICATION_COMMON]);
 
         $journal = $request->getJournal();
-        if (!$journal) return false;
+        if (!$journal) {
+            return false;
+        }
 
+        /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
-        $issue = $issueDao->getCurrentIssue($journal->getId(), true);
-        if (!$issue) return false;
+        $issue = $issueDao->getCurrentIssue((int) $journal->getId(), true);
+        if (!$issue) {
+            return false;
+        }
 
         $webFeedPlugin = $this->getWebFeedPlugin();
-        if (!$webFeedPlugin->getEnabled()) return false;
+        if (!$webFeedPlugin || !$webFeedPlugin->getEnabled()) {
+            return false;
+        }
 
         $type = array_shift($args);
-        $typeMap = ['rss' => 'rss.tpl', 'rss2' => 'rss2.tpl', 'atom' => 'atom.tpl'];
+        $typeMap = [
+            'rss' => 'rss.tpl',
+            'rss2' => 'rss2.tpl',
+            'atom' => 'atom.tpl'
+        ];
         $mimeTypeMap = [
             'rss' => 'application/rdf+xml',
             'rss2' => 'application/rss+xml',
             'atom' => 'application/atom+xml'
         ];
 
-        if (!isset($typeMap[$type])) return false;
+        if (!isset($typeMap[$type])) {
+            return false;
+        }
 
-        // --- Logika Data Artikel (Tetap sama seperti asli) ---
-        $displayItems = $webFeedPlugin->getSetting($journal->getId(), 'displayItems');
-        $recentItems = (int) $webFeedPlugin->getSetting($journal->getId(), 'recentItems');
+        $journalId = (int) $journal->getId();
+        $displayItems = (string) $webFeedPlugin->getSetting($journalId, 'displayItems');
+        $recentItems = (int) $webFeedPlugin->getSetting($journalId, 'recentItems');
+        
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+        $publishedArticles = [];
 
-        if ($displayItems == 'recent' && $recentItems > 0) {
+        if ($displayItems === 'recent' && $recentItems > 0) {
             import('lib.pkp.classes.db.DBResultRange');
             $rangeInfo = new DBResultRange($recentItems, 1);
             $publishedArticleObjects = $publishedArticleDao->getPublishedArticlesByJournalId(
-                $journal->getId(), $rangeInfo, true
+                $journalId, $rangeInfo, true
             );
-            $publishedArticles = [];
-            while ($publishedArticle = $publishedArticleObjects->next()) {
-                $publishedArticles[]['articles'][] = $publishedArticle;
+            
+            if ($publishedArticleObjects) {
+                while ($publishedArticle = $publishedArticleObjects->next()) {
+                    $publishedArticles[] = $publishedArticle;
+                }
             }
         } else {
             $publishedArticles = $publishedArticleDao->getPublishedArticlesInSections(
-                $issue->getId(), true
+                (int) $issue->getId(), true
             );
         }
 
+        /** @var VersionDAO $versionDao */
         $versionDao = DAORegistry::getDAO('VersionDAO');
         $version = $versionDao->getCurrentVersion();
+        $versionString = $version ? $version->getVersionString() : 'Unknown';
 
         $templateMgr = TemplateManager::getManager($request);
-        $templateMgr->assign('ojsVersion', $version->getVersionString());
+        $templateMgr->assign('ojsVersion', $versionString);
         $templateMgr->assign('publishedArticles', $publishedArticles);
         $templateMgr->assign('journal', $journal);
         $templateMgr->assign('issue', $issue);
         $templateMgr->assign('showToc', true);
 
-        // Header Content-Type
         header('Content-Type: ' . $mimeTypeMap[$type] . '; charset=utf-8');
 
         $templateMgr->display(
@@ -189,5 +212,6 @@ class WebFeedGatewayPlugin extends GatewayPlugin {
 
         return true;
     }
+
 }
 ?>

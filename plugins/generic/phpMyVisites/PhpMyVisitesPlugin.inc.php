@@ -19,44 +19,47 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 class PhpMyVisitesPlugin extends GenericPlugin {
     
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * Called as a plugin is registered to the registry
-     * @param $category
+     * Called as a plugin is registered to the registry.
+     * @param string $category
+     * @param string $path
      * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
-        if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
+        if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) {
+            return true;
+        }
         if ($success && $this->getEnabled()) {
             // Insert phpmv page tag to common footer
-            HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertFooter'));
+            HookRegistry::register('Templates::Common::Footer::PageFooter', [$this, 'insertFooter']);
 
             // Insert phpmv page tag to article footer
-            HookRegistry::register('Templates::Article::Footer::PageFooter', array($this, 'insertFooter'));
+            HookRegistry::register('Templates::Article::Footer::PageFooter', [$this, 'insertFooter']);
 
             // Insert phpmv page tag to article interstitial footer
-            HookRegistry::register('Templates::Article::Interstitial::PageFooter', array($this, 'insertFooter'));
+            HookRegistry::register('Templates::Article::Interstitial::PageFooter', [$this, 'insertFooter']);
 
             // Insert phpmv page tag to article pdf interstitial footer
-            HookRegistry::register('Templates::Article::PdfInterstitial::PageFooter', array($this, 'insertFooter'));
+            HookRegistry::register('Templates::Article::PdfInterstitial::PageFooter', [$this, 'insertFooter']);
 
             // Insert phpmv page tag to reading tools footer
-            HookRegistry::register('Templates::Rt::Footer::PageFooter', array($this, 'insertFooter'));
+            HookRegistry::register('Templates::Rt::Footer::PageFooter', [$this, 'insertFooter']);
 
             // Insert phpmv page tag to help footer
-            HookRegistry::register('Templates::Help::Footer::PageFooter', array($this, 'insertFooter'));
+            HookRegistry::register('Templates::Help::Footer::PageFooter', [$this, 'insertFooter']);
         }
         return $success;
     }
 
     /**
-     * Get display name
+     * Get display name.
      * @return string
      */
     public function getDisplayName(): string {
@@ -64,7 +67,7 @@ class PhpMyVisitesPlugin extends GenericPlugin {
     }
 
     /**
-     * Get description
+     * Get description.
      * @return string
      */
     public function getDescription(): string {
@@ -73,46 +76,52 @@ class PhpMyVisitesPlugin extends GenericPlugin {
 
     /**
      * Extend the {url ...} smarty to support this plugin.
-     * FIX: Signature matched (Removed & from $smarty)
+     * @param array $params
+     * @param object $smarty
+     * @return string
      */
     public function smartyPluginUrl(array $params, $smarty): string {
-        $path = array($this->getCategory(), $this->getName());
+        $path = [$this->getCategory(), $this->getName()];
         if (is_array($params['path'])) {
             $params['path'] = array_merge($path, $params['path']);
         } elseif (!empty($params['path'])) {
-            $params['path'] = array_merge($path, array($params['path']));
+            $params['path'] = array_merge($path, [$params['path']]);
         } else {
             $params['path'] = $path;
         }
 
         if (!empty($params['id'])) {
-            $params['path'] = array_merge($params['path'], array($params['id']));
+            $params['path'] = array_merge($params['path'], [$params['id']]);
             unset($params['id']);
         }
         return $smarty->smartyUrl($params, $smarty);
     }
 
     /**
-     * Set the page's breadcrumbs, given the plugin's tree of items
-     * to append.
-     * @param $isSubclass bool
+     * Set the page's breadcrumbs, given the plugin's tree of items to append.
+     * @param bool $isSubclass
      */
     public function setBreadcrumbs($isSubclass = false) {
-        $templateMgr = TemplateManager::getManager();
-        $pageCrumbs = array(
-            array(
-                Request::url(null, 'user'),
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
+        
+        $pageCrumbs = [
+            [
+                $request->url(null, 'user'),
                 'navigation.user'
-            ),
-            array(
-                Request::url(null, 'manager'),
+            ],
+            [
+                $request->url(null, 'manager'),
                 'user.role.manager'
-            )
-        );
-        if ($isSubclass) $pageCrumbs[] = array(
-            Request::url(null, 'manager', 'plugins'),
-            'manager.plugins'
-        );
+            ]
+        ];
+        if ($isSubclass) {
+            $pageCrumbs[] = [
+                $request->url(null, 'manager', 'plugins'),
+                'manager.plugins'
+            ];
+        }
 
         $templateMgr->assign('pageHierarchy', $pageCrumbs);
     }
@@ -121,12 +130,13 @@ class PhpMyVisitesPlugin extends GenericPlugin {
      * Display verbs for the management interface.
      * @param array $verbs
      * @param mixed $request
+     * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs($verbs, $request); 
 
         if ($this->getEnabled($request)) { 
-            $verbs[] = array('settings', __('plugins.generic.phpmv.manager.settings'));
+            $verbs[] = ['settings', __('plugins.generic.phpmv.manager.settings')];
         }
         
         return $verbs;
@@ -134,26 +144,27 @@ class PhpMyVisitesPlugin extends GenericPlugin {
 
     /**
      * Insert phpmv page tag to footer.
-     * @param mixed $hookName
-     * @param mixed $params
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function insertFooter($hookName, $params) {
         if ($this->getEnabled()) {
-            $smarty = $params[1];
-            $output = $params[2];
-            $templateMgr = TemplateManager::getManager();
-            $currentJournal = $templateMgr->get_template_vars('currentJournal');
+            // Lumera Singleton Fallback
+            $request = Application::get()->getRequest();
+            $journal = $request->getJournal();
 
-            if (!empty($currentJournal)) {
-                $journal = Request::getJournal();
-                $journalId = $journal->getId();
-                $phpmvSiteId = $this->getSetting($journalId, 'phpmvSiteId');
-                $phpmvUrl = $this->getSetting($journalId, 'phpmvUrl');
+            if ($journal) {
+                $journalId = (int) $journal->getId();
+                $phpmvSiteId = (string) $this->getSetting($journalId, 'phpmvSiteId');
+                $phpmvUrl = (string) $this->getSetting($journalId, 'phpmvUrl');
 
-                if (!empty($phpmvSiteId) && !empty($phpmvUrl)) {
+                if ($phpmvSiteId !== '' && $phpmvUrl !== '') {
+                    $templateMgr = TemplateManager::getManager($request);
                     $templateMgr->assign('phpmvSiteId', $phpmvSiteId);
                     $templateMgr->assign('phpmvUrl', $phpmvUrl);
-                    $output .= $templateMgr->fetch($this->getTemplatePath() . 'pageTag.tpl');
+
+                    $params[2] .= $templateMgr->fetch($this->getTemplatePath() . 'pageTag.tpl');
                 }
             }
         }
@@ -162,46 +173,55 @@ class PhpMyVisitesPlugin extends GenericPlugin {
 
     /**
      * Execute a management verb on this plugin.
-     * @param $verb string
-     * @param $args array
-     * @param string|null $message string
-     * @param array|null $messageParams array
-     * @return boolean
+     * @param string $verb
+     * @param array $args
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param mixed $request
+     * @return bool
      */
     public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
-        if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
+        if (!parent::manage($verb, $args, $message, $messageParams, $request)) {
+            return false;
+        }
 
-        if (!$request) $request = Registry::get('request');
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         switch ($verb) {
             case 'settings':
-                $templateMgr = TemplateManager::getManager();
-                $templateMgr->register_function('plugin_url', array($this, 'smartyPluginUrl'));
+                $templateMgr = TemplateManager::getManager($request);
+                $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
                 $journal = $request->getJournal();
 
-                AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON,  LOCALE_COMPONENT_CORE_MANAGER);
+                if (!$journal) {
+                    return false;
+                }
+
+                AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON, LOCALE_COMPONENT_CORE_MANAGER);
                 $this->import('PhpMyVisitesSettingsForm');
-                $form = new PhpMyVisitesSettingsForm($this, $journal->getId());
-                if (Request::getUserVar('save')) {
+                $form = new PhpMyVisitesSettingsForm($this, (int) $journal->getId());
+                
+                if ($request->getUserVar('save')) {
                     $form->readInputData();
                     if ($form->validate()) {
                         $form->execute();
-                        $request->redirect(null, 'manager', 'plugins', $this->getCategory());
+                        $request->redirect(null, 'manager', 'plugins', [$this->getCategory()]);
                         return false;
                     } else {
-                        $this->setBreadCrumbs(true);
-                        $form->display();
+                        $this->setBreadcrumbs(true);
+                        $form->display($request);
                     }
                 } else {
-                    $this->setBreadCrumbs(true);
+                    $this->setBreadcrumbs(true);
                     $form->initData();
-                    $form->display();
+                    $form->display($request);
                 }
                 return true;
             default:
-                // Unknown management verb
-                assert(false);
-                return false;
+                throw new \BadMethodCallException('Unknown management verb');
         }
     }
 

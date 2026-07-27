@@ -30,7 +30,7 @@ define('CROSSREF_API_DEPOSIT_OK', 303);
 define('CROSSREF_API_RESPONSE_OK', 200);
 define('CROSSREF_API_URL', 'https://api.crossref.org/deposits');
 
-//TESTING
+// TESTING
 // define('CROSSREF_API_URL', 'https://api.crossref.org/deposits?test=true');
 
 define('CROSSREF_SEARCH_API', 'http://search.crossref.org/dois');
@@ -148,16 +148,18 @@ class CrossRefExportPlugin extends DOIExportPlugin {
     /**
      * Process a DOI activity request.
      * @see DOIExportPlugin::process()
-     * @param PKPRequest $request
+     * @param Request $request
      * @param Journal $journal
      */
     public function process($request, $journal): void {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
         if ($request->getUserVar('checkStatus')) {
             $articleIds = (array) $request->getUserVar('articleId');
-            
-            // [WIZDAM] FIX: Initialize $errors before pass-by-reference
             $errors = [];
-            $articles = $this->_getObjectsFromIds(DOI_EXPORT_ARTICLES, $articleIds, $journal->getId(), $errors);
+            $articles = $this->_getObjectsFromIds(DOI_EXPORT_ARTICLES, $articleIds, (int) $journal->getId(), $errors);
             
             foreach ($articles as $article) {
                 $this->updateDepositStatus($request, $journal, $article);
@@ -197,7 +199,7 @@ class CrossRefExportPlugin extends DOIExportPlugin {
         $allArticlesRegistered = [];
 
         while ($issue = $issueIterator->next()) {
-            $issueId = $issue->getId();
+            $issueId = (int) $issue->getId();
             $excludes[$issueId] = true;
             $issueArticles = $publishedArticleDao->getPublishedArticles($issueId);
             $issueArticlesNo = 0;
@@ -218,9 +220,8 @@ class CrossRefExportPlugin extends DOIExportPlugin {
             }
             $numArticles[$issueId] = $issueArticlesNo;
         }
-        unset($issueIterator);
 
-        $issueIterator = $issueDao->getPublishedIssues($journal->getId(), Handler::getRangeInfo('issues'));
+        $issueIterator = $issueDao->getPublishedIssues((int) $journal->getId(), Handler::getRangeInfo('issues'));
 
         $templateMgr->assign([
             'issues'                => $issueIterator,
@@ -250,9 +251,9 @@ class CrossRefExportPlugin extends DOIExportPlugin {
         
         if ($filter) {
             if ($filter === CROSSREF_STATUS_NOT_DEPOSITED) {
-                $allArticles = $publishedArticleDao->getBySetting($this->getDepositStatusSettingName(), null, $journal->getId());
+                $allArticles = $publishedArticleDao->getBySetting($this->getDepositStatusSettingName(), null, (int) $journal->getId());
             } else {
-                $allArticles = $publishedArticleDao->getBySetting($this->getDepositStatusSettingName(), $filter, $journal->getId());
+                $allArticles = $publishedArticleDao->getBySetting($this->getDepositStatusSettingName(), $filter, (int) $journal->getId());
             }
         } else {
             $allArticles = $this->getAllPublishedArticles($journal);
@@ -269,11 +270,10 @@ class CrossRefExportPlugin extends DOIExportPlugin {
                 }
             }
         }
-        unset($articles, $allArticles);
 
         $totalArticles = count($articleData);
         $rangeInfo = Handler::getRangeInfo('articles');
-        if ($rangeInfo->isValid()) {
+        if ($rangeInfo && $rangeInfo->isValid()) {
             $articleData = array_slice($articleData, $rangeInfo->getCount() * ($rangeInfo->getPage() - 1), $rangeInfo->getCount());
         }
         
@@ -285,7 +285,7 @@ class CrossRefExportPlugin extends DOIExportPlugin {
             'depositStatusSettingName'  => $this->getDepositStatusSettingName(),
             'depositStatusUrlSettingName'=> $this->getDepositStatusUrlSettingName(),
             'statusMapping'             => $this->getStatusMapping(),
-            'isEditor'                  => Validation::isEditor($journal->getId())
+            'isEditor'                  => Validation::isEditor((int) $journal->getId())
         ]);
 
         $templateMgr->display($this->getTemplatePath() . 'articles.tpl');
@@ -304,7 +304,7 @@ class CrossRefExportPlugin extends DOIExportPlugin {
         if ($foundObject instanceof Issue) {
             /** @var PublishedArticleDAO $publishedArticleDao */
             $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-            $issueArticles = $publishedArticleDao->getPublishedArticles($foundObject->getId());
+            $issueArticles = $publishedArticleDao->getPublishedArticles((int) $foundObject->getId());
             foreach ($issueArticles as $issueArticle) {
                 if (parent::canBeExported($issueArticle, $errors)) {
                     return true;
@@ -320,7 +320,7 @@ class CrossRefExportPlugin extends DOIExportPlugin {
     /**
      * Prepare article data for display in the article list template.
      * @see DOIExportPlugin::generateExportFiles()
-     * @param PKPRequest $request
+     * @param Request $request
      * @param int $exportType
      * @param array $objects
      * @param string $targetPath
@@ -343,23 +343,27 @@ class CrossRefExportPlugin extends DOIExportPlugin {
         $exportFileName = $this->getTargetFileName($targetPath, $exportType);
         file_put_contents($exportFileName, XMLCustomWriter::getXML($doc));
 
-        $generatedFiles = [$exportFileName => $objects];
-        return $generatedFiles;
+        return [$exportFileName => $objects];
     }
 
     /**
      * Mark the DOI as registered in the system, so that it is not exported/registered again and update the status of the deposit.
      * @see DOIExportPlugin::processMarkRegistered()
-     * @param PKPRequest $request
+     * @param Request $request
      * @param int $exportType
      * @param array $objects
      * @param Journal $journal
      */
     public function processMarkRegistered($request, $exportType, $objects, $journal): void {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
         /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $this->import('classes.CrossRefExportDom');
         $dom = new CrossRefExportDom($request, $this, $journal, $this->getCache());
+        
         // NOTE: $statusUpdatePossible declare but not use
         // $statusUpdatePossible = $this->getSetting($journal->getId(), 'username') && $this->getSetting($journal->getId(), 'password');
 
@@ -368,13 +372,13 @@ class CrossRefExportPlugin extends DOIExportPlugin {
                 $articlesByIssue = $dom->retrieveArticlesByIssue($object);
                 foreach ($articlesByIssue as $article) {
                     if ($article->getPubId('doi')) {
-                        $articleDao->updateSetting($article->getId(), $this->getDepositStatusSettingName(), CROSSREF_STATUS_MARKEDREGISTERED, 'string');
+                        $articleDao->updateSetting((int) $article->getId(), $this->getDepositStatusSettingName(), CROSSREF_STATUS_MARKEDREGISTERED, 'string');
                         $this->markRegistered($request, $article);
                     }
                 }
             } else {
                 if ($object->getPubId('doi')) {
-                    $articleDao->updateSetting($object->getId(), $this->getDepositStatusSettingName(), CROSSREF_STATUS_MARKEDREGISTERED, 'string');
+                    $articleDao->updateSetting((int) $object->getId(), $this->getDepositStatusSettingName(), CROSSREF_STATUS_MARKEDREGISTERED, 'string');
                     $this->markRegistered($request, $object);
                 }
             }
@@ -382,56 +386,65 @@ class CrossRefExportPlugin extends DOIExportPlugin {
     }
 
     /**
-     * Mark the DOI as registered in the system, so that it is not exported/registered again.
-     * @see DOIExportPlugin::registerDoi()
-     * @param PKPRequest $request
+     * Register DOIs with the DOI registration agency.
+     * @param mixed $request
      * @param Journal $journal
      * @param array $objects
      * @param string $filename
      * @return bool|array
      */
     public function registerDoi($request, $journal, $objects, $filename) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
         $curlCh = curl_init();
-        if ($httpProxyHost = Config::getVar('proxy', 'http_host')) {
-            curl_setopt($curlCh, CURLOPT_PROXY, $httpProxyHost);
+        $proxyHost = Config::getVar('proxy', 'http_host');
+        if ($proxyHost) {
+            curl_setopt($curlCh, CURLOPT_PROXY, $proxyHost);
             curl_setopt($curlCh, CURLOPT_PROXYPORT, Config::getVar('proxy', 'http_port', '80'));
-            if ($username = Config::getVar('proxy', 'username')) {
-                curl_setopt($curlCh, CURLOPT_PROXYUSERPWD, $username . ':' . Config::getVar('proxy', 'password'));
+            $proxyUsername = Config::getVar('proxy', 'username');
+            if ($proxyUsername) {
+                $proxyPassword = Config::getVar('proxy', 'password');
+                curl_setopt($curlCh, CURLOPT_PROXYUSERPWD, $proxyUsername . ':' . $proxyPassword);
             }
         }
+        
         curl_setopt($curlCh, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curlCh, CURLOPT_POST, true);
         curl_setopt($curlCh, CURLOPT_HEADER, 1);
         curl_setopt($curlCh, CURLOPT_BINARYTRANSFER, true);
 
-        $username = $this->getSetting($journal->getId(), 'username');
-        $password = $this->getSetting($journal->getId(), 'password');
+        $crossrefUsername = (string) $this->getSetting((int) $journal->getId(), 'username');
+        $crossrefPassword = (string) $this->getSetting((int) $journal->getId(), 'password');
 
         curl_setopt($curlCh, CURLOPT_URL, CROSSREF_API_URL);
-        curl_setopt($curlCh, CURLOPT_USERPWD, "$username:$password");
+        curl_setopt($curlCh, CURLOPT_USERPWD, "$crossrefUsername:$crossrefPassword");
 
         if (!is_readable($filename)) {
             return [['plugins.importexport.crossref.register.error.mdsError', 'File is not readable.']];
         }
+        
         $fh = fopen($filename, 'rb');
+        $fileSize = (int) filesize($filename);
 
         $httpheaders = [
             'Content-Type: application/vnd.crossref.deposit+xml',
-            'Content-Length: ' . filesize($filename)
+            'Content-Length: ' . $fileSize
         ];
 
         curl_setopt($curlCh, CURLOPT_HTTPHEADER, $httpheaders);
         curl_setopt($curlCh, CURLOPT_INFILE, $fh);
-        curl_setopt($curlCh, CURLOPT_INFILESIZE, filesize($filename));
+        curl_setopt($curlCh, CURLOPT_INFILESIZE, $fileSize);
 
         $response = curl_exec($curlCh);
         $status = curl_getinfo($curlCh, CURLINFO_HTTP_CODE);
-        curl_close($curlCh);
         
-        // Ensure file handle is closed
         if (is_resource($fh)) {
             fclose($fh);
         }
+        
+        curl_close($curlCh);
 
         if ($response === false) {
             return [['plugins.importexport.crossref.register.error.mdsError', 'No response from server.']];
@@ -439,8 +452,6 @@ class CrossRefExportPlugin extends DOIExportPlugin {
             return [['plugins.importexport.crossref.register.error.mdsError', "$status - $response"]];
         }
 
-        /** @var ArticleDAO $articleDao */
-        $articleDao = DAORegistry::getDAO('ArticleDAO');
         foreach ($objects as $article) {
             if ($article instanceof Article) {
                 $this->updateDepositStatus($request, $journal, $article);
@@ -452,32 +463,40 @@ class CrossRefExportPlugin extends DOIExportPlugin {
 
     /**
      * This method checks the CrossRef APIs, if deposits and registration have been successful.
-     * @param PKPRequest $request
+     * @param Request $request
      * @param Journal $journal
      * @param Article $article
      * @return bool
      */
     public function updateDepositStatus($request, $journal, $article): bool {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+
         /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         import('lib.pkp.classes.core.JSONManager');
         $jsonManager = new JSONManager();
 
         $curlCh = curl_init();
-        if ($httpProxyHost = Config::getVar('proxy', 'http_host')) {
-            curl_setopt($curlCh, CURLOPT_PROXY, $httpProxyHost);
+        $proxyHost = Config::getVar('proxy', 'http_host');
+        if ($proxyHost) {
+            curl_setopt($curlCh, CURLOPT_PROXY, $proxyHost);
             curl_setopt($curlCh, CURLOPT_PROXYPORT, Config::getVar('proxy', 'http_port', '80'));
-            if ($username = Config::getVar('proxy', 'username')) {
-                curl_setopt($curlCh, CURLOPT_PROXYUSERPWD, $username . ':' . Config::getVar('proxy', 'password'));
+            
+            $proxyUsername = Config::getVar('proxy', 'username');
+            if ($proxyUsername) {
+                $proxyPassword = Config::getVar('proxy', 'password');
+                curl_setopt($curlCh, CURLOPT_PROXYUSERPWD, $proxyUsername . ':' . $proxyPassword);
             }
         }
         curl_setopt($curlCh, CURLOPT_RETURNTRANSFER, true);
 
-        $username = $this->getSetting($journal->getId(), 'username');
-        $password = $this->getSetting($journal->getId(), 'password');
-        curl_setopt($curlCh, CURLOPT_USERPWD, "$username:$password");
+        $crossrefUsername = (string) $this->getSetting((int) $journal->getId(), 'username');
+        $crossrefPassword = (string) $this->getSetting((int) $journal->getId(), 'password');
+        curl_setopt($curlCh, CURLOPT_USERPWD, "$crossrefUsername:$crossrefPassword");
 
-        $doi = urlencode($article->getPubId('doi'));
+        $doi = urlencode((string) $article->getPubId('doi'));
         $params = 'filter=doi:' . $doi;
         curl_setopt(
             $curlCh,
@@ -510,7 +529,7 @@ class CrossRefExportPlugin extends DOIExportPlugin {
                 $depositStatusSettingName = $this->getDepositStatusSettingName();
                 
                 if ($article->getData($statusUrlSettingName) !== '/deposits/' . $lastBatchId) {
-                    $articleDao->updateSetting($article->getId(), $statusUrlSettingName, '/deposits/' . $lastBatchId, 'string');
+                    $articleDao->updateSetting((int) $article->getId(), $statusUrlSettingName, '/deposits/' . $lastBatchId, 'string');
                 }
                 
                 if ($lastStatus === CROSSREF_STATUS_COMPLETED) {
@@ -519,7 +538,7 @@ class CrossRefExportPlugin extends DOIExportPlugin {
                     
                     if ($worksResponse && curl_getinfo($curlCh, CURLINFO_HTTP_CODE) === CROSSREF_API_RESPONSE_OK) {
                         $article->setData($depositStatusSettingName, CROSSREF_STATUS_REGISTERED);
-                        $articleDao->updateSetting($article->getId(), $depositStatusSettingName, CROSSREF_STATUS_REGISTERED, 'string');
+                        $articleDao->updateSetting((int) $article->getId(), $depositStatusSettingName, CROSSREF_STATUS_REGISTERED, 'string');
                         $this->markRegistered($request, $article);
                         curl_close($curlCh);
                         return true;
@@ -528,11 +547,11 @@ class CrossRefExportPlugin extends DOIExportPlugin {
                 
                 if ($article->getData($depositStatusSettingName) !== $lastStatus) {
                     $article->setData($depositStatusSettingName, $lastStatus);
-                    $articleDao->updateSetting($article->getId(), $depositStatusSettingName, $lastStatus, 'string');
+                    $articleDao->updateSetting((int) $article->getId(), $depositStatusSettingName, $lastStatus, 'string');
                 }
                 
                 if ($article->getData($this->getPluginId() . '::' . DOI_EXPORT_REGDOI)) {
-                    $articleDao->updateSetting($article->getId(), $this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, 'string');
+                    $articleDao->updateSetting((int) $article->getId(), $this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, 'string');
                 }
             }
         }
@@ -549,7 +568,6 @@ class CrossRefExportPlugin extends DOIExportPlugin {
      * @return bool
      */
     public function callbackParseCronTab($hookName, $args): bool {
-        // [LUMERA Keep] Use reference to actually modify the array passed by the hook
         $taskFilesPath =& $args[0];
         $taskFilesPath[] = $this->getPluginPath() . DIRECTORY_SEPARATOR . 'scheduledTasks.xml';
         return false;
@@ -577,10 +595,10 @@ class CrossRefExportPlugin extends DOIExportPlugin {
      */
     public function getStatusMapping(): array {
         return [
-            CROSSREF_STATUS_SUBMITTED      => __('plugins.importexport.crossref.status.submitted'),
-            CROSSREF_STATUS_COMPLETED      => __('plugins.importexport.crossref.status.completed'),
-            CROSSREF_STATUS_FAILED         => __('plugins.importexport.crossref.status.failed'),
-            CROSSREF_STATUS_REGISTERED     => __('plugins.importexport.crossref.status.registered'),
+            CROSSREF_STATUS_SUBMITTED        => __('plugins.importexport.crossref.status.submitted'),
+            CROSSREF_STATUS_COMPLETED        => __('plugins.importexport.crossref.status.completed'),
+            CROSSREF_STATUS_FAILED           => __('plugins.importexport.crossref.status.failed'),
+            CROSSREF_STATUS_REGISTERED       => __('plugins.importexport.crossref.status.registered'),
             CROSSREF_STATUS_MARKEDREGISTERED => __('plugins.importexport.crossref.status.markedRegistered')
         ];
     }

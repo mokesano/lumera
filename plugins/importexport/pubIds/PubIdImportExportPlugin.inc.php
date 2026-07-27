@@ -178,7 +178,7 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
      * Export public identifiers of one or more issues.
      * @param object $journal
      * @param array $issues
-     * @param string|null $outputFile xml file containing the exported public identifiers
+     * @param string|null $outputFile xml
      * @return bool
      */
     public function exportPubIdsForIssues($journal, $issues, $outputFile = null): bool {
@@ -223,10 +223,10 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
 
     /**
      * Import public identifier.
-     * @param object $journal
+     * @param Journal $journal
      * @param XMLNode $pubIdNode
-     * @param array|null $pubId Array describing the successfully imported public identifier (passed by ref)
-     * @param array $errors Array (passed by ref)
+     * @param array|null $pubId (passed by ref)
+     * @param array $errors (passed by ref)
      * @param bool $isCommandLine
      */
     public function importPubId($journal, $pubIdNode, &$pubId, &$errors, $isCommandLine): void {
@@ -292,9 +292,9 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
 
     /**
      * Import public identifiers.
-     * @param object $journal
-     * @param array $pubIdNodes all pubId nodes of the xml document
-     * @param array $pubIds successfully imported pubIds (passed by ref)
+     * @param Journal $journal
+     * @param array $pubIdNodes
+     * @param array $pubIds (passed by ref)
      * @param array $errors (passed by ref)
      * @param bool $isCommandLine
      */
@@ -314,12 +314,13 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
 
     /**
      * Get the tree structure of the xml document.
-     * @param string $fileName full path to the XML file
-     * @return object tree structure representing the document
+     * @param string $fileName the XML file
+     * @return object
      */
     public function getDocument($fileName) {
         $parser = new PKPXMLParser();
         $returner = $parser->parse($fileName);
+        
         return $returner;
     }
 
@@ -337,7 +338,7 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
      * @param array $context
      * @param object $doc
      * @param array $errors (passed by ref)
-     * @param array $pubIds successfully imported pubIds (passed by ref)
+     * @param array $pubIds (passed by ref)
      * @param bool $isCommandLine
      * @return void
      */
@@ -389,7 +390,7 @@ class PubIdImportExportPlugin extends ImportExportPlugin {
     /**
      * Check if this is a relative path to the xml docuemnt
      * that describes public identifiers to be imported.
-     * @param string $url path to the xml file
+     * @param string $url the xml file
      * @return bool
      */
     public function isRelativePath($url): bool {

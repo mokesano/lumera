@@ -27,8 +27,7 @@ declare(strict_types=1);
  * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache 2.0
  * @version   0.2.1
  * @link      https://github.com/erochest/BagItPHP
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * 
  */
 
 /**
@@ -55,7 +54,7 @@ class BagItFetch
      *
      * @var string
      */
-    protected $fileName;
+    public $fileName;
 
     /**
      * The data from the fetch file.
@@ -223,7 +222,6 @@ class BagItFetch
 
 }
 
-
 /*
  * Local variables:
  * tab-width: 4
@@ -231,6 +229,5 @@ class BagItFetch
  * c-hanging-comment-ender-p: nil
  * End:
  */
-
 
 ?>

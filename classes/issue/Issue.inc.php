@@ -63,7 +63,7 @@ class Issue extends DataObject {
 
     /**
      * [DEPRECATED] Set issue id
-     * @param mixed $issueId
+     * @param int|null $issueId
      */
     public function setIssueId($issueId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -82,7 +82,7 @@ class Issue extends DataObject {
 
     /**
      * Set journal id
-     * @param mixed $journalId
+     * @param int|null $journalId
      */
     public function setJournalId($journalId) {
         return $this->setData('journalId', (int) $journalId);
@@ -97,8 +97,8 @@ class Issue extends DataObject {
     }
 
     /**
-     * [DEPRECATED] Deprecated function to get the localized title
-     * @return string|null
+     * [DEPRECATED] 
+     * Deprecated function to get the localized title
      */
     public function getIssueTitle() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -118,7 +118,7 @@ class Issue extends DataObject {
 
     /**
      * Set title
-     * @param mixed $title
+     * @param string $title
      * @param string $locale
      */
     public function setTitle($title, $locale) {
@@ -135,7 +135,7 @@ class Issue extends DataObject {
 
     /**
      * Set volume
-     * @param mixed $volume
+     * @param int|null $volume
      */
     public function setVolume($volume) {
         return $this->setData('volume', (int) $volume);
@@ -151,7 +151,7 @@ class Issue extends DataObject {
 
     /**
      * Set number
-     * @param mixed $number
+     * @param string $number
      */
     public function setNumber($number) {
         return $this->setData('number', (string) $number);
@@ -182,8 +182,8 @@ class Issue extends DataObject {
     }
 
     /**
-     * [DEPRECATED] Deprecated function to get the localized description
-     * @return string|null
+     * [DEPRECATED] 
+     * Deprecated function to get the localized description
      */
     public function getIssueDescription() {
         if (Config::getVar('debug', 'deprecation_warnings')) {

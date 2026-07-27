@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_subscriptionManager
  *
  * @brief Handle requests for subscription management functions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.handler.Handler');
@@ -46,7 +44,7 @@ class SubscriptionManagerHandler extends Handler {
     /**
      * Display the index page.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function index($args = [], $request = null) {
         $this->subscriptionsSummary($args, $request);
@@ -55,33 +53,42 @@ class SubscriptionManagerHandler extends Handler {
     /**
      * Display subscriptions summary page for the current journal.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function subscriptionsSummary($args = [], $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
         import('classes.subscription.SubscriptionAction');
-        SubscriptionAction::subscriptionsSummary();
+        $subscriptionAction = new SubscriptionAction();
+        $subscriptionAction->subscriptionsSummary();
     }
 
     /**
      * Display a list of subscriptions for the current journal.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function subscriptions($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
-        if (isset($args) && !empty($args)) {
-            if ($args[0] == 'individual') {
+        $institutional = false;
+        $redirect = 'individual';
+        if (!empty($args)) {
+            if ($args[0] === 'individual') {
                 $institutional = false;
-            } else {
+                $redirect = 'individual';
+            } elseif ($args[0] === 'institutional') {
                 $institutional = true;
+                $redirect = 'institutional';
+            } else {
+                $request->redirect(null, 'subscriptionManager');
             }
         } else {
             $request->redirect(null, 'subscriptionManager');
@@ -92,25 +99,31 @@ class SubscriptionManagerHandler extends Handler {
 
         array_shift($args);
         import('classes.subscription.SubscriptionAction');
-        SubscriptionAction::subscriptions($institutional);
+        $subscriptionAction = new SubscriptionAction();
+        $subscriptionAction->subscriptions($institutional);
     }
 
     /**
      * Delete a subscription.
-     * @param array $args first parameter is the ID of the subscription to delete
-     * @param object|null $request
+     * @param array $args
+     * @param mixed $request
      */
     public function deleteSubscription($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
-        if (isset($args) && !empty($args)) {
-            if ($args[0] == 'individual') {
+        $institutional = false;
+        $redirect = 'individual';
+        if (!empty($args)) {
+            if ($args[0] === 'individual') {
                 $institutional = false;
                 $redirect = 'individual';
-            } else {
+            } elseif ($args[0] === 'institutional') {
                 $institutional = true;
                 $redirect = 'institutional';
+            } else {
+                $request->redirect(null, 'subscriptionManager');
             }
         } else {
             $request->redirect(null, 'subscriptionManager');
@@ -121,27 +134,33 @@ class SubscriptionManagerHandler extends Handler {
 
         array_shift($args);
         import('classes.subscription.SubscriptionAction');
-        SubscriptionAction::deleteSubscription($args, $institutional);
+        $subscriptionAction = new SubscriptionAction();
+        $subscriptionAction->deleteSubscription($args, $institutional);
 
         $request->redirect(null, null, 'subscriptions', $redirect);
     }
 
     /**
      * Renew a subscription.
-     * @param array $args first parameter is the ID of the subscription to renew
-     * @param object|null $request
+     * @param array $args
+     * @param mixed $request
      */
     public function renewSubscription($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
-        if (isset($args) && !empty($args)) {
-            if ($args[0] == 'individual') {
+        $institutional = false;
+        $redirect = 'individual';
+        if (!empty($args)) {
+            if ($args[0] === 'individual') {
                 $institutional = false;
                 $redirect = 'individual';
-            } else {
+            } elseif ($args[0] === 'institutional') {
                 $institutional = true;
                 $redirect = 'institutional';
+            } else {
+                $request->redirect(null, 'subscriptionManager');
             }
         } else {
             $request->redirect(null, 'subscriptionManager');
@@ -152,27 +171,33 @@ class SubscriptionManagerHandler extends Handler {
 
         array_shift($args);
         import('classes.subscription.SubscriptionAction');
-        SubscriptionAction::renewSubscription($args, $institutional);
+        $subscriptionAction = new SubscriptionAction();
+        $subscriptionAction->renewSubscription($args, $institutional);
 
         $request->redirect(null, null, 'subscriptions', $redirect);
     }
 
     /**
      * Display form to edit a subscription.
-     * @param array $args optional, first parameter is the ID of the subscription to edit
-     * @param object|null $request
+     * @param array $args
+     * @param mixed $request
      */
     public function editSubscription($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
-        if (isset($args) && !empty($args)) {
-            if ($args[0] == 'individual') {
+        $institutional = false;
+        $redirect = 'individual';
+        if (!empty($args)) {
+            if ($args[0] === 'individual') {
                 $institutional = false;
                 $redirect = 'individual';
-            } else {
+            } elseif ($args[0] === 'institutional') {
                 $institutional = true;
                 $redirect = 'institutional';
+            } else {
+                $request->redirect(null, 'subscriptionManager');
             }
         } else {
             $request->redirect(null, 'subscriptionManager');
@@ -183,7 +208,8 @@ class SubscriptionManagerHandler extends Handler {
 
         array_shift($args);
         import('classes.subscription.SubscriptionAction');
-        $editSuccess = SubscriptionAction::editSubscription($args, $institutional);
+        $subscriptionAction = new SubscriptionAction();
+        $editSuccess = $subscriptionAction->editSubscription($args, $institutional);
 
         if (!$editSuccess) {
             $request->redirect(null, null, 'subscriptions', $redirect);
@@ -193,7 +219,7 @@ class SubscriptionManagerHandler extends Handler {
     /**
      * Display form to create new subscription.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function createSubscription($args, $request = null) {
         $this->editSubscription($args, $request);
@@ -202,19 +228,24 @@ class SubscriptionManagerHandler extends Handler {
     /**
      * Display a list of users from which to choose a subscriber.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function selectSubscriber($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
-        if (isset($args) && !empty($args)) {
-            if ($args[0] == 'individual') {
+        $institutional = false;
+        $redirect = 'individual';
+        if (!empty($args)) {
+            if ($args[0] === 'individual') {
                 $institutional = false;
                 $redirect = 'individual';
-            } else {
+            } elseif ($args[0] === 'institutional') {
                 $institutional = true;
                 $redirect = 'institutional';
+            } else {
+                $request->redirect(null, 'subscriptionManager');
             }
         } else {
             $request->redirect(null, 'subscriptionManager');
@@ -225,25 +256,31 @@ class SubscriptionManagerHandler extends Handler {
 
         array_shift($args);
         import('classes.subscription.SubscriptionAction');
-        SubscriptionAction::selectSubscriber($args, $institutional);
+        $subscriptionAction = new SubscriptionAction();
+        $subscriptionAction->selectSubscriber($args, $institutional);
     }
 
     /**
      * Save changes to a subscription.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function updateSubscription($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
-        if (isset($args) && !empty($args)) {
-            if ($args[0] == 'individual') {
+        $institutional = false;
+        $redirect = 'individual';
+        if (!empty($args)) {
+            if ($args[0] === 'individual') {
                 $institutional = false;
                 $redirect = 'individual';
-            } else {
+            } elseif ($args[0] === 'institutional') {
                 $institutional = true;
                 $redirect = 'institutional';
+            } else {
+                $request->redirect(null, 'subscriptionManager');
             }
         } else {
             $request->redirect(null, 'subscriptionManager');
@@ -254,9 +291,9 @@ class SubscriptionManagerHandler extends Handler {
 
         array_shift($args);
         import('classes.subscription.SubscriptionAction');
-        $updateSuccess = SubscriptionAction::updateSubscription($args, $institutional);
+        $subscriptionAction = new SubscriptionAction();
+        $updateSuccess = $subscriptionAction->updateSubscription($args, $institutional);
 
-        // [SECURITY FIX] Amankan 'createAnother' sebagai flag boolean dengan (int) trim()
         $createAnotherFlag = (int) trim((string) $request->getUserVar('createAnother'));
         
         if ($updateSuccess && $createAnotherFlag) {
@@ -269,19 +306,24 @@ class SubscriptionManagerHandler extends Handler {
     /**
      * Reset a subscription reminder date.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function resetDateReminded($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
-        if (isset($args) && !empty($args)) {
-            if ($args[0] == 'individual') {
+        $institutional = false;
+        $redirect = 'individual';
+        if (!empty($args)) {
+            if ($args[0] === 'individual') {
                 $institutional = false;
                 $redirect = 'individual';
-            } else {
+            } elseif ($args[0] === 'institutional') {
                 $institutional = true;
                 $redirect = 'institutional';
+            } else {
+                $request->redirect(null, 'subscriptionManager');
             }
         } else {
             $request->redirect(null, 'subscriptionManager');
@@ -291,9 +333,10 @@ class SubscriptionManagerHandler extends Handler {
         $this->setupTemplate(true, $institutional);
 
         array_shift($args);
-        $subscriptionId = (int) $args[0];
+        $subscriptionId = (int) ($args[0] ?? 0);
         import('classes.subscription.SubscriptionAction');
-        SubscriptionAction::resetDateReminded($args, $institutional);
+        $subscriptionAction = new SubscriptionAction();
+        $subscriptionAction->resetDateReminded($args, $institutional);
 
         $request->redirect(null, null, 'editSubscription', [$redirect, $subscriptionId]);
     }
@@ -301,55 +344,61 @@ class SubscriptionManagerHandler extends Handler {
     /**
      * Display a list of subscription types for the current journal.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function subscriptionTypes($args = [], $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->addJavaScript('lib/pkp/js/lib/jquery/plugins/jquery.tablednd.js');
         $templateMgr->addJavaScript('lib/pkp/js/functions/tablednd.js');
 
         import('classes.subscription.SubscriptionAction');
-        SubscriptionAction::subscriptionTypes();
+        $subscriptionAction = new SubscriptionAction();
+        $subscriptionAction->subscriptionTypes();
     }
 
     /**
      * Rearrange the order of subscription types.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function moveSubscriptionType($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
         import('classes.subscription.SubscriptionAction');
-        SubscriptionAction::moveSubscriptionType($args);
+        $subscriptionAction = new SubscriptionAction();
+        $subscriptionAction->moveSubscriptionType($args);
 
         $request->redirect(null, null, 'subscriptionTypes');
     }
 
     /**
      * Delete a subscription type.
-     * @param array $args first parameter is the ID of the subscription type to delete
-     * @param object|null $request
+     * @param array $args
+     * @param mixed $request
      */
     public function deleteSubscriptionType($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
         import('classes.subscription.SubscriptionAction');
-        SubscriptionAction::deleteSubscriptionType($args);
+        $subscriptionAction = new SubscriptionAction();
+        $subscriptionAction->deleteSubscriptionType($args);
 
         $request->redirect(null, null, 'subscriptionTypes');
     }
@@ -357,20 +406,22 @@ class SubscriptionManagerHandler extends Handler {
     /**
      * Display form to edit a subscription type.
      * @param array $args optional, first parameter is the ID of the subscription type to edit
-     * @param object|null $request
+     * @param mixed $request
      */
     public function editSubscriptionType($args = [], $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->append('pageHierarchy', [$request->url(null, 'subscriptionManager', 'subscriptionTypes'), 'subscriptionManager.subscriptionTypes']);
 
         import('classes.subscription.SubscriptionAction');
-        $editSuccess = SubscriptionAction::editSubscriptionType($args);
+        $subscriptionAction = new SubscriptionAction();
+        $editSuccess = $subscriptionAction->editSubscriptionType($args);
 
         if (!$editSuccess) {
             $request->redirect(null, null, 'subscriptionTypes');
@@ -380,7 +431,7 @@ class SubscriptionManagerHandler extends Handler {
     /**
      * Display form to create new subscription type.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function createSubscriptionType($args = [], $request = null) {
         $this->editSubscriptionType($args, $request);
@@ -389,22 +440,23 @@ class SubscriptionManagerHandler extends Handler {
     /**
      * Save changes to a subscription type.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function updateSubscriptionType($args = [], $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->append('pageHierarchy', [$request->url(null, 'subscriptionManager', 'subscriptionTypes'), 'subscriptionManager.subscriptionTypes']);
 
         import('classes.subscription.SubscriptionAction');
-        $updateSuccess = SubscriptionAction::updateSubscriptionType();
+        $subscriptionAction = new SubscriptionAction();
+        $updateSuccess = $subscriptionAction->updateSubscriptionType();
 
-        // [SECURITY FIX] Amankan 'createAnother' sebagai flag boolean dengan (int) trim()
         $createAnotherFlag = (int) trim((string) $request->getUserVar('createAnother'));
         
         if ($updateSuccess && $createAnotherFlag) {
@@ -417,50 +469,53 @@ class SubscriptionManagerHandler extends Handler {
     /**
      * Display subscription policies for the current journal.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param mixed $request
      */
-    public function subscriptionPolicies($args, $request) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+    public function subscriptionPolicies($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
         import('classes.subscription.SubscriptionAction');
-        SubscriptionAction::subscriptionPolicies($args, $request);
+        $subscriptionAction = new SubscriptionAction();
+        $subscriptionAction->subscriptionPolicies($args, $request);
     }
 
     /**
      * Save subscription policies for the current journal.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param mixed $request
      */
-    public function saveSubscriptionPolicies($args, $request) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+    public function saveSubscriptionPolicies($args, $request = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
         import('classes.subscription.SubscriptionAction');
-        SubscriptionAction::saveSubscriptionPolicies($args, $request);
+        $subscriptionAction = new SubscriptionAction();
+        $subscriptionAction->saveSubscriptionPolicies($args, $request);
     }
 
     /**
      * Display form to create a user profile.
      * @param array $args optional
-     * @param object|null $request
+     * @param mixed $request
      */
     public function createUser($args = [], $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate(true);
 
-        $journal = $request->getJournal();
-
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
 
         import('classes.manager.form.UserManagementForm');
 
@@ -471,22 +526,21 @@ class SubscriptionManagerHandler extends Handler {
         } else {
             $userForm->initData();
         }
-        $userForm->display();
+        $userForm->display($request);
     }
 
     /**
      * Save changes to a user profile.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function updateUser($args = [], $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate(true);
-
-        $journal = $request->getJournal();
 
         import('classes.manager.form.UserManagementForm');
 
@@ -496,17 +550,16 @@ class SubscriptionManagerHandler extends Handler {
         if ($userForm->validate()) {
             $userForm->execute();
 
-            // [SECURITY FIX] Amankan 'createAnother' sebagai flag boolean dengan (int) trim()
             $createAnotherFlag = (int) trim((string) $request->getUserVar('createAnother'));
 
             if ($createAnotherFlag) {
                 $this->setupTemplate(true);
-                $templateMgr = TemplateManager::getManager(); 
+                $templateMgr = TemplateManager::getManager($request); 
                 $templateMgr->assign('currentUrl', $request->url(null, null, 'index'));
                 $templateMgr->assign('userCreated', true);
                 $userForm = new UserManagementForm();
                 $userForm->initData();
-                $userForm->display();
+                $userForm->display($request);
 
             } else {
                 $source = trim((string) $request->getUserVar('source'));
@@ -519,43 +572,47 @@ class SubscriptionManagerHandler extends Handler {
             }
 
         } else {
-            $userForm->display();
+            $userForm->display($request);
         }
     }
 
     /**
      * Display payments settings form
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function payments($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
         import('classes.payment.ojs.OJSPaymentAction');
-        OJSPaymentAction::payments($args);
+        $paymentAction = new OJSPaymentAction();
+        $paymentAction->payments($args);
     }
 
     /**
      * Execute the payments form or display it again if there are problems
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function savePaymentSettings($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
         import('classes.payment.ojs.OJSPaymentAction');
-        $success = OJSPaymentAction::savePaymentSettings($args);
+        $paymentAction = new OJSPaymentAction();
+        $success = $paymentAction->savePaymentSettings($args);
 
         if ($success) {
-            $templateMgr = TemplateManager::getManager();
+            $templateMgr = TemplateManager::getManager($request);
             $templateMgr->assign([
                 'currentUrl' => $request->url(null, null, 'payments'),
                 'pageTitle' => 'manager.payment.feePaymentOptions',
@@ -570,68 +627,76 @@ class SubscriptionManagerHandler extends Handler {
     /**
      * Display all payments previously made
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function viewPayments($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
         import('classes.payment.ojs.OJSPaymentAction');
-        OJSPaymentAction::viewPayments($args);
+        $paymentAction = new OJSPaymentAction();
+        $paymentAction->viewPayments($args);
     }
 
     /**
      * Display a single Completed payment
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function viewPayment($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
         import('classes.payment.ojs.OJSPaymentAction');
-        OJSPaymentAction::viewPayment($args);
+        $paymentAction = new OJSPaymentAction();
+        $paymentAction->viewPayment($args);
     }
 
     /**
-    * Display form to edit program settings.
-    * @param array $args
-    * @param object|null $request
-    */
+     * Display form to edit program settings.
+     * @param array $args
+     * @param mixed $request
+     */
     public function payMethodSettings($args = [], $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
         import('classes.payment.ojs.OJSPaymentAction');
-        OJSPaymentAction::payMethodSettings();
+        $paymentAction = new OJSPaymentAction();
+        $paymentAction->payMethodSettings();
     }
 
     /**
      * Save changes to payment settings.
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function savePayMethodSettings($args = [], $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
         import('classes.payment.ojs.OJSPaymentAction');
-        $success = OJSPaymentAction::savePayMethodSettings();
+        $paymentAction = new OJSPaymentAction();
+        $success = $paymentAction->savePayMethodSettings();
 
         if ($success) {
-            $templateMgr = TemplateManager::getManager();
+            $templateMgr = TemplateManager::getManager($request);
             $templateMgr->assign([
                 'currentUrl' => $request->url(null, null, 'payMethodSettings'),
                 'pageTitle' => 'manager.payment.paymentMethods',
@@ -647,15 +712,15 @@ class SubscriptionManagerHandler extends Handler {
      * Get a suggested username, making sure it's not
      * already used by the system. (Poor-man's AJAX.)
      * @param array $args
-     * @param object|null $request
+     * @param mixed $request
      */
     public function suggestUsername($args = [], $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $suggestion = Validation::suggestUsername(
-            // [SECURITY FIX] Amankan input dengan trim()
             trim((string) $request->getUserVar('firstName')),
             trim((string) $request->getUserVar('lastName'))
         );
@@ -664,71 +729,75 @@ class SubscriptionManagerHandler extends Handler {
 
     /**
      * Display a user's profile.
-     * @param array $args first parameter is the ID or username of the user to display
-     * @param object|null $request
+     * @param array $args
+     * @param mixed $request
      */
     public function userProfile($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         $this->validate($request);
         $this->setupTemplate();
 
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('currentUrl', $request->url(null, null, 'viewPayments'));
         $templateMgr->assign('helpTopicId', 'journal.managementPages.payments');
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
-        $userId = isset($args[0]) ? $args[0] : 0;
+        $userId = $args[0] ?? 0;
         if (is_numeric($userId)) {
             $userId = (int) $userId;
             $user = $userDao->getById($userId);
         } else {
-            $user = $userDao->getByUsername($userId);
+            $user = $userDao->getByUsername((string) $userId);
         }
 
-        if ($user == null) {
+        if ($user === null) {
             // Non-existent user requested
             $templateMgr->assign('pageTitle', 'user.profile');
             $templateMgr->assign('errorMsg', 'manager.people.invalidUser');
             $templateMgr->assign('backLink', $request->url(null, null, 'viewPayments'));
             $templateMgr->assign('backLinkLabel', 'manager.payment.feePaymentOptions');
+
             $templateMgr->display('common/error.tpl');
         } else {
             $site = $request->getSite();
             $journal = $request->getJournal();
 
+            /** @var CountryDAO $countryDao */
             $countryDao = DAORegistry::getDAO('CountryDAO');
             $country = null;
-            if ($user->getCountry() != '') {
+            if ($user->getCountry() !== '') {
                 $country = $countryDao->getCountry($user->getCountry());
             }
             $templateMgr->assign('country', $country);
-
             $templateMgr->assign('userInterests', $user->getInterestString());
-
             $templateMgr->assign('user', $user);
             $templateMgr->assign('localeNames', AppLocale::getAllLocales());
+
             $templateMgr->display('subscription/userProfile.tpl');
         }
     }
 
     /**
      * Setup common template variables.
-     * @param boolean $subclass
-     * @param boolean $institutional
-     * @param object|null $request
+     * @param bool $subclass
+     * @param bool $institutional
+     * @param mixed $request
      */
     public function setupTemplate($subclass = false, $institutional = false, $request = null) {
-        // [WIZDAM] Strict Type Guard
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
         parent::setupTemplate(true);
         AppLocale::requireComponents(
             LOCALE_COMPONENT_CORE_MANAGER, 
             LOCALE_COMPONENT_APP_MANAGER
         );
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('pageHierarchy', [[$request->url(null, 'user'), 'navigation.user'], [$request->url(null, 'subscriptionManager'), 'subscriptionManager.subscriptionManagement']]);
         if ($subclass) {
             if ($institutional) {
@@ -738,5 +807,6 @@ class SubscriptionManagerHandler extends Handler {
             }
         }
     }
+
 }
 ?>

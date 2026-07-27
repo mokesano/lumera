@@ -19,18 +19,21 @@ import('classes.oai.ojs.OAIDAO');
 class OpenAIREDAO extends OAIDAO {
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function OpenAIREDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::OpenAIREDAO(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
         call_user_func_array([$this, '__construct'], $args);
@@ -39,6 +42,7 @@ class OpenAIREDAO extends OAIDAO {
     /**
      * Set parent OAI object.
      * @param JournalOAI $oai
+     * @return void
      */
     public function setOAI($oai) {
         $this->oai = $oai;
@@ -53,17 +57,18 @@ class OpenAIREDAO extends OAIDAO {
      * Note: We rely on manual SQL construction here because the Parent's 
      * legacy _getRecordsRecordSet method was removed during refactoring.
      *
-     * @param array $setIds Objects ids that specify an OAI set, in this case only journal ID.
-     * @param int $from timestamp
-     * @param int $until timestamp
+     * @param array $setIds
+     * @param int|null $from timestamp
+     * @param int|null $until timestamp
      * @param int $offset
      * @param int $limit
-     * @param int $total Output parameter for total count
-     * @param string $funcName Function to call to convert row to object
-     * @return array OAIRecord
+     * @param int $total Passed by reference
+     * @param string $funcName
+     * @return array
      */
     public function getOpenAIRERecordsOrIdentifiers($setIds, $from, $until, $offset, $limit, &$total, $funcName) {
         $records = [];
+        $total = 0;
 
         // 1. Prepare Params
         $params = $this->getOrderedRecordParams(null, $setIds, null);
@@ -78,73 +83,81 @@ class OpenAIREDAO extends OAIDAO {
         $result = $this->retrieve($sql, $params);
 
         // 4. Handle Pagination & Filtering
-        $total = $result->RecordCount();
-        $result->Move($offset);
-        
-        for ($count = 0; $count < $limit && !$result->EOF; $count++) {
-            $row = $result->GetRowAssoc(false);
+        if ($result) {
+            $total = $result->RecordCount();
+            $result->Move($offset);
             
-            // Filter: Only process if it's an OpenAIRE record
-            if ($this->isOpenAIRERecord($row)) {
-                $records[] = $this->$funcName($row);
+            for ($count = 0; $count < $limit && !$result->EOF; $count++) {
+                $row = $result->GetRowAssoc(false);
+                
+                // Filter: Only process if it's an OpenAIRE record
+                if ($this->isOpenAIRERecord($row)) {
+                    $records[] = $this->$funcName($row);
+                }
+                $result->moveNext();
             }
-            $result->moveNext();
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $records;
     }
 
     /**
      * Check if it's an OpenAIRE record, if it contains projectID.
-     * @param array $row array of database fields
-     * @return boolean
+     * @param array $row
+     * @return bool
      */
     public function isOpenAIRERecord($row) {
-        if (!isset($row['tombstone_id'])) {
+        if (!isset($row['tombstone_id']) || $row['tombstone_id'] === null || $row['tombstone_id'] === '') {
             $params = ['projectID', (int) $row['article_id']];
             $result = $this->retrieve(
-                'SELECT COUNT(*) FROM article_settings WHERE setting_name = ? AND setting_value IS NOT NULL AND setting_value <> \'\' AND article_id = ?',
+                'SELECT COUNT(*) AS count FROM article_settings WHERE setting_name = ? AND setting_value IS NOT NULL AND setting_value <> \'\' AND article_id = ?',
                 $params
             );
             
-            /** @var array|bool $fields */
-            $fields = $result->fields;
-            $returner = isset($fields[0]) && (int) $fields[0] > 0;
+            $returner = false;
+            // [SCHOLARWIZDAM LUMERA STANDARD] Using $result && !$result->EOF instead of $result->fields
+            if ($result && !$result->EOF) {
+                $rowAssoc = $result->GetRowAssoc(false);
+                $returner = ((int) ($rowAssoc['count'] ?? 0)) > 0;
+            }
             
-            $result->Close();
-            unset($result);
+            if ($result) {
+                $result->Close();
+            }
 
             return $returner;
         } else {
             /** @var DataObjectTombstoneSettingsDAO $dataObjectTombstoneSettingsDao */
             $dataObjectTombstoneSettingsDao = DAORegistry::getDAO('DataObjectTombstoneSettingsDAO');
-            return $dataObjectTombstoneSettingsDao ? $dataObjectTombstoneSettingsDao->getSetting($row['tombstone_id'], 'openaire') : false;
+            return $dataObjectTombstoneSettingsDao ? (bool) $dataObjectTombstoneSettingsDao->getSetting((int) $row['tombstone_id'], 'openaire') : false;
         }
     }
 
     /**
      * Check if it's an OpenAIRE article, if it contains projectID.
      * @param int $articleId
-     * @return boolean
+     * @return bool
      */
     public function isOpenAIREArticle($articleId) {
         $params = ['projectID', (int) $articleId];
         $result = $this->retrieve(
-            'SELECT COUNT(*) FROM article_settings WHERE setting_name = ? AND setting_value IS NOT NULL AND setting_value <> \'\' AND article_id = ?',
+            'SELECT COUNT(*) AS count FROM article_settings WHERE setting_name = ? AND setting_value IS NOT NULL AND setting_value <> \'\' AND article_id = ?',
             $params
         );
         
-        /** @var array|bool $fields */
-        $fields = $result->fields;
-        $returner = isset($fields[0]) && (int) $fields[0] > 0;
+        $returner = false;
+        if ($result && !$result->EOF) {
+            $rowAssoc = $result->GetRowAssoc(false);
+            $returner = ((int) ($rowAssoc['count'] ?? 0)) > 0;
+        }
         
-        $result->Close();
-        unset($result);
+        if ($result) {
+            $result->Close();
+        }
 
         return $returner;
     }
+    
 }
 ?>

@@ -6,10 +6,10 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
+ * Distributed under the GNU GPL v3.
+ * 
  * @class LoAService
+ * 
  * @brief Jantung verifikasi LoA. Berhubungan erat dengan InvoiceService untuk
  * memastikan LoA hanya terbit dan terverifikasi jika APC telah LUNAS.
  */
@@ -34,103 +34,121 @@ class LoAService {
      * @return array
      */
     public function getPublicLoASummary(int $submissionId): array {
-        $submissionDao = DAORegistry::getDAO('SubmissionDAO');
-        $submission = $submissionDao->getById($submissionId);
+        /** @var ArticleDAO $articleDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO');
+        $submission = $articleDao->getArticle($submissionId);
 
         if (!$submission) {
             return ['status' => 'NOT_FOUND'];
         }
 
-        // 1. Verifikasi Pelunasan Tagihan
         $paidInvoice = $this->getPaidInvoiceForSubmission($submissionId);
-
         if (!$paidInvoice) {
             return ['status' => 'PENDING_PAYMENT'];
         }
 
-        // 2. Ambil Tanggal Otentik Keputusan "Accepted" dari Editor
-        $dateAccepted = $this->getDateAccepted($submissionId);
+        $timeline = $articleDao->getEditorialTimeline($submissionId);
+        $dateAccepted = $timeline['acceptedDate'] ?? $submission->getDateSubmitted() ?? Core::getCurrentDate();
 
-        // Fallback (Fail-safe): Jika tidak ada rekam jejak keputusan, gunakan tanggal submit
-        if (!$dateAccepted) {
-            $dateAccepted = $submission->getDateSubmitted() ?? Core::getCurrentDate();
+        [$authorsList, $correspondingAuthor] = $this->buildAuthorsList($submission->getAuthors());
+
+        // Fallback: jika tidak ada penulis yang ditandai primary contact, gunakan submiter naskah
+        if (!$correspondingAuthor) {
+            $correspondingAuthor = $this->getSubmitterAsCorrespondingAuthor((int) $submission->getUserId());
         }
 
-        // 3. Rakit data otentik LoA
         return [
             'status' => 'VERIFIED',
             'submissionId' => $submission->getId(),
             'title' => $submission->getLocalizedTitle(),
             'abstract' => $submission->getLocalizedAbstract(),
+            'sectionTitle' => $submission->getSectionTitle(),
+            'dateSubmitted' => $submission->getDateSubmitted(),
+            'dateAccepted' => $dateAccepted,
+
             'authors' => $submission->getAuthorString(),
-            'dateAccepted' => $dateAccepted, 
-            'journalTitle' => $this->getJournalTitle($submission->getContextId())
+            'authorsList' => $authorsList,
+            'correspondingAuthorName' => $correspondingAuthor['fullName'] ?? '',
+            'correspondingAuthorEmail' => $correspondingAuthor['email'] ?? '',
+
+            'journalTitle' => $this->getJournalTitle($submission->getJournalId())
         ];
     }
 
     /**
-     * [WIZDAM HELPER] Mengekstrak Tanggal "Accept Submission" secara presisi.
-     * Mengurai kerumitan tabel edit_decisions menjadi satu fungsi bersih.
+     * Menyusun daftar penulis terstruktur. Tidak melakukan fallback di sini —
+     * fallback ke submiter naskah ditangani oleh caller.
+     * @param array $authors Array of Author objects
+     * @return array{0: array, 1: array|null} [authorsList, correspondingAuthor]
      */
-    private function getDateAccepted(int $submissionId): ?string {
-        $editDecisionDao = DAORegistry::getDAO('EditDecisionDAO');
-        
-        // Ambil seluruh riwayat keputusan editor untuk naskah ini
-        $decisions = $editDecisionDao->getEditorDecisions($submissionId);
-        
-        // Konstanta SUBMISSION_EDITOR_DECISION_ACCEPT bernilai 1
-        $acceptValue = defined('SUBMISSION_EDITOR_DECISION_ACCEPT') ? SUBMISSION_EDITOR_DECISION_ACCEPT : 1;
+    private function buildAuthorsList(array $authors): array {
+        $authorsList = [];
+        $correspondingAuthor = null;
 
-        if (is_array($decisions)) {
-            // Loop mundur untuk menemukan keputusan Accept
-            foreach ($decisions as $decision) {
-                if (isset($decision['decision']) && (int) $decision['decision'] === $acceptValue) {
-                    return $decision['dateDecided'];
-                }
+        foreach ($authors as $author) {
+            $authorData = [
+                'fullName' => $author->getFullName(),
+                'email' => $author->getEmail(),
+                'affiliation' => $author->getLocalizedAffiliation(),
+                'country' => $author->getCountry(),
+                'isCorresponding' => (bool) $author->getPrimaryContact(),
+            ];
+            $authorsList[] = $authorData;
+
+            if ($author->getPrimaryContact()) {
+                $correspondingAuthor = $authorData;
             }
         }
 
-        return null;
+        return [$authorsList, $correspondingAuthor];
+    }
+
+    /**
+     * Mengambil data submiter naskah sebagai fallback corresponding author,
+     * ketika tidak ada penulis yang secara eksplisit ditandai primary contact.
+     * @param int $userId
+     * @return array|null
+     */
+    private function getSubmitterAsCorrespondingAuthor(int $userId): ?array {
+        /** @var UserDAO $userDao */
+        $userDao = DAORegistry::getDAO('UserDAO');
+        $submitter = $userDao->getById($userId);
+        if (!$submitter) return null;
+
+        return [
+            'fullName' => $submitter->getFullName(),
+            'email' => $submitter->getEmail(),
+            'affiliation' => $submitter->getLocalizedAffiliation(),
+            'country' => $submitter->getCountry(),
+            'isCorresponding' => true,
+        ];
     }
 
     /**
      * Mencari objek Invoice yang berstatus PAID untuk sebuah naskah.
      * @param int $submissionId
-     * @return object|null Mengembalikan objek Invoice jika lunas, atau null.
+     * @return object|null
      */
     private function getPaidInvoiceForSubmission(int $submissionId): ?object {
-        $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
-        $assocType = 256; // ASSOC_TYPE_SUBMISSION
-
-        $invoices = $invoiceDao->getByAssocId($assocType, $submissionId);
-
-        if (!$invoices) return null;
-
-        if (is_array($invoices)) {
-            foreach ($invoices as $invoice) {
-                if ($invoice->getStatus() === 'PAID') return $invoice;
-            }
-        } elseif (is_object($invoices) && is_a($invoices, 'DAOResultFactory')) {
-            while ($invoice = $invoices->next()) {
-                if ($invoice->getStatus() === 'PAID') return $invoice;
-            }
-        } elseif (is_object($invoices) && method_exists($invoices, 'getStatus')) {
-            if ($invoices->getStatus() === 'PAID') return $invoices;
+        $invoices = $this->invoiceService->getInvoicesBySubmissionId($submissionId);
+        foreach ($invoices as $invoice) {
+            if ($invoice->getStatus() === 'PAID') return $invoice;
         }
-
-        return null; 
+        return null;
     }
 
     /**
      * Mendapatkan nama jurnal berdasarkan contextId.
-     * @param int $contextId
+     * @param int $journalId
      * @return string
      */
-    private function getJournalTitle(int $contextId): string {
-        $contextDao = DAORegistry::getDAO('JournalDAO');
-        $journal = $contextDao->getById($contextId);
-        
-        return $journal ? $journal->getLocalizedName() : 'Wizdam Frontedge Publisher';
+    private function getJournalTitle(int $journalId): string {
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $journal = $journalDao->getById($journalId);
+
+        return $journal ? $journal->getLocalizedSetting('name') : 'Sangia Frontedge Publisher';
     }
+
 }
 ?>
