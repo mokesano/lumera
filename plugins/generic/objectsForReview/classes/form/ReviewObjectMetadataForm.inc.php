@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see ReviewObjectMetadata
  *
  * @brief Form for creating and modifying review object metadata.
- * [WIZDAM EDITION] Modernized. PHP 8 Safe.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -21,36 +20,40 @@ import('lib.pkp.classes.form.Form');
 class ReviewObjectMetadataForm extends Form {
 
     /** @var string Name of parent plugin */
-    public $parentPluginName;
+    protected $_parentPluginName;
 
     /** @var int ID of the ReviewObjectType being edited */
-    public $reviewObjectTypeId;
+    protected $_reviewObjectTypeId;
 
-    /** @var object ReviewObjectMetadata being edited */
-    public $reviewObjectMetadata;
+    /** @var ReviewObjectMetadata|null ReviewObjectMetadata being edited */
+    protected $_reviewObjectMetadata;
 
     /**
-     * Constructor
-     * @param $parentPluginName sting
-     * @param $reviewObjectTypeId int
-     * @param $metadataId int (optional)
+     * Constructor.
+     * @param string $parentPluginName
+     * @param int $reviewObjectTypeId
+     * @param int|null $metadataId
      */
     public function __construct($parentPluginName, $reviewObjectTypeId, $metadataId = null) {
-        $this->parentPluginName = $parentPluginName;
-        $this->reviewObjectTypeId = (int) $reviewObjectTypeId;
+        $this->_parentPluginName = (string) $parentPluginName;
+        $this->_reviewObjectTypeId = (int) $reviewObjectTypeId;
 
-        // [MODERNISASI] Hapus &
-        $ofrPlugin = PluginRegistry::getPlugin('generic', $parentPluginName);
-        $journal = Request::getJournal();
-        $journalId = $journal->getId();
+        // [SCHOLARWIZDAM LUMERA STANDARD] Context resolution via Router
+        $request = Application::get()->getRequest();
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        $journalId = $journal ? (int) $journal->getId() : 0;
 
+        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->_parentPluginName);
         $ofrPlugin->import('classes.ReviewObjectMetadata');
+        
+        /** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
         $reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
         
-        if (!empty($metadataId)) {
-            $this->reviewObjectMetadata = $reviewObjectMetadataDao->getById((int) $metadataId, $this->reviewObjectTypeId);
+        if ($metadataId !== null) {
+            $this->_reviewObjectMetadata = $reviewObjectMetadataDao->getById((int) $metadataId, $this->_reviewObjectTypeId);
         } else {
-            $this->reviewObjectMetadata = null;
+            $this->_reviewObjectMetadata = null;
         }
         
         parent::__construct($ofrPlugin->getTemplatePath() . 'editor/reviewObjectMetadataForm.tpl');
@@ -62,23 +65,29 @@ class ReviewObjectMetadataForm extends Form {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $parentPluginName
+     * @param int $reviewObjectTypeId
+     * @param int|null $metadataId
      */
     public function ReviewObjectMetadataForm($parentPluginName, $reviewObjectTypeId, $metadataId = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::ReviewObjectMetadataForm(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($parentPluginName, $reviewObjectTypeId, $metadataId);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Get the names of the fields that are localized.
      * @see Form::getLocaleFieldNames()
+     * @return array
      */
-    public function getLocaleFieldNames() {
+    public function getLocaleFieldNames(): array {
+        /** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
         $reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
         return $reviewObjectMetadataDao->getLocaleFieldNames();
     }
@@ -86,84 +95,109 @@ class ReviewObjectMetadataForm extends Form {
     /**
      * Display the form.
      * @see Form::display()
+     * @param mixed $request
+     * @param string|null $template
+     * @return void
      */
     public function display($request = null, $template = null) {
         $templateMgr = TemplateManager::getManager($request);
-        $templateMgr->assign('reviewObjectMetadata', $this->reviewObjectMetadata);
-        $templateMgr->assign('reviewObjectTypeId', $this->reviewObjectTypeId);
+        $templateMgr->assign('reviewObjectMetadata', $this->_reviewObjectMetadata);
+        $templateMgr->assign('reviewObjectTypeId', $this->_reviewObjectTypeId);
 
         $ofrPlugin = PluginRegistry::getPlugin('generic', OBJECTS_FOR_REVIEW_PLUGIN_NAME);
         $ofrPlugin->import('classes.ReviewObjectMetadata');
-        $templateMgr->assign('multipleOptionsTypes', ReviewObjectMetadata::getMultipleOptionsTypes());
-        // in order to be able to search for an element in the array in the javascript function 'togglePossibleResponses':
-        $templateMgr->assign('multipleOptionsTypesString', ';'.implode(';', ReviewObjectMetadata::getMultipleOptionsTypes()).';');
-        $templateMgr->assign('metadataTypeOptions', ReviewObjectMetadata::getMetadataFormTypeOptions());
+        
+        // [WIZDAM FIX] Instantiate to call non-static methods safely, resolving linter error
+        $reviewObjectMetadata = new ReviewObjectMetadata();
+        $multipleOptionsTypes = $reviewObjectMetadata->getMultipleOptionsTypes();
+        
+        $templateMgr->assign('multipleOptionsTypes', $multipleOptionsTypes);
+        // In order to be able to search for an element in the array in the javascript function 'togglePossibleResponses'
+        $templateMgr->assign('multipleOptionsTypesString', ';' . implode(';', $multipleOptionsTypes) . ';');
+        $templateMgr->assign('metadataTypeOptions', $reviewObjectMetadata->getMetadataFormTypeOptions());
+        
         parent::display($request, $template);
     }
 
     /**
      * Initialize form data.
      * @see Form::initData()
+     * @return void
      */
     public function initData() {
-        if ($this->reviewObjectMetadata != null) {
-            $reviewObjectMetadata = $this->reviewObjectMetadata;
-            $this->_data = array(
-                'name' => $reviewObjectMetadata->getName(null), // Localized
-                'required' => $reviewObjectMetadata->getRequired(),
-                'display' => $reviewObjectMetadata->getDisplay(),
-                'metadataType' => $reviewObjectMetadata->getMetadataType(),
-                'possibleOptions' => $reviewObjectMetadata->getPossibleOptions(null) //Localized
-            );
+        if ($this->_reviewObjectMetadata !== null) {
+            $reviewObjectMetadata = $this->_reviewObjectMetadata;
+            $this->_data = [
+                'name' => $reviewObjectMetadata->getName(null),
+                'required' => (bool) $reviewObjectMetadata->getRequired(),
+                'display' => (bool) $reviewObjectMetadata->getDisplay(),
+                'metadataType' => (string) $reviewObjectMetadata->getMetadataType(),
+                'possibleOptions' => $reviewObjectMetadata->getPossibleOptions(null)
+            ];
         }
     }
 
     /**
      * Read user-submitted data.
      * @see Form::readInputData()
+     * @return void
      */
     public function readInputData() {
-        $this->readUserVars(array('name', 'required', 'display', 'metadataType', 'possibleOptions'));
+        $this->readUserVars([
+            'name', 
+            'required', 
+            'display', 
+            'metadataType', 
+            'possibleOptions'
+        ]);
     }
 
     /**
      * Save review object metadata. Called by submit handler.
      * @see Form::execute()
+     * @param mixed $object Ignored.
+     * @return void
      */
     public function execute($object = null) {
-        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
-        $journal = Request::getJournal();
-        $journalId = $journal->getId();
-
+        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->_parentPluginName);
         $ofrPlugin->import('classes.ReviewObjectMetadata');
+
+        // [SCHOLARWIZDAM LUMERA STANDARD] Context resolution via Router
+        $request = Application::get()->getRequest();
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        $journalId = $journal ? (int) $journal->getId() : 0;
+
+        /** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
         $reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
-        
-        if ($this->reviewObjectMetadata == null) {
+        if ($this->_reviewObjectMetadata === null) {
             $reviewObjectMetadata = $reviewObjectMetadataDao->newDataObject();
-            $reviewObjectMetadata->setReviewObjectTypeId($this->reviewObjectTypeId);
-            $reviewObjectMetadata->setSequence(REALLY_BIG_NUMBER);
+            $reviewObjectMetadata->setReviewObjectTypeId($this->_reviewObjectTypeId);
+            $reviewObjectMetadata->setSequence(999999); 
         } else {
-            $reviewObjectMetadata = $this->reviewObjectMetadata;
+            $reviewObjectMetadata = $this->_reviewObjectMetadata;
         }
         
-        $reviewObjectMetadata->setName($this->getData('name'), null); // Localized
-        $reviewObjectMetadata->setRequired($this->getData('required') ? 1 : 0);
-        $reviewObjectMetadata->setDisplay($this->getData('display') ? 1 : 0);
-        $reviewObjectMetadata->setMetadataType($this->getData('metadataType'));
+        $reviewObjectMetadata->setName((string) $this->getData('name'), null);
+        $reviewObjectMetadata->setRequired((bool) $this->getData('required') ? 1 : 0);
+        $reviewObjectMetadata->setDisplay((bool) $this->getData('display') ? 1 : 0);
+        $reviewObjectMetadata->setMetadataType((string) $this->getData('metadataType'));
 
-        if (in_array($this->getData('metadataType'), ReviewObjectMetadata::getMultipleOptionsTypes())) {
-            $reviewObjectMetadata->setPossibleOptions($this->getData('possibleOptions'), null); // Localized
+        $reviewObjectMetadataInstance = new ReviewObjectMetadata();
+        if (in_array($this->getData('metadataType'), $reviewObjectMetadataInstance->getMultipleOptionsTypes(), true)) {
+            $reviewObjectMetadata->setPossibleOptions($this->getData('possibleOptions'), null);
         } else {
             $reviewObjectMetadata->setPossibleOptions(null, null);
         }
 
-        if ($reviewObjectMetadata->getId() != null) {
-            $reviewObjectMetadataDao->deleteSetting($reviewObjectMetadata->getId(), 'possibleOptions');
+        if ($reviewObjectMetadata->getId() !== null) {
+            $reviewObjectMetadataDao->deleteSetting((int) $reviewObjectMetadata->getId(), 'possibleOptions');
             $reviewObjectMetadataDao->updateObject($reviewObjectMetadata);
         } else {
             $reviewObjectMetadataDao->insertObject($reviewObjectMetadata);
-            $reviewObjectMetadataDao->resequence($this->reviewObjectTypeId);
+            $reviewObjectMetadataDao->resequence($this->_reviewObjectTypeId);
         }
     }
+    
 }
 ?>
