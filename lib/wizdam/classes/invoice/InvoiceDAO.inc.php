@@ -245,7 +245,7 @@ class InvoiceDAO extends DAO {
             );
         } else {
             $result = $this->retrieve(
-                'SELECT invoice_id, amount FROM invoices WHERE user_id = ? AND (submission_id IS NULL OR submission_id = 0) AND fee_type = ? AND status = ?',
+                'SELECT invoice_id, amount FROM invoices WHERE user_id = ? AND (submission_id IS NULL OR submission_id = 0) AND fee_type = ? AND status = ? AND legacy_source_table IS NULL',
                 [$userId, $feeType, Invoice::STATUS_UNPAID]
             );
         }
