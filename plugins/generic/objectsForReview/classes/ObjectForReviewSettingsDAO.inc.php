@@ -12,93 +12,106 @@ declare(strict_types=1);
  * @ingroup submission
  *
  * @brief Operations for retrieving and modifying object for review settings.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 class ObjectForReviewSettingsDAO extends DAO {
 
     /** @var string Name of parent plugin */
-    public $parentPluginName;
+    protected $_parentPluginName;
 
     /**
-     * Constructor
+     * Constructor.
+     * @param string $parentPluginName
      */
-    public function __construct($parentPluginName){
+    public function __construct($parentPluginName) {
         parent::__construct();
-        $this->parentPluginName = $parentPluginName;
+        $this->_parentPluginName = (string) $parentPluginName;
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $parentPluginName
      */
     public function ObjectForReviewSettingsDAO($parentPluginName) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::ObjectForReviewSettingsDAO(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($parentPluginName);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Retrieve object for review setting value.
-     * @param $objectId int
-     * @param $metadataId int
+     * @param int $objectId
+     * @param int $metadataId
+     * @return array|null
      */
     public function getSetting($objectId, $metadataId) {
-        $params = array((int) $objectId, (int) $metadataId);
+        $params = [(int) $objectId, (int) $metadataId];
         $sql = 'SELECT * FROM object_for_review_settings WHERE object_id = ? AND review_object_metadata_id = ?';
         $result = $this->retrieve($sql, $params);
 
         $setting = null;
-        while (!$result->EOF) {
-            $row = $result->getRowAssoc(false);
-            $value = $this->convertFromDB($row['setting_value'], $row['setting_type']);
-            $setting[$row['review_object_metadata_id']] = $value;
-            $result->MoveNext();
+        if ($result) {
+            while (!$result->EOF) {
+                // [WIZDAM FIX] Corrected typo from getRowAssoc to GetRowAssoc (standard ADODB)
+                $row = $result->GetRowAssoc(false);
+                $value = $this->convertFromDB($row['setting_value'], $row['setting_type']);
+                $setting[(int) $row['review_object_metadata_id']] = $value;
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
         return $setting;
     }
 
     /**
      * Retrieve all settings for the object for review.
-     * @param $objectId int
+     * @param int $objectId
      * @return array
      */
     public function getSettings($objectId) {
         $result = $this->retrieve(
-            'SELECT review_object_metadata_id, setting_value, setting_type FROM object_for_review_settings WHERE object_id = ?', (int) $objectId
+            'SELECT review_object_metadata_id, setting_value, setting_type FROM object_for_review_settings WHERE object_id = ?', 
+            [(int) $objectId]
         );
 
-        $objectForReviewSettings = array();
-        while (!$result->EOF) {
-            $row = $result->getRowAssoc(false);
-            $value = $this->convertFromDB($row['setting_value'], $row['setting_type']);
-            $objectForReviewSettings[$row['review_object_metadata_id']] = $value;
-            $result->MoveNext();
+        $objectForReviewSettings = [];
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $value = $this->convertFromDB($row['setting_value'], $row['setting_type']);
+                $objectForReviewSettings[(int) $row['review_object_metadata_id']] = $value;
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
         return $objectForReviewSettings;
     }
 
     /**
      * Add/update an object for review setting.
-     * @param $objectId int
-     * @param $metadataId int
-     * @param $value mixed
-     * @param $type string data type of the setting. If omitted, type will be guessed
-     * @return boolean
+     * @param int $objectId
+     * @param int $metadataId
+     * @param mixed $value
+     * @param string|null $type
+     * @return bool
      */
     public function updateSetting($objectId, $metadataId, $value, $type = null) {
-        $keyFields = array('object_id', 'review_object_metadata_id');
-        $value = $this->convertToDB($value, $type);
-        $this->replace('object_for_review_settings',
-            array(
+        $keyFields = ['object_id', 'review_object_metadata_id'];
+        $dbValue = $this->convertToDB($value, $type);
+        
+        $this->replace(
+            'object_for_review_settings',
+            [
                 'object_id' => (int) $objectId,
                 'review_object_metadata_id' => (int) $metadataId,
-                'setting_value' => $value,
-                'setting_type' => $type
-            ),
+                'setting_value' => $dbValue,
+                'setting_type' => $type !== null ? (string) $type : null
+            ],
             $keyFields
         );
         return true;
@@ -106,36 +119,40 @@ class ObjectForReviewSettingsDAO extends DAO {
 
     /**
      * Delete an object for review setting.
-     * @param $objectId int
-     * @param $metadataId int
+     * @param int $objectId
+     * @param int $metadataId
+     * @return bool
      */
     public function deleteSetting($objectId, $metadataId) {
-        $params = array((int) $objectId, (int) $metadataId);
+        $params = [(int) $objectId, (int) $metadataId];
         $sql = 'DELETE FROM object_for_review_settings WHERE object_id = ? AND review_object_metadata_id = ?';
-        return $this->update($sql, $params);
+        return (bool) $this->update($sql, $params);
     }
 
     /**
      * Delete all settings for an object for review.
-     * @param $objectId int
+     * @param int $objectId
+     * @return bool
      */
     public function deleteSettings($objectId) {
-        return $this->update(
-            'DELETE FROM object_for_review_settings WHERE object_id = ?', (int) $objectId
+        return (bool) $this->update(
+            'DELETE FROM object_for_review_settings WHERE object_id = ?', 
+            [(int) $objectId]
         );
     }
 
     /**
      * Delete settings by review object metadata ID
      * to be called only when deleting a review object metadata.
-     * @param $reviewObjectMetadataId int
+     * @param int $reviewObjectMetadataId
+     * @return bool
      */
     public function deleteByReviewObjectMetadataId($reviewObjectMetadataId) {
-        return $this->update(
-            'DELETE FROM object_for_review_settings WHERE review_object_metadata_id = ?', (int) $reviewObjectMetadataId
+        return (bool) $this->update(
+            'DELETE FROM object_for_review_settings WHERE review_object_metadata_id = ?', 
+            [(int) $reviewObjectMetadataId]
         );
     }
 
 }
-
 ?>
