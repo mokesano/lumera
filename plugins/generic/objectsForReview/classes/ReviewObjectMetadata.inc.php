@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see ReviewObjectMetadataDAO
  *
  * @brief Basic class describing a review object metadata.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 define('REVIEW_OBJECT_METADATA_TYPE_SMALL_TEXT_FIELD',    0x000001);
@@ -37,7 +36,6 @@ define('REVIEW_OBJECT_METADATA_KEY_ABSTRACT',     'abstract');
 define('REVIEW_OBJECT_METADATA_KEY_COPY',         'copy');
 define('REVIEW_OBJECT_METADATA_KEY_COVERPAGE',    'coverPage');
 
-
 class ReviewObjectMetadata extends DataObject {
 
     /**
@@ -48,174 +46,188 @@ class ReviewObjectMetadata extends DataObject {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ReviewObjectMetadata() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::ReviewObjectMetadata(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Get localized name.
-     * @return string
+     * @return string|null
      */
     public function getLocalizedName() {
-        return $this->getLocalizedData('name');
+        $name = $this->getLocalizedData('name');
+        return $name !== null ? (string) $name : null;
     }
 
     /**
      * Get localized list of possible options.
-     * @return array
+     * @return array|null
      */
     public function getLocalizedPossibleOptions() {
-        return $this->getLocalizedData('possibleOptions');
+        $options = $this->getLocalizedData('possibleOptions');
+        return is_array($options) ? $options : null;
     }
 
     //
     // Get/set methods
     //
+
     /**
      * Get review object type ID.
-     * @return int
+     * @return int|null
      */
     public function getReviewObjectTypeId() {
-        return $this->getData('reviewObjectTypeId');
+        $id = $this->getData('reviewObjectTypeId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set review object type ID.
-     * @param $typeId int
+     * @param int|null $reviewObjectTypeId
      */
     public function setReviewObjectTypeId($reviewObjectTypeId) {
-        return $this->setData('reviewObjectTypeId', $reviewObjectTypeId);
+        $this->setData('reviewObjectTypeId', $reviewObjectTypeId !== null ? (int) $reviewObjectTypeId : null);
     }
 
     /**
      * Get sequence.
-     * @return float
+     * @return float|null
      */
     public function getSequence() {
-        return $this->getData('sequence');
+        $seq = $this->getData('sequence');
+        return $seq !== null ? (float) $seq : null;
     }
 
     /**
      * Set sequence.
-     * @param $sequence float
+     * @param float|null $sequence
      */
     public function setSequence($sequence) {
-        return $this->setData('sequence', $sequence);
+        $this->setData('sequence', $sequence !== null ? (float) $sequence : null);
     }
 
     /**
      * Get type.
-     * @return string
+     * @return int|null
      */
     public function getMetadataType() {
-        return $this->getData('metadataType');
+        $type = $this->getData('metadataType');
+        return $type !== null ? (int) $type : null;
     }
 
     /**
      * Set type.
-     * @param $metadataType string
+     * @param int|null $metadataType
      */
     public function setMetadataType($metadataType) {
-        return $this->setData('metadataType', $metadataType);
+        $this->setData('metadataType', $metadataType !== null ? (int) $metadataType : null);
     }
 
     /**
      * Get required flag.
-     * @return boolean
+     * @return int|null
      */
     public function getRequired() {
-        return $this->getData('required');
+        $req = $this->getData('required');
+        return $req !== null ? (int) $req : null;
     }
 
     /**
      * Set required flag.
-     * @param $required boolean
+     * @param int|null $required
      */
     public function setRequired($required) {
-        return $this->setData('required', $required);
+        $this->setData('required', $required !== null ? (int) $required : null);
     }
 
     /**
      * Get display flag.
-     * @return boolean
+     * @return int|null
      */
     public function getDisplay() {
-        return $this->getData('display');
+        $disp = $this->getData('display');
+        return $disp !== null ? (int) $disp : null;
     }
 
     /**
      * Set display flag.
-     * @param $display boolean
+     * @param int|null $display
      */
     public function setDisplay($display) {
-        return $this->setData('display', $display);
+        $this->setData('display', $display !== null ? (int) $display : null);
     }
 
     /**
      * Get key.
-     * @return string
+     * @return string|null
      */
     public function getKey() {
-        return $this->getData('key');
+        $key = $this->getData('key');
+        return $key !== null ? (string) $key : null;
     }
 
     /**
      * Set key.
-     * @param $key string
+     * @param string|null $key
      */
     public function setKey($key) {
-        return $this->setData('key', $key);
+        $this->setData('key', $key !== null ? (string) $key : null);
     }
 
     /**
      * Get name.
-     * @param $locale string
-     * @return string
+     * @param string|null $locale
+     * @return string|null
      */
     public function getName($locale) {
-        return $this->getData('name', $locale);
+        $name = $this->getData('name', $locale);
+        return $name !== null ? (string) $name : null;
     }
 
     /**
      * Set name.
-     * @param $name string
-     * @param $locale string
+     * @param string|null $name
+     * @param string|null $locale
      */
     public function setName($name, $locale) {
-        return $this->setData('name', $name, $locale);
+        $this->setData('name', $name !== null ? (string) $name : null, $locale);
     }
 
     /**
-     * Get possible otions.
-     * @param $locale string
-     * @return string
+     * Get possible options.
+     * @param string|null $locale
+     * @return array|null
      */
     public function getPossibleOptions($locale) {
-        return $this->getData('possibleOptions', $locale);
+        $options = $this->getData('possibleOptions', $locale);
+        return is_array($options) ? $options : null;
     }
 
     /**
      * Set possible options.
-     * @param $possibleOptions string
-     * @param $locale string
+     * @param array|null $possibleOptions
+     * @param string|null $locale
      */
     public function setPossibleOptions($possibleOptions, $locale) {
-        return $this->setData('possibleOptions', $possibleOptions, $locale);
+        $this->setData('possibleOptions', is_array($possibleOptions) ? $possibleOptions : null, $locale);
     }
 
     /**
      * Get an associative array matching metadata type codes with locale strings.
      * (Includes default '' => "Choose One" string.)
-     * @return array metadataType => localeString
+     * @return array
      */
     public function getMetadataFormTypeOptions() {
-        static $metadataTypeOptions = array(
+        static $metadataTypeOptions = [
             '' => 'plugins.generic.objectsForReview.editor.objectMetadata.type.chooseType',
             REVIEW_OBJECT_METADATA_TYPE_SMALL_TEXT_FIELD => 'plugins.generic.objectsForReview.editor.objectMetadata.type.smalltextfield',
             REVIEW_OBJECT_METADATA_TYPE_TEXT_FIELD => 'plugins.generic.objectsForReview.editor.objectMetadata.type.textfield',
@@ -223,7 +235,7 @@ class ReviewObjectMetadata extends DataObject {
             REVIEW_OBJECT_METADATA_TYPE_CHECKBOXES => 'plugins.generic.objectsForReview.editor.objectMetadata.type.checkboxes',
             REVIEW_OBJECT_METADATA_TYPE_RADIO_BUTTONS => 'plugins.generic.objectsForReview.editor.objectMetadata.type.radiobuttons',
             REVIEW_OBJECT_METADATA_TYPE_DROP_DOWN_BOX => 'plugins.generic.objectsForReview.editor.objectMetadata.type.dropdownbox'
-        );
+        ];
         return $metadataTypeOptions;
     }
 
@@ -232,7 +244,7 @@ class ReviewObjectMetadata extends DataObject {
      * @return array
      */
     public function getMetadataDTDTypes() {
-        static $metadataDTDTypes =  array(
+        static $metadataDTDTypes = [
             'smallTextField' => REVIEW_OBJECT_METADATA_TYPE_SMALL_TEXT_FIELD,
             'singleLineTextBox' => REVIEW_OBJECT_METADATA_TYPE_TEXT_FIELD,
             'extendedTextBox' => REVIEW_OBJECT_METADATA_TYPE_TEXTAREA,
@@ -242,30 +254,30 @@ class ReviewObjectMetadata extends DataObject {
             'roleDropDownBox' => REVIEW_OBJECT_METADATA_TYPE_ROLE_DROP_DOWN_BOX,
             'languageDropDownBox' => REVIEW_OBJECT_METADATA_TYPE_LANG_DROP_DOWN_BOX,
             'coverPage' => REVIEW_OBJECT_METADATA_TYPE_COVERPAGE
-        );
+        ];
         return $metadataDTDTypes;
     }
 
     /**
      * Get array of all multiple options metadata types.
-     * @return array multiple options types
+     * @return array
      */
     public function getMultipleOptionsTypes() {
-        static $multipleOptionsTypes = array(
+        static $multipleOptionsTypes = [
             REVIEW_OBJECT_METADATA_TYPE_CHECKBOXES,
             REVIEW_OBJECT_METADATA_TYPE_RADIO_BUTTONS,
             REVIEW_OBJECT_METADATA_TYPE_DROP_DOWN_BOX,
             REVIEW_OBJECT_METADATA_TYPE_ROLE_DROP_DOWN_BOX
-        );
+        ];
         return $multipleOptionsTypes;
     }
 
     /**
      * Get array of all common metadata keys.
-     * @return array common metadata keys
+     * @return array
      */
     public function getCommonMetadataKeys() {
-        static $commonMetadataKeys = array(
+        static $commonMetadataKeys = [
             REVIEW_OBJECT_METADATA_KEY_TITLE,
             REVIEW_OBJECT_METADATA_KEY_ROLE,
             REVIEW_OBJECT_METADATA_KEY_DATE,
@@ -276,42 +288,44 @@ class ReviewObjectMetadata extends DataObject {
             REVIEW_OBJECT_METADATA_KEY_ABSTRACT,
             REVIEW_OBJECT_METADATA_KEY_COPY,
             REVIEW_OBJECT_METADATA_KEY_COVERPAGE
-        );
+        ];
         return $commonMetadataKeys;
     }
 
     /**
      * Check if this is a common metadata.
-     * @return boolean
+     * @return bool
      */
     public function isCommon() {
-        return in_array($this->getKey(), $this->getCommonMetadataKeys());
+        return in_array($this->getKey(), $this->getCommonMetadataKeys(), true);
     }
 
     /**
      * Check if there is a key for this metadata,
      * i.e. if the metadata is predefined.
-     * @return boolean
+     * @return bool
      */
     public function keyExists() {
-        return $this->getKey() != '';
+        $key = $this->getKey();
+        return $key !== null && $key !== '';
     }
 
     /**
      * Get localised content of the possible option.
-     * @param $order int
-     * @return string
+     * @param int $order
+     * @return string|null
      */
     public function getLocalizedPossibleOptionContent($order) {
         $possibleOptions = $this->getLocalizedData('possibleOptions');
-        foreach ($possibleOptions as $option) {
-            if ($option['order'] == $order) {
-                return $option['content'];
+        if (is_array($possibleOptions)) {
+            foreach ($possibleOptions as $option) {
+                if (is_array($option) && isset($option['order']) && (int) $option['order'] === (int) $order) {
+                    return (string) ($option['content'] ?? '');
+                }
             }
         }
         return null;
     }
 
 }
-
 ?>
