@@ -13,76 +13,89 @@ declare(strict_types=1);
  * @see ReviewObjectMetadata
  *
  * @brief Operations for retrieving and modifying ReviewObjectMetadata objects.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 class ReviewObjectMetadataDAO extends DAO {
 
     /** @var string Name of parent plugin */
-    public $parentPluginName;
+    protected $_parentPluginName;
 
     /**
      * Constructor.
+     * @param string $parentPluginName
      */
     public function __construct($parentPluginName) {
         parent::__construct();
-        $this->parentPluginName = $parentPluginName;
+        $this->_parentPluginName = (string) $parentPluginName;
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $parentPluginName
      */
     public function ReviewObjectMetadataDAO($parentPluginName) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::ReviewObjectMetadataDAO(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($parentPluginName);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Retrieve a review object metadata by ID.
-     * @param $metadataId int
-     * @param $reviewObjectTypeId int (optional)
-     * @return ReviewObjectMetadata
+     * @param int $metadataId
+     * @param int|null $reviewObjectTypeId
+     * @return ReviewObjectMetadata|null
      */
     public function getById($metadataId, $reviewObjectTypeId = null) {
-        $params = array((int) $metadataId);
-        if ($reviewObjectTypeId) $params[] = (int) $reviewObjectTypeId;
+        $params = [(int) $metadataId];
+        if ($reviewObjectTypeId !== null) {
+            $params[] = (int) $reviewObjectTypeId;
+        }
 
         $result = $this->retrieve(
-            'SELECT * FROM review_object_metadata WHERE metadata_id = ?' . ($reviewObjectTypeId ? ' AND review_object_type_id = ?' : ''),
+            'SELECT * FROM review_object_metadata WHERE metadata_id = ?' . ($reviewObjectTypeId !== null ? ' AND review_object_type_id = ?' : ''),
             $params
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        // [SCHOLARWIZDAM LUMERA STANDARD] Using $result && !$result->EOF
+        if ($result && !$result->EOF) {
             $returner = $this->_fromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Retrieve review object metadata by key.
-     * @param $key string
-     * @param $reviewObjectTypeId int (optional)
-     * @return ReviewObjectMetadata
+     * @param string $key
+     * @param int|null $reviewObjectTypeId
+     * @return ReviewObjectMetadata|null
      */
     public function getByKey($key, $reviewObjectTypeId = null) {
-        $params = array($key);
-        if ($reviewObjectTypeId) $params[] = (int) $reviewObjectTypeId;
+        $params = [(string) $key];
+        if ($reviewObjectTypeId !== null) {
+            $params[] = (int) $reviewObjectTypeId;
+        }
 
         $result = $this->retrieve(
-            'SELECT * FROM review_object_metadata WHERE metadata_key = ?' . ($reviewObjectTypeId ? ' AND review_object_type_id = ?' : ''),
+            'SELECT * FROM review_object_metadata WHERE metadata_key = ?' . ($reviewObjectTypeId !== null ? ' AND review_object_type_id = ?' : ''),
             $params
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if ($result && !$result->EOF) {
             $returner = $this->_fromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
@@ -91,29 +104,32 @@ class ReviewObjectMetadataDAO extends DAO {
      * @return ReviewObjectMetadata
      */
     public function newDataObject() {
-        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
+        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->_parentPluginName);
         $ofrPlugin->import('classes.ReviewObjectMetadata');
         return new ReviewObjectMetadata();
     }
 
     /**
      * Internal function to return a ReviewObjectMetadata object from a row.
-     * @param $row array
+     * @param array $row
      * @return ReviewObjectMetadata
      */
     public function _fromRow($row) {
         $reviewObjectMetadata = $this->newDataObject();
-        $reviewObjectMetadata->setId($row['metadata_id']);
-        $reviewObjectMetadata->setReviewObjectTypeId($row['review_object_type_id']);
-        $reviewObjectMetadata->setSequence($row['seq']);
-        $reviewObjectMetadata->setMetadataType($row['metadata_type']);
-        $reviewObjectMetadata->setRequired($row['required']);
-        $reviewObjectMetadata->setDisplay($row['display']);
-        $reviewObjectMetadata->setKey($row['metadata_key']);
+        $reviewObjectMetadata->setId((int) $row['metadata_id']);
+        $reviewObjectMetadata->setReviewObjectTypeId((int) $row['review_object_type_id']);
+        $reviewObjectMetadata->setSequence((float) $row['seq']);
+        $reviewObjectMetadata->setMetadataType((int) $row['metadata_type']);
+        $reviewObjectMetadata->setRequired((int) $row['required']);
+        $reviewObjectMetadata->setDisplay((int) $row['display']);
+        $reviewObjectMetadata->setKey((string) $row['metadata_key']);
 
-        $this->getDataObjectSettings('review_object_metadata_settings', 'metadata_id', $row['metadata_id'], $reviewObjectMetadata);
+        $this->getDataObjectSettings('review_object_metadata_settings', 'metadata_id', (int) $row['metadata_id'], $reviewObjectMetadata);
 
-        HookRegistry::dispatch('ReviewObjectMetadataDAO::_fromRow', array(&$reviewObjectMetadata, &$row));
+        // Note: HookRegistry dispatch with references is legacy but preserved for signature compatibility
+        $tempMetadata = $reviewObjectMetadata;
+        $tempRow = $row;
+        HookRegistry::dispatch('ReviewObjectMetadataDAO::_fromRow', [&$tempMetadata, &$tempRow]);
 
         return $reviewObjectMetadata;
     }
@@ -123,22 +139,23 @@ class ReviewObjectMetadataDAO extends DAO {
      * @return array
      */
     public function getLocaleFieldNames() {
-        return array('name', 'possibleOptions');
+        return ['name', 'possibleOptions'];
     }
 
     /**
-     * Update the localized fields for this table
-     * @param $reviewObjectMetadata ReviewObjectMetadata
+     * Update the localized fields for this table.
+     * @param ReviewObjectMetadata $reviewObjectMetadata
+     * @return void
      */
     public function updateLocaleFields($reviewObjectMetadata) {
-        $this->updateDataObjectSettings('review_object_metadata_settings', $reviewObjectMetadata, array(
-            'metadata_id' => $reviewObjectMetadata->getId()
-        ));
+        $this->updateDataObjectSettings('review_object_metadata_settings', $reviewObjectMetadata, [
+            'metadata_id' => (int) $reviewObjectMetadata->getId()
+        ]);
     }
 
     /**
      * Insert a new review object metadata.
-     * @param $reviewObjectMetadata ReviewObjectMetadata
+     * @param ReviewObjectMetadata $reviewObjectMetadata
      * @return int
      */
     public function insertObject($reviewObjectMetadata) {
@@ -147,24 +164,24 @@ class ReviewObjectMetadataDAO extends DAO {
                 (review_object_type_id, seq, metadata_type, required, display, metadata_key)
                 VALUES
                 (?, ?, ?, ?, ?, ?)',
-            array(
+            [
                 (int) $reviewObjectMetadata->getReviewObjectTypeId(),
-                $reviewObjectMetadata->getSequence() == null ? 0 : $reviewObjectMetadata->getSequence(),
-                $reviewObjectMetadata->getMetadataType(),
-                $reviewObjectMetadata->getRequired() ? 1 : 0,
-                $reviewObjectMetadata->getDisplay() ? 1 : 0,
-                $reviewObjectMetadata->getKey()
-                )
+                $reviewObjectMetadata->getSequence() === null ? 0.0 : (float) $reviewObjectMetadata->getSequence(),
+                (int) $reviewObjectMetadata->getMetadataType(),
+                (int) $reviewObjectMetadata->getRequired(),
+                (int) $reviewObjectMetadata->getDisplay(),
+                (string) $reviewObjectMetadata->getKey()
+            ]
         );
-        $reviewObjectMetadata->setId($this->getInsertId());
+        $reviewObjectMetadata->setId((int) $this->getInsertId());
         $this->updateLocaleFields($reviewObjectMetadata);
         return $reviewObjectMetadata->getId();
     }
 
     /**
      * Update an existing review object metadata.
-     * @param $reviewObjectMetadata ReviewObjectMetadata
-     * @return boolean
+     * @param ReviewObjectMetadata $reviewObjectMetadata
+     * @return bool
      */
     public function updateObject($reviewObjectMetadata) {
         $returner = $this->update(
@@ -176,248 +193,291 @@ class ReviewObjectMetadataDAO extends DAO {
                     required = ?,
                     display = ?,
                     metadata_key = ?
-                WHERE    metadata_id = ?',
-            array(
+                WHERE metadata_id = ?',
+            [
                 (int) $reviewObjectMetadata->getReviewObjectTypeId(),
-                $reviewObjectMetadata->getSequence(),
-                $reviewObjectMetadata->getMetadataType(),
-                $reviewObjectMetadata->getRequired(),
-                $reviewObjectMetadata->getDisplay(),
-                $reviewObjectMetadata->getKey(),
+                (float) $reviewObjectMetadata->getSequence(),
+                (int) $reviewObjectMetadata->getMetadataType(),
+                (int) $reviewObjectMetadata->getRequired(),
+                (int) $reviewObjectMetadata->getDisplay(),
+                (string) $reviewObjectMetadata->getKey(),
                 (int) $reviewObjectMetadata->getId()
-            )
+            ]
         );
         $this->updateLocaleFields($reviewObjectMetadata);
-        return $returner;
+        return (bool) $returner;
     }
 
     /**
      * Delete a review object metadata.
-     * @param $reviewObjectMetadata ReviewObjectMetadata
+     * @param ReviewObjectMetadata $reviewObjectMetadata
+     * @return bool
      */
     public function deleteObject($reviewObjectMetadata) {
-        return $this->deleteById($reviewObjectMetadata->getId());
+        return $this->deleteById((int) $reviewObjectMetadata->getId());
     }
 
     /**
      * Delete a review object metadata by ID.
-     * @param $metadataId int
-     * @param $reviewObjectTypeId int (optional)
+     * @param int $metadataId
+     * @param int|null $reviewObjectTypeId
+     * @return void
      */
     public function deleteById($metadataId, $reviewObjectTypeId = null) {
-        $params = array((int) $metadataId);
-        if ($reviewObjectTypeId) $params[] = (int) $reviewObjectTypeId;
+        $params = [(int) $metadataId];
+        if ($reviewObjectTypeId !== null) {
+            $params[] = (int) $reviewObjectTypeId;
+        }
 
-        $this->update('DELETE FROM review_object_metadata WHERE metadata_id = ?' . ($reviewObjectTypeId ? ' AND review_object_type_id = ?' : ''),
+        $this->update(
+            'DELETE FROM review_object_metadata WHERE metadata_id = ?' . ($reviewObjectTypeId !== null ? ' AND review_object_type_id = ?' : ''),
             $params
         );
+        
         if ($this->getAffectedRows()) {
-            // Delete settings
-            $this->update('DELETE FROM review_object_metadata_settings WHERE metadata_id = ?',
-                (int) $metadataId
+            $this->update(
+                'DELETE FROM review_object_metadata_settings WHERE metadata_id = ?',
+                [(int) $metadataId]
             );
-            // Delete the same objects for review metadata
+            
+            /** @var ObjectForReviewSettingsDAO $ofrSettingsDao */
             $ofrSettingsDao = DAORegistry::getDAO('ObjectForReviewSettingsDAO');
-            $ofrSettingsDao->deleteByReviewObjectMetadataId($metadataId);
+            $ofrSettingsDao->deleteByReviewObjectMetadataId((int) $metadataId);
         }
     }
 
     /**
      * Delete review object metadata by review object type ID
      * to be called only when deleting a review object type.
-     * @param $reviewObjectTypeId int
+     * @param int $reviewObjectTypeId
+     * @return void
      */
     public function deleteByReviewObjectTypeId($reviewObjectTypeId) {
-        $allMetadata = $this->getArrayByReviewObjectTypeId($reviewObjectTypeId);
+        $allMetadata = $this->getArrayByReviewObjectTypeId((int) $reviewObjectTypeId);
         foreach ($allMetadata as $metadataId => $reviewObjectMetadata) {
-            $this->deleteById($metadataId);
+            $this->deleteById((int) $metadataId);
         }
     }
 
     /**
-     * Delete a review object metadata setting
-     * @param $metadataId int
-     * @param $name string
-     * @param $locale string (optional)
+     * Delete a review object metadata setting.
+     * @param int $metadataId
+     * @param string $name
+     * @param string|null $locale
+     * @return bool
      */
     public function deleteSetting($metadataId, $name, $locale = null) {
-        $params = array((int) $metadataId, $name);
+        $params = [(int) $metadataId, (string) $name];
         $sql = 'DELETE FROM review_object_metadata_settings WHERE metadata_id = ? AND setting_name = ?';
         if ($locale !== null) {
-            $params[] = $locale;
+            $params[] = (string) $locale;
             $sql .= ' AND locale = ?';
         }
-        return $this->update($sql, $params);
+        return (bool) $this->update($sql, $params);
     }
 
     /**
      * Retrieve metadata ID by review object type ID and metadata key.
-     * @param $reviewObjectTypeId int
-     * @param $key string
-     * @return int
+     * @param int $reviewObjectTypeId
+     * @param string $key
+     * @return int|false
      */
     public function getMetadataId($reviewObjectTypeId, $key) {
         $result = $this->retrieve(
             'SELECT metadata_id FROM review_object_metadata WHERE review_object_type_id = ? AND metadata_key = ? ORDER BY seq',
-            array((int) $reviewObjectTypeId, $key)
+            [(int) $reviewObjectTypeId, (string) $key]
         );
-        $returner = isset($result->fields[0]) ? $result->fields[0] : false;
-        $result->Close();
+        
+        $returner = false;
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = (int) $row['metadata_id'];
+        }
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Retrieve all metadata array for a review object type.
-     * @param $reviewObjectTypeId int
+     * @param int $reviewObjectTypeId
      * @return array ReviewObjectMetadata ordered by sequence
      */
     public function getArrayByReviewObjectTypeId($reviewObjectTypeId) {
         $result = $this->retrieve(
             'SELECT * FROM review_object_metadata WHERE review_object_type_id = ? ORDER BY seq',
-            (int) $reviewObjectTypeId
+            [(int) $reviewObjectTypeId]
         );
 
-        $allMetadata = array();
-        while (!$result->EOF) {
-            $reviewObjectMetadata = $this->_fromRow($result->GetRowAssoc(false));
-            $allMetadata[$reviewObjectMetadata->getId()] = $reviewObjectMetadata;
-            $result->MoveNext();
+        $allMetadata = [];
+        if ($result) {
+            while (!$result->EOF) {
+                $reviewObjectMetadata = $this->_fromRow($result->GetRowAssoc(false));
+                $allMetadata[(int) $reviewObjectMetadata->getId()] = $reviewObjectMetadata;
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
         return $allMetadata;
     }
 
     /**
      * Retrieve all metadata for a review object type.
-     * @param $reviewObjectTypeId int
-     * @param $rangeInfo DBResultRange (optional)
+     * @param int $reviewObjectTypeId
+     * @param mixed $rangeInfo DBResultRange (optional)
      * @return DAOResultFactory containing ReviewObjectMetadata ordered by sequence
      */
     public function getByReviewObjectTypeId($reviewObjectTypeId, $rangeInfo = null) {
         $result = $this->retrieveRange(
             'SELECT * FROM review_object_metadata WHERE review_object_type_id = ? ORDER BY seq',
-            (int) $reviewObjectTypeId, $rangeInfo
+            [(int) $reviewObjectTypeId], 
+            $rangeInfo
         );
-        $returner = new DAOResultFactory($result, $this, '_fromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_fromRow');
     }
 
     /**
      * Retrieve IDs of all required metadata for a review object type.
-     * @param $reviewObjectTypeId int
+     * @param int $reviewObjectTypeId
      * @return array
      */
     public function getRequiredReviewObjectMetadataIds($reviewObjectTypeId) {
         $result = $this->retrieve(
             'SELECT metadata_id FROM review_object_metadata WHERE review_object_type_id = ? AND required = 1 ORDER BY seq',
-            (int) $reviewObjectTypeId
+            [(int) $reviewObjectTypeId]
         );
 
-        $requiredReviewObjectMetadataIds = array();
-        while (!$result->EOF) {
-            $requiredReviewObjectMetadataIds[] = $result->fields[0];
-            $result->MoveNext();
+        $requiredReviewObjectMetadataIds = [];
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $requiredReviewObjectMetadataIds[] = (int) $row['metadata_id'];
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
         return $requiredReviewObjectMetadataIds;
     }
 
     /**
      * Retrieve IDs of all metadata that should be displayed for a review object type.
      * Except Title - it is always displayed.
-     * @param $reviewObjectTypeId int (optional)
+     * @param int|null $reviewObjectTypeId
      * @return array
      */
     public function getDisplayReviewObjectMetadataIds($reviewObjectTypeId = null) {
-        if ($reviewObjectTypeId) $params[] = (int) $reviewObjectTypeId;
+        $params = [];
+        if ($reviewObjectTypeId !== null) {
+            $params[] = (int) $reviewObjectTypeId;
+        }
+        
         $result = $this->retrieve(
-            'SELECT metadata_id FROM review_object_metadata WHERE display = 1 AND metadata_key <> \'title\'' . ($reviewObjectTypeId ? ' AND review_object_type_id = ?' : '') . ' ORDER BY seq',
+            'SELECT metadata_id FROM review_object_metadata WHERE display = 1 AND metadata_key <> \'title\'' . ($reviewObjectTypeId !== null ? ' AND review_object_type_id = ?' : '') . ' ORDER BY seq',
             $params
         );
 
-        $displayReviewObjectMetadataIds = array();
-        while (!$result->EOF) {
-            $displayReviewObjectMetadataIds[] = $result->fields[0];
-            $result->MoveNext();
+        $displayReviewObjectMetadataIds = [];
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $displayReviewObjectMetadataIds[] = (int) $row['metadata_id'];
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
         return $displayReviewObjectMetadataIds;
     }
 
     /**
      * Retrieve IDs of all metadata of the type textarea for a review object type.
-     * @param $reviewObjectTypeId int
+     * @param int $reviewObjectTypeId
      * @return array
      */
     public function getTextareaReviewObjectMetadataIds($reviewObjectTypeId) {
-        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
+        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->_parentPluginName);
         $ofrPlugin->import('classes.ReviewObjectMetadata');
 
         $result = $this->retrieve(
             'SELECT metadata_id FROM review_object_metadata WHERE review_object_type_id = ? AND metadata_type = ? ORDER BY seq',
-            array((int) $reviewObjectTypeId, REVIEW_OBJECT_METADATA_TYPE_TEXTAREA)
+            [(int) $reviewObjectTypeId, REVIEW_OBJECT_METADATA_TYPE_TEXTAREA]
         );
 
-        $textareaReviewObjectMetadataIds = array();
-        while (!$result->EOF) {
-            $textareaReviewObjectMetadataIds[] = $result->fields[0];
-            $result->MoveNext();
+        $textareaReviewObjectMetadataIds = [];
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $textareaReviewObjectMetadataIds[] = (int) $row['metadata_id'];
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
         return $textareaReviewObjectMetadataIds;
     }
 
     /**
      * Check if the review object metadata exists.
-     * @param $metadataId int
-     * @param $reviewObjectTypeId int (optional)
-     * @return boolean
+     * @param int $metadataId
+     * @param int|null $reviewObjectTypeId
+     * @return bool
      */
     public function reviewObjectMetadataExists($metadataId, $reviewObjectTypeId = null) {
-        $params = array((int) $metadataId);
-        if ($reviewObjectTypeId) $params[] = (int) $reviewObjectTypeId;
+        $params = [(int) $metadataId];
+        if ($reviewObjectTypeId !== null) {
+            $params[] = (int) $reviewObjectTypeId;
+        }
 
         $result = $this->retrieve(
-            'SELECT COUNT(*) FROM review_object_metadata WHERE metadata_id = ?' . ($reviewObjectTypeId ? ' AND review_object_type_id = ?' : ''),
+            'SELECT COUNT(*) AS count FROM review_object_metadata WHERE metadata_id = ?' . ($reviewObjectTypeId !== null ? ' AND review_object_type_id = ?' : ''),
             $params
         );
 
-        $returner = isset($result->fields[0]) && $result->fields[0] == 1 ? true : false;
-        $result->Close();
+        $returner = false;
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = ((int) ($row['count'] ?? 0)) > 0;
+        }
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Sequentially renumber review object metadata in their sequence order.
-     * @param $reviewObjectTypeId int
+     * @param int $reviewObjectTypeId
+     * @return void
      */
     public function resequence($reviewObjectTypeId) {
         $result = $this->retrieve(
-            'SELECT metadata_id FROM review_object_metadata WHERE review_object_type_id = ? ORDER BY seq', (int) $reviewObjectTypeId
+            'SELECT metadata_id FROM review_object_metadata WHERE review_object_type_id = ? ORDER BY seq', 
+            [(int) $reviewObjectTypeId]
         );
 
-        for ($i=1; !$result->EOF; $i++) {
-            list($metadataId) = $result->fields;
-            $this->update(
-                'UPDATE review_object_metadata SET seq = ? WHERE metadata_id = ?',
-                array(
-                    $i,
-                    $metadataId
-                )
-            );
-            $result->MoveNext();
+        if ($result) {
+            for ($i = 1; !$result->EOF; $i++) {
+                $row = $result->GetRowAssoc(false);
+                $metadataId = (int) $row['metadata_id'];
+                $this->update(
+                    'UPDATE review_object_metadata SET seq = ? WHERE metadata_id = ?',
+                    [$i, $metadataId]
+                );
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
     }
 
     /**
      * Get the ID of the last inserted review object metadata.
+     * @param string $table
+     * @param string $id
+     * @param bool $callHooks
      * @return int
      */
     public function getInsertId($table = '', $id = '', $callHooks = true) {
-        return parent::getInsertId('review_object_metadata', 'metadata_id', $callHooks);
+        return (int) parent::getInsertId('review_object_metadata', 'metadata_id', $callHooks);
     }
 
 }
-
 ?>
