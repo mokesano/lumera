@@ -24,7 +24,7 @@ import('classes.payment.QueuedPayment');
 class InvoiceLegacyMigrationDAO extends DAO {
 
     /**
-     * [FIX] Pastikan kolom legacy_source_table/legacy_source_id sudah ada
+     * [LUMERA] Pastikan kolom legacy_source_table/legacy_source_id sudah ada
      * di tabel invoices sebelum migrasi/wipe dijalankan. Tanpa pengecekan
      * ini, kegagalan tampil sebagai error MySQL mentah ("Unknown column")
      * yang membingungkan -- sekarang tampil sebagai pesan jelas berisi
@@ -89,7 +89,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
     }
 
     /**
-     * [FIX BUG B] Generate nomor invoice STABIL untuk tipe yang tidak punya
+     * [LUMERA] Generate nomor invoice STABIL untuk tipe yang tidak punya
      * skema fallback stabil di InvoiceService::getInvoiceSummary() (yaitu
      * SEMUA tipe KECUALI SUBMISSION/FAST_TRACK/PUBLICATION, yang sudah punya
      * fallback berbasis ISSN+articleId yang tidak berubah-ubah).
@@ -106,7 +106,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
      * @param string $dateBilled Tanggal transaksi asli dari data legacy
      * @return array ['number' => string, 'code' => string]
      */
-    private function _generateLegacyStableNumber(string $feeType, int $userId, string $dateBilled): array {
+    private function _generateLegacyStableNumber(string $feeType, int $userId, string $dateBilled, int $sourceId): array {
         $prefixMap = [
             'MEMBERSHIP'            => 'MBR',
             'RENEW_SUBSCRIPTION'    => 'SUB',
@@ -120,8 +120,8 @@ class InvoiceLegacyMigrationDAO extends DAO {
         $datePart = date('ymd', strtotime($dateBilled));
 
         return [
-            'number' => $prefix . '-' . $userId . '-' . $datePart,
-            'code'   => $prefix . '#' . str_pad((string) $userId, 7, '0', STR_PAD_LEFT),
+            'number' => $prefix . '-' . $userId . '-' . $datePart . '-' . $sourceId,
+            'code'   => $prefix . '#' . str_pad((string) $userId, 7, '0', STR_PAD_LEFT) . '-' . $sourceId,
         ];
     }
 
@@ -131,13 +131,13 @@ class InvoiceLegacyMigrationDAO extends DAO {
      * FAST_TRACK/PUBLICATION), atau nomor stabil buatan sendiri untuk tipe
      * lain yang tidak punya fallback stabil di tampilan.
      */
-    private function _resolveInvoiceIdentity(?int $assocId, string $feeType, int $userId, string $dateBilled): array {
+    private function _resolveInvoiceIdentity(?int $assocId, string $feeType, int $userId, string $dateBilled, int $sourceId): array {
         $identity = $this->_getLegacyInvoiceIdentity($assocId);
 
         $isCoreArticleType = in_array(strtoupper($feeType), ['SUBMISSION', 'FAST_TRACK', 'PUBLICATION'], true);
 
         if (empty($identity['number']) && !$isCoreArticleType) {
-            $identity = $this->_generateLegacyStableNumber($feeType, $userId, $dateBilled);
+            $identity = $this->_generateLegacyStableNumber($feeType, $userId, $dateBilled, $sourceId);
         }
 
         return $identity;
@@ -165,7 +165,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
     }
 
     /**
-     * [COPY] Menyalin legacy queued payments ke invoices. 
+     * [LUMERA COPY] Menyalin legacy queued payments ke invoices. 
      * TIDAK PERNAH menghapus baris sumber.
      * @param int $limit
      * @param int $afterId
@@ -227,7 +227,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
             $dateBilled = $row['date_created'];
 
             try {
-                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled);
+                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled, $qId);
 
                 $insertSuccess = $this->update(
                     sprintf(
@@ -250,7 +250,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
     }
 
     /**
-     * [COPY] Menyalin legacy completed payments ke invoices. 
+     * [LUMERA COPY] Menyalin legacy completed payments ke invoices. 
      * TIDAK PERNAH menghapus baris sumber.
      * @param int $limit
      * @param int $afterId
@@ -298,7 +298,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
 
             try {
                 $assocId = (int) $row['assoc_id'];
-                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled);
+                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled, $cId);
 
                 $insertSuccess = $this->update(
                     sprintf(
@@ -324,7 +324,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
     }
 
     /**
-     * [MOVE] Memindahkan legacy queued payments ke invoices. 
+     * [LUMERA MOVE] Memindahkan legacy queued payments ke invoices. 
      * Baris sumber DIHAPUS setelah berhasil disalin. DESTRUKTIF.
      * @param int $limit
      * @param int $afterId
@@ -387,7 +387,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
             $dateBilled = $row['date_created'];
 
             try {
-                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled);
+                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled, $qId);
 
                 $insertSuccess = $this->update(
                     sprintf(
@@ -412,7 +412,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
     }
 
     /**
-     * [MOVE] Memindahkan legacy completed payments ke invoices. 
+     * [LUMERA MOVE] Memindahkan legacy completed payments ke invoices. 
      * Baris sumber DIHAPUS setelah berhasil disalin. DESTRUKTIF.
      * @param int $limit
      * @param int $afterId
@@ -461,7 +461,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
 
             try {
                 $assocId = (int) $row['assoc_id'];
-                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled);
+                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled, $cId);
 
                 $insertSuccess = $this->update(
                     sprintf(
