@@ -20,157 +20,170 @@ import('lib.pkp.classes.submission.PKPAuthor');
 class PKPAuthorDAO extends DAO {
     
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function PKPAuthorDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::PKPAuthorDAO(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Retrieve an author by ID.
-     * @param $authorId int
-     * @param $submissionId int optional
-     * @return Author
+     * @param int $authorId
+     * @param int|null $submissionId optional
+     * @return PKPAuthor|null
      */
     public function getAuthor($authorId, $submissionId = null) {
-        $params = array((int) $authorId);
-        if ($submissionId !== null) $params[] = (int) $submissionId;
+        $params = [(int) $authorId];
+        if ($submissionId !== null) {
+            $params[] = (int) $submissionId;
+        }
         
-        // Hapus '&'
         $result = $this->retrieve(
             'SELECT * FROM authors WHERE author_id = ?'
-            . ($submissionId !== null?' AND submission_id = ?':''),
+            . ($submissionId !== null ? ' AND submission_id = ?' : ''),
             $params
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
-            // Hapus '&'
+        if ($result && !$result->EOF) {
             $returner = $this->_returnAuthorFromRow($result->GetRowAssoc(false));
         }
-
-        $result->Close();
-        unset($result);
+        if ($result) {
+            $result->Close();
+        }
 
         return $returner;
     }
 
     /**
      * Retrieve all authors for a submission.
-     * @param $submissionId int
-     * @param $sortByAuthorId bool Use author Ids as indexes in the array
-     * @return array Authors ordered by sequence
+     * @param int $submissionId
+     * @param bool $sortByAuthorId
+     * @return array
      */
     public function getAuthorsBySubmissionId($submissionId, $sortByAuthorId = false) {
-        $authors = array();
+        $authors = [];
 
         $result = $this->retrieve(
             'SELECT * FROM authors WHERE submission_id = ? ORDER BY seq',
-            (int) $submissionId
+            [(int) $submissionId]
         );
 
-        while (!$result->EOF) {
-            $row = $result->getRowAssoc(false);
-            if ($sortByAuthorId) {
-                $authorId = $row['author_id'];
-                // Hapus '&'
-                $authors[$authorId] = $this->_returnAuthorFromRow($row);
-            } else {
-                // Hapus '&'
-                $authors[] = $this->_returnAuthorFromRow($row);
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                if ($sortByAuthorId) {
+                    $authorId = (int) $row['author_id'];
+                    $authors[$authorId] = $this->_returnAuthorFromRow($row);
+                } else {
+                    $authors[] = $this->_returnAuthorFromRow($row);
+                }
+                $result->MoveNext();
             }
-            unset($row);
-            $result->MoveNext();
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $authors;
     }
 
     /**
-     * Retrieve the number of authors assigned to a submission
-     * @param $submissionId int
+     * Retrieve the number of authors assigned to a submission.
+     * @param int $submissionId
      * @return int
      */
     public function getAuthorCountBySubmissionId($submissionId) {
         $result = $this->retrieve(
-            'SELECT count(*) FROM authors WHERE submission_id = ?',
-            (int) $submissionId
+            'SELECT COUNT(*) AS count FROM authors WHERE submission_id = ?',
+            [(int) $submissionId]
         );
 
-        $returner = $result->fields[0];
-
-        $result->Close();
-        unset($result);
+        $returner = 0;
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = (int) ($row['count'] ?? 0);
+        }
+        if ($result) {
+            $result->Close();
+        }
 
         return $returner;
     }
 
     /**
-     * Update the localized data for this object
-     * @param $author object
+     * Update the localized data for this object.
+     * @param PKPAuthor $author
+     * @return void
      */
     public function updateLocaleFields($author) {
         $this->updateDataObjectSettings(
             'author_settings',
             $author,
-            array(
-                'author_id' => $author->getId()
-            )
+            [
+                'author_id' => (int) $author->getId()
+            ]
         );
     }
     
     /**
      * Get the localized country name for this author.
-     * @return string
+     * Note: This method appears to be misplaced in the DAO. 
+     * It is kept for backward compatibility but will return null 
+     * unless overridden or called on an object that has getCountry().
+     * @return string|null
      */
     public function getCountryLocalized() {
-        $countryDao = DAORegistry::getDAO('CountryDAO');
-        $country = $this->getCountry(); // Mengambil kode negara (misal: 'ID') dari objek Author ini
-        
-        if ($country) {
-            // Mengembalikan Nama Negara (misal: 'Indonesia')
-            return $countryDao->getCountry($country);
+        if (method_exists($this, 'getCountry')) {
+            $country = $this->getCountry();
+            if ($country !== null && $country !== '') {
+                /** @var CountryDAO $countryDao */
+                $countryDao = DAORegistry::getDAO('CountryDAO');
+                return $countryDao->getCountry((string) $country);
+            }
         }
         return null;
     }
 
     /**
      * Internal function to return an Author object from a row.
-     * @param $row array
-     * @return Author
+     * @param array $row
+     * @return PKPAuthor
      */
     public function _returnAuthorFromRow($row) {
+        /** @var PKPAuthor $author */
         $author = $this->newDataObject();
-        $author->setId($row['author_id']);
-        $author->setSubmissionId($row['submission_id']);
-        $author->setFirstName($row['first_name']);
-        $author->setMiddleName($row['middle_name']);
-        $author->setLastName($row['last_name']);
-        $author->setSuffix($row['suffix'] ?? null);
-        $author->setCountry($row['country']);
-        $author->setEmail($row['email']);
-        $author->setUrl($row['url']);
-        $author->setUserGroupId($row['user_group_id'] ?? null);
-        $author->setPrimaryContact($row['primary_contact']);
-        $author->setSequence($row['seq']);
+        $author->setId((int) $row['author_id']);
+        $author->setSubmissionId((int) $row['submission_id']);
+        $author->setFirstName((string) $row['first_name']);
+        $author->setMiddleName((string) $row['middle_name']);
+        $author->setLastName((string) $row['last_name']);
+        $author->setSuffix(isset($row['suffix']) ? (string) $row['suffix'] : null);
+        $author->setCountry((string) $row['country']);
+        $author->setEmail((string) $row['email']);
+        $author->setUrl((string) $row['url']);
+        $author->setUserGroupId(isset($row['user_group_id']) ? (int) $row['user_group_id'] : null);
+        $author->setPrimaryContact((int) $row['primary_contact']);
+        $author->setSequence((int) $row['seq']);
 
-        $this->getDataObjectSettings('author_settings', 'author_id', $row['author_id'], $author);
+        $this->getDataObjectSettings('author_settings', 'author_id', (int) $row['author_id'], $author);
 
-        // WIZDAM UPDATE: HookRegistry::dispatch
-        HookRegistry::dispatch('AuthorDAO::_returnAuthorFromRow', array($author, &$row));
+        // Note: HookRegistry dispatch with references is legacy but preserved for signature compatibility
+        $tempAuthor = $author;
+        $tempRow = $row;
+        HookRegistry::dispatch('AuthorDAO::_returnAuthorFromRow', [&$tempAuthor, &$tempRow]);
         
         return $author;
     }
@@ -178,37 +191,49 @@ class PKPAuthorDAO extends DAO {
     /**
      * Internal function to return an Author object from a row. Simplified
      * not to include object settings.
-     * @param $row array
-     * @return Author
+     * @param array $row
+     * @return PKPAuthor
      */
     public function _returnSimpleAuthorFromRow($row) {
+        /** @var PKPAuthor $author */
         $author = $this->newDataObject();
-        $author->setId($row['author_id']);
-        $author->setSubmissionId($row['submission_id']);
-        $author->setFirstName($row['first_name']);
-        $author->setMiddleName($row['middle_name']);
-        $author->setLastName($row['last_name']);
-        $author->setSuffix($row['suffix'] ?? null);
-        $author->setCountry($row['country']);
-        $author->setEmail($row['email']);
-        $author->setUrl($row['url']);
-        $author->setUserGroupId($row['user_group_id'] ?? null);
-        $author->setPrimaryContact($row['primary_contact']);
-        $author->setSequence($row['seq']);
-        $author->setAffiliation($row['affiliation_l'] ?? null, $row['locale'] ?? null);
-        $author->setAffiliation($row['affiliation_pl'] ?? null, $row['primary_locale'] ?? null);
+        $author->setId((int) $row['author_id']);
+        $author->setSubmissionId((int) $row['submission_id']);
+        $author->setFirstName((string) $row['first_name']);
+        $author->setMiddleName((string) $row['middle_name']);
+        $author->setLastName((string) $row['last_name']);
+        $author->setSuffix(isset($row['suffix']) ? (string) $row['suffix'] : null);
+        $author->setCountry((string) $row['country']);
+        $author->setEmail((string) $row['email']);
+        $author->setUrl((string) $row['url']);
+        $author->setUserGroupId(isset($row['user_group_id']) ? (int) $row['user_group_id'] : null);
+        $author->setPrimaryContact((int) $row['primary_contact']);
+        $author->setSequence((int) $row['seq']);
+        
+        $locale = isset($row['locale']) ? (string) $row['locale'] : null;
+        $primaryLocale = isset($row['primary_locale']) ? (string) $row['primary_locale'] : null;
+        
+        if (isset($row['affiliation_l'])) {
+            $author->setAffiliation((string) $row['affiliation_l'], $locale);
+        }
+        if (isset($row['affiliation_pl'])) {
+            $author->setAffiliation((string) $row['affiliation_pl'], $primaryLocale);
+        }
 
-        HookRegistry::dispatch('AuthorDAO::_returnSimpleAuthorFromRow', array($author, &$row));
+        $tempAuthor = $author;
+        $tempRow = $row;
+        HookRegistry::dispatch('AuthorDAO::_returnSimpleAuthorFromRow', [&$tempAuthor, &$tempRow]);
         
         return $author;
     }
 
     /**
-     * Get a new data object
+     * Get a new data object.
      * @return DataObject
      */
     public function newDataObject() {
         assert(false); // Should be overridden by child classes
+        return new DataObject();
     }
 
     /**
@@ -216,94 +241,102 @@ class PKPAuthorDAO extends DAO {
      * @return array
      */
     public function getLocaleFieldNames() {
-        return array_merge(parent::getLocaleFieldNames(), array('biography', 'competingInterests', 'affiliation'));
+        return array_merge(parent::getLocaleFieldNames(), ['biography', 'competingInterests', 'affiliation']);
     }
 
     /**
      * Delete an Author.
-     * @param $author Author
+     * @param PKPAuthor $author
+     * @return bool
      */
     public function deleteAuthor($author) {
-        return $this->deleteAuthorById($author->getId());
+        return $this->deleteAuthorById((int) $author->getId());
     }
 
     /**
      * Delete an author by ID.
-     * @param $authorId int
-     * @param $submissionId int optional
+     * @param int $authorId
+     * @param int|null $submissionId optional
+     * @return bool
      */
     public function deleteAuthorById($authorId, $submissionId = null) {
-        $params = array((int) $authorId);
-        if ($submissionId) $params[] = (int) $submissionId;
-        $returner = $this->update(
-            'DELETE FROM authors WHERE author_id = ?' .
-            ($submissionId?' AND submission_id = ?':''),
-            $params
-        );
-        if ($returner) $this->update('DELETE FROM author_settings WHERE author_id = ?', array((int) $authorId));
+        $params = [(int) $authorId];
+        $sql = 'DELETE FROM authors WHERE author_id = ?';
+        
+        if ($submissionId !== null) {
+            $sql .= ' AND submission_id = ?';
+            $params[] = (int) $submissionId;
+        }
+        
+        $returner = (bool) $this->update($sql, $params);
+        
+        if ($returner) {
+            $this->update('DELETE FROM author_settings WHERE author_id = ?', [(int) $authorId]);
+        }
 
         return $returner;
     }
 
     /**
      * Sequentially renumber a submission's authors in their sequence order.
-     * @param $submissionId int
+     * @param int $submissionId
+     * @return void
      */
     public function resequenceAuthors($submissionId) {
         $result = $this->retrieve(
             'SELECT author_id FROM authors WHERE submission_id = ? ORDER BY seq',
-            (int) $submissionId
+            [(int) $submissionId]
         );
 
-        for ($i=1; !$result->EOF; $i++) {
-            list($authorId) = $result->fields;
-            $this->update(
-                'UPDATE authors SET seq = ? WHERE author_id = ?',
-                array(
-                    $i,
-                    $authorId
-                )
-            );
-
-            $result->MoveNext();
+        if ($result) {
+            for ($i = 1; !$result->EOF; $i++) {
+                $row = $result->GetRowAssoc(false);
+                $authorId = (int) $row['author_id'];
+                $this->update(
+                    'UPDATE authors SET seq = ? WHERE author_id = ?',
+                    [$i, $authorId]
+                );
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
     }
 
     /**
      * Retrieve the primary author for a submission.
-     * @param $submissionId int
-     * @return Author
+     * @param int $submissionId
+     * @return PKPAuthor|null
      */
     public function getPrimaryContact($submissionId) {
         $result = $this->retrieve(
             'SELECT * FROM authors WHERE submission_id = ? AND primary_contact = 1',
-            (int) $submissionId
+            [(int) $submissionId]
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if ($result && !$result->EOF) {
             $returner = $this->_returnAuthorFromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
-     * Remove other primary contacts from a submission and set to authorId
-     * @param $authorId int
-     * @param $submissionId int
+     * Remove other primary contacts from a submission and set to authorId.
+     * @param int $authorId
+     * @param int $submissionId
+     * @return void
      */
     public function resetPrimaryContact($authorId, $submissionId) {
         $this->update(
             'UPDATE authors SET primary_contact = 0 WHERE primary_contact = 1 AND submission_id = ?',
-            (int) $submissionId
+            [(int) $submissionId]
         );
         $this->update(
             'UPDATE authors SET primary_contact = 1 WHERE author_id = ? AND submission_id = ?',
-            array((int) $authorId, (int) $submissionId)
+            [(int) $authorId, (int) $submissionId]
         );
     }
 
@@ -312,8 +345,8 @@ class PKPAuthorDAO extends DAO {
      * @return int
      */
     public function getInsertAuthorId() {
-        return $this->getInsertId('authors', 'author_id');
+        return (int) $this->getInsertId('authors', 'author_id');
     }
+    
 }
-
 ?>
