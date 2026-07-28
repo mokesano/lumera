@@ -9,80 +9,92 @@ declare(strict_types=1);
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @class ReviewObjectTypeDAO
- * @ingroup plugins_generic_booksForReview
+ * @ingroup plugins_generic_objectsForReview
  * @see ReviewObjectType
  *
  * @brief Operations for retrieving and modifying ReviewObjectType objects.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 class ReviewObjectTypeDAO extends DAO {
 
     /** @var string Name of parent plugin */
-    public $parentPluginName;
+    protected $_parentPluginName;
 
     /**
      * Constructor.
+     * @param string $parentPluginName
      */
     public function __construct($parentPluginName) {
         parent::__construct();
-        $this->parentPluginName = $parentPluginName;
+        $this->_parentPluginName = (string) $parentPluginName;
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $parentPluginName
      */
     public function ReviewObjectTypeDAO($parentPluginName) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::ReviewObjectTypeDAO(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($parentPluginName);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Retrieve a review object type by ID.
-     * @param $typeId int
-     * @param $contextId int (optional)
-     * @return ReviewObjectType
+     * @param int $typeId
+     * @param int|null $contextId
+     * @return ReviewObjectType|null
      */
     public function getById($typeId, $contextId = null) {
-        $params = array((int) $typeId);
-        if ($contextId) $params[] = (int) $contextId;
+        $params = [(int) $typeId];
+        if ($contextId !== null) {
+            $params[] = (int) $contextId;
+        }
 
         $result = $this->retrieve(
-            'SELECT * FROM review_object_types WHERE type_id = ?' . ($contextId ? ' AND context_id = ?' : ''),
+            'SELECT * FROM review_object_types WHERE type_id = ?' . ($contextId !== null ? ' AND context_id = ?' : ''),
             $params
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if ($result && !$result->EOF) {
             $returner = $this->_fromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Retrieve a review object type by key.
-     * @param $typeKey string
-     * @param $contextId int (optional)
-     * @return ReviewObjectType
+     * @param string $typeKey
+     * @param int|null $contextId
+     * @return ReviewObjectType|null
      */
     public function getByKey($typeKey, $contextId = null) {
-        $params = array((int) $typeKey);
-        if ($contextId) $params[] = (int) $contextId;
+        $params = [(string) $typeKey];
+        if ($contextId !== null) {
+            $params[] = (int) $contextId;
+        }
 
         $result = $this->retrieve(
-            'SELECT * FROM review_object_types WHERE type_key = ?' . ($contextId ? ' AND context_id = ?' : ''),
+            'SELECT * FROM review_object_types WHERE type_key = ?' . ($contextId !== null ? ' AND context_id = ?' : ''),
             $params
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if ($result && !$result->EOF) {
             $returner = $this->_fromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
@@ -91,26 +103,29 @@ class ReviewObjectTypeDAO extends DAO {
      * @return ReviewObjectType
      */
     public function newDataObject() {
-        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
+        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->_parentPluginName);
         $ofrPlugin->import('classes.ReviewObjectType');
         return new ReviewObjectType();
     }
 
     /**
      * Internal function to return a ReviewObjectType object from a row.
-     * @param $row array
+     * @param array $row
      * @return ReviewObjectType
      */
     public function _fromRow($row) {
         $reviewObjectType = $this->newDataObject();
-        $reviewObjectType->setId($row['type_id']);
-        $reviewObjectType->setContextId($row['context_id']);
-        $reviewObjectType->setActive($row['is_active']);
-        $reviewObjectType->setKey($row['type_key']);
+        $reviewObjectType->setId((int) $row['type_id']);
+        $reviewObjectType->setContextId((int) $row['context_id']);
+        $reviewObjectType->setActive((int) $row['is_active']);
+        $reviewObjectType->setKey((string) $row['type_key']);
 
-        $this->getDataObjectSettings('review_object_type_settings', 'type_id', $row['type_id'], $reviewObjectType);
+        $this->getDataObjectSettings('review_object_type_settings', 'type_id', (int) $row['type_id'], $reviewObjectType);
 
-        HookRegistry::dispatch('ReviewObjectTypeDAO::_fromRow', array(&$reviewObjectType, &$row));
+        // Note: HookRegistry dispatch with references is legacy but preserved for signature compatibility
+        $tempObjectType = $reviewObjectType;
+        $tempRow = $row;
+        HookRegistry::dispatch('ReviewObjectTypeDAO::_fromRow', [&$tempObjectType, &$tempRow]);
 
         return $reviewObjectType;
     }
@@ -120,22 +135,23 @@ class ReviewObjectTypeDAO extends DAO {
      * @return array
      */
     public function getLocaleFieldNames() {
-        return array('name', 'description');
+        return ['name', 'description'];
     }
 
     /**
-     * Update the localized fields for this table
-     * @param $reviewObjectType ReviewObjectType
+     * Update the localized fields for this table.
+     * @param ReviewObjectType $reviewObjectType
+     * @return void
      */
     public function updateLocaleFields($reviewObjectType) {
-        $this->updateDataObjectSettings('review_object_type_settings', $reviewObjectType, array(
-            'type_id' => $reviewObjectType->getId()
-        ));
+        $this->updateDataObjectSettings('review_object_type_settings', $reviewObjectType, [
+            'type_id' => (int) $reviewObjectType->getId()
+        ]);
     }
 
     /**
      * Insert a new review object type.
-     * @param $reviewObjectType ReviewObjectType
+     * @param ReviewObjectType $reviewObjectType
      * @return int
      */
     public function insertObject($reviewObjectType) {
@@ -144,21 +160,21 @@ class ReviewObjectTypeDAO extends DAO {
                 (context_id, is_active, type_key)
                 VALUES
                 (?, ?, ?)',
-            array(
+            [
                 (int) $reviewObjectType->getContextId(),
-                $reviewObjectType->getActive() ? 1 : 0,
-                $reviewObjectType->getKey()
-            )
+                (int) $reviewObjectType->getActive() ? 1 : 0,
+                (string) $reviewObjectType->getKey()
+            ]
         );
-        $reviewObjectType->setId($this->getInsertId());
+        $reviewObjectType->setId((int) $this->getInsertId());
         $this->updateLocaleFields($reviewObjectType);
         return $reviewObjectType->getId();
     }
 
     /**
      * Update an existing review object type.
-     * @param $reviewObjectType ReviewObjectType
-     * @return boolean
+     * @param ReviewObjectType $reviewObjectType
+     * @return bool
      */
     public function updateObject($reviewObjectType) {
         $returner = $this->update(
@@ -168,163 +184,190 @@ class ReviewObjectTypeDAO extends DAO {
                     is_active = ?,
                     type_key = ?
                 WHERE type_id = ?',
-            array(
+            [
                 (int) $reviewObjectType->getContextId(),
-                $reviewObjectType->getActive() ? 1 : 0,
-                $reviewObjectType->getKey(),
+                (int) $reviewObjectType->getActive() ? 1 : 0,
+                (string) $reviewObjectType->getKey(),
                 (int) $reviewObjectType->getId()
-            )
+            ]
         );
         $this->updateLocaleFields($reviewObjectType);
-        return $returner;
+        return (bool) $returner;
     }
 
     /**
      * Delete a review object type.
-     * @param $reviewObjectType ReviewObjectType
+     * @param ReviewObjectType $reviewObjectType
+     * @return bool
      */
     public function deleteObject($reviewObjectType) {
-        return $this->deleteById($reviewObjectType->getId());
+        return $this->deleteById((int) $reviewObjectType->getId());
     }
 
     /**
      * Delete a review object type by ID.
-     * @param $typeId int
-     * @param $contextId int (optional)
+     * @param int $typeId
+     * @param int|null $contextId
+     * @return void
      */
     public function deleteById($typeId, $contextId = null) {
-        $params = array((int) $typeId);
-        if ($contextId) $params[] = (int) $contextId;
+        $params = [(int) $typeId];
+        if ($contextId !== null) {
+            $params[] = (int) $contextId;
+        }
 
-        $this->update('DELETE FROM review_object_types WHERE type_id = ?' . ($contextId ? ' AND context_id = ?' : ''),
+        $this->update(
+            'DELETE FROM review_object_types WHERE type_id = ?' . ($contextId !== null ? ' AND context_id = ?' : ''),
             $params
         );
+        
         if ($this->getAffectedRows()) {
-            // Delete settings
-            $this->update('DELETE FROM review_object_type_settings WHERE type_id = ?',
-                (int) $typeId
+            $this->update(
+                'DELETE FROM review_object_type_settings WHERE type_id = ?',
+                [(int) $typeId]
             );
-            // Delete metadata
+            
+            /** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
             $reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
-            $reviewObjectMetadataDao->deleteByReviewObjectTypeId($typeId);
-            // Delete objects for review of this type
+            $reviewObjectMetadataDao->deleteByReviewObjectTypeId((int) $typeId);
+            
+            /** @var ObjectForReviewDAO $ofrDao */
             $ofrDao = DAORegistry::getDAO('ObjectForReviewDAO');
-            $ofrDao->deleteByReviewObjectTypeId($typeId);
+            $ofrDao->deleteByReviewObjectTypeId((int) $typeId);
         }
     }
 
     /**
      * Delete all review object types by context ID.
-     * @param $contextId int
+     * @param int $contextId
+     * @return void
      */
     public function deleteByContextId($contextId) {
-        $reviewObjectTypes = $this->getByContextId($contextId);
+        $reviewObjectTypes = $this->getByContextId((int) $contextId);
         while ($reviewObjectType = $reviewObjectTypes->next()) {
-            $this->deleteById($reviewObjectType->getId());
-            unset($reviewObjectType);
+            $this->deleteById((int) $reviewObjectType->getId());
         }
     }
 
     /**
-     * Get all review object types by jorunal ID.
-     * @param $contextId int
-     * @param $rangeInfo DBResultRange (optional)
-     * @return DAOResultFactory containing matching ReviewForms
+     * Get all review object types by journal ID.
+     * @param int $contextId
+     * @param mixed $rangeInfo DBResultRange (optional)
+     * @return DAOResultFactory containing matching ReviewObjectTypes
      */
     public function getByContextId($contextId, $rangeInfo = null) {
-        $params = array((int) $contextId);
+        $params = [(int) $contextId];
 
         $result = $this->retrieveRange(
-            'SELECT    * FROM review_object_types WHERE context_id = ?',
-            $params, $rangeInfo
+            'SELECT * FROM review_object_types WHERE context_id = ?',
+            $params, 
+            $rangeInfo
         );
 
-        $returner = new DAOResultFactory($result, $this, '_fromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_fromRow');
     }
 
     /**
      * Retrieve review object types IDs for a context, sorted alphabetically.
-     * @param $contextId int
+     * @param int $contextId
      * @return array
      */
     public function getTypeIdsAlphabetizedByContext($contextId) {
-        $params = array(
+        $params = [
             'name', AppLocale::getLocale(),
             'name', AppLocale::getPrimaryLocale(),
             (int) $contextId
-        );
+        ];
 
         $result = $this->retrieve(
-                    'SELECT    t.type_id, t.is_active, t.type_key,
+            'SELECT t.type_id, t.is_active, t.type_key,
                 COALESCE(nl.setting_value, npl.setting_value) AS type_name
-            FROM    review_object_types t
+            FROM review_object_types t
                 LEFT JOIN review_object_type_settings nl ON (nl.type_id = t.type_id AND nl.setting_name = ? AND nl.locale = ?)
                 LEFT JOIN review_object_type_settings npl ON (npl.type_id = t.type_id AND npl.setting_name = ? AND npl.locale = ?)
             WHERE t.context_id = ? ORDER BY type_name',
             $params
         );
 
-        $types = array();
-        while (!$result->EOF) {
-            $row = $result->getRowAssoc(false);
-            $types[] = array('typeId' => $row['type_id'], 'typeKey' => $row['type_key'], 'typeName' => $row['type_name'], 'typeActive' => $row['is_active']);
-            $result->MoveNext();
+        $types = [];
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $types[] = [
+                    'typeId' => (int) $row['type_id'], 
+                    'typeKey' => (string) $row['type_key'], 
+                    'typeName' => (string) $row['type_name'], 
+                    'typeActive' => (int) $row['is_active']
+                ];
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
         return $types;
     }
 
     /**
      * Check if review object type exists with the specified ID.
-     * @param $typeId int
-     * @param $contextId int (optional)
-     * @return boolean
+     * @param int $typeId
+     * @param int|null $contextId
+     * @return bool
      */
     public function reviewObjectTypeExists($typeId, $contextId = null) {
-        $params = array((int) $typeId);
-        if ($contextId) $params[] = (int) $contextId;
+        $params = [(int) $typeId];
+        if ($contextId !== null) {
+            $params[] = (int) $contextId;
+        }
 
         $result = $this->retrieve(
-            'SELECT COUNT(*) FROM review_object_types WHERE type_id = ?' . ($contextId ? ' AND context_id = ?' : ''),
+            'SELECT COUNT(*) AS count FROM review_object_types WHERE type_id = ?' . ($contextId !== null ? ' AND context_id = ?' : ''),
             $params
         );
 
-        $returner = isset($result->fields[0]) && $result->fields[0] == 1 ? true : false;
-        $result->Close();
+        $returner = false;
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = ((int) ($row['count'] ?? 0)) > 0;
+        }
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Get all installed default types i.e. their keys.
-     * @param $contextId int
+     * @param int $contextId
      * @return array
      */
     public function getTypeKeys($contextId) {
-        $params = array((int) $contextId);
+        $params = [(int) $contextId];
         $result = $this->retrieve(
             'SELECT type_key FROM review_object_types WHERE context_id = ?',
             $params
         );
 
-        $typeKeys = array();
-        while (!$result->EOF) {
-            $row = $result->getRowAssoc(false);
-            $typeKeys[] = $row['type_key'];
-            $result->MoveNext();
+        $typeKeys = [];
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $typeKeys[] = (string) $row['type_key'];
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
         return $typeKeys;
     }
 
     /**
      * Get the ID of the last inserted review object type.
+     * @param string $table
+     * @param string $id
+     * @param bool $callHooks
      * @return int
      */
     public function getInsertId($table = '', $id = '', $callHooks = true) {
-        return parent::getInsertId('review_object_types', 'type_id', $callHooks);
+        return (int) parent::getInsertId('review_object_types', 'type_id', $callHooks);
     }
 
 }
-
 ?>
