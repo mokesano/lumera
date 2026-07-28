@@ -59,6 +59,8 @@
     <message key="billing.error.cannotCancel">Tagihan tidak dapat dibatalkan karena mungkin sudah lunas atau Anda tidak memiliki akses.</message>
     <message key="billing.success.paymentSessionCreated">Sesi pembayaran berhasil dibuat.</message>
     <message key="billing.success.invoiceCancelled">Tagihan berhasil dibatalkan.</message>
+    <message key="billing.error.invoiceLinkFailedUser">Terjadi kendala teknis saat memproses invoice #{$invoiceId} Anda. Tim kami sudah diberitahu; mohon hubungi editor jika status tagihan tidak sesuai.</message>
+    <message key="billing.error.invoiceLinkFailedManager">Pembayaran masuk gagal ditautkan ke invoice #{$invoiceId} (queued payment #{$queuedPaymentId}). Data tetap tercatat di completed_payments sebagai fallback -- mohon diperiksa manual.</message>
     
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Keranjang Belanja</message>
@@ -69,7 +71,7 @@
     <message key="order.success.checkoutComplete">Checkout berhasil. Tagihan resmi Anda telah diterbitkan.</message>
     
     <!-- Reedem Wallet -->
-    <message key="redeem.walletDashboard">Dompet Virtual & Loyalty Points</message>
+    <message key="redeem.walletDashboard">Dompet Virtual &amp; Loyalty Points</message>
     <message key="redeem.error.invalidMethod">Metode permintaan tidak diizinkan.</message>
     <message key="redeem.error.csrfInvalid">Sesi telah kedaluwarsa. Silakan muat ulang halaman.</message>
     <message key="redeem.error.invalidPointAmount">Jumlah poin yang akan ditukarkan tidak valid.</message>

@@ -14,17 +14,20 @@ declare(strict_types=1);
  * yang rusak akibat bug mapLegacyFeeType() versi lama. Setelah dipakai
  * sekali dengan sukses, file ini boleh dihapus dari server.
  *
+ * TIDAK ADA operasi database yang berjalan hanya dengan membuka halaman ini.
+ * Setiap langkah (Preview, Wipe, Migrate) HANYA berjalan lewat klik tombol,
+ * yang memicu fetch() ke ?action=...
+ *
  * Alur wajib berurutan:
  *  1) PREVIEW  -> backup tabel invoices + identifikasi baris yang WAJIB
- *                 dipertahankan (tidak punya kembaran di completed_payments,
- *                 berarti bukan hasil migrasi lama, tapi invoice ASLI dari
- *                 alur Pay Now / Payment Receive pasca-perbaikan).
+ *                 dipertahankan (legacy_source_table IS NULL, artinya
+ *                 invoice ASLI dari alur Pay Now/Payment Receive, BUKAN
+ *                 hasil migrasi).
  *  2) WIPE     -> TRUNCATE invoices, lalu insert-ulang HANYA baris yang
  *                 teridentifikasi di langkah Preview.
- *  3) MIGRATE  -> jalankan migrateLegacyQueuedPayments()/
- *                 migrateLegacyCompletedPayments() dari InvoiceDAO --
- *                 copy-only, idempoten, TIDAK PERNAH menghapus
- *                 queued_payments/completed_payments.
+ *  3) MIGRATE  -> jalankan copyLegacyQueuedPayments()/copyLegacyCompletedPayments()
+ *                 atau moveLegacyQueuedPayments()/moveLegacyCompletedPayments()
+ *                 dari InvoiceLegacyMigrationDAO, sesuai mode yang dipilih.
  */
 
 define('BATCH_SIZE', 100);
@@ -40,56 +43,25 @@ if (!Validation::isLoggedIn() || !Validation::isSiteAdmin()) {
 import('lib.wizdam.classes.invoice.InvoiceLegacyMigrationDAO');
 $migrationDao = new InvoiceLegacyMigrationDAO();
 
-/** @param mixed $legacyType */
-function migrateAjaxMapLegacyFeeType($legacyType): string {
-    switch ((int) $legacyType) {
-        case 1:  return 'MEMBERSHIP';
-        case 2:  return 'RENEW_SUBSCRIPTION';
-        case 3:  return 'PURCHASE_ARTICLE';
-        case 4:  return 'DONATION';
-        case 5:  return 'SUBMISSION';
-        case 6:  return 'FAST_TRACK';
-        case 7:  return 'PUBLICATION';
-        case 8:  return 'PURCHASE_SUBSCRIPTION';
-        case 9:  return 'PURCHASE_ISSUE';
-        case 16: return 'GIFT';
-        default: return (is_string($legacyType) && !empty($legacyType) && !is_numeric($legacyType)) ? strtoupper($legacyType) : 'OTHER_FEE';
-    }
-}
-
+/**
+ * [FIX Temuan 3] Identifikasi baris invoices yang WAJIB dipertahankan saat
+ * wipe -- yaitu invoice ASLI (bukan hasil migrasi), ditandai dengan
+ * legacy_source_table IS NULL. Sebelumnya fungsi ini menebak lewat
+ * pencocokan (journal_id/user_id + fee_type) terhadap completed_payments,
+ * yang berisiko salah menghapus invoice live asli kalau kebetulan ada
+ * kombinasi yang sama. Sekarang membaca penanda migrasi langsung dari
+ * kolom yang memang dibuat untuk ini -- akurat, bukan heuristik.
+ * @param InvoiceLegacyMigrationDAO $migrationDao
+ * @return array daftar baris invoices (assoc array) yang wajib dipertahankan
+ */
 function migrateAjaxFindRowsToPreserve(InvoiceLegacyMigrationDAO $migrationDao): array {
-    $invoicesResult = $migrationDao->retrieve('SELECT * FROM invoices');
-    $allInvoices = [];
-    while ($invoicesResult && !$invoicesResult->EOF) {
-        $allInvoices[] = $invoicesResult->GetRowAssoc(false);
-        $invoicesResult->MoveNext();
-    }
-    if ($invoicesResult) $invoicesResult->Close();
-
-    $cpResult = $migrationDao->retrieve('SELECT user_id, assoc_id, payment_type FROM completed_payments');
-    $lookupByAssoc = [];
-    $lookupByUser = [];
-    while ($cpResult && !$cpResult->EOF) {
-        $row = $cpResult->GetRowAssoc(false);
-        $feeType = migrateAjaxMapLegacyFeeType($row['payment_type']);
-        if ((int) $row['assoc_id'] > 0) {
-            $lookupByAssoc[$row['assoc_id'] . '|' . $feeType] = true;
-        } else {
-            $lookupByUser[$row['user_id'] . '|' . $feeType] = true;
-        }
-        $cpResult->MoveNext();
-    }
-    if ($cpResult) $cpResult->Close();
-
+    $result = $migrationDao->retrieve('SELECT * FROM invoices WHERE legacy_source_table IS NULL');
     $toPreserve = [];
-    foreach ($allInvoices as $invoice) {
-        $hasAssoc = (int) $invoice['submission_id'] > 0;
-        $key = $hasAssoc ? $invoice['submission_id'] . '|' . $invoice['fee_type'] : $invoice['user_id'] . '|' . $invoice['fee_type'];
-        $lookup = $hasAssoc ? $lookupByAssoc : $lookupByUser;
-        if (!isset($lookup[$key])) {
-            $toPreserve[] = $invoice;
-        }
+    while ($result && !$result->EOF) {
+        $toPreserve[] = $result->GetRowAssoc(false);
+        $result->MoveNext();
     }
+    if ($result) $result->Close();
     return $toPreserve;
 }
 
@@ -99,6 +71,11 @@ if (isset($_GET['action'])) {
 
     try {
         if ($_GET['action'] === 'preview') {
+            // [FIX Temuan 3] Pengecekan skema juga wajib di sini, bukan cuma
+            // di 'wipe' -- preview yang membaca legacy_source_table akan
+            // gagal dengan error mentah kalau kolomnya belum ada.
+            $migrationDao->ensureSchemaReady();
+
             $migrationDao->update('DROP TABLE IF EXISTS invoices_backup_manual');
             $migrationDao->update('CREATE TABLE invoices_backup_manual AS SELECT * FROM invoices');
 
@@ -121,6 +98,7 @@ if (isset($_GET['action'])) {
 
         if ($_GET['action'] === 'wipe') {
             $migrationDao->ensureSchemaReady();
+
             $backupExists = false;
             try {
                 $checkBackup = $migrationDao->retrieve('SELECT COUNT(*) AS total FROM invoices_backup_manual');
@@ -159,6 +137,8 @@ if (isset($_GET['action'])) {
             $mode = $_GET['mode'] ?? '';
             $afterId = isset($_GET['after']) ? (int) $_GET['after'] : 0;
 
+            // [PILIHAN EKSPLISIT] Tidak ada default diam-diam -- kalau mode
+            // tidak dikirim/tidak dikenali, tolak, jangan tebak.
             $methodMap = [
                 'copy' => ['queued' => 'copyLegacyQueuedPayments', 'completed' => 'copyLegacyCompletedPayments'],
                 'move' => ['queued' => 'moveLegacyQueuedPayments', 'completed' => 'moveLegacyCompletedPayments'],
@@ -236,7 +216,7 @@ if (isset($_GET['action'])) {
 
     <div class="step" id="stepPreview">
         <h3>Langkah 1 — Preview & Backup</h3>
-        <p>Membuat tabel cadangan <code>invoices_backup_manual</code>, lalu mengidentifikasi baris mana yang WAJIB dipertahankan.</p>
+        <p>Membuat tabel cadangan <code>invoices_backup_manual</code>, lalu mengidentifikasi baris mana yang WAJIB dipertahankan (invoice asli, ditandai <code>legacy_source_table IS NULL</code>).</p>
         <button onclick="runPreview()" id="btnPreview">JALANKAN PREVIEW</button>
         <div id="previewStatus" class="info-text"></div>
         <div class="log-box" id="previewLogs" style="display:none;"></div>
