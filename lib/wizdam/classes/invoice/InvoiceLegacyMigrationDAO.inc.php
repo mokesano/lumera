@@ -12,10 +12,7 @@ declare(strict_types=1);
  * 
  * @brief Menerjemahkan data legacy (queued_payments/completed_payments) ke
  * tabel invoices. Dipakai HANYA oleh tools/copyMigrateInvoices.php,
- * tools/moveMigrateInvoices.php, dan tools/migrateInvoicesAjax.php --
- * TIDAK PERNAH dipanggil dari jalur penerbitan invoice yang aktif
- * (OJSPaymentManager, InvoiceService, BillingHandler). Sengaja dipisah
- * dari InvoiceDAO supaya class itu tetap murni soal CRUD tabel invoices.
+ * tools/moveMigrateInvoices.php, dan tools/migrateInvoicesAjax.php.
  */
 
 import('lib.pkp.classes.db.DAO');
@@ -27,11 +24,31 @@ import('classes.payment.QueuedPayment');
 class InvoiceLegacyMigrationDAO extends DAO {
 
     /**
-     * Cek apakah baris legacy ini sudah pernah dimigrasi -- dibaca langsung dari
-     * kolom legacy_source_table/legacy_source_id di tabel invoices.
-     * @param string $sourceTable 'queued_payments' atau 'completed_payments'
-     * @param int $sourceId
-     * @return bool
+     * [FIX] Pastikan kolom legacy_source_table/legacy_source_id sudah ada
+     * di tabel invoices sebelum migrasi/wipe dijalankan. Tanpa pengecekan
+     * ini, kegagalan tampil sebagai error MySQL mentah ("Unknown column")
+     * yang membingungkan -- sekarang tampil sebagai pesan jelas berisi
+     * ALTER TABLE yang perlu dijalankan.
+     * @throws \Exception
+     */
+    public function ensureSchemaReady(): void {
+        $result = $this->retrieve("SHOW COLUMNS FROM invoices LIKE 'legacy_source_table'");
+        $hasColumn = ($result && $result->RecordCount() > 0);
+        if ($result) $result->Close();
+
+        if (!$hasColumn) {
+            throw new \Exception(
+                "Kolom 'legacy_source_table'/'legacy_source_id' belum ada di tabel invoices. " .
+                "Jalankan ALTER TABLE berikut sebelum migrasi:\n" .
+                "ALTER TABLE invoices ADD COLUMN legacy_source_table VARCHAR(64) DEFAULT NULL, " .
+                "ADD COLUMN legacy_source_id BIGINT(20) DEFAULT NULL, " .
+                "ADD UNIQUE INDEX uniq_invoices_legacy_source (legacy_source_table, legacy_source_id);"
+            );
+        }
+    }
+
+    /**
+     * Cek apakah baris legacy ini sudah pernah dimigrasi.
      */
     private function _isMigrated(string $sourceTable, int $sourceId): bool {
         $result = $this->retrieve(
@@ -44,7 +61,10 @@ class InvoiceLegacyMigrationDAO extends DAO {
     }
 
     /**
-     * Mengekstrak invoice_number dan invoice_code lama dari article_settings
+     * Mengekstrak invoice_number dan invoice_code lama dari article_settings.
+     * Hanya berlaku untuk tipe yang punya assocId berupa articleId (SUBMISSION/
+     * FAST_TRACK/PUBLICATION) -- tipe lain akan selalu mendapat null dari sini
+     * dan ditangani oleh _generateLegacyStableNumber() di bawah.
      * @param int|null $articleId
      * @return array
      */
@@ -64,6 +84,61 @@ class InvoiceLegacyMigrationDAO extends DAO {
             $result->MoveNext();
         }
         if ($result) $result->Close();
+
+        return $identity;
+    }
+
+    /**
+     * [FIX BUG B] Generate nomor invoice STABIL untuk tipe yang tidak punya
+     * skema fallback stabil di InvoiceService::getInvoiceSummary() (yaitu
+     * SEMUA tipe KECUALI SUBMISSION/FAST_TRACK/PUBLICATION, yang sudah punya
+     * fallback berbasis ISSN+articleId yang tidak berubah-ubah).
+     *
+     * Tanpa ini, invoice_number tersimpan NULL selamanya, dan setiap kali
+     * invoice ditampilkan, nomornya DIHITUNG ULANG dari tanggal HARI ITU
+     * (date('ymd') di InvoiceService::generateInvoiceNumber()) -- bukan
+     * tanggal transaksi asli. Nomor jadi berbeda setiap hari dilihat.
+     *
+     * Di sini kita pakai TANGGAL TRANSAKSI ASLI ($dateBilled), bukan hari
+     * ini, supaya nomornya bermakna dan sekali dipersist, tidak berubah lagi.
+     * @param string $feeType
+     * @param int $userId
+     * @param string $dateBilled Tanggal transaksi asli dari data legacy
+     * @return array ['number' => string, 'code' => string]
+     */
+    private function _generateLegacyStableNumber(string $feeType, int $userId, string $dateBilled): array {
+        $prefixMap = [
+            'MEMBERSHIP'            => 'MBR',
+            'RENEW_SUBSCRIPTION'    => 'SUB',
+            'PURCHASE_ARTICLE'      => 'ART',
+            'DONATION'              => 'DON',
+            'PURCHASE_SUBSCRIPTION' => 'PSB',
+            'PURCHASE_ISSUE'        => 'ISS',
+            'GIFT'                  => 'GFT',
+        ];
+        $prefix = $prefixMap[strtoupper($feeType)] ?? 'INV';
+        $datePart = date('ymd', strtotime($dateBilled));
+
+        return [
+            'number' => $prefix . '-' . $userId . '-' . $datePart,
+            'code'   => $prefix . '#' . str_pad((string) $userId, 7, '0', STR_PAD_LEFT),
+        ];
+    }
+
+    /**
+     * Helper terpusat: ambil identitas nomor invoice untuk satu baris migrasi.
+     * Mengembalikan identity dari article_settings kalau tersedia (SUBMISSION/
+     * FAST_TRACK/PUBLICATION), atau nomor stabil buatan sendiri untuk tipe
+     * lain yang tidak punya fallback stabil di tampilan.
+     */
+    private function _resolveInvoiceIdentity(?int $assocId, string $feeType, int $userId, string $dateBilled): array {
+        $identity = $this->_getLegacyInvoiceIdentity($assocId);
+
+        $isCoreArticleType = in_array(strtoupper($feeType), ['SUBMISSION', 'FAST_TRACK', 'PUBLICATION'], true);
+
+        if (empty($identity['number']) && !$isCoreArticleType) {
+            $identity = $this->_generateLegacyStableNumber($feeType, $userId, $dateBilled);
+        }
 
         return $identity;
     }
@@ -90,13 +165,15 @@ class InvoiceLegacyMigrationDAO extends DAO {
     }
 
     /**
-     * [COPY] Menyalin legacy queued payments ke invoices. TIDAK PERNAH menghapus
-     * baris sumber. Aman dijalankan berkali-kali (idempoten via legacy_source_*).
+     * [COPY] Menyalin legacy queued payments ke invoices. 
+     * TIDAK PERNAH menghapus baris sumber.
      * @param int $limit
      * @param int $afterId
      * @return array ['is_done' => bool, 'processed' => int, 'logs' => array, 'next_cursor' => int]
      */
     public function copyLegacyQueuedPayments(int $limit, int $afterId): array {
+        $this->ensureSchemaReady();
+
         $logs = [];
         $processed = 0;
         $lastSeenId = $afterId;
@@ -130,7 +207,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
             }
 
             if (method_exists($paymentObj, 'getCheckoutPayload') && !empty($paymentObj->getCheckoutPayload())) {
-                $logs[] = ['type' => 'skip', 'msg' => "[SKIP] Queued ID {$qId}: sesi checkout WIZDAM aktif, bukan payment legacy."];
+                $logs[] = ['type' => 'skip', 'msg' => "[SKIP] Queued ID {$qId}: sesi checkout aktif, bukan payment legacy."];
                 continue;
             }
 
@@ -150,7 +227,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
             $dateBilled = $row['date_created'];
 
             try {
-                $identity = $this->_getLegacyInvoiceIdentity($assocId);
+                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled);
 
                 $insertSuccess = $this->update(
                     sprintf(
@@ -173,13 +250,15 @@ class InvoiceLegacyMigrationDAO extends DAO {
     }
 
     /**
-     * [COPY] Menyalin legacy completed payments ke invoices. TIDAK PERNAH
-     * menghapus baris sumber.
+     * [COPY] Menyalin legacy completed payments ke invoices. 
+     * TIDAK PERNAH menghapus baris sumber.
      * @param int $limit
      * @param int $afterId
      * @return array ['is_done' => bool, 'processed' => int, 'logs' => array, 'next_cursor' => int]
      */
     public function copyLegacyCompletedPayments(int $limit, int $afterId): array {
+        $this->ensureSchemaReady();
+
         $logs = [];
         $processed = 0;
         $lastSeenId = $afterId;
@@ -219,7 +298,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
 
             try {
                 $assocId = (int) $row['assoc_id'];
-                $identity = $this->_getLegacyInvoiceIdentity($assocId);
+                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled);
 
                 $insertSuccess = $this->update(
                     sprintf(
@@ -245,13 +324,15 @@ class InvoiceLegacyMigrationDAO extends DAO {
     }
 
     /**
-     * [MOVE] Memindahkan legacy queued payments ke invoices. Baris sumber
-     * DIHAPUS setelah berhasil disalin. DESTRUKTIF.
+     * [MOVE] Memindahkan legacy queued payments ke invoices. 
+     * Baris sumber DIHAPUS setelah berhasil disalin. DESTRUKTIF.
      * @param int $limit
      * @param int $afterId
      * @return array ['is_done' => bool, 'processed' => int, 'logs' => array, 'next_cursor' => int]
      */
     public function moveLegacyQueuedPayments(int $limit, int $afterId): array {
+        $this->ensureSchemaReady();
+
         $logs = [];
         $processed = 0;
         $lastSeenId = $afterId;
@@ -286,7 +367,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
             }
 
             if (method_exists($paymentObj, 'getCheckoutPayload') && !empty($paymentObj->getCheckoutPayload())) {
-                $logs[] = ['type' => 'skip', 'msg' => "[SKIP] Queued ID {$qId}: sesi checkout WIZDAM aktif, dilewati TANPA dihapus."];
+                $logs[] = ['type' => 'skip', 'msg' => "[SKIP] Queued ID {$qId}: sesi checkout aktif, dilewati TANPA dihapus."];
                 continue;
             }
 
@@ -306,7 +387,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
             $dateBilled = $row['date_created'];
 
             try {
-                $identity = $this->_getLegacyInvoiceIdentity($assocId);
+                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled);
 
                 $insertSuccess = $this->update(
                     sprintf(
@@ -331,13 +412,15 @@ class InvoiceLegacyMigrationDAO extends DAO {
     }
 
     /**
-     * [MOVE] Memindahkan legacy completed payments ke invoices. Baris sumber
-     * DIHAPUS setelah berhasil disalin. DESTRUKTIF.
+     * [MOVE] Memindahkan legacy completed payments ke invoices. 
+     * Baris sumber DIHAPUS setelah berhasil disalin. DESTRUKTIF.
      * @param int $limit
      * @param int $afterId
      * @return array ['is_done' => bool, 'processed' => int, 'logs' => array, 'next_cursor' => int]
      */
     public function moveLegacyCompletedPayments(int $limit, int $afterId): array {
+        $this->ensureSchemaReady();
+
         $logs = [];
         $processed = 0;
         $lastSeenId = $afterId;
@@ -378,7 +461,7 @@ class InvoiceLegacyMigrationDAO extends DAO {
 
             try {
                 $assocId = (int) $row['assoc_id'];
-                $identity = $this->_getLegacyInvoiceIdentity($assocId);
+                $identity = $this->_resolveInvoiceIdentity($assocId, $feeType, $userId, $dateBilled);
 
                 $insertSuccess = $this->update(
                     sprintf(
