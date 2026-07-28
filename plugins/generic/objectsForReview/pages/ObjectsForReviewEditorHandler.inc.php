@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_objectsForReview
  *
  * @brief Handle requests for editor objects for review functions.
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
  */
 
 import('classes.handler.Handler');
@@ -21,36 +19,46 @@ import('classes.handler.Handler');
 class ObjectsForReviewEditorHandler extends Handler {
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ObjectsForReviewEditorHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::ObjectsForReviewEditorHandler(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Display objects for review listing pages.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function objectsForReview($args, $request) {
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
 
         // Search
-        $duplicateParameters = [
-            'searchField', 'searchMatch', 'search'
-        ];
+        $duplicateParameters = ['searchField', 'searchMatch', 'search'];
         $fieldOptions = [
             OFR_FIELD_TITLE => 'plugins.generic.objectsForReview.search.field.title',
             OFR_FIELD_ABSTRACT => 'plugins.generic.objectsForReview.search.field.abstract'
@@ -58,25 +66,22 @@ class ObjectsForReviewEditorHandler extends Handler {
         $searchField = null;
         $searchMatch = null;
         
-        // [SECURITY FIX] Amankan 'search' (string) dengan trim() + Null Coalescing PHP 8
-        $search = trim($request->getUserVar('search') ?? '');
+        $search = (string) $request->getUserVar('search');
 
-        if (!empty($search)) {
-            // [SECURITY FIX] Whitelist 'searchField'
-            $validSearchFields = [
-                OFR_OBJECT_SEARCH_TITLE,
-                OFR_OBJECT_SEARCH_METADATA
-            ];
-            $searchField = $request->getUserVar('searchField');
-            if (!in_array($searchField, $validSearchFields)) {
-                $searchField = null; // Set default aman
+        if ($search !== '') {
+            // [WIZDAM FIX] Replaced undefined constants with correct user/object search fields
+            $validSearchFields = [OFR_FIELD_TITLE, OFR_FIELD_ABSTRACT];
+            $searchFieldInput = (string) $request->getUserVar('searchField');
+            if (in_array($searchFieldInput, $validSearchFields, true)) {
+                $searchField = $searchFieldInput;
             }
 
-            // [SECURITY FIX] Whitelist 'searchMatch'
             $validSearchMatches = ['is', 'contains', 'startsWith'];
-            $searchMatch = trim($request->getUserVar('searchMatch') ?? '');
-            if (!in_array($searchMatch, $validSearchMatches)) {
-                $searchMatch = 'contains'; // Set default aman
+            $searchMatchInput = (string) $request->getUserVar('searchMatch');
+            if (in_array($searchMatchInput, $validSearchMatches, true)) {
+                $searchMatch = $searchMatchInput;
+            } else {
+                $searchMatch = 'contains';
             }
         }
 
@@ -84,86 +89,86 @@ class ObjectsForReviewEditorHandler extends Handler {
         import('pages.editor.EditorHandler');
         
         $user = $request->getUser();
+        if (!$user) {
+            $request->redirect(null, 'index');
+        }
+        
         $filterEditorOptions = [
-            FILTER_EDITOR_ALL => AppLocale::Translate('editor.allEditors'),
-            FILTER_EDITOR_ME => AppLocale::Translate('editor.me')
+            FILTER_EDITOR_ALL => __('editor.allEditors'),
+            FILTER_EDITOR_ME => __('editor.me')
         ];
         
-        // [SECURITY FIX] Amankan 'filterEditor' (diharapkan integer)
-        $filterEditor = (int) trim($request->getUserVar('filterEditor') ?? '');
+        $filterEditorInput = $request->getUserVar('filterEditor');
+        $filterEditor = $filterEditorInput !== null && $filterEditorInput !== '' ? (int) $filterEditorInput : null;
         
         if (array_key_exists($filterEditor, $filterEditorOptions)) {
             $user->updateSetting('filterEditor', $filterEditor, 'int', $journalId);
         } else {
             $filterEditor = $user->getSetting('filterEditor', $journalId);
-            if ($filterEditor == null) {
+            if ($filterEditor === null) {
                 $filterEditor = FILTER_EDITOR_ALL;
                 $user->updateSetting('filterEditor', $filterEditor, 'int', $journalId);
+            } else {
+                $filterEditor = (int) $filterEditor;
             }
         }
         
-        if ($filterEditor == FILTER_EDITOR_ME) {
-            $editorId = $user->getId();
-        } else {
-            $editorId = null;
-        }
+        $editorId = ($filterEditor === FILTER_EDITOR_ME) ? (int) $user->getId() : null;
 
         // Filter by review object type
+        /** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
         $reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
         $allTypes = $reviewObjectTypeDao->getTypeIdsAlphabetizedByContext($journalId);
         $filterTypeOptions = [0 => __('common.all')];
         
         $createTypeOptions = [];
         foreach ($allTypes as $type) {
-            $typeId = $type['typeId'];
-            $filterTypeOptions[$typeId] = $type['typeName'];
-            if ($type['typeActive']) {
-                $createTypeOptions[$typeId] = $type['typeName'];
+            $typeId = (int) $type['typeId'];
+            $filterTypeOptions[$typeId] = (string) $type['typeName'];
+            if ((int) $type['typeActive'] === 1) {
+                $createTypeOptions[$typeId] = (string) $type['typeName'];
             }
         }
         
-        // [SECURITY FIX] Amankan 'filterType'
-        $filterType = (int) trim($request->getUserVar('filterType') ?? '');
+        $filterTypeInput = $request->getUserVar('filterType');
+        $filterType = $filterTypeInput !== null && $filterTypeInput !== '' ? (int) $filterTypeInput : null;
         
         if (array_key_exists($filterType, $filterTypeOptions)) {
             $user->updateSetting('filterReviewObjectType', $filterType, 'int', $journalId);
         } else {
             $filterType = $user->getSetting('filterReviewObjectType', $journalId);
-            if ($filterType == null) {
+            if ($filterType === null) {
                 $filterType = 0;
                 $user->updateSetting('filterReviewObjectType', $filterType, 'int', $journalId);
+            } else {
+                $filterType = (int) $filterType;
             }
         }
 
         // Sort
-        // [SECURITY FIX] Whitelist 'sort'
-        $sortInput = trim($request->getUserVar('sort') ?? '');
-        
+        $sortInput = (string) $request->getUserVar('sort');
         $validSortColumns = ['title', 'type', 'status', 'dateAdded']; 
         
-        if (!empty($sortInput) && in_array($sortInput, $validSortColumns)) {
+        if ($sortInput !== '' && in_array($sortInput, $validSortColumns, true)) {
             $sort = $sortInput;
         } else {
-            $sort = 'title'; // Default aman
+            $sort = 'title';
         }
 
-        // [SECURITY FIX] Whitelist 'sortDirection'
-        $sortDirectionInput = trim($request->getUserVar('sortDirection') ?? '');
-        
-        if ($sortDirectionInput == SORT_DIRECTION_DESC) {
-            $sortDirection = SORT_DIRECTION_DESC;
-        } else {
-            $sortDirection = SORT_DIRECTION_ASC; // Default aman
-        }
+        $sortDirectionInput = (string) $request->getUserVar('sortDirection');
+        $sortDirection = ($sortDirectionInput === SORT_DIRECTION_DESC) ? SORT_DIRECTION_DESC : SORT_DIRECTION_ASC;
 
         $ofrPlugin = $this->_getObjectsForReviewPlugin();
-        $mode = $ofrPlugin->getSetting($journalId, 'mode');
+        if (!$ofrPlugin) {
+            $request->redirect(null, 'index');
+        }
+        $mode = (int) $ofrPlugin->getSetting($journalId, 'mode');
 
         $ofrPlugin->import('classes.ObjectForReviewAssignment');
-        $path = !isset($args) || empty($args) ? null : $args[0];
+        $path = isset($args[0]) ? (string) $args[0] : '';
         $template = 'objectsForReviewAssignments.tpl';
         
-        switch($path) {
+        switch ($path) {
             case '':
                 $status = null;
                 $pageTitle = 'plugins.generic.objectsForReview.objectsForReview.pageTitle';
@@ -196,30 +201,28 @@ class ObjectsForReviewEditorHandler extends Handler {
         $templateMgr = TemplateManager::getManager($request);
 
         foreach ($duplicateParameters as $param) {
-            // [SECURITY FIX] Escape output
-            $templateMgr->assign($param, htmlspecialchars(trim($request->getUserVar($param) ?? ''), ENT_QUOTES, 'UTF-8'));
+            $templateMgr->assign($param, htmlspecialchars((string) $request->getUserVar($param), ENT_QUOTES, 'UTF-8'));
         }
         $templateMgr->assign('fieldOptions', $fieldOptions);
-
         $templateMgr->assign('editorOptions', $filterEditorOptions);
         $templateMgr->assign('filterEditor', $filterEditor);
         $templateMgr->assign('filterTypeOptions', $filterTypeOptions);
         $templateMgr->assign('createTypeOptions', $createTypeOptions);
         $templateMgr->assign('filterType', $filterType);
-
         $templateMgr->assign('sort', $sort);
         $templateMgr->assign('sortDirection', $sortDirection);
-
         $templateMgr->assign('mode', $mode);
         $templateMgr->assign('returnPage', $path);
 
-        if ($path == '') {
+        if ($path === '') {
             $rangeInfo = Handler::getRangeInfo('objectsForReview');
+            /** @var ObjectForReviewDAO $ofrDao */
             $ofrDao = DAORegistry::getDAO('ObjectForReviewDAO');
             $objectsForReview = $ofrDao->getAllByContextId($journalId, $searchField, $search, $searchMatch, $status, $editorId, $filterType, $rangeInfo, $sort, $sortDirection);
             $templateMgr->assign('objectsForReview', $objectsForReview);
         } else {
             $rangeInfo = Handler::getRangeInfo('objectForReviewAssignments');
+            /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
             $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
             $objectForReviewAssignments = $ofrAssignmentDao->getAllByContextId($journalId, $searchField, $search, $searchMatch, $status, null, $editorId, $filterType, $rangeInfo, $sort, $sortDirection);
             $templateMgr->assign('objectForReviewAssignments', $objectForReviewAssignments);
@@ -227,36 +230,47 @@ class ObjectsForReviewEditorHandler extends Handler {
         }
 
         $templateMgr->assign('pageTitle', $pageTitle);
-        $templateMgr->display($ofrPlugin->getTemplatePath() . 'editor' . '/' . $template);
+        $templateMgr->display($ofrPlugin->getTemplatePath() . 'editor/' . $template);
     }
 
     /**
      * Edit and update object for review (plug-in) settings.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function objectsForReviewSettings($args, $request) {
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
 
         $ofrPlugin = $this->_getObjectsForReviewPlugin();
+        if (!$ofrPlugin) {
+            $request->redirect(null, 'index');
+        }
         $ofrPlugin->import('classes.form.ObjectsForReviewSettingsForm');
         $settingsForm = new ObjectsForReviewSettingsForm($ofrPlugin, $journalId);
         
-        // [SECURITY FIX] Amankan flag boolean 'save'
-        if ($settingsForm->isLocaleResubmit() || (int) trim($request->getUserVar('save') ?? '')) {
+        $saveFlag = (bool) $request->getUserVar('save');
+        if ($settingsForm->isLocaleResubmit() || $saveFlag) {
             $settingsForm->readInputData();
             
-            // [SECURITY FIX] Amankan flag boolean 'save'
-            if ((int) trim($request->getUserVar('save') ?? '')) {
+            if ($saveFlag) {
                 if ($settingsForm->validate()) {
                     $settingsForm->execute();
                     
-                    // Notification
                     $user = $request->getUser();
-                    import('classes.notification.NotificationManager');
-                    $notificationManager = new NotificationManager();
-                    $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_OFR_SETTINGS_SAVED);
+                    if ($user) {
+                        import('classes.notification.NotificationManager');
+                        $notificationManager = new NotificationManager();
+                        $notificationManager->createTrivialNotification((int) $user->getId(), NOTIFICATION_TYPE_OFR_SETTINGS_SAVED);
+                    }
 
                     $request->redirect(null, 'editor', 'objectsForReviewSettings');
                 }
@@ -270,7 +284,8 @@ class ObjectsForReviewEditorHandler extends Handler {
     /**
      * Create/edit object for review.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function createObjectForReview($args, $request) {
         $this->editObjectForReview($args, $request);
@@ -279,138 +294,147 @@ class ObjectsForReviewEditorHandler extends Handler {
     /**
      * Create/edit object for review.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function editObjectForReview($args, $request) {
-        $objectId = array_shift($args);
-        // [SECURITY FIX] Amankan 'reviewObjectTypeId'
-        $reviewObjectTypeId = (int) trim($request->getUserVar('reviewObjectTypeId') ?? '');
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
 
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
+        $objectId = isset($args[0]) ? (int) $args[0] : null;
+        $reviewObjectTypeIdInput = $request->getUserVar('reviewObjectTypeId');
+        $reviewObjectTypeId = $reviewObjectTypeIdInput !== null && $reviewObjectTypeIdInput !== '' ? (int) $reviewObjectTypeIdInput : null;
 
-        if (!$this->_ensureObjectExists($objectId, $journalId, $reviewObjectTypeId) && !isset($reviewObjectTypeId)) {
+        if (!$this->_ensureObjectExists($objectId, $journalId, $reviewObjectTypeId) && $reviewObjectTypeId === null) {
             $request->redirect(null, 'editor', 'objectsForReview');
         }
+        
+        /** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
         $reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
-        if (!$reviewObjectTypeDao->reviewObjectTypeExists($reviewObjectTypeId, $journalId)) {
+        if ($reviewObjectTypeId !== null && !$reviewObjectTypeDao->reviewObjectTypeExists($reviewObjectTypeId, $journalId)) {
             $request->redirect(null, 'editor', 'objectsForReview');
         }
 
         $this->setupTemplate($request, true);
         $templateMgr = TemplateManager::getManager($request);
-        if ($objectId) {
-            $templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.edit');
-        } else {
-            $templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.create');
-        }
+        $templateMgr->assign('pageTitle', $objectId ? 'plugins.generic.objectsForReview.editor.edit' : 'plugins.generic.objectsForReview.editor.create');
+        
         $ofrPlugin = $this->_getObjectsForReviewPlugin();
-        $ofrPlugin->import('classes.form.ObjectForReviewForm');
-        $ofrForm = new ObjectForReviewForm($ofrPlugin->getName(), $objectId, $reviewObjectTypeId);
-        $ofrForm->initData();
-        $ofrForm->display($request);
+        if ($ofrPlugin) {
+            $ofrPlugin->import('classes.form.ObjectForReviewForm');
+            $ofrForm = new ObjectForReviewForm($ofrPlugin->getName(), $objectId, $reviewObjectTypeId);
+            $ofrForm->initData();
+            $ofrForm->display($request);
+        }
     }
 
     /**
      * Update object for review.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function updateObjectForReview($args, $request) {
-        // [SECURITY FIX] Amankan 'objectId'
-        $objectId = (int) trim($request->getUserVar('objectId') ?? '');
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
+
+        $objectIdInput = $request->getUserVar('objectId');
+        $objectId = $objectIdInput !== null && $objectIdInput !== '' ? (int) $objectIdInput : null;
         
-        // [SECURITY FIX] Amankan 'reviewObjectTypeId'
-        $reviewObjectTypeId = (int) trim($request->getUserVar('reviewObjectTypeId') ?? '');
+        $reviewObjectTypeIdInput = $request->getUserVar('reviewObjectTypeId');
+        $reviewObjectTypeId = $reviewObjectTypeIdInput !== null && $reviewObjectTypeIdInput !== '' ? (int) $reviewObjectTypeIdInput : null;
 
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
-        if ($objectId && !$this->_ensureObjectExists($objectId, $journalId, $reviewObjectTypeId)) {
+        if ($objectId !== null && !$this->_ensureObjectExists($objectId, $journalId, $reviewObjectTypeId)) {
             $request->redirect(null, 'editor', 'objectsForReview');
         }
 
         $ofrPlugin = $this->_getObjectsForReviewPlugin();
+        if (!$ofrPlugin) {
+            $request->redirect(null, 'index');
+        }
         $ofrPlugin->import('classes.form.ObjectForReviewForm');
         $ofrForm = new ObjectForReviewForm($ofrPlugin->getName(), $objectId, $reviewObjectTypeId);
         $ofrForm->readInputData();
 
-        // Add a role block
-        // [SECURITY FIX] Amankan flag boolean 'addPerson'
-        if ((int) trim($request->getUserVar('addPerson') ?? '')) {
-            $editData = true;
-            $persons = $ofrForm->getData('persons');
-            array_push($persons, []);
-            $ofrForm->setData('persons', $persons);
+        $editData = false;
+        $addPersonFlag = (bool) $request->getUserVar('addPerson');
+        $delPerson = $request->getUserVar('delPerson');
+        $movePersonFlag = (bool) $request->getUserVar('movePerson');
 
-        // Delete persons
-        // [SECURITY FIX] Amankan 'delPerson' sebagai array
-        } else if (($delPerson = (array) $request->getUserVar('delPerson')) && count($delPerson) == 1) {
+        if ($addPersonFlag) {
             $editData = true;
-            list($delPerson) = array_keys($delPerson);
-            $delPerson = (int) $delPerson; 
             $persons = $ofrForm->getData('persons');
-            if (isset($persons[$delPerson]['personId']) && !empty($persons[$delPerson]['personId'])) {
-                $deletedPersons = explode(':', $ofrForm->getData('deletedPersons'));
-                array_push($deletedPersons, $persons[$delPerson]['personId']);
+            if (is_array($persons)) {
+                $persons[] = [];
+                $ofrForm->setData('persons', $persons);
+            }
+        } elseif (is_array($delPerson) && count($delPerson) === 1) {
+            $editData = true;
+            $delPersonKey = array_keys($delPerson)[0];
+            $delPersonId = (int) $delPersonKey; 
+            $persons = $ofrForm->getData('persons');
+            if (is_array($persons) && isset($persons[$delPersonId]['personId']) && !empty($persons[$delPersonId]['personId'])) {
+                $deletedPersons = explode(':', (string) $ofrForm->getData('deletedPersons'));
+                $deletedPersons[] = (string) $persons[$delPersonId]['personId'];
                 $ofrForm->setData('deletedPersons', implode(':', $deletedPersons));
             }
-            array_splice($persons, $delPerson, 1);
-            $ofrForm->setData('persons', $persons);
-
-        // Change person order
-        // [SECURITY FIX] Amankan flag boolean 'movePerson'
-        } else if ((int) trim($request->getUserVar('movePerson') ?? '')) {
+            if (is_array($persons)) {
+                array_splice($persons, $delPersonId, 1);
+                $ofrForm->setData('persons', $persons);
+            }
+        } elseif ($movePersonFlag) {
             $editData = true;
+            $movePersonDir = (string) $request->getUserVar('movePersonDir');
+            $movePersonDir = ($movePersonDir === 'u') ? 'u' : 'd'; 
             
-            // [SECURITY FIX] Amankan string key 'movePersonDir'
-            $movePersonDir = trim($request->getUserVar('movePersonDir') ?? '');
-            $movePersonDir = $movePersonDir == 'u' ? 'u' : 'd'; 
-            
-            // [SECURITY FIX] Amankan 'movePersonIndex'
-            $movePersonIndex = (int) trim($request->getUserVar('movePersonIndex') ?? '');
+            $movePersonIndexInput = $request->getUserVar('movePersonIndex');
+            $movePersonIndex = $movePersonIndexInput !== null && $movePersonIndexInput !== '' ? (int) $movePersonIndexInput : 0;
             $persons = $ofrForm->getData('persons');
 
-            if (!(($movePersonDir == 'u' && $movePersonIndex <= 0) || ($movePersonDir == 'd' && $movePersonIndex >= count($persons) - 1))) {
+            if (is_array($persons) && !(($movePersonDir === 'u' && $movePersonIndex <= 0) || ($movePersonDir === 'd' && $movePersonIndex >= count($persons) - 1))) {
                 $tmpPerson = $persons[$movePersonIndex];
-                if ($movePersonDir == 'u') {
+                if ($movePersonDir === 'u') {
                     $persons[$movePersonIndex] = $persons[$movePersonIndex - 1];
                     $persons[$movePersonIndex - 1] = $tmpPerson;
                 } else {
                     $persons[$movePersonIndex] = $persons[$movePersonIndex + 1];
                     $persons[$movePersonIndex + 1] = $tmpPerson;
                 }
+                $ofrForm->setData('persons', $persons);
             }
-            $ofrForm->setData('persons', $persons);
         }
 
-        if (!isset($editData) && $ofrForm->validate()) {
+        if (!$editData && $ofrForm->validate()) {
             $ofrForm->execute();
-            // Notification
-            if ($objectId) {
-                $notificationType = NOTIFICATION_TYPE_OFR_UPDATED;
-            } else {
-                $notificationType = NOTIFICATION_TYPE_OFR_CREATED;
-            }
+            $notificationType = $objectId ? NOTIFICATION_TYPE_OFR_UPDATED : NOTIFICATION_TYPE_OFR_CREATED;
             $this->_createTrivialNotification($notificationType, $request);
 
-            // [SECURITY FIX] Amankan flag boolean 'createAnother'
-            if ((int) trim($request->getUserVar('createAnother') ?? '')) {
+            $createAnotherFlag = (bool) $request->getUserVar('createAnother');
+            if ($createAnotherFlag) {
                 $request->redirect(null, 'editor', 'createObjectForReview');
-            // [SECURITY FIX] Amankan flag boolean
-            } elseif ((int) trim($request->getUserVar('addPerson') ?? '') || (int) trim($request->getUserVar('delPerson') ?? '') || (int) trim($request->getUserVar('movePerson') ?? '')) {
-                $request->redirect(null, 'editor', 'editObjectForReview', $objectId, ['reviewObjectTypeId' => $reviewObjectTypeId]);
+            } elseif ($addPersonFlag || is_array($delPerson) || $movePersonFlag) {
+                $request->redirect(null, 'editor', 'editObjectForReview', $objectId, ['reviewObjectTypeId' => (string) $reviewObjectTypeId]);
             } else {
                 $request->redirect(null, 'editor', 'objectsForReview');
             }
         } else {
             $this->setupTemplate($request, true);
             $templateMgr = TemplateManager::getManager($request);
-            if ($objectId) {
-                $templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.edit');
-            } else {
-                $templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.create');
-            }
+            $templateMgr->assign('pageTitle', $objectId ? 'plugins.generic.objectsForReview.editor.edit' : 'plugins.generic.objectsForReview.editor.create');
             $ofrForm->display($request);
         }
     }
@@ -418,52 +442,77 @@ class ObjectsForReviewEditorHandler extends Handler {
     /**
      * Remove object for review cover page image.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function removeObjectForReviewCoverPage($args, $request) {
-        $objectId = array_shift($args);
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
 
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
+        $objectId = isset($args[0]) ? (int) $args[0] : null;
         if (!$this->_ensureObjectExists($objectId, $journalId)) {
             $request->redirect(null, 'editor', 'objectsForReview');
         }
 
+        /** @var ObjectForReviewDAO $ofrDao */
         $ofrDao = DAORegistry::getDAO('ObjectForReviewDAO');
         $objectForReview = $ofrDao->getById($objectId, $journalId);
-        $coverPageSetting = $objectForReview->getCoverPage();
-        if ($coverPageSetting) {
-            // Delete cover image file from the filesystem
-            import('classes.file.PublicFileManager');
-            $publicFileManager = new PublicFileManager();
-            $publicFileManager->removeJournalFile($journalId, $coverPageSetting['fileName']);
-            // Delete object for review setting
-            $ofrPlugin = $this->_getObjectsForReviewPlugin();
-            $ofrPlugin->import('classes.ReviewObjectMetadata');
-            $metadataId = $objectForReview->getMetadataId(REVIEW_OBJECT_METADATA_KEY_COVERPAGE);
-            $ofrSettingsDao = DAORegistry::getDAO('ObjectForReviewSettingsDAO');
-            $ofrSettingsDao->deleteSetting($objectId, $metadataId);
+        
+        if ($objectForReview) {
+            $coverPageSetting = $objectForReview->getCoverPage();
+            if (is_array($coverPageSetting) && isset($coverPageSetting['fileName'])) {
+                import('classes.file.PublicFileManager');
+                $publicFileManager = new PublicFileManager();
+                $publicFileManager->removeJournalFile($journalId, (string) $coverPageSetting['fileName']);
+                
+                $ofrPlugin = $this->_getObjectsForReviewPlugin();
+                if ($ofrPlugin) {
+                    $ofrPlugin->import('classes.ReviewObjectMetadata');
+                    $metadataId = $objectForReview->getMetadataId(REVIEW_OBJECT_METADATA_KEY_COVERPAGE);
+                    if ($metadataId !== null) {
+                        /** @var ObjectForReviewSettingsDAO $ofrSettingsDao */
+                        $ofrSettingsDao = DAORegistry::getDAO('ObjectForReviewSettingsDAO');
+                        $ofrSettingsDao->deleteSetting($objectId, $metadataId);
+                    }
+                }
+            }
+            $request->redirect(null, 'editor', 'editObjectForReview', $objectId, ['reviewObjectTypeId' => (string) $objectForReview->getReviewObjectTypeId()]);
         }
-        $request->redirect(null, 'editor', 'editObjectForReview', $objectId, ['reviewObjectTypeId' => $objectForReview->getReviewObjectTypeId()]);
     }
 
     /**
      * Delete object for review.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function deleteObjectForReview($args, $request) {
-        $objectId = array_shift($args);
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
 
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
+        $objectId = isset($args[0]) ? (int) $args[0] : null;
         if ($this->_ensureObjectExists($objectId, $journalId)) {
+            /** @var ObjectForReviewDAO $ofrDao */
             $ofrDao = DAORegistry::getDAO('ObjectForReviewDAO');
             $objectForReview = $ofrDao->getById($objectId, $journalId);
-            $ofrDao->deleteObject($objectForReview);
-            $this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_DELETED, $request);
+            if ($objectForReview) {
+                $ofrDao->deleteObject($objectForReview);
+                $this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_DELETED, $request);
+            }
         }
         $request->redirect(null, 'editor', 'objectsForReview');
     }
@@ -471,14 +520,21 @@ class ObjectsForReviewEditorHandler extends Handler {
     /**
      * Display a list of authors from which to choose an object reviewer.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function selectObjectForReviewAuthor($args, $request) {
-        $objectId = array_shift($args);
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
 
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
+        $objectId = isset($args[0]) ? (int) $args[0] : null;
         if (!$this->_ensureObjectExists($objectId, $journalId)) {
             $request->redirect(null, 'editor', 'objectsForReview');
         }
@@ -486,43 +542,34 @@ class ObjectsForReviewEditorHandler extends Handler {
         // Search
         $searchField = null;
         $searchMatch = null;
+        $search = (string) $request->getUserVar('search');
+        $searchInitial = (string) $request->getUserVar('searchInitial');
         
-        // [SECURITY FIX] Amankan 'search' (string)
-        $search = trim($request->getUserVar('search') ?? '');
-
-        // [SECURITY FIX] Amankan 'searchInitial'
-        $searchInitial = trim($request->getUserVar('searchInitial') ?? '');
-        if (!preg_match('/^[A-Z0-9]$/i', $searchInitial)) {
-            $searchInitial = ''; // Set default aman
+        if ($searchInitial !== '' && !preg_match('/^[A-Z0-9]$/i', $searchInitial)) {
+            $searchInitial = '';
         }
 
-        if (!empty($search)) {
-            // [SECURITY FIX] Whitelist 'searchField'
-            $validSearchFields = [
-                OFR_OBJECT_SEARCH_TITLE,
-                OFR_OBJECT_SEARCH_METADATA
-            ];
-            $searchFieldInput = $request->getUserVar('searchField');
-            if (in_array($searchFieldInput, $validSearchFields)) {
+        if ($search !== '') {
+            // [WIZDAM FIX] Corrected undefined constants to valid user search fields
+            $validSearchFields = [USER_FIELD_FIRSTNAME, USER_FIELD_LASTNAME, USER_FIELD_USERNAME, USER_FIELD_EMAIL];
+            $searchFieldInput = (string) $request->getUserVar('searchField');
+            if (in_array($searchFieldInput, $validSearchFields, true)) {
                 $searchField = $searchFieldInput;
-            } else {
-                $searchField = null; // Default aman
             }
 
-            // [SECURITY FIX] Whitelist 'searchMatch'
             $validSearchMatches = ['is', 'contains', 'startsWith'];
-            $searchMatchInput = trim($request->getUserVar('searchMatch') ?? '');
-            if (in_array($searchMatchInput, $validSearchMatches)) {
+            $searchMatchInput = (string) $request->getUserVar('searchMatch');
+            if (in_array($searchMatchInput, $validSearchMatches, true)) {
                 $searchMatch = $searchMatchInput;
             } else {
-                $searchMatch = 'contains'; // Default aman
+                $searchMatch = 'contains';
             }
-
-        } else if (!empty($searchInitial)) {
+        } elseif ($searchInitial !== '') {
             $searchInitial = PKPString::strtoupper($searchInitial);
-            $searchField = USER_FIELD_INITIAL; // Konstanta ini aman
+            $searchField = USER_FIELD_INITIAL;
             $search = $searchInitial;
         }
+        
         $fieldOptions = [
             USER_FIELD_FIRSTNAME => 'user.firstName',
             USER_FIELD_LASTNAME => 'user.lastName',
@@ -530,305 +577,376 @@ class ObjectsForReviewEditorHandler extends Handler {
             USER_FIELD_EMAIL => 'user.email'
         ];
 
-        // Get all and those authors assigned to this object
         $rangeInfo = Handler::getRangeInfo('users');
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $users = $roleDao->getUsersByRoleId(ROLE_ID_AUTHOR, $journalId, $searchField, $search, $searchMatch, $rangeInfo);
+        
+        /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
         $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
         $usersAssigned = $ofrAssignmentDao->getUserIds($objectId);
 
         $this->setupTemplate($request, true);
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('objectId', $objectId);
-
         $templateMgr->assign('searchField', $searchField);
         $templateMgr->assign('searchMatch', $searchMatch);
         $templateMgr->assign('search', $search);
         $templateMgr->assign('searchInitial', $searchInitial);
         $templateMgr->assign('searchFieldOptions', $fieldOptions);
         $templateMgr->assign('alphaList', explode(' ', __('common.alphaList')));
-
         $templateMgr->assign('users', $users);
         $templateMgr->assign('usersAssigned', $usersAssigned);
 
         import('classes.security.Validation');
-        $templateMgr->assign('isJournalManager', Validation::isJournalManager());
+        $templateMgr->assign('isJournalManager', Validation::isJournalManager((int) $journal->getId()));
 
         $ofrPlugin = $this->_getObjectsForReviewPlugin();
-        $templateMgr->display($ofrPlugin->getTemplatePath() . 'editor' . '/' . 'authors.tpl');
+        if ($ofrPlugin) {
+            $templateMgr->display($ofrPlugin->getTemplatePath() . 'editor/authors.tpl');
+        }
     }
 
     /**
      * Assign an object for review author.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function assignObjectForReviewAuthor($args, $request) {
-        $objectId = array_shift($args);
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
 
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
+        $objectId = isset($args[0]) ? (int) $args[0] : null;
         if (!$this->_ensureObjectExists($objectId, $journalId)) {
             $request->redirect(null, 'editor', 'objectsForReview');
         }
+        
+        /** @var ObjectForReviewDAO $ofrDao */
         $ofrDao = DAORegistry::getDAO('ObjectForReviewDAO');
         $objectForReview = $ofrDao->getById($objectId, $journalId);
 
         $redirect = true;
-        if ($objectForReview->getAvailable()) {
-            // [SECURITY FIX] Amankan 'userId'
-            $userId = (int) trim($request->getUserVar('userId') ?? '');
+        if ($objectForReview && (int) $objectForReview->getAvailable() === 1) {
+            $userIdInput = $request->getUserVar('userId');
+            $userId = $userIdInput !== null && $userIdInput !== '' ? (int) $userIdInput : null;
             
-            // Ensure there is no assignment for this object and user
+            /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
             $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
-            if ($ofrAssignmentDao->assignmentExists($objectId, $userId)) {
+            if ($userId !== null && $ofrAssignmentDao->assignmentExists($objectId, $userId)) {
                 $request->redirect(null, 'editor', 'objectsForReview');
             }
-            // Ensure the user exists and is an author for this journal
+            
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $user = $userDao->getById($userId);
+            
+            /** @var RoleDAO $roleDao */
             $roleDao = DAORegistry::getDAO('RoleDAO');
-            if (isset($user) && $roleDao->userHasRole($journalId, $userId, ROLE_ID_AUTHOR)) {
-                $returnUrl = $request->url(null, 'editor', 'assignObjectForReviewAuthor', $objectId, ['userId' => $userId]);
-                // Assign
+            if ($user !== null && $roleDao->userHasRole($journalId, (int) $user->getId(), ROLE_ID_AUTHOR)) {
+                $returnUrl = $request->url(null, 'editor', 'assignObjectForReviewAuthor', $objectId, ['userId' => (string) $user->getId()]);
                 $redirect = $this->_assign(null, $objectForReview, $user, $returnUrl, $request);
             }
         }
-        if ($redirect) $request->redirect(null, 'editor', 'objectsForReview', 'assigned');
+        if ($redirect) {
+            $request->redirect(null, 'editor', 'objectsForReview', 'assigned');
+        }
     }
 
     /**
      * Accept an object for review author.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function acceptObjectForReviewAuthor($args, $request) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
+
         $returnPage = $this->_getReturnpage($request);
-
-        $assignmentId = array_shift($args);
-
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
+        $assignmentId = isset($args[0]) ? (int) $args[0] : null;
 
         $redirect = true;
-        // Ensure the assignment exists
         $ofrPlugin = $this->_getObjectsForReviewPlugin();
-        $ofrPlugin->import('classes.ObjectForReviewAssignment');
-        if (!$this->_ensureAssignmentExists($assignmentId, $journalId, OFR_STATUS_REQUESTED)) {
-            $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+        if ($ofrPlugin) {
+            $ofrPlugin->import('classes.ObjectForReviewAssignment');
         }
+        
+        if (!$this->_ensureAssignmentExists($assignmentId, $journalId, OFR_STATUS_REQUESTED)) {
+            $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
+        }
+        
+        /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
         $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
         $ofrAssignment = $ofrAssignmentDao->getById($assignmentId);
-        // Get the author
-        $userDao = DAORegistry::getDAO('UserDAO');
-        $user = $userDao->getById($ofrAssignment->getUserId());
-        $returnUrl = $request->url(null, 'editor', 'acceptObjectForReviewAuthor', $assignmentId, ['returnPage' => $returnPage]);
-        // Assign
-        $redirect = $this->_assign($ofrAssignment, $ofrAssignment->getObjectForReview(), $user, $returnUrl, $request);
+        
+        if ($ofrAssignment) {
+            /** @var UserDAO $userDao */
+            $userDao = DAORegistry::getDAO('UserDAO');
+            $user = $userDao->getById((int) $ofrAssignment->getUserId());
+            $returnUrl = $request->url(null, 'editor', 'acceptObjectForReviewAuthor', $assignmentId, ['returnPage' => $returnPage !== '' ? $returnPage : null]);
+            
+            if ($user) {
+                $redirect = $this->_assign($ofrAssignment, $ofrAssignment->getObjectForReview(), $user, $returnUrl, $request);
+            }
+        }
 
         if ($redirect) {
-            if ($returnPage != 'all') $returnPage = 'assigned';
-            $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+            $finalReturnPage = ($returnPage !== '' && $returnPage !== 'all') ? 'assigned' : $returnPage;
+            $request->redirect(null, 'editor', 'objectsForReview', $finalReturnPage !== '' ? $finalReturnPage : null);
         }
     }
 
     /**
      * Deny an object for review request.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function denyObjectForReviewAuthor($args, $request) {
-        $returnPage = $this->_getReturnpage($request);
-
-        $assignmentId = array_shift($args);
-
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
-        // Ensure the assignment exists
-        $ofrPlugin = $this->_getObjectsForReviewPlugin();
-        $ofrPlugin->import('classes.ObjectForReviewAssignment');
-        if (!$this->_ensureAssignmentExists($assignmentId, $journalId, OFR_STATUS_REQUESTED)) {
-            $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+        if (!$request) {
+            $request = Application::get()->getRequest();
         }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
+
+        $returnPage = $this->_getReturnpage($request);
+        $assignmentId = isset($args[0]) ? (int) $args[0] : null;
+
+        $ofrPlugin = $this->_getObjectsForReviewPlugin();
+        if ($ofrPlugin) {
+            $ofrPlugin->import('classes.ObjectForReviewAssignment');
+        }
+        
+        if (!$this->_ensureAssignmentExists($assignmentId, $journalId, OFR_STATUS_REQUESTED)) {
+            $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
+        }
+        
+        /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
         $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
         $ofrAssignment = $ofrAssignmentDao->getById($assignmentId);
 
         $redirect = true;
-        import('classes.mail.MailTemplate');
-        $email = new MailTemplate('OFR_OBJECT_DENIED');
-        
-        // [SECURITY FIX] Amankan flag boolean 'send'
-        $send = (int) trim($request->getUserVar('send') ?? '');
-        
-        // Editor has filled out mail form or skipped mail
-        if ($send && !$email->hasErrors()) {
-            // Delete the assignment
-            $ofrAssignmentDao->deleteById($assignmentId);
-            $email->send();
-            $this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_AUTHOR_DENIED, $request);
-        } else {
-            $returnUrl = $request->url(null, 'editor', 'denyObjectForReviewAuthor', $assignmentId, ['returnPage' => $returnPage]);
-            $this->_displayEmailForm($email, $ofrAssignment->getObjectForReview(), $ofrAssignment->getUser(), $returnUrl, 'OFR_OBJECT_DENIED', $request);
-            $redirect = false;
+        if ($ofrAssignment) {
+            import('classes.mail.MailTemplate');
+            $email = new MailTemplate('OFR_OBJECT_DENIED');
+            
+            $sendFlag = (bool) $request->getUserVar('send');
+            
+            if ($sendFlag && !$email->hasErrors()) {
+                $ofrAssignmentDao->deleteById($assignmentId);
+                $email->send();
+                $this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_AUTHOR_DENIED, $request);
+            } else {
+                $returnUrl = $request->url(null, 'editor', 'denyObjectForReviewAuthor', $assignmentId, ['returnPage' => $returnPage !== '' ? $returnPage : null]);
+                $this->_displayEmailForm($email, $ofrAssignment->getObjectForReview(), $ofrAssignment->getUser(), $returnUrl, 'OFR_OBJECT_DENIED', $request);
+                $redirect = false;
+            }
         }
-        if ($redirect) $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+        
+        if ($redirect) {
+            $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
+        }
     }
 
     /**
      * Mark an object for review assignment as mailed.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function notifyObjectForReviewMailed($args, $request) {
-        $returnPage = $this->_getReturnpage($request);
-
-        $assignmentId = array_shift($args);
-
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
-        // Ensure the assignment exists
-        $ofrPlugin = $this->_getObjectsForReviewPlugin();
-        $ofrPlugin->import('classes.ObjectForReviewAssignment');
-        if (!$this->_ensureAssignmentExists($assignmentId, $journalId, OFR_STATUS_ASSIGNED)) {
-            $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+        if (!$request) {
+            $request = Application::get()->getRequest();
         }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
+
+        $returnPage = $this->_getReturnpage($request);
+        $assignmentId = isset($args[0]) ? (int) $args[0] : null;
+
+        $ofrPlugin = $this->_getObjectsForReviewPlugin();
+        if ($ofrPlugin) {
+            $ofrPlugin->import('classes.ObjectForReviewAssignment');
+        }
+        
+        if (!$this->_ensureAssignmentExists($assignmentId, $journalId, OFR_STATUS_ASSIGNED)) {
+            $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
+        }
+        
+        /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
         $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
         $ofrAssignment = $ofrAssignmentDao->getById($assignmentId);
 
         $redirect = true;
-        import('classes.mail.MailTemplate');
-        $email = new MailTemplate('OFR_OBJECT_MAILED');
-        
-        // [SECURITY FIX] Amankan flag boolean 'send'
-        $send = (int) trim($request->getUserVar('send') ?? '');
-        
-        // Editor has filled out mail form or skipped mail
-        if ($send && !$email->hasErrors()) {
-            // Update status
-            $ofrAssignment->setStatus(OFR_STATUS_MAILED);
-            // Update due date
-            $dueWeeks = $ofrPlugin->getSetting($journalId, 'dueWeeks');
-            $dueDateTimestamp = time() + ($dueWeeks * 7 * 24 * 60 * 60);
-            $dueDate = date('Y-m-d H:i:s', $dueDateTimestamp);
-            $ofrAssignment->setDateDue($dueDate);
-            // Set date mailed and update the assignment
-            $ofrAssignment->setDateMailed(Core::getCurrentDate());
-            $ofrAssignmentDao->updateObject($ofrAssignment);
-            $email->send();
-            $this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_AUTHOR_MAILED, $request);
-        } else {
-            $returnUrl = $request->url(null, 'editor', 'notifyObjectForReviewMailed', $assignmentId, ['returnPage' => $returnPage]);
-            $this->_displayEmailForm($email, $ofrAssignment->getObjectForReview(), $ofrAssignment->getUser(), $returnUrl, 'OFR_OBJECT_MAILED', $request);
-            $redirect = false;
+        if ($ofrAssignment && $ofrPlugin) {
+            import('classes.mail.MailTemplate');
+            $email = new MailTemplate('OFR_OBJECT_MAILED');
+            
+            $sendFlag = (bool) $request->getUserVar('send');
+            
+            if ($sendFlag && !$email->hasErrors()) {
+                $ofrAssignment->setStatus(OFR_STATUS_MAILED);
+                $dueWeeks = (int) $ofrPlugin->getSetting($journalId, 'dueWeeks');
+                $dueDateTimestamp = time() + ($dueWeeks * 7 * 24 * 60 * 60);
+                $ofrAssignment->setDateDue(date('Y-m-d H:i:s', $dueDateTimestamp));
+                $ofrAssignment->setDateMailed(Core::getCurrentDate());
+                $ofrAssignmentDao->updateObject($ofrAssignment);
+                $email->send();
+                $this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_AUTHOR_MAILED, $request);
+            } else {
+                $returnUrl = $request->url(null, 'editor', 'notifyObjectForReviewMailed', $assignmentId, ['returnPage' => $returnPage !== '' ? $returnPage : null]);
+                $this->_displayEmailForm($email, $ofrAssignment->getObjectForReview(), $ofrAssignment->getUser(), $returnUrl, 'OFR_OBJECT_MAILED', $request);
+                $redirect = false;
+            }
         }
-        if ($returnPage != 'all') $returnPage = 'mailed';
-        if ($redirect) $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+        
+        if ($redirect) {
+            $finalReturnPage = ($returnPage !== '' && $returnPage !== 'all') ? 'mailed' : $returnPage;
+            $request->redirect(null, 'editor', 'objectsForReview', $finalReturnPage !== '' ? $finalReturnPage : null);
+        }
     }
 
     /**
      * Remove object reviewer assignment.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function removeObjectForReviewAssignment($args, $request) {
-        $returnPage = $this->_getReturnpage($request);
-
-        $assignmentId = array_shift($args);
-
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
-        // Ensure the assignment exists
-        if (!$this->_ensureAssignmentExists($assignmentId, $journalId)) {
-            $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+        if (!$request) {
+            $request = Application::get()->getRequest();
         }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
+
+        $returnPage = $this->_getReturnpage($request);
+        $assignmentId = isset($args[0]) ? (int) $args[0] : null;
+
+        if (!$this->_ensureAssignmentExists($assignmentId, $journalId)) {
+            $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
+        }
+        
+        /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
         $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
         $ofrAssignment = $ofrAssignmentDao->getById($assignmentId);
-        // Ensure the assignment can be removed
-        if (!$this->_canBeRemoved($ofrAssignment)) {
-            $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
-        }
 
         $redirect = true;
-        import('classes.mail.MailTemplate');
-        $email = new MailTemplate('OFR_REVIEWER_REMOVED');
-        
-        // [SECURITY FIX] Amankan flag boolean 'send'
-        $send = (int) trim($request->getUserVar('send') ?? '');
-        
-        // Editor has filled out mail form or skipped mail
-        if ($send && !$email->hasErrors()) {
-            // Delete the assignment
-            $ofrAssignmentDao->deleteById($assignmentId);
-            $email->send();
-            $this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_AUTHOR_REMOVED, $request);
-        } else {
-            $returnUrl = $request->url(null, 'editor', 'removeObjectForReviewAssignment', $assignmentId, ['returnPage' => $returnPage]);
-            $this->_displayEmailForm($email, $ofrAssignment->getObjectForReview(), $ofrAssignment->getUser(), $returnUrl, 'OFR_REVIEWER_REMOVED', $request);
-            $redirect = false;
+        if ($ofrAssignment && $this->_canBeRemoved($ofrAssignment)) {
+            import('classes.mail.MailTemplate');
+            $email = new MailTemplate('OFR_REVIEWER_REMOVED');
+            
+            $sendFlag = (bool) $request->getUserVar('send');
+            
+            if ($sendFlag && !$email->hasErrors()) {
+                $ofrAssignmentDao->deleteById($assignmentId);
+                $email->send();
+                $this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_AUTHOR_REMOVED, $request);
+            } else {
+                $returnUrl = $request->url(null, 'editor', 'removeObjectForReviewAssignment', $assignmentId, ['returnPage' => $returnPage !== '' ? $returnPage : null]);
+                $this->_displayEmailForm($email, $ofrAssignment->getObjectForReview(), $ofrAssignment->getUser(), $returnUrl, 'OFR_REVIEWER_REMOVED', $request);
+                $redirect = false;
+            }
         }
-        if ($redirect) $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+        
+        if ($redirect) {
+            $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
+        }
     }
 
     /**
      * Display a list of submissions from which to choose an object review submission.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function selectObjectForReviewSubmission($args, $request) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
+
         $returnPage = $this->_getReturnpage($request);
-
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
         $ofrPlugin = $this->_getObjectsForReviewPlugin();
-        $mode = $ofrPlugin->getSetting($journalId, 'mode');
+        if (!$ofrPlugin) {
+            $request->redirect(null, 'index');
+        }
+        $mode = (int) $ofrPlugin->getSetting($journalId, 'mode');
 
-        $assignmentId = array_shift($args);
-        if ($mode == OFR_MODE_FULL) {
+        $assignmentId = isset($args[0]) ? (int) $args[0] : null;
+        $objectId = null;
+        
+        if ($mode === OFR_MODE_FULL) {
             if (!$this->_ensureAssignmentExists($assignmentId, $journalId)) {
-                $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+                $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
             }
+            /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
             $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
             $ofrAssignment = $ofrAssignmentDao->getById($assignmentId);
-            $objectId = $ofrAssignment->getObjectId();
-        }
-        if ($mode == OFR_MODE_METADATA) {
-            // [SECURITY FIX] Amankan 'objectId'
-            $objectId = (int) trim($request->getUserVar('objectId') ?? '');
-            // Ensure the object exists
+            if ($ofrAssignment) {
+                $objectId = (int) $ofrAssignment->getObjectId();
+            }
+        } elseif ($mode === OFR_MODE_METADATA) {
+            $objectIdInput = $request->getUserVar('objectId');
+            $objectId = $objectIdInput !== null && $objectIdInput !== '' ? (int) $objectIdInput : null;
             if (!$this->_ensureObjectExists($objectId, $journalId)) {
-                $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+                $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
             }
         }
 
         // Search
         $searchField = null;
         $searchMatch = null;
-        // [SECURITY FIX] Amankan 'search' (string)
-        $search = trim($request->getUserVar('search') ?? '');
+        $search = (string) $request->getUserVar('search');
 
-        if (!empty($search)) {
-            // [SECURITY FIX] Whitelist 'searchField'
-            $validSearchFields = [
-                OFR_OBJECT_SEARCH_TITLE,
-                OFR_OBJECT_SEARCH_METADATA
-            ];
-            $searchField = $request->getUserVar('searchField');
-            if (!in_array($searchField, $validSearchFields)) {
-                $searchField = null; // Set default aman
+        if ($search !== '') {
+            // [WIZDAM FIX] Corrected undefined constants to valid submission search fields
+            $validSearchFields = [SUBMISSION_FIELD_TITLE, SUBMISSION_FIELD_ID, SUBMISSION_FIELD_AUTHOR];
+            $searchFieldInput = (string) $request->getUserVar('searchField');
+            if (in_array($searchFieldInput, $validSearchFields, true)) {
+                $searchField = $searchFieldInput;
             }
 
-            // [SECURITY FIX] Whitelist 'searchMatch'
             $validSearchMatches = ['is', 'contains', 'startsWith'];
-            $searchMatch = trim($request->getUserVar('searchMatch') ?? '');
-            if (!in_array($searchMatch, $validSearchMatches)) {
-                $searchMatch = 'contains'; // Set default aman
+            $searchMatchInput = (string) $request->getUserVar('searchMatch');
+            if (in_array($searchMatchInput, $validSearchMatches, true)) {
+                $searchMatch = $searchMatchInput;
+            } else {
+                $searchMatch = 'contains';
             }
         }
+        
         import('classes.submission.common.Action');
         $fieldOptions = [
             SUBMISSION_FIELD_TITLE => 'article.title',
@@ -836,24 +954,14 @@ class ObjectsForReviewEditorHandler extends Handler {
             SUBMISSION_FIELD_AUTHOR => 'user.role.author',
         ];
 
-        // Get submissions assigned to this user/editor
         $user = $request->getUser();
-        $editorId = $user->getId();
+        $editorId = $user ? (int) $user->getId() : null;
         $rangeInfo = Handler::getRangeInfo('submissions');
+        
+        /** @var EditorSubmissionDAO $editorSubmissionDao */
         $editorSubmissionDao = DAORegistry::getDAO('EditorSubmissionDAO');
         $submissions = $editorSubmissionDao->getEditorSubmissions(
-            $journalId,
-            0,
-            $editorId,
-            $searchField,
-            $searchMatch,
-            $search,
-            null,
-            null,
-            null,
-            $rangeInfo,
-            'id',
-            SORT_DIRECTION_DESC
+            $journalId, 0, $editorId, $searchField, $searchMatch, $search, null, null, null, $rangeInfo, 'id', SORT_DIRECTION_DESC
         );
 
         $this->setupTemplate($request, true);
@@ -861,57 +969,68 @@ class ObjectsForReviewEditorHandler extends Handler {
         $templateMgr->assign('assignmentId', $assignmentId);
         $templateMgr->assign('objectId', $objectId);
         $templateMgr->assign('returnPage', $returnPage);
-
         $templateMgr->assign('searchField', $searchField);
         $templateMgr->assign('searchMatch', $searchMatch);
         $templateMgr->assign('search', $search);
         $templateMgr->assign('searchFieldOptions', $fieldOptions);
-
         $templateMgr->assign('submissions', $submissions);
-        $templateMgr->display($ofrPlugin->getTemplatePath() . 'editor' . '/' . 'submissions.tpl');
+        
+        $templateMgr->display($ofrPlugin->getTemplatePath() . 'editor/submissions.tpl');
     }
 
     /**
      * Assign an object for review submission.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function assignObjectForReviewSubmission($args, $request) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
+
         $returnPage = $this->_getReturnpage($request);
-
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
         $ofrPlugin = $this->_getObjectsForReviewPlugin();
-        $mode = $ofrPlugin->getSetting($journalId, 'mode');
+        if (!$ofrPlugin) {
+            $request->redirect(null, 'index');
+        }
+        $mode = (int) $ofrPlugin->getSetting($journalId, 'mode');
 
-        $assignmentId = array_shift($args);
+        $assignmentId = isset($args[0]) ? (int) $args[0] : null;
+        
+        /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
         $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
         $insert = false;
-        
         $ofrAssignment = null;
-        if ($mode == OFR_MODE_FULL) {
+        
+        if ($mode === OFR_MODE_FULL) {
             if (!$this->_ensureAssignmentExists($assignmentId, $journalId)) {
-                $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+                $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
             }
             $ofrAssignment = $ofrAssignmentDao->getById($assignmentId);
-        } elseif ($mode == OFR_MODE_METADATA) {
-            // [SECURITY FIX] Amankan 'objectId'
-            $objectId = (int) trim($request->getUserVar('objectId') ?? '');
+        } elseif ($mode === OFR_MODE_METADATA) {
+            $objectIdInput = $request->getUserVar('objectId');
+            $objectId = $objectIdInput !== null && $objectIdInput !== '' ? (int) $objectIdInput : null;
             if (!$this->_ensureObjectExists($objectId, $journalId)) {
-                $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+                $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
             }
             $ofrAssignment = $ofrAssignmentDao->newDataObject();
             $ofrAssignment->setObjectId($objectId);
             $insert = true;
         }
 
-        // [SECURITY FIX] Amankan 'submissionId'
-        $submissionId = (int) trim($request->getUserVar('submissionId') ?? '');
+        $submissionIdInput = $request->getUserVar('submissionId');
+        $submissionId = $submissionIdInput !== null && $submissionIdInput !== '' ? (int) $submissionIdInput : null;
         
-        // Ensure article is for this journal and update object for review assignment
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
-        if ($ofrAssignment && $articleDao->getArticleJournalId($submissionId) == $journalId) {
+        if ($ofrAssignment !== null && $articleDao->getArticleJournalId($submissionId) === $journalId) {
             $ofrAssignment->setSubmissionId($submissionId);
             $ofrAssignment->setStatus(OFR_STATUS_SUBMITTED);
             if ($insert) {
@@ -922,32 +1041,42 @@ class ObjectsForReviewEditorHandler extends Handler {
             $this->_createTrivialNotification(NOTIFICATION_TYPE_OFR_SUBMISSION_ASSIGNED, $request);
         }
 
-        if ($returnPage != 'all') $returnPage = 'submitted';
-        $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+        $finalReturnPage = ($returnPage !== '' && $returnPage !== 'all') ? 'submitted' : $returnPage;
+        $request->redirect(null, 'editor', 'objectsForReview', $finalReturnPage !== '' ? $finalReturnPage : null);
     }
 
     /**
      * Edit object for review assignment.
      * @param array $args
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     public function editObjectForReviewAssignment($args, $request) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
+
         $returnPage = $this->_getReturnpage($request);
-
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
-        $assignmentId = array_shift($args);
-        // [SECURITY FIX] Amankan 'objectId'
-        $objectId = (int) trim($request->getUserVar('objectId') ?? '');
+        $assignmentId = isset($args[0]) ? (int) $args[0] : null;
+        
+        $objectIdInput = $request->getUserVar('objectId');
+        $objectId = $objectIdInput !== null && $objectIdInput !== '' ? (int) $objectIdInput : null;
         
         if (!$this->_ensureAssignmentExists($assignmentId, $journalId) || !$this->_ensureObjectExists($objectId, $journalId)) {
-            $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+            $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
         }
+        
+        /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
         $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
         $ofrAssignment = $ofrAssignmentDao->getById($assignmentId, $objectId);
-        if (!isset($ofrAssignment)) {
-            $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
+        if ($ofrAssignment === null) {
+            $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
         }
 
         $this->setupTemplate($request, true);
@@ -955,53 +1084,11 @@ class ObjectsForReviewEditorHandler extends Handler {
         $templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.edit');
 
         $ofrPlugin = $this->_getObjectsForReviewPlugin();
-        $ofrPlugin->import('classes.form.ObjectForReviewAssignmentForm');
-        $ofrAssignmentForm = new ObjectForReviewAssignmentForm($ofrPlugin->getName(), $assignmentId, $objectId);
-        $ofrAssignmentForm->initData();
-        $mode = $ofrPlugin->getSetting($journalId, 'mode');
-        $templateMgr->assign('mode', $mode);
-        $templateMgr->assign('returnPage', $returnPage);
-        $ofrAssignmentForm->display($request);
-    }
-
-    /**
-     * Update object for review assignment.
-     * @param array $args
-     * @param PKPRequest $request
-     */
-    public function updateObjectForReviewAssignment($args, $request) {
-        $returnPage = $this->_getReturnpage($request);
-
-        $journal = $request->getJournal();
-        $journalId = $journal->getId();
-
-        // [SECURITY FIX] Amankan 'assignmentId'
-        $assignmentId = (int) trim($request->getUserVar('assignmentId') ?? '');
-        
-        // [SECURITY FIX] Amankan 'objectId'
-        $objectId = (int) trim($request->getUserVar('objectId') ?? '');
-        
-        if (!$this->_ensureAssignmentExists($assignmentId, $journalId) || !$this->_ensureObjectExists($objectId, $journalId)) {
-            $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
-        }
-        $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
-        $ofrAssignment = $ofrAssignmentDao->getById($assignmentId, $objectId);
-        if (!isset($ofrAssignment)) {
-            $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
-        }
-
-        $ofrPlugin = $this->_getObjectsForReviewPlugin();
-        $ofrPlugin->import('classes.form.ObjectForReviewAssignmentForm');
-        $ofrAssignmentForm = new ObjectForReviewAssignmentForm($ofrPlugin->getName(), $assignmentId, $objectId);
-        $ofrAssignmentForm->readInputData();
-        if ($ofrAssignmentForm->validate()) {
-            $ofrAssignmentForm->execute();
-            $request->redirect(null, 'editor', 'objectsForReview', $returnPage);
-        } else {
-            $this->setupTemplate($request, true);
-            $templateMgr = TemplateManager::getManager($request);
-            $templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.edit');
-            $mode = $ofrPlugin->getSetting($journalId, 'mode');
+        if ($ofrPlugin) {
+            $ofrPlugin->import('classes.form.ObjectForReviewAssignmentForm');
+            $ofrAssignmentForm = new ObjectForReviewAssignmentForm($ofrPlugin->getName(), $assignmentId, $objectId);
+            $ofrAssignmentForm->initData();
+            $mode = (int) $ofrPlugin->getSetting($journalId, 'mode');
             $templateMgr->assign('mode', $mode);
             $templateMgr->assign('returnPage', $returnPage);
             $ofrAssignmentForm->display($request);
@@ -1009,7 +1096,63 @@ class ObjectsForReviewEditorHandler extends Handler {
     }
 
     /**
-     * Return valid landing/return pages
+     * Update object for review assignment.
+     * @param array $args
+     * @param mixed $request
+     * @return void
+     */
+    public function updateObjectForReviewAssignment($args, $request) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        if (!$journal) {
+            $request->redirect(null, 'index');
+        }
+        $journalId = (int) $journal->getId();
+
+        $returnPage = $this->_getReturnpage($request);
+        $assignmentIdInput = $request->getUserVar('assignmentId');
+        $assignmentId = $assignmentIdInput !== null && $assignmentIdInput !== '' ? (int) $assignmentIdInput : null;
+        
+        $objectIdInput = $request->getUserVar('objectId');
+        $objectId = $objectIdInput !== null && $objectIdInput !== '' ? (int) $objectIdInput : null;
+        
+        if (!$this->_ensureAssignmentExists($assignmentId, $journalId) || !$this->_ensureObjectExists($objectId, $journalId)) {
+            $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
+        }
+        
+        /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
+        $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
+        $ofrAssignment = $ofrAssignmentDao->getById($assignmentId, $objectId);
+        if ($ofrAssignment === null) {
+            $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
+        }
+
+        $ofrPlugin = $this->_getObjectsForReviewPlugin();
+        if ($ofrPlugin) {
+            $ofrPlugin->import('classes.form.ObjectForReviewAssignmentForm');
+            $ofrAssignmentForm = new ObjectForReviewAssignmentForm($ofrPlugin->getName(), $assignmentId, $objectId);
+            $ofrAssignmentForm->readInputData();
+            
+            if ($ofrAssignmentForm->validate()) {
+                $ofrAssignmentForm->execute();
+                $request->redirect(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null);
+            } else {
+                $this->setupTemplate($request, true);
+                $templateMgr = TemplateManager::getManager($request);
+                $templateMgr->assign('pageTitle', 'plugins.generic.objectsForReview.editor.edit');
+                $mode = (int) $ofrPlugin->getSetting($journalId, 'mode');
+                $templateMgr->assign('mode', $mode);
+                $templateMgr->assign('returnPage', $returnPage);
+                $ofrAssignmentForm->display($request);
+            }
+        }
+    }
+
+    /**
+     * Return valid landing/return pages.
      * @return array
      */
     public function &getValidReturnPages() {
@@ -1026,29 +1169,48 @@ class ObjectsForReviewEditorHandler extends Handler {
     /**
      * Ensure that we have a journal, plugin is enabled, and user is editor.
      * @see PKPHandler::authorize()
+     * @param mixed $request
+     * @param array $args
+     * @param array $roleAssignments
+     * @return bool
      */
     public function authorize($request, $args, $roleAssignments) {
-        $journal = $request->getJournal();
-        if (!isset($journal)) return false;
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        
+        if (!$journal) {
+            return false;
+        }
 
         $ofrPlugin = $this->_getObjectsForReviewPlugin();
+        if (!$ofrPlugin || !$ofrPlugin->getEnabled()) {
+            return false;
+        }
 
-        if (!isset($ofrPlugin)) return false;
-
-        if (!$ofrPlugin->getEnabled()) return false;
-
-        if (!Validation::isEditor($journal->getId())) Validation::redirectLogin();;
+        if (!Validation::isEditor((int) $journal->getId())) {
+            Validation::redirectLogin();
+        }
 
         return parent::authorize($request, $args, $roleAssignments);
     }
 
     /**
      * Setup common template variables.
-     * @param PKPRequest $request
-     * @param boolean $subclass set to true if caller is below this handler in the hierarchy
-     * @param int $objectId
+     * @param mixed $request
+     * @param bool $subclass
+     * @param int|null $objectId
+     * @return void
      */
-    public function setupTemplate($request, $subclass = false, $objectId = null) {
+    public function setupTemplate($request = null, $subclass = false, $objectId = null) {
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+
         $templateMgr = TemplateManager::getManager($request);
         $pageCrumbs = [
             [
@@ -1061,148 +1223,153 @@ class ObjectsForReviewEditorHandler extends Handler {
             ]
         ];
         if ($subclass) {
-            // [SECURITY FIX] Amankan 'returnPage'
-            $returnPage = trim($request->getUserVar('returnPage') ?? '');
-    
-            if (!empty($returnPage)) { 
+            $returnPage = (string) $request->getUserVar('returnPage');
+            if ($returnPage !== '') { 
                 $validPages = $this->getValidReturnPages();
-                if (!in_array($returnPage, $validPages)) {
-                    $returnPage = null; // Set default aman
+                if (!in_array($returnPage, $validPages, true)) {
+                    $returnPage = '';
                 }
             }
             $pageCrumbs[] = [
-                $request->url(null, 'editor', 'objectsForReview', $returnPage),
-                AppLocale::Translate('plugins.generic.objectsForReview.displayName'),
+                $request->url(null, 'editor', 'objectsForReview', $returnPage !== '' ? $returnPage : null),
+                __('plugins.generic.objectsForReview.displayName'),
                 true
             ];
         }
-        if ($objectId) {
+        if ($objectId !== null) {
+            /** @var ObjectForReviewDAO $ofrDao */
             $ofrDao = DAORegistry::getDAO('ObjectForReviewDAO');
-            $objectForReview = $ofrDao->getById($objectId);
-            $reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
-            $reviewObjectType = $reviewObjectTypeDao->getById($objectForReview->getReviewObjectTypeId());
-            
-            $pageCrumbs[] = [
-                $request->url(null, 'editor', 'objectsForReview', $objectId),
-                $reviewObjectType->getLocalizedName(),
-                true
-            ];
+            $objectForReview = $ofrDao->getById((int) $objectId);
+            if ($objectForReview) {
+                /** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
+                $reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
+                $reviewObjectType = $reviewObjectTypeDao->getById((int) $objectForReview->getReviewObjectTypeId());
+                if ($reviewObjectType) {
+                    $pageCrumbs[] = [
+                        $request->url(null, 'editor', 'objectsForReview', (string) $objectId),
+                        (string) $reviewObjectType->getLocalizedName(),
+                        true
+                    ];
+                }
+            }
         }
         $templateMgr->assign('pageHierarchy', $pageCrumbs);
         $ofrPlugin = $this->_getObjectsForReviewPlugin();
-        $templateMgr->addStyleSheet(Request::getBaseUrl() . '/' . $ofrPlugin->getStyleSheet());
+        if ($ofrPlugin) {
+            $templateMgr->addStyleSheet($request->getBaseUrl() . '/' . $ofrPlugin->getStyleSheet());
+        }
     }
 
     //
     // Private helper methods
     //
+
     /**
-     * Get the objectForReview plugin object
-     * @return ObjectsForReviewPlugin
+     * Get the objectForReview plugin object.
+     * @return ObjectsForReviewPlugin|null
      */
     protected function _getObjectsForReviewPlugin() {
-        $plugin = PluginRegistry::getPlugin('generic', OBJECTS_FOR_REVIEW_PLUGIN_NAME);
-        return $plugin;
+        return PluginRegistry::getPlugin('generic', OBJECTS_FOR_REVIEW_PLUGIN_NAME);
     }
 
     /**
-     * Get return page
-     * @param PKPRequest $request
+     * Get return page.
+     * @param mixed $request
      * @return string
      */
     protected function _getReturnpage($request) {
-        
-        // [SECURITY FIX] Amankan 'returnPage'
-        $returnPage = trim($request->getUserVar('returnPage') ?? '');
+        $returnPage = (string) $request->getUserVar('returnPage');
 
-        if (!empty($returnPage)) {
+        if ($returnPage !== '') {
             $validPages = $this->getValidReturnPages();
-            if (!in_array($returnPage, $validPages)) {
-                $returnPage = null; // Set default aman
+            if (!in_array($returnPage, $validPages, true)) {
+                $returnPage = '';
             }
         }
         return $returnPage;
     }
 
     /**
-     * Ensure object for review exists
-     * @param int $objectId
+     * Ensure object for review exists.
+     * @param int|null $objectId
      * @param int $journalId
-     * @param int $reviewObjectTypeId (optional)
-     * @return boolean
+     * @param int|null $reviewObjectTypeId
+     * @return bool
      */
     protected function _ensureObjectExists($objectId, $journalId, $reviewObjectTypeId = null) {
-        if (!$objectId) {
+        if ($objectId === null || $objectId === '') {
             return false;
         }
+        /** @var ObjectForReviewDAO $ofrDao */
         $ofrDao = DAORegistry::getDAO('ObjectForReviewDAO');
-        $objectForReview = $ofrDao->getById($objectId, $journalId);
-        if (!isset($objectForReview)) {
+        $objectForReview = $ofrDao->getById((int) $objectId, (int) $journalId);
+        if ($objectForReview === null) {
             return false;
         }
-        if ($reviewObjectTypeId && ($objectForReview->getReviewObjectTypeId() != $reviewObjectTypeId)) {
+        if ($reviewObjectTypeId !== null && (int) $objectForReview->getReviewObjectTypeId() !== (int) $reviewObjectTypeId) {
             return false;
         }
         return true;
     }
 
     /**
-     * Ensure object for review assignment exists
-     * @param int $assignmentId
+     * Ensure object for review assignment exists.
+     * @param int|null $assignmentId
      * @param int $journalId
-     * @param int $status (optional)
-     * @return boolean
+     * @param int|null $status
+     * @return bool
      */
     protected function _ensureAssignmentExists($assignmentId, $journalId, $status = null) {
-        if (!$assignmentId) {
+        if ($assignmentId === null || $assignmentId === '') {
             return false;
         }
+        /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
         $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
-        $ofrAssignment = $ofrAssignmentDao->getById($assignmentId);
-        if (!isset($ofrAssignment)) {
+        $ofrAssignment = $ofrAssignmentDao->getById((int) $assignmentId);
+        if ($ofrAssignment === null) {
             return false;
         }
-        // Ensure status
-        if ($status && ($ofrAssignment->getStatus() != $status)) {
+        if ($status !== null && (int) $ofrAssignment->getStatus() !== (int) $status) {
             return false;
         }
-        // Ensure the object exists
-        return $this->_ensureObjectExists($ofrAssignment->getObjectId(), $journalId);
+        return $this->_ensureObjectExists((int) $ofrAssignment->getObjectId(), (int) $journalId);
     }
 
     /**
      * Assign an author to an object for review.
-     * @param ObjectForReviewAssignment $ofrAssignment
+     * @param ObjectForReviewAssignment|null $ofrAssignment
      * @param ObjectForReview $objectForReview
      * @param User $author
      * @param string $returnUrl
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return bool
      */
     protected function _assign($ofrAssignment, $objectForReview, $author, $returnUrl, $request) {
         import('classes.mail.MailTemplate');
         $email = new MailTemplate('OFR_OBJECT_ASSIGNED');
-        // [SECURITY FIX] Amankan flag boolean 'send'
-        $send = (int) trim($request->getUserVar('send') ?? '');
+        $sendFlag = (bool) $request->getUserVar('send');
 
-        // Editor has filled out mail form or skipped mail
-        if ($send && !$email->hasErrors()) {
-            // Update object for review
+        if ($sendFlag && !$email->hasErrors()) {
             $ofrPlugin = $this->_getObjectsForReviewPlugin();
-            $journal = $request->getJournal();
-            $dueWeeks = $ofrPlugin->getSetting($journal->getId(), 'dueWeeks');
+            $router = $request->getRouter();
+            $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+            $journalId = $journal ? (int) $journal->getId() : 0;
+            
+            $dueWeeks = $ofrPlugin ? (int) $ofrPlugin->getSetting($journalId, 'dueWeeks') : 0;
             $dueDateTimestamp = time() + ($dueWeeks * 7 * 24 * 60 * 60);
-            $dueDate = date('Y-m-d H:i:s', $dueDateTimestamp);
 
+            /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
             $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
-            if (!isset($ofrAssignment)) {
+            if ($ofrAssignment === null) {
                 $ofrAssignment = $ofrAssignmentDao->newDataObject();
-                $ofrAssignment->setObjectId($objectForReview->getId());
-                $ofrAssignment->setUserId($author->getId());
+                $ofrAssignment->setObjectId((int) $objectForReview->getId());
+                $ofrAssignment->setUserId((int) $author->getId());
             }
             $ofrAssignment->setStatus(OFR_STATUS_ASSIGNED);
             $ofrAssignment->setDateAssigned(Core::getCurrentDate());
-            $ofrAssignment->setDateDue($dueDate);
-            if ($ofrAssignment->getId() == null) {
+            $ofrAssignment->setDateDue(date('Y-m-d H:i:s', $dueDateTimestamp));
+            
+            if ($ofrAssignment->getId() === null) {
                 $ofrAssignmentDao->insertObject($ofrAssignment);
             } else {
                 $ofrAssignmentDao->updateObject($ofrAssignment);
@@ -1217,101 +1384,114 @@ class ObjectsForReviewEditorHandler extends Handler {
     }
 
     /**
-     * Is remove action allowed
+     * Is remove action allowed.
      * @param ObjectForReviewAssignment $ofrAssignment
-     * @return boolean
+     * @return bool
      */
     protected function _canBeRemoved($ofrAssignment) {
-        return ($ofrAssignment->getStatus() == OFR_STATUS_ASSIGNED) || ($ofrAssignment->getStatus() == OFR_STATUS_MAILED) || ($ofrAssignment->getStatus() == OFR_STATUS_SUBMITTED);
+        $status = (int) $ofrAssignment->getStatus();
+        return ($status === OFR_STATUS_ASSIGNED) || ($status === OFR_STATUS_MAILED) || ($status === OFR_STATUS_SUBMITTED);
     }
 
     /**
-     * Display email form for the editor
+     * Display email form for the editor.
      * @param MailTemplate $email
      * @param ObjectForReview $objectForReview
      * @param User $user
      * @param string $returnUrl
      * @param string $action
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     protected function _displayEmailForm($email, $objectForReview, $user, $returnUrl, $action, $request) {
-        // [SECURITY FIX] Amankan flag boolean 'continued'
-        if (!(int) trim($request->getUserVar('continued') ?? '')) {
-            $userFullName = $user->getFullName();
-            $userEmail = $user->getEmail();
-            $userMailingAddress = $user->getMailingAddress();
-            $userCountryCode = $user->getCountry();
-            if (empty($userMailingAddress)) {
+        $continuedFlag = (bool) $request->getUserVar('continued');
+        $paramArray = [];
+
+        if (!$continuedFlag) {
+            $userFullName = (string) $user->getFullName();
+            $userEmail = (string) $user->getEmail();
+            $userMailingAddress = (string) $user->getMailingAddress();
+            $userCountryCode = (string) $user->getCountry();
+            
+            if ($userMailingAddress === '') {
                 $userMailingAddress = __('plugins.generic.objectsForReview.editor.noMailingAddress');
             } else {
+                /** @var CountryDAO $countryDao */
                 $countryDao = DAORegistry::getDAO('CountryDAO');
                 $countries = $countryDao->getCountries();
-                $userCountry = $countries[$userCountryCode];
-                $userMailingAddress .= "\n" . $userCountry;
+                if (isset($countries[$userCountryCode])) {
+                    $userMailingAddress .= "\n" . (string) $countries[$userCountryCode];
+                }
             }
 
             $editor = $objectForReview->getEditor();
-            $editorFullName = $editor->getFullName();
-            $editorEmail = $editor->getEmail();
-            $editorContactSignature = $editor->getContactSignature();
-            
-            $paramArray = [];
-
-            if ($action == 'OFR_OBJECT_ASSIGNED') {
-                $ofrPlugin = $this->_getObjectsForReviewPlugin();
-                $journal = $request->getJournal();
-                $dueWeeks = $ofrPlugin->getSetting($journal->getId(), 'dueWeeks');
-                $dueDateTimestamp = time() + ($dueWeeks * 7 * 24 * 60 * 60);
-                $paramArray = [
-                    'authorName' => strip_tags($userFullName),
-                    'authorMailingAddress' => PKPString::html2text($userMailingAddress),
-                    'objectForReviewTitle' => '"' . strip_tags($objectForReview->getTitle()) . '"',
-                    'objectForReviewDueDate' => date('l, F j, Y', $dueDateTimestamp),
-                    'userProfileUrl' => $request->url(null, 'user', 'profile'),
-                    'submissionUrl' => $request->url(null, 'author', 'submit'),
-                    'editorialContactSignature' => PKPString::html2text($editorContactSignature)
-                ];
-            } elseif ($action == 'OFR_OBJECT_DENIED') {
-                $paramArray = [
-                    'authorName' => strip_tags($userFullName),
-                    'objectForReviewTitle' => '"' . strip_tags($objectForReview->getTitle()) . '"',
-                    'submissionUrl' => $request->url(null, 'author', 'submit'),
-                    'editorialContactSignature' => PKPString::html2text($editorContactSignature)
-                ];
-            } elseif ($action == 'OFR_OBJECT_MAILED') {
-                $paramArray = [
-                    'authorName' => strip_tags($userFullName),
-                    'authorMailingAddress' => PKPString::html2text($userMailingAddress),
-                    'objectForReviewTitle' => '"' . strip_tags($objectForReview->getTitle()) . '"',
-                    'submissionUrl' => $request->url(null, 'author', 'submit'),
-                    'editorialContactSignature' => PKPString::html2text($editorContactSignature)
-                ];
-            } elseif ($action == 'OFR_REVIEWER_REMOVED') {
-                $paramArray = [
-                    'authorName' => strip_tags($userFullName),
-                    'objectForReviewTitle' => '"' . strip_tags($objectForReview->getTitle()) . '"',
-                    'editorialContactSignature' => PKPString::html2text($editorContactSignature)
-                ];
+            if ($editor) {
+                $editorFullName = (string) $editor->getFullName();
+                $editorEmail = (string) $editor->getEmail();
+                $editorContactSignature = (string) $editor->getContactSignature();
+                
+                if ($action === 'OFR_OBJECT_ASSIGNED') {
+                    $router = $request->getRouter();
+                    $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+                    $journalId = $journal ? (int) $journal->getId() : 0;
+                    
+                    $ofrPlugin = $this->_getObjectsForReviewPlugin();
+                    $dueWeeks = $ofrPlugin ? (int) $ofrPlugin->getSetting($journalId, 'dueWeeks') : 0;
+                    $dueDateTimestamp = time() + ($dueWeeks * 7 * 24 * 60 * 60);
+                    
+                    $paramArray = [
+                        'authorName' => strip_tags($userFullName),
+                        'authorMailingAddress' => PKPString::html2text($userMailingAddress),
+                        'objectForReviewTitle' => '"' . strip_tags((string) $objectForReview->getTitle()) . '"',
+                        'objectForReviewDueDate' => date('l, F j, Y', $dueDateTimestamp),
+                        'userProfileUrl' => $request->url(null, 'user', 'profile'),
+                        'submissionUrl' => $request->url(null, 'author', 'submit'),
+                        'editorialContactSignature' => PKPString::html2text($editorContactSignature)
+                    ];
+                } elseif ($action === 'OFR_OBJECT_DENIED') {
+                    $paramArray = [
+                        'authorName' => strip_tags($userFullName),
+                        'objectForReviewTitle' => '"' . strip_tags((string) $objectForReview->getTitle()) . '"',
+                        'submissionUrl' => $request->url(null, 'author', 'submit'),
+                        'editorialContactSignature' => PKPString::html2text($editorContactSignature)
+                    ];
+                } elseif ($action === 'OFR_OBJECT_MAILED') {
+                    $paramArray = [
+                        'authorName' => strip_tags($userFullName),
+                        'authorMailingAddress' => PKPString::html2text($userMailingAddress),
+                        'objectForReviewTitle' => '"' . strip_tags((string) $objectForReview->getTitle()) . '"',
+                        'submissionUrl' => $request->url(null, 'author', 'submit'),
+                        'editorialContactSignature' => PKPString::html2text($editorContactSignature)
+                    ];
+                } elseif ($action === 'OFR_REVIEWER_REMOVED') {
+                    $paramArray = [
+                        'authorName' => strip_tags($userFullName),
+                        'objectForReviewTitle' => '"' . strip_tags((string) $objectForReview->getTitle()) . '"',
+                        'editorialContactSignature' => PKPString::html2text($editorContactSignature)
+                    ];
+                }
+                $email->addRecipient($userEmail, $userFullName);
+                $email->setFrom($editorEmail, $editorFullName);
+                $email->assignParams($paramArray);
             }
-            $email->addRecipient($userEmail, $userFullName);
-            $email->setFrom($editorEmail, $editorFullName);
-            $email->assignParams($paramArray);
         }
         $email->displayEditForm($returnUrl);
     }
 
     /**
-     * Create trivial notification
+     * Create trivial notification.
      * @param int $notificationType
-     * @param PKPRequest $request
+     * @param mixed $request
+     * @return void
      */
     protected function _createTrivialNotification($notificationType, $request) {
         $user = $request->getUser();
-        import('classes.notification.NotificationManager');
-        $notificationManager = new NotificationManager();
-        $notificationManager->createTrivialNotification($user->getId(), $notificationType);
+        if ($user) {
+            import('classes.notification.NotificationManager');
+            $notificationManager = new NotificationManager();
+            $notificationManager->createTrivialNotification((int) $user->getId(), (int) $notificationType);
+        }
     }
 
 }
-
 ?>
