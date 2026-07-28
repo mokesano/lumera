@@ -39,6 +39,7 @@ class VersionForm extends Form {
 
         $this->journalId = (int) $journalId;
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
         $this->version = $rtDao->getVersion($versionId, $journalId);
 
@@ -49,6 +50,8 @@ class VersionForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param int|null $versionId
+     * @param int $journalId
      */
     public function VersionForm($versionId, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -117,6 +120,7 @@ class VersionForm extends Form {
      * @return int the version ID
      */
     public function execute($object = null) {
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $version = $this->version;
@@ -138,5 +142,6 @@ class VersionForm extends Form {
 
         return $this->versionId;
     }
+    
 }
 ?>

@@ -429,6 +429,17 @@ class PayPalPlugin extends PaymethodPlugin {
                                 $queuedPayment->setAmount($grantedAmount);
                                 $queuedPayment->setCurrencyCode($grantedCurrency);
                                 $queuedPaymentDao->updateQueuedPayment($queuedPaymentId, $queuedPayment);
+
+                                // [FIX] Kalau queued payment ini sudah tertaut ke invoice, sinkronkan juga nominalnya
+                                if (method_exists($queuedPayment, 'getInvoiceId') && $queuedPayment->getInvoiceId() > 0) {
+                                    import('lib.wizdam.classes.invoice.Invoice');
+                                    /** @var InvoiceDAO $invoiceDao */
+                                    $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
+                                    $invoiceDao->update(
+                                        'UPDATE invoices SET amount = ?, currency_code = ? WHERE invoice_id = ? AND status = ?',
+                                        [$grantedAmount, $grantedCurrency, $queuedPayment->getInvoiceId(), Invoice::STATUS_UNPAID]
+                                    );
+                                }
                             }
 
                             if ($ojsPaymentManager->fulfillQueuedPayment($queuedPayment, $this->getName())) {

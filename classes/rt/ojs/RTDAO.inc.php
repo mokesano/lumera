@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see RT
  *
  * @brief DAO operations for the OJS Reading Tools interface.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.rt.ojs.JournalRT');
@@ -55,6 +53,7 @@ class RTDAO extends DAO {
      * @return bool
      */
     public function updateJournalRT($rt) {
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $journalId = $rt->getJournalId();
     
@@ -611,5 +610,6 @@ class RTDAO extends DAO {
         $result->close();
         unset($result);
     }
+    
 }
 ?>

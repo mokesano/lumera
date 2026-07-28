@@ -40,6 +40,7 @@ class SearchForm extends Form {
         parent::__construct('rtadmin/search.tpl');
         $this->addCheck(new FormValidatorPost($this));
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
         $this->search = $rtDao->getSearch($searchId);
 
@@ -53,6 +54,9 @@ class SearchForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param int|null $searchId
+     * @param int $contextId
+     * @param int $versionId
      */
     public function SearchForm($searchId, $contextId, $versionId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -129,6 +133,7 @@ class SearchForm extends Form {
      * @return int the search ID
      */
     public function execute($object = null) {
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $search = $this->search;
@@ -153,5 +158,6 @@ class SearchForm extends Form {
 
         return $this->searchId;
     }
+    
 }
 ?>

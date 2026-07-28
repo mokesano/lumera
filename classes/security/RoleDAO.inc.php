@@ -19,267 +19,271 @@ import('classes.security.Role');
 
 class RoleDAO extends DAO {
     
-    /** @var \DAO $userDao */
-    public $userDao;
+    /** @var UserDAO */
+    protected $_userDao;
 
     /**
      * Constructor.
      */
     public function __construct() {
         parent::__construct();
-        $this->userDao = DAORegistry::getDAO('UserDAO');
+        $this->_userDao = DAORegistry::getDAO('UserDAO');
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function RoleDAO() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::RoleDAO(). Please refactor to parent::__construct().", 
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Retrieve a role.
-     * @param mixed $journalId int
-     * @param mixed $userId int
-     * @param mixed $roleId int
-     * @return Role
+     * @param int $journalId
+     * @param int $userId
+     * @param int $roleId
+     * @return Role|null
      */
     public function getRole($journalId, $userId, $roleId) {
         $result = $this->retrieve(
             'SELECT * FROM roles WHERE journal_id = ? AND user_id = ? AND role_id = ?',
-            array(
-                (int) $journalId,
-                (int) $userId,
-                (int) $roleId
-            )
+            [(int) $journalId, (int) $userId, (int) $roleId]
         );
+        
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if ($result && !$result->EOF) {
             $returner = $this->_returnRoleFromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Internal function to return a Role object from a row.
-     * @param mixed $row array
+     * @param array $row
      * @return Role
      */
     public function _returnRoleFromRow($row) {
         $role = new Role();
-        $role->setJournalId($row['journal_id']);
-        $role->setUserId($row['user_id']);
-        $role->setRoleId($row['role_id']);
+        $role->setJournalId((int) $row['journal_id']);
+        $role->setUserId((int) $row['user_id']);
+        $role->setRoleId((int) $row['role_id']);
 
-        HookRegistry::dispatch('RoleDAO::_returnRoleFromRow', array(&$role, &$row));
+        $tempRole = $role;
+        $tempRow = $row;
+        HookRegistry::dispatch('RoleDAO::_returnRoleFromRow', [&$tempRole, &$tempRow]);
 
         return $role;
     }
 
     /**
      * Insert a new role.
-     * @param mixed $role Role
+     * @param Role $role
+     * @return bool
      */
     public function insertRole($role) {
-        return $this->update(
-            'INSERT INTO roles
-                (journal_id, user_id, role_id)
-                VALUES
-                (?, ?, ?)',
-            array(
-                (int) $role->getJournalId(),
-                (int) $role->getUserId(),
-                (int) $role->getRoleId()
-            )
+        return (bool) $this->update(
+            'INSERT INTO roles (journal_id, user_id, role_id) VALUES (?, ?, ?)',
+            [(int) $role->getJournalId(), (int) $role->getUserId(), (int) $role->getRoleId()]
         );
     }
 
     /**
      * Delete a role.
-     * @param mixed $role Role
+     * @param Role $role
+     * @return bool
      */
     public function deleteRole($role) {
-        return $this->update(
+        return (bool) $this->update(
             'DELETE FROM roles WHERE journal_id = ? AND user_id = ? AND role_id = ?',
-            array(
-                (int) $role->getJournalId(),
-                (int) $role->getUserId(),
-                (int) $role->getRoleId()
-            )
+            [(int) $role->getJournalId(), (int) $role->getUserId(), (int) $role->getRoleId()]
         );
     }
 
     /**
      * Retrieve a list of all roles for a specified user.
-     * @param mixed $userId int
-     * @param $journalId int optional, include roles only in this journal
+     * @param int $userId
+     * @param int|null $journalId optional, include roles only in this journal
      * @return array matching Roles
      */
     public function getRolesByUserId($userId, $journalId = null) {
-        $roles = array();
-        $params = array((int) $userId);
-        if ($journalId !== null) $params[] = (int) $journalId;
-        $result = $this->retrieve(
-            'SELECT * FROM roles WHERE user_id = ?
-            ' . (isset($journalId) ? ' AND journal_id = ?' : '') . '
-            ORDER BY journal_id',
-            $params
-        );
-        while (!$result->EOF) {
-            $roles[] = $this->_returnRoleFromRow($result->GetRowAssoc(false));
-            $result->MoveNext();
+        $roles = [];
+        $params = [(int) $userId];
+        $sql = 'SELECT * FROM roles WHERE user_id = ?';
+        
+        if ($journalId !== null) {
+            $sql .= ' AND journal_id = ?';
+            $params[] = (int) $journalId;
         }
-        $result->Close();
+        $sql .= ' ORDER BY journal_id';
+        
+        $result = $this->retrieve($sql, $params);
+        
+        if ($result) {
+            while (!$result->EOF) {
+                $roles[] = $this->_returnRoleFromRow($result->GetRowAssoc(false));
+                $result->MoveNext();
+            }
+            $result->Close();
+        }
         return $roles;
     }
 
     /**
-    * Return an array of objects corresponding to the roles a given user has, grouped by context id.
-    * @param mixed $userId int
-    * @return array
-    */
+     * Return an array of objects corresponding to the roles a given user has, grouped by context id.
+     * @param int $userId
+     * @return array
+     */
     public function getByUserIdGroupedByContext($userId) {
         $roles = $this->getRolesByUserId($userId);
-        $groupedRoles = array();
+        $groupedRoles = [];
         foreach ($roles as $role) {
-            $groupedRoles[$role->getJournalId()][$role->getRoleId()] = $role;
+            $groupedRoles[(int) $role->getJournalId()][(int) $role->getRoleId()] = $role;
         }
         return $groupedRoles;
     }
 
     /**
      * Retrieve a list of users in a specified role.
-     * @param mixed $roleId
-     * @param mixed $journalId
-     * @param mixed $searchType
-     * @param mixed $search
-     * @param mixed $searchMatch
-     * @param mixed $dbResultRange
-     * @param mixed $sortBy
-     * @param mixed $sortDirection
-     * @return DAOResultFactory matching Users
+     * @param int|null $roleId
+     * @param int|null $journalId
+     * @param string|null $searchType
+     * @param string|null $search
+     * @param string|null $searchMatch
+     * @param DBResultRange|null $dbResultRange
+     * @param string|null $sortBy
+     * @param int $sortDirection
+     * @return DAOResultFactory|null matching Users
      */
     public function getUsersByRoleId($roleId = null, $journalId = null, $searchType = null, $search = null, $searchMatch = null, $dbResultRange = null, $sortBy = null, $sortDirection = SORT_DIRECTION_ASC) {
-        // For security / resource usage reasons, a role or journal ID
-        // must be specified. Don't allow calls supplying neither.
-        if ($journalId === null && $roleId === null) return null;
+        // For security / resource usage reasons, a role or journal ID must be specified.
+        if ($journalId === null && $roleId === null) {
+            return null;
+        }
 
-        $paramArray = array('interest');
-        if (isset($roleId)) $paramArray[] = (int) $roleId;
-        if (isset($journalId)) $paramArray[] = (int) $journalId;
+        $paramArray = ['interest'];
+        $sqlConditions = ' WHERE u.user_id = r.user_id ';
+        
+        if ($roleId !== null) {
+            $paramArray[] = (int) $roleId;
+            $sqlConditions .= ' AND r.role_id = ? ';
+        }
+        if ($journalId !== null) {
+            $paramArray[] = (int) $journalId;
+            $sqlConditions .= ' AND r.journal_id = ? ';
+        }
 
         $searchSql = '';
-
-        $searchTypeMap = array(
+        $searchTypeMap = [
             USER_FIELD_FIRSTNAME => 'u.first_name',
             USER_FIELD_LASTNAME => 'u.last_name',
             USER_FIELD_USERNAME => 'u.username',
             USER_FIELD_EMAIL => 'u.email',
             USER_FIELD_INTERESTS => 'cves.setting_value'
-        );
+        ];
 
-        if (!empty($search) && isset($searchTypeMap[$searchType])) {
+        if ($search !== null && $search !== '' && $searchType !== null && isset($searchTypeMap[$searchType])) {
             $fieldName = $searchTypeMap[$searchType];
-            switch ($searchMatch) {
-                case 'is':
-                    $searchSql = "AND LOWER($fieldName) = LOWER(?)";
-                    $paramArray[] = $search;
-                    break;
-                case 'contains':
-                    $searchSql = "AND LOWER($fieldName) LIKE LOWER(?)";
-                    $paramArray[] = '%' . $search . '%';
-                    break;
-                case 'startsWith':
-                    $searchSql = "AND LOWER($fieldName) LIKE LOWER(?)";
-                    $paramArray[] = $search . '%';
-                    break;
+            if ($searchMatch === 'is') {
+                $searchSql = " AND LOWER($fieldName) = LOWER(?)";
+                $paramArray[] = (string) $search;
+            } elseif ($searchMatch === 'startsWith') {
+                $searchSql = " AND LOWER($fieldName) LIKE LOWER(?)";
+                $paramArray[] = (string) $search . '%';
+            } else { // contains
+                $searchSql = " AND LOWER($fieldName) LIKE LOWER(?)";
+                $paramArray[] = '%' . (string) $search . '%';
             }
-        } elseif (!empty($search)) switch ($searchType) {
-            case USER_FIELD_USERID:
-                $searchSql = 'AND u.user_id=?';
-                $paramArray[] = $search;
-                break;
-            case USER_FIELD_INITIAL:
-                $searchSql = 'AND LOWER(u.last_name) LIKE LOWER(?)';
-                $paramArray[] = $search . '%';
-                break;
+        } elseif ($search !== null && $search !== '') {
+            if ($searchType === USER_FIELD_USERID) {
+                $searchSql = ' AND u.user_id = ?';
+                $paramArray[] = (int) $search;
+            } elseif ($searchType === USER_FIELD_INITIAL) {
+                $searchSql = ' AND LOWER(u.last_name) LIKE LOWER(?)';
+                $paramArray[] = (string) $search . '%';
+            }
         }
 
-        $searchSql .= ($sortBy?(' ORDER BY ' . $this->getSortMapping($sortBy) . ' ' . $this->getDirectionMapping($sortDirection)) : '');
+        if ($sortBy !== null && $sortBy !== '') {
+            $searchSql .= ' ORDER BY ' . $this->getSortMapping($sortBy) . ' ' . $this->getDirectionMapping($sortDirection);
+        }
 
         $result = $this->retrieveRange(
             'SELECT DISTINCT u.*
-            FROM    users u
+            FROM users u
                 LEFT JOIN controlled_vocabs cv ON (cv.symbolic = ?)
                 LEFT JOIN user_interests ui ON (ui.user_id = u.user_id)
                 LEFT JOIN controlled_vocab_entries cve ON (cve.controlled_vocab_id = cv.controlled_vocab_id AND cve.controlled_vocab_entry_id = ui.controlled_vocab_entry_id)
                 LEFT JOIN controlled_vocab_entry_settings cves ON (cves.controlled_vocab_entry_id = cve.controlled_vocab_entry_id),
-                roles AS r WHERE u.user_id = r.user_id ' . (isset($roleId)?'AND r.role_id = ?':'') . (isset($journalId) ? ' AND r.journal_id = ?' : '') . ' ' . $searchSql,
+                roles AS r ' . $sqlConditions . $searchSql,
             $paramArray,
             $dbResultRange
         );
 
-        $returner = new DAOResultFactory($result, $this->userDao, '_returnUserFromRowWithData');
-        return $returner;
+        return new DAOResultFactory($result, $this->_userDao, '_returnUserFromRowWithData');
     }
 
     /**
      * Retrieve a list of all users with some role in the specified journal.
-     * @param mixed $journalId
-     * @param mixed $sortDirection
      * @param int $journalId
+     * @param string|null $searchType
+     * @param string|null $search
+     * @param string|null $searchMatch
      * @param DBResultRange|null $dbResultRange
-     * @return DAOResultFactory|null
+     * @param string|null $sortBy
+     * @param int $sortDirection
+     * @return DAOResultFactory
      */
     public function getUsersByJournalId($journalId, $searchType = null, $search = null, $searchMatch = null, $dbResultRange = null, $sortBy = null, $sortDirection = SORT_DIRECTION_ASC) {
-        $paramArray = array('interest', (int) $journalId);
+        $paramArray = ['interest', (int) $journalId];
         $searchSql = '';
 
-        $searchTypeMap = array(
+        $searchTypeMap = [
             USER_FIELD_FIRSTNAME => 'u.first_name',
             USER_FIELD_LASTNAME => 'u.last_name',
             USER_FIELD_USERNAME => 'u.username',
             USER_FIELD_EMAIL => 'u.email',
             USER_FIELD_INTERESTS => 'cves.setting_value'
-        );
+        ];
 
-        if (!empty($search) && isset($searchTypeMap[$searchType])) {
+        if ($search !== null && $search !== '' && $searchType !== null && isset($searchTypeMap[$searchType])) {
             $fieldName = $searchTypeMap[$searchType];
-            switch ($searchMatch) {
-                case 'is':
-                    $searchSql = "AND LOWER($fieldName) = LOWER(?)";
-                    $paramArray[] = $search;
-                    break;
-                case 'contains':
-                    $searchSql = "AND LOWER($fieldName) LIKE LOWER(?)";
-                    $paramArray[] = '%' . $search . '%';
-                    break;
-                case 'startsWith':
-                    $searchSql = "AND LOWER($fieldName) LIKE LOWER(?)";
-                    $paramArray[] = $search . '%';
-                    break;
+            if ($searchMatch === 'is') {
+                $searchSql = " AND LOWER($fieldName) = LOWER(?)";
+                $paramArray[] = (string) $search;
+            } elseif ($searchMatch === 'startsWith') {
+                $searchSql = " AND LOWER($fieldName) LIKE LOWER(?)";
+                $paramArray[] = (string) $search . '%';
+            } else { // contains
+                $searchSql = " AND LOWER($fieldName) LIKE LOWER(?)";
+                $paramArray[] = '%' . (string) $search . '%';
             }
-        } elseif (!empty($search)) switch ($searchType) {
-            case USER_FIELD_USERID:
-                $searchSql = 'AND u.user_id=?';
-                $paramArray[] = $search;
-                break;
-            case USER_FIELD_INITIAL:
-                $searchSql = 'AND LOWER(u.last_name) LIKE LOWER(?)';
-                $paramArray[] = $search . '%';
-                break;
+        } elseif ($search !== null && $search !== '') {
+            if ($searchType === USER_FIELD_USERID) {
+                $searchSql = ' AND u.user_id = ?';
+                $paramArray[] = (int) $search;
+            } elseif ($searchType === USER_FIELD_INITIAL) {
+                $searchSql = ' AND LOWER(u.last_name) LIKE LOWER(?)';
+                $paramArray[] = (string) $search . '%';
+            }
         }
 
-        $searchSql .= ($sortBy?(' ORDER BY ' . $this->getSortMapping($sortBy) . ' ' . $this->getDirectionMapping($sortDirection)) : '');
+        if ($sortBy !== null && $sortBy !== '') {
+            $searchSql .= ' ORDER BY ' . $this->getSortMapping($sortBy) . ' ' . $this->getDirectionMapping($sortDirection);
+        }
 
         $result = $this->retrieveRange(
             'SELECT DISTINCT u.*
-            FROM    users u
+            FROM users u
                 LEFT JOIN controlled_vocabs cv ON (cv.symbolic = ?)
                 LEFT JOIN user_interests ui ON (ui.user_id = u.user_id)
                 LEFT JOIN controlled_vocab_entries cve ON (cve.controlled_vocab_id = cv.controlled_vocab_id AND ui.controlled_vocab_entry_id = cve.controlled_vocab_entry_id)
@@ -289,8 +293,7 @@ class RoleDAO extends DAO {
             $dbResultRange
         );
 
-        $returner = new DAOResultFactory($result, $this->userDao, '_returnUserFromRowWithData');
-        return $returner;
+        return new DAOResultFactory($result, $this->_userDao, '_returnUserFromRowWithData');
     }
 
     /**
@@ -300,18 +303,24 @@ class RoleDAO extends DAO {
      * @return int
      */
     public function getJournalUsersCount($journalId, $roleId = null) {
-        $params = array((int) $journalId);
+        $params = [(int) $journalId];
+        $sql = 'SELECT COUNT(DISTINCT user_id) AS count FROM roles WHERE journal_id = ?';
+        
         if ($roleId !== null) {
+            $sql .= ' AND role_id = ?';
             $params[] = (int) $roleId;
         }
-        $result = $this->retrieve(
-            'SELECT COUNT(DISTINCT user_id) FROM roles WHERE journal_id = ?' . ($roleId === null ? '' : ' AND role_id = ?'),
-            $params
-        );
-        /** @var array|false $fields */
-        $fields = $result->fields;
-        $returner = isset($fields[0]) ? (int) $fields[0] : 0;
-        $result->Close();
+        
+        $result = $this->retrieve($sql, $params);
+        
+        $returner = 0;
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = (int) ($row['count'] ?? 0);
+        }
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
@@ -323,204 +332,195 @@ class RoleDAO extends DAO {
      */
     public function getJournalUsersRoleCount($journalId, $roleId) {
         $result = $this->retrieve(
-            'SELECT COUNT(DISTINCT user_id) FROM roles WHERE journal_id = ? AND role_id = ?',
-            array(
-                (int) $journalId,
-                (int) $roleId
-            )
+            'SELECT COUNT(DISTINCT user_id) AS count FROM roles WHERE journal_id = ? AND role_id = ?',
+            [(int) $journalId, (int) $roleId]
         );
-        /** @var array|false $fields */
-        $fields = $result->fields;
-        $returner = isset($fields[0]) ? (int) $fields[0] : 0;
-        $result->Close();
+        
+        $returner = 0;
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = (int) ($row['count'] ?? 0);
+        }
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Select all roles for a specified journal.
-     * @param mixed $journalId
-     * @param mixed $roleId
+     * @param int|null $journalId
+     * @param int|null $roleId
+     * @return DAOResultFactory
      */
     public function getRolesByJournalId($journalId = null, $roleId = null) {
-        $params = array();
-        $conditions = array();
-        if (isset($journalId)) {
+        $params = [];
+        $conditions = [];
+        
+        if ($journalId !== null) {
             $params[] = (int) $journalId;
             $conditions[] = 'journal_id = ?';
         }
-        if (isset($roleId)) {
+        if ($roleId !== null) {
             $params[] = (int) $roleId;
             $conditions[] = 'role_id = ?';
         }
 
-        $result = $this->retrieve(
-            'SELECT * FROM roles' . (empty($conditions) ? '' : ' WHERE ' . join(' AND ', $conditions)),
-            $params
-        );
+        $sql = 'SELECT * FROM roles';
+        if (!empty($conditions)) {
+            $sql .= ' WHERE ' . implode(' AND ', $conditions);
+        }
 
-        $returner = new DAOResultFactory($result, $this, '_returnRoleFromRow');
-        return $returner;
+        $result = $this->retrieve($sql, $params);
+        return new DAOResultFactory($result, $this, '_returnRoleFromRow');
     }
 
     /**
      * Delete all roles for a specified journal.
-     * @param mixed $journalId
+     * @param int $journalId
+     * @return bool
      */
     public function deleteRoleByJournalId($journalId) {
-        return $this->update(
-            'DELETE FROM roles WHERE journal_id = ?', (int) $journalId
-        );
+        return (bool) $this->update('DELETE FROM roles WHERE journal_id = ?', [(int) $journalId]);
     }
 
     /**
-     * Delete all roles for a specified journal.
-     * @param mixed $userId
-     * @param mixed $journalId
-     * @param mixed $roleId
+     * Delete roles by user ID, optionally filtered by journal and role.
+     * @param int $userId
+     * @param int|null $journalId
+     * @param int|null $roleId
+     * @return bool
      */
-    public function deleteRoleByUserId($userId, $journalId  = null, $roleId = null) {
-        return $this->update(
-            'DELETE FROM roles WHERE user_id = ?' . (isset($journalId) ? ' AND journal_id = ?' : '') . (isset($roleId) ? ' AND role_id = ?' : ''),
-            isset($journalId) && isset($roleId) ? array((int) $userId, (int) $journalId, (int) $roleId)
-            : (isset($journalId) ? array((int) $userId, (int) $journalId)
-            : (isset($roleId) ? array((int) $userId, (int) $roleId) : (int) $userId))
-        );
+    public function deleteRoleByUserId($userId, $journalId = null, $roleId = null) {
+        $sql = 'DELETE FROM roles WHERE user_id = ?';
+        $params = [(int) $userId];
+        
+        if ($journalId !== null) {
+            $sql .= ' AND journal_id = ?';
+            $params[] = (int) $journalId;
+        }
+        if ($roleId !== null) {
+            $sql .= ' AND role_id = ?';
+            $params[] = (int) $roleId;
+        }
+        
+        return (bool) $this->update($sql, $params);
     }
 
     /**
-     * Validation check to see if a user belongs to any group that has a given role.
-     * @param mixed $journalId
-     * @param mixed $userId
-     * @param mixed $roleId
+     * [DEPRECATED] Validation check to see if a user belongs to any group that has a given role.
+     * @param int $journalId
+     * @param int $userId
+     * @param int $roleId
+     * @return bool
+     * @deprecated
      */
     public function roleExists($journalId, $userId, $roleId) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->userHasRole($journalId, $userId, $roleId);
     }
 
     /**
-     * Validation check to see if a user belongs to any group that has a given role
-     * @param mixed $journalId
-     * @param mixed $userId
-     * @param mixed $roleId
+     * Validation check to see if a user belongs to any group that has a given role.
+     * @param int $journalId
+     * @param int $userId
+     * @param int $roleId
+     * @return bool
      */
     public function userHasRole($journalId, $userId, $roleId) {
         $result = $this->retrieve(
-            'SELECT COUNT(*) FROM roles WHERE journal_id = ? AND user_id = ? AND role_id = ?', 
-            array((int) $journalId, (int) $userId, (int) $roleId)
+            'SELECT COUNT(*) AS count FROM roles WHERE journal_id = ? AND user_id = ? AND role_id = ?', 
+            [(int) $journalId, (int) $userId, (int) $roleId]
         );
-        /** @var array|false $fields */
-        $fields = $result->fields;
-        $returner = isset($fields[0]) && (int)$fields[0] > 0;
-        $result->Close();
+        
+        $returner = false;
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = ((int) ($row['count'] ?? 0)) > 0;
+        }
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Get the i18n key name associated with the specified role.
-     * @param mixed $roleId
+     * @param int $roleId
+     * @param bool $plural
+     * @return string
      */
     public static function getRoleName($roleId, $plural = false) {
-        switch ($roleId) {
-            case ROLE_ID_SITE_ADMIN:
-                return 'user.role.siteAdmin' . ($plural ? 's' : '');
-            case ROLE_ID_JOURNAL_MANAGER:
-                return 'user.role.manager' . ($plural ? 's' : '');
-            case ROLE_ID_EDITOR:
-                return 'user.role.editor' . ($plural ? 's' : '');
-            case ROLE_ID_SECTION_EDITOR:
-                return 'user.role.sectionEditor' . ($plural ? 's' : '');
-            case ROLE_ID_LAYOUT_EDITOR:
-                return 'user.role.layoutEditor' . ($plural ? 's' : '');
-            case ROLE_ID_REVIEWER:
-                return 'user.role.reviewer' . ($plural ? 's' : '');
-            case ROLE_ID_COPYEDITOR:
-                return 'user.role.copyeditor' . ($plural ? 's' : '');
-            case ROLE_ID_PROOFREADER:
-                return 'user.role.proofreader' . ($plural ? 's' : '');
-            case ROLE_ID_AUTHOR:
-                return 'user.role.author' . ($plural ? 's' : '');
-            case ROLE_ID_READER:
-                return 'user.role.reader' . ($plural ? 's' : '');
-            case ROLE_ID_SUBSCRIPTION_MANAGER:
-                return 'user.role.subscriptionManager' . ($plural ? 's' : '');
-            default:
-                return '';
+        $suffix = $plural ? 's' : '';
+        switch ((int) $roleId) {
+            case ROLE_ID_SITE_ADMIN: return 'user.role.siteAdmin' . $suffix;
+            case ROLE_ID_JOURNAL_MANAGER: return 'user.role.manager' . $suffix;
+            case ROLE_ID_EDITOR: return 'user.role.editor' . $suffix;
+            case ROLE_ID_SECTION_EDITOR: return 'user.role.sectionEditor' . $suffix;
+            case ROLE_ID_LAYOUT_EDITOR: return 'user.role.layoutEditor' . $suffix;
+            case ROLE_ID_REVIEWER: return 'user.role.reviewer' . $suffix;
+            case ROLE_ID_COPYEDITOR: return 'user.role.copyeditor' . $suffix;
+            case ROLE_ID_PROOFREADER: return 'user.role.proofreader' . $suffix;
+            case ROLE_ID_AUTHOR: return 'user.role.author' . $suffix;
+            case ROLE_ID_READER: return 'user.role.reader' . $suffix;
+            case ROLE_ID_SUBSCRIPTION_MANAGER: return 'user.role.subscriptionManager' . $suffix;
+            default: return '';
         }
     }
 
     /**
      * Get the URL path associated with the specified role's operations.
-     * @param mixed $roleId
+     * @param int $roleId
+     * @return string
      */
     public static function getRolePath($roleId) {
-        switch ($roleId) {
-            case ROLE_ID_SITE_ADMIN:
-                return 'admin';
-            case ROLE_ID_JOURNAL_MANAGER:
-                return 'manager';
-            case ROLE_ID_EDITOR:
-                return 'editor';
-            case ROLE_ID_SECTION_EDITOR:
-                return 'sectionEditor';
-            case ROLE_ID_LAYOUT_EDITOR:
-                return 'layoutEditor';
-            case ROLE_ID_REVIEWER:
-                return 'reviewer';
-            case ROLE_ID_COPYEDITOR:
-                return 'copyeditor';
-            case ROLE_ID_PROOFREADER:
-                return 'proofreader';
-            case ROLE_ID_AUTHOR:
-                return 'author';
-            case ROLE_ID_READER:
-                return 'reader';
-            case ROLE_ID_SUBSCRIPTION_MANAGER:
-                return 'subscriptionManager';
-            default:
-                return '';
+        switch ((int) $roleId) {
+            case ROLE_ID_SITE_ADMIN: return 'admin';
+            case ROLE_ID_JOURNAL_MANAGER: return 'manager';
+            case ROLE_ID_EDITOR: return 'editor';
+            case ROLE_ID_SECTION_EDITOR: return 'sectionEditor';
+            case ROLE_ID_LAYOUT_EDITOR: return 'layoutEditor';
+            case ROLE_ID_REVIEWER: return 'reviewer';
+            case ROLE_ID_COPYEDITOR: return 'copyeditor';
+            case ROLE_ID_PROOFREADER: return 'proofreader';
+            case ROLE_ID_AUTHOR: return 'author';
+            case ROLE_ID_READER: return 'reader';
+            case ROLE_ID_SUBSCRIPTION_MANAGER: return 'subscriptionManager';
+            default: return '';
         }
     }
 
     /**
      * Get a role's ID based on its path.
-     * @param mixed $rolePath
+     * @param string $rolePath
+     * @return int|null
      */
     public static function getRoleIdFromPath($rolePath) {
-        switch ($rolePath) {
-            case 'admin':
-                return ROLE_ID_SITE_ADMIN;
-            case 'manager':
-                return ROLE_ID_JOURNAL_MANAGER;
-            case 'editor':
-                return ROLE_ID_EDITOR;
-            case 'sectionEditor':
-                return ROLE_ID_SECTION_EDITOR;
-            case 'layoutEditor':
-                return ROLE_ID_LAYOUT_EDITOR;
-            case 'reviewer':
-                return ROLE_ID_REVIEWER;
-            case 'copyeditor':
-                return ROLE_ID_COPYEDITOR;
-            case 'proofreader':
-                return ROLE_ID_PROOFREADER;
-            case 'author':
-                return ROLE_ID_AUTHOR;
-            case 'reader':
-                return ROLE_ID_READER;
-            case 'subscriptionManager':
-                return ROLE_ID_SUBSCRIPTION_MANAGER;
-            default:
-                return null;
+        switch ((string) $rolePath) {
+            case 'admin': return ROLE_ID_SITE_ADMIN;
+            case 'manager': return ROLE_ID_JOURNAL_MANAGER;
+            case 'editor': return ROLE_ID_EDITOR;
+            case 'sectionEditor': return ROLE_ID_SECTION_EDITOR;
+            case 'layoutEditor': return ROLE_ID_LAYOUT_EDITOR;
+            case 'reviewer': return ROLE_ID_REVIEWER;
+            case 'copyeditor': return ROLE_ID_COPYEDITOR;
+            case 'proofreader': return ROLE_ID_PROOFREADER;
+            case 'author': return ROLE_ID_AUTHOR;
+            case 'reader': return ROLE_ID_READER;
+            case 'subscriptionManager': return ROLE_ID_SUBSCRIPTION_MANAGER;
+            default: return null;
         }
     }
 
     /**
-     * Map a column heading value to a database value for sorting
-     * @param mixed $heading string
+     * Map a column heading value to a database value for sorting.
+     * @param string $heading
+     * @return string|null
      */
     public static function getSortMapping($heading) {
-        switch ($heading) {
+        switch ((string) $heading) {
             case 'username': return 'u.username';
             case 'name': return 'u.last_name';
             case 'email': return 'u.email';
