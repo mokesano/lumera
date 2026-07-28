@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see ObjectForReviewDAO
  *
  * @brief Basic class describing an object for review.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 class ObjectForReview extends DataObject {
@@ -26,139 +25,149 @@ class ObjectForReview extends DataObject {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ObjectForReview() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::ObjectForReview(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Return string of person names, separated by the specified token
-     * @param $lastOnly boolean return the list of lastnames only (default false)
-     * @param $separator string separator for names (default comma+space)
+     * Return string of person names, separated by the specified token.
+     * @param bool $lastOnly
+     * @param string $separator
      * @return string
      */
     public function getPersonString($lastOnly = false, $separator = ', ') {
         $str = '';
         $persons = $this->getPersons();
         foreach ($persons as $person) {
-            if (!empty($str)) {
+            if ($str !== '') {
                 $str .= $separator;
             }
-            $str .= $lastOnly ? $person->getLastName() : $person->getFullName();
+            $str .= $lastOnly ? (string) $person->getLastName() : (string) $person->getFullName();
         }
         return $str;
     }
 
     /**
      * Get all persons of this object for review.
-     * @return array of ObjectForReviewPerson
+     * @return array
      */
     public function getPersons() {
+        /** @var ObjectForReviewPersonDAO $ofrPersonDao */
         $ofrPersonDao = DAORegistry::getDAO('ObjectForReviewPersonDAO');
-        return $ofrPersonDao->getByObjectForReview($this->getId());
+        return $ofrPersonDao->getByObjectForReview((int) $this->getId());
     }
 
     /**
      * Get editor ID.
-     * @return int
+     * @return int|null
      */
     public function getEditorId() {
-        return $this->getData('editorId');
+        $id = $this->getData('editorId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set editor ID.
-     * @param $editor int
+     * @param int|null $editorId
      */
     public function setEditorId($editorId) {
-        return $this->setData('editorId', $editorId);
+        $this->setData('editorId', $editorId !== null ? (int) $editorId : null);
     }
 
     /**
      * Get editor assigned to the object for review.
-     * @return User
+     * @return User|null
      */
     public function getEditor() {
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
-        return $userDao->getById($this->getData('editorId'));
+        return $userDao->getById($this->getEditorId());
     }
 
     /**
      * Get editor's initials assigned to the object for review.
-     * @return string
+     * @return string|null
      */
     public function getEditorInitials() {
         $editor = $this->getEditor();
-        if ($editor) {
+        if ($editor !== null) {
             $initials = $editor->getInitials();
             if (!empty($initials)) {
-                return $initials;
-            } else {
-                return substr($editor->getFirstName(), 0, 1) . substr($editor->getLastName(), 0, 1);
+                return (string) $initials;
             }
+            return substr((string) $editor->getFirstName(), 0, 1) . substr((string) $editor->getLastName(), 0, 1);
         }
+        return null;
     }
 
     /**
      * Get review object type ID.
-     * @return int
+     * @return int|null
      */
     public function getReviewObjectTypeId() {
-        return $this->getData('reviewObjectTypeId');
+        $id = $this->getData('reviewObjectTypeId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set review object type ID.
-     * @param $reviewObjectTypeId int
+     * @param int|null $reviewObjectTypeId
      */
     public function setReviewObjectTypeId($reviewObjectTypeId) {
-        return $this->setData('reviewObjectTypeId', $reviewObjectTypeId);
+        $this->setData('reviewObjectTypeId', $reviewObjectTypeId !== null ? (int) $reviewObjectTypeId : null);
     }
 
     /**
      * Get review object type.
-     * @return ReviewObjectType
+     * @return ReviewObjectType|null
      */
     public function getReviewObjectType() {
+        /** @var ReviewObjectTypeDAO $reviewObjectTypeDao */
         $reviewObjectTypeDao = DAORegistry::getDAO('ReviewObjectTypeDAO');
-        return $reviewObjectTypeDao->getById($this->getData('reviewObjectTypeId'));
+        return $reviewObjectTypeDao->getById($this->getReviewObjectTypeId());
     }
 
     /**
      * Get context ID.
-     * @return int
+     * @return int|null
      */
     public function getContextId() {
-        return $this->getData('contextId');
+        $id = $this->getData('contextId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set context ID.
-     * @param $contextId int
+     * @param int|null $contextId
      */
     public function setContextId($contextId) {
-        return $this->setData('contextId', $contextId);
+        $this->setData('contextId', $contextId !== null ? (int) $contextId : null);
     }
 
     /**
      * Get available status of the object for review.
-     * @return int
+     * @return int|null
      */
     public function getAvailable() {
-        return $this->getData('available');
+        $available = $this->getData('available');
+        return $available !== null ? (int) $available : null;
     }
 
     /**
      * Set available status of the object for review.
-     * @param $available int
+     * @param int|null $available
      */
     public function setAvailable($available) {
-        return $this->setData('available', $available);
+        $this->setData('available', $available !== null ? (int) $available : null);
     }
 
     /**
@@ -166,51 +175,53 @@ class ObjectForReview extends DataObject {
      * @return string
      */
     public function getStatusString() {
-        if ($this->getData('available')) {
+        if ((int) $this->getData('available') === 1) {
             return 'plugins.generic.objectsForReview.editor.objectForReview.status.available';
-        } else {
-            return 'plugins.generic.objectsForReview.editor.objectForReview.status.notAvailable';
         }
+        return 'plugins.generic.objectsForReview.editor.objectForReview.status.notAvailable';
     }
 
     /**
      * Get dateCreated.
-     * @return string
+     * @return string|null
      */
     public function getDateCreated() {
-        return $this->getData('dateCreated');
+        $date = $this->getData('dateCreated');
+        return $date !== null ? (string) $date : null;
     }
 
     /**
      * Set dateCreated.
-     * @param $dateCreated string
+     * @param string|null $dateCreated
      */
     public function setDateCreated($dateCreated) {
-        return $this->setData('dateCreated', $dateCreated);
+        $this->setData('dateCreated', $dateCreated !== null ? (string) $dateCreated : null);
     }
 
     /**
      * Get notes for the object for review.
-     * @return string
+     * @return string|null
      */
     public function getNotes() {
-        return $this->getData('notes');
+        $notes = $this->getData('notes');
+        return $notes !== null ? (string) $notes : null;
     }
 
     /**
      * Set notes for the object for review.
-     * @param $notes string
+     * @param string|null $notes
      */
     public function setNotes($notes) {
-        return $this->setData('notes', $notes);
+        $this->setData('notes', $notes !== null ? (string) $notes : null);
     }
 
     //
     // Get settings
     //
+
     /**
      * Get title.
-     * @return string
+     * @return mixed
      */
     public function getTitle() {
         return $this->getSettingByKey('title');
@@ -218,7 +229,7 @@ class ObjectForReview extends DataObject {
 
     /**
      * Get cover page.
-     * @return string
+     * @return mixed
      */
     public function getCoverPage() {
         return $this->getSettingByKey('coverPage');
@@ -229,20 +240,25 @@ class ObjectForReview extends DataObject {
      * @return string
      */
     public function getLanguages() {
+        /** @var LanguageDAO $languageDao */
         $languageDao = DAORegistry::getDAO('LanguageDAO');
         $languageCodes = $this->getSettingByKey('language');
-        $languages = array();
-        if (isset($languageCodes)) foreach ($languageCodes as $languageCode) {
-            $language = $languageDao->getLanguageByCode($languageCode);
-            if ($language) $languages[] = $language->getName();
-            unset($language);
+        $languages = [];
+        
+        if (is_array($languageCodes)) {
+            foreach ($languageCodes as $languageCode) {
+                $language = $languageDao->getLanguageByCode((string) $languageCode);
+                if ($language !== null) {
+                    $languages[] = (string) $language->getName();
+                }
+            }
         }
         return implode(';', $languages);
     }
 
     /**
      * Get info if there is a copy of the object for review.
-     * @return int
+     * @return mixed
      */
     public function getCopy() {
         return $this->getSettingByKey('copy');
@@ -253,46 +269,50 @@ class ObjectForReview extends DataObject {
      * @return array
      */
     public function getSettings() {
+        /** @var ObjectForReviewSettingsDAO $ofrSettingsDao */
         $ofrSettingsDao = DAORegistry::getDAO('ObjectForReviewSettingsDAO');
-        $settings = $ofrSettingsDao->getSettings($this->getId());
-        return $settings;
+        return $ofrSettingsDao->getSettings((int) $this->getId());
     }
 
     /**
-     * Retrieve object for review setting value by reivew object metadata id.
-     * @param $reviewObjectMetadataId int
+     * Retrieve object for review setting value by review object metadata id.
+     * @param int $reviewObjectMetadataId
      * @return mixed
      */
     public function getSetting($reviewObjectMetadataId) {
+        /** @var ObjectForReviewSettingsDAO $ofrSettingsDao */
         $ofrSettingsDao = DAORegistry::getDAO('ObjectForReviewSettingsDAO');
-        $setting = $ofrSettingsDao->getSetting($this->getId(), $reviewObjectMetadataId);
-        return $setting[$reviewObjectMetadataId];
+        $setting = $ofrSettingsDao->getSetting((int) $this->getId(), (int) $reviewObjectMetadataId);
+        return $setting[(int) $reviewObjectMetadataId] ?? null;
     }
 
     /**
      * Update object for review setting value.
-     * @param $reviewObjectMetadataId int
-     * @param $value mixed
-     * @param $type string (optional)
+     * @param int $reviewObjectMetadataId
+     * @param mixed $value
+     * @param string|null $type (optional)
+     * @return mixed
      */
     public function updateSetting($reviewObjectMetadataId, $value, $type = null) {
+        /** @var ObjectForReviewSettingsDAO $ofrSettingsDao */
         $ofrSettingsDao = DAORegistry::getDAO('ObjectForReviewSettingsDAO');
-        return $ofrSettingsDao->updateSetting($this->getId(), $reviewObjectMetadataId, $value, $type);
+        return $ofrSettingsDao->updateSetting((int) $this->getId(), (int) $reviewObjectMetadataId, $value, $type);
     }
 
     /**
      * Retrieve metadata ID by key.
-     * @param $key string
-     * @return int
+     * @param string $key
+     * @return int|null
      */
     public function getMetadataId($key) {
+        /** @var ReviewObjectMetadataDAO $reviewObjectMetadataDao */
         $reviewObjectMetadataDao = DAORegistry::getDAO('ReviewObjectMetadataDAO');
-        return $reviewObjectMetadataDao->getMetadataId($this->getReviewObjectTypeId(), $key);
+        return $reviewObjectMetadataDao->getMetadataId($this->getReviewObjectTypeId(), (string) $key);
     }
 
     /**
-     * Retrieve object for review setting value by reivew object metadata key.
-     * @param $key string
+     * Retrieve object for review setting value by review object metadata key.
+     * @param string $key
      * @return mixed
      */
     public function getSettingByKey($key) {
@@ -301,5 +321,4 @@ class ObjectForReview extends DataObject {
     }
 
 }
-
 ?>
