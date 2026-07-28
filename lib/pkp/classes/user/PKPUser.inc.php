@@ -17,7 +17,6 @@ declare(strict_types=1);
  * @see UserDAO
  *
  * @brief Basic class describing users existing in the system.
- * [WIZDAM EDITION] PHP 7.4+ Compatible
  */
 
 class PKPUser extends DataObject {
@@ -33,11 +32,14 @@ class PKPUser extends DataObject {
      * [SHIM] Backward Compatibility
      */
     public function PKPUser() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::PKPUser(). Please refactor to parent::__construct().", 
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -50,18 +52,22 @@ class PKPUser extends DataObject {
      * @return int
      */
     public function getUserId() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->getId();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        return (int) $this->getId();
     }
 
     /**
      * Set the ID of the user. 
      * DEPRECATED in favour of setId.
-     * @param $userId int
+     * @param int $userId
      */
     public function setUserId($userId) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->setId($userId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        $this->setId((int) $userId);
     }
 
     /**
@@ -69,38 +75,39 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getUsername() {
-        return $this->getData('username');
+        return (string) $this->getData('username');
     }
 
     /**
      * Set username.
-     * @param $username string
+     * @param string $username
      */
     public function setUsername($username) {
-        return $this->setData('username', $username);
+        $this->setData('username', (string) $username);
     }
 
     /**
      * Get implicit auth ID string.
-     * @return String
+     * @return string
      */
     public function getAuthStr() {
-        return $this->getData('authStr');
+        return (string) $this->getData('authStr');
     }
 
     /**
      * Set Shib ID string for this user.
-     * @param $authStr string
+     * @param string $authStr
      */
     public function setAuthStr($authStr) {
-        return $this->setData('authStr', $authStr);
+        $this->setData('authStr', (string) $authStr);
     }
 
     /**
      * Get localized user signature.
+     * @return string
      */
     public function getLocalizedSignature() {
-        return $this->getLocalizedData('signature');
+        return (string) $this->getLocalizedData('signature');
     }
 
     /**
@@ -109,26 +116,28 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getUserSignature() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedSignature();
     }
 
     /**
      * Get email signature.
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getSignature($locale) {
-        return $this->getData('signature', $locale);
+        return (string) $this->getData('signature', $locale);
     }
 
     /**
      * Set signature.
-     * @param $signature string
-     * @param $locale string
+     * @param string $signature
+     * @param string $locale
      */
     public function setSignature($signature, $locale) {
-        return $this->setData('signature', $signature, $locale);
+        $this->setData('signature', (string) $signature, $locale);
     }
 
     /**
@@ -136,15 +145,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getPassword() {
-        return $this->getData('password');
+        return (string) $this->getData('password');
     }
 
     /**
      * Set password (assumed to be already encrypted).
-     * @param $password string
+     * @param string $password
      */
     public function setPassword($password) {
-        return $this->setData('password', $password);
+        $this->setData('password', (string) $password);
     }
 
     /**
@@ -152,15 +161,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getSalutation() {
-        return $this->getData('salutation');
+        return (string) $this->getData('salutation');
     }
 
     /**
      * Set user salutation.
-     * @param $salutation string
+     * @param string $salutation
      */
     public function setSalutation($salutation) {
-        return $this->setData('salutation', $salutation);
+        $this->setData('salutation', (string) $salutation);
     }
 
     /**
@@ -168,15 +177,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getFirstName() {
-        return $this->getData('firstName');
+        return (string) $this->getData('firstName');
     }
 
     /**
      * Set first name.
-     * @param $firstName string
+     * @param string $firstName
      */
     public function setFirstName($firstName) {
-        return $this->setData('firstName', $firstName);
+        $this->setData('firstName', (string) $firstName);
     }
 
     /**
@@ -184,15 +193,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getMiddleName() {
-        return $this->getData('middleName');
+        return (string) $this->getData('middleName');
     }
 
     /**
      * Set middle name.
-     * @param $middleName string
+     * @param string $middleName
      */
     public function setMiddleName($middleName) {
-        return $this->setData('middleName', $middleName);
+        $this->setData('middleName', (string) $middleName);
     }
 
     /**
@@ -200,15 +209,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getLastName() {
-        return $this->getData('lastName');
+        return (string) $this->getData('lastName');
     }
 
     /**
      * Set last name.
-     * @param $lastName string
+     * @param string $lastName
      */
     public function setLastName($lastName) {
-        return $this->setData('lastName', $lastName);
+        $this->setData('lastName', (string) $lastName);
     }
 
     /**
@@ -216,15 +225,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getSuffix() {
-        return $this->getData('suffix');
+        return (string) $this->getData('suffix');
     }
 
     /**
      * Set suffix.
-     * @param $suffix string
+     * @param string $suffix
      */
     public function setSuffix($suffix) {
-        return $this->setData('suffix', $suffix);
+        $this->setData('suffix', (string) $suffix);
     }
     
     /**
@@ -232,15 +241,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getInitials() {
-        return $this->getData('initials');
+        return (string) $this->getData('initials');
     }
 
     /**
      * Set initials.
-     * @param $initials string
+     * @param string $initials
      */
     public function setInitials($initials) {
-        return $this->setData('initials', $initials);
+        $this->setData('initials', (string) $initials);
     }
 
     /**
@@ -248,33 +257,33 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getGender() {
-        return $this->getData('gender');
+        return (string) $this->getData('gender');
     }
 
     /**
      * Set user gender.
-     * @param $gender string
+     * @param string $gender
      */
     public function setGender($gender) {
-        return $this->setData('gender', $gender);
+        $this->setData('gender', (string) $gender);
     }
 
     /**
      * Get affiliation (position, institution, etc.).
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getAffiliation($locale) {
-        return $this->getData('affiliation', $locale);
+        return (string) $this->getData('affiliation', $locale);
     }
 
     /**
      * Set affiliation.
-     * @param $affiliation string
-     * @param $locale string
+     * @param string $affiliation
+     * @param string $locale
      */
     public function setAffiliation($affiliation, $locale) {
-        return $this->setData('affiliation', $affiliation, $locale);
+        $this->setData('affiliation', (string) $affiliation, $locale);
     }
 
     /**
@@ -282,17 +291,19 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getLocalizedAffiliation() {
-        return $this->getLocalizedData('affiliation');
+        return (string) $this->getLocalizedData('affiliation');
     }
 
     /**
-     * Mendapatkan afiliasi utama (hanya baris pertama)
-     * @param $locale string
+     * Get primary affiliation (first line only).
+     * @param string $locale
      * @return string
      */
-    function getPrimaryAffiliation($locale = null) {
-        $affiliation = $this->getAffiliation($locale);
-        if (empty($affiliation)) return '';
+    public function getPrimaryAffiliation($locale = null) {
+        $affiliation = (string) $this->getAffiliation($locale);
+        if ($affiliation === '') {
+            return '';
+        }
         $parts = explode("\n", $affiliation);
         return trim($parts[0]);
     }
@@ -302,15 +313,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getEmail() {
-        return $this->getData('email');
+        return (string) $this->getData('email');
     }
 
     /**
      * Set email address.
-     * @param $email string
+     * @param string $email
      */
     public function setEmail($email) {
-        return $this->setData('email', $email);
+        $this->setData('email', (string) $email);
     }
 
     /**
@@ -318,15 +329,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getUrl() {
-        return $this->getData('url');
+        return (string) $this->getData('url');
     }
 
     /**
      * Set URL.
-     * @param $url string
+     * @param string $url
      */
     public function setUrl($url) {
-        return $this->setData('url', $url);
+        $this->setData('url', (string) $url);
     }
 
     /**
@@ -334,15 +345,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getGoogleScholar() {
-        return $this->getData('googleScholar');
+        return (string) $this->getData('googleScholar');
     }
 
     /**
      * Set Google Scholar ID user.
-     * @param $googleScholarId string
+     * @param string $googleScholarId
      */
     public function setGoogleScholar($googleScholarId) {
-        return $this->setData('googleScholar', $googleScholarId);
+        $this->setData('googleScholar', (string) $googleScholarId);
     }
 
     /**
@@ -350,15 +361,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getSintaId() {
-        return $this->getData('sintaId');
+        return (string) $this->getData('sintaId');
     }
 
     /**
      * Set SINTA ID user.
-     * @param $sintaId string
+     * @param string $sintaId
      */
     public function setSintaId($sintaId) {
-        return $this->setData('sintaId', $sintaId);
+        $this->setData('sintaId', (string) $sintaId);
     }
 
     /**
@@ -366,15 +377,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getScopusId() {
-        return $this->getData('scopusId');
+        return (string) $this->getData('scopusId');
     }
 
     /**
      * Set Scopus ID user.
-     * @param $scopusId string
+     * @param string $scopusId
      */
     public function setScopusId($scopusId) {
-        return $this->setData('scopusId', $scopusId);
+        $this->setData('scopusId', (string) $scopusId);
     }
 
     /**
@@ -382,15 +393,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getDimensionId() {
-        return $this->getData('dimensionId');
+        return (string) $this->getData('dimensionId');
     }
 
     /**
      * Set Dimension ID user.
-     * @param $dimensionId string
+     * @param string $dimensionId
      */
     public function setDimensionId($dimensionId) {
-        return $this->setData('dimensionId', $dimensionId);
+        $this->setData('dimensionId', (string) $dimensionId);
     }
 
     /**
@@ -398,15 +409,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getResearcherId() {
-        return $this->getData('researcherId');
+        return (string) $this->getData('researcherId');
     }
 
     /**
      * Set Researcher ID user.
-     * @param $researcherId string
+     * @param string $researcherId
      */
     public function setResearcherId($researcherId) {
-        return $this->setData('researcherId', $researcherId);
+        $this->setData('researcherId', (string) $researcherId);
     }
 
     /**
@@ -414,15 +425,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getPhone() {
-        return $this->getData('phone');
+        return (string) $this->getData('phone');
     }
 
     /**
      * Set phone number.
-     * @param $phone string
+     * @param string $phone
      */
     public function setPhone($phone) {
-        return $this->setData('phone', $phone);
+        $this->setData('phone', (string) $phone);
     }
 
     /**
@@ -430,15 +441,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getFax() {
-        return $this->getData('fax');
+        return (string) $this->getData('fax');
     }
 
     /**
      * Set fax number.
-     * @param $fax string
+     * @param string $fax
      */
     public function setFax($fax) {
-        return $this->setData('fax', $fax);
+        $this->setData('fax', (string) $fax);
     }
 
     /**
@@ -446,15 +457,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getMailingAddress() {
-        return $this->getData('mailingAddress');
+        return (string) $this->getData('mailingAddress');
     }
 
     /**
      * Set mailing address.
-     * @param $mailingAddress string
+     * @param string $mailingAddress
      */
     public function setMailingAddress($mailingAddress) {
-        return $this->setData('mailingAddress', $mailingAddress);
+        $this->setData('mailingAddress', (string) $mailingAddress);
     }
 
     /**
@@ -462,15 +473,15 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getBillingAddress() {
-        return $this->getData('billingAddress');
+        return (string) $this->getData('billingAddress');
     }
 
     /**
      * Set billing address.
-     * @param $billingAddress string
+     * @param string $billingAddress
      */
     public function setBillingAddress($billingAddress) {
-        return $this->setData('billingAddress', $billingAddress);
+        $this->setData('billingAddress', (string) $billingAddress);
     }
 
     /**
@@ -478,7 +489,7 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getCountry() {
-        return $this->getData('country');
+        return (string) $this->getData('country');
     }
     
     /**
@@ -486,83 +497,83 @@ class PKPUser extends DataObject {
      * @return string|null
      */
     public function getCountryLocalized() {
-        $countryDao = DAORegistry::getDAO('CountryDAO');
-
         $code = $this->getCountry();
-        if (empty($code)) {
+        if ($code === '') {
             return null;
         }
-        return $countryDao->getCountry($code);
+        /** @var CountryDAO $countryDao */
+        $countryDao = DAORegistry::getDAO('CountryDAO');
+        $country = $countryDao->getCountry($code);
+        return $country !== null ? (string) $country : null;
     }
 
     /**
-     * [WIZDAM] Mendapatkan nama negara lengkap berdasarkan locale aktif
+     * Get the full name of the country based on the active locale.
      * @return string|null
      */
     public function getCountryName() {
         $countryCode = $this->getCountry();
-        if (!$countryCode) return null;
-        
+        if ($countryCode === '') {
+            return null;
+        }
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
-        // Mengambil locale saat ini secara global
         $locale = AppLocale::getLocale(); 
-        return $countryDao->getCountry($countryCode, $locale);
+        $country = $countryDao->getCountry($countryCode, $locale);
+        return $country !== null ? (string) $country : null;
     }
 
     /**
      * Set country.
-     * @param $country string
+     * @param string $country
      */
     public function setCountry($country) {
-        return $this->setData('country', $country);
+        $this->setData('country', (string) $country);
     }
 
     /**
-     * [WIZDAM] Mendapatkan nama file foto profil
+     * Get the profile picture file name.
      * @return string|null
      */
     public function getProfilePictureName() {
         $profileImage = $this->getData('profileImage');
-        if ($profileImage && !empty($profileImage['uploadName'])) {
-            return $profileImage['uploadName'];
+        if (is_array($profileImage) && !empty($profileImage['uploadName'])) {
+            return (string) $profileImage['uploadName'];
         }
         return null;
     }
 
     /**
-     * [WIZDAM REFACTOR] Mendapatkan Full URL Foto Profil secara Dinamis.
-     * Core yang melacak path, bukan Smarty. 
-     * Tahan banting terhadap perubahan config.
+     * Get the dynamic full URL of the profile picture.
+     * Resilient to config changes and falls back to Gravatar.
+     * @return string
      */
     public function getProfileImageUrl() {
-        // 1. Cek apakah user punya data gambar di database
         $profileImage = $this->getData('profileImage');
         
-        if ($profileImage && !empty($profileImage['uploadName'])) {
-            // Ambil Base URL jurnal
-            $baseUrl = Request::getBaseUrl();
+        if (is_array($profileImage) && !empty($profileImage['uploadName'])) {
+            // Lumera Singleton Fallback
+            $request = Application::get()->getRequest();
+            $baseUrl = $request->getBaseUrl();
+            $publicDir = (string) Config::getVar('files', 'public_files_dir'); 
             
-            // BACA DARI CONFIG: Ambil nama direktori publik yang aktif saat ini
-            $publicDir = Config::getVar('files', 'public_files_dir'); 
-            
-            // Rakit URL secara dinamis (Contoh hasil: http://domain.com/public/site/namafile.jpg)
-            return $baseUrl . '/' . $publicDir . '/site/' . $profileImage['uploadName'];
+            return $baseUrl . '/' . $publicDir . '/site/' . (string) $profileImage['uploadName'];
         }
         
-        // 2. Fallback Gravatar Otomatis (Jika tidak ada foto lokal)
         $email = $this->getEmail();
-        if (!empty($email)) {
-            return "https://www.gravatar.com/avatar/" . md5(strtolower(trim($email))) . "?s=150&d=mp";
+        if ($email !== '') {
+            return 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($email))) . '?s=150&d=mp';
         }
         
-        return ''; // Kosong jika tidak ada sama sekali
+        return '';
     }
 
     /**
      * Get localized user biography.
+     * @return string
      */
     public function getLocalizedBiography() {
-        return $this->getLocalizedData('biography');
+        return (string) $this->getLocalizedData('biography');
     }
 
     /**
@@ -571,26 +582,28 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getUserBiography() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedBiography();
     }
 
     /**
      * Get user biography.
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getBiography($locale) {
-        return $this->getData('biography', $locale);
+        return (string) $this->getData('biography', $locale);
     }
 
     /**
      * Set user biography.
-     * @param $biography string
-     * @param $locale string
+     * @param string $biography
+     * @param string $locale
      */
     public function setBiography($biography, $locale) {
-        return $this->setData('biography', $biography, $locale);
+        $this->setData('biography', (string) $biography, $locale);
     }
 
     /**
@@ -599,46 +612,49 @@ class PKPUser extends DataObject {
      * @return array
      */
     public function getUserInterests() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         import('lib.pkp.classes.user.InterestManager');
         $interestManager = new InterestManager();
         return $interestManager->getInterestsForUser($this);
     }
 
     /**
-     * Get the user's interests displayed as a comma-separated string
+     * Get the user's interests displayed as a comma-separated string.
      * @return string
      */
     public function getInterestString() {
         import('lib.pkp.classes.user.InterestManager');
         $interestManager = new InterestManager();
-        return $interestManager->getInterestsString($this);
+        return (string) $interestManager->getInterestsString($this);
     }
 
     /**
      * Get localized user gossip.
+     * @return string
      */
     public function getLocalizedGossip() {
-        return $this->getLocalizedData('gossip');
+        return (string) $this->getLocalizedData('gossip');
     }
 
     /**
      * Get user gossip.
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getGossip($locale) {
         $gossip = $this->getData('gossip', $locale);
-        return ($gossip !== null) ? (string) $gossip : '';
+        return $gossip !== null ? (string) $gossip : '';
     }
 
     /**
      * Set user gossip.
-     * @param $gossip string
-     * @param $locale string
+     * @param string $gossip
+     * @param string $locale
      */
     public function setGossip($gossip, $locale) {
-        return $this->setData('gossip', $gossip, $locale);
+        $this->setData('gossip', (string) $gossip, $locale);
     }
 
     /**
@@ -647,111 +663,111 @@ class PKPUser extends DataObject {
      */
     public function getLocales() {
         $locales = $this->getData('locales');
-        return isset($locales) ? $locales : array();
+        return is_array($locales) ? $locales : [];
     }
 
     /**
      * Set user's working languages.
-     * @param $locales array
+     * @param array $locales
      */
     public function setLocales($locales) {
-        return $this->setData('locales', $locales);
+        $this->setData('locales', is_array($locales) ? $locales : []);
     }
 
     /**
      * Get date user last sent an email.
-     * @return datestamp (YYYY-MM-DD HH:MM:SS)
+     * @return string
      */
     public function getDateLastEmail() {
-        return $this->getData('dateLastEmail');
+        return (string) $this->getData('dateLastEmail');
     }
 
     /**
      * Set date user last sent an email.
-     * @param $dateLastEmail datestamp (YYYY-MM-DD HH:MM:SS)
+     * @param string $dateLastEmail
      */
     public function setDateLastEmail($dateLastEmail) {
-        return $this->setData('dateLastEmail', $dateLastEmail);
+        $this->setData('dateLastEmail', (string) $dateLastEmail);
     }
 
     /**
      * Get date user registered with the site.
-     * @return datestamp (YYYY-MM-DD HH:MM:SS)
+     * @return string
      */
     public function getDateRegistered() {
-        return $this->getData('dateRegistered');
+        return (string) $this->getData('dateRegistered');
     }
 
     /**
      * Set date user registered with the site.
-     * @param $dateRegistered datestamp (YYYY-MM-DD HH:MM:SS)
+     * @param string $dateRegistered
      */
     public function setDateRegistered($dateRegistered) {
-        return $this->setData('dateRegistered', $dateRegistered);
+        $this->setData('dateRegistered', (string) $dateRegistered);
     }
 
     /**
      * Get date user email was validated with the site.
-     * @return datestamp (YYYY-MM-DD HH:MM:SS)
+     * @return string
      */
     public function getDateValidated() {
-        return $this->getData('dateValidated');
+        return (string) $this->getData('dateValidated');
     }
 
     /**
      * Set date user email was validated with the site.
-     * @param $dateValidated datestamp (YYYY-MM-DD HH:MM:SS)
+     * @param string $dateValidated
      */
     public function setDateValidated($dateValidated) {
-        return $this->setData('dateValidated', $dateValidated);
+        $this->setData('dateValidated', (string) $dateValidated);
     }
 
     /**
      * Get date user last logged in to the site.
-     * @return datestamp
+     * @return string
      */
     public function getDateLastLogin() {
-        return $this->getData('dateLastLogin');
+        return (string) $this->getData('dateLastLogin');
     }
 
     /**
      * Set date user last logged in to the site.
-     * @param $dateLastLogin datestamp
+     * @param string $dateLastLogin
      */
     public function setDateLastLogin($dateLastLogin) {
-        return $this->setData('dateLastLogin', $dateLastLogin);
+        $this->setData('dateLastLogin', (string) $dateLastLogin);
     }
 
     /**
      * Check if user must change their password on their next login.
-     * @return boolean
+     * @return bool
      */
     public function getMustChangePassword() {
-        return $this->getData('mustChangePassword');
+        return (bool) $this->getData('mustChangePassword');
     }
 
     /**
      * Set whether or not user must change their password on their next login.
-     * @param $mustChangePassword boolean
+     * @param bool $mustChangePassword
      */
     public function setMustChangePassword($mustChangePassword) {
-        return $this->setData('mustChangePassword', $mustChangePassword);
+        $this->setData('mustChangePassword', (bool) $mustChangePassword);
     }
 
     /**
      * Check if user is disabled.
-     * @return boolean
+     * @return bool
      */
     public function getDisabled() {
-        return $this->getData('disabled');
+        return (bool) $this->getData('disabled');
     }
 
     /**
      * Set whether or not user is disabled.
-     * @param $disabled boolean
+     * @param bool $disabled
      */
     public function setDisabled($disabled) {
-        return $this->setData('disabled', $disabled);
+        $this->setData('disabled', (bool) $disabled);
     }
 
     /**
@@ -759,31 +775,32 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getDisabledReason() {
-        return $this->getData('disabled_reason');
+        return (string) $this->getData('disabled_reason');
     }
 
     /**
      * Set the reason the user is disabled.
-     * @param $reasonDisabled string
+     * @param string $reasonDisabled
      */
     public function setDisabledReason($reasonDisabled) {
-        return $this->setData('disabled_reason', $reasonDisabled);
+        $this->setData('disabled_reason', (string) $reasonDisabled);
     }
 
     /**
      * Get ID of authentication source for this user.
-     * @return int
+     * @return int|null
      */
     public function getAuthId() {
-        return $this->getData('authId');
+        $authId = $this->getData('authId');
+        return $authId !== null ? (int) $authId : null;
     }
 
     /**
      * Set ID of authentication source for this user.
-     * @param $authId int
+     * @param int $authId
      */
     public function setAuthId($authId) {
-        return $this->setData('authId', $authId);
+        $this->setData('authId', $authId !== null ? (int) $authId : null);
     }
 
     /**
@@ -791,89 +808,71 @@ class PKPUser extends DataObject {
      * @return int
      */
     public function getInlineHelp() {
-        return $this->getData('inlineHelp');
+        return (int) $this->getData('inlineHelp');
     }
 
     /**
      * Set the inline help display status for this user.
-     * @param $inlineHelp int
+     * @param int $inlineHelp
      */
     public function setInlineHelp($inlineHelp) {
-        return $this->setData('inlineHelp', $inlineHelp);
+        $this->setData('inlineHelp', (int) $inlineHelp);
     }
 
     /**
-     * Mendapatkan Given Name untuk UI Aplikasi.
-     * Menggabungkan First Name dan Last Name. Jika pengguna adalah mononim
-     * (First Name dan Last Name diinput sama persis sesuai aturan form),
-     * maka hanya kembalikan satu nama saja agar tidak tercetak ganda.
+     * Get the Given Name for the application UI.
+     * Combines First Name and Last Name. If the user is mononymous 
+     * (First Name and Last Name are identical), returns only one name.
      * @return string
      */
-    function getGivenName() {
-        $firstName = trim($this->getFirstName());
-        $lastName = trim($this->getLastName());
+    public function getGivenName() {
+        $firstName = trim((string) $this->getFirstName());
+        $lastName = trim((string) $this->getLastName());
 
-        // Cek apakah ini kasus mononim (input kembar)
-        if (strtolower($firstName) === strtolower($lastName)) {
+        if ($firstName !== '' && $lastName !== '' && strcasecmp($firstName, $lastName) === 0) {
             return $firstName;
         }
 
-        // Jika nama normal (berbeda), gabungkan
-        return $firstName . ' ' . $lastName;
+        return $firstName !== '' ? $firstName . ' ' . $lastName : $lastName;
     }
 
     /**
-     * Mendapatkan Surname untuk UI Aplikasi.
-     * Mengembalikan Last Name apa adanya karena database dijamin bersih.
+     * Get the Surname for the application UI.
+     * Returns Last Name as is, assuming database integrity.
      * @return string
      */
-    function getSurname() {
-        // Jika nama pengguna Soekarno (LN=Soekarno), fungsi ini akan 
-        // mengembalikan "Soekarno".
-        return trim($this->getLastName());
+    public function getSurname() {
+        return trim((string) $this->getLastName());
     }
     
     /**
      * Get the user's complete name.
      * Includes first name, middle name (if applicable), and last name.
-     * The suffix is only included when the name is not reversed with $lastFirst
-     * @param $lastFirst boolean return in "LastName, FirstName" format
+     * The suffix is only included when the name is not reversed with $lastFirst.
+     * @param bool $lastFirst Return in "LastName, FirstName" format
      * @return string
      */
     public function getFullName($lastFirst = false) {
-        // Ambil data dan bersihkan spasi berlebih di awal/akhir trim()
         $salutation = trim((string) $this->getData('salutation'));
         $firstName  = trim((string) $this->getData('firstName'));
         $middleName = trim((string) $this->getData('middleName'));
         $lastName   = trim((string) $this->getData('lastName'));
         $suffix     = trim((string) $this->getData('suffix'));
 
-        // [WIZDAM]: Deteksi nama tunggal Indonesia, Jika FirstName dan LastName sama persis (abaikan huruf besar/kecil), maka kosongkan FirstName agar tidak dicetak ganda.
+        // Detect Indonesian mononymous names: if First and Last are identical, clear First to avoid duplication.
         if ($firstName !== '' && $lastName !== '' && strcasecmp($firstName, $lastName) === 0) {
             $firstName = ''; 
         }
 
         if ($lastFirst) {
-            // Format: "LastName, Salutation FirstName MiddleName"
             $firstPart = $lastName;
-            
-            // Kumpulkan bagian setelah koma, abaikan yang kosong
-            $secondPartArray = array_filter([$salutation, $firstName, $middleName], fn($val) => $val !== '');
+            $secondPartArray = array_filter([$salutation, $firstName, $middleName], function($val) { return $val !== ''; });
             $secondPart = implode(' ', $secondPartArray);
-
-            // Jika ada bagian kedua, gabungkan dengan koma. 
-            // Jika tidak, tampilkan nama akhirnya saja.
-            return !empty($secondPart) ? "$firstPart, $secondPart" : $firstPart;
-
+            return $secondPart !== '' ? "$firstPart, $secondPart" : $firstPart;
         } else {
-            // Format: "Salutation FirstName MiddleName LastName, Suffix"
-            
-            // Kumpulkan semua bagian nama utama, abaikan yang kosong
-            $mainPartArray = array_filter([$salutation, $firstName, $middleName, $lastName], fn($val) => $val !== '');
+            $mainPartArray = array_filter([$salutation, $firstName, $middleName, $lastName], function($val) { return $val !== ''; });
             $mainPart = implode(' ', $mainPartArray);
-
-            // Tambahkan suffix (gelar di belakang) jika ada
-            return !empty($suffix) ? "$mainPart, $suffix" : $mainPart;
+            return $suffix !== '' ? "$mainPart, $suffix" : $mainPart;
         }
     }
 
@@ -885,11 +884,29 @@ class PKPUser extends DataObject {
     public function getContactSignature() {
         $signature = $this->getFullName();
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_USER);
-        if ($a = $this->getLocalizedAffiliation()) $signature .= "\n" . $a;
-        if ($p = $this->getPhone()) $signature .= "\n" . __('user.phone') . ' ' . $p;
-        if ($f = $this->getFax()) $signature .= "\n" . __('user.fax') . ' ' . $f;
-        $signature .= "\n" . $this->getEmail();
+        
+        $affiliation = $this->getLocalizedAffiliation();
+        if ($affiliation !== '') {
+            $signature .= "\n" . $affiliation;
+        }
+        
+        $phone = $this->getPhone();
+        if ($phone !== '') {
+            $signature .= "\n" . __('user.phone') . ' ' . $phone;
+        }
+        
+        $fax = $this->getFax();
+        if ($fax !== '') {
+            $signature .= "\n" . __('user.fax') . ' ' . $fax;
+        }
+        
+        $email = $this->getEmail();
+        if ($email !== '') {
+            $signature .= "\n" . $email;
+        }
+        
         return $signature;
     }
+    
 }
 ?>

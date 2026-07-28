@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup rt_ojs
  *
  * @brief OJS-specific Reading Tools administration interface.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.rt.RTAdmin');
@@ -41,6 +39,7 @@ class JournalRTAdmin extends RTAdmin {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param int $journalId
      */
     public function JournalRTAdmin($journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -93,5 +92,6 @@ class JournalRTAdmin extends RTAdmin {
         $version = $parser->parse($filename);
         $this->dao->insertVersion($this->journalId, $version);
     }
+    
 }
 ?>

@@ -38,19 +38,22 @@ class Role extends DataObject {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function Role() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::Role(). Please refactor to parent::__construct().", 
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Get the i18n key name associated with this role.
-     * @return String the key
+     * @return string
      */
     public function getRoleName() {
         return RoleDAO::getRoleName($this->getData('roleId'));
@@ -58,7 +61,7 @@ class Role extends DataObject {
 
     /**
      * Get the URL path associated with this role's operations.
-     * @return String the path
+     * @return string
      */
     public function getRolePath() {
         return RoleDAO::getRolePath($this->getData('roleId'));
@@ -70,50 +73,54 @@ class Role extends DataObject {
 
     /**
      * Get journal ID associated with role.
-     * @return int
+     * @return int|null
      */
     public function getJournalId() {
-        return $this->getData('journalId');
+        $id = $this->getData('journalId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set journal ID associated with role.
-     * @param mixed $journalId int
+     * @param int|null $journalId
      */
     public function setJournalId($journalId) {
-        return $this->setData('journalId', $journalId);
+        $this->setData('journalId', $journalId !== null ? (int) $journalId : null);
     }
 
     /**
      * Get user ID associated with role.
-     * @return int
+     * @return int|null
      */
     public function getUserId() {
-        return $this->getData('userId');
+        $id = $this->getData('userId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set user ID associated with role.
-     * @param mixed $userId int
+     * @param int|null $userId
      */
     public function setUserId($userId) {
-        return $this->setData('userId', $userId);
+        $this->setData('userId', $userId !== null ? (int) $userId : null);
     }
 
     /**
      * Get role ID of this role.
-     * @return int
+     * @return int|null
      */
     public function getRoleId() {
-        return $this->getData('roleId');
+        $id = $this->getData('roleId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set role ID of this role.
-     * @param mixed $roleId int
+     * @param int|null $roleId
      */
     public function setRoleId($roleId) {
-        return $this->setData('roleId', $roleId);
+        $this->setData('roleId', $roleId !== null ? (int) $roleId : null);
     }
+    
 }
 ?>

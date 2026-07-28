@@ -12,72 +12,75 @@ declare(strict_types=1);
  * @ingroup security
  *
  * @brief Class providing password hashing operations.
- * [WIZDAM EDITION] PHP 7.4+ Native Bcrypt Implementation (No Polyfill needed)
  */
 
 class Hashing {
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
-        // Tidak perlu inisialisasi library eksternal lagi
+        // No external library initialization needed for PHP 7.4+ native Bcrypt
     }
     
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function Hashing() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class 'Hashing' uses deprecated constructor parent::Hashing().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Generate a hash for a string (password).
-     * Menggunakan algoritma default PHP (saat ini Bcrypt).
-     * * @param $string string Plain text password
+     * Uses PHP's default algorithm (currently Bcrypt).
+     * @param string $string
      * @return string|false
      */
     public function getHash($string) {
-        // PASSWORD_DEFAULT akan menggunakan Bcrypt di PHP 7.x
-        // Ini otomatis menghasilkan salt yang aman.
-        return password_hash($string, PASSWORD_DEFAULT);
+        return password_hash((string) $string, PASSWORD_DEFAULT);
     }
 
     /**
      * Verify that a password matches a hash.
-     * * @param $password string Plain text password
-     * @param $hash string The hash to verify against
-     * @return boolean
+     * @param string $password
+     * @param string $hash
+     * @return bool
      */
     public function isValid($password, $hash) {
-        // Cek apakah hash kosong (untuk menghindari bypass pada akun rusak)
-        if (empty($hash)) return false;
+        // Prevent bypass on corrupted accounts with empty hashes
+        if ($hash === null || $hash === '') {
+            return false;
+        }
 
-        return password_verify($password, $hash);
+        return password_verify((string) $password, (string) $hash);
     }
 
     /**
      * Check if the password needs to be rehashed.
-     * Ini PENTING untuk migrasi otomatis. Jika algoritma PHP diupdate di masa depan,
-     * atau jika cost factor dinaikkan, user akan otomatis direhash saat login.
-     * * @param $hash string
-     * @return boolean
+     * Important for automatic migration. If the PHP algorithm is updated in the future,
+     * or if the cost factor is increased, the user will be automatically rehashed upon login.
+     * @param string $hash
+     * @return bool
      */
     public function needsRehash($hash) {
-        return password_needs_rehash($hash, PASSWORD_DEFAULT);
+        return password_needs_rehash((string) $hash, PASSWORD_DEFAULT);
     }
 
     /**
-     * Is password library supported?
-     * Di PHP 5.5+ (termasuk 7.4), ini selalu TRUE.
-     * * @return boolean
+     * Check if the password library is supported.
+     * In PHP 5.5+ (including 7.4+), this is always true.
+     * @return bool
      */
     public function isSupported() {
         return true;
     }
+    
 }
-
 ?>

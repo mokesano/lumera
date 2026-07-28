@@ -36,6 +36,7 @@ class ContextForm extends Form {
         parent::__construct('rtadmin/context.tpl');
         $this->addCheck(new FormValidatorPost($this));
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
         $this->context = $rtDao->getContext($contextId);
 
@@ -48,6 +49,8 @@ class ContextForm extends Form {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param int|null $contextId
+     * @param int $versionId
      */
     public function ContextForm($contextId, $versionId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -124,6 +127,7 @@ class ContextForm extends Form {
      * @return int the context ID
      */
     public function execute($object = null) {
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
         $context = $this->context;
         if (!isset($context)) {
@@ -148,5 +152,6 @@ class ContextForm extends Form {
 
         return $this->contextId;
     }
+    
 }
 ?>
