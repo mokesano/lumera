@@ -120,6 +120,7 @@ if (isset($_GET['action'])) {
         }
 
         if ($_GET['action'] === 'wipe') {
+            $migrationDao->ensureSchemaReady();
             $backupExists = false;
             try {
                 $checkBackup = $migrationDao->retrieve('SELECT COUNT(*) AS total FROM invoices_backup_manual');

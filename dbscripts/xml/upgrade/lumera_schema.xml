@@ -54,10 +54,16 @@
         <field name="legacy_source_table" type="C2" size="32" />
         <field name="legacy_source_id" type="I8" />
         
-        <index name="invoices_journal_id"><col>journal_id</col></index>
-        <index name="invoices_user_id"><col>user_id</col></index>
-        <index name="invoices_submission_id"><col>submission_id</col></index>
-        <index name="invoices_legacy_source">
+        <index name="invoices_journal_id">
+            <col>journal_id</col>
+        </index>
+        <index name="invoices_user_id">
+            <col>user_id</col>
+        </index>
+        <index name="invoices_submission_id">
+            <col>submission_id</col>
+        </index>
+        <index name="uniq_invoices_legacy_source">
             <col>legacy_source_table</col>
             <col>legacy_source_id</col>
             <UNIQUE/>

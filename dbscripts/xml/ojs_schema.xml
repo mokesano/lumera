@@ -1454,7 +1454,7 @@
         <index name="invoices_submission_id">
             <col>submission_id</col>
         </index>
-		<index name="invoices_legacy_source">
+		<index name="uniq_invoices_legacy_source">
 			<col>legacy_source_table</col>
 			<col>legacy_source_id</col>
 			<UNIQUE/>
