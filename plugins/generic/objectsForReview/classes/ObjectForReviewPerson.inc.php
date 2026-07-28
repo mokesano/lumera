@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see ObjectForReviewPersonDAO
  *
  * @brief Object for review person metadata class.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 class ObjectForReviewPerson extends DataObject {
@@ -26,14 +25,17 @@ class ObjectForReviewPerson extends DataObject {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ObjectForReviewPerson() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::ObjectForReviewPerson(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -42,108 +44,125 @@ class ObjectForReviewPerson extends DataObject {
      * @return string
      */
     public function getFullName() {
-        return $this->getData('firstName') . ' ' . ($this->getData('middleName') != '' ? $this->getData('middleName') . ' ' : '') . $this->getData('lastName');
+        $firstName = (string) $this->getData('firstName');
+        $middleName = (string) $this->getData('middleName');
+        $lastName = (string) $this->getData('lastName');
+        
+        $name = $firstName;
+        if ($middleName !== '') {
+            $name .= ' ' . $middleName;
+        }
+        if ($lastName !== '') {
+            $name .= ' ' . $lastName;
+        }
+        return trim($name);
     }
 
     //
     // Get/set methods
     //
+
     /**
      * Get object for review ID.
-     * @return int
+     * @return int|null
      */
     public function getObjectId() {
-        return $this->getData('objectId');
+        $id = $this->getData('objectId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set object for review ID.
-     * @param $objectId int
+     * @param int|null $objectId
      */
     public function setObjectId($objectId) {
-        return $this->setData('objectId', $objectId);
+        $this->setData('objectId', $objectId !== null ? (int) $objectId : null);
     }
 
     /**
      * Get role.
-     * @return string
+     * @return string|null
      */
     public function getRole() {
-        return $this->getData('role');
+        $role = $this->getData('role');
+        return $role !== null ? (string) $role : null;
     }
 
     /**
      * Set role.
-     * @param $role int
+     * @param string|null $role
      */
-    public function setRole($role)    {
-        return $this->setData('role', $role);
+    public function setRole($role) {
+        $this->setData('role', $role !== null ? (string) $role : null);
     }
 
     /**
      * Get first name.
-     * @return string
+     * @return string|null
      */
     public function getFirstName() {
-        return $this->getData('firstName');
+        $firstName = $this->getData('firstName');
+        return $firstName !== null ? (string) $firstName : null;
     }
 
     /**
      * Set first name.
-     * @param $firstName string
+     * @param string|null $firstName
      */
     public function setFirstName($firstName) {
-        return $this->setData('firstName', $firstName);
+        $this->setData('firstName', $firstName !== null ? (string) $firstName : null);
     }
 
     /**
      * Get middle name.
-     * @return string
+     * @return string|null
      */
     public function getMiddleName() {
-        return $this->getData('middleName');
+        $middleName = $this->getData('middleName');
+        return $middleName !== null ? (string) $middleName : null;
     }
 
     /**
      * Set middle name.
-     * @param $middleName string
+     * @param string|null $middleName
      */
     public function setMiddleName($middleName) {
-        return $this->setData('middleName', $middleName);
+        $this->setData('middleName', $middleName !== null ? (string) $middleName : null);
     }
 
     /**
      * Get last name.
-     * @return string
+     * @return string|null
      */
     public function getLastName() {
-        return $this->getData('lastName');
+        $lastName = $this->getData('lastName');
+        return $lastName !== null ? (string) $lastName : null;
     }
 
     /**
      * Set last name.
-     * @param $lastName string
+     * @param string|null $lastName
      */
     public function setLastName($lastName) {
-        return $this->setData('lastName', $lastName);
+        $this->setData('lastName', $lastName !== null ? (string) $lastName : null);
     }
 
     /**
-     * Get sequence of the person in the object's for reivew person list.
-     * @return float
+     * Get sequence of the person in the object's for review person list.
+     * @return float|null
      */
     public function getSequence() {
-        return $this->getData('sequence');
+        $sequence = $this->getData('sequence');
+        return $sequence !== null ? (float) $sequence : null;
     }
 
     /**
      * Set sequence of the person in the object's for review person list.
-     * @param $sequence float
+     * @param float|null $sequence
      */
     public function setSequence($sequence) {
-        return $this->setData('sequence', $sequence);
+        $this->setData('sequence', $sequence !== null ? (float) $sequence : null);
     }
 
 }
-
 ?>
