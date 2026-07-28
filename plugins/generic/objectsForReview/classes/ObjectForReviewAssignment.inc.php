@@ -13,242 +13,251 @@ declare(strict_types=1);
  * @see ObjectForReviewAssignmentDAO
  *
  * @brief Basic class describing an object for review assignment.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
-define('OFR_STATUS_AVAILABLE',    0x01);
-define('OFR_STATUS_REQUESTED',    0x02);
-define('OFR_STATUS_ASSIGNED',     0x03);
-define('OFR_STATUS_MAILED',       0x04);
-define('OFR_STATUS_SUBMITTED',    0x05);
-
+define('OFR_STATUS_AVAILABLE', 0x01);
+define('OFR_STATUS_REQUESTED', 0x02);
+define('OFR_STATUS_ASSIGNED', 0x03);
+define('OFR_STATUS_MAILED', 0x04);
+define('OFR_STATUS_SUBMITTED', 0x05);
 
 class ObjectForReviewAssignment extends DataObject {
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ObjectForReviewAssignment() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::ObjectForReviewAssignment(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
     // Get/set methods
     //
+
     /**
-     * get object id
-     * @return int
+     * Get object ID.
+     * @return int|null
      */
     public function getObjectId() {
-        return $this->getData('objectId');
+        $id = $this->getData('objectId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
-     * set object id
-     * @param $objectId int
+     * Set object ID.
+     * @param int|null $objectId
      */
     public function setObjectId($objectId) {
-        return $this->setData('objectId', $objectId);
+        $this->setData('objectId', $objectId !== null ? (int) $objectId : null);
     }
 
     /**
      * Get the associated object for review.
-     * @return ObjectForReview
+     * @return ObjectForReview|null
      */
     public function getObjectForReview() {
+        /** @var ObjectForReviewDAO $ofrDao */
         $ofrDao = DAORegistry::getDAO('ObjectForReviewDAO');
-        return $ofrDao->getById($this->getData('objectId'));
+        return $ofrDao->getById($this->getObjectId());
     }
 
     /**
      * Get user ID for this assignment.
-     * @return int
+     * @return int|null
      */
     public function getUserId() {
-        return $this->getData('userId');
+        $id = $this->getData('userId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set user ID for this assignment.
-     * @param $userId int
+     * @param int|null $userId
      */
     public function setUserId($userId) {
-        return $this->setData('userId', $userId);
+        $this->setData('userId', $userId !== null ? (int) $userId : null);
     }
 
     /**
      * Get the user assigned to the object for review.
-     * @return User
+     * @return User|null
      */
     public function getUser() {
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
-        return $userDao->getById($this->getData('userId'));
+        return $userDao->getById($this->getUserId());
     }
 
     /**
      * Get submission ID for this assignment.
-     * @return int
+     * @return int|null
      */
     public function getSubmissionId() {
-        return $this->getData('submissionId');
+        $id = $this->getData('submissionId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set submission ID for this assignment.
-     * @param $submissionId int
+     * @param int|null $submissionId
      */
     public function setSubmissionId($submissionId) {
-        return $this->setData('submissionId', $submissionId);
+        $this->setData('submissionId', $submissionId !== null ? (int) $submissionId : null);
     }
 
     /**
      * Get the article.
-     * @return Article
+     * @return Article|null
      */
     public function getArticle() {
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         return $articleDao->getArticle($this->getSubmissionId());
     }
 
     /**
      * Get date requested.
-     * @return string
+     * @return string|null
      */
     public function getDateRequested() {
-        return $this->getData('dateRequested');
+        $date = $this->getData('dateRequested');
+        return $date !== null ? (string) $date : null;
     }
 
     /**
      * Set date requested.
-     * @param $dateRequested string
+     * @param string|null $dateRequested
      */
     public function setDateRequested($dateRequested) {
-        return $this->setData('dateRequested', $dateRequested);
+        $this->setData('dateRequested', $dateRequested !== null ? (string) $dateRequested : null);
     }
 
     /**
      * Get date assigned.
-     * @return string
+     * @return string|null
      */
     public function getDateAssigned() {
-        return $this->getData('dateAssigned');
+        $date = $this->getData('dateAssigned');
+        return $date !== null ? (string) $date : null;
     }
 
     /**
      * Set date assigned.
-     * @param $dateAssigned string
+     * @param string|null $dateAssigned
      */
     public function setDateAssigned($dateAssigned) {
-        return $this->setData('dateAssigned', $dateAssigned);
+        $this->setData('dateAssigned', $dateAssigned !== null ? (string) $dateAssigned : null);
     }
-
 
     /**
      * Get date mailed.
-     * @return string
+     * @return string|null
      */
     public function getDateMailed() {
-        return $this->getData('dateMailed');
+        $date = $this->getData('dateMailed');
+        return $date !== null ? (string) $date : null;
     }
 
     /**
      * Set date mailed.
-     * @param $dateMailed string
+     * @param string|null $dateMailed
      */
     public function setDateMailed($dateMailed) {
-        return $this->setData('dateMailed', $dateMailed);
+        $this->setData('dateMailed', $dateMailed !== null ? (string) $dateMailed : null);
     }
 
     /**
      * Get date due.
-     * @return string
+     * @return string|null
      */
     public function getDateDue() {
-        return $this->getData('dateDue');
+        $date = $this->getData('dateDue');
+        return $date !== null ? (string) $date : null;
     }
 
     /**
      * Set date due.
-     * @param $dateDue string
+     * @param string|null $dateDue
      */
     public function setDateDue($dateDue) {
-        return $this->setData('dateDue', $dateDue);
+        $this->setData('dateDue', $dateDue !== null ? (string) $dateDue : null);
     }
 
     /**
-     * Check whether the review has past due date
-     * @return boolean
+     * Check whether the review has past due date.
+     * @return bool
      */
     public function isLate() {
         $dateDue = $this->getData('dateDue');
-        if (!empty($dateDue)) {
-            if (strtotime($dateDue) > time()) {
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            return false;
+        if ($dateDue !== null && $dateDue !== '') {
+            return strtotime((string) $dateDue) <= time();
         }
+        return false;
     }
 
     /**
      * Get date reminded, before the due date.
-     * @return string
+     * @return string|null
      */
     public function getDateRemindedBefore() {
-        return $this->getData('dateRemindedBefore');
+        $date = $this->getData('dateRemindedBefore');
+        return $date !== null ? (string) $date : null;
     }
 
     /**
      * Set date reminded, before the due date.
-     * @param $dateRemindedBefore string
+     * @param string|null $dateRemindedBefore
      */
     public function setDateRemindedBefore($dateRemindedBefore) {
-        return $this->setData('dateRemindedBefore', $dateRemindedBefore);
+        $this->setData('dateRemindedBefore', $dateRemindedBefore !== null ? (string) $dateRemindedBefore : null);
     }
 
     /**
      * Get date reminded, after the due date.
-     * @return string
+     * @return string|null
      */
     public function getDateRemindedAfter() {
-        return $this->getData('dateRemindedAfter');
+        $date = $this->getData('dateRemindedAfter');
+        return $date !== null ? (string) $date : null;
     }
 
     /**
      * Set date reminded, after the due date.
-     * @param $dateRemindedAfter string
+     * @param string|null $dateRemindedAfter
      */
     public function setDateRemindedAfter($dateRemindedAfter) {
-        return $this->setData('dateRemindedAfter', $dateRemindedAfter);
+        $this->setData('dateRemindedAfter', $dateRemindedAfter !== null ? (string) $dateRemindedAfter : null);
     }
 
     /**
      * Get status of the object for review assignment.
-     * @return int OFR_STATUS_...
+     * @return int|null OFR_STATUS_...
      */
     public function getStatus() {
-        return $this->getData('status');
+        $status = $this->getData('status');
+        return $status !== null ? (int) $status : null;
     }
 
     /**
      * Set status of the object for review assignment.
-     * @param $status int OFR_STATUS_...
+     * @param int|null $status OFR_STATUS_...
      */
     public function setStatus($status) {
-        return $this->setData('status', $status);
+        $this->setData('status', $status !== null ? (int) $status : null);
     }
 
     /**
@@ -256,7 +265,8 @@ class ObjectForReviewAssignment extends DataObject {
      * @return string
      */
     public function getStatusString() {
-        switch ($this->getData('status')) {
+        $status = (int) $this->getData('status');
+        switch ($status) {
             case OFR_STATUS_AVAILABLE:
                 return 'plugins.generic.objectsForReview.objectForReviewAssignment.status.available';
             case OFR_STATUS_REQUESTED:
@@ -274,20 +284,20 @@ class ObjectForReviewAssignment extends DataObject {
 
     /**
      * Get notes for the assignment.
-     * @return string
+     * @return string|null
      */
     public function getNotes() {
-        return $this->getData('notes');
+        $notes = $this->getData('notes');
+        return $notes !== null ? (string) $notes : null;
     }
 
     /**
      * Set notes for the assignment.
-     * @param $notes string
+     * @param string|null $notes
      */
     public function setNotes($notes) {
-        return $this->setData('notes', $notes);
+        $this->setData('notes', $notes !== null ? (string) $notes : null);
     }
 
 }
-
 ?>
