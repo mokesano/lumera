@@ -13,72 +13,83 @@ declare(strict_types=1);
  * @see ObjectForReviewPerson
  *
  * @brief Operations for retrieving and modifying ObjectForReviewPerson objects.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 class ObjectForReviewPersonDAO extends DAO {
 
     /** @var string Name of parent plugin */
-    public $parentPluginName;
+    protected $_parentPluginName;
 
     /**
-     * Constructor
+     * Constructor.
+     * @param string $parentPluginName
      */
-    public function __construct($parentPluginName){
+    public function __construct($parentPluginName) {
         parent::__construct();
-        $this->parentPluginName = $parentPluginName;
+        $this->_parentPluginName = (string) $parentPluginName;
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $parentPluginName
      */
     public function ObjectForReviewPersonDAO($parentPluginName) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::ObjectForReviewPersonDAO(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($parentPluginName);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Retrieve person by ID.
-     * @param $personId int
-     * @return ObjectForReviewPerson
+     * @param int $personId
+     * @param int|null $objectId
+     * @return ObjectForReviewPerson|null
      */
     public function getById($personId, $objectId = null) {
-        $params = array((int) $personId);
-        if ($objectId) $params[] = (int) $objectId;
+        $params = [(int) $personId];
+        if ($objectId !== null) {
+            $params[] = (int) $objectId;
+        }
 
         $result = $this->retrieve(
-            'SELECT * FROM object_for_review_persons WHERE person_id = ?'. ($objectId ? ' AND object_id = ?' : ''),
+            'SELECT * FROM object_for_review_persons WHERE person_id = ?' . ($objectId !== null ? ' AND object_id = ?' : ''),
             $params
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if ($result && !$result->EOF) {
             $returner = $this->_fromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Retrieve all persons for the object for review.
-     * @param $objectId int
-     * @return array ObjectForReviewPersons ordered by sequence
+     * @param int $objectId
+     * @return array
      */
     public function getByObjectForReview($objectId) {
         $result = $this->retrieve(
             'SELECT * FROM object_for_review_persons WHERE object_id = ? ORDER BY seq',
-            (int) $objectId
+            [(int) $objectId]
         );
 
-        $persons = array();
-        while (!$result->EOF) {
-            $persons[] = $this->_fromRow($result->GetRowAssoc(false));
-            $result->MoveNext();
+        $persons = [];
+        if ($result) {
+            while (!$result->EOF) {
+                $persons[] = $this->_fromRow($result->GetRowAssoc(false));
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
         return $persons;
     }
 
@@ -87,34 +98,37 @@ class ObjectForReviewPersonDAO extends DAO {
      * @return ObjectForReviewPerson
      */
     public function newDataObject() {
-        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
+        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->_parentPluginName);
         $ofrPlugin->import('classes.ObjectForReviewPerson');
         return new ObjectForReviewPerson();
     }
 
     /**
      * Internal function to return an ObjectForReviewPerson object from a row.
-     * @param $row array
+     * @param array $row
      * @return ObjectForReviewPerson
      */
     public function _fromRow($row) {
         $person = $this->newDataObject();
-        $person->setId($row['person_id']);
-        $person->setObjectId($row['object_id']);
-        $person->setSequence($row['seq']);
-        $person->setRole($row['role']);
-        $person->setFirstName($row['first_name']);
-        $person->setMiddleName($row['middle_name']);
-        $person->setLastName($row['last_name']);
+        $person->setId((int) $row['person_id']);
+        $person->setObjectId((int) $row['object_id']);
+        $person->setSequence((float) $row['seq']);
+        $person->setRole((string) $row['role']);
+        $person->setFirstName((string) $row['first_name']);
+        $person->setMiddleName((string) ($row['middle_name'] ?? ''));
+        $person->setLastName((string) $row['last_name']);
 
-        HookRegistry::dispatch('ObjectForReviewPersonDAO::_fromRow', array(&$person, &$row));
+        // Note: HookRegistry dispatch with references is legacy but preserved for signature compatibility
+        $tempPerson = $person;
+        $tempRow = $row;
+        HookRegistry::dispatch('ObjectForReviewPersonDAO::_fromRow', [&$tempPerson, &$tempRow]);
 
         return $person;
     }
 
     /**
      * Insert a new ObjectForReviewPerson.
-     * @param $person ObjectForReviewPerson
+     * @param ObjectForReviewPerson $person
      * @return int
      */
     public function insertObject($person) {
@@ -123,26 +137,26 @@ class ObjectForReviewPersonDAO extends DAO {
                 (object_id, seq, role, first_name, middle_name, last_name)
                 VALUES
                 (?, ?, ?, ?, ?, ?)',
-            array(
+            [
                 (int) $person->getObjectId(),
                 (float) $person->getSequence(),
-                $person->getRole(),
-                $person->getFirstName(),
-                $person->getMiddleName() . '', // make non-null
-                $person->getLastName()
-            )
+                (string) $person->getRole(),
+                (string) $person->getFirstName(),
+                (string) $person->getMiddleName(),
+                (string) $person->getLastName()
+            ]
         );
-        $person->setId($this->getInsertId());
+        $person->setId((int) $this->getInsertId());
         return $person->getId();
     }
 
     /**
      * Update an existing ObjectForReviewPerson.
-     * @param $person ObjectForReviewPerson
-     * @return boolean
+     * @param ObjectForReviewPerson $person
+     * @return bool
      */
     public function updateObject($person) {
-        $returner = $this->update(
+        return (bool) $this->update(
             'UPDATE object_for_review_persons
                 SET
                     seq = ?,
@@ -151,46 +165,50 @@ class ObjectForReviewPersonDAO extends DAO {
                     middle_name = ?,
                     last_name = ?
                 WHERE person_id = ?',
-            array(
+            [
                 (float) $person->getSequence(),
-                $person->getRole(),
-                $person->getFirstName(),
-                $person->getMiddleName() . '', // make non-null
-                $person->getLastName(),
+                (string) $person->getRole(),
+                (string) $person->getFirstName(),
+                (string) $person->getMiddleName(),
+                (string) $person->getLastName(),
                 (int) $person->getId()
-            )
+            ]
         );
-        return $returner;
     }
 
     /**
      * Delete a person.
-     * @param $person ObjectForReviewPerson
+     * @param ObjectForReviewPerson $person
+     * @return bool
      */
     public function deleteObject($person) {
-        return $this->deleteById($person->getId());
+        return $this->deleteById((int) $person->getId());
     }
 
     /**
      * Delete a person by ID.
-     * @param $personId int
-     * @param $objectId int (optional)
+     * @param int $personId
+     * @param int|null $objectId
+     * @return bool
      */
     public function deleteById($personId, $objectId = null) {
-        $params = array((int) $personId);
-        if ($objectId) $params[] = (int) $objectId;
-        $returner = $this->update(
-            'DELETE FROM object_for_review_persons WHERE person_id = ?' . ($objectId ? ' AND object_id = ?' : ''),
+        $params = [(int) $personId];
+        if ($objectId !== null) {
+            $params[] = (int) $objectId;
+        }
+        return (bool) $this->update(
+            'DELETE FROM object_for_review_persons WHERE person_id = ?' . ($objectId !== null ? ' AND object_id = ?' : ''),
             $params
         );
     }
 
     /**
      * Delete object for review persons.
-     * @param $objectId int
+     * @param int $objectId
+     * @return void
      */
     public function deleteByObjectForReview($objectId) {
-        $persons = $this->getByObjectForReview($objectId);
+        $persons = $this->getByObjectForReview((int) $objectId);
         foreach ($persons as $person) {
             $this->deleteObject($person);
         }
@@ -198,36 +216,39 @@ class ObjectForReviewPersonDAO extends DAO {
 
     /**
      * Sequentially renumber object for review's persons in their sequence order.
-     * @param $objectId int
+     * @param int $objectId
+     * @return void
      */
     public function resequence($objectId) {
         $result = $this->retrieve(
-            'SELECT person_id FROM object_for_review_persons WHERE object_id = ? ORDER BY seq', (int) $objectId
+            'SELECT person_id FROM object_for_review_persons WHERE object_id = ? ORDER BY seq', 
+            [(int) $objectId]
         );
 
-        for ($i=1; !$result->EOF; $i++) {
-            list($personId) = $result->fields;
-            $this->update(
-                'UPDATE object_for_review_persons SET seq = ? WHERE person_id = ?',
-                array(
-                    $i,
-                    $personId
-                )
-            );
-
-            $result->MoveNext();
+        if ($result) {
+            for ($i = 1; !$result->EOF; $i++) {
+                $row = $result->GetRowAssoc(false);
+                $personId = (int) $row['person_id'];
+                $this->update(
+                    'UPDATE object_for_review_persons SET seq = ? WHERE person_id = ?',
+                    [$i, $personId]
+                );
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
     }
 
     /**
      * Get the ID of the last inserted person.
+     * @param string $table
+     * @param string $id
+     * @param bool $callHooks
      * @return int
      */
     public function getInsertId($table = '', $id = '', $callHooks = true) {
-        return parent::getInsertId('object_for_review_persons', 'person_id', $callHooks);
+        return (int) parent::getInsertId('object_for_review_persons', 'person_id', $callHooks);
     }
 
 }
-
 ?>
