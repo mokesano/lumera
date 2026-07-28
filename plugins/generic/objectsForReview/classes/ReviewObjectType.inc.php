@@ -13,7 +13,6 @@ declare(strict_types=1);
  * @see ReviewObjectTypeDAO
  *
  * @brief Basic class describing a review object type.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 class ReviewObjectType extends DataObject {
@@ -26,119 +25,129 @@ class ReviewObjectType extends DataObject {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ReviewObjectType() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::ReviewObjectType(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Get localized type name.
-     * @return string
+     * @return string|null
      */
     public function getLocalizedName() {
-        return $this->getLocalizedData('name');
+        $name = $this->getLocalizedData('name');
+        return $name !== null ? (string) $name : null;
     }
 
     /**
      * Get localized description.
-     * @return string
+     * @return string|null
      */
     public function getLocalizedDescription() {
-        return $this->getLocalizedData('description');
+        $description = $this->getLocalizedData('description');
+        return $description !== null ? (string) $description : null;
     }
 
     //
     // Get/set methods
     //
+
     /**
      * Get context ID.
-     * @return int
+     * @return int|null
      */
     public function getContextId() {
-        return $this->getData('contextId');
+        $id = $this->getData('contextId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set context ID.
-     * @param $contextId int
+     * @param int|null $contextId
      */
     public function setContextId($contextId) {
-        return $this->setData('contextId', $contextId);
+        $this->setData('contextId', $contextId !== null ? (int) $contextId : null);
     }
 
     /**
      * Get active flag.
-     * @return int
+     * @return int|null
      */
     public function getActive() {
-        return $this->getData('active');
+        $active = $this->getData('active');
+        return $active !== null ? (int) $active : null;
     }
 
     /**
      * Set active flag.
-     * @param $active int
+     * @param int|null $active
      */
     public function setActive($active) {
-        return $this->setData('active', $active);
+        $this->setData('active', $active !== null ? (int) $active : null);
     }
 
     /**
      * Get key.
-     * @return string
+     * @return string|null
      */
     public function getKey() {
-        return $this->getData('key');
+        $key = $this->getData('key');
+        return $key !== null ? (string) $key : null;
     }
 
     /**
      * Set key.
-     * @param $key string
+     * @param string|null $key
      */
     public function setKey($key) {
-        return $this->setData('key', $key);
+        $this->setData('key', $key !== null ? (string) $key : null);
     }
 
     /**
      * Get name.
-     * @param $locale string
-     * @return string
+     * @param string|null $locale
+     * @return string|null
      */
     public function getName($locale) {
-        return $this->getData('name', $locale);
+        $name = $this->getData('name', $locale);
+        return $name !== null ? (string) $name : null;
     }
 
     /**
      * Set name.
-     * @param $name string
-     * @param $locale string
+     * @param string|null $name
+     * @param string|null $locale
      */
     public function setName($name, $locale) {
-        return $this->setData('name', $name, $locale);
+        $this->setData('name', $name !== null ? (string) $name : null, $locale);
     }
 
     /**
      * Get description.
-     * @param $locale string
-     * @return string
+     * @param string|null $locale
+     * @return string|null
      */
     public function getDescription($locale) {
-        return $this->getData('description', $locale);
+        $description = $this->getData('description', $locale);
+        return $description !== null ? (string) $description : null;
     }
 
     /**
      * Set description.
-     * @param $description string
-     * @param $locale string
+     * @param string|null $description
+     * @param string|null $locale
      */
     public function setDescription($description, $locale) {
-        return $this->setData('description', $description, $locale);
+        $this->setData('description', $description !== null ? (string) $description : null, $locale);
     }
 
 }
-
 ?>
