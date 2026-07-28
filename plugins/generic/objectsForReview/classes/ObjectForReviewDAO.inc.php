@@ -13,57 +13,65 @@ declare(strict_types=1);
  * @see ObjectForReview
  *
  * @brief Operations for retrieving and modifying ObjectForReview objects.
- * * MODERNIZED FOR WIZDAM FORK
  */
 
 class ObjectForReviewDAO extends DAO {
 
     /** @var string Name of the parent plugin */
-    public $parentPluginName;
+    protected $_parentPluginName;
 
-    /** @var object Object for review person DAO */
-    public $objectForReviewPersonDao;
+    /** @var ObjectForReviewPersonDAO Object for review person DAO */
+    protected $_objectForReviewPersonDao;
 
     /**
      * Constructor.
+     * @param string $parentPluginName
      */
     public function __construct($parentPluginName) {
         parent::__construct();
-        $this->parentPluginName = $parentPluginName;
-        $this->objectForReviewPersonDao = DAORegistry::getDAO('ObjectForReviewPersonDAO');
+        $this->_parentPluginName = (string) $parentPluginName;
+        $this->_objectForReviewPersonDao = DAORegistry::getDAO('ObjectForReviewPersonDAO');
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $parentPluginName
      */
     public function ObjectForReviewDAO($parentPluginName) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::ObjectForReviewDAO(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($parentPluginName);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Retrieve object for review by object ID.
-     * @param $objectId int
-     * @param $contextId int
-     * @return ObjectForReview
+     * @param int $objectId
+     * @param int|null $contextId
+     * @return ObjectForReview|null
      */
     public function getById($objectId, $contextId = null) {
-        $params = array((int) $objectId);
-        if ($contextId) $params[] = (int) $contextId;
+        $params = [(int) $objectId];
+        if ($contextId !== null) {
+            $params[] = (int) $contextId;
+        }
 
         $result = $this->retrieve(
-            'SELECT * FROM objects_for_review WHERE object_id = ?'. ($contextId ? ' AND context_id = ?' : ''),
+            'SELECT * FROM objects_for_review WHERE object_id = ?' . ($contextId !== null ? ' AND context_id = ?' : ''),
             $params
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if ($result && !$result->EOF) {
             $returner = $this->_fromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
@@ -72,34 +80,36 @@ class ObjectForReviewDAO extends DAO {
      * @return ObjectForReview
      */
     public function newDataObject() {
-        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
+        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->_parentPluginName);
         $ofrPlugin->import('classes.ObjectForReview');
         return new ObjectForReview();
     }
 
     /**
      * Internal function to return an ObjectForReview object from a row.
-     * @param $row array
+     * @param array $row
      * @return ObjectForReview
      */
     public function _fromRow($row) {
         $object = $this->newDataObject();
-        $object->setId($row['object_id']);
-        $object->setReviewObjectTypeId($row['review_object_type_id']);
-        $object->setContextId($row['context_id']);
-        $object->setAvailable($row['available']);
-        $object->setDateCreated($row['date_created']);
-        $object->setEditorId($row['editor_id']);
-        $object->setNotes($row['notes']);
+        $object->setId((int) $row['object_id']);
+        $object->setReviewObjectTypeId((int) $row['review_object_type_id']);
+        $object->setContextId((int) $row['context_id']);
+        $object->setAvailable((int) $row['available']);
+        $object->setDateCreated($this->datetimeFromDB($row['date_created']));
+        $object->setEditorId(isset($row['editor_id']) ? (int) $row['editor_id'] : null);
+        $object->setNotes((string) ($row['notes'] ?? ''));
 
-        HookRegistry::dispatch('ObjectForReviewDAO::_fromRow', array(&$object, &$row));
+        $tempObject = $object;
+        $tempRow = $row;
+        HookRegistry::dispatch('ObjectForReviewDAO::_fromRow', [&$tempObject, &$tempRow]);
 
         return $object;
     }
 
     /**
      * Insert a new ObjectForReview.
-     * @param $objectForReview ObjectForReview
+     * @param ObjectForReview $objectForReview
      * @return int
      */
     public function insertObject($objectForReview) {
@@ -116,26 +126,26 @@ class ObjectForReviewDAO extends DAO {
                     (?, ?, ?, %s, ?, ?)',
                 $this->datetimeToDB($objectForReview->getDateCreated())
             ),
-            array(
+            [
                 (int) $objectForReview->getReviewObjectTypeId(),
                 (int) $objectForReview->getContextId(),
                 (int) $objectForReview->getAvailable(),
-                (int) $objectForReview->getEditorId(),
-                $objectForReview->getNotes()
-            )
+                $objectForReview->getEditorId() !== null ? (int) $objectForReview->getEditorId() : null,
+                (string) $objectForReview->getNotes()
+            ]
         );
-        $objectForReview->setId($this->getInsertId());
+        $objectForReview->setId((int) $this->getInsertId());
 
         return $objectForReview->getId();
     }
 
     /**
      * Update an existing object for review.
-     * @param $objectForReview ObjectForReview
-     * @return boolean
+     * @param ObjectForReview $objectForReview
+     * @return bool
      */
     public function updateObject($objectForReview) {
-        $this->update(
+        return (bool) $this->update(
             sprintf('UPDATE objects_for_review
                 SET
                     review_object_type_id = ?,
@@ -147,117 +157,129 @@ class ObjectForReviewDAO extends DAO {
                 WHERE object_id = ?',
                 $this->datetimeToDB($objectForReview->getDateCreated())
             ),
-            array(
+            [
                 (int) $objectForReview->getReviewObjectTypeId(),
                 (int) $objectForReview->getContextId(),
                 (int) $objectForReview->getAvailable(),
-                $this->nullOrInt($objectForReview->getEditorId()),
-                $objectForReview->getNotes(),
+                $objectForReview->getEditorId() !== null ? (int) $objectForReview->getEditorId() : null,
+                (string) $objectForReview->getNotes(),
                 (int) $objectForReview->getId()
-            )
+            ]
         );
     }
 
     /**
      * Delete an object for review.
-     * @param $objectForReview ObjectForReview
+     * @param ObjectForReview $objectForReview
+     * @return void
      */
     public function deleteObject($objectForReview) {
-        // Delete object
-        $this->update('DELETE FROM objects_for_review WHERE object_id = ? AND context_id = ?',
-            array((int) $objectForReview->getId(), (int) $objectForReview->getContextId())
+        $this->update(
+            'DELETE FROM objects_for_review WHERE object_id = ? AND context_id = ?',
+            [(int) $objectForReview->getId(), (int) $objectForReview->getContextId()]
         );
+        
         if ($this->getAffectedRows()) {
             // Delete cover image files (for all locales) from the filesystem
             import('classes.file.PublicFileManager');
             $publicFileManager = new PublicFileManager();
             $coverPageSetting = $objectForReview->getCoverPage();
-            $publicFileManager->removeJournalFile($objectForReview->getContextId(), $coverPageSetting['fileName']);
+            
+            // [WIZDAM FIX] Null-safety check for array access
+            if (is_array($coverPageSetting) && isset($coverPageSetting['fileName'])) {
+                $publicFileManager->removeJournalFile((int) $objectForReview->getContextId(), (string) $coverPageSetting['fileName']);
+            }
 
             // Delete settings
+            /** @var ObjectForReviewSettingsDAO $ofrSettingsDao */
             $ofrSettingsDao = DAORegistry::getDAO('ObjectForReviewSettingsDAO');
-            $ofrSettingsDao->deleteSettings($objectForReview->getId());
+            $ofrSettingsDao->deleteSettings((int) $objectForReview->getId());
+            
             // Delete persons
-            $this->objectForReviewPersonDao->deleteByObjectForReview($objectForReview->getId());
+            $this->_objectForReviewPersonDao->deleteByObjectForReview((int) $objectForReview->getId());
+            
             // Delete assignments
+            /** @var ObjectForReviewAssignmentDAO $ofrAssignmentDao */
             $ofrAssignmentDao = DAORegistry::getDAO('ObjectForReviewAssignmentDAO');
-            $ofrAssignmentDao->deleteAllByObjectId($objectForReview->getId());
+            $ofrAssignmentDao->deleteAllByObjectId((int) $objectForReview->getId());
         }
     }
 
     /**
      * Delete objects for review by context ID.
-     * @param $contextId int
+     * @param int $contextId
+     * @return void
      */
     public function deleteByContextId($contextId) {
-        $objectsForReview = $this->getAllByContextId($contextId);
+        $objectsForReview = $this->getAllByContextId((int) $contextId);
         while ($objectForReview = $objectsForReview->next()) {
             $this->deleteObject($objectForReview);
-            unset($objectForReview);
         }
     }
 
     /**
      * Delete objects for review by review object type ID
      * to be called only when deleting a review object type.
-     * @param $reviewObjectTypeId int
+     * @param int $reviewObjectTypeId
+     * @return void
      */
     public function deleteByReviewObjectTypeId($reviewObjectTypeId) {
-        $objectsForReview = $this->getArrayByReviewObjectTypeId($reviewObjectTypeId);
-        foreach ($objectsForReview as $objectId => $objectForReview) {
+        $objectsForReview = $this->getArrayByReviewObjectTypeId((int) $reviewObjectTypeId);
+        foreach ($objectsForReview as $objectForReview) {
             $this->deleteObject($objectForReview);
         }
     }
 
     /**
      * Retrieve all objects for review in an array for a review object type.
-     * @param $reviewObjectTypeId int
-     * @return array ObjectForReviews ordered by ID
+     * @param int $reviewObjectTypeId
+     * @return array
      */
     public function getArrayByReviewObjectTypeId($reviewObjectTypeId) {
         $result = $this->retrieve(
             'SELECT * FROM objects_for_review WHERE review_object_type_id = ? ORDER BY object_id',
-            (int) $reviewObjectTypeId
+            [(int) $reviewObjectTypeId]
         );
 
-        $allObjectsForReview = array();
-        while (!$result->EOF) {
-            $objectForReview = $this->_fromRow($result->GetRowAssoc(false));
-            $allObjectsForReview[$objectForReview->getId()] = $objectForReview;
-            $result->MoveNext();
-            unset($objectForReview);
+        $allObjectsForReview = [];
+        if ($result) {
+            while (!$result->EOF) {
+                $objectForReview = $this->_fromRow($result->GetRowAssoc(false));
+                $allObjectsForReview[(int) $objectForReview->getId()] = $objectForReview;
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-        $result->Close();
         return $allObjectsForReview;
     }
 
     /**
-     * Retrieve all objects for reivew matching a particular context ID.
-     * @param $contextId int
-     * @param $searchType int (optional), which field to search
-     * @param $search string (optional), string to match
-     * @param $searchMatch string (optional), type of match ('is' vs. 'contains')
-     * @param $available int (optional), status to match
-     * @param $editorId int, (optional) editor to match
-     * @param $filterType int (optional), review object type ID to match
-     * @param $rangeInfo DBResultRange (optional)
-     * @param $sortBy string (optional), sorting criteria
-     * @param $sortDirection int (optional), sorting direction
-     * @return DAOResultFactory containing matching ObjectForReviewAssignments
+     * Retrieve all objects for review matching a particular context ID.
+     * @param int $contextId
+     * @param int|null $searchType
+     * @param string|null $search
+     * @param string|null $searchMatch
+     * @param int|null $available
+     * @param int|null $editorId
+     * @param int|null $filterType
+     * @param mixed $rangeInfo DBResultRange
+     * @param string|null $sortBy
+     * @param int $sortDirection
+     * @return DAOResultFactory
      */
     public function getAllByContextId($contextId, $searchType = null, $search = null, $searchMatch = null, $available = null, $editorId = null, $filterType = null, $rangeInfo = null, $sortBy = null, $sortDirection = SORT_DIRECTION_ASC) {
-        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
+        $ofrPlugin = PluginRegistry::getPlugin('generic', $this->_parentPluginName);
         $ofrPlugin->import('classes.ReviewObjectMetadata');
 
-        $params = array();
-
+        $params = [];
         $sortColumn = '';
         $sortSQL = '';
+        
         switch ($sortBy) {
             case 'title':
                 $sortColumn .= ', ofrs.setting_value AS ofr_title';
                 $sortSQL .= ' LEFT JOIN object_for_review_settings ofrs ON (ofr.object_id = ofrs.object_id)
-                    JOIN review_object_metadata rom ON (rom.metadata_id = ofrs.review_object_metadata_id AND rom.metadata_key = \'' . REVIEW_OBJECT_METADATA_KEY_TITLE .'\')';
+                    JOIN review_object_metadata rom ON (rom.metadata_id = ofrs.review_object_metadata_id AND rom.metadata_key = \'' . REVIEW_OBJECT_METADATA_KEY_TITLE . '\')';
                 break;
             case 'type':
                 $sortColumn .= ', COALESCE(rtl.setting_value, rtpl.setting_value) AS ofr_type_name';
@@ -266,9 +288,10 @@ class ObjectForReviewDAO extends DAO {
                     LEFT JOIN review_object_type_settings rtpl ON (ofr.review_object_type_id = rtpl.type_id AND rtpl.setting_name = \'name\' AND rtpl.locale = ?)';
                 $params[] = AppLocale::getLocale();
                 $params[] = AppLocale::getPrimaryLocale();
+                // intentional fall-through
             case 'editor':
                 $sortColumn .= ', COALESCE(ue.initials, CONCAT(SUBSTRING(ue.first_name FROM 1 FOR 1), SUBSTRING(ue.last_name FROM 1 FOR 1))) AS ed_initials';
-                $sortSQL .= 'LEFT JOIN users ue ON (ofr.editor_id = ue.user_id)';
+                $sortSQL .= ' LEFT JOIN users ue ON (ofr.editor_id = ue.user_id)';
                 break;
         }
 
@@ -278,18 +301,18 @@ class ObjectForReviewDAO extends DAO {
 
         switch ($searchType) {
             case OFR_FIELD_TITLE:
-                if ($sortBy != 'title') {
+                if ($sortBy !== 'title') {
                     $sql .= ' LEFT JOIN object_for_review_settings ofrs ON (ofr.object_id = ofrs.object_id)
-                        JOIN review_object_metadata rom ON (rom.metadata_id = ofrs.review_object_metadata_id AND rom.metadata_key = \'' . REVIEW_OBJECT_METADATA_KEY_TITLE .'\')';
+                        JOIN review_object_metadata rom ON (rom.metadata_id = ofrs.review_object_metadata_id AND rom.metadata_key = \'' . REVIEW_OBJECT_METADATA_KEY_TITLE . '\')';
                 }
-                $sql .= ' WHERE LOWER(ofrs.setting_value) ' . ($searchMatch == 'is' ? '=' : 'LIKE') . ' LOWER(?)';
-                $params[] = $searchMatch == 'is' ? $search : "%$search%";
+                $sql .= ' WHERE LOWER(ofrs.setting_value) ' . ($searchMatch === 'is' ? '=' : 'LIKE') . ' LOWER(?)';
+                $params[] = $searchMatch === 'is' ? (string) $search : '%' . (string) $search . '%';
                 break;
             case OFR_FIELD_ABSTRACT:
                 $sql .= ' LEFT JOIN object_for_review_settings ofrsa ON (ofr.object_id = ofrsa.object_id)
                     LEFT JOIN review_object_metadata roma ON (roma.metadata_id = ofrsa.review_object_metadata_id)
-                    WHERE roma.metadata_key = \'' . REVIEW_OBJECT_METADATA_KEY_ABSTRACT .'\' AND LOWER(ofrsa.setting_value) ' . ($searchMatch == 'is' ? '=' : 'LIKE') . ' LOWER(?)';
-                $params[] = $searchMatch == 'is' ? $search : "%$search%";
+                    WHERE roma.metadata_key = \'' . REVIEW_OBJECT_METADATA_KEY_ABSTRACT . '\' AND LOWER(ofrsa.setting_value) ' . ($searchMatch === 'is' ? '=' : 'LIKE') . ' LOWER(?)';
+                $params[] = $searchMatch === 'is' ? (string) $search : '%' . (string) $search . '%';
                 break;
             default:
                 $searchType = null;
@@ -301,16 +324,16 @@ class ObjectForReviewDAO extends DAO {
             $sql .= ' AND';
         }
 
-        if (!empty($available)) {
+        if ($available !== null && $available !== '') {
             $sql .= ' ofr.available = 1 AND';
         }
 
-        if (!empty($editorId)) {
+        if ($editorId !== null && $editorId !== '') {
             $sql .= ' ofr.editor_id = ? AND';
             $params[] = (int) $editorId;
         }
 
-        if (!empty($filterType)) {
+        if ($filterType !== null && $filterType !== '') {
             $sql .= ' ofr.review_object_type_id = ? AND';
             $params[] = (int) $filterType;
         }
@@ -318,45 +341,57 @@ class ObjectForReviewDAO extends DAO {
         $sql .= " ofr.context_id = ?";
         $params[] = (int) $contextId;
 
-        $sql .= ($sortBy?(' ORDER BY ' . $this->getSortMapping($sortBy) . ' ' . $this->getDirectionMapping($sortDirection)) : '');
+        if ($sortBy) {
+            $sql .= ' ORDER BY ' . $this->getSortMapping($sortBy) . ' ' . $this->getDirectionMapping($sortDirection);
+        }
 
         $result = $this->retrieveRange($sql, $params, $rangeInfo);
-        $returner = new DAOResultFactory($result, $this, '_fromRow');
-        return $returner;
+        return new DAOResultFactory($result, $this, '_fromRow');
     }
 
     /**
      * Check if the review object type exists with the specified ID.
-     * @param $objectId int
-     * @param $contextId int (optional)
-     * @return boolean
+     * @param int $objectId
+     * @param int|null $contextId
+     * @return bool
      */
     public function objectForReviewExists($objectId, $contextId = null) {
-        $params = array((int) $objectId);
-        if ($contextId) $params[] = (int) $contextId;
+        $params = [(int) $objectId];
+        if ($contextId !== null) {
+            $params[] = (int) $contextId;
+        }
 
         $result = $this->retrieve(
-            'SELECT COUNT(*) FROM objects_for_review WHERE object_id = ?' . ($contextId ? ' AND context_id = ?' : ''),
+            'SELECT COUNT(*) AS count FROM objects_for_review WHERE object_id = ?' . ($contextId !== null ? ' AND context_id = ?' : ''),
             $params
         );
 
-        $returner = isset($result->fields[0]) && $result->fields[0] == 1 ? true : false;
-        $result->Close();
+        $returner = false;
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = ((int) ($row['count'] ?? 0)) > 0;
+        }
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Get the ID of the last inserted object for review.
+     * @param string $table
+     * @param string $id
+     * @param bool $callHooks
      * @return int
      */
     public function getInsertId($table = '', $id = '', $callHooks = true) {
-        return parent::getInsertId('objects_for_review', 'object_id', $callHooks);
+        return (int) parent::getInsertId('objects_for_review', 'object_id', $callHooks);
     }
 
     /**
-     * Map a column heading value to a database value for sorting
-     * @param string
-     * @return string
+     * Map a column heading value to a database value for sorting.
+     * @param string $heading
+     * @return string|null
      */
     public static function getSortMapping($heading) {
         switch ($heading) {
@@ -370,5 +405,4 @@ class ObjectForReviewDAO extends DAO {
     }
 
 }
-
 ?>
