@@ -816,6 +816,7 @@ current password.<br /><br />Enter your email address below to reset your passwo
 	<message key="user.register.reviewerDescription">Willing to conduct peer review of submissions to the site.</message>
 	<message key="user.register.reviewerInterests">Identify reviewing interests (substantive areas and research methods):</message>
 	<message key="user.register.implicitAuth">Login via Shibboleth with an existing organization account</message>
+	<message key="user.register.authError">Failed to register user to external authentication system. Please try again.</message>
 
 	<!-- Subscriptions -->
 	<message key="user.subscriptions.mySubscriptions">My Subscriptions</message>
