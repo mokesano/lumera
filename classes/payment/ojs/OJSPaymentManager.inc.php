@@ -127,7 +127,7 @@ class OJSPaymentManager extends PaymentManager {
         $payment->setJournalId($journalId);
         $payment->setType($type);
         if ($invoiceId > 0) {
-            $payment->setInvoiceId($invoiceId); // <- INI kuncinya: menautkan queued payment ke invoice ASLI
+            $payment->setInvoiceId($invoiceId); // <- KEY: menautkan queued payment ke invoice ASLI
         }
 
         switch ($type) {
@@ -455,7 +455,7 @@ class OJSPaymentManager extends PaymentManager {
                     $recipientEmail = (string) $gift->getRecipientEmail();
 
                     $newUserAccount = false;
-                    $password = ''; // [WIZDAM FIX] Initialize to prevent undefined variable warning
+                    $password = ''; // [WIZDAM] Initialize to prevent undefined variable warning
 
                     if ($userDao->userExistsByEmail($recipientEmail)) {
                         $user = $userDao->getUserByEmail($recipientEmail);
@@ -569,7 +569,45 @@ class OJSPaymentManager extends PaymentManager {
         if (method_exists($queuedPayment, 'getInvoiceId') && $queuedPayment->getInvoiceId() > 0) {
             import('lib.wizdam.classes.services.InvoiceService');
             $invoiceService = new InvoiceService();
-            $invoiceService->markAsPaid($queuedPayment->getInvoiceId(), (string) $payMethodPluginName);
+            $markPaidSuccess = $invoiceService->markAsPaid($queuedPayment->getInvoiceId(), (string) $payMethodPluginName);
+
+            if (!$markPaidSuccess) {
+                // Catat log dan kirim sebagai notifikasi tersimpan ke pengguna yang membayar 
+                // DAN seluruh Journal Manager terkait, supaya insiden langsung terlihat di antarmuka.
+                import('classes.notification.NotificationManager');
+                $notificationManager = new NotificationManager();
+
+                $notificationManager->createTrivialNotification(
+                    (int) $queuedPayment->getUserId(),
+                    NOTIFICATION_TYPE_ERROR,
+                    ['contents' => __('billing.error.invoiceLinkFailedUser', ['invoiceId' => $queuedPayment->getInvoiceId()])]
+                );
+
+                /** @var RoleDAO $roleDao */
+                $roleDao = DAORegistry::getDAO('RoleDAO');
+                $managerUsers = $roleDao->getUsersByRoleId(ROLE_ID_JOURNAL_MANAGER, (int) $queuedPayment->getJournalId());
+                while ($managerUser = $managerUsers->next()) {
+                    $notificationManager->createTrivialNotification(
+                        (int) $managerUser->getId(),
+                        NOTIFICATION_TYPE_ERROR,
+                        ['contents' => __('billing.error.invoiceLinkFailedManager', [
+                            'invoiceId' => $queuedPayment->getInvoiceId(),
+                            'queuedPaymentId' => (int) $queuedPayment->getId()
+                        ])]
+                    );
+                }
+
+                // Catat insiden ke error_log sebagai jejak teknis tambahan.
+                error_log(sprintf(
+                    '[WIZDAM] markAsPaid() GAGAL untuk invoice #%d (queued_payment #%d) -- notifikasi sudah dikirim ke pengguna dan Journal Manager jurnal #%d.',
+                    $queuedPayment->getInvoiceId(), (int) $queuedPayment->getId(), (int) $queuedPayment->getJournalId()
+                ));
+
+                /** @var OJSCompletedPaymentDAO $completedPaymentDao */
+                $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
+                $completedPayment = $this->createCompletedPayment($queuedPayment, $payMethodPluginName);
+                $completedPaymentDao->insertCompletedPayment($completedPayment);
+            }
         } else {
             /** @var OJSCompletedPaymentDAO $completedPaymentDao */
             $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');

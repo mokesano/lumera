@@ -11,10 +11,7 @@ declare(strict_types=1);
  * @class OJSPaymentAction
  * @ingroup payments
  *
- * Common actions for payment management functions.
- * [WIZDAM EDITION] 
- * - FIXED: PHP 8.4 Static Compliance
- * - REFACTORED: De-monolithized into modular, testable methods.
+ * @brief Common actions for payment management functions.
  */
 
 class OJSPaymentAction {
@@ -24,8 +21,9 @@ class OJSPaymentAction {
     // 
 
     /**
-     * Display Payments Settings Form (main payments page)
+     * Display Payments Settings Form (main payments page).
      * @param array $args
+     * @return void
      */
     public static function payments($args) {
         import('classes.payment.ojs.form.PaymentSettingsForm');
@@ -42,7 +40,7 @@ class OJSPaymentAction {
     }
 
     /**
-     * Execute the form or display it again if there are problems
+     * Execute the form or display it again if there are problems.
      * @param array $args
      * @return bool
      */
@@ -62,17 +60,26 @@ class OJSPaymentAction {
     }
 
     /**
-     * Display all payments previously made
+     * Display all payments previously made.
      * @param array $args
+     * @return void
      */
     public static function viewPayments($args) {
-        $journal = Application::get()->getRequest()->getJournal();
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+
+        // [WIZDAM FIX] Null-safety check for journal context
+        if (!$journal) {
+            return;
+        }
+
         $rangeInfo = self::getPaginationRange('payments');
         
+        /** @var OJSCompletedPaymentDAO $paymentDao */
         $paymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
-        $payments = $paymentDao->getPaymentsByJournalId($journal->getId(), $rangeInfo);
+        $payments = $paymentDao->getPaymentsByJournalId((int) $journal->getId(), $rangeInfo);
         
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         self::assignCommonPaymentDAOs($templateMgr, $journal);
         $templateMgr->assign('payments', $payments);
 
@@ -80,17 +87,27 @@ class OJSPaymentAction {
     }
 
     /**
-     * Display a single Completed payment
+     * Display a single Completed payment.
      * @param array $args
+     * @return void
      */
     public static function viewPayment($args) {
-        $journal = Application::get()->getRequest()->getJournal();
-        $completedPaymentId = isset($args[0]) ? (int) $args[0] : 0;
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+
+        // [WIZDAM FIX] Null-safety check for journal context
+        if (!$journal) {
+            return;
+        }
+
+        // [WIZDAM FIX] Modern null coalescing operator with internal coercion
+        $completedPaymentId = (int) ($args[0] ?? 0);
         
+        /** @var OJSCompletedPaymentDAO $paymentDao */
         $paymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
         $payment = $paymentDao->getCompletedPayment($completedPaymentId);
 
-        $templateMgr = TemplateManager::getManager();
+        $templateMgr = TemplateManager::getManager($request);
         self::assignCommonPaymentDAOs($templateMgr, $journal);
         $templateMgr->assign('payment', $payment);
 
@@ -99,6 +116,7 @@ class OJSPaymentAction {
 
     /**
      * Display form to edit program settings.
+     * @return void
      */
     public static function payMethodSettings() {
         import('classes.payment.ojs.form.PayMethodSettingsForm');
@@ -128,7 +146,6 @@ class OJSPaymentAction {
         return false;
     }
 
-
     // 
     // PRIVATE HELPER METHODS (Modularity & Testability)
     // 
@@ -146,7 +163,7 @@ class OJSPaymentAction {
 
     /**
      * Assigns common boilerplate variables required by payment forms.
-     * @param TemplateManager $templateMgr
+     * @return void
      */
     private static function assignCommonFormVars(): void {
         $templateMgr = TemplateManager::getManager();
@@ -158,15 +175,17 @@ class OJSPaymentAction {
      * Separating this makes the main display methods cleaner and isolates DB dependencies.
      * @param TemplateManager $templateMgr
      * @param Journal $journal
+     * @return void
      */
     private static function assignCommonPaymentDAOs($templateMgr, $journal): void {
         $templateMgr->assign([
             'helpTopicId' => 'journal.managementPages.payments',
-            'isJournalManager' => Validation::isJournalManager($journal->getId()),
+            'isJournalManager' => Validation::isJournalManager((int) $journal->getId()),
             'individualSubscriptionDao' => DAORegistry::getDAO('IndividualSubscriptionDAO'),
             'institutionalSubscriptionDao' => DAORegistry::getDAO('InstitutionalSubscriptionDAO'),
             'userDao' => DAORegistry::getDAO('UserDAO')
         ]);
     }
+
 }
 ?>

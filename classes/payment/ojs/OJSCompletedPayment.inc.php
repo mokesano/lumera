@@ -2,10 +2,6 @@
 declare(strict_types=1);
 
 /**
- * @defgroup payment_ojs
- */
-
-/**
  * @file classes/payment/ojs/OJSCompletedPayment.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
@@ -17,31 +13,36 @@ declare(strict_types=1);
  * @see OJSCompletedPaymentDAO
  *
  * @brief Class describing a payment ready to be in the database.
- * * MODERNIZED FOR WIZDAM FORK
  */
+
 import('lib.pkp.classes.payment.Payment');
 
 class OJSCompletedPayment extends Payment {
-    /** @var int */
-    public $journalId;
-    /** @var int */
-    public $paperId;
-    /** @var int */
-    public $type;
-    /** @var int */
-    public $timestamp;
-    /** @var string */
-    public $payMethod;
+
+    /** @var int|null */
+    protected $_journalId;
+
+    /** @var int|null */
+    protected $_paperId;
+
+    /** @var int|null */
+    protected $_type;
+
+    /** @var string|null */
+    protected $_timestamp;
+
+    /** @var string|null */
+    protected $_payMethod;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function OJSCompletedPayment() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -51,348 +52,383 @@ class OJSCompletedPayment extends Payment {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
-    /**
-     * Get/set methods
-     */
+    //
+    // Get/set methods
+    //
 
     /**
-     * Set the  ID of the payment.
-     * @param $queuedPaymentId int
+     * Set the ID of the payment.
+     * @param int|null $queuedPaymentId
      */
     public function setCompletedPaymentId($queuedPaymentId) {
-        parent::setPaymentId($queuedPaymentId);
+        parent::setPaymentId($queuedPaymentId !== null ? (int) $queuedPaymentId : null);
     }
 
     /**
      * Get the ID of the payment.
-     * @return int
+     * @return int|null
      */
     public function getCompletedPaymentId() {
-        return parent::getId();
+        $id = parent::getId();
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Get the journal ID of the payment.
-     * @return int
+     * @return int|null
      */
     public function getJournalId() {
-        return $this->journalId;
+        return $this->_journalId !== null ? (int) $this->_journalId : null;
     }
 
     /**
      * Set the journal ID of the payment.
-     * @param $journalId int
+     * @param int|null $journalId
      */
     public function setJournalId($journalId) {
-        $this->journalId = $journalId;
+        $this->_journalId = $journalId !== null ? (int) $journalId : null;
     }
 
     /**
-     * Set the Payment Type
-     * @param $type int
+     * Set the Payment Type.
+     * @param int|null $type
      */
     public function setType($type) {
-        $this->type = $type;
+        $this->_type = $type !== null ? (int) $type : null;
     }
 
     /**
-     * Set the Payment Type
-     * @return $type int
+     * Get the Payment Type.
+     * @return int|null
      */
     public function getType() {
-        return $this->type;
+        return $this->_type !== null ? (int) $this->_type : null;
     }
 
     /**
-     * Returns the description of the CompletedPayment.
+     * Returns the name of the CompletedPayment.
      * Pulled from Journal Settings if present, or from locale file otherwise.
      * For subscriptions, pulls subscription type name.
-     * @return string
+     * @return string|null
      */
     public function getName() {
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($this->getJournalId());
+        if (!$journal) {
+            return null;
+        }
 
-        switch ($this->type) {
+        $type = $this->getType();
+        $assocId = $this->getAssocId();
+
+        switch ($type) {
             case PAYMENT_TYPE_PURCHASE_SUBSCRIPTION:
             case PAYMENT_TYPE_RENEW_SUBSCRIPTION:
+                /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
                 $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
-
-                if ($institutionalSubscriptionDao->subscriptionExists($this->assocId)) {
-                    $subscription = $institutionalSubscriptionDao->getSubscription($this->assocId);
+                if ($institutionalSubscriptionDao->subscriptionExists($assocId)) {
+                    $subscription = $institutionalSubscriptionDao->getSubscription($assocId);
                 } else {
+                    /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
                     $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
-                    $subscription = $individualSubscriptionDao->getSubscription($this->assocId);
+                    $subscription = $individualSubscriptionDao->getSubscription($assocId);
                 }
-                if (!$subscription) return __('payment.type.subscription');
+                if ($subscription === null) {
+                    return __('payment.type.subscription');
+                }
 
+                /** @var SubscriptionTypeDAO $subscriptionTypeDao */
                 $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
-                $subscriptionType = $subscriptionTypeDao->getSubscriptionType($subscription->getTypeId());
+                $subscriptionType = $subscriptionTypeDao->getSubscriptionType((int) $subscription->getTypeId());
+                
+                if ($subscriptionType === null) {
+                    return __('payment.type.subscription');
+                }
 
                 return __('payment.type.subscription') . ' (' . $subscriptionType->getSubscriptionTypeName() . ')';
+                
             case PAYMENT_TYPE_DONATION:
-                if ($journal->getLocalizedSetting('donationFeeName') != '') {
-                    return $journal->getLocalizedSetting('donationFeeName');
-                } else {
-                    return __('payment.type.donation');
-                }
+                $feeName = $journal->getLocalizedSetting('donationFeeName');
+                return $feeName !== '' ? (string) $feeName : __('payment.type.donation');
+                
             case PAYMENT_TYPE_MEMBERSHIP:
-                if ($journal->getLocalizedSetting('membershipFeeName') != '') {
-                    return $journal->getLocalizedSetting('membershipFeeName');
-                } else {
-                    return __('payment.type.membership');
-                }
+                $feeName = $journal->getLocalizedSetting('membershipFeeName');
+                return $feeName !== '' ? (string) $feeName : __('payment.type.membership');
+                
             case PAYMENT_TYPE_PURCHASE_ARTICLE:
-                if ($journal->getLocalizedSetting('purchaseArticleFeeName') != '') {
-                    return $journal->getLocalizedSetting('purchaseArticleFeeName');
-                } else {
-                    return __('payment.type.purchaseArticle');
-                }
+                $feeName = $journal->getLocalizedSetting('purchaseArticleFeeName');
+                return $feeName !== '' ? (string) $feeName : __('payment.type.purchaseArticle');
+                
             case PAYMENT_TYPE_PURCHASE_ISSUE:
-                if ($journal->getLocalizedSetting('purchaseIssueFeeName') != '') {
-                    return $journal->getLocalizedSetting('purchaseIssueFeeName');
-                } else {
-                    return __('payment.type.purchaseIssue');
-                }
+                $feeName = $journal->getLocalizedSetting('purchaseIssueFeeName');
+                return $feeName !== '' ? (string) $feeName : __('payment.type.purchaseIssue');
+                
             case PAYMENT_TYPE_SUBMISSION:
-                if ($journal->getLocalizedSetting('submissionFeeName') != '') {
-                    return $journal->getLocalizedSetting('submissionFeeName');
-                } else {
-                    return __('payment.type.submission');
-                }
+                $feeName = $journal->getLocalizedSetting('submissionFeeName');
+                return $feeName !== '' ? (string) $feeName : __('payment.type.submission');
+                
             case PAYMENT_TYPE_FASTTRACK:
-                if ($journal->getLocalizedSetting('fastTrackFeeName') != '') {
-                    return $journal->getLocalizedSetting('fastTrackFeeName');
-                } else {
-                    return __('payment.type.fastTrack');
-                }
+                $feeName = $journal->getLocalizedSetting('fastTrackFeeName');
+                return $feeName !== '' ? (string) $feeName : __('payment.type.fastTrack');
+                
             case PAYMENT_TYPE_PUBLICATION:
-                if ($journal->getLocalizedSetting('publicationFeeName') != '') {
-                    return $journal->getLocalizedSetting('publicationFeeName');
-                } else {
-                    return __('payment.type.publication');
-                }
+                $feeName = $journal->getLocalizedSetting('publicationFeeName');
+                return $feeName !== '' ? (string) $feeName : __('payment.type.publication');
+                
             case PAYMENT_TYPE_GIFT:
+                /** @var GiftDAO $giftDao */
                 $giftDao = DAORegistry::getDAO('GiftDAO');
-                $gift = $giftDao->getGift($this->assocId);
+                $gift = $giftDao->getGift($assocId);
 
-                // Try to return gift details in name
-                if ($gift) {
-                    return $gift->getGiftName();
+                if ($gift !== null) {
+                    return (string) $gift->getGiftName();
                 }
-
-                // Otherwise, generic gift name
                 return __('payment.type.gift');
+                
+            default:
+                return null;
         }
     }
 
     /**
      * Returns the description of the CompletedPayment.
      * Pulled from Journal Settings if present, or from locale file otherwise.
-     * For subscriptions, pulls subscription type name.
-     * @return string
+     * For subscriptions, pulls subscription type description.
+     * @return string|null
      */
     public function getDescription() {
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($this->getJournalId());
+        if (!$journal) {
+            return null;
+        }
 
-        switch ($this->type) {
+        $type = $this->getType();
+        $assocId = $this->getAssocId();
+
+        switch ($type) {
             case PAYMENT_TYPE_PURCHASE_SUBSCRIPTION:
             case PAYMENT_TYPE_RENEW_SUBSCRIPTION:
+                /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
                 $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
-
-                if ($institutionalSubscriptionDao->subscriptionExists($this->assocId)) {
-                    $subscription = $institutionalSubscriptionDao->getSubscription($this->assocId);
+                if ($institutionalSubscriptionDao->subscriptionExists($assocId)) {
+                    $subscription = $institutionalSubscriptionDao->getSubscription($assocId);
                 } else {
+                    /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
                     $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
-                    $subscription = $individualSubscriptionDao->getSubscription($this->assocId);
+                    $subscription = $individualSubscriptionDao->getSubscription($assocId);
                 }
-                if (!$subscription) return __('payment.type.subscription');
+                if ($subscription === null) {
+                    return __('payment.type.subscription');
+                }
 
+                /** @var SubscriptionTypeDAO $subscriptionTypeDao */
                 $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
-                $subscriptionType = $subscriptionTypeDao->getSubscriptionType($subscription->getTypeId());
+                $subscriptionType = $subscriptionTypeDao->getSubscriptionType((int) $subscription->getTypeId());
+                
+                if ($subscriptionType === null) {
+                    return __('payment.type.subscription');
+                }
 
-                return $subscriptionType->getSubscriptionTypeDescription();
+                return (string) $subscriptionType->getSubscriptionTypeDescription();
+                
             case PAYMENT_TYPE_DONATION:
-                if ($journal->getLocalizedSetting('donationFeeDescription') != '') {
-                    return $journal->getLocalizedSetting('donationFeeDescription');
-                } else {
-                    return __('payment.type.donation');
-                }
+                $feeDesc = $journal->getLocalizedSetting('donationFeeDescription');
+                return $feeDesc !== '' ? (string) $feeDesc : __('payment.type.donation');
+                
             case PAYMENT_TYPE_MEMBERSHIP:
-                if ($journal->getLocalizedSetting('membershipFeeDescription') != '') {
-                    return $journal->getLocalizedSetting('membershipFeeDescription');
-                } else {
-                    return __('payment.type.membership');
-                }
+                $feeDesc = $journal->getLocalizedSetting('membershipFeeDescription');
+                return $feeDesc !== '' ? (string) $feeDesc : __('payment.type.membership');
+                
             case PAYMENT_TYPE_PURCHASE_ARTICLE:
-                if ($journal->getLocalizedSetting('purchaseArticleFeeDescription') != '') {
-                    return $journal->getLocalizedSetting('purchaseArticleFeeDescription');
-                } else {
-                    return __('payment.type.purchaseArticle');
-                }
+                $feeDesc = $journal->getLocalizedSetting('purchaseArticleFeeDescription');
+                return $feeDesc !== '' ? (string) $feeDesc : __('payment.type.purchaseArticle');
+                
             case PAYMENT_TYPE_PURCHASE_ISSUE:
-                if ($journal->getLocalizedSetting('purchaseIssueFeeDescription') != '') {
-                    return $journal->getLocalizedSetting('purchaseIssueFeeDescription');
-                } else {
-                    return __('payment.type.purchaseIssue');
-                }
+                $feeDesc = $journal->getLocalizedSetting('purchaseIssueFeeDescription');
+                return $feeDesc !== '' ? (string) $feeDesc : __('payment.type.purchaseIssue');
+                
             case PAYMENT_TYPE_SUBMISSION:
-                if ($journal->getLocalizedSetting('submissionFeeDescription') != '') {
-                    return $journal->getLocalizedSetting('submissionFeeDescription');
-                } else {
-                    return __('payment.type.submission');
-                }
+                $feeDesc = $journal->getLocalizedSetting('submissionFeeDescription');
+                return $feeDesc !== '' ? (string) $feeDesc : __('payment.type.submission');
+                
             case PAYMENT_TYPE_FASTTRACK:
-                if ($journal->getLocalizedSetting('fastTrackFeeDescription') != '') {
-                    return $journal->getLocalizedSetting('fastTrackFeeDescription');
-                } else {
-                    return __('payment.type.fastTrack');
-                }
+                $feeDesc = $journal->getLocalizedSetting('fastTrackFeeDescription');
+                return $feeDesc !== '' ? (string) $feeDesc : __('payment.type.fastTrack');
+                
             case PAYMENT_TYPE_PUBLICATION:
-                if ($journal->getLocalizedSetting('publicationFeeDescription') != '') {
-                    return $journal->getLocalizedSetting('publicationFeeDescription');
-                } else {
-                    return __('payment.type.publication');
-                }
+                $feeDesc = $journal->getLocalizedSetting('publicationFeeDescription');
+                return $feeDesc !== '' ? (string) $feeDesc : __('payment.type.publication');
+                
             case PAYMENT_TYPE_GIFT:
+                /** @var GiftDAO $giftDao */
                 $giftDao = DAORegistry::getDAO('GiftDAO');
-                $gift = $giftDao->getGift($this->assocId);
+                $gift = $giftDao->getGift($assocId);
 
-                // Try to return gift details in description
-                if ($gift) {
+                if ($gift !== null) {
                     import('classes.gift.Gift');
-
-                    if ($gift->getGiftType() == GIFT_TYPE_SUBSCRIPTION) {
+                    if ((int) $gift->getGiftType() === GIFT_TYPE_SUBSCRIPTION) {
+                        /** @var SubscriptionTypeDAO $subscriptionTypeDao */
                         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
-                        $subscriptionType = $subscriptionTypeDao->getSubscriptionType($gift->getAssocId());
+                        $subscriptionType = $subscriptionTypeDao->getSubscriptionType((int) $gift->getAssocId());
 
-                        if ($subscriptionType) {
-                            return $subscriptionType->getSubscriptionTypeDescription();    
-                        } else {
-                            return __('payment.type.gift') . ' ' . __('payment.type.gift.subscription');                                
+                        if ($subscriptionType !== null) {
+                            return (string) $subscriptionType->getSubscriptionTypeDescription();
                         }
+                        return __('payment.type.gift') . ' ' . __('payment.type.gift.subscription');
                     }
                 }
-
-                // Otherwise, generic gift name
                 return __('payment.type.gift');
+                
+            default:
+                return null;
         }
     }
 
     /**
-     * Get the row id of the payment.
-     * @return int
+     * Get the timestamp of the payment.
+     * @return string|null
      */
     public function getTimestamp() {
-        return $this->timestamp;
+        return $this->_timestamp !== null ? (string) $this->_timestamp : null;
     }
 
     /**
-     * Set the id of payment
-     * @param $timestamp int/string *nix timestamp or ISO datetime string
+     * Set the timestamp of the payment.
+     * @param string|int|null $timestamp Unix timestamp or ISO datetime string
      */
     public function setTimestamp($timestamp) {
-        $this->timestamp = $timestamp;
+        $this->_timestamp = $timestamp !== null ? (string) $timestamp : null;
     }
 
     /**
-     * Get the  method of payment.
-     * @return String
+     * Get the method of payment.
+     * @return string|null
      */
     public function getPayMethodPluginName() {
-        return $this->payMethod;
+        return $this->_payMethod !== null ? (string) $this->_payMethod : null;
     }
 
     /**
      * Set the method of payment.
-     * @param $payMethod String
+     * @param string|null $payMethod
      */
-    public function setPayMethodPluginName($payMethod){
-        $this->payMethod = $payMethod;
+    public function setPayMethodPluginName($payMethod) {
+        $this->_payMethod = $payMethod !== null ? (string) $payMethod : null;
+    }
+
+    //
+    // Display-related get Methods
+    //
+
+    /**
+     * Check if the type is a membership.
+     * @return bool
+     */
+    public function isMembership(): bool {
+        return $this->getType() === PAYMENT_TYPE_MEMBERSHIP;
     }
 
     /**
-     * Display-related get Methods
-     */
-
-    /**
-     * Check if the type is a membership
+     * Check if the type is a subscription.
      * @return bool
      */
-    public function isMembership() {
-        return $this->type == PAYMENT_TYPE_MEMBERSHIP;
-    }
-
-    /**
-     * Check if the type is a subscription
-     * @return bool
-     */
-    public function isSubscription() {
-        return ($this->type == PAYMENT_TYPE_RENEW_SUBSCRIPTION || $this->type == PAYMENT_TYPE_PURCHASE_SUBSCRIPTION);
+    public function isSubscription(): bool {
+        $type = $this->getType();
+        return $type === PAYMENT_TYPE_RENEW_SUBSCRIPTION || $type === PAYMENT_TYPE_PURCHASE_SUBSCRIPTION;
     }
 
     /**
      * Get some information about the assocId for display.
-     * @return String
+     * @return string|false
      */
     public function getAssocDescription() {
-        if (!$this->assocId) return false;
-        switch ($this->type) {
+        $assocId = $this->getAssocId();
+        if ($assocId === null || (int) $assocId === 0) {
+            return false;
+        }
+
+        $type = $this->getType();
+        $journalId = $this->getJournalId();
+
+        switch ($type) {
             case PAYMENT_TYPE_PURCHASE_SUBSCRIPTION:
             case PAYMENT_TYPE_RENEW_SUBSCRIPTION:
+                /** @var InstitutionalSubscriptionDAO $institutionalSubscriptionDao */
                 $institutionalSubscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
-
-                if ($institutionalSubscriptionDao->subscriptionExists($this->assocId)) {
-                    $subscription = $institutionalSubscriptionDao->getSubscription($this->assocId);
+                if ($institutionalSubscriptionDao->subscriptionExists($assocId)) {
+                    $subscription = $institutionalSubscriptionDao->getSubscription($assocId);
                 } else {
+                    /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
                     $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
-                    $subscription = $individualSubscriptionDao->getSubscription($this->assocId);
+                    $subscription = $individualSubscriptionDao->getSubscription($assocId);
                 }
-                if (!$subscription) return __('manager.payment.notFound');
+                if ($subscription === null) {
+                    return __('manager.payment.notFound');
+                }
 
+                /** @var SubscriptionTypeDAO $subscriptionTypeDao */
                 $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
-                $subscriptionType = $subscriptionTypeDao->getSubscriptionType($subscription->getTypeId());
+                $subscriptionType = $subscriptionTypeDao->getSubscriptionType((int) $subscription->getTypeId());
+                
+                if ($subscriptionType === null) {
+                    return __('manager.payment.notFound');
+                }
 
                 $membership = $subscription->getMembership();
                 $typeName = $subscriptionType->getSubscriptionTypeName();
-                if ($membership) return $typeName . ' ('. $membership . ')';
+                if ($membership !== null && $membership !== '') {
+                    return $typeName . ' (' . $membership . ')';
+                }
                 return $typeName;
+                
             case PAYMENT_TYPE_SUBMISSION:
             case PAYMENT_TYPE_FASTTRACK:
             case PAYMENT_TYPE_PUBLICATION:
             case PAYMENT_TYPE_PURCHASE_ARTICLE:
-                // all the article-related payments should output the article title
+                // All article-related payments should output the article title
+                /** @var ArticleDAO $articleDao */
                 $articleDao = DAORegistry::getDAO('ArticleDAO');
-                $article = $articleDao->getArticle($this->assocId, $this->journalId);
-                if (!$article) return __('manager.payment.notFound');
-                return $article->getLocalizedTitle();
+                $article = $articleDao->getArticle((int) $assocId, $journalId);
+                if ($article === null) {
+                    return __('manager.payment.notFound');
+                }
+                return (string) $article->getLocalizedTitle();
+                
             case PAYMENT_TYPE_PURCHASE_ISSUE:
                 // Purchase issue payment should output the issue title
+                /** @var IssueDAO $issueDao */
                 $issueDao = DAORegistry::getDAO('IssueDAO');
-                $issue = $issueDao->getIssueById($this->assocId, $this->journalId);
-                if (!$issue) return __('manager.payment.notFound');
-                return $issue->getIssueIdentification(false, true);
-            case PAYMENT_TYPE_GIFT:
-                $giftDao = DAORegistry::getDAO('GiftDAO');
-                $gift = $giftDao->getGift($this->assocId);
-
-                // Try to get buyer and recipient details
-                if ($gift) {
-                    return __('gifts.buyer') . ': ' . $gift->getBuyerFullName() . ' (' . $gift->getBuyerEmail() . ') ' . __('gifts.recipient') . ': ' . $gift->getRecipientFullName() . ' (' . $gift->getRecipientEmail() . ')';
-                } else {
-                    return false;
+                $issue = $issueDao->getIssueById((int) $assocId, $journalId);
+                if ($issue === null) {
+                    return __('manager.payment.notFound');
                 }
+                return (string) $issue->getIssueIdentification();
+                
+            case PAYMENT_TYPE_GIFT:
+                /** @var GiftDAO $giftDao */
+                $giftDao = DAORegistry::getDAO('GiftDAO');
+                $gift = $giftDao->getGift((int) $assocId);
+
+                if ($gift !== null) {
+                    return __('gifts.buyer') . ': ' . (string) $gift->getBuyerFullName() . ' (' . (string) $gift->getBuyerEmail() . ') ' . 
+                           __('gifts.recipient') . ': ' . (string) $gift->getRecipientFullName() . ' (' . (string) $gift->getRecipientEmail() . ')';
+                }
+                return false;
+                
             case PAYMENT_TYPE_MEMBERSHIP:
             case PAYMENT_TYPE_DONATION:
                 return false;
+                
+            default:
+                return false;
         }
-
-        return false;
     }
+    
 }
-
 ?>

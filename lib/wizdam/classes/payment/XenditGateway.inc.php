@@ -35,7 +35,7 @@ class XenditGateway implements PaymentGatewayInterface {
      * @throws \RuntimeException
      */
     public function __construct(string $apiKey, string $webhookToken = '') {
-        Configuration::getDefaultConfiguration()->setApiKey('apikey', $apiKey);
+        Configuration::getDefaultConfiguration()->setApiKey($apiKey);
         $this->apiInstance = new InvoiceApi();
         $this->webhookToken = $webhookToken;
     }
