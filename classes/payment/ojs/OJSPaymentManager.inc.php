@@ -80,47 +80,59 @@ class OJSPaymentManager extends PaymentManager {
 
         $invoiceId = 0;
 
-        if (in_array($type, array(PAYMENT_TYPE_SUBMISSION, PAYMENT_TYPE_FASTTRACK, PAYMENT_TYPE_PUBLICATION))) {
-            $articleId = $assocId;
-            $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
-            $journal = $journalDao->getById($journalId);
+        import('lib.wizdam.classes.invoice.Invoice');
+        $feeTypeMap = [
+            PAYMENT_TYPE_MEMBERSHIP            => Invoice::FEE_TYPE_MEMBERSHIP,
+            PAYMENT_TYPE_RENEW_SUBSCRIPTION     => Invoice::FEE_TYPE_RENEW_SUBSCRIPTION,
+            PAYMENT_TYPE_PURCHASE_ARTICLE       => Invoice::FEE_TYPE_PURCHASE_ARTICLE,
+            PAYMENT_TYPE_DONATION               => Invoice::FEE_TYPE_DONATION,
+            PAYMENT_TYPE_SUBMISSION             => Invoice::FEE_TYPE_SUBMISSION,
+            PAYMENT_TYPE_FASTTRACK              => Invoice::FEE_TYPE_FAST_TRACK,
+            PAYMENT_TYPE_PUBLICATION            => Invoice::FEE_TYPE_PUBLICATION,
+            PAYMENT_TYPE_PURCHASE_SUBSCRIPTION  => Invoice::FEE_TYPE_PURCHASE_SUBSCRIPTION,
+            PAYMENT_TYPE_PURCHASE_ISSUE         => Invoice::FEE_TYPE_PURCHASE_ISSUE,
+            PAYMENT_TYPE_GIFT                   => Invoice::FEE_TYPE_GIFT,
+        ];
+        $articleFeeTypesForTax = [PAYMENT_TYPE_SUBMISSION, PAYMENT_TYPE_FASTTRACK, PAYMENT_TYPE_PUBLICATION];
 
-            if ($journal) {
-                $settingTaxRate = (float) $journal->getSetting('paymentTax');
-                $taxRate = $settingTaxRate > 0 ? ($settingTaxRate / 100) : 0.00;
-                $isTaxInclusive = (bool) $journal->getSetting('paymentTaxInclusive');
-                $discount = (float) $journal->getSetting('paymentDiscount');
+        if (isset($feeTypeMap[$type]) && (int) $userId > 0) {
+            $feeType = $feeTypeMap[$type];
+            $finalAmount = (float) $amount;
+            $articleIdForNumbering = null;
 
-                $subtotal = $amount;
-                $taxableAmount = $subtotal - $discount;
-                if ($taxableAmount < 0) $taxableAmount = 0;
+            if (in_array($type, $articleFeeTypesForTax, true)) {
+                $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
+                $journal = $journalDao->getById($journalId);
+                if ($journal) {
+                    $settingTaxRate = (float) $journal->getSetting('paymentTax');
+                    $taxRate = $settingTaxRate > 0 ? ($settingTaxRate / 100) : 0.00;
+                    $isTaxInclusive = (bool) $journal->getSetting('paymentTaxInclusive');
+                    $discount = (float) $journal->getSetting('paymentDiscount');
 
-                if ($isTaxInclusive) {
-                    $finalAmount = $taxableAmount;
-                } else {
-                    $taxAmount = $taxableAmount * $taxRate;
-                    $finalAmount = $taxableAmount + $taxAmount;
+                    $taxableAmount = $finalAmount - $discount;
+                    if ($taxableAmount < 0) $taxableAmount = 0;
+
+                    if ($isTaxInclusive) {
+                        $finalAmount = $taxableAmount;
+                    } else {
+                        $finalAmount = $taxableAmount + ($taxableAmount * $taxRate);
+                    }
                 }
-                $amount = $finalAmount;
-
-                $issnRaw = $journal->getSetting('onlineIssn') ? $journal->getSetting('onlineIssn') : ($journal->getSetting('printIssn') ? $journal->getSetting('printIssn') : '00000000');
-                $issnClean = str_pad(str_replace('-', '', $issnRaw), 8, '0', STR_PAD_RIGHT);
-                $invoiceNumber = substr($issnClean, 0, 4) . '-' . $articleId . '-' . substr($issnClean, -4);
-                $invoiceCode = 'Manuscript#' . str_pad((string)$articleId, 7, '0', STR_PAD_LEFT);
-
-                $feeType = 'PUBLICATION';
-                if ($type == PAYMENT_TYPE_SUBMISSION) $feeType = 'SUBMISSION';
-                if ($type == PAYMENT_TYPE_FASTTRACK) $feeType = 'FAST_TRACK';
-
-                // [FIX] Sebelumnya: cek invoice yang sudah ada lalu BUANG hasilnya.
-                // Sekarang: TANGKAP invoice_id-nya, entah baru dibuat atau sudah ada.
-                /** @var InvoiceDAO $invoiceDao */
-                $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
-                $invoiceId = $invoiceDao->findOrCreateUnpaidInvoiceId(
-                    (int) $journalId, (int) $userId, (int) $articleId, $feeType,
-                    (float) $amount, (string) $currencyCode, $invoiceNumber, $invoiceCode
-                );
+                $articleIdForNumbering = (int) $assocId;
             }
+
+            import('lib.wizdam.classes.services.InvoiceService');
+            $invoiceService = new InvoiceService();
+            $generated = $invoiceService->generateInvoiceNumber($feeType, (int) $journalId, (int) $userId, $articleIdForNumbering);
+
+            /** @var InvoiceDAO $invoiceDao */
+            $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
+            $invoiceId = $invoiceDao->findOrCreateUnpaidInvoiceId(
+                (int) $journalId, (int) $userId, (int) $assocId, $feeType,
+                $finalAmount, (string) $currencyCode, $generated['invoiceNumber'], $generated['invoiceCode']
+            );
+
+            $amount = $finalAmount;
         }
 
         $payment = new OJSQueuedPayment($amount, $currencyCode, $userId, $assocId);

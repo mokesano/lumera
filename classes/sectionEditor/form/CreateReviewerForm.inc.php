@@ -2,10 +2,6 @@
 declare(strict_types=1);
 
 /**
- * @defgroup sectionEditor_form
- */
-
-/**
  * @file classes/sectionEditor/form/CreateReviewerForm.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
@@ -23,79 +19,101 @@ import('lib.pkp.classes.form.Form');
 class CreateReviewerForm extends Form {
 
     /** @var int The article this form is for */
-    public $articleId;
+    protected $_articleId;
 
     /**
      * Constructor.
+     * @param int $articleId
      */
     public function __construct($articleId) {
         parent::__construct('sectionEditor/createReviewerForm.tpl');
         $this->addCheck(new FormValidatorPost($this));
 
-        $site = Request::getSite();
-        $this->articleId = $articleId;
+        $this->_articleId = (int) $articleId;
+
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
+        $site = $request->getSite();
+        $journal = $request->getJournal();
 
         // Validation checks for this form
         $this->addCheck(new FormValidator($this, 'username', 'required', 'user.profile.form.usernameRequired'));
-        $this->addCheck(new FormValidatorCustom($this, 'username', 'required', 'user.register.form.usernameExists', array(DAORegistry::getDAO('UserDAO'), 'userExistsByUsername'), array(null, true), true));
+        $this->addCheck(new FormValidatorCustom($this, 'username', 'required', 'user.register.form.usernameExists', [DAORegistry::getDAO('UserDAO'), 'userExistsByUsername'], [null, true], true));
         $this->addCheck(new FormValidatorAlphaNum($this, 'username', 'required', 'user.register.form.usernameAlphaNumeric'));
         $this->addCheck(new FormValidator($this, 'firstName', 'required', 'user.profile.form.firstNameRequired'));
         $this->addCheck(new FormValidator($this, 'lastName', 'required', 'user.profile.form.lastNameRequired'));
         $this->addCheck(new FormValidatorUrl($this, 'userUrl', 'optional', 'user.profile.form.urlInvalid'));
         $this->addCheck(new FormValidatorEmail($this, 'email', 'required', 'user.profile.form.emailRequired'));
-        $this->addCheck(new FormValidatorCustom($this, 'email', 'required', 'user.register.form.emailExists', array(DAORegistry::getDAO('UserDAO'), 'userExistsByEmail'), array(null, true), true));
+        $this->addCheck(new FormValidatorCustom($this, 'email', 'required', 'user.register.form.emailExists', [DAORegistry::getDAO('UserDAO'), 'userExistsByEmail'], [null, true], true));
 
         // Provide a default for sendNotify: If we're using one-click
         // reviewer access or email-based reviews, it's not necessary;
         // otherwise, it should default to on.
-        $journal = Request::getJournal();
-        $reviewerAccessKeysEnabled = $journal->getSetting('reviewerAccessKeysEnabled');
-        $isEmailBasedReview = $journal->getSetting('mailSubmissionsToReviewers')==1?true:false;
-        $this->setData('sendNotify', ($reviewerAccessKeysEnabled || $isEmailBasedReview)?false:true);
+        if ($journal) {
+            $reviewerAccessKeysEnabled = (bool) $journal->getSetting('reviewerAccessKeysEnabled');
+            $isEmailBasedReview = ((int) $journal->getSetting('mailSubmissionsToReviewers')) === 1;
+            $this->setData('sendNotify', !($reviewerAccessKeysEnabled || $isEmailBasedReview));
+        }
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param int $articleId
      */
     public function CreateReviewerForm($articleId) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::CreateReviewerForm(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($articleId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Get locale field names.
+     * @return array
      */
     public function getLocaleFieldNames() {
-        return array('biography', 'gossip');
+        return ['biography', 'gossip'];
     }
 
     /**
      * Display the form.
+     * @param mixed $args
+     * @param mixed $request
+     * @return void
      */
     public function display($args = null, $request = null) {
-        $templateMgr = TemplateManager::getManager();
-        $templateMgr->assign('articleId', $this->articleId);
+        // Lumera Singleton Fallback
+        if (!$request) {
+            $request = Application::get()->getRequest();
+        }
 
-        $site = Request::getSite();
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign('articleId', $this->_articleId);
+
+        $site = $request->getSite();
         $templateMgr->assign('availableLocales', $site->getSupportedLocaleNames());
+        
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $templateMgr->assign('genderOptions', $userDao->getGenderOptions());
 
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
-        $countries = $countryDao->getCountries();
-        $templateMgr->assign('countries', $countries);
+        $templateMgr->assign('countries', $countryDao->getCountries());
 
-        parent::display();
+        parent::display($args, $request);
     }
 
     /**
      * Assign form data to user-submitted data.
+     * @return void
      */
     public function readInputData() {
-        $this->readUserVars(array(
+        $this->readUserVars([
             'salutation',
             'firstName',
             'middleName',
@@ -117,19 +135,21 @@ class CreateReviewerForm extends Form {
             'userLocales',
             'sendNotify',
             'username'
-        ));
+        ]);
 
-        if ($this->getData('userLocales') == null || !is_array($this->getData('userLocales'))) {
-            $this->setData('userLocales', array());
+        $userLocales = $this->getData('userLocales');
+        if ($userLocales === null || !is_array($userLocales)) {
+            $this->setData('userLocales', []);
         }
 
-        if ($this->getData('username') != null) {
+        $username = $this->getData('username');
+        if ($username !== null) {
             // Usernames must be lowercase
-            $this->setData('username', strtolower($this->getData('username')));
+            $this->setData('username', strtolower((string) $username));
         }
 
         $keywords = $this->getData('keywords');
-        if ($keywords != null && is_array($keywords['interests'])) {
+        if ($keywords !== null && is_array($keywords) && isset($keywords['interests']) && is_array($keywords['interests'])) {
             // The interests are coming in encoded -- Decode them for DB storage
             $this->setData('interestsKeywords', array_map('urldecode', $keywords['interests']));
         }
@@ -137,89 +157,105 @@ class CreateReviewerForm extends Form {
 
     /**
      * Register a new user.
+     * @param mixed $object Ignored.
      * @return int userId
      */
     public function execute($object = null) {
+        // Lumera Singleton Fallback
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+        $site = $request->getSite();
+
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $user = new User();
 
-        $user->setSalutation($this->getData('salutation'));
-        $user->setFirstName($this->getData('firstName'));
-        $user->setMiddleName($this->getData('middleName'));
-        $user->setLastName($this->getData('lastName'));
-        $user->setGender($this->getData('gender'));
-        $user->setInitials($this->getData('initials'));
-        $user->setAffiliation($this->getData('affiliation'), null); // Localized
-        $user->setEmail($this->getData('email'));
-        $user->setData('orcid', $this->getData('orcid'));
-        $user->setUrl($this->getData('userUrl'));
-        $user->setPhone($this->getData('phone'));
-        $user->setFax($this->getData('fax'));
-        $user->setMailingAddress($this->getData('mailingAddress'));
-        $user->setCountry($this->getData('country'));
-        $user->setBiography($this->getData('biography'), null); // Localized
-        $user->setGossip($this->getData('gossip'), null); // Localized
+        $user->setSalutation((string) $this->getData('salutation'));
+        $user->setFirstName((string) $this->getData('firstName'));
+        $user->setMiddleName((string) $this->getData('middleName'));
+        $user->setLastName((string) $this->getData('lastName'));
+        $user->setGender((string) $this->getData('gender'));
+        $user->setInitials((string) $this->getData('initials'));
+        $user->setAffiliation((string) $this->getData('affiliation'), null); // Localized
+        $user->setEmail((string) $this->getData('email'));
+        $user->setData('orcid', (string) $this->getData('orcid'));
+        $user->setUrl((string) $this->getData('userUrl'));
+        $user->setPhone((string) $this->getData('phone'));
+        $user->setFax((string) $this->getData('fax'));
+        $user->setMailingAddress((string) $this->getData('mailingAddress'));
+        $user->setCountry((string) $this->getData('country'));
+        $user->setBiography((string) $this->getData('biography'), null); // Localized
+        $user->setGossip((string) $this->getData('gossip'), null); // Localized
 
+        /** @var AuthSourceDAO $authDao */
         $authDao = DAORegistry::getDAO('AuthSourceDAO');
         $auth = $authDao->getDefaultPlugin();
-        $user->setAuthId($auth?$auth->getAuthId():0);
+        $user->setAuthId($auth !== null ? (int) $auth->getAuthId() : 0);
 
-        $site = Request::getSite();
         $availableLocales = $site->getSupportedLocales();
-
-        $locales = array();
-        foreach ($this->getData('userLocales') as $locale) {
-            if (AppLocale::isLocaleValid($locale) && in_array($locale, $availableLocales)) {
-                array_push($locales, $locale);
+        $locales = [];
+        $userLocales = $this->getData('userLocales');
+        
+        if (is_array($userLocales)) {
+            foreach ($userLocales as $locale) {
+                if (AppLocale::isLocaleValid((string) $locale) && in_array((string) $locale, $availableLocales, true)) {
+                    $locales[] = (string) $locale;
+                }
             }
         }
         $user->setLocales($locales);
 
-        $user->setUsername($this->getData('username'));
+        $user->setUsername((string) $this->getData('username'));
         $password = Validation::generatePassword();
-        $sendNotify = $this->getData('sendNotify');
+        $sendNotify = (bool) $this->getData('sendNotify');
 
-        if (isset($auth)) {
+        if ($auth !== null) {
             $user->setPassword($password);
             // FIXME Check result and handle failures
             $auth->doCreateUser($user);
-            $user->setAuthId($auth->authId);
-            $user->setPassword(Validation::encryptCredentials($user->getId(), Validation::generatePassword())); // Used for PW reset hash only
+            $user->setAuthId((int) $auth->authId);
+            $user->setPassword(Validation::encryptCredentials((string) $user->getId(), Validation::generatePassword())); // Used for PW reset hash only
         } else {
-            // [MODERNISASI] Enkripsi password menggunakan fungsi standar yang sudah di-upgrade
-            $user->setPassword(Validation::encryptCredentials($this->getData('username'), $password));
+            $user->setPassword(Validation::encryptCredentials((string) $this->getData('username'), $password));
         }
-        $user->setMustChangePassword(isset($auth) ? 0 : 1);
+        $user->setMustChangePassword($auth !== null ? 0 : 1);
 
         $user->setDateRegistered(Core::getCurrentDate());
         parent::execute();
-        $userId = $userDao->insertUser($user);
+        $userId = (int) $userDao->insertUser($user);
 
         // Insert the user interests
-        $interests = $this->getData('interestsKeywords') ? $this->getData('interestsKeywords') : $this->getData('interestsTextOnly');
+        $interests = $this->getData('interestsKeywords') ?? $this->getData('interestsTextOnly');
         import('lib.pkp.classes.user.InterestManager');
         $interestManager = new InterestManager();
         $interestManager->setInterestsForUser($user, $interests);
 
-        $roleDao = DAORegistry::getDAO('RoleDAO');
-        $journal = Request::getJournal();
-        $role = new Role();
-        $role->setJournalId($journal->getId());
-        $role->setUserId($userId);
-        $role->setRoleId(ROLE_ID_REVIEWER);
-        $roleDao->insertRole($role);
+        if ($journal) {
+            /** @var RoleDAO $roleDao */
+            $roleDao = DAORegistry::getDAO('RoleDAO');
+            $role = new Role();
+            $role->setJournalId((int) $journal->getId());
+            $role->setUserId($userId);
+            $role->setRoleId(ROLE_ID_REVIEWER);
+            $roleDao->insertRole($role);
+        }
 
-        if ($sendNotify) {
+        if ($sendNotify && $journal) {
             // Send welcome email to user
             import('classes.mail.MailTemplate');
             $mail = new MailTemplate('REVIEWER_REGISTER');
-            $mail->setFrom($journal->getSetting('contactEmail'), $journal->getSetting('contactName'));
-            $mail->assignParams(array('username' => $this->getData('username'), 'password' => $password, 'userFullName' => $user->getFullName()));
-            $mail->addRecipient($user->getEmail(), $user->getFullName());
+            $mail->setFrom((string) $journal->getSetting('contactEmail'), (string) $journal->getSetting('contactName'));
+            $mail->assignParams([
+                'username' => (string) $this->getData('username'),
+                'password' => (string) $password,
+                'userFullName' => (string) $user->getFullName()
+            ]);
+            $mail->addRecipient((string) $user->getEmail(), (string) $user->getFullName());
             $mail->send();
         }
 
         return $userId;
     }
+    
 }
 ?>

@@ -41,6 +41,7 @@ class JournalRT extends RT {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param int $journalId
      */
     public function JournalRT($journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -69,5 +70,6 @@ class JournalRT extends RT {
     public function setJournalId($journalId) {
         $this->journalId = (int) $journalId;
     }
+    
 }
 ?>
