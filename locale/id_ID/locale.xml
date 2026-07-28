@@ -691,6 +691,7 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<message key="user.register.reviewerDescriptionNoInterests">Bersedia melakukan proses peer review naskah untuk jurnal.</message>
 	<message key="user.register.reviewerDescription">Bersedia melakukan proses peer review naskah untuk penerbit.</message>
 	<message key="user.register.reviewerInterests">Mengidentifikasi minat mereview (area substantif dan metode riset):</message>
+	<message key="user.register.authError">Gagal mendaftarkan pengguna ke sistem autentikasi eksternal. Silakan coba lagi.</message>
 	
 	<!-- Subscriptions -->
 	<message key="user.subscriptions.mySubscriptions">Saya</message>

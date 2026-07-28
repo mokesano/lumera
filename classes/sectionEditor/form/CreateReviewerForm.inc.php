@@ -190,7 +190,7 @@ class CreateReviewerForm extends Form {
         /** @var AuthSourceDAO $authDao */
         $authDao = DAORegistry::getDAO('AuthSourceDAO');
         $auth = $authDao->getDefaultPlugin();
-        $user->setAuthId($auth !== null ? (int) $auth->getAuthId() : 0);
+        $user->setAuthId($auth !== null ? (int) $auth->authId : 0);
 
         $availableLocales = $site->getSupportedLocales();
         $locales = [];
@@ -211,10 +211,21 @@ class CreateReviewerForm extends Form {
 
         if ($auth !== null) {
             $user->setPassword($password);
-            // FIXME Check result and handle failures
-            $auth->doCreateUser($user);
+
+            $result = $auth->doCreateUser($user);
+            if ($result === false) {
+                $notificationManager = new NotificationManager();
+                $notificationManager->createTrivialNotification(
+                    null,
+                    NOTIFICATION_TYPE_ERROR,
+                    ['contents' => __('user.register.authError')]
+                );
+                $this->addError('auth', __('user.register.authError'));
+                return false;
+            }
+
             $user->setAuthId((int) $auth->authId);
-            $user->setPassword(Validation::encryptCredentials((string) $user->getId(), Validation::generatePassword())); // Used for PW reset hash only
+            $user->setPassword(Validation::encryptCredentials((string) $user->getId(), Validation::generatePassword()));
         } else {
             $user->setPassword(Validation::encryptCredentials((string) $this->getData('username'), $password));
         }
