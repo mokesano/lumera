@@ -8,7 +8,7 @@ declare(strict_types=1);
  * Copyright (c) 2000-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @class PKPNotificationManager
+ * @class NotificationManager
  * @ingroup notification
  * @see NotificationDAO
  * @see Notification
@@ -20,7 +20,7 @@ import('lib.pkp.classes.notification.PKPNotificationManager');
 class NotificationManager extends PKPNotificationManager {
     
     /** @var array Cache each user's most privileged role for each article */
-    public $privilegedRoles = [];
+    protected $_privilegedRoles = [];
 
     /**
      * Constructor.
@@ -30,19 +30,23 @@ class NotificationManager extends PKPNotificationManager {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function NotificationManager() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::NotificationManager(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Construct a URL for the notification based on its type and associated object
-     * @param $request PKPRequest
-     * @param $notification Notification
+     * Construct a URL for the notification based on its type and associated object.
+     * @param mixed $request
+     * @param Notification $notification
      * @return string
      */
     public function getNotificationUrl($request, $notification) {
@@ -55,40 +59,40 @@ class NotificationManager extends PKPNotificationManager {
                 $role = $this->_getCachedRole($notification);
                 return $dispatcher->url($request, ROUTE_PAGE, null, $role, 'submission', $notification->getAssocId());
             case NOTIFICATION_TYPE_SUPP_FILE_MODIFIED:
-                $role = $this->_getCachedRole($notification, array(ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR));
+                $role = $this->_getCachedRole($notification, [ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR]);
                 return $dispatcher->url($request, ROUTE_PAGE, null, $role, 'submissionEditing', $notification->getAssocId());
             case NOTIFICATION_TYPE_METADATA_MODIFIED:
                 $role = $this->_getCachedRole($notification);
                 return $dispatcher->url($request, ROUTE_PAGE, null, $role, 'submission', $notification->getAssocId(), null, 'metadata');
             case NOTIFICATION_TYPE_GALLEY_MODIFIED:
-                $role = $this->_getCachedRole($notification, array(ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR));
+                $role = $this->_getCachedRole($notification, [ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR]);
                 return $dispatcher->url($request, ROUTE_PAGE, null, $role, 'submissionEditing', $notification->getAssocId(), null, 'layout');
             case NOTIFICATION_TYPE_SUBMISSION_COMMENT:
-                $role = $this->_getCachedRole($notification, array(ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR));
+                $role = $this->_getCachedRole($notification, [ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR]);
                 return $dispatcher->url($request, ROUTE_PAGE, null, $role, 'submissionReview', $notification->getAssocId(), null, 'editorDecision');
             case NOTIFICATION_TYPE_LAYOUT_COMMENT:
-                $role = $this->_getCachedRole($notification, array(ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR));
+                $role = $this->_getCachedRole($notification, [ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR]);
                 return $dispatcher->url($request, ROUTE_PAGE, null, $role, 'submissionEditing', $notification->getAssocId(), null, 'layout');
             case NOTIFICATION_TYPE_COPYEDIT_COMMENT:
-                $role = $this->_getCachedRole($notification, array(ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR));
-                return $dispatcher->url($request, ROUTE_PAGE, null, $role, 'submissionEditing', $notification->getAssocId(), null, 'coypedit');
+                $role = $this->_getCachedRole($notification, [ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR]);
+                // [WIZDAM FIX] Corrected typo from 'coypedit' to 'copyedit'
+                return $dispatcher->url($request, ROUTE_PAGE, null, $role, 'submissionEditing', $notification->getAssocId(), null, 'copyedit');
             case NOTIFICATION_TYPE_PROOFREAD_COMMENT:
-                $role = $this->_getCachedRole($notification, array(ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR));
+                $role = $this->_getCachedRole($notification, [ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR]);
                 return $dispatcher->url($request, ROUTE_PAGE, null, $role, 'submissionEditing', $notification->getAssocId(), null, 'proofread');
             case NOTIFICATION_TYPE_REVIEWER_COMMENT:
             case NOTIFICATION_TYPE_REVIEWER_FORM_COMMENT:
-                $role = $this->_getCachedRole($notification, array(ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR));
+                $role = $this->_getCachedRole($notification, [ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR]);
                 return $dispatcher->url($request, ROUTE_PAGE, null, $role, 'submissionReview', $notification->getAssocId(), null, 'peerReview');
             case NOTIFICATION_TYPE_EDITOR_DECISION_COMMENT:
-                $role = $this->_getCachedRole($notification, array(ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR));
+                $role = $this->_getCachedRole($notification, [ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_AUTHOR]);
                 return $dispatcher->url($request, ROUTE_PAGE, null, $role, 'submissionReview', $notification->getAssocId(), null, 'editorDecision');
             case NOTIFICATION_TYPE_USER_COMMENT:
                 return $dispatcher->url($request, ROUTE_PAGE, null, 'comment', 'view', $notification->getAssocId());
             case NOTIFICATION_TYPE_PUBLISHED_ISSUE:
                 return $dispatcher->url($request, ROUTE_PAGE, null, 'issue', 'current');
             case NOTIFICATION_TYPE_NEW_ANNOUNCEMENT:
-                assert($notification->getAssocType() == ASSOC_TYPE_ANNOUNCEMENT);
-                return $dispatcher->url($request, ROUTE_PAGE, null, 'announcement', 'view', array($notification->getAssocId()));
+                return $dispatcher->url($request, ROUTE_PAGE, null, 'announcement', 'view', [$notification->getAssocId()]);
             default:
                 return parent::getNotificationUrl($request, $notification);
         }
@@ -96,129 +100,135 @@ class NotificationManager extends PKPNotificationManager {
 
     /**
      * Helper to get cached role.
-     * @param $notification Notification
-     * @param $validRoles array|null
-     * @return string Role path
+     * @param Notification $notification
+     * @param array|null $validRoles
+     * @return string|null Role path
      */
     public function _getCachedRole($notification, $validRoles = null) {
-        assert($notification->getAssocType() == ASSOC_TYPE_ARTICLE);
         $articleId = (int) $notification->getAssocId();
-        $userId = $notification->getUserId();
+        $userId = (int) $notification->getUserId();
 
-        // Check if we've already set the roles for this user and article, otherwise fetch them
-        if (!isset($this->privilegedRoles[$userId][$articleId])) {
-            $this->privilegedRoles[$userId][$articleId] = $this->_getHighestPrivilegedRolesForArticle($userId, $articleId);
+        if (!isset($this->_privilegedRoles[$userId][$articleId])) {
+            $this->_privilegedRoles[$userId][$articleId] = $this->_getHighestPrivilegedRolesForArticle($userId, $articleId);
         }
 
-        $roleDao = DAORegistry::getDAO('RoleDAO'); /* @var $roleDao RoleDAO */
+        /** @var RoleDAO $roleDao */
+        $roleDao = DAORegistry::getDAO('RoleDAO');
 
         if (is_array($validRoles)) {
-            // We've specified a list of roles that should be the only roles considered
-            foreach ($this->privilegedRoles[$userId][$articleId] as $roleId) {
-                // Get the first role that is in the validRoles list
-                if (in_array($roleId, $validRoles)) {
+            foreach ($this->_privilegedRoles[$userId][$articleId] as $roleId) {
+                if (in_array($roleId, $validRoles, true)) {
                     return $roleDao->getRolePath($roleId);
                 }
             }
         } else {
-            // Return first (most privileged) role
-            $roleId = isset($this->privilegedRoles[$userId][$articleId][0]) ? $this->privilegedRoles[$userId][$articleId][0] : null;
+            $roleId = $this->_privilegedRoles[$userId][$articleId][0] ?? null;
             return $roleDao->getRolePath($roleId);
         }
+        return null;
     }
 
     /**
      * Get a list of the most 'privileged' roles a user has associated with an article.
-     * @param $userId int User ID
-     * @param $articleId int Article ID
+     * @param int $userId User ID
+     * @param int $articleId Article ID
      * @return array
      */
     public function _getHighestPrivilegedRolesForArticle($userId, $articleId) {
-        $roleDao = DAORegistry::getDAO('RoleDAO'); /* @var $roleDao RoleDAO */
-        $articleDao = DAORegistry::getDAO('ArticleDAO'); /* @var $articleDao ArticleDAO */
+        /** @var RoleDAO $roleDao */
+        $roleDao = DAORegistry::getDAO('RoleDAO');
+        /** @var ArticleDAO $articleDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO');
 
-        $roles = array();
+        $roles = [];
 
-        // Check if user is editor
         $article = $articleDao->getArticle($articleId);
-        if ($article && Validation::isEditor($article->getJournalId())) {
+        if ($article && Validation::isEditor((int) $article->getJournalId())) {
             $roles[] = ROLE_ID_EDITOR;
         }
 
-        $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO'); /* @var $editAssignmentDao EditAssignmentDAO */
+        /** @var EditAssignmentDAO $editAssignmentDao */
+        $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
         $editAssignments = $editAssignmentDao->getEditingSectionEditorAssignmentsByArticleId($articleId);
         while ($editAssignment = $editAssignments->next()) {
-            if ($userId == $editAssignment->getEditorId()) $roles[] = ROLE_ID_SECTION_EDITOR;
-            unset($editAssignment);
+            if ((int) $userId === (int) $editAssignment->getEditorId()) {
+                $roles[] = ROLE_ID_SECTION_EDITOR;
+            }
         }
 
-        // Check if user is copy/layout editor or proofreader
-        $signoffDao = DAORegistry::getDAO('SignoffDAO'); /* @var $signoffDao SignoffDAO */
+        /** @var SignoffDAO $signoffDao */
+        $signoffDao = DAORegistry::getDAO('SignoffDAO');
         $copyedSignoff = $signoffDao->build('SIGNOFF_COPYEDITING_INITIAL', ASSOC_TYPE_ARTICLE, $articleId);
-        if ($userId == $copyedSignoff->getUserId()) $roles[] = ROLE_ID_COPYEDITOR;
+        if ((int) $userId === (int) $copyedSignoff->getUserId()) {
+            $roles[] = ROLE_ID_COPYEDITOR;
+        }
 
         $layoutSignoff = $signoffDao->build('SIGNOFF_LAYOUT', ASSOC_TYPE_ARTICLE, $articleId);
-        if ($userId == $layoutSignoff->getUserId()) $roles[] = ROLE_ID_LAYOUT_EDITOR;
+        if ((int) $userId === (int) $layoutSignoff->getUserId()) {
+            $roles[] = ROLE_ID_LAYOUT_EDITOR;
+        }
 
         $proofSignoff = $signoffDao->build('SIGNOFF_PROOFREADING_PROOFREADER', ASSOC_TYPE_ARTICLE, $articleId);
-        if ($userId == $proofSignoff->getUserId()) $roles[] = ROLE_ID_PROOFREADER;
+        if ((int) $userId === (int) $proofSignoff->getUserId()) {
+            $roles[] = ROLE_ID_PROOFREADER;
+        }
 
-        // Check if user is author
-        if ($article && $userId == $article->getUserId()) $roles[] = ROLE_ID_AUTHOR;
+        if ($article && (int) $userId === (int) $article->getUserId()) {
+            $roles[] = ROLE_ID_AUTHOR;
+        }
 
-        // Check if user is reviewer
-        $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO'); /* @var $reviewAssignmentDao ReviewAssignmentDAO */
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
+        $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
         $reviewAssignments = $reviewAssignmentDao->getBySubmissionId($articleId);
         foreach ($reviewAssignments as $reviewAssignment) {
-            if ($userId == $reviewAssignment->getReviewerId()) $roles[] = ROLE_ID_REVIEWER;
+            if ((int) $userId === (int) $reviewAssignment->getReviewerId()) {
+                $roles[] = ROLE_ID_REVIEWER;
+            }
         }
 
         return $roles;
     }
 
     /**
-     * Construct the contents for the notification based on its type and associated object
-     * @param $request PKPRequest
-     * @param $notification Notification
+     * Construct the contents for the notification based on its type and associated object.
+     * @param mixed $request
+     * @param Notification $notification
      * @return string
      */
     public function getNotificationContents($request, $notification) {
         $type = $notification->getType();
-        assert(isset($type));
 
         $message = null;
-        // WIZDAM MODERNIZATION: Use dispatch.
-        // Param 1 ($notification) passed by value (object).
-        // Param 2 ($message) passed by reference (primitive, output param).
-        HookRegistry::dispatch('NotificationManager::getNotificationContents', array($notification, &$message));
+        HookRegistry::dispatch('NotificationManager::getNotificationContents', [$notification, &$message]);
         
-        if ($message) return $message;
+        if ($message) {
+            return $message;
+        }
 
         switch ($type) {
             case NOTIFICATION_TYPE_ARTICLE_SUBMITTED:
-                return __('notification.type.articleSubmitted', array('title' => $this->_getArticleTitle($notification)));
+                return __('notification.type.articleSubmitted', ['title' => $this->_getArticleTitle($notification)]);
             case NOTIFICATION_TYPE_SUPP_FILE_MODIFIED:
-                return __('notification.type.suppFileModified', array('title' => $this->_getArticleTitle($notification)));
+                return __('notification.type.suppFileModified', ['title' => $this->_getArticleTitle($notification)]);
             case NOTIFICATION_TYPE_METADATA_MODIFIED:
-                return __('notification.type.metadataModified', array('title' => $this->_getArticleTitle($notification)));
+                return __('notification.type.metadataModified', ['title' => $this->_getArticleTitle($notification)]);
             case NOTIFICATION_TYPE_GALLEY_MODIFIED:
-                return __('notification.type.galleyModified', array('title' => $this->_getArticleTitle($notification)));
+                return __('notification.type.galleyModified', ['title' => $this->_getArticleTitle($notification)]);
             case NOTIFICATION_TYPE_SUBMISSION_COMMENT:
-                return __('notification.type.submissionComment', array('title' => $this->_getArticleTitle($notification)));
+                return __('notification.type.submissionComment', ['title' => $this->_getArticleTitle($notification)]);
             case NOTIFICATION_TYPE_LAYOUT_COMMENT:
-                return __('notification.type.layoutComment', array('title' => $this->_getArticleTitle($notification)));
+                return __('notification.type.layoutComment', ['title' => $this->_getArticleTitle($notification)]);
             case NOTIFICATION_TYPE_COPYEDIT_COMMENT:
-                return __('notification.type.copyeditComment', array('title' => $this->_getArticleTitle($notification)));
+                return __('notification.type.copyeditComment', ['title' => $this->_getArticleTitle($notification)]);
             case NOTIFICATION_TYPE_PROOFREAD_COMMENT:
-                return __('notification.type.proofreadComment', array('title' => $this->_getArticleTitle($notification)));
+                return __('notification.type.proofreadComment', ['title' => $this->_getArticleTitle($notification)]);
             case NOTIFICATION_TYPE_REVIEWER_COMMENT:
-                return __('notification.type.reviewerComment', array('title' => $this->_getArticleTitle($notification)));
             case NOTIFICATION_TYPE_REVIEWER_FORM_COMMENT:
-                return __('notification.type.reviewerFormComment', array('title' => $this->_getArticleTitle($notification)));
+                return __('notification.type.reviewerComment', ['title' => $this->_getArticleTitle($notification)]);
             case NOTIFICATION_TYPE_EDITOR_DECISION_COMMENT:
-                return __('notification.type.editorDecisionComment', array('title' => $this->_getArticleTitle($notification)));
+                return __('notification.type.editorDecisionComment', ['title' => $this->_getArticleTitle($notification)]);
             case NOTIFICATION_TYPE_USER_COMMENT:
-                return __('notification.type.userComment', array('title' => $this->_getArticleTitle($notification)));
+                return __('notification.type.userComment', ['title' => $this->_getArticleTitle($notification)]);
             case NOTIFICATION_TYPE_PUBLISHED_ISSUE:
                 return __('notification.type.issuePublished');
             case NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_SUCCESS:
@@ -259,22 +269,24 @@ class NotificationManager extends PKPNotificationManager {
     }
 
     /**
-     * Helper function to get an article title from a notification's associated object
-     * @param $notification Notification
+     * Helper function to get an article title from a notification's associated object.
+     * @param Notification $notification
      * @return string|null
      */
     public function _getArticleTitle($notification) {
-        assert($notification->getAssocType() == ASSOC_TYPE_ARTICLE);
-        assert(is_numeric($notification->getAssocId()));
-        $articleDao = DAORegistry::getDAO('ArticleDAO'); /* @var $articleDao ArticleDAO */
-        $article = $articleDao->getArticle($notification->getAssocId());
-        if (!$article) return null;
-        return $article->getLocalizedTitle();
+        $articleId = (int) $notification->getAssocId();
+        /** @var ArticleDAO $articleDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO');
+        $article = $articleDao->getArticle($articleId);
+        if (!$article) {
+            return null;
+        }
+        return (string) $article->getLocalizedTitle();
     }
 
     /**
-     * get notification style class
-     * @param $notification Notification
+     * Get notification style class.
+     * @param Notification $notification
      * @return string
      */
     public function getStyleClass($notification) {
@@ -290,20 +302,21 @@ class NotificationManager extends PKPNotificationManager {
             case NOTIFICATION_TYPE_BOOK_AUTHOR_DENIED:
             case NOTIFICATION_TYPE_BOOK_AUTHOR_REMOVED:
             case NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_SUCCESS:
-                    return 'notifySuccess';
+                return 'notifySuccess';
             case NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_ERROR_NO_GIFT_TO_REDEEM:
             case NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_ERROR_GIFT_ALREADY_REDEEMED:
             case NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_ERROR_GIFT_INVALID:
             case NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_ERROR_SUBSCRIPTION_TYPE_INVALID:
             case NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_ERROR_SUBSCRIPTION_NON_EXPIRING:
-                    return 'notifyError';
-            default: return parent::getStyleClass($notification);
+                return 'notifyError';
+            default: 
+                return parent::getStyleClass($notification);
         }
     }
 
     /**
-     * Return a CSS class containing the icon of this notification type
-     * @param $notification Notification
+     * Return a CSS class containing the icon of this notification type.
+     * @param Notification $notification
      * @return string
      */
     public function getIconClass($notification) {
@@ -346,30 +359,34 @@ class NotificationManager extends PKPNotificationManager {
             case NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_ERROR_SUBSCRIPTION_TYPE_INVALID:
             case NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_ERROR_SUBSCRIPTION_NON_EXPIRING:
                 return 'notifyIconError';
-            default: return parent::getIconClass($notification);
+            default: 
+                return parent::getIconClass($notification);
         }
     }
 
     /**
-     * Returns an array of information on the journal's subscription settings
-     * @param $request PKPRequest
+     * Returns an array of information on the journal's subscription settings.
+     * @param mixed $request
      * @return array
      */
     public function getSubscriptionSettings($request) {
-        $journal = $request->getJournal();
-        if (!$journal) return array();
+        // [SCHOLARWIZDAM LUMERA STANDARD] Context resolution via Router
+        $router = $request->getRouter();
+        $journal = ($router instanceof PKPPageRouter) ? $router->getContext($request) : null;
+        
+        if (!$journal) {
+            return [];
+        }
 
         import('classes.payment.ojs.OJSPaymentManager');
         $paymentManager = new OJSPaymentManager($request);
 
-        $settings = array(
+        return [
             'subscriptionsEnabled' => $paymentManager->acceptSubscriptionPayments(),
-            'allowRegReviewer' => $journal->getSetting('allowRegReviewer'),
-            'allowRegAuthor' => $journal->getSetting('allowRegAuthor')
-        );
-
-        return $settings;
+            'allowRegReviewer' => (bool) $journal->getSetting('allowRegReviewer'),
+            'allowRegAuthor' => (bool) $journal->getSetting('allowRegAuthor')
+        ];
     }
+    
 }
-
 ?>

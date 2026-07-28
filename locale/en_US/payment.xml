@@ -62,6 +62,8 @@
     <message key="billing.error.cannotCancel">Invoice cannot be canceled as it may already be paid or you lack the necessary access.</message>
     <message key="billing.success.paymentSessionCreated">Payment session successfully created.</message>
     <message key="billing.success.invoiceCancelled">Invoice successfully canceled.</message>
+    <message key="billing.error.invoiceLinkFailedUser">A technical issue occurred while processing your invoice #{$invoiceId}. Our team has been notified; please contact the editor if your billing status is incorrect.</message>
+    <message key="billing.error.invoiceLinkFailedManager">The incoming payment failed to link to invoice #{$invoiceId} (queued payment #{$queuedPaymentId}). The record has been saved in completed_payments as a fallback -- please verify manually.</message>
     
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Shopping Cart</message>
@@ -72,7 +74,7 @@
     <message key="order.success.checkoutComplete">Checkout successful. Your official invoice has been issued.</message>
     
     <!-- Redeem Wallet -->
-    <message key="redeem.walletDashboard">Virtual Wallet & Loyalty Points</message>
+    <message key="redeem.walletDashboard">Virtual Wallet &amp; Loyalty Points</message>
     <message key="redeem.error.invalidMethod">Request method not allowed.</message>
     <message key="redeem.error.csrfInvalid">Session has expired. Please reload the page.</message>
     <message key="redeem.error.invalidPointAmount">Invalid point redemption amount.</message>
