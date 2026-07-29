@@ -39,6 +39,7 @@ cache/HTML/*
 .user.ini
 php.ini
 config.inc.php
+plugins/themes/sangiapub/php/
 
 # Editor/IDE
 .vscode/
