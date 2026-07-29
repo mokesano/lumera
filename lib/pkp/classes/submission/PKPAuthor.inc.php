@@ -25,25 +25,35 @@ class PKPAuthor extends DataObject {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function PKPAuthor() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::PKPAuthor(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Get the author's complete name.
      * Includes first name, middle name (if applicable), and last name.
-     * @param $lastFirst boolean False / default: Firstname Middle Lastname
-     * If true: Lastname, Firstname Middlename
+     * @param bool $lastFirst
      * @return string
      */
     public function getFullName($lastFirst = false) {
-        if ($lastFirst) return $this->getData('lastName') . ', ' . $this->getData('firstName') . ($this->getData('middleName') != '' ? ' ' . $this->getData('middleName') : '');
-        else return $this->getData('firstName') . ' ' . ($this->getData('middleName') != '' ? $this->getData('middleName') . ' ' : '') . $this->getData('lastName') . ($this->getData('suffix') != '' ? ', ' . $this->getData('suffix') : '');
+        $firstName = (string) $this->getData('firstName');
+        $middleName = (string) $this->getData('middleName');
+        $lastName = (string) $this->getData('lastName');
+        $suffix = (string) $this->getData('suffix');
+
+        if ($lastFirst) {
+            return $lastName . ', ' . $firstName . ($middleName !== '' ? ' ' . $middleName : '');
+        }
+        return $firstName . ' ' . ($middleName !== '' ? $middleName . ' ' : '') . $lastName . ($suffix !== '' ? ', ' . $suffix : '');
     }
 
     //
@@ -52,52 +62,60 @@ class PKPAuthor extends DataObject {
 
     /**
      * Get ID of author.
+     * DEPRECATED in favour of getId.
      * @return int
      */
     public function getAuthorId() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.', E_USER_DEPRECATED);
-        return $this->getId();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        return (int) $this->getId();
     }
 
     /**
      * Set ID of author.
+     * DEPRECATED in favour of setId.
      * @param int $authorId
      */
     public function setAuthorId($authorId) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.', E_USER_DEPRECATED);
-        return $this->setId($authorId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        $this->setId((int) $authorId);
     }
 
     /**
      * Get ID of submission.
-     * @return int
+     * @return int|null
      */
     public function getSubmissionId() {
-        return $this->getData('submissionId');
+        $id = $this->getData('submissionId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set ID of submission.
-     * @param int $submissionId
+     * @param int|null $submissionId
      */
     public function setSubmissionId($submissionId) {
-        return $this->setData('submissionId', $submissionId);
+        $this->setData('submissionId', $submissionId !== null ? (int) $submissionId : null);
     }
 
     /**
-     * Set the user group id
-     * @param int $userGroupId
+     * Set the user group id.
+     * @param int|null $userGroupId
      */
     public function setUserGroupId($userGroupId) {
-        $this->setData('userGroupId', $userGroupId);
+        $this->setData('userGroupId', $userGroupId !== null ? (int) $userGroupId : null);
     }
 
     /**
-     * Get the user group id
-     * @return int
+     * Get the user group id.
+     * @return int|null
      */
     public function getUserGroupId() {
-        return $this->getData('userGroupId');
+        $id = $this->getData('userGroupId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
@@ -105,7 +123,7 @@ class PKPAuthor extends DataObject {
      * @return string
      */
     public function getFirstName() {
-        return $this->getData('firstName');
+        return (string) $this->getData('firstName');
     }
 
     /**
@@ -113,7 +131,7 @@ class PKPAuthor extends DataObject {
      * @param string $firstName
      */
     public function setFirstName($firstName) {
-        return $this->setData('firstName', $firstName);
+        $this->setData('firstName', (string) $firstName);
     }
 
     /**
@@ -121,7 +139,7 @@ class PKPAuthor extends DataObject {
      * @return string
      */
     public function getMiddleName() {
-        return $this->getData('middleName');
+        return (string) $this->getData('middleName');
     }
 
     /**
@@ -129,7 +147,7 @@ class PKPAuthor extends DataObject {
      * @param string $middleName
      */
     public function setMiddleName($middleName) {
-        return $this->setData('middleName', $middleName);
+        $this->setData('middleName', (string) $middleName);
     }
 
     /**
@@ -137,7 +155,7 @@ class PKPAuthor extends DataObject {
      * @return string
      */
     public function getInitials() {
-        return $this->getData('initials');
+        return (string) $this->getData('initials');
     }
 
     /**
@@ -145,7 +163,7 @@ class PKPAuthor extends DataObject {
      * @param string $initials
      */
     public function setInitials($initials) {
-        return $this->setData('initials', $initials);
+        $this->setData('initials', (string) $initials);
     }
 
     /**
@@ -153,7 +171,7 @@ class PKPAuthor extends DataObject {
      * @return string
      */
     public function getLastName() {
-        return $this->getData('lastName');
+        return (string) $this->getData('lastName');
     }
 
     /**
@@ -161,7 +179,7 @@ class PKPAuthor extends DataObject {
      * @param string $lastName
      */
     public function setLastName($lastName) {
-        return $this->setData('lastName', $lastName);
+        $this->setData('lastName', (string) $lastName);
     }
 
     /**
@@ -169,7 +187,7 @@ class PKPAuthor extends DataObject {
      * @return string
      */
     public function getSuffix() {
-        return $this->getData('suffix');
+        return (string) $this->getData('suffix');
     }
 
     /**
@@ -177,7 +195,7 @@ class PKPAuthor extends DataObject {
      * @param string $suffix
      */
     public function setSuffix($suffix) {
-        return $this->setData('suffix', $suffix);
+        $this->setData('suffix', (string) $suffix);
     }
 
     /**
@@ -185,7 +203,7 @@ class PKPAuthor extends DataObject {
      * @return string
      */
     public function getSalutation() {
-        return $this->getData('salutation');
+        return (string) $this->getData('salutation');
     }
 
     /**
@@ -193,51 +211,52 @@ class PKPAuthor extends DataObject {
      * @param string $salutation
      */
     public function setSalutation($salutation) {
-        return $this->setData('salutation', $salutation);
+        $this->setData('salutation', (string) $salutation);
     }
 
     /**
      * Get affiliation (position, institution, etc.).
-     * @param string $locale
+     * @param string|null $locale
      * @return string
      */
     public function getAffiliation($locale) {
-        return $this->getData('affiliation', $locale);
+        return (string) $this->getData('affiliation', $locale);
     }
 
     /**
      * Set affiliation.
      * @param string $affiliation
-     * @param string $locale
+     * @param string|null $locale
      */
     public function setAffiliation($affiliation, $locale) {
-        return $this->setData('affiliation', $affiliation, $locale);
+        $this->setData('affiliation', (string) $affiliation, $locale);
     }
 
     /**
-     * Get the localized affiliation for this author
+     * Get the localized affiliation for this author.
+     * @return string
      */
     public function getLocalizedAffiliation() {
-        return $this->getLocalizedData('affiliation');
+        return (string) $this->getLocalizedData('affiliation');
     }
 
     /**
-     * Get country code
+     * Get country code.
      * @return string
      */
     public function getCountry() {
-        return $this->getData('country');
+        return (string) $this->getData('country');
     }
 
     /**
-     * Get localized country
-     * @return string
+     * Get localized country name.
+     * @return string|null
      */
     public function getCountryLocalized() {
-        /** @var CountryDAO $countryDao */
-        $countryDao = DAORegistry::getDAO('CountryDAO');
         $country = $this->getCountry();
-        if ($country) {
+        if ($country !== null && $country !== '') {
+            /** @var CountryDAO $countryDao */
+            $countryDao = DAORegistry::getDAO('CountryDAO');
             return $countryDao->getCountry($country);
         }
         return null;
@@ -248,7 +267,7 @@ class PKPAuthor extends DataObject {
      * @param string $country
      */
     public function setCountry($country) {
-        return $this->setData('country', $country);
+        $this->setData('country', (string) $country);
     }
 
     /**
@@ -256,7 +275,7 @@ class PKPAuthor extends DataObject {
      * @return string
      */
     public function getEmail() {
-        return $this->getData('email');
+        return (string) $this->getData('email');
     }
 
     /**
@@ -264,7 +283,7 @@ class PKPAuthor extends DataObject {
      * @param string $email
      */
     public function setEmail($email) {
-        return $this->setData('email', $email);
+        $this->setData('email', (string) $email);
     }
 
     /**
@@ -272,7 +291,7 @@ class PKPAuthor extends DataObject {
      * @return string
      */
     public function getUrl() {
-        return $this->getData('url');
+        return (string) $this->getData('url');
     }
 
     /**
@@ -280,72 +299,89 @@ class PKPAuthor extends DataObject {
      * @param string $url
      */
     public function setUrl($url) {
-        return $this->setData('url', $url);
+        $this->setData('url', (string) $url);
     }
 
     /**
-     * Get the localized biography for this author
+     * Get the localized biography for this author.
+     * @return string
      */
     public function getLocalizedBiography() {
-        return $this->getLocalizedData('biography');
+        return (string) $this->getLocalizedData('biography');
     }
 
     /**
-     * [DEPRECATED] Get Author Biography
+     * [DEPRECATED] Get Author Biography.
+     * @return string
      */
     public function getAuthorBiography() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedBiography();
     }
 
     /**
      * Get author biography.
-     * @param string $locale
+     * @param string|null $locale
      * @return string
      */
     public function getBiography($locale) {
-        return $this->getData('biography', $locale);
+        if (empty($locale)) {
+            $locale = AppLocale::getPrimaryLocale();
+        }
+
+        $biography = $this->getData('biography', $locale);
+        if (is_array($biography)) {
+            $biography = reset($biography);
+            if (!is_string($biography)) {
+                $biography = '';
+            }
+        }
+
+        return (string) $biography;
     }
 
     /**
      * Set author biography.
      * @param string $biography
-     * @param string $locale
+     * @param string|null $locale
      */
     public function setBiography($biography, $locale) {
-        return $this->setData('biography', $biography, $locale);
+        $this->setData('biography', (string) $biography, $locale);
     }
 
     /**
      * Get primary contact.
-     * @return boolean
+     * @return bool
      */
     public function getPrimaryContact() {
-        return $this->getData('primaryContact');
+        return (bool) $this->getData('primaryContact');
     }
 
     /**
      * Set primary contact.
-     * @param boolean $primaryContact
+     * @param bool $primaryContact
      */
     public function setPrimaryContact($primaryContact) {
-        return $this->setData('primaryContact', $primaryContact);
+        $this->setData('primaryContact', (bool) $primaryContact);
     }
 
     /**
      * Get sequence of author in article's author list.
-     * @return float
+     * @return float|null
      */
     public function getSequence() {
-        return $this->getData('sequence');
+        $seq = $this->getData('sequence');
+        return $seq !== null ? (float) $seq : null;
     }
 
     /**
      * Set sequence of author in article's author list.
-     * @param float $sequence
+     * @param float|null $sequence
      */
     public function setSequence($sequence) {
-        return $this->setData('sequence', $sequence);
+        $this->setData('sequence', $sequence !== null ? (float) $sequence : null);
     }
     
 }
