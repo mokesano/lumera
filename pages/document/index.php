@@ -13,6 +13,7 @@ declare(strict_types=1);
  * Menangani URL: /document/...
  */
 
+/** @var string $op */
 switch ($op) {
     //
     // Letter of Acceptance
@@ -30,4 +31,5 @@ switch ($op) {
         import('pages.document.CertificateHandler');
         break;
 }
+
 ?>
