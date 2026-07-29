@@ -74,11 +74,13 @@ switch ($op) {
 	//
     // AREA ADMIN WIZDAM PAYMENT ---
     //
-    case 'payment-settings':
-    case 'save-payment-settings':
-        define('HANDLER_CLASS', 'AdminPaymentHandler'); 
-        import('pages.admin.AdminPaymentHandler');
-        break;
+	case 'payment-settings':
+	case 'save-payment-settings':
+	case 'manualPayments':               // [BARU]
+	case 'confirmManualPaymentAction':   // [BARU]
+		define('HANDLER_CLASS', 'AdminPaymentHandler'); 
+		import('pages.admin.AdminPaymentHandler');
+		break;
 	//
 	// Administrative functions
 	//
