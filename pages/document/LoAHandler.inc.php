@@ -21,6 +21,7 @@ import('classes.handler.Handler');
 import('lib.wizdam.classes.services.LoAService');
 import('lib.wizdam.classes.services.PdfService');
 import('lib.wizdam.classes.services.QrCodeService');
+import('lib.wizdam.classes.services.PublisherProfileService');
 import('lib.wizdam.classes.security.SecurityHashService');
 
 class LoAHandler extends Handler {
@@ -65,10 +66,17 @@ class LoAHandler extends Handler {
      * SMART ROUTER: Menampilkan Web View (HTML) atau Mengunduh PDF dari LoA Privat.
      * Rute HTML: /document/loa/[hash]-[submissionId]
      * Rute PDF:  /document/loa/pdf-[hash]-[submissionId]
+     *
+     * [FIX KRITIS] Method ini SEBELUMNYA bernama index() -- karena dispatcher
+     * pages/document/index.php meneruskan op 'loa' langsung sebagai nama
+     * method yang dipanggil (call_user_func([$handler, $op], ...) di
+     * PKPPageRouter, tanpa fallback __call()), method bernama index() TIDAK
+     * PERNAH bisa dipanggil lewat rute ini -- selalu 404. Sudah diganti
+     * jadi loa() supaya benar-benar tercapai.
      * @param array $args
      * @param Request|null $request
      */
-    public function index(array $args = [], $request = null): void {
+    public function loa(array $args = [], $request = null): void {
         $this->validate();
         if (!$request) $request = Application::get()->getRequest();
         
@@ -134,14 +142,19 @@ class LoAHandler extends Handler {
             // Render HTML
             $templateMgr = TemplateManager::getManager($request);
             
-            // Build URL untuk tombol "Download PDF" dengan mewariskan Hash
-            $pdfDownloadUrl = $request->url(null, 'billing', 'loa', ["pdf-{$providedHash}-{$submissionId}"]);
+            // [FIX] Rute sebelumnya salah: page="billing" op="loa" TIDAK ADA
+            // di dispatcher manapun. Halaman ini live di page="document"
+            // op="loa" (LoAHandler sendiri) -- diperbaiki supaya tombol
+            // Download PDF di halaman HTML benar-benar mengarah ke rute yang hidup.
+            $pdfDownloadUrl = $request->url(null, 'document', 'loa', ["pdf-{$providedHash}-{$submissionId}"]);
 
             $templateMgr->assign([
                 'loaData' => $loaData,
                 'qrCodeImage' => $qrCodeBase64,
                 'submissionId' => $submissionId,
                 'pdfDownloadUrl' => $pdfDownloadUrl,
+                // [BARU] Identitas resmi Penerbit -- untuk letterhead logo/warna.
+                'publisher' => (new PublisherProfileService())->getProfile(),
                 'pageTitle' => 'billing.loa.pageTitle',
                 'pageHierarchy' => [
                     [$request->url(null, 'user'), 'navigation.user'],
@@ -149,8 +162,11 @@ class LoAHandler extends Handler {
                 ]
             ]);
 
-            // Pastikan Anda memindahkan template private.tpl ke direktori billing/loa/
-            $templateMgr->display('billing/loa/private.tpl');
+            // [FIX] Path template disesuaikan dengan file yang benar-benar ada:
+            // plugins/themes/sangiapub/templates/document/loa/loaPrivate.tpl
+            // (sebelumnya salah menunjuk ke 'billing/loa/private.tpl' yang
+            // tidak pernah ada -- akan fatal "template not found").
+            $templateMgr->display('document/loa/loaPrivate.tpl');
         }
     }
 

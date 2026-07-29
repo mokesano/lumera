@@ -233,6 +233,24 @@ class InvoiceService {
         HookRegistry::dispatch('Wizdam::InvoicePaid', [$invoice]);
         return true;
     }
+
+    /**
+     * [BARU] Menandai invoice sebagai "menunggu konfirmasi manual" -- status
+     * TETAP UNPAID (uang belum diterima), hanya payment_method diberi
+     * penanda supaya staf/admin bisa memfilter daftar "perlu diverifikasi
+     * manual" di dashboard (lihat AdminPaymentHandler::manualPayments()).
+     * @param int $invoiceId
+     * @return bool
+     */
+    public function markPendingManualConfirmation(int $invoiceId): bool {
+        $invoice = $this->getInvoiceById($invoiceId);
+        if (!$invoice || $invoice->isLegacy() || $invoice->getStatus() === Invoice::STATUS_PAID) {
+            return false;
+        }
+        $invoice->setData('paymentMethod', 'ManualPending');
+        $this->invoiceDao->updateObject($invoice);
+        return true;
+    }
     
     /**
      * Mengambil tagihan yang belum dibayar untuk pengguna tertentu

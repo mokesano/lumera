@@ -24,6 +24,8 @@ import('lib.wizdam.classes.services.InvoiceService');
 import('lib.wizdam.classes.services.QrCodeService');
 import('lib.wizdam.classes.services.PdfService');
 import('lib.wizdam.classes.services.PaymentSettingsService');
+import('lib.wizdam.classes.services.PaymentMethodResolver');
+import('lib.wizdam.classes.services.PublisherProfileService');
 import('lib.wizdam.classes.security.SecurityHashService');
 
 class BillingHandler extends Handler {
@@ -188,6 +190,7 @@ class BillingHandler extends Handler {
     /**
      * Memproses permintaan inisiasi pembayaran ke Payment Gateway (AJAX/POST).
      * Rute: POST /billing/pay/[hash]-[id]
+     * Metode 'manual' TIDAK melalui method ini -- lihat confirmManual().
      * @param array $args Harus berisi format keamanan: [hash]-[id]
      * @param Request|null $request
      */
@@ -195,6 +198,7 @@ class BillingHandler extends Handler {
         $this->validate();
         if (!$request) $request = Application::get()->getRequest();
 
+        $method = strtolower((string) ($request->getUserVar('method') ?: ''));
         $paymentType = $request->getUserVar('payment_type') ?: 'all';
 
         import('lib.pkp.classes.validation.ValidatorCSRF');
@@ -229,19 +233,36 @@ class BillingHandler extends Handler {
             $this->_sendJsonResponse($request, 'error', __('billing.error.alreadyPaid'));
         }
 
-        $settingsService = new PaymentSettingsService();
-        $activeGatewayStr = $settingsService->getActiveGateway();
+        // [FIX] 'manual' tidak punya URL checkout gateway -- tolak eksplisit
+        // dan arahkan pengguna ke confirmManual() yang memang dirancang untuknya.
+        if ($method === 'manual') {
+            $this->_sendJsonResponse($request, 'error', __('billing.error.useManualEndpoint'));
+        }
 
-        // Factory Pattern
-        if ($activeGatewayStr === 'xendit') {
-            import('lib.wizdam.classes.payment.XenditGateway');
-            $gateway = new XenditGateway($settingsService->getXenditApiKey());
-        } else {
-            import('lib.wizdam.classes.payment.MidtransGateway');
-            $gateway = new MidtransGateway(
-                $settingsService->getMidtransServerKey(), 
-                $settingsService->isProduction()
-            );
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
+        $journal = $journalDao->getById((int) $invoice->getData('journalId'));
+        $settingsService = PaymentSettingsService::resolveForJournal($journal);
+
+        switch ($method) {
+            case 'xendit':
+                import('lib.wizdam.classes.payment.XenditGateway');
+                $gateway = new XenditGateway($settingsService->getXenditApiKey());
+                break;
+            case 'paypal':
+                import('lib.wizdam.classes.payment.PayPalGateway');
+                $gateway = new PayPalGateway(
+                    $settingsService->getPayPalSellerEmail(),
+                    $settingsService->isProduction()
+                );
+                break;
+            case 'midtrans':
+            default:
+                import('lib.wizdam.classes.payment.MidtransGateway');
+                $gateway = new MidtransGateway(
+                    $settingsService->getMidtransServerKey(), 
+                    $settingsService->isProduction()
+                );
+                break;
         }
 
         $customerData = [
@@ -257,6 +278,91 @@ class BillingHandler extends Handler {
             // Gunakan message bawaan gateway untuk debugging, atau bungkus dengan locale error general
             $this->_sendJsonResponse($request, 'error', __('billing.error.gatewayFailed') . ': ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Memproses konfirmasi niat bayar Manual (bukan gateway online). TIDAK
+     * menandai invoice PAID -- uang belum diterima. Mengirim email instruksi
+     * ke pengguna + notifikasi ke admin, dan menandai invoice "ManualPending"
+     * supaya muncul di daftar konfirmasi manual staf/admin.
+     * Rute: POST /billing/confirmManual/[hash]-[id]
+     * @param array $args Harus berisi format keamanan: [hash]-[id]
+     * @param Request|null $request
+     */
+    public function confirmManual(array $args = [], $request = null): void {
+        $this->validate();
+        if (!$request) $request = Application::get()->getRequest();
+
+        import('lib.pkp.classes.validation.ValidatorCSRF');
+        if ($request->isPost()) {
+            if (!ValidatorCSRF::checkToken($request->getUserVar('csrfToken'))) {
+                $this->_sendJsonResponse($request, 'error', __('billing.error.csrfInvalid'));
+            }
+        } else {
+            $this->_sendJsonResponse($request, 'error', __('billing.error.methodNotAllowed'));
+        }
+
+        $param = $args[0] ?? '';
+        if (strlen($param) <= 65 || $param[64] !== '-') {
+            $this->_sendJsonResponse($request, 'error', __('billing.error.malformedRequest'));
+        }
+
+        $providedHash = substr($param, 0, 64);
+        $invoiceId = (int) substr($param, 65);
+
+        if (!$this->securityHashService->validateHash('invoice', $invoiceId, $providedHash)) {
+            $this->_sendJsonResponse($request, 'error', __('billing.error.hashValidationFailed'));
+        }
+
+        $user = $request->getUser();
+        $invoice = $this->invoiceService->getInvoiceById($invoiceId);
+
+        if (!$invoice || $invoice->getUserId() !== (int) $user->getId()) {
+            $this->_sendJsonResponse($request, 'error', __('billing.error.invoiceNotFound'));
+        }
+
+        if ($invoice->getStatus() === 'PAID') {
+            $this->_sendJsonResponse($request, 'error', __('billing.error.alreadyPaid'));
+        }
+
+        $marked = $this->invoiceService->markPendingManualConfirmation($invoiceId);
+        if (!$marked) {
+            $this->_sendJsonResponse($request, 'error', __('billing.error.gatewayFailed'));
+        }
+
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
+        $journal = $journalDao->getById((int) $invoice->getData('journalId'));
+        $settingsService = PaymentSettingsService::resolveForJournal($journal);
+
+        import('classes.mail.MailTemplate');
+        $contactEmail = $journal ? (string) $journal->getSetting('contactEmail') : (string) Config::getVar('email', 'contact_email');
+        $contactName = $journal ? (string) $journal->getSetting('contactName') : (string) Config::getVar('email', 'contact_name');
+
+        $mailUser = new MailTemplate('USER_INVOICE_GENERATED');
+        $mailUser->setFrom($contactEmail, $contactName);
+        $mailUser->addRecipient((string) $user->getEmail(), (string) $user->getFullName());
+        $mailUser->assignParams([
+            'userFullName'   => (string) $user->getFullName(),
+            'paymentId'      => (string) $invoice->getData('invoiceNumber'),
+            'totalAmount'    => number_format($invoice->getAmount(), 2),
+            'itemCurrencyCode' => (string) $invoice->getCurrencyCode(),
+            'manualInstructions' => $settingsService->getManualInstructions(),
+        ]);
+        $mailUser->send();
+
+        $mailAdmin = new MailTemplate('MANUAL_PAYMENT_NOTIFICATION');
+        $mailAdmin->setFrom($contactEmail, $contactName);
+        $mailAdmin->addRecipient($contactEmail, $contactName);
+        $mailAdmin->assignParams([
+            'paymentId'   => (string) $invoice->getData('invoiceNumber'),
+            'totalAmount' => number_format($invoice->getAmount(), 2),
+            'itemCurrencyCode' => (string) $invoice->getCurrencyCode(),
+            'userFullName' => (string) $user->getFullName(),
+            'userEmail'   => (string) $user->getEmail(),
+        ]);
+        $mailAdmin->send();
+
+        $this->_sendJsonResponse($request, 'success', __('billing.success.manualConfirmationSent'));
     }
 
     /**
@@ -326,6 +432,12 @@ class BillingHandler extends Handler {
             [$request->url(null, 'user'), 'navigation.user'],
             [$request->url(null, 'billing', 'index'), 'billing.globalBilling']
         ];
+
+        // [BARU] Daftar semua metode pembayaran (dengan status
+        // dikonfigurasi/direkomendasikan) dan identitas resmi Penerbit.
+        $methodResolver = new PaymentMethodResolver();
+        $viewData['availablePaymentMethods'] = $methodResolver->getAvailableMethods($invoice);
+        $viewData['publisher'] = (new PublisherProfileService())->getProfile();
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign($viewData);

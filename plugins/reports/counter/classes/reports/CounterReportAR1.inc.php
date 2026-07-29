@@ -29,6 +29,8 @@ class CounterReportAR1 extends CounterReport {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param string $parentPluginCategory
+     * @param string $parentPluginName
      */
     public function CounterReportAR1($parentPluginCategory, $parentPluginName) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -45,11 +47,11 @@ class CounterReportAR1 extends CounterReport {
      * Get the report title
      * @return string
      */
-    public function getTitle() {
+    public function getTitle(): string {
         return __('plugins.reports.counter.ar1.title');
     }
 
-    /*
+    /**
      * Convert an OJS metrics request to a COUNTER ReportItem
      * @param string|array $columns column (aggregation level) selection
      * @param array $filters report-level filter selection
@@ -59,7 +61,7 @@ class CounterReportAR1 extends CounterReport {
      * @return array COUNTER\ReportItem
      */
     public function getReportItems($columns = [], $filters = [], $orderBy = [], $range = null) {
-        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /* @var $metricsDao MetricsDAO */
+        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /** @var MetricsDAO $metricsDao */
         
         // Columns are fixed for this report
         $defaultColumns = [STATISTICS_DIMENSION_MONTH, STATISTICS_DIMENSION_SUBMISSION_ID];
@@ -150,14 +152,14 @@ class CounterReportAR1 extends CounterReport {
      * @return mixed COUNTER\ReportItems or false
      */
     private function _createReportItem($submissionId, $metrics) {
-        $articleDao = DAORegistry::getDAO('ArticleDAO'); /* @var $articleDao ArticleDAO */
+        $articleDao = DAORegistry::getDAO('ArticleDAO'); /** @var ArticleDAO $articleDao */
         $article = $articleDao->getArticle($submissionId);
         if (!$article) {
             return false;
         }
         $title = $article->getLocalizedTitle();
         $journalId = $article->getJournalId();
-        $journalDao = DAORegistry::getDAO('JournalDAO'); /* @var $journalDao JournalDAO */
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
         $journal = $journalDao->getById($journalId);
         if (!$journal) {
             return false;
@@ -205,7 +207,7 @@ class CounterReportAR1 extends CounterReport {
                 $articlePubIds
             );
         } catch (Exception $e) {
-            $this->setError($e, COUNTER_EXCEPTION_ERROR | COUNTER_EXCEPTION_INTERNAL);
+            $this->setError($e);
         }
         return $reportItem;
     }

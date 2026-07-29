@@ -13,7 +13,7 @@ declare(strict_types=1);
  * @brief A COUNTER report, base class.
  */
 
-require_once __DIR__ . '/../../classes/COUNTER/COUNTER.php';
+require_once __DIR__ . '/COUNTER/COUNTER.php';
 
 define('COUNTER_EXCEPTION_WARNING', 0);
 define('COUNTER_EXCEPTION_ERROR', 1);
@@ -25,7 +25,9 @@ define('COUNTER_EXCEPTION_BAD_ORDERBY', 64);
 define('COUNTER_EXCEPTION_BAD_RANGE', 128);
 define('COUNTER_EXCEPTION_INTERNAL', 256);
 
-define('COUNTER_CLASS_PREFIX', 'CounterReport');
+if (!defined('COUNTER_CLASS_PREFIX')) {
+    define('COUNTER_CLASS_PREFIX', 'CounterReport');
+}
 
 // COUNTER as of yet is not internationalized and requires English constants
 define('COUNTER_LITERAL_ARTICLE', 'Article');
