@@ -112,14 +112,6 @@ class AdminHandler extends Handler {
         if (!$request) $request = Application::get()->getRequest();
         
         $this->setupTemplate(true);
-        // Param passed to custom setupTemplate? Original code passed $request? No, original signature is just $subclass.
-        // Wait, original custom code: setupTemplate($request, true).
-        // BUT Standard AdminHandler::setupTemplate only accepts $subclass.
-        // I will stick to standard signature usage unless custom override exists.
-        // Standard: setupTemplate($subclass = false)
-        // Original custom call passed $request as first arg... likely ignored or handled if overridden.
-        // I will use standard call:
-        // $this->setupTemplate(true); 
         
         import('classes.admin.form.AboutSiteForm');
         $form = new AboutSiteForm();
@@ -154,6 +146,13 @@ class AdminHandler extends Handler {
         // 2. Baca data POST berdasarkan kunci yang sudah ada di _data
         $form->readInputData(); 
         // AKHIR PERBAIKAN ALUR ---
+
+        // [BARU] Proses unggahan logo Penerbit SEBELUM validate(), supaya
+        // kalau gagal (format file tidak valid) bisa ditolak sekaligus
+        // lewat jalur error form biasa, bukan silent-fail terpisah.
+        if (!$form->uploadPublisherLogo()) { // Undefined method 'uploadPublisherLogo'.
+            $form->addError('publisherLogo', __('admin.siteSettings.error.logoUploadFailed'));
+        }
 
         if ($form->validate()) {
             $form->execute();

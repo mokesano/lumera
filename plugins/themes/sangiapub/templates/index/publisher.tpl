@@ -16,6 +16,18 @@
     {include file="common/header-parts/header-site.tpl"}
 {/strip}
 
+{* [BARU] Identitas resmi Penerbit -- logo, nama, tagline, motto, sumber
+   dari AboutSite (PublisherProfileService). Menggantikan asumsi hardcode
+   "Sangia" yang sebelumnya tersebar di teks statis halaman ini. *}
+<div style="text-align:center; padding:20px 0;">
+    {if $publisher.logoUrl}
+        <img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" style="max-height:90px; margin-bottom:10px;">
+    {/if}
+    <h1>{$publisher.name|escape}</h1>
+    {if $publisher.tagline}<p style="font-style:italic; color:#666;">{$publisher.tagline|escape}</p>{/if}
+    {if $publisher.motto}<p style="font-weight:600; color:{$publisher.colorPrimary|escape};">{$publisher.motto|escape}</p>{/if}
+</div>
+
 {** Kode Statistik jurnal secara global perlu perbaikan **}
 {** {include file="common/featured/site_stats.tpl"} **}
 

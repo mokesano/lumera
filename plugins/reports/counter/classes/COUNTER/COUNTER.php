@@ -79,7 +79,7 @@ namespace COUNTER {
 		 * @param object $object
 		 * @param string $className If no namespace specified, defaults to the COUNTER namespace
 		 * @return object
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		protected function validateOneOf($object, $className) {
 			if (strpos($className, '\\') === FALSE) {
@@ -119,7 +119,7 @@ namespace COUNTER {
 		 * @param object $objects
 		 * @param string $className
 		 * @return array
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		protected function validateOneOrMoreOf($objects, $className) {
 			if (is_array($objects)) {
@@ -137,7 +137,7 @@ namespace COUNTER {
 		 * @param object $objects
 		 * @param string $className
 		 * @return array
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		protected function validateZeroOrMoreOf($objects, $className) {
 			if (empty($objects)) {
@@ -152,7 +152,7 @@ namespace COUNTER {
 		 * @param object $object
 		 * @param string $className
 		 * @return object
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		protected function validateZeroOrOneOf($object, $className) {
 			if (empty($object)) {
@@ -166,7 +166,7 @@ namespace COUNTER {
 		 * Validate that $yr is an integer.  If valid, return the year, otherwise, throw an exception
 		 * @param int $int
 		 * @return int
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		protected function validatePositiveInteger($int) {
 			$intval = intval($int);
@@ -180,7 +180,7 @@ namespace COUNTER {
 		 * Validate that $string is string.  If valid, return the string, otherwise, throw an exception
 		 * @param string $string
 		 * @return string
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		protected function validateString($string) {
 			if (!is_string($string)) {
@@ -193,7 +193,7 @@ namespace COUNTER {
 		 * Validate that $array is an array of strings.  If valid, return the array, otherwise, throw an exception
 		 * @param array $array
 		 * @return array
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		protected function validateStrings($array) {
 			if (is_array($array)) {
@@ -226,11 +226,11 @@ namespace COUNTER {
 		 */
 		protected function buildMultiple($classname, $array) {
 			if (!is_array($array)) {
-				return array();
+				return [];
 			}else if (self::isAssociative($array)) {
 				return $classname::build($array);
 			} else {
-				$elements = array();
+				$elements = [];
 				foreach ($array as $element) {
 					$elements[] = $classname::build($element);
 				}
@@ -244,7 +244,7 @@ namespace COUNTER {
 		 * @todo verify addition of "Article" here for proposed release 4.2.
 		 */
 		protected function getItemDataTypes() {
-			return array('Journal', 'Database', 'Platform', 'Book', 'Collection', 'Multimedia', 'Article');
+			return ['Journal', 'Database', 'Platform', 'Book', 'Collection', 'Multimedia', 'Article'];
 		}
 
 		/**
@@ -252,7 +252,7 @@ namespace COUNTER {
 		 * @return array
 		 */
 		protected function getIdentifierTypes() {
-			return array('Online_ISSN', 'Print_ISSN', 'Online_ISBN', 'Print_ISBN', 'DOI', 'Proprietary');
+			return ['Online_ISSN', 'Print_ISSN', 'Online_ISBN', 'Print_ISBN', 'DOI', 'Proprietary'];
 		}
 
 		/**
@@ -260,7 +260,7 @@ namespace COUNTER {
 		 * @return array
 		 */
 		protected function getContributorIdentifierTypes() {
-			return array('ORCID', 'ISNI', 'Proprietary');
+			return ['ORCID', 'ISNI', 'Proprietary'];
 		}
 
 		/**
@@ -269,7 +269,7 @@ namespace COUNTER {
 		 * @todo these values are preliminary; need an update from COUNTER
 		 */
 		protected function getDateTypes() {
-			return array('PubDate', 'FirstAccessedOnline', 'Proprietary');
+			return ['PubDate', 'FirstAccessedOnline', 'Proprietary'];
 		}
 
 		/**
@@ -278,7 +278,7 @@ namespace COUNTER {
 		 * @todo these values are preliminary; need an update from COUNTER
 		 */
 		protected function getAttributeTypes() {
-			return array('ArticleVersion', 'ArticleType', 'QualificationName', 'QualificationLevel');
+			return ['ArticleVersion', 'ArticleType', 'QualificationName', 'QualificationLevel'];
 		}
 
 		/**
@@ -286,7 +286,7 @@ namespace COUNTER {
 		 * @return array
 		 */
 		protected function getMetricTypes() {
-			return array('abstract', 'audio', 'data_set', 'ft_epub', 'ft_html', 'ft_html_mobile', 'ft_pdf', 'ft_pdf_mobile', 'ft_ps', 'ft_ps_mobile', 'ft_total', 'image', 'multimedia', 'no_license', 'other', 'podcast', 'record_view', 'reference', 'result_click', 'search_fed', 'search_reg', 'sectioned_html', 'toc', 'turnaway', 'video');
+			return ['abstract', 'audio', 'data_set', 'ft_epub', 'ft_html', 'ft_html_mobile', 'ft_pdf', 'ft_pdf_mobile', 'ft_ps', 'ft_ps_mobile', 'ft_total', 'image', 'multimedia', 'no_license', 'other', 'podcast', 'record_view', 'reference', 'result_click', 'search_fed', 'search_reg', 'sectioned_html', 'toc', 'turnaway', 'video'];
 		}
 
 		/**
@@ -294,7 +294,7 @@ namespace COUNTER {
 		 * @return array
 		 */
 		protected function getCategories() {
-			return array('Requests', 'Searches', 'Access_denied');
+			return ['Requests', 'Searches', 'Access_denied'];
 		}
 
 		/**
@@ -311,17 +311,18 @@ namespace COUNTER {
 		/**
 		 * Do NOT Output this object as a DOMDocument
 		 * This method must be implemented in the subclass
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function asDOMDocument() {
-			throw new Exception(get_class($this).' does not implement asDOMDocument()');
+			throw new \Exception(get_class($this).' does not implement asDOMDocument()');
 		}
 		
 		/**
 		 * Do NOT build this object
 		 * This method must be implemented in the subclass
 		 * Subclasses should call this method if unable to build the object in order to report an error.
-		 * @throws Exception
+		 * @param array $array
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			throw new \Exception('Failed to build '.get_called_class().' from data '.var_export($array, true));
@@ -333,17 +334,17 @@ namespace COUNTER {
 	 * 
 	 */
 	class Reports extends ReportBuilder {
-		/* 
+		/** 
 		 * @var array one or more COUNTER\Report objects
 		 * @access private
 		 */
-		private $report = array();
+		private $report = [];
 
 		/**
 		 * Construct the object
 		 * @param array $reports COUNTER\Report array
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function __construct($reports) {
 			$this->report = $this->validateOneOrMoreOf($reports, 'Report');
@@ -352,8 +353,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -374,7 +375,7 @@ namespace COUNTER {
 		 * Add a report 
 		 * @param object $report CounterReport
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function addReport($report) {
 			$this->report[] = $this->validateOneOf($report, 'Report');
@@ -390,7 +391,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -409,37 +410,37 @@ namespace COUNTER {
 	 * COUNTER report instance class
 	 */
 	class Report extends ReportBuilder {
-		/* 
+		/** 
 		 * @var string Report attribute "Created"
 		 * @access private
 		 */
 		private $created;
-		/* 
+		/** 
 		 * @var string Report attribute "ID"
 		 * @access private
 		 */
 		private $id;
-		/* 
+		/** 
 		 * @var string Report attribute "Version"
 		 * @access private
 		 */
 		private $version;
-		/* 
+		/** 
 		 * @var string Report attribute "Name"
 		 * @access private
 		 */
 		private $name;
-		/* 
+		/** 
 		 * @var string Report attribute "Title"
 		 * @access private
 		 */
 		private $title;
-		/* 
-		 * @var COUNTER\Vendor
+		/** 
+		 * @var \COUNTER\Vendor
 		 * @access private
 		 */
 		private $vendor;
-		/* 
+		/** 
 		 * @var array one or more COUNTER\Customer objects
 		 * @access private
 		 */
@@ -455,10 +456,10 @@ namespace COUNTER {
 		 * @param object $vendor COUNTER\Vendor array
 		 * @param string $created optional
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function __construct($id, $version, $name, $title, $customers, $vendor, $created = '') {
-			foreach (array('id', 'version', 'name', 'title', 'created') as $arg) {
+			foreach (['id', 'version', 'name', 'title', 'created'] as $arg) {
 				$this->$arg = $this->validateString($$arg);
 			}
 			if (!$created) {
@@ -471,8 +472,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -495,7 +496,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -518,27 +519,27 @@ namespace COUNTER {
 	 * COUNTER vendor class
 	 */
 	class Vendor extends ReportBuilder {
-		/* 
+		/** 
 		 * @var string Vendor element "Name"
 		 * @access private
 		 */
 		private $name;
-		/* 
+		/** 
 		 * @var string Vendor element "ID"
 		 * @access private
 		 */
 		private $id;
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\Contact elements
 		 * @access private
 		 */
-		private $contact = array();
-		/* 
+		private $contact = [];
+		/** 
 		 * @var string Vendor element "WebSiteUrl"
 		 * @access private
 		 */
 		private $webSiteUrl;
-		/* 
+		/** 
 		 * @var string Vendor element "LogoUrl"
 		 * @access private
 		 */
@@ -552,10 +553,10 @@ namespace COUNTER {
 		 * @param string $webSiteUrl optional
 		 * @param string $logoUrl optional
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
-		public function __construct($id, $name = '', $contacts = array(), $webSiteUrl = '', $logoUrl = '') {
-			foreach (array('id', 'name', 'webSiteUrl', 'logoUrl') as $arg) {
+		public function __construct($id, $name = '', $contacts = [], $webSiteUrl = '', $logoUrl = '') {
+			foreach (['id', 'name', 'webSiteUrl', 'logoUrl'] as $arg) {
 				$this->$arg = $this->validateString($$arg);
 			}
 			$this->contact = $this->validateZeroOrMoreOf($contacts, 'Contact');
@@ -564,8 +565,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -586,7 +587,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -614,12 +615,12 @@ namespace COUNTER {
 	 * COUNTER contact class
 	 */
 	class Contact extends ReportBuilder {
-		/* 
+		/** 
 		 * @var string Contact element "Contact"
 		 * @access private
 		 */
 		private $contact;
-		/* 
+		/** 
 		 * @var string Contact element "Email"
 		 * @access private
 		 */
@@ -630,7 +631,7 @@ namespace COUNTER {
 		 * @param string $contact optional
 		 * @param string $email optional
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function __construct($contact = '', $email = '') {
 			foreach (array('contact', 'email') as $arg) {
@@ -641,8 +642,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -665,7 +666,7 @@ namespace COUNTER {
 					}
 				} elseif (count(array_keys($array)) == 1 && !parent::isAssociative($array)) {
 					// Loosely array with a name or email
-					if (filter_var($k, FILTER_VALIDATE_EMAIL)) {
+					if (filter_var($array[0], FILTER_VALIDATE_EMAIL)) {
 						// email
 						return new self('', $array[0]);
 					} else {
@@ -688,7 +689,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -707,42 +708,42 @@ namespace COUNTER {
 	 * COUNTER customer class
 	 */
 	class Customer extends ReportBuilder {
-		/* 
+		/** 
 		 * @var string Customer element "Name"
 		 * @access private
 		 */
 		private $name;
-		/* 
+		/** 
 		 * @var string Customer element "ID"
 		 * @access private
 		 */
 		private $id;
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\Contact elements
 		 * @access private
 		 */
 		private $contact;
-		/* 
+		/** 
 		 * @var string Customer element "WebSiteUrl"
 		 * @access private
 		 */
 		private $webSiteUrl;
-		/* 
+		/** 
 		 * @var string Customer element "LogoUrl"
 		 * @access private
 		 */
 		private $logoUrl;
-		/* 
-		 * @var string Customer element "Consortium"
+		/** 
+		 * @var \COUNTER\Consortium Customer element "Consortium"
 		 * @access private
 		 */
 		private $consortium;
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\Identifier elements
 		 * @access private
 		 */
 		private $institutionalIdentifier;
-		/* 
+		/** 
 		 * @var array one or more COUNTER\ReportItem elements
 		 * @access private
 		 */
@@ -759,10 +760,10 @@ namespace COUNTER {
 		 * @param object $consortium optional COUNTER\Consortium
 		 * @param array $institutionalIdentifier optional COUNTER\Identifier array
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
-		public function __construct($id, $reportItems, $name = '', $contacts = array(), $webSiteUrl = '' , $logoUrl = '', $consortium = NULL, $institutionalIdentifier = array()) {
-			foreach (array('id', 'name', 'webSiteUrl', 'logoUrl') as $arg) {
+		public function __construct($id, $reportItems, $name = '', $contacts = [], $webSiteUrl = '' , $logoUrl = '', $consortium = NULL, $institutionalIdentifier = []) {
+			foreach (['id', 'name', 'webSiteUrl', 'logoUrl'] as $arg) {
 				$this->$arg = $this->validateString($$arg);
 			}
 			$this->reportItems = $this->validateOneOrMoreOf($reportItems, 'ReportItems');
@@ -774,8 +775,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -801,7 +802,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -840,12 +841,12 @@ namespace COUNTER {
 	 * COUNTER consortium class
 	 */
 	class Consortium extends ReportBuilder {
-		/* 
+		/** 
 		 * @var string Consortium element "Code"
 		 * @access private
 		 */
 		private $code;
-		/* 
+		/** 
 		 * @var string Consortium element "WellKnownName"
 		 * @access private
 		 */
@@ -865,8 +866,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -891,7 +892,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -908,52 +909,52 @@ namespace COUNTER {
 	 * COUNTER report item class
 	 */
 	class ReportItems extends ReportBuilder {
-		/* 
-		 * @var COUNTER\ParentItem ReportItem element "ParentItem"
+		/** 
+		 * @var \COUNTER\ParentItem ReportItem element "ParentItem"
 		 * @access private
 		 */
 		private $parentItem;
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\Identifier elements
 		 * @access private
 		 */
 		private $itemIdentifier;
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\ItemContributor elements
 		 * @access private
 		 */
 		private $itemContributor;
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\ItemDate elements
 		 * @access private
 		 */
 		private $itemDate;
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\ItemAttribute elements
 		 * @access private
 		 */
 		private $itemAttribute;
-		/* 
+		/** 
 		 * @var string ReportItem element "ItemPlatform"
 		 * @access private
 		 */
 		private $itemPlatform;
-		/* 
+		/** 
 		 * @var string ReportItem element "ItemPublisher"
 		 * @access private
 		 */
 		private $itemPublisher;
-		/* 
+		/** 
 		 * @var string ReportItem element "ItemName"
 		 * @access private
 		 */
 		private $itemName;
-		/* 
-		 * @var COUNTER\ItemDataType ReportItem element "ItemData"
+		/** 
+		 * @var string ReportItem element "ItemData"
 		 * @access private
 		 */
 		private $itemDataType;
-		/* 
+		/** 
 		 * @var array one or more COUNTER\Metric elements
 		 * @access private
 		 */
@@ -972,10 +973,10 @@ namespace COUNTER {
 		 * @param array $itemAttributes optional COUNTER\ItemAttribute array
 		 * @param string $itemPublisher optional
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
-		public function __construct($itemPlatform, $itemName, $itemDataType, $itemPerformance, $parentItem = NULL, $itemIdentifiers = array(), $itemContributors = array(), $itemDates = array(), $itemAttributes = array(), $itemPublisher = '') {
-			foreach (array('itemPlatform', 'itemPublisher', 'itemName', 'itemDataType') as $arg) {
+		public function __construct($itemPlatform, $itemName, $itemDataType, $itemPerformance, $parentItem = NULL, $itemIdentifiers = [], $itemContributors = [], $itemDates = [], $itemAttributes = [], $itemPublisher = '') {
+			foreach (['itemPlatform', 'itemPublisher', 'itemName', 'itemDataType'] as $arg) {
 				$this->$arg = $this->validateString($$arg);
 			}
 			if (!in_array($itemDataType, $this->getItemDataTypes())) {
@@ -992,8 +993,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -1023,7 +1024,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -1056,7 +1057,7 @@ namespace COUNTER {
 				$root->appendChild($doc->createElement('ItemPublisher'))->appendChild($doc->createTextNode($this->itemPublisher));
 			}
 			$root->appendChild($doc->createElement('ItemName'))->appendChild($doc->createTextNode($this->itemName));
-			$root->appendChild($doc->createElement('ItemDataType'))->appendChild($doc->createTextNode($this->itemDataType));
+			$root->appendChild($doc->createElement('ItemDataType'))->appendChild($doc->createTextNode($this->itemDataType)); // Expected type 'string'. Found 'COUNTER\ItemData'.
 			foreach ($this->itemPerformance as $perf) {
 				$root->appendChild($doc->importNode($perf->asDOMDocument()->documentElement, true));
 			}
@@ -1068,38 +1069,38 @@ namespace COUNTER {
 	 * COUNTER parent item class
 	 */
 	class ParentItem extends ReportBuilder {
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\Identifier elements
 		 * @access private
 		 */
 		private $itemIdentifier;
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\ItemContributor elements
 		 * @access private
 		 */
 		private $itemContributor;
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\ItemDate elements
 		 * @access private
 		 */
 		private $itemDate;
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\ItemAttribute elements
 		 * @access private
 		 */
 		private $itemAttribute;
-		/* 
+		/** 
 		 * @var string ParentItem element "ItemPublisher"
 		 * @access private
 		 */
 		private $itemPublisher;
-		/* 
+		/** 
 		 * @var string ParentItem element "ItemName"
 		 * @access private
 		 */
 		private $itemName;
-		/* 
-		 * @var COUNTER\DataType ParentItem element "ItemDataType"
+		/** 
+		 * @var string ParentItem element "ItemDataType"
 		 * @access private
 		 */
 		private $itemDataType;
@@ -1114,14 +1115,14 @@ namespace COUNTER {
 		 * @param array $itemAttributes optional COUNTER\ItemAttribute array
 		 * @param string $itemPublisher optional
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
-		public function __construct($itemName, $itemDataType, $itemIdentifiers = array(), $itemContributors = array(), $itemDates = array(), $itemAttributes = array(), $itemPublisher = '') {
-			foreach (array('itemName', 'itemDataType', 'itemPublisher') as $arg) {
+		public function __construct($itemName, $itemDataType, $itemIdentifiers = [], $itemContributors = [], $itemDates = [], $itemAttributes = [], $itemPublisher = '') {
+			foreach (['itemName', 'itemDataType', 'itemPublisher'] as $arg) {
 				$this->$arg = $this->validateString($$arg);
 			}
 			if (!in_array($itemDataType, $this->getItemDataTypes())) {
-				throw new \Exception('Invalid type: '.$type);
+				throw new \Exception('Invalid type: '.$itemDataType);
 			}
 			$this->itemIdentifier = $this->validateZeroOrMoreOf($itemIdentifiers, 'Identifier');
 			$this->itemContributor = $this->validateZeroOrMoreOf($itemContributors, 'ItemContributor');
@@ -1132,8 +1133,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -1159,7 +1160,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -1188,7 +1189,7 @@ namespace COUNTER {
 				$root->appendChild($doc->createElement('ItemPublisher'))->appendChild($doc->createTextNode($this->itemPublisher));
 			}
 			$root->appendChild($doc->createElement('ItemName'))->appendChild($doc->createTextNode($this->itemName));
-			$root->appendChild($doc->createElement('ItemDataType'))->appendChild($doc->createTextNode($this->itemDataType));
+			$root->appendChild($doc->createElement('ItemDataType'))->appendChild($doc->createTextNode($this->itemDataType)); // Expected type 'string'. Found 'COUNTER\DataType'.
 			return $doc;
 		}
 	}
@@ -1197,23 +1198,23 @@ namespace COUNTER {
 	 * COUNTER item contributor class
 	 */
 	class ItemContributor extends ReportBuilder {
-		/* 
+		/** 
 		 * @var array zero or more COUNTER\ItemContributorID elements
 		 * @access private
 		 */
 		private $itemContributorId;
-		/* 
+		/** 
 		 * @var string ItemContributor element "Name"
 		 * @access private
 		 */
 		private $itemContributorName;
-		/* 
-		 * @var string ItemContributor element "Affiliation"
+		/** 
+		 * @var array ItemContributor element "Affiliation"
 		 * @access private
 		 */
 		private $itemContributorAffiliation;
-		/* 
-		 * @var string ItemContributor element "Role"
+		/** 
+		 * @var array ItemContributor element "Role"
 		 * @access private
 		 */
 		private $itemContributorRole;
@@ -1222,12 +1223,12 @@ namespace COUNTER {
 		 * Construct the object
 		 * @param array $itemContributorIds optional COUNTER\ContributorId array
 		 * @param string $itemContributorName optional 
-		 * @param array itemContributorAffiliations optional string array
-		 * @param array itemContributorRoles optional string array
+		 * @param array $itemContributorAffiliations optional string array
+		 * @param array $itemContributorRoles optional string array
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
-		public function __construct($itemContributorIds = array(), $itemContributorName = '', $itemContributorAffiliations = array(), $itemContributorRoles = array()) {
+		public function __construct($itemContributorIds = [], $itemContributorName = '', $itemContributorAffiliations = [], $itemContributorRoles = []) {
 			$this->itemContributorId = $this->validateZeroOrMoreOf($itemContributorIds, 'ItemContributorId');
 			$this->itemContributorName = $this->validateString($itemContributorName);
 			$this->itemContributorAffiliation = $this->validateStrings($itemContributorAffiliations);
@@ -1237,8 +1238,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -1258,7 +1259,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -1272,12 +1273,12 @@ namespace COUNTER {
 				$root->appendChild($doc->createElement('ItemContributorName'))->appendChild($doc->createTextNode($this->itemContributorName));
 			}
 			if ($this->itemContributorAffiliation) {
-				foreach ($this->itemContributorAffiliation as $affiliation) {
+				foreach ($this->itemContributorAffiliation as $affiliation) { // Expected type 'iterable|object'. Found 'string'.
 					$root->appendChild($doc->createElement('ItemContributorAffiliation', $affiliation));
 				}
 			}
 			if ($this->itemContributorRole) {
-				foreach ($this->itemContributorRole as $role) {
+				foreach ($this->itemContributorRole as $role) { // Expected type 'iterable|object'. Found 'string'.
 					$root->appendChild($doc->createElement('ItemContributorRole', $role));
 				}
 			}
@@ -1289,12 +1290,12 @@ namespace COUNTER {
 	 * COUNTER contributor id class
 	 */
 	class ItemContributorId extends ReportBuilder {
-		/* 
+		/** 
 		 * @var string ItemContributorID element "Type"
 		 * @access private
 		 */
 		private $type;
-		/* 
+		/** 
 		 * @var string ItemContributorID element "Value"
 		 * @access private
 		 */
@@ -1305,10 +1306,10 @@ namespace COUNTER {
 		 * @param string $type
 		 * @param string $value
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function __construct($type, $value) {
-			foreach (array('type', 'value') as $arg) {
+			foreach (['type', 'value'] as $arg) {
 				$this->$arg = $this->validateString($$arg);
 			}
 			if (!in_array($type, $this->getContributorIdentifierTypes())) {
@@ -1319,8 +1320,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -1339,7 +1340,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -1354,12 +1355,12 @@ namespace COUNTER {
 	 * COUNTER item identifier class
 	 */
 	class Identifier extends ReportBuilder {
-		/* 
+		/** 
 		 * @var string Identifier element "Type"
 		 * @access private
 		 */
 		private $type;
-		/* 
+		/** 
 		 * @var string Identifier element "Type"
 		 * @access private
 		 */
@@ -1370,10 +1371,10 @@ namespace COUNTER {
 		 * @param string $type
 		 * @param string $value
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function __construct($type, $value) {
-			foreach (array('type', 'value') as $arg) {
+			foreach (['type', 'value'] as $arg) {
 				$this->$arg = $this->validateString($$arg);
 			}
 			if (!in_array($type, $this->getIdentifierTypes())) {
@@ -1384,8 +1385,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -1404,7 +1405,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -1419,13 +1420,13 @@ namespace COUNTER {
 	 * COUNTER item date class
 	 */
 	class ItemDate extends ReportBuilder{
-		/* 
+		/** 
 		 * @var string ItemDate element "Type"
 		 * @access private
 		 */
 		private $type;
-		/* 
-		 * @var string ItemDate element "Value"
+		/** 
+		 * @var \DateTime ItemDate element "Value"
 		 * @access private
 		 */
 		private $value;
@@ -1435,7 +1436,7 @@ namespace COUNTER {
 		 * @param string $type
 		 * @param string $value
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function __construct($type, $value) {
 			$this->type = $this->validateString($type);
@@ -1448,8 +1449,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -1468,7 +1469,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -1483,12 +1484,12 @@ namespace COUNTER {
 	 * COUNTER item attribute class
 	 */
 	class ItemAttribute extends ReportBuilder {
-		/* 
+		/** 
 		 * @var string ItemAttribute element "Type"
 		 * @access private
 		 */
 		private $type;
-		/* 
+		/** 
 		 * @var string ItemAttribute element "Value"
 		 * @access private
 		 */
@@ -1499,7 +1500,7 @@ namespace COUNTER {
 		 * @param string $type
 		 * @param string $value
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function __construct($type, $value) {
 			foreach (array('type', 'value') as $arg) {
@@ -1513,8 +1514,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -1533,7 +1534,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -1548,32 +1549,32 @@ namespace COUNTER {
 	 * COUNTER performance counter class
 	 */
 	class Metric extends ReportBuilder {
-		/* 
+		/** 
 		 * @var int Metric element "PubYr"
 		 * @access private
 		 */
 		private $pubYr;
-		/* 
+		/** 
 		 * @var int Metric element "PubYrFrom"
 		 * @access private
 		 */
 		private $pubYrFrom;
-		/* 
+		/** 
 		 * @var int Metric element "PubYrTo"
 		 * @access private
 		 */
 		private $pubYrTo;
-		/* 
-		 * @var COUNTER\DateRange Metric element "Period"
+		/** 
+		 * @var \COUNTER\DateRange Metric element "Period"
 		 * @access private
 		 */
 		private $period;
-		/* 
-		 * @var COUNTER\Category Metric element "Category"
+		/** 
+		 * @var string Metric element "Category"
 		 * @access private
 		 */
 		private $category;
-		/* 
+		/** 
 		 * @var array one or more COUNTER\PerformanceCounter elements
 		 * @access private
 		 */
@@ -1582,13 +1583,13 @@ namespace COUNTER {
 		/**
 		 * Construct the object
 		 * @param array $period COUNTER\DateRange array
-		 * @param array $category COUNTER\Category array
+		 * @param string $category COUNTER\Category
 		 * @param array $instances COUNTER\PerformanceCounter array
-		 * @param int pubYrFrom optional 
-		 * @param int pubYrTo optional 
-		 * @param int pubYr optional 
+		 * @param int $pubYrFrom optional 
+		 * @param int $pubYrTo optional 
+		 * @param int $pubYr optional 
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function __construct($period, $category, $instances, $pubYrFrom = NULL, $pubYrTo = NULL, $pubYr = NULL) {
 			$this->period = $this->validateOneOf($period, 'DateRange');
@@ -1611,8 +1612,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -1634,7 +1635,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -1643,7 +1644,7 @@ namespace COUNTER {
 				$root->appendChild($doc->importNode($this->period->asDOMDocument()->documentElement, true));
 			}
 			if ($this->category) {
-				$root->appendChild($doc->createElement('Category'))->appendChild($doc->createTextNode($this->category));
+				$root->appendChild($doc->createElement('Category'))->appendChild($doc->createTextNode($this->category)); // Expected type 'string'. Found 'COUNTER\Category'.
 			}
 			foreach ($this->instance as $instance) {
 				$root->appendChild($doc->importNode($instance->asDOMDocument()->documentElement, true));
@@ -1665,12 +1666,12 @@ namespace COUNTER {
 	 * COUNTER date range class
 	 */
 	class DateRange extends ReportBuilder {
-		/* 
+		/** 
 		 * @var \DateTime DateRange element "Begin"
 		 * @access private
 		 */
 		private $begin;
-		/* 
+		/** 
 		 * @var \DateTime DateRange element "End"
 		 * @access private
 		 */
@@ -1678,10 +1679,10 @@ namespace COUNTER {
 
 		/**
 		 * Construct the object
-		 * @param DateTime $begin
-		 * @param DateTime $end
+		 * @param \DateTime $begin
+		 * @param \DateTime $end
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function __construct($begin, $end) {
 			$this->begin = $this->validateOneOf($begin, '\DateTime');
@@ -1691,8 +1692,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -1709,7 +1710,7 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
@@ -1724,12 +1725,12 @@ namespace COUNTER {
 	 * COUNTER performance counter class
 	 */
 	class PerformanceCounter extends ReportBuilder {
-		/* 
-		 * @var COUNTER\MetricType PerformanceCounter element "MetricType"
+		/** 
+		 * @var string PerformanceCounter element "MetricType"
 		 * @access private
 		 */
 		private $metricType;
-		/* 
+		/** 
 		 * @var int PerformanceCounter element "Count"
 		 * @access private
 		 */
@@ -1740,7 +1741,7 @@ namespace COUNTER {
 		 * @param string $metricType
 		 * @param integer $count
 		 * @return void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function __construct($metricType, $count) {
 			$this->metricType = $this->validateString($metricType);
@@ -1753,8 +1754,8 @@ namespace COUNTER {
 		/**
 		 * Construct the object from an array
 		 * @param array $array Hash of key-values
-		 * @return \self
-		 * @throws Exception
+		 * @return self
+		 * @throws \Exception
 		 */
 		public static function build($array) {
 			if (is_array($array)) {
@@ -1773,13 +1774,13 @@ namespace COUNTER {
 
 		/**
 		 * Output this object as a DOMDocument
-		 * @return DOMDocument
+		 * @return \DOMDocument
 		 */
 		public function asDOMDocument() {
 			$doc = new \DOMDocument();
 			$root = $doc->appendChild($doc->createElement('Instance'));
 			$root->appendChild($doc->createElement('MetricType'))->appendChild($doc->createTextNode($this->metricType));
-			$root->appendChild($doc->createElement('Count'))->appendChild($doc->createTextNode($this->count));
+			$root->appendChild($doc->createElement('Count'))->appendChild($doc->createTextNode((string) $this->count));
 			return $doc;
 		}
 	}

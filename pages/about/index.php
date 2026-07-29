@@ -13,16 +13,19 @@ declare(strict_types=1);
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @ingroup pages_about
- * @brief Handle requests for about the journal functions. 
- *
+ * @brief Handle requests for about the journal functions, DAN about the
+ * publisher/site functions -- dipisah tegas ke handler yang berbeda.
  */
 
 /** @var string $op */
 switch($op) {
+	//
+	// About JOURNAL -- konteks jurnal (AboutHandler)
+	//
 	case 'index':
 	case 'contact':
 	case 'editorial-team':
-	case 'leadership':
+	case 'leadership-journal': // Jika suatu saat perlu leadership level jurnal, beda dari level Penerbit
 	case 'displayMembership':
 	case 'display-membership':
 	case 'editorialTeamBio':
@@ -32,13 +35,25 @@ switch($op) {
 	case 'memberships':
 	case 'submissions':
 	case 'sponsorship':
-	case 'sitemap': // Tidak penting, redundant di SitemapHandler indexer
-	case 'history':
-	case 'aboutThisPublishingSystem': // Hanya diaktifkan sementara
+	case 'sitemap':
+	// case 'journal-history':
+	case 'aboutThisPublishingSystem':
 	case 'insights':
 	case 'statistics':
 		define('HANDLER_CLASS', 'AboutHandler');
 		import('pages.about.AboutHandler');
+		break;
+
+	//
+	// About PUBLISHER/SITE -- murni level root, TIDAK PERNAH bercabang jurnal
+	//
+	// case 'contact':
+	case 'mission':
+	case 'history':
+	case 'leadership':
+	case 'award':
+		define('HANDLER_CLASS', 'PublisherAboutHandler');
+		import('pages.about.PublisherAboutHandler');
 		break;
 }
 ?>

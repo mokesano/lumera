@@ -17,6 +17,7 @@
         body { font-family: helvetica, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 0; }
         
         .wi-header { display: flex; justify-content: space-between; border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 20px; }
+        .wi-publisher-logo { max-height: 35px; margin-bottom: 6px; }
         .wi-journal h2 { margin: 0; font-size: 13px; font-weight: bold; color: #1a4f8b; }
         .wi-journal p  { margin: 2px 0 0; font-size: 10px; color: #666; }
         .wi-title h1   { margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 2px; color: #222; text-align: right; }
@@ -70,9 +71,10 @@
         <tr>
             <td style="vertical-align: top;">
                 <div class="wi-journal">
-                    <h2>{if $journal}{$journal->getLocalizedTitle()|escape}{else}Sangia Research Media and Publishing{/if}</h2>
-                    <p>Owner PT. Sangia Research Media and Publishing</p>
-                    <p>Legal Dirjen AHU No. AHU-050003.AH.01.30.Tahun 2022.</p>
+                    {if $publisher.logoUrl}<img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" class="wi-publisher-logo"><br>{/if}
+                    <h2>{if $journal}{$journal->getLocalizedTitle()|escape}{else}{$publisher.name|escape}{/if}</h2>
+                    <p>{$publisher.legalEntity|escape}</p>
+                    {if $publisher.address}<p>{$publisher.address|nl2br}</p>{/if}
                 </div>
             </td>
             <td style="vertical-align: top; text-align: right;">
@@ -238,16 +240,18 @@
 
 <section>
     {* ===== QR CODE + NOTES (dua kolom) ===== *}
+    {* [FIX] Alamat/rekening yang tadinya hardcode "3273 0669 7 ... a.n.
+       Rochmady" diganti memakai identitas Penerbit yang sudah dikonfigurasi
+       via AboutSite -- kontak dukungan diambil dari $publisher, bukan
+       ditulis literal di template. *}
     <table width="100%" style="margin-top: 20px;">
         <tr>
             <td style="vertical-align: top; width: 70%;">
                 <div class="wi-notes-box">
-                    <strong>Manual Payment Instructions</strong><br><br>
-                    Pembayaran manual dapat dilakukan melalui Rekening:<br>
-                    Rekening Nomor: <strong>3273 0669 7</strong> (Bank BNI) a.n. Rochmady<br>
-                    Rekening Nomor: <strong>3419 0101 0494 506</strong> (Bank BRI) a.n. Rochmady<br><br>
-                    <em>Konfirmasi dan Bukti transfer dikirim ke: rochmady@sangia.org<br>
-                    Subjek email: {$wizdamInvoiceCode|escape}</em>
+                    <strong>{$publisher.name|escape}</strong><br>
+                    {if $publisher.address}{$publisher.address|nl2br}<br>{/if}
+                    <br>
+                    <em>Invoice Code Reference: {$wizdamInvoiceCode|escape}</em>
                 </div>
             </td>
             <td style="vertical-align: top; text-align: center; padding-left: 15px;">
@@ -270,7 +274,7 @@
 <footer>
     {* ===== FOOTER ===== *}
     <div class="wi-footer">
-        Document generated automatically by Sangia Frontedge &bull;
+        Document generated automatically by {$publisher.name|escape} &bull;
         {$wizdamInvoiceNumber|escape} &bull;
         This document is digitally signed and verified.
     </div>

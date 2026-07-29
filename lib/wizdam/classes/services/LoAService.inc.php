@@ -15,6 +15,8 @@ declare(strict_types=1);
  */
 
 import('lib.wizdam.classes.services.InvoiceService');
+import('lib.wizdam.classes.services.JournalManagerResolver');
+import('lib.wizdam.classes.services.PublisherProfileService');
 
 class LoAService {
     
@@ -57,6 +59,8 @@ class LoAService {
             $correspondingAuthor = $this->getSubmitterAsCorrespondingAuthor((int) $submission->getUserId());
         }
 
+        $journalId = (int) $submission->getJournalId();
+
         return [
             'status' => 'VERIFIED',
             'submissionId' => $submission->getId(),
@@ -71,7 +75,12 @@ class LoAService {
             'correspondingAuthorName' => $correspondingAuthor['fullName'] ?? '',
             'correspondingAuthorEmail' => $correspondingAuthor['email'] ?? '',
 
-            'journalTitle' => $this->getJournalTitle($submission->getJournalId())
+            // [BARU] Editor yang menangani naskah + Journal Manager penanda
+            // tangan -- tampil di LoA privat/publik/PDF bersama QR Code.
+            'editorNames' => $this->_getHandlingEditorNames($submissionId),
+            'managerNames' => (new JournalManagerResolver())->resolve($journalId)['names'],
+
+            'journalTitle' => $this->getJournalTitle($journalId)
         ];
     }
 
@@ -138,6 +147,30 @@ class LoAService {
     }
 
     /**
+     * [BARU] Mengambil nama editor yang menangani naskah ini (handling/section
+     * editor, BUKAN reviewer). Bisa lebih dari satu jika ada co-editor.
+     * @param int $submissionId
+     * @return string[]
+     */
+    private function _getHandlingEditorNames(int $submissionId): array {
+        /** @var EditAssignmentDAO $editAssignmentDao */
+        $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
+        /** @var UserDAO $userDao */
+        $userDao = DAORegistry::getDAO('UserDAO');
+
+        $assignments = $editAssignmentDao->getEditingSectionEditorAssignmentsByArticleId($submissionId);
+
+        $names = [];
+        while ($assignment = $assignments->next()) {
+            $editor = $userDao->getById((int) $assignment->getEditorId());
+            if ($editor) {
+                $names[] = $editor->getFullName();
+            }
+        }
+        return $names;
+    }
+
+    /**
      * Mendapatkan nama jurnal berdasarkan contextId.
      * @param int $journalId
      * @return string
@@ -147,7 +180,13 @@ class LoAService {
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($journalId);
 
-        return $journal ? $journal->getLocalizedSetting('name') : 'Sangia Frontedge Publisher';
+        if ($journal) {
+            return $journal->getLocalizedSetting('name');
+        }
+
+        // [FIX] Fallback sebelumnya hardcode "Sangia Frontedge Publisher" --
+        // diganti memakai identitas Penerbit yang sudah dikonfigurasi.
+        return (new PublisherProfileService())->getProfile()['name'];
     }
 
 }

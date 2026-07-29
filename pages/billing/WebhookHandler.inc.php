@@ -34,20 +34,24 @@ class WebhookHandler extends Handler {
 
     /**
      * Menangani request webhook yang masuk dari Payment Gateway.
-     * URL contoh: /billing/webhook/midtrans
+     * URL contoh: /billing/webhook/midtrans, /billing/webhook/xendit, /billing/webhook/paypal
+     * 
      * @param array $args
      * @param Request|null $request
      */
-    public function index(array $args = [], $request = null): void {
+    public function webhook(array $args = [], $request = null): void {
         $gatewayName = isset($args[0]) ? strtolower($args[0]) : '';
-        
-        $jsonPayload = file_get_contents('php://input');
-        $payload = json_decode((string) $jsonPayload, true);
 
-        // Validasi Payload JSON
-        if (!is_array($payload)) {
+        if ($gatewayName === 'paypal') {
+            $payload = $_POST;
+        } else {
+            $jsonPayload = file_get_contents('php://input');
+            $payload = json_decode((string) $jsonPayload, true);
+        }
+
+        if (!is_array($payload) || empty($payload)) {
             header("HTTP/1.1 400 Bad Request");
-            exit('Invalid JSON Payload');
+            exit('Invalid Payload');
         }
 
         $settingsService = new PaymentSettingsService();
@@ -66,18 +70,21 @@ class WebhookHandler extends Handler {
                 $settingsService->getXenditApiKey(),
                 $settingsService->getXenditWebhookToken()
             );
+        } elseif ($gatewayName === 'paypal') {
+            import('lib.wizdam.classes.payment.PayPalGateway');
+            $gateway = new PayPalGateway(
+                $settingsService->getPayPalSellerEmail(),
+                $settingsService->isProduction()
+            );
         } else {
             header("HTTP/1.1 404 Not Found");
             exit('Payment Gateway Not Supported');
         }
 
         try {
-            // 1. Suruh Gateway menerjemahkan bahasa bank & validasi Signature
             $result = $gateway->processWebhook($payload);
 
-            // [SECURITY SHIELD] Jika signature salah / payload dimanipulasi
             if (!$result) {
-                // Log IP dan gateway untuk audit keamanan server
                 $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'Unknown_IP';
                 error_log("WIZDAM SECURITY ALERT: Invalid Webhook Signature attempt at {$gatewayName} from IP {$ipAddress}.");
                 
@@ -85,35 +92,28 @@ class WebhookHandler extends Handler {
                 exit('Forbidden: Invalid Security Signature');
             }
 
-            // 2. Proses Berdasarkan Status Terstandar WIZDAM
             $invoiceId = (int) $result['invoiceId'];
             
             if ($result['status'] === 'PAID') {
-                // Eksekusi penandaan lunas. Fungsi markAsPaid() sudah memiliki perlindungan 
-                // idempotent di dalamnya (mengecek status sebelum update).
                 $success = $this->invoiceService->markAsPaid($invoiceId, $result['method']);
                 
                 if ($success) {
                     error_log("WIZDAM PAYMENT SUCCESS: Invoice #{$invoiceId} cleared via {$result['method']} ({$gatewayName})");
                 }
             } elseif ($result['status'] === 'CANCELLED') {
-                // Tangani tagihan Virtual Account/Qris yang kedaluwarsa atau dibatalkan oleh bank
                 if (method_exists($this->invoiceService, 'markAsCancelled')) {
                     $this->invoiceService->markAsCancelled($invoiceId);
                     error_log("WIZDAM PAYMENT CANCELLED: Invoice #{$invoiceId} expired/voided via {$gatewayName}");
                 }
             }
 
-            // 3. Sukses memproses tanpa ada error database. Balas 200 OK agar gateway berhenti melakukan retry.
             header("HTTP/1.1 200 OK");
             echo "OK";
             exit;
 
         } catch (\Throwable $e) {
-            // [FAIL-SAFE] Jika Database / Server WIZDAM Error, RAM penuh, atau query gagal.
             error_log("WIZDAM WEBHOOK CRITICAL ERROR: " . $e->getMessage());
             
-            // Wajib berikan 500 Server Error agar Midtrans/Xendit MENGIRIM ULANG webhook ini secara berkala (Retry Mechanism).
             header("HTTP/1.1 500 Internal Server Error");
             exit('Internal Server Error');
         }

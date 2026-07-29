@@ -12,10 +12,14 @@ declare(strict_types=1);
  * @ingroup admin_form
  *
  * @brief Form for site administrator to edit basic journal settings.
+ * Diperkaya: toggle Partnership Journal (paymentIndependent) dan pemilihan
+ * Journal Manager penanda tangan Sertifikat/LoA (certificateSignatoryUserId)
+ * -- keduanya WAJIB diatur Site Admin, bukan Journal Manager sendiri.
  */
 
 import('lib.pkp.classes.db.DBDataXMLParser');
 import('lib.pkp.classes.form.Form');
+import('lib.wizdam.classes.services.JournalManagerResolver');
 
 class JournalSiteSettingsForm extends Form {
 
@@ -77,6 +81,19 @@ class JournalSiteSettingsForm extends Form {
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('journalId', $this->journalId);
         $templateMgr->assign('helpTopicId', 'site.siteManagement');
+
+        // [BARU] Daftar Journal Manager jurnal ini, untuk pemilihan penanda
+        // tangan Sertifikat/LoA. HANYA relevan untuk jurnal yang sudah ada --
+        // jurnal baru belum punya Journal Manager sama sekali di titik ini.
+        if (isset($this->journalId)) {
+            $resolver = new JournalManagerResolver();
+            $candidates = $resolver->getCandidates($this->journalId);
+            $templateMgr->assign([
+                'certificateSignatoryCandidates' => $candidates,
+                'certificateSignatoryManagerCount' => count($candidates),
+            ]);
+        }
+
         parent::display($request, $template);
     }
 
@@ -94,7 +111,9 @@ class JournalSiteSettingsForm extends Form {
                     'description' => $journal->getSetting('description', null), // Localized
                     'journalPath' => $journal->getPath(),
                     'enabled' => $journal->getEnabled(),
-                    'showOnHomepage' => $journal->getSetting('showOnHomepage') !== null ? $journal->getSetting('showOnHomepage') : 1
+                    'showOnHomepage' => $journal->getSetting('showOnHomepage') !== null ? $journal->getSetting('showOnHomepage') : 1,
+                    'paymentIndependent' => $journal->getSetting('paymentIndependent') ?: 0,
+                    'certificateSignatoryUserId' => (int) $journal->getSetting('certificateSignatoryUserId'),
                 ];
             } else {
                 $this->journalId = null;
@@ -104,7 +123,9 @@ class JournalSiteSettingsForm extends Form {
         if (!isset($this->journalId)) {
             $this->_data = [
                 'enabled' => 1,
-                'showOnHomepage' => 1
+                'showOnHomepage' => 1,
+                'paymentIndependent' => 0,
+                'certificateSignatoryUserId' => 0,
             ];
         }
     }
@@ -113,9 +134,11 @@ class JournalSiteSettingsForm extends Form {
      * Assign form data to user-submitted data.
      */
     public function readInputData() {
-        $this->readUserVars(['title', 'description', 'journalPath', 'enabled', 'showOnHomepage']);
+        $this->readUserVars(['title', 'description', 'journalPath', 'enabled', 'showOnHomepage', 'paymentIndependent', 'certificateSignatoryUserId']);
         $this->setData('enabled', (int)$this->getData('enabled'));
         $this->setData('showOnHomepage', (int)$this->getData('showOnHomepage'));
+        $this->setData('paymentIndependent', (int)$this->getData('paymentIndependent'));
+        $this->setData('certificateSignatoryUserId', (int)$this->getData('certificateSignatoryUserId'));
 
         if (isset($this->journalId)) {
             /** @var JournalDAO $journalDao */
@@ -226,6 +249,19 @@ class JournalSiteSettingsForm extends Form {
         $journal->updateSetting('title', $this->getData('title'), 'string', true);
         $journal->updateSetting('description', $this->getData('description'), 'string', true);
         $journal->updateSetting('showOnHomepage', $this->getData('showOnHomepage') ? 1 : 0, 'int');
+        $journal->updateSetting('paymentIndependent', $this->getData('paymentIndependent') ? 1 : 0, 'int');
+
+        // [BARU] Simpan HANYA kalau pilihannya valid -- mencegah user_id sampah
+        // tersimpan (mis. dari manipulasi form) untuk jurnal yang sebenarnya
+        // tidak butuh pemilihan ini (<=2 manager).
+        $selectedSignatory = (int) $this->getData('certificateSignatoryUserId');
+        if ($selectedSignatory > 0 && $journal->getId() != null) {
+            $resolver = new JournalManagerResolver();
+            $validIds = array_column($resolver->getCandidates($journal->getId()), 'id');
+            if (in_array($selectedSignatory, $validIds, true)) {
+                $journal->updateSetting('certificateSignatoryUserId', $selectedSignatory, 'int');
+            }
+        }
 
         // Make sure all plugins are loaded for settings preload
         PluginRegistry::loadAllPlugins();
