@@ -173,6 +173,38 @@ class SubmissionFile extends PKPFile {
     }
 
     /**
+     * Get the genre ID of this submission file.
+     * @return int
+     */
+    public function getGenreId() {
+        return (int) $this->getData('genreId');
+    }
+
+    /**
+     * Set the genre ID of this submission file.
+     * @param int $genreId
+     */
+    public function setGenreId($genreId) {
+        $this->setData('genreId', (int) $genreId);
+    }
+
+    /**
+     * Get the association type of this submission file.
+     * @return int
+     */
+    public function getAssocType() {
+        return (int) $this->getData('assocType');
+    }
+
+    /**
+     * Set the association type of this submission file.
+     * @param int $assocType
+     */
+    public function setAssocType($assocType) {
+        $this->setData('assocType', (int) $assocType);
+    }
+
+    /**
      * Get file stage of the file.
      * @return int
      */
@@ -247,7 +279,7 @@ class SubmissionFile extends PKPFile {
      * @return boolean
      */
     public function isInlineable() {
-        /** @var SubmissionFileDAO $submissionFileDao */
+        /** @var SubmissionFileDAO $submissionFileDao */ // Documented type is not compatible with the inferred type.
         $submissionFileDao = DAORegistry::getDAO('SubmissionFileDAO');
         return $submissionFileDao->isInlineable($this);
     }

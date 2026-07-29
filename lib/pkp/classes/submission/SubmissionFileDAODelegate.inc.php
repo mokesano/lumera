@@ -21,29 +21,32 @@ import('lib.pkp.classes.db.DAO');
 class SubmissionFileDAODelegate extends DAO {
     
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function SubmissionFileDAODelegate() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::SubmissionFileDAODelegate(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
-
 
     //
     // Abstract public methods to be implemented by subclasses.
     //
+
     /**
-     * Return the name of the base submission entity
-     * (i.e. 'monograph', 'paper', 'article', etc.)
+     * Return the name of the base submission entity (i.e. 'monograph', 'paper', 'article', etc.).
      * @return string
      */
     public function getSubmissionEntityName() {
@@ -52,13 +55,10 @@ class SubmissionFileDAODelegate extends DAO {
 
     /**
      * Insert a new submission file.
-     * @param $submissionFile SubmissionFile
-     * @param $sourceFile string The place where the physical file
-     * resides right now or the file name in the case of an upload.
-     * The file will be copied to its canonical target location.
-     * @param $isUpload boolean set to true if the file has just been
-     * uploaded.
-     * @return SubmissionFile the inserted file
+     * @param SubmissionFile $submissionFile
+     * @param string $sourceFile
+     * @param bool $isUpload
+     * @return SubmissionFile
      */
     public function insertObject($submissionFile, $sourceFile, $isUpload = false) {
         assert(false);
@@ -66,11 +66,9 @@ class SubmissionFileDAODelegate extends DAO {
 
     /**
      * Update a submission file.
-     * @param $submissionFile SubmissionFile The target state
-     * of the updated file.
-     * @param $previousFile SubmissionFile The current state
-     * of the updated file.
-     * @return boolean
+     * @param SubmissionFile $submissionFile
+     * @param SubmissionFile $previousFile
+     * @return bool
      */
     public function updateObject($submissionFile, $previousFile) {
         assert(false);
@@ -78,8 +76,8 @@ class SubmissionFileDAODelegate extends DAO {
 
     /**
      * Delete a submission file from the database.
-     * @param $submissionFile SubmissionFile
-     * @return boolean
+     * @param SubmissionFile $submissionFile
+     * @return bool
      */
     public function deleteObject($submissionFile) {
         assert(false);
@@ -87,7 +85,7 @@ class SubmissionFileDAODelegate extends DAO {
 
     /**
      * Function to return a SubmissionFile object from a row.
-     * @param $row array
+     * @param array $row
      * @return SubmissionFile
      */
     public function fromRow($row) {
@@ -102,10 +100,10 @@ class SubmissionFileDAODelegate extends DAO {
         assert(false);
     }
 
-
     //
     // Protected helper methods
     //
+
     /**
      * Get the list of fields for which data is localized.
      * @return array
@@ -116,14 +114,18 @@ class SubmissionFileDAODelegate extends DAO {
 
     /**
      * Update the localized fields for this submission file.
-     * @param $submissionFile SubmissionFile
+     * @param SubmissionFile $submissionFile
+     * @return void
      */
     public function updateLocaleFields($submissionFile) {
-        // Update the locale fields.
-        $this->updateDataObjectSettings($this->getSubmissionEntityName().'_file_settings', $submissionFile, array(
-            'file_id' => $submissionFile->getFileId()
-        ));
+        $this->updateDataObjectSettings(
+            $this->getSubmissionEntityName() . '_file_settings',
+            $submissionFile,
+            [
+                'file_id' => (int) $submissionFile->getFileId()
+            ]
+        );
     }
-}
 
+}
 ?>
