@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Template should render an array, e.g. ["assets/style1.scss","assets/style2.scss"]
   const scssUrls = {$scssUrls|@json_encode};
 
   if (!Array.isArray(scssUrls) || scssUrls.length === 0) {
@@ -64,13 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   (async () => {
-    // If you want to dynamically load a Sass runtime, do it here.
-    // Example (uncomment and set correct URL if needed):
-    // if (typeof Sass === 'undefined') {
-    //   await loadScript('https://cdn.jsdelivr.net/npm/sass.js@0.11.1/dist/sass.sync.js');
-    // }
-
-    // Kick off all fetch+compile tasks concurrently
     const tasks = scssUrls.map(url => (
       compileScssUrl(url)
         .then(css => ({ url, css, ok: true }))
@@ -78,8 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ));
 
     const results = await Promise.all(tasks);
-
-    // Insert styles in original order; replace previous style tags if present
     for (const r of results) {
       if (!r.ok) {
         console.error(`SCSS compile failed for ${r.url}:`, r.error);
