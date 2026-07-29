@@ -23,13 +23,16 @@ define('STATISTICS_DIMENSION_SUBMISSION_ID', 'submission_id');
 define('STATISTICS_DIMENSION_ASSOC_TYPE', 'assoc_type');
 define('STATISTICS_DIMENSION_ASSOC_ID', 'assoc_id');
 define('STATISTICS_DIMENSION_FILE_TYPE', 'file_type');
+
 // 2) time dimension:
 define('STATISTICS_DIMENSION_MONTH', 'month');
 define('STATISTICS_DIMENSION_DAY', 'day');
+
 // 3) geography dimension:
 define('STATISTICS_DIMENSION_COUNTRY', 'country_id');
 define('STATISTICS_DIMENSION_REGION', 'region');
 define('STATISTICS_DIMENSION_CITY', 'city');
+
 // 4) metric type dimension (non-additive!):
 define('STATISTICS_DIMENSION_METRIC_TYPE', 'metric_type');
 
@@ -60,10 +63,8 @@ class StatisticsHelper {
     //
     // Static methods.
     //
-    
     /**
-     * Check whether the filter filters on a journal
-     * and if so: retrieve it.
+     * Check whether the filter filters on a journal and if so: retrieve it.
      * @param array $filter
      * @return Journal|null
      */
@@ -84,14 +85,13 @@ class StatisticsHelper {
     /**
      * Identify and canonicalize the filtered metric type.
      * @param string|array|null $metricType
-     * @param Journal|null $journal (Passed by value in modernized code)
+     * @param Journal|null $journal
      * @param string $defaultSiteMetricType
      * @param array $siteMetricTypes
-     * @return array|null The canonicalized metric type array. Null if an error occurred.
+     * @return array|null
      */
     public static function canonicalizeMetricTypes($metricType, $journal, $defaultSiteMetricType, $siteMetricTypes) {
-        // Metric type is null: Return the default metric for
-        // the filtered context.
+        // Metric type is null: Return the default metric for the filtered context.
         if (is_null($metricType)) {
             if (is_a($journal, 'Journal')) {
                 $metricType = $journal->getDefaultMetricType();
@@ -104,7 +104,7 @@ class StatisticsHelper {
         if (!is_null($metricType)) {
             if (is_scalar($metricType) && $metricType !== '*') {
                 // Metric type is a scalar value: Select a single metric.
-                $metricType = array($metricType);
+                $metricType = [$metricType];
 
             } elseif ($metricType === '*') {
                 // Metric type is '*': Select all available metrics.
@@ -115,8 +115,7 @@ class StatisticsHelper {
                 }
 
             } else {
-                // Only arrays are otherwise supported as metric type
-                // specification.
+                // Only arrays are otherwise supported as metric type specification.
                 if (!is_array($metricType)) $metricType = null;
 
                 // Metric type is an array: Select multiple metrics.
@@ -141,11 +140,11 @@ class StatisticsHelper {
         }
 
         if (is_scalar($metricType)) {
-            $metricType = array($metricType);
+            $metricType = [$metricType];
         }
 
         foreach ($reportPlugins as $reportPlugin) {
-            /* @var $reportPlugin ReportPlugin */
+            /** @var ReportPlugin $reportPlugin */
             $pluginMetricTypes = $reportPlugin->getMetricTypes();
             $metricTypeMatches = array_intersect($pluginMetricTypes, $metricType);
             if (!empty($metricTypeMatches)) {
@@ -158,16 +157,15 @@ class StatisticsHelper {
     }
 
     /**
-     * Get metric type display strings implemented by all
-     * available report plugins.
-     * @return array Metric type as index and the display string as values.
+     * Get metric type display strings implemented by all available report plugins.
+     * @return array
      */
     public static function getAllMetricTypeStrings() {
-        $allMetricTypes = array();
+        $allMetricTypes = [];
         $reportPlugins = PluginRegistry::loadCategory('reports', true, CONTEXT_SITE);
         if (is_array($reportPlugins)) {
             foreach ($reportPlugins as $reportPlugin) {
-                /* @var $reportPlugin ReportPlugin */
+                /** @var ReportPlugin $reportPlugin */
                 $reportMetricTypes = $reportPlugin->getMetricTypes();
                 foreach ($reportMetricTypes as $metricType) {
                     $allMetricTypes[$metricType] = $reportPlugin->getMetricDisplayType($metricType);
@@ -184,7 +182,7 @@ class StatisticsHelper {
      * @return array|string|null
      */
     public static function getColumnNames($column = null) {
-        $columns = array(
+        $columns = [
             STATISTICS_DIMENSION_ASSOC_ID => __('common.id'),
             STATISTICS_DIMENSION_ASSOC_TYPE => __('common.type'),
             STATISTICS_DIMENSION_SUBMISSION_ID => __('article.article'),
@@ -198,7 +196,7 @@ class StatisticsHelper {
             STATISTICS_DIMENSION_FILE_TYPE => __('common.fileType'),
             STATISTICS_DIMENSION_METRIC_TYPE => __('common.metric'),
             STATISTICS_METRIC => __('common.count')
-        );
+        ];
 
         if ($column) {
             if (isset($columns[$column])) {
@@ -217,13 +215,13 @@ class StatisticsHelper {
      * @return mixed string or array
      */
     public static function getObjectTypeString($assocType = null) {
-        $objectTypeStrings = array(
+        $objectTypeStrings = [
             ASSOC_TYPE_JOURNAL => __('journal.journal'),
             ASSOC_TYPE_ISSUE => __('issue.issue'),
             ASSOC_TYPE_ISSUE_GALLEY => __('editor.issues.galley'),
             ASSOC_TYPE_ARTICLE => __('article.article'),
             ASSOC_TYPE_GALLEY => __('submission.galley')
-        );
+        ];
 
         if (is_null($assocType)) {
             return $objectTypeStrings;
@@ -243,11 +241,11 @@ class StatisticsHelper {
      * @return mixed string or array
      */
     public static function getFileTypeString($fileType = null) {
-        $fileTypeStrings = array(
+        $fileTypeStrings = [
             STATISTICS_FILE_TYPE_PDF => 'PDF',
             STATISTICS_FILE_TYPE_HTML => 'HTML',
             STATISTICS_FILE_TYPE_OTHER => __('common.other')
-        );
+        ];
 
         if (is_null($fileType)) {
             return $fileTypeStrings;
@@ -264,19 +262,19 @@ class StatisticsHelper {
     /**
      * Get an url that requests a statiscs report.
      * @param PKPRequest $request
-     * @param string $metricType Report metric type.
-     * @param array $columns Report columns
-     * @param array $filter Report filters.
-     * @param array $orderBy (optional) Report order by values.
+     * @param string $metricType
+     * @param array $columns
+     * @param array $filter
+     * @param array $orderBy
      * @return string
      */
-    public static function getReportUrl($request, $metricType, $columns, $filter, $orderBy = array()) {
-        $dispatcher = $request->getDispatcher(); /* @var $dispatcher Dispatcher */
-        $args = array(
+    public static function getReportUrl($request, $metricType, $columns, $filter, $orderBy = []) {
+        $dispatcher = $request->getDispatcher(); /** @var Dispatcher $dispatcher */
+        $args = [
             'metricType' => $metricType,
             'columns' => $columns,
             'filters' => serialize($filter)
-        );
+        ];
 
         if (!empty($orderBy)) {
             $args['orderBy'] = serialize($orderBy);
@@ -291,11 +289,12 @@ class StatisticsHelper {
      */
     public static function getGeoLocationTool() {
         $geoLocationTool = null;
-        $plugin = PluginRegistry::getPlugin('generic', 'usagestatsplugin'); /* @var $plugin UsageStatsPlugin */
+        $plugin = PluginRegistry::getPlugin('generic', 'usagestatsplugin'); /** @var UsageStatsPlugin $plugin */
         if (is_object($plugin) && is_a($plugin, 'UsageStatsPlugin')) {
             $geoLocationTool = $plugin->getGeoLocationTool();
         }
         return $geoLocationTool;
     }
+
 }
 ?>

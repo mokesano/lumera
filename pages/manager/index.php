@@ -213,6 +213,14 @@ switch ($op) {
 		import('pages.manager.ManagerPaymentHandler');
 		break;
 	//
+	// [BARU] Certificate Signatory Settings
+	//
+	case 'certificateSettings':
+	case 'saveCertificateSettings':
+		define('HANDLER_CLASS', 'CertificateSettingsHandler');
+		import('pages.manager.CertificateSettingsHandler');
+		break;
+	//
 	//	Announcements
 	//
 	case 'announcements':

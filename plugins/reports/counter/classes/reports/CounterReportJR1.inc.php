@@ -9,7 +9,8 @@ declare(strict_types=1);
  *
  * @class CounterReportJR1
  * @ingroup plugins_reports_counter
- * * @brief Journal Report 1
+ * 
+ * @brief Journal Report 1
  */
 
 import('plugins.reports.counter.classes.CounterReport');
@@ -28,6 +29,8 @@ class CounterReportJR1 extends CounterReport {
 
     /**
      * [SHIM] Backward Compatibility
+     * @param string $parentPluginCategory
+     * @param string $parentPluginName
      */
     public function CounterReportJR1($parentPluginCategory, $parentPluginName) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -44,11 +47,11 @@ class CounterReportJR1 extends CounterReport {
      * Get the report title
      * @return string
      */
-    public function getTitle() {
+    public function getTitle(): string {
         return __('plugins.reports.counter.jr1.title');
     }
 
-    /*
+    /**
      * Convert an OJS metrics request to COUNTER ReportItems
      * @param string|array $columns column (aggregation level) selection
      * @param array $filters report-level filter selection
@@ -58,7 +61,7 @@ class CounterReportJR1 extends CounterReport {
      * @return array COUNTER\ReportItem array
      */
     public function getReportItems($columns = [], $filters = [], $orderBy = [], $range = null) {
-        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /* @var $metricsDao MetricsDAO */
+        $metricsDao = DAORegistry::getDAO('MetricsDAO'); /** @var MetricsDAO $metricsDao */
         
         // Columns are fixed for this report
         $defaultColumns = [STATISTICS_DIMENSION_MONTH, STATISTICS_DIMENSION_FILE_TYPE, STATISTICS_DIMENSION_CONTEXT_ID];
@@ -155,7 +158,7 @@ class CounterReportJR1 extends CounterReport {
      * @return mixed COUNTER\ReportItems or false
      */
     private function _createReportItem($journalId, $metrics) {
-        $journalDao = DAORegistry::getDAO('JournalDAO'); /* @var $journalDao JournalDAO */
+        $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
         $journal = $journalDao->getById($journalId);
         if (!$journal) {
             return false;
@@ -176,7 +179,7 @@ class CounterReportJR1 extends CounterReport {
         try {
             $reportItem = new COUNTER\ReportItems(__('common.openJournalSystems'), $journalName, COUNTER_LITERAL_JOURNAL, $metrics, NULL, $journalPubIds);
         } catch (Exception $e) {
-            $this->setError($e, COUNTER_EXCEPTION_ERROR | COUNTER_EXCEPTION_INTERNAL);
+            $this->setError($e);
         }
         return $reportItem;
     }

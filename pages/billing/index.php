@@ -22,11 +22,11 @@ switch ($op) {
     case 'history':   // Arsip Tagihan (PAID/VOID/EXPIRED)
     case 'invoice':   // Smart Router (HTML & PDF Download) dengan Validasi Hash
     case 'pay':       // Proses Pembayaran ke Payment Gateway
+    case 'confirmManual': // [BARU] Konfirmasi niat bayar Manual
     case 'cancel':    // Pembatalan Tagihan
         define('HANDLER_CLASS', 'BillingHandler');
         import('pages.billing.BillingHandler');
         break;
-
     // 
     // [WIZDAM CORE LOGIC] Payment Gateway Integration
     // 

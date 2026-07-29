@@ -17,6 +17,7 @@ declare(strict_types=1);
 require_once(Core::getBaseDir() . '/lib/wizdam/library/autoload.php');
 import('lib.wizdam.classes.invoice.Invoice');
 import('lib.wizdam.classes.security.DigitalSignatureService');
+import('lib.wizdam.classes.services.PublisherProfileService');
 
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
@@ -65,6 +66,9 @@ class PdfService {
         // Tambahkan variabel tambahan yang dibutuhkan template PDF
         $flatData['qrCodeBase64']   = $qrCodeBase64;
         $flatData['wizdamSignedBy'] = 'Wizdam Frontedge System';
+
+        // [BARU] Identitas resmi Penerbit -- menggantikan hardcode di template.
+        $flatData['publisher'] = (new PublisherProfileService())->getProfile();
 
         $request     = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
@@ -128,6 +132,8 @@ class PdfService {
         $templateMgr->assign([
             'loaData'      => $loaData,
             'qrCodeBase64' => $qrCodeBase64,
+            // [BARU] Identitas resmi Penerbit -- untuk letterhead logo/warna.
+            'publisher'    => (new PublisherProfileService())->getProfile(),
         ]);
 
         $html = $templateMgr->fetch('document/loa/LoAPdf.tpl');
@@ -172,7 +178,12 @@ class PdfService {
     public function generateCertificatePdf(array $certData, string $qrCodeBase64): void {
         $request     = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
-        $templateMgr->assign(['certData' => $certData, 'qrCodeBase64' => $qrCodeBase64]);
+        $templateMgr->assign([
+            'certData' => $certData,
+            'qrCodeBase64' => $qrCodeBase64,
+            // [BARU] Identitas resmi Penerbit -- untuk letterhead logo/warna.
+            'publisher' => (new PublisherProfileService())->getProfile(),
+        ]);
 
         $this->mpdf->AddPage('L');
         $html = $templateMgr->fetch('document/certificate/certificatePdf.tpl');
