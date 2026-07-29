@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 import('classes.handler.Handler');
 import('lib.wizdam.statistics.WizdamStats');
+import('lib.wizdam.classes.services.PublisherProfileService');
 
 class IndexHandler extends Handler {
     
@@ -285,6 +286,10 @@ class IndexHandler extends Handler {
         $templateMgr->assign([
             'sitePrincipalContactEmail' => (string) $site->getLocalizedData('contactEmail')
         ]);
+
+        // [BARU] Identitas resmi Penerbit -- logo, nama, motto, tagline,
+        // warna brand. Menggantikan hardcode "Sangia..." di publisher.tpl.
+        $templateMgr->assign('publisher', (new PublisherProfileService())->getProfile());
         
         // [LUMERA] Most Popular ---
         import('lib.wizdam.trends.WizdamTrendsManager');

@@ -10,8 +10,11 @@ declare(strict_types=1);
  * 
  * @class CertificateService
  * 
- * @brief Layanan penyedia data untuk penerbitan Sertifikat (Reviewer, Author, dll).
+ * @brief Layanan penyedia data untuk penerbitan Sertifikat (Reviewer, Editor).
+ * TIDAK untuk Author -- Author memakai LoA (LoAService).
  */
+
+import('lib.wizdam.classes.services.JournalManagerResolver');
 
 class CertificateService {
 
@@ -46,6 +49,10 @@ class CertificateService {
         $journal = $journalDao->getById($article->getJournalId());
         $reviewer = $userDao->getById($reviewAssignment->getReviewerId());
 
+        // [BARU] Nama Journal Manager penanda tangan -- lihat aturan
+        // 1/2/>2 manager di JournalManagerResolver.
+        $signatory = (new JournalManagerResolver())->resolve((int) $journal->getId());
+
         return [
             'type' => 'REVIEWER_CERTIFICATE',
             'reviewId' => $reviewId,
@@ -55,8 +62,65 @@ class CertificateService {
             'articleTitle' => $article->getLocalizedTitle(),
             'journalTitle' => $journal->getLocalizedTitle(),
             'dateCompleted' => $reviewAssignment->getDateCompleted(),
+            'signatoryNames' => $signatory['names'],
             // Nomor Sertifikat (Bisa di-generate kustom, ini contoh format dinamis)
             'certificateNumber' => 'CERT-REV-' . date('Y', strtotime($reviewAssignment->getDateCompleted())) . '-' . str_pad((string)$reviewId, 5, '0', STR_PAD_LEFT)
+        ];
+    }
+
+    /**
+     * Mengambil data lengkap Sertifikat Editor berdasarkan ID Penugasan Edit.
+     * Catatan: edit_assignments tidak punya kolom "selesai" seperti
+     * review_assignments (getDateCompleted()) -- di sini dipakai date_notified
+     * sebagai syarat minimal keterlibatan aktif yang sudah tercatat resmi.
+     * @param int $editId
+     * @return array
+     * @throws \Exception
+     */
+    public function getEditorCertificateData(int $editId): array {
+        /** @var EditAssignmentDAO $editAssignmentDao */
+        $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
+        /** @var ArticleDAO $articleDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO');
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
+        /** @var UserDAO $userDao */
+        $userDao = DAORegistry::getDAO('UserDAO');
+
+        $editAssignment = $editAssignmentDao->getEditAssignment($editId);
+
+        if (!$editAssignment) {
+            throw new \Exception('NOT_FOUND');
+        }
+
+        if (!$editAssignment->getDateNotified()) {
+            throw new \Exception('INCOMPLETE_ASSIGNMENT');
+        }
+
+        $article = $articleDao->getArticle($editAssignment->getArticleId());
+        if (!$article) {
+            throw new \Exception('NOT_FOUND');
+        }
+
+        $journal = $journalDao->getById($article->getJournalId());
+        $editor = $userDao->getById($editAssignment->getEditorId());
+
+        $dateRef = $editAssignment->getDateAssigned() ?: $editAssignment->getDateNotified();
+
+        // [BARU] Nama Journal Manager penanda tangan.
+        $signatory = (new JournalManagerResolver())->resolve((int) $journal->getId());
+
+        return [
+            'type' => 'EDITOR_CERTIFICATE',
+            'editId' => $editId,
+            'submissionId' => $article->getId(),
+            'editorName' => $editor->getFullName(),
+            'editorAffiliation' => $editor->getLocalizedAffiliation(),
+            'articleTitle' => $article->getLocalizedTitle(),
+            'journalTitle' => $journal->getLocalizedTitle(),
+            'dateAssigned' => $dateRef,
+            'signatoryNames' => $signatory['names'],
+            'certificateNumber' => 'CERT-EDT-' . date('Y', strtotime($dateRef)) . '-' . str_pad((string) $editId, 5, '0', STR_PAD_LEFT),
         ];
     }
     

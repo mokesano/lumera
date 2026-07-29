@@ -18,6 +18,20 @@
     <message key="admin.siteSettings.publisherHistory">Sejarah</message>
     <message key="admin.siteSettings.publisherLeaderships">Kepemimpinan</message>
     <message key="admin.siteSettings.publisherAwards">Penghargaan</message>
+	<message key="admin.siteSettings.publisherName">Nama Penerbit</message>
+	<message key="admin.siteSettings.publisherLegalEntity">Legalitas Hukum</message>
+	<message key="admin.siteSettings.publisherLegalEntity.description">Nama badan hukum resmi dan nomor legalitas (contoh: bentuk badan usaha, nomor SK pendirian).</message>
+	<message key="admin.siteSettings.publisherAddress">Alamat Penerbit</message>
+	<message key="admin.siteSettings.publisherLogo">Logo Penerbit</message>
+	<message key="admin.siteSettings.publisherLogo.description">Disarankan: PNG transparan, lebar minimal 300px.</message>
+	<message key="admin.siteSettings.publisherColors">Warna Brand</message>
+	<message key="admin.siteSettings.publisherColorPrimary">Primer</message>
+	<message key="admin.siteSettings.publisherColorSecondary">Sekunder</message>
+	<message key="admin.siteSettings.publisherMotto">Motto</message>
+	<message key="admin.siteSettings.publisherTagline">Tagline</message>
+	<message key="admin.siteSettings.error.invalidColor">Masukkan kode warna hex yang valid (contoh: #1A4F8B).</message>
+	<message key="admin.siteSettings.error.logoUploadFailed">File logo yang diunggah bukan gambar yang valid. Silakan coba file lain.</message>
+
 	<message key="admin.hostedJournals">Host Jurnal</message>
 
 	<!-- Settings -->

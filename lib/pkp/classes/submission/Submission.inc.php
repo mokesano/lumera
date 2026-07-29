@@ -68,6 +68,9 @@ class Submission extends DataObject {
                 continue;
             }
             $value = $this->getData($key, $locale);
+            if (is_array($value)) {
+                continue;
+            }
             if ($value !== null && $value !== '') {
                 return $value;
             }
@@ -275,8 +278,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getAbstract($locale) {
-        $abstract = $this->getData('abstract', $locale);
-        return is_array($abstract) ? '' : (string) $abstract;
+        return $this->getData('abstract', $locale);
     }
 
     /**
@@ -354,8 +356,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getSubject($locale) {
-        $subject = $this->getData('subject', $locale);
-        return is_array($subject) ? '' : (string) $subject;
+        return $this->getData('subject', $locale);
     }
 
     /**

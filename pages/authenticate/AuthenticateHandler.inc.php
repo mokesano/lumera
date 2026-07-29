@@ -20,6 +20,7 @@ import('classes.handler.Handler');
 import('lib.wizdam.classes.services.LoAService');
 import('lib.wizdam.classes.services.InvoiceService');
 import('lib.wizdam.classes.services.CertificateService'); // Layanan sertifikat
+import('lib.wizdam.classes.services.PublisherProfileService');
 import('lib.wizdam.classes.security.SecurityHashService');
 
 class AuthenticateHandler extends Handler {
@@ -107,6 +108,8 @@ class AuthenticateHandler extends Handler {
         $templateMgr->assign([
             'loaData' => $loaData,
             'isVerified' => true,
+            // [BARU] Identitas resmi Penerbit -- untuk letterhead logo/warna.
+            'publisher' => (new PublisherProfileService())->getProfile(),
             'pageTitle' => 'authenticate.loa.verifiedTitle'
         ]);
         
@@ -149,6 +152,8 @@ class AuthenticateHandler extends Handler {
         $templateMgr->assign([
             'invoice' => $invoice,
             'isVerified' => true,
+            // [BARU] Identitas resmi Penerbit -- untuk letterhead logo/warna.
+            'publisher' => (new PublisherProfileService())->getProfile(),
             'pageTitle' => 'authenticate.invoice.verifiedTitle'
         ]);
         
@@ -156,9 +161,10 @@ class AuthenticateHandler extends Handler {
     }
 
     /**
-     * Endpoint untuk memverifikasi keabsahan Sertifikat (Reviewer/Author)
-     * URL Contoh: /authenticate/certificate/[hash]-[reviewId]
-     * @param array $args
+     * Endpoint untuk memverifikasi keabsahan Sertifikat (Reviewer/Editor)
+     * URL Contoh: /authenticate/certificate/reviewer/[hash]-[reviewId]
+     *             /authenticate/certificate/editor/[hash]-[editId]
+     * @param array $args [0] = tipe ('reviewer'|'editor'), [1] = param keamanan
      * @param Request|null $request
      */
     public function certificate(array $args, $request = null): void {
@@ -166,30 +172,36 @@ class AuthenticateHandler extends Handler {
         $this->setupTemplate($request);
         $templateMgr = TemplateManager::getManager($request);
 
-        // 1. Ekstraksi dan Validasi Hash
-        $param = $args[0] ?? '';
-        if (strlen($param) <= 65 || $param[64] !== '-') {
+        $type = strtolower((string) ($args[0] ?? ''));
+        if (!in_array($type, ['reviewer', 'editor'], true)) {
+            $this->_renderPublicError($templateMgr, 'authenticate.error.malformedUrl');
+            return;
+        }
+
+        $param = $args[1] ?? '';
+        if (strlen($param) <= 65 || ($param[64] ?? '') !== '-') {
             $this->_renderPublicError($templateMgr, 'authenticate.error.malformedUrl');
             return;
         }
 
         $providedHash = substr($param, 0, 64);
-        $reviewId = (int) substr($param, 65);
+        $id = (int) substr($param, 65);
+        $hashScope = $type === 'editor' ? 'certificate_editor' : 'certificate';
 
-        // 2. Verifikasi Kriptografi URL
-        if (!$this->securityHashService->validateHash('certificate', $reviewId, $providedHash)) {
+        if (!$this->securityHashService->validateHash($hashScope, $id, $providedHash)) {
             $this->_renderPublicError($templateMgr, 'authenticate.error.hashValidationFailed');
             return;
         }
 
-        // 3. Proses Logika Sertifikat
         $certService = new CertificateService();
         
         try {
-            $certData = $certService->getReviewerCertificateData($reviewId);
+            $certData = $type === 'reviewer'
+                ? $certService->getReviewerCertificateData($id)
+                : $certService->getEditorCertificateData($id);
         } catch (\Exception $e) {
-            // Tangkap error secara spesifik dari Service
-            if ($e->getMessage() === 'INCOMPLETE_REVIEW') {
+            $msg = $e->getMessage();
+            if ($msg === 'INCOMPLETE_REVIEW' || $msg === 'INCOMPLETE_ASSIGNMENT') {
                 $this->_renderPublicError($templateMgr, 'authenticate.cert.incompleteReview');
             } else {
                 $this->_renderPublicError($templateMgr, 'document.cert.notFound');
@@ -197,10 +209,11 @@ class AuthenticateHandler extends Handler {
             return;
         }
 
-        // 4. Render Halaman Publik
         $templateMgr->assign([
             'certData' => $certData,
             'isVerified' => true,
+            // [BARU] Identitas resmi Penerbit -- untuk letterhead logo/warna.
+            'publisher' => (new PublisherProfileService())->getProfile(),
             'pageTitle' => 'authenticate.cert.verifiedTitle'
         ]);
         

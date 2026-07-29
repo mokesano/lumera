@@ -63,8 +63,8 @@ class MetricsDAO extends DAO {
      * @return string
      */
     private function _getSemanticCachePath(array $filters, string $requestHash): string {
-        // Lokasi folder tunggal (Flat Storage)
-        $baseDir = 'cache/t_cache';
+        import('lib.pkp.classes.cache.CacheManager');
+        $baseDir = CacheManager::getFileCachePath() . DIRECTORY_SEPARATOR . 't_cache';
         if (!is_dir($baseDir)) {
             @mkdir($baseDir, 0755, true);
         }
@@ -109,8 +109,8 @@ class MetricsDAO extends DAO {
      * Resolve sentinel values (STATISTICS_YESTERDAY, STATISTICS_CURRENT_MONTH) 
      * to their actual date values.
      * 
-     * @param mixed $value The value to resolve
-     * @return mixed The resolved value or original if not a sentinel
+     * @param mixed $value
+     * @return mixed
      */
     private function _resolveSentinelValue($value) {
         if ($value === STATISTICS_YESTERDAY) {
@@ -125,11 +125,11 @@ class MetricsDAO extends DAO {
     /**
      * Retrieve a range of aggregate, filtered, ordered metric values.
      * 
-     * @param string|array $metricType metrics selection
-     * @param string|array $columns column (aggregation level) selection
-     * @param array $filters report-level filter selection
-     * @param array $orderBy order criteria
-     * @param DBResultRange|null $range paging specification
+     * @param string|array $metricType
+     * @param string|array $columns
+     * @param array $filters
+     * @param array $orderBy
+     * @param DBResultRange|null $range
      * @param bool $nonAdditive
      * @return array|null
      */
@@ -172,6 +172,7 @@ class MetricsDAO extends DAO {
         if (!is_array($filters) || !is_array($orderBy)) return [];
 
         // Validasi parameter...
+        if (empty($metricType)) return [];
         foreach ($metricType as $metricTypeElement) {
             if (!is_string($metricTypeElement)) return [];
         }
@@ -187,6 +188,16 @@ class MetricsDAO extends DAO {
         $validColumns[] = STATISTICS_METRIC;
 
         if (count(array_diff($columns, $validColumns)) > 0) return [];
+        foreach (array_keys($filters) as $filterColumn) {
+            if (!in_array($filterColumn, $validColumns)) return [];
+        }
+
+        $validDirections = [STATISTICS_ORDER_ASC, STATISTICS_ORDER_DESC];
+        foreach ($orderBy as $orderColumn => $direction) {
+            if (!in_array($orderColumn, $validColumns)) return [];
+            if (!in_array($direction, $validDirections)) return [];
+        }
+
         if ($nonAdditive && count($metricType) !== 1) {
             if (!in_array(STATISTICS_DIMENSION_METRIC_TYPE, $columns)) $columns[] = STATISTICS_DIMENSION_METRIC_TYPE;
         }
@@ -266,11 +277,16 @@ class MetricsDAO extends DAO {
             return $rawData;
 
         } catch (Throwable $e) {
+            error_log('MetricsDAO::getMetrics gagal: ' . $e->getMessage() . ' | SQL: ' . ($sql ?? '(sql belum terbentuk)'));
+
             if (file_exists($cacheFile)) {
                 $content = @file_get_contents($cacheFile);
                 if ($content) {
                     $pl = json_decode(@gzdecode($content), true);
-                    return is_array($pl) && isset($pl['data']) ? $pl['data'] : [];
+                    if (is_array($pl) && isset($pl['data'])) {
+                        error_log('MetricsDAO::getMetrics: memakai cache lama (stale) setelah query gagal, file: ' . $cacheFile);
+                        return $pl['data'];
+                    }
                 }
             }
             return [];
@@ -527,5 +543,6 @@ class MetricsDAO extends DAO {
         $params = array_values($recordToStore);
         return $this->update("INSERT INTO metrics ($fields) VALUES ($placeholders)", $params);
     }
+
 }
 ?>
