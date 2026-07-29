@@ -687,8 +687,17 @@ class TrackSubmissionHandler extends AuthorHandler {
         $user = $request->getUser();
 
         $queuedPayment = $paymentManager->createQueuedPayment($journal->getId(), PAYMENT_TYPE_SUBMISSION, $user->getId(), $articleId, $journal->getSetting('submissionFee'));
-        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
 
+        if (method_exists($queuedPayment, 'getInvoiceId') && $queuedPayment->getInvoiceId() > 0) {
+            import('lib.wizdam.classes.security.SecurityHashService');
+            $hashService = new SecurityHashService();
+            $invoiceId = $queuedPayment->getInvoiceId();
+            $hash = $hashService->generateHash('invoice', $invoiceId);
+            $request->redirect(null, 'billing', 'invoice', ["{$hash}-{$invoiceId}"]);
+            return;
+        }
+
+        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
         $paymentManager->displayPaymentForm($queuedPaymentId, $queuedPayment);
     }
 
@@ -710,8 +719,17 @@ class TrackSubmissionHandler extends AuthorHandler {
         $user = $request->getUser();
 
         $queuedPayment = $paymentManager->createQueuedPayment($journal->getId(), PAYMENT_TYPE_FASTTRACK, $user->getId(), $articleId, $journal->getSetting('fastTrackFee'));
-        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
 
+        if (method_exists($queuedPayment, 'getInvoiceId') && $queuedPayment->getInvoiceId() > 0) {
+            import('lib.wizdam.classes.security.SecurityHashService');
+            $hashService = new SecurityHashService();
+            $invoiceId = $queuedPayment->getInvoiceId();
+            $hash = $hashService->generateHash('invoice', $invoiceId);
+            $request->redirect(null, 'billing', 'invoice', ["{$hash}-{$invoiceId}"]);
+            return;
+        }
+
+        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
         $paymentManager->displayPaymentForm($queuedPaymentId, $queuedPayment);
     }
 
@@ -733,8 +751,17 @@ class TrackSubmissionHandler extends AuthorHandler {
         $user = $request->getUser();
 
         $queuedPayment = $paymentManager->createQueuedPayment($journal->getId(), PAYMENT_TYPE_PUBLICATION, $user->getId(), $articleId, $journal->getSetting('publicationFee'));
-        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
 
+        if (method_exists($queuedPayment, 'getInvoiceId') && $queuedPayment->getInvoiceId() > 0) {
+            import('lib.wizdam.classes.security.SecurityHashService');
+            $hashService = new SecurityHashService();
+            $invoiceId = $queuedPayment->getInvoiceId();
+            $hash = $hashService->generateHash('invoice', $invoiceId);
+            $request->redirect(null, 'billing', 'invoice', ["{$hash}-{$invoiceId}"]);
+            return;
+        }
+
+        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
         $paymentManager->displayPaymentForm($queuedPaymentId, $queuedPayment);
     }
 
