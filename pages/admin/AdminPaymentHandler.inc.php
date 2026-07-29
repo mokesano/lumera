@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * @file pages/checkout/AdminPaymentHandler.inc.php
+ * @file pages/admin/AdminPaymentHandler.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
@@ -10,10 +10,12 @@ declare(strict_types=1);
  * 
  * @class AdminPaymentHandler
  * 
- * @brief Handler khusus untuk Site Administrator mengelola Payment Gateway.
+ * @brief Handler khusus untuk Site Administrator mengelola Payment Gateway
+ * dan konfirmasi pembayaran manual.
  */
 
 import('classes.handler.Handler');
+import('lib.wizdam.classes.services.InvoiceService');
 
 class AdminPaymentHandler extends Handler {
 
@@ -90,6 +92,63 @@ class AdminPaymentHandler extends Handler {
             // Jika ada error (misal CSRF gagal), tampilkan ulang formnya
             $settingsForm->display();
         }
+    }
+
+    /**
+     * [BARU] Menampilkan daftar invoice UNPAID yang menunggu konfirmasi
+     * manual (payment_method = 'ManualPending').
+     * Rute: GET /admin/payment-settings/manualPayments
+     * @param array $args
+     * @param Request|null $request
+     */
+    public function manualPayments(array $args = [], $request = null): void {
+        $this->validate();
+        $this->setupTemplate();
+        if (!$request) $request = Application::get()->getRequest();
+
+        /** @var InvoiceDAO $invoiceDao */
+        $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
+        $result = $invoiceDao->retrieve(
+            "SELECT * FROM invoices WHERE status = 'UNPAID' AND payment_method = 'ManualPending' ORDER BY date_billed ASC"
+        );
+        $pendingInvoices = [];
+        while ($result && !$result->EOF) {
+            $pendingInvoices[] = $invoiceDao->_fromRow($result->GetRowAssoc(false));
+            $result->MoveNext();
+        }
+        if ($result) $result->Close();
+
+        import('lib.pkp.classes.validation.ValidatorCSRF');
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign([
+            'pendingInvoices' => $pendingInvoices,
+            'pageTitle' => 'Manual Payment Confirmations',
+        ]);
+        $templateMgr->display('admin/manualPayments.tpl');
+    }
+
+    /**
+     * [BARU] Mengeksekusi konfirmasi: menandai invoice PAID secara resmi.
+     * Rute: POST /admin/payment-settings/confirmManualPaymentAction/[invoiceId]
+     * @param array $args
+     * @param Request|null $request
+     */
+    public function confirmManualPaymentAction(array $args = [], $request = null): void {
+        $this->validate();
+        if (!$request) $request = Application::get()->getRequest();
+
+        import('lib.pkp.classes.validation.ValidatorCSRF');
+        if (!$request->isPost() || !\ValidatorCSRF::checkToken($request->getUserVar('csrfToken'))) {
+            $request->redirect(null, 'admin', 'payment-settings', 'manualPayments');
+            return;
+        }
+
+        $invoiceId = (int) ($args[0] ?? 0);
+
+        $invoiceService = new InvoiceService();
+        $invoiceService->markAsPaid($invoiceId, 'ManualPayment');
+
+        $request->redirect(null, 'admin', 'payment-settings', 'manualPayments', null, ['confirmed' => 1]);
     }
     
 }

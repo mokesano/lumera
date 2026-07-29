@@ -282,9 +282,11 @@ class BillingHandler extends Handler {
 
     /**
      * Memproses konfirmasi niat bayar Manual (bukan gateway online). TIDAK
-     * menandai invoice PAID -- uang belum diterima. Mengirim email instruksi
-     * ke pengguna + notifikasi ke admin, dan menandai invoice "ManualPending"
-     * supaya muncul di daftar konfirmasi manual staf/admin.
+     * menandai invoice PAID -- uang belum diterima. Mengembalikan TEKS
+     * INSTRUKSI PEMBAYARAN langsung di respons JSON (supaya tercetak di
+     * halaman invoice, bukan cuma dikirim lewat email), dan mengirim SATU
+     * notifikasi ke admin (bukan email palsu ke pengguna yang templatenya
+     * tidak pernah ada).
      * Rute: POST /billing/confirmManual/[hash]-[id]
      * @param array $args Harus berisi format keamanan: [hash]-[id]
      * @param Request|null $request
@@ -334,35 +336,34 @@ class BillingHandler extends Handler {
         $journal = $journalDao->getById((int) $invoice->getData('journalId'));
         $settingsService = PaymentSettingsService::resolveForJournal($journal);
 
+        $summary = $this->invoiceService->getInvoiceSummary($invoice);
+        $manualInstructions = $settingsService->getManualInstructions();
+
         import('classes.mail.MailTemplate');
         $contactEmail = $journal ? (string) $journal->getSetting('contactEmail') : (string) Config::getVar('email', 'contact_email');
         $contactName = $journal ? (string) $journal->getSetting('contactName') : (string) Config::getVar('email', 'contact_name');
 
-        $mailUser = new MailTemplate('USER_INVOICE_GENERATED');
-        $mailUser->setFrom($contactEmail, $contactName);
-        $mailUser->addRecipient((string) $user->getEmail(), (string) $user->getFullName());
-        $mailUser->assignParams([
-            'userFullName'   => (string) $user->getFullName(),
-            'paymentId'      => (string) $invoice->getData('invoiceNumber'),
-            'totalAmount'    => number_format($invoice->getAmount(), 2),
-            'itemCurrencyCode' => (string) $invoice->getCurrencyCode(),
-            'manualInstructions' => $settingsService->getManualInstructions(),
-        ]);
-        $mailUser->send();
-
         $mailAdmin = new MailTemplate('MANUAL_PAYMENT_NOTIFICATION');
-        $mailAdmin->setFrom($contactEmail, $contactName);
-        $mailAdmin->addRecipient($contactEmail, $contactName);
-        $mailAdmin->assignParams([
-            'paymentId'   => (string) $invoice->getData('invoiceNumber'),
-            'totalAmount' => number_format($invoice->getAmount(), 2),
-            'itemCurrencyCode' => (string) $invoice->getCurrencyCode(),
-            'userFullName' => (string) $user->getFullName(),
-            'userEmail'   => (string) $user->getEmail(),
-        ]);
-        $mailAdmin->send();
+        if ($mailAdmin->isEnabled()) {
+            $mailAdmin->setFrom($contactEmail, $contactName);
+            $mailAdmin->addRecipient($contactEmail, $contactName);
+            $mailAdmin->assignParams([
+                'journalName'      => $journal ? $journal->getLocalizedTitle() : $contactName,
+                'userFullName'     => (string) $user->getFullName(),
+                'userName'         => (string) $user->getUsername(),
+                'itemName'         => (string) $invoice->getData('invoiceNumber'),
+                'itemCost'         => number_format($invoice->getAmount(), 2),
+                'itemCurrencyCode' => (string) $invoice->getCurrencyCode(),
+            ]);
+            $mailAdmin->send();
+        }
 
-        $this->_sendJsonResponse($request, 'success', __('billing.success.manualConfirmationSent'));
+        $this->_sendJsonResponse($request, 'success', __('billing.success.manualConfirmationSent'), [
+            'instructions'  => $manualInstructions,
+            'invoiceNumber' => $summary['wizdamInvoiceNumber'],
+            'amount'        => $summary['formattedAmount'],
+            'currencyCode'  => $summary['currencyCode'],
+        ]);
     }
 
     /**

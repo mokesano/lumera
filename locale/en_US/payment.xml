@@ -66,6 +66,12 @@
     <message key="billing.error.invoiceLinkFailedManager">The incoming payment failed to link to invoice #{$invoiceId} (queued payment #{$queuedPaymentId}). The record has been saved in completed_payments as a fallback -- please verify manually.</message>
     <message key="billing.error.useManualEndpoint">Manual payment cannot be processed through this channel. Please use the manual confirmation button instead.</message>
     <message key="billing.success.manualConfirmationSent">Your manual payment confirmation has been sent. Our staff will verify it shortly.</message>
+
+    <message key="billing.error.useManualEndpoint">Manual payment cannot be processed through this channel. Please use the manual confirmation button instead.</message>
+    <message key="billing.success.manualConfirmationSent">Your manual payment confirmation has been sent. Our staff will verify it shortly.</message>
+    <message key="billing.error.csrfInvalid">Your session has expired or the request is invalid. Please refresh the page and try again.</message>
+    <message key="billing.error.methodNotAllowed">This request method is not allowed.</message>
+    <message key="billing.error.gatewayFailed">Failed to connect to the payment gateway</message>
     
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Shopping Cart</message>

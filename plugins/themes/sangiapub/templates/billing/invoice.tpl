@@ -54,6 +54,11 @@
     .wi-pay-btn-disabled:hover { border-color: #ccc; box-shadow: none; }
     .wi-badge-recommended { display: inline-block; font-size: 10px; background: #28a745; color: #fff; padding: 2px 6px; border-radius: 10px; vertical-align: middle; }
 
+    .wi-manual-instructions-box { display:none; margin-top:20px; padding:20px; background:#fffaf0; border:1px solid #ffeeba; border-radius:4px; }
+    .wi-manual-instructions-box h3 { margin-top:0; color:#856404; }
+    .wi-manual-instructions-text { white-space: pre-line; line-height:1.6; }
+    .wi-manual-instructions-note { margin-top:15px; margin-bottom:0; font-size:13px; color:#666; }
+
     .action-button { margin-top: 20px; text-align: right; display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
     .action-button a { text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 4px; font-weight: 700; transition: 0.2s; }
     .action-button .download { border: 1px solid #1a4f8b; color: #fff; background-color: #1a4f8b; }
@@ -172,9 +177,9 @@
     </div>
 
     {* ===== PAYMENT OPTIONS (hanya untuk tagihan yang belum lunas) ===== *}
-    {* [FIX] Tombol dinamis dari PaymentMethodResolver -- bukan lagi 3
-       tombol hardcode Midtrans. Rekomendasi Journal Manager disorot,
-       metode yang belum dikonfigurasi tetap tampil tapi nonaktif. *}
+    {* Tombol dinamis dari PaymentMethodResolver -- rekomendasi Journal
+       Manager disorot, metode yang belum dikonfigurasi tetap tampil
+       tapi nonaktif (bukan disembunyikan). *}
     {if !$isPaid}
     <div class="wi-actions">
         {foreach from=$availablePaymentMethods item=method}
@@ -189,15 +194,21 @@
     <div id="loadingIndicator" style="display: none; text-align: center; padding: 15px; color: #1a4f8b; font-weight: bold;">
         Memproses jalur pembayaran aman... Mohon tunggu.
     </div>
+
+    {* [BARU] Kotak instruksi pembayaran Manual -- tercetak LANGSUNG di
+       halaman ini setelah tombol "Manual" diklik dan berhasil, bukan
+       lewat email/alert generik. Kosong & tersembunyi sampai diisi JS. *}
+    <div id="manualInstructionsBox" class="wi-manual-instructions-box">
+        <h3>Instruksi Pembayaran Manual</h3>
+        <div id="manualInstructionsText" class="wi-manual-instructions-text"></div>
+        <p class="wi-manual-instructions-note">
+            Setelah transfer, invoice ini akan berstatus <strong>menunggu verifikasi staf</strong>.
+            Anda tidak perlu mengunggah bukti transfer secara terpisah kecuali diminta.
+        </p>
+    </div>
     {/if}
 
     {* ===== ACTION BUTTONS ===== *}
-    {*
-        FIXED:
-        - Cancel: page="billing", op="cancel", menggunakan $securePath (hash-id)
-        - Download: menggunakan $pdfDownloadUrl yang sudah disiapkan Handler (pdf-hash-id)
-        - Keduanya tidak lagi menggunakan page="checkout" atau plain invoice ID
-    *}
     <div class="action-button">
         {if !$isPaid}
         <a class="cancel-action"
@@ -214,16 +225,6 @@
 </div>
 
 {* ===== JAVASCRIPT PAYMENT GATEWAY ===== *}
-{*
-    FIXED:
-    - payUrl: menggunakan page="billing", op="pay", dan $securePath (hash-id)
-      agar request diterima oleh BillingHandler::pay() yang memvalidasi hash
-    - confirmManualUrl: endpoint terpisah untuk metode 'manual'
-    - Parameter 'method' sekarang DIKIRIM (sebelumnya hilang, menyebabkan
-      semua pembayaran diam-diam jatuh ke Midtrans apapun tombolnya)
-    - res.data.invoice_url -> res.data.url (menyesuaikan bentuk respons
-      XenditGateway/PayPalGateway yang sebenarnya)
-*}
 <script>
     const csrfToken = "{$csrfToken|escape}";
     const payUrl    = "{url page="billing" op="pay" path=$securePath}";
@@ -246,8 +247,15 @@
             .then(res => {
                 document.getElementById('loadingIndicator').style.display = 'none';
                 if (res.status === 'success') {
-                    alert(res.message);
-                    window.location.reload();
+                    // [FIX] Instruksi tercetak LANGSUNG di halaman -- bukan
+                    // alert() generik + reload seperti sebelumnya.
+                    const box = document.getElementById('manualInstructionsBox');
+                    const text = document.getElementById('manualInstructionsText');
+                    text.textContent = (res.data.instructions && res.data.instructions.trim() !== '')
+                        ? res.data.instructions
+                        : 'Instruksi pembayaran belum diatur oleh penerbit. Silakan hubungi kontak jurnal untuk informasi rekening.';
+                    box.style.display = 'block';
+                    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } else {
                     alert('Error: ' + res.message);
                 }
