@@ -64,6 +64,8 @@
     <message key="billing.success.invoiceCancelled">Invoice successfully canceled.</message>
     <message key="billing.error.invoiceLinkFailedUser">A technical issue occurred while processing your invoice #{$invoiceId}. Our team has been notified; please contact the editor if your billing status is incorrect.</message>
     <message key="billing.error.invoiceLinkFailedManager">The incoming payment failed to link to invoice #{$invoiceId} (queued payment #{$queuedPaymentId}). The record has been saved in completed_payments as a fallback -- please verify manually.</message>
+    <message key="billing.error.useManualEndpoint">Manual payment cannot be processed through this channel. Please use the manual confirmation button instead.</message>
+    <message key="billing.success.manualConfirmationSent">Your manual payment confirmation has been sent. Our staff will verify it shortly.</message>
     
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Shopping Cart</message>
