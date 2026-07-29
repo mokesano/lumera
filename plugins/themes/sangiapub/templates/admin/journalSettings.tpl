@@ -20,9 +20,22 @@
 	<!--
 	// Ensure that the form submit button cannot be double-clicked
 	function doSubmit() {
-		if (document.getElementById('journal').submitted.value != 1) {
-			document.getElementById('journal').submitted.value = 1;
-			document.getElementById('journal').submit();
+		var form = document.querySelector('form#journal');
+		
+		if (form) {
+			var submittedInput = form.querySelector('input[name="submitted"]');
+			
+			if (submittedInput) {
+				if (submittedInput.value != '1') {
+					submittedInput.value = '1';
+					form.submit();
+				}
+			} else {
+				form.submit();
+			}
+		} else {
+			console.error("Form dengan ID 'journal' tidak ditemukan.");
+			alert("Gagal menyimpan: Form tidak terdeteksi. Silakan refresh halaman.");
 		}
 		return true;
 	}
@@ -78,6 +91,12 @@
 		</tr>
 		<tr valign="top">
 			<td colspan="2" class="label">
+				<input type="checkbox" name="showOnHomepage" id="showOnHomepage" value="1"{if $showOnHomepage} checked="checked"{/if} />
+				<label for="showOnHomepage">{translate key="admin.journals.showOnHomepage"}</label>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td colspan="2" class="label">
 				<input type="checkbox" name="paymentIndependent" id="paymentIndependent" value="1"{if $paymentIndependent} checked="checked"{/if} /> <label for="paymentIndependent">{translate key="admin.journals.paymentIndependentInstructions"}</label>
 			</td>
 		</tr>
@@ -122,7 +141,10 @@
 		</tr>
 	</table>
 
-	<p><input type="button" id="saveJournal" value="{translate key="common.save"}" class="button defaultButton" onclick="doSubmit()" /> <input type="button" value="{translate key="common.cancel"}" class="button" onclick="document.location.href='{url op="journals" escape=false}'" /></p>
+	<p>
+		<input type="button" id="saveJournal" value="{translate key="common.save"}" class="button defaultButton" onclick="doSubmit()" />
+		<input type="button" value="{translate key="common.cancel"}" class="button" onclick="document.location.href='{url op="journals" escape=false}'" />
+	</p>
 
 </form>
 

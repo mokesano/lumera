@@ -61,6 +61,8 @@
     <message key="billing.success.invoiceCancelled">Tagihan berhasil dibatalkan.</message>
     <message key="billing.error.invoiceLinkFailedUser">Terjadi kendala teknis saat memproses invoice #{$invoiceId} Anda. Tim kami sudah diberitahu; mohon hubungi editor jika status tagihan tidak sesuai.</message>
     <message key="billing.error.invoiceLinkFailedManager">Pembayaran masuk gagal ditautkan ke invoice #{$invoiceId} (queued payment #{$queuedPaymentId}). Data tetap tercatat di completed_payments sebagai fallback -- mohon diperiksa manual.</message>
+    <message key="billing.error.useManualEndpoint">Manual payment cannot be processed through this channel. Please use the manual confirmation button instead.</message>
+    <message key="billing.success.manualConfirmationSent">Your manual payment confirmation has been sent. Our staff will verify it shortly.</message>
     
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Keranjang Belanja</message>

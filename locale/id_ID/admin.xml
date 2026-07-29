@@ -81,6 +81,11 @@
 	<message key="admin.journals.redirect">Hasilkan kode untuk peta legacy URLs ke LumeraApp URLs</message>
 	<message key="admin.journals.form.importPathRequired">Dibutuhkan path impor.</message>
 	<message key="admin.journals.importErrors">Pengimporan gagal untuk meyelesaikan secara sukses</message>
+	<message key="admin.journals.certificateSignatory.label">Penanda Tangan Sertifikat/LoA</message>
+	<message key="admin.journals.certificateSignatory.noManagers">Jurnal ini belum memiliki Journal Manager yang ditetapkan.</message>
+	<message key="admin.journals.certificateSignatory.autoInfoIntro">Journal Manager berikut akan otomatis tampil sebagai penanda tangan pada sertifikat dan LoA yang diterbitkan:</message>
+	<message key="admin.journals.certificateSignatory.selectInstructions">Jurnal ini memiliki lebih dari dua Journal Manager. Silakan pilih tepat satu nama yang akan tampil pada sertifikat dan LoA yang diterbitkan.</message>
+	<message key="admin.journals.paymentIndependentInstructions">Tandai jurnal ini sebagai jurnal Partnership independen</message>
 
 	<!-- Merge Users -->
 	<message key="admin.mergeUsers">Gabungkan Para Pengguna</message>

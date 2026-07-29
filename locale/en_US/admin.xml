@@ -97,6 +97,11 @@
 	<message key="admin.journals.redirect">Generate code to map legacy URLs to LumeraApp URLs</message>
 	<message key="admin.journals.form.importPathRequired">The import path is required.</message>
 	<message key="admin.journals.importErrors">Importing failed to complete successfully</message>
+	<message key="admin.journals.certificateSignatory.label">Certificate/LoA Signatory</message>
+	<message key="admin.journals.certificateSignatory.noManagers">This journal has no Journal Manager assigned yet.</message>
+	<message key="admin.journals.certificateSignatory.autoInfoIntro">The following Journal Manager(s) will automatically appear as signatory on issued certificates and LoA:</message>
+	<message key="admin.journals.certificateSignatory.selectInstructions">This journal has more than two Journal Managers. Please select exactly one whose name will appear on issued certificates and LoA.</message>
+	<message key="admin.journals.paymentIndependentInstructions">Mark this journal as an independent Partnership journal</message>
 
 	<!-- Merge Users -->
 	<message key="admin.mergeUsers">Merge Users</message>
