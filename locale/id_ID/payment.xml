@@ -64,6 +64,12 @@
     <message key="billing.error.useManualEndpoint">Manual payment cannot be processed through this channel. Please use the manual confirmation button instead.</message>
     <message key="billing.success.manualConfirmationSent">Your manual payment confirmation has been sent. Our staff will verify it shortly.</message>
     
+    <message key="billing.error.useManualEndpoint">Pembayaran manual tidak dapat diproses lewat jalur ini. Silakan gunakan tombol konfirmasi manual.</message>
+    <message key="billing.success.manualConfirmationSent">Konfirmasi pembayaran manual Anda telah terkirim. Staf kami akan segera memverifikasi.</message>
+    <message key="billing.error.csrfInvalid">Sesi Anda telah kedaluwarsa atau permintaan tidak valid. Silakan muat ulang halaman dan coba lagi.</message>
+    <message key="billing.error.methodNotAllowed">Metode permintaan ini tidak diizinkan.</message>
+    <message key="billing.error.gatewayFailed">Gagal terhubung ke payment gateway</message>
+
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Keranjang Belanja</message>
     <message key="order.error.invalidMethod">Metode permintaan tidak diizinkan.</message>
