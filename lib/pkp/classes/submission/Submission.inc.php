@@ -28,18 +28,22 @@ class Submission extends DataObject {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function Submission() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::Submission(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Returns the association type of this submission
-     * @return integer one of the ASSOC_TYPE_* constants
+     * Returns the association type of this submission.
+     * @return int
      */
     public function getAssocType() {
         // Must be implemented by sub-classes.
@@ -49,30 +53,33 @@ class Submission extends DataObject {
     /**
      * Get a piece of data for this object, localized to the current
      * locale if possible.
-     * @param $key string
-     * @param $preferredLocale string
+     * @param string $key
+     * @param string|null $preferredLocale
      * @return mixed
      */
     public function getLocalizedData($key, $preferredLocale = null) {
-        if (is_null($preferredLocale)) $preferredLocale = AppLocale::getLocale();
-        $localePrecedence = array($preferredLocale, $this->getLocale());
+        if ($preferredLocale === null) {
+            $preferredLocale = AppLocale::getLocale();
+        }
+        
+        $localePrecedence = [$preferredLocale, $this->getLocale()];
         foreach ($localePrecedence as $locale) {
-            if (empty($locale)) continue;
-            // Hapus '&'
+            if ($locale === null || $locale === '') {
+                continue;
+            }
             $value = $this->getData($key, $locale);
-            if (!empty($value)) return $value;
-            unset($value);
+            if ($value !== null && $value !== '') {
+                return $value;
+            }
         }
 
-        // Fallback: Get the first available piece of data.
-        // Hapus '&'
         $data = $this->getData($key, null);
-        if (!empty($data)) return $data[array_shift(array_keys($data))];
+        if (is_array($data) && !empty($data)) {
+            $keys = array_keys($data);
+            return $data[array_shift($keys)];
+        }
 
-        // No data available; return null.
-        unset($data);
-        $data = null;
-        return $data;
+        return null;
     }
 
     //
@@ -80,32 +87,30 @@ class Submission extends DataObject {
     //
 
     /**
-     * Return first author
-     * @param $lastOnly boolean return lastname only (default false)
-     * @return string
+     * Return first author.
+     * @param bool $lastOnly
+     * @return string|null
      */
     public function getFirstAuthor($lastOnly = false) {
         $authors = $this->getAuthors();
         if (is_array($authors) && !empty($authors)) {
             $author = $authors[0];
             return $lastOnly ? $author->getLastName() : $author->getFullName();
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
-     * Return string of author names, separated by the specified token
-     * @param $lastOnly boolean return list of lastnames only (default false)
-     * @param $separator string separator for names (default comma+space)
+     * Return string of author names, separated by the specified token.
+     * @param bool $lastOnly
+     * @param string $separator
      * @return string
      */
     public function getAuthorString($lastOnly = false, $separator = ', ') {
         $authors = $this->getAuthors();
-
         $str = '';
-        foreach($authors as $author) {
-            if (!empty($str)) {
+        foreach ($authors as $author) {
+            if ($str !== '') {
                 $str .= $separator;
             }
             $str .= $lastOnly ? $author->getLastName() : $author->getFullName();
@@ -119,10 +124,9 @@ class Submission extends DataObject {
      */
     public function getAuthorEmails() {
         $authors = $this->getAuthors();
-
         import('lib.pkp.classes.mail.Mail');
-        $returner = array();
-        foreach($authors as $author) {
+        $returner = [];
+        foreach ($authors as $author) {
             $returner[] = Mail::encodeDisplayName($author->getFullName()) . ' <' . $author->getEmail() . '>';
         }
         return $returner;
@@ -133,43 +137,44 @@ class Submission extends DataObject {
      * @return array Authors
      */
     public function getAuthors() {
-        // Hapus '&'
+        /** @var AuthorDAO $authorDao */
         $authorDao = DAORegistry::getDAO('AuthorDAO');
         return $authorDao->getAuthorsBySubmissionId($this->getId());
     }
 
     /**
      * Get the primary author of this submission.
-     * @return Author
+     * @return Author|null
      */
     public function getPrimaryAuthor() {
-        // Hapus '&'
+        /** @var AuthorDAO $authorDao */
         $authorDao = DAORegistry::getDAO('AuthorDAO');
         return $authorDao->getPrimaryContact($this->getId());
     }
 
     /**
      * Get user ID of the submitter.
-     * @return int
+     * @return int|null
      */
     public function getUserId() {
-        return $this->getData('userId');
+        $id = $this->getData('userId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set user ID of the submitter.
-     * @param $userId int
+     * @param int|null $userId
      */
     public function setUserId($userId) {
-        return $this->setData('userId', $userId);
+        $this->setData('userId', $userId !== null ? (int) $userId : null);
     }
 
     /**
      * Return the user of the submitter.
-     * @return User
+     * @return User|null
      */
     public function getUser() {
-        // Hapus '&'
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         return $userDao->getById($this->getUserId(), true);
     }
@@ -179,53 +184,54 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocale() {
-        return $this->getData('locale');
+        return (string) $this->getData('locale');
     }
 
     /**
      * Set the locale of the submission.
-     * @param $locale string
+     * @param string $locale
      */
     public function setLocale($locale) {
-        return $this->setData('locale', $locale);
+        $this->setData('locale', (string) $locale);
     }
 
     /**
      * Get "localized" submission title (if applicable).
-     * @param $preferredLocale string
+     * @param string|null $preferredLocale
      * @return string
      */
     public function getLocalizedTitle($preferredLocale = null) {
-        return $this->getLocalizedData('title', $preferredLocale);
+        return (string) $this->getLocalizedData('title', $preferredLocale);
     }
 
     /**
      * Get title.
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getTitle($locale) {
-        return $this->getData('title', $locale);
+        $title = $this->getData('title', $locale);
+        return is_array($title) ? '' : (string) $title;
     }
 
     /**
      * Set title.
-     * @param $title string
-     * @param $locale
+     * @param string $title
+     * @param string|null $locale
      */
     public function setTitle($title, $locale) {
         $this->setCleanTitle($title, $locale);
-        return $this->setData('title', $title, $locale);
+        return $this->setData('title', (string) $title, $locale);
     }
 
     /**
      * Set 'clean' title (with punctuation removed).
-     * @param $cleanTitle string
-     * @param $locale
+     * @param string $cleanTitle
+     * @param string|null $locale
      */
     public function setCleanTitle($cleanTitle, $locale) {
-        $punctuation = array ("\"", "\'", ",", ".", "!", "?", "-", "$", "(", ")");
-        $cleanTitle = str_replace($punctuation, "", $cleanTitle);
+        $punctuation = ['"', "'", ',', '.', '!', '?', '-', '$', '(', ')'];
+        $cleanTitle = str_replace($punctuation, '', (string) $cleanTitle);
         return $this->setData('cleanTitle', $cleanTitle, $locale);
     }
 
@@ -234,25 +240,25 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedPrefix() {
-        return $this->getLocalizedData('prefix');
+        return (string) $this->getLocalizedData('prefix');
     }
 
     /**
      * Get prefix.
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getPrefix($locale) {
-        return $this->getData('prefix', $locale);
+        return (string) $this->getData('prefix', $locale);
     }
 
     /**
      * Set prefix.
-     * @param $prefix string
-     * @param $locale
+     * @param string $prefix
+     * @param string|null $locale
      */
     public function setPrefix($prefix, $locale) {
-        return $this->setData('prefix', $prefix, $locale);
+        return $this->setData('prefix', (string) $prefix, $locale);
     }
 
     /**
@@ -260,243 +266,248 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedAbstract() {
-        return $this->getLocalizedData('abstract');
+        return (string) $this->getLocalizedData('abstract');
     }
 
     /**
      * Get abstract.
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getAbstract($locale) {
-        return $this->getData('abstract', $locale);
+        $abstract = $this->getData('abstract', $locale);
+        return is_array($abstract) ? '' : (string) $abstract;
     }
 
     /**
      * Set abstract.
-     * @param $abstract string
-     * @param $locale
+     * @param string $abstract
+     * @param string|null $locale
      */
     public function setAbstract($abstract, $locale) {
-        return $this->setData('abstract', $abstract, $locale);
+        return $this->setData('abstract', (string) $abstract, $locale);
     }
 
     /**
-     * Return the localized discipline
+     * Return the localized discipline.
      * @return string
      */
     public function getLocalizedDiscipline() {
-        return $this->getLocalizedData('discipline');
+        return (string) $this->getLocalizedData('discipline');
     }
 
     /**
-     * Get discipline
-     * @param $locale
+     * Get discipline.
+     * @param string|null $locale
      * @return string
      */
     public function getDiscipline($locale) {
-        return $this->getData('discipline', $locale);
+        return (string) $this->getData('discipline', $locale);
     }
 
     /**
-     * Set discipline
-     * @param $discipline string
-     * @param $locale
+     * Set discipline.
+     * @param string $discipline
+     * @param string|null $locale
      */
     public function setDiscipline($discipline, $locale) {
-        return $this->setData('discipline', $discipline, $locale);
+        return $this->setData('discipline', (string) $discipline, $locale);
     }
 
     /**
-     * Return the localized subject classification
+     * Return the localized subject classification.
      * @return string
      */
     public function getLocalizedSubjectClass() {
-        return $this->getLocalizedData('subjectClass');
+        return (string) $this->getLocalizedData('subjectClass');
     }
 
     /**
      * Get subject classification.
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getSubjectClass($locale) {
-        return $this->getData('subjectClass', $locale);
+        return (string) $this->getData('subjectClass', $locale);
     }
 
     /**
      * Set subject classification.
-     * @param $subjectClass string
-     * @param $locale
+     * @param string $subjectClass
+     * @param string|null $locale
      */
     public function setSubjectClass($subjectClass, $locale) {
-        return $this->setData('subjectClass', $subjectClass, $locale);
+        return $this->setData('subjectClass', (string) $subjectClass, $locale);
     }
 
     /**
-     * Return the localized subject
+     * Return the localized subject.
      * @return string
      */
     public function getLocalizedSubject() {
-        return $this->getLocalizedData('subject');
+        return (string) $this->getLocalizedData('subject');
     }
 
     /**
      * Get subject.
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getSubject($locale) {
-        return $this->getData('subject', $locale);
+        $subject = $this->getData('subject', $locale);
+        return is_array($subject) ? '' : (string) $subject;
     }
 
     /**
      * Set subject.
-     * @param $subject string
-     * @param $locale
+     * @param string $subject
+     * @param string|null $locale
      */
     public function setSubject($subject, $locale) {
-        return $this->setData('subject', $subject, $locale);
+        return $this->setData('subject', (string) $subject, $locale);
     }
 
     /**
-     * Return the localized geographical coverage
+     * Return the localized geographical coverage.
      * @return string
      */
     public function getLocalizedCoverageGeo() {
-        return $this->getLocalizedData('coverageGeo');
+        return (string) $this->getLocalizedData('coverageGeo');
     }
 
     /**
      * Get geographical coverage.
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getCoverageGeo($locale) {
-        return $this->getData('coverageGeo', $locale);
+        $coverageGeo = $this->getData('coverageGeo', $locale);
+        return is_array($coverageGeo) ? '' : (string) $coverageGeo;
     }
 
     /**
      * Set geographical coverage.
-     * @param $coverageGeo string
-     * @param $locale
+     * @param string $coverageGeo
+     * @param string|null $locale
      */
     public function setCoverageGeo($coverageGeo, $locale) {
-        return $this->setData('coverageGeo', $coverageGeo, $locale);
+        return $this->setData('coverageGeo', (string) $coverageGeo, $locale);
     }
 
     /**
-     * Return the localized chronological coverage
+     * Return the localized chronological coverage.
      * @return string
      */
     public function getLocalizedCoverageChron() {
-        return $this->getLocalizedData('coverageChron');
+        return (string) $this->getLocalizedData('coverageChron');
     }
 
     /**
      * Get chronological coverage.
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getCoverageChron($locale) {
-        return $this->getData('coverageChron', $locale);
+        $coverageChron = $this->getData('coverageChron', $locale);
+        return is_array($coverageChron) ? '' : (string) $coverageChron;
     }
 
     /**
      * Set chronological coverage.
-     * @param $coverageChron string
-     * @param $locale
+     * @param string $coverageChron
+     * @param string|null $locale
      */
     public function setCoverageChron($coverageChron, $locale) {
-        return $this->setData('coverageChron', $coverageChron, $locale);
+        return $this->setData('coverageChron', (string) $coverageChron, $locale);
     }
 
     /**
-     * Return the localized sample coverage
+     * Return the localized sample coverage.
      * @return string
      */
     public function getLocalizedCoverageSample() {
-        return $this->getLocalizedData('coverageSample');
+        return (string) $this->getLocalizedData('coverageSample');
     }
 
     /**
      * Get research sample coverage.
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getCoverageSample($locale) {
-        return $this->getData('coverageSample', $locale);
+        $coverageSample = $this->getData('coverageSample', $locale);
+        return is_array($coverageSample) ? '' : (string) $coverageSample;
     }
 
     /**
-     * Set geographical coverage.
-     * @param $coverageSample string
-     * @param $locale
+     * Set sample coverage.
+     * @param string $coverageSample
+     * @param string|null $locale
      */
     public function setCoverageSample($coverageSample, $locale) {
-        return $this->setData('coverageSample', $coverageSample, $locale);
+        return $this->setData('coverageSample', (string) $coverageSample, $locale);
     }
 
     /**
-     * Return the localized type (method/approach)
+     * Return the localized type (method/approach).
      * @return string
      */
     public function getLocalizedType() {
-        return $this->getLocalizedData('type');
+        return (string) $this->getLocalizedData('type');
     }
 
     /**
      * Get type (method/approach).
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getType($locale) {
-        return $this->getData('type', $locale);
+        return (string) $this->getData('type', $locale);
     }
 
     /**
      * Set type (method/approach).
-     * @param $type string
-     * @param $locale
+     * @param string $type
+     * @param string|null $locale
      */
     public function setType($type, $locale) {
-        return $this->setData('type', $type, $locale);
+        return $this->setData('type', (string) $type, $locale);
     }
 
     /**
      * Get rights.
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getRights($locale) {
-        return $this->getData('rights', $locale);
+        return (string) $this->getData('rights', $locale);
     }
 
     /**
      * Set rights.
-     * @param $rights string
-     * @param $locale
+     * @param string $rights
+     * @param string|null $locale
      */
     public function setRights($rights, $locale) {
-        return $this->setData('rights', $rights, $locale);
+        return $this->setData('rights', (string) $rights, $locale);
     }
 
     /**
      * Get source.
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getSource($locale) {
-        return $this->getData('source', $locale);
+        return (string) $this->getData('source', $locale);
     }
 
     /**
      * Set source.
-     * @param $source string
-     * @param $locale
+     * @param string $source
+     * @param string|null $locale
      */
     public function setSource($source, $locale) {
-        return $this->setData('source', $source, $locale);
+        return $this->setData('source', (string) $source, $locale);
     }
 
     /**
@@ -504,41 +515,42 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLanguage() {
-        return $this->getData('language');
+        return (string) $this->getData('language');
     }
 
     /**
      * Set language.
-     * @param $language string
+     * @param string $language
      */
     public function setLanguage($language) {
-        return $this->setData('language', $language);
+        $this->setData('language', (string) $language);
     }
 
     /**
-     * Return the localized sponsor
+     * Return the localized sponsor.
      * @return string
      */
     public function getLocalizedSponsor() {
-        return $this->getLocalizedData('sponsor');
+        return (string) $this->getLocalizedData('sponsor');
     }
 
     /**
      * Get sponsor.
-     * @param $locale
+     * @param string|null $locale
      * @return string
      */
     public function getSponsor($locale) {
-        return $this->getData('sponsor', $locale);
+        $sponsor = $this->getData('sponsor', $locale);
+        return is_array($sponsor) ? '' : (string) $sponsor;
     }
 
     /**
      * Set sponsor.
-     * @param $sponsor string
-     * @param $locale
+     * @param string $sponsor
+     * @param string|null $locale
      */
     public function setSponsor($sponsor, $locale) {
-        return $this->setData('sponsor', $sponsor, $locale);
+        return $this->setData('sponsor', (string) $sponsor, $locale);
     }
 
     /**
@@ -546,215 +558,224 @@ class Submission extends DataObject {
      * @return string
      */
     public function getCitations() {
-        return $this->getData('citations');
+        return (string) $this->getData('citations');
     }
 
     /**
      * Set citations.
-     * @param $citations string
+     * @param string $citations
      */
     public function setCitations($citations) {
-        return $this->setData('citations', $citations);
+        $this->setData('citations', (string) $citations);
     }
 
     /**
-     * Get the localized cover filename
+     * Get the localized cover filename.
      * @return string
      */
     public function getLocalizedFileName() {
-        return $this->getLocalizedData('fileName');
+        return (string) $this->getLocalizedData('fileName');
     }
 
     /**
-     * get file name
-     * @param $locale string
+     * Get file name.
+     * @param string|null $locale
      * @return string
      */
     public function getFileName($locale) {
-        return $this->getData('fileName', $locale);
+        return (string) $this->getData('fileName', $locale);
     }
 
     /**
-     * set file name
-     * @param $fileName string
-     * @param $locale string
+     * Set file name.
+     * @param string $fileName
+     * @param string|null $locale
      */
     public function setFileName($fileName, $locale) {
-        return $this->setData('fileName', $fileName, $locale);
+        return $this->setData('fileName', (string) $fileName, $locale);
     }
 
     /**
-     * Get the localized submission cover width
-     * @return string
+     * Get the localized submission cover width.
+     * @return int|null
      */
     public function getLocalizedWidth() {
-        return $this->getLocalizedData('width');
+        $width = $this->getLocalizedData('width');
+        return $width !== null ? (int) $width : null;
     }
 
     /**
-     * get width of cover page image
-     * @param $locale string
-     * @return string
+     * Get width of cover page image.
+     * @param string|null $locale
+     * @return int|null
      */
     public function getWidth($locale) {
-        return $this->getData('width', $locale);
+        $width = $this->getData('width', $locale);
+        return $width !== null ? (int) $width : null;
     }
 
     /**
-     * set width of cover page image
-     * @param $locale string
-     * @param $width int
+     * Set width of cover page image.
+     * @param int|null $width
+     * @param string|null $locale
      */
     public function setWidth($width, $locale) {
-        return $this->setData('width', $width, $locale);
+        $this->setData('width', $width !== null ? (int) $width : null, $locale);
     }
 
     /**
-     * Get the localized submission cover height
-     * @return string
+     * Get the localized submission cover height.
+     * @return int|null
      */
     public function getLocalizedHeight() {
-        return $this->getLocalizedData('height');
+        $height = $this->getLocalizedData('height');
+        return $height !== null ? (int) $height : null;
     }
 
     /**
-     * get height of cover page image
-     * @param $locale string
-     * @return string
+     * Get height of cover page image.
+     * @param string|null $locale
+     * @return int|null
      */
     public function getHeight($locale) {
-        return $this->getData('height', $locale);
+        $height = $this->getData('height', $locale);
+        return $height !== null ? (int) $height : null;
     }
 
     /**
-     * set height of cover page image
-     * @param $locale string
-     * @param $height int
+     * Set height of cover page image.
+     * @param int|null $height
+     * @param string|null $locale
      */
     public function setHeight($height, $locale) {
-        return $this->setData('height', $height, $locale);
+        $this->setData('height', $height !== null ? (int) $height : null, $locale);
     }
 
     /**
-     * Get the localized cover filename on the uploader's computer
+     * Get the localized cover filename on the uploader's computer.
      * @return string
      */
     public function getLocalizedOriginalFileName() {
-        return $this->getLocalizedData('originalFileName');
+        return (string) $this->getLocalizedData('originalFileName');
     }
 
     /**
-     * get original file name
-     * @param $locale string
+     * Get original file name.
+     * @param string|null $locale
      * @return string
      */
     public function getOriginalFileName($locale) {
-        return $this->getData('originalFileName', $locale);
+        return (string) $this->getData('originalFileName', $locale);
     }
 
     /**
-     * set original file name
-     * @param $originalFileName string
-     * @param $locale string
+     * Set original file name.
+     * @param string $originalFileName
+     * @param string|null $locale
      */
     public function setOriginalFileName($originalFileName, $locale) {
-        return $this->setData('originalFileName', $originalFileName, $locale);
+        return $this->setData('originalFileName', (string) $originalFileName, $locale);
     }
 
     /**
-     * Get the localized cover alternate text
+     * Get the localized cover alternate text.
      * @return string
      */
     public function getLocalizedCoverPageAltText() {
-        return $this->getLocalizedData('coverPageAltText');
+        return (string) $this->getLocalizedData('coverPageAltText');
     }
 
     /**
-     * get cover page alternate text
-     * @param $locale string
+     * Get cover page alternate text.
+     * @param string|null $locale
      * @return string
      */
     public function getCoverPageAltText($locale) {
-        return $this->getData('coverPageAltText', $locale);
+        return (string) $this->getData('coverPageAltText', $locale);
     }
 
     /**
-     * set cover page alternate text
-     * @param $coverPageAltText string
-     * @param $locale string
+     * Set cover page alternate text.
+     * @param string $coverPageAltText
+     * @param string|null $locale
      */
     public function setCoverPageAltText($coverPageAltText, $locale) {
-        return $this->setData('coverPageAltText', $coverPageAltText, $locale);
+        return $this->setData('coverPageAltText', (string) $coverPageAltText, $locale);
     }
 
     /**
-     * Get the flag indicating whether or not to show
-     * a cover page.
-     * @return string
+     * Get the flag indicating whether or not to show a cover page.
+     * @return int|null
      */
     public function getLocalizedShowCoverPage() {
-        return $this->getLocalizedData('showCoverPage');
+        $show = $this->getLocalizedData('showCoverPage');
+        return $show !== null ? (int) $show : null;
     }
 
     /**
-     * get show cover page
-     * @param $locale string
-     * @return int
+     * Get show cover page.
+     * @param string|null $locale
+     * @return int|null
      */
     public function getShowCoverPage($locale) {
-        return $this->getData('showCoverPage', $locale);
+        $show = $this->getData('showCoverPage', $locale);
+        return $show !== null ? (int) $show : null;
     }
 
     /**
-     * set show cover page
-     * @param $showCoverPage int
-     * @param $locale string
+     * Set show cover page.
+     * @param int|null $showCoverPage
+     * @param string|null $locale
      */
     public function setShowCoverPage($showCoverPage, $locale) {
-        return $this->setData('showCoverPage', $showCoverPage, $locale);
+        $this->setData('showCoverPage', $showCoverPage !== null ? (int) $showCoverPage : null, $locale);
     }
 
     /**
-     * get hide cover page thumbnail in Toc
-     * @param $locale string
-     * @return int
+     * Get hide cover page thumbnail in Toc.
+     * @param string|null $locale
+     * @return int|null
      */
     public function getHideCoverPageToc($locale) {
-        return $this->getData('hideCoverPageToc', $locale);
+        $hide = $this->getData('hideCoverPageToc', $locale);
+        return $hide !== null ? (int) $hide : null;
     }
 
     /**
-     * set hide cover page thumbnail in Toc
-     * @param $hideCoverPageToc int
-     * @param $locale string
+     * Set hide cover page thumbnail in Toc.
+     * @param int|null $hideCoverPageToc
+     * @param string|null $locale
      */
     public function setHideCoverPageToc($hideCoverPageToc, $locale) {
-        return $this->setData('hideCoverPageToc', $hideCoverPageToc, $locale);
+        $this->setData('hideCoverPageToc', $hideCoverPageToc !== null ? (int) $hideCoverPageToc : null, $locale);
     }
 
     /**
-     * get hide cover page in abstract view
-     * @param $locale string
-     * @return int
+     * Get hide cover page in abstract view.
+     * @param string|null $locale
+     * @return int|null
      */
     public function getHideCoverPageAbstract($locale) {
-        return $this->getData('hideCoverPageAbstract', $locale);
+        $hide = $this->getData('hideCoverPageAbstract', $locale);
+        return $hide !== null ? (int) $hide : null;
     }
 
     /**
-     * set hide cover page in abstract view
-     * @param $hideCoverPageAbstract int
-     * @param $locale string
+     * Set hide cover page in abstract view.
+     * @param int|null $hideCoverPageAbstract
+     * @param string|null $locale
      */
     public function setHideCoverPageAbstract($hideCoverPageAbstract, $locale) {
-        return $this->setData('hideCoverPageAbstract', $hideCoverPageAbstract, $locale);
+        $this->setData('hideCoverPageAbstract', $hideCoverPageAbstract !== null ? (int) $hideCoverPageAbstract : null, $locale);
     }
 
     /**
-     * Get localized hide cover page in abstract view
+     * Get localized hide cover page in abstract view.
+     * @return int|null
      */
     public function getLocalizedHideCoverPageAbstract() {
-        return $this->getLocalizedData('hideCoverPageAbstract');
+        $hide = $this->getLocalizedData('hideCoverPageAbstract');
+        return $hide !== null ? (int) $hide : null;
     }
 
     /**
@@ -762,15 +783,15 @@ class Submission extends DataObject {
      * @return string
      */
     public function getDateSubmitted() {
-        return $this->getData('dateSubmitted');
+        return (string) $this->getData('dateSubmitted');
     }
 
     /**
      * Set submission date.
-     * @param $dateSubmitted string
+     * @param string $dateSubmitted
      */
     public function setDateSubmitted($dateSubmitted) {
-        return $this->setData('dateSubmitted', $dateSubmitted);
+        $this->setData('dateSubmitted', (string) $dateSubmitted);
     }
 
     /**
@@ -778,15 +799,15 @@ class Submission extends DataObject {
      * @return string
      */
     public function getDateStatusModified() {
-        return $this->getData('dateStatusModified');
+        return (string) $this->getData('dateStatusModified');
     }
 
     /**
      * Set the date of the last status modification.
-     * @param $dateModified string
+     * @param string $dateModified
      */
     public function setDateStatusModified($dateModified) {
-        return $this->setData('dateStatusModified', $dateModified);
+        $this->setData('dateStatusModified', (string) $dateModified);
     }
 
     /**
@@ -794,45 +815,48 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLastModified() {
-        return $this->getData('lastModified');
+        return (string) $this->getData('lastModified');
     }
 
     /**
      * Set the date of the last modification.
-     * @param $dateModified string
+     * @param string $dateModified
      */
     public function setLastModified($dateModified) {
-        return $this->setData('lastModified', $dateModified);
+        $this->setData('lastModified', (string) $dateModified);
     }
 
     /**
      * Stamp the date of the last modification to the current time.
+     * @return void
      */
     public function stampModified() {
-        return $this->setLastModified(Core::getCurrentDate());
+        $this->setLastModified(Core::getCurrentDate());
     }
 
     /**
      * Stamp the date of the last status modification to the current time.
+     * @return void
      */
     public function stampStatusModified() {
-        return $this->setDateStatusModified(Core::getCurrentDate());
+        $this->setDateStatusModified(Core::getCurrentDate());
     }
 
     /**
      * Get submission status.
-     * @return int
+     * @return int|null
      */
     public function getStatus() {
-        return $this->getData('status');
+        $status = $this->getData('status');
+        return $status !== null ? (int) $status : null;
     }
 
     /**
      * Set submission status.
-     * @param $status int
+     * @param int|null $status
      */
     public function setStatus($status) {
-        return $this->setData('status', $status);
+        $this->setData('status', $status !== null ? (int) $status : null);
     }
 
     /**
@@ -840,10 +864,9 @@ class Submission extends DataObject {
      * @return array
      */
     public function getStatusMap() {
-        // Hapus '&'
         static $statusMap;
         if (!isset($statusMap)) {
-            $statusMap = array(
+            $statusMap = [
                 STATUS_ARCHIVED => 'submissions.archived',
                 STATUS_QUEUED => 'submissions.queued',
                 STATUS_PUBLISHED => 'submissions.published',
@@ -852,99 +875,106 @@ class Submission extends DataObject {
                 STATUS_QUEUED_REVIEW => 'submissions.queuedReview',
                 STATUS_QUEUED_EDITING => 'submissions.queuedEditing',
                 STATUS_INCOMPLETE => 'submissions.incomplete'
-            );
+            ];
         }
         return $statusMap;
     }
 
     /**
      * Get a locale key for the paper's current status.
-     * @return string
+     * @return string|null
      */
     public function getStatusKey() {
-        $statusMap = $this->getStatusMap(); // Hapus '&'
-        return $statusMap[$this->getStatus()];
+        $statusMap = $this->getStatusMap();
+        $status = $this->getStatus();
+        return $status !== null && isset($statusMap[$status]) ? $statusMap[$status] : null;
     }
 
     /**
      * Get submission progress (most recently completed submission step).
-     * @return int
+     * @return int|null
      */
     public function getSubmissionProgress() {
-        return $this->getData('submissionProgress');
+        $progress = $this->getData('submissionProgress');
+        return $progress !== null ? (int) $progress : null;
     }
 
     /**
      * Set submission progress.
-     * @param $submissionProgress int
+     * @param int|null $submissionProgress
      */
     public function setSubmissionProgress($submissionProgress) {
-        return $this->setData('submissionProgress', $submissionProgress);
+        $this->setData('submissionProgress', $submissionProgress !== null ? (int) $submissionProgress : null);
     }
 
     /**
      * Get submission file id.
-     * @return int
+     * @return int|null
      */
     public function getSubmissionFileId() {
-        return $this->getData('submissionFileId');
+        $id = $this->getData('submissionFileId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set submission file id.
-     * @param $submissionFileId int
+     * @param int|null $submissionFileId
      */
     public function setSubmissionFileId($submissionFileId) {
-        return $this->setData('submissionFileId', $submissionFileId);
+        $this->setData('submissionFileId', $submissionFileId !== null ? (int) $submissionFileId : null);
     }
 
     /**
      * Get revised file id.
-     * @return int
+     * @return int|null
      */
     public function getRevisedFileId() {
-        return $this->getData('revisedFileId');
+        $id = $this->getData('revisedFileId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set revised file id.
-     * @param $revisedFileId int
+     * @param int|null $revisedFileId
      */
     public function setRevisedFileId($revisedFileId) {
-        return $this->setData('revisedFileId', $revisedFileId);
+        $this->setData('revisedFileId', $revisedFileId !== null ? (int) $revisedFileId : null);
     }
 
     /**
      * Get review file id.
-     * @return int
+     * @return int|null
      */
     public function getReviewFileId() {
-        return $this->getData('reviewFileId');
+        $id = $this->getData('reviewFileId');
+        return $id !== null ? (int) $id : null;
     }
 
     /**
      * Set review file id.
-     * @param $reviewFileId int
+     * @param int|null $reviewFileId
      */
     public function setReviewFileId($reviewFileId) {
-        return $this->setData('reviewFileId', $reviewFileId);
+        $this->setData('reviewFileId', $reviewFileId !== null ? (int) $reviewFileId : null);
     }
 
     /**
-     * get pages
+     * Get pages.
      * @return string
      */
     public function getPages() {
-        return $this->getData('pages');
+        return (string) $this->getData('pages');
     }
 
     /**
-     * get pages as a nested array of page ranges
-     * for example, pages of "pp. ii-ix, 9,15-18,a2,b2-b6" will return array( array(0 => 'ii', 1, => 'ix'), array(0 => '9'), array(0 => '15', 1 => '18'), array(0 => 'a2'), array(0 => 'b2', 1 => 'b6') )
+     * Get pages as a nested array of page ranges.
+     * For example, pages of "pp. ii-ix, 9,15-18,a2,b2-b6" will return 
+     * array( array(0 => 'ii', 1 => 'ix'), array(0 => '9'), array(0 => '15', 1 => '18'), array(0 => 'a2'), array(0 => 'b2', 1 => 'b6') )
      * @return array
      */
     public function getPageArray() {
-        $pages = $this->getData('pages');
+        $pages = (string) $this->getData('pages');
+        
         // Strip any leading word
         if (preg_match('/^[[:alpha:]]+\W/', $pages)) {
             // but don't strip a leading roman numeral
@@ -953,45 +983,50 @@ class Submission extends DataObject {
                 $pages = preg_replace('/^[[:alpha:]]+[:.]?/', '', $pages);
             }
         }
+        
         // strip leading and trailing space
         $pages = trim($pages);
+        
         // shortcut the explode/foreach if the remainder is an empty value
         if ($pages === '') {
-            return array();
+            return [];
         }
+        
         // commas indicate distinct ranges
         $ranges = explode(',', $pages);
-        $pageArray = array();
+        $pageArray = [];
         foreach ($ranges as $range) {
             // hyphens (or double-hyphens) indicate range spans
             $pageArray[] = array_map('trim', explode('-', str_replace('--', '-', $range), 2));
         }
+        
         return $pageArray;
     }
 
     /**
-     * set pages
-     * @param $pages string
+     * Set pages.
+     * @param string $pages
      */
     public function setPages($pages) {
-        return $this->setData('pages',$pages);
+        $this->setData('pages', (string) $pages);
     }
 
     /**
      * Return submission RT comments status.
-     * @return int
+     * @return int|null
      */
     public function getCommentsStatus() {
-        return $this->getData('commentsStatus');
+        $status = $this->getData('commentsStatus');
+        return $status !== null ? (int) $status : null;
     }
 
     /**
      * Set submission RT comments status.
-     * @param $commentsStatus boolean
+     * @param int|null $commentsStatus
      */
     public function setCommentsStatus($commentsStatus) {
-        return $this->setData('commentsStatus', $commentsStatus);
+        $this->setData('commentsStatus', $commentsStatus !== null ? (int) $commentsStatus : null);
     }
+    
 }
-
 ?>
