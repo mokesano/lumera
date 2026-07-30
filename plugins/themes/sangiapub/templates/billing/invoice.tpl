@@ -190,9 +190,7 @@
         </button>
         {/foreach}
     </div>
-    <div id="loadingIndicator" style="display: none; text-align: center; padding: 15px; color: #1a4f8b; font-weight: bold;">
-        {translate key="billing.processingPayment"}
-    </div>
+    <div id="loadingIndicator" style="display: none; text-align: center; padding: 15px; color: #1a4f8b; font-weight: bold;"></div>
 
     <div id="manualInstructionsBox" class="wi-manual-instructions-box">
         <h3>{translate key="billing.manualInstructionsTitle"}</h3>
@@ -230,7 +228,17 @@
     const connectionErrorMessage = "{translate key="billing.connectionError"|escape:"javascript"}";
     const gatewayUnknownMessage = "{translate key="billing.gatewayError"|escape:"javascript"}";
     const paymentFailedPrefix = "{translate key="billing.paymentFailed"|escape:"javascript"}";
-
+function processPayment(method, paymentType) {
+    const indicator = document.getElementById('loadingIndicator');
+    // [FIX] Teks dibedakan sesuai konteks nyata -- Manual TIDAK memproses
+    // apapun yang perlu "diamankan" (tidak ada uang lewat aplikasi ini,
+    // cuma update status + kirim email ke admin), beda dari gateway
+    // (Midtrans/Xendit/PayPal) yang genuinely memanggil API pihak ketiga.
+    indicator.textContent = (method === 'manual')
+        ? manualPreparingMessage
+        : gatewayProcessingMessage;
+    indicator.style.display = 'block';
+    ...
     {literal}
     function processPayment(method, paymentType) {
         document.getElementById('loadingIndicator').style.display = 'block';
@@ -242,7 +250,8 @@
             fetch(confirmManualUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: manualData.toString()
+                body: manualData.toString()const manualPreparingMessage = "{translate key="billing.manualPreparing"|escape:"javascript"}";
+const gatewayProcessingMessage = "{translate key="billing.processingPayment"|escape:"javascript"}";
             })
             .then(response => response.json())
             .then(res => {
