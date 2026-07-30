@@ -54,10 +54,22 @@ class WebhookHandler extends Handler {
             exit('Invalid Payload');
         }
 
+        // [FIX] Tentukan scope kredensial (Publisher/Partner) berdasarkan jurnal
+        $rawInvoiceId = $this->_peekInvoiceIdFromPayload($gatewayName, $payload);
         $settingsService = new PaymentSettingsService();
+
+        if ($rawInvoiceId > 0) {
+            $peekedInvoice = $this->invoiceService->getInvoiceById($rawInvoiceId);
+            if ($peekedInvoice) {
+                /** @var JournalDAO $journalDao */
+                $journalDao = DAORegistry::getDAO('JournalDAO');
+                $journal = $journalDao->getById((int) $peekedInvoice->getData('journalId'));
+                $settingsService = PaymentSettingsService::resolveForJournal($journal);
+            }
+        }
+
         $gateway = null;
 
-        // Inisialisasi Gateway menggunakan Factory Pattern sederhana
         if ($gatewayName === 'midtrans') {
             import('lib.wizdam.classes.payment.MidtransGateway');
             $gateway = new MidtransGateway(
@@ -117,6 +129,39 @@ class WebhookHandler extends Handler {
             header("HTTP/1.1 500 Internal Server Error");
             exit('Internal Server Error');
         }
+    }
+
+    /**
+     * [BARU] Mengintip invoiceId dari payload webhook TANPA verifikasi keamanan
+     * apapun -- semata untuk menentukan scope kredensial (Publisher/Partner)
+     * yang benar SEBELUM verifikasi signature sesungguhnya dijalankan oleh
+     * processWebhook(). Mengembalikan 0 kalau format tidak dikenali/tidak ada
+     * -- di titik itu kode di atas jatuh ke scope Publisher (perilaku lama).
+     * @param string $gatewayName
+     * @param array $payload
+     * @return int
+     */
+    private function _peekInvoiceIdFromPayload(string $gatewayName, array $payload): int {
+        $rawId = '';
+        if ($gatewayName === 'xendit' && isset($payload['external_id'])) {
+            $rawId = (string) $payload['external_id'];
+        } elseif ($gatewayName === 'midtrans' && isset($payload['order_id'])) {
+            $rawId = (string) $payload['order_id'];
+        } elseif ($gatewayName === 'paypal' && isset($payload['custom'])) {
+            $rawId = (string) $payload['custom'];
+        }
+
+        if ($rawId === '') return 0;
+
+        // Format: WIZDAM-{invoiceId}-{time} / WIZDAM-X-{invoiceId}-{time} / WIZDAM-PP-{invoiceId}-{time}
+        // -- segmen digit murni PERTAMA yang ditemui adalah invoiceId (selalu
+        // muncul sebelum segmen timestamp).
+        foreach (explode('-', $rawId) as $part) {
+            if (ctype_digit($part) && (int) $part > 0) {
+                return (int) $part;
+            }
+        }
+        return 0;
     }
     
 }

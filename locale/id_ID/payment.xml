@@ -12,11 +12,33 @@
   -->
 
 <locale name="id_ID" full_name="Bahasa Indonesia">
-    
-    <message key="payment.gatewaySettings">Payment Gateway Settings</message>
+
+    <!-- Admin manual Payment -->
+    <message key="admin.manualPayments.pageTitle">Konfirmasi Pembayaran Manual</message>
+    <message key="admin.manualPayments.description">Daftar tagihan yang menunggu verifikasi transfer manual staf.</message>
+    <message key="admin.manualPayments.confirmButton">Konfirmasi Diterima</message>
+    <message key="admin.manualPayments.confirmPrompt">Konfirmasi dana sudah diterima untuk invoice ini?</message>
+    <message key="admin.manualPayments.empty">Tidak ada yang menunggu konfirmasi.</message>
+
+    <!-- Payment -->
+    <message key="payment.gatewaySettings">Pengaturan Payment Gateway</message>
+    <message key="payment.enabledMethods">Metode Pembayaran Aktif</message>
+    <message key="payment.enabledMethods.description">Centang metode yang ingin diaktifkan. Metode yang dicentang akan tampil sebagai opsi di halaman Invoice, metode yang tidak dicentang tetap tampil tapi nonaktif.</message>
+    <message key="payment.method.manual">Manual (Transfer Bank)</message>
+    <message key="payment.method.paypal">PayPal</message>
+    <message key="payment.method.midtrans">Midtrans</message>
+    <message key="payment.method.xendit">Xendit</message>
+    <message key="payment.method.enableThis">Aktifkan metode ini</message>
+    <message key="payment.method.manualInstructionsPlaceholder">Contoh: Transfer ke BCA 1234567890 a.n. PT Sangia Research Media</message>
+    <message key="payment.settingsSaved">Pengaturan Payment Gateway telah disimpan ke dalam database.</message>
+
+    <!-- Checkout -->
     <message key="checkout.globalBilling">Billing</message>
     <message key="checkout.invoiceDetail">Billing Details</message>
-    
+    <message key="checkout.cart.title">Detail Keranjang Checkout</message>
+    <message key="checkout.billing.title">Detail Penagihan Checkout</message>
+    <message key="checkout.payment.title">Detail Pembayaran Checkout</message>
+
     <!-- Authenticate Management -->
     <message key="authenticate.invoiceTitle">Validasi Document Invoice</message>
     <message key="authenticate.error.title">Verifikasi Gagal</message>
@@ -61,9 +83,6 @@
     <message key="billing.success.invoiceCancelled">Tagihan berhasil dibatalkan.</message>
     <message key="billing.error.invoiceLinkFailedUser">Terjadi kendala teknis saat memproses invoice #{$invoiceId} Anda. Tim kami sudah diberitahu; mohon hubungi editor jika status tagihan tidak sesuai.</message>
     <message key="billing.error.invoiceLinkFailedManager">Pembayaran masuk gagal ditautkan ke invoice #{$invoiceId} (queued payment #{$queuedPaymentId}). Data tetap tercatat di completed_payments sebagai fallback -- mohon diperiksa manual.</message>
-    <message key="billing.error.useManualEndpoint">Manual payment cannot be processed through this channel. Please use the manual confirmation button instead.</message>
-    <message key="billing.success.manualConfirmationSent">Your manual payment confirmation has been sent. Our staff will verify it shortly.</message>
-    
     <message key="billing.error.useManualEndpoint">Pembayaran manual tidak dapat diproses lewat jalur ini. Silakan gunakan tombol konfirmasi manual.</message>
     <message key="billing.success.manualConfirmationSent">Konfirmasi pembayaran manual Anda telah terkirim. Staf kami akan segera memverifikasi.</message>
     <message key="billing.error.csrfInvalid">Sesi Anda telah kedaluwarsa atau permintaan tidak valid. Silakan muat ulang halaman dan coba lagi.</message>

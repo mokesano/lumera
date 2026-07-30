@@ -12,14 +12,33 @@
   -->
 
 <locale name="en_US" full_name="U.S. English">
-    
+
+    <!-- Admin Manual Payment -->
+    <message key="admin.manualPayments.pageTitle">Manual Payment Confirmation</message>
+    <message key="admin.manualPayments.description">List of invoices awaiting manual transfer verification by staff.</message>
+    <message key="admin.manualPayments.confirmButton">Confirm Received</message>
+    <message key="admin.manualPayments.confirmPrompt">Confirm that funds have been received for this invoice?</message>
+    <message key="admin.manualPayments.empty">No items awaiting confirmation.</message>
+
+    <!-- Payment -->
+    <message key="payment.enabledMethods">Enabled Payment Methods</message>
+    <message key="payment.enabledMethods.description">Check the methods you want to enable. Checked methods will appear as options on the Invoice page, while unchecked methods will remain visible but disabled.</message>
+    <message key="payment.method.manual">Manual (Bank Transfer)</message>
+    <message key="payment.method.paypal">PayPal</message>
+    <message key="payment.method.midtrans">Midtrans</message>
+    <message key="payment.method.xendit">Xendit</message>
+    <message key="payment.method.enableThis">Enable this method</message>
+    <message key="payment.method.manualInstructionsPlaceholder">Example: Transfer to BCA 1234567890 a/n PT Sangia Research Media</message>
+    <message key="payment.settingsSaved">Payment Gateway settings have been saved to the database.</message>
     <message key="payment.gatewaySettings">Payment Gateway Settings</message>
+
+    <!-- Checkout -->
     <message key="checkout.cart.title">Checkout Cart Details</message>
     <message key="checkout.billing.title">Checkout Billing Details</message>
     <message key="checkout.payment.title">Checkout Payment Details</message>
     <message key="checkout.globalBilling">All Billing</message>
     <message key="checkout.invoiceDetail">Invoice Billing Details</message>
-    
+
     <!-- Authenticate Management -->
     <message key="authenticate.invoiceTitle">Validation Invoice Document</message>
     <message key="authenticate.error.title">Verification Failed</message>
@@ -64,9 +83,6 @@
     <message key="billing.success.invoiceCancelled">Invoice successfully canceled.</message>
     <message key="billing.error.invoiceLinkFailedUser">A technical issue occurred while processing your invoice #{$invoiceId}. Our team has been notified; please contact the editor if your billing status is incorrect.</message>
     <message key="billing.error.invoiceLinkFailedManager">The incoming payment failed to link to invoice #{$invoiceId} (queued payment #{$queuedPaymentId}). The record has been saved in completed_payments as a fallback -- please verify manually.</message>
-    <message key="billing.error.useManualEndpoint">Manual payment cannot be processed through this channel. Please use the manual confirmation button instead.</message>
-    <message key="billing.success.manualConfirmationSent">Your manual payment confirmation has been sent. Our staff will verify it shortly.</message>
-
     <message key="billing.error.useManualEndpoint">Manual payment cannot be processed through this channel. Please use the manual confirmation button instead.</message>
     <message key="billing.success.manualConfirmationSent">Your manual payment confirmation has been sent. Our staff will verify it shortly.</message>
     <message key="billing.error.csrfInvalid">Your session has expired or the request is invalid. Please refresh the page and try again.</message>

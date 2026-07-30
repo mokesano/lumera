@@ -15,7 +15,7 @@
 
 {if $smarty.get.saved}
     <div style="background-color: #d4edda; color: #155724; padding: 15px; margin-bottom: 20px; border: 1px solid #c3e6cb; border-radius: 4px;">
-        <strong>Berhasil!</strong> Pengaturan Payment Gateway telah disimpan ke dalam database.
+        <<strong>{translate key="common.success"}</strong> {translate key="payment.settingsSaved"}
     </div>
 {/if}
 
@@ -48,6 +48,45 @@
                 </td>
             </tr>
         </table>
+    </div>
+
+    <div style="margin-bottom: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 5px; background: #fff;">
+        <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">{translate key="payment.enabledMethods"}</h3>
+        <table class="data" width="100%">
+            <tr valign="top">
+                <td width="25%" class="label">{translate key="payment.method.manual"}</td>
+                <td width="75%" class="value">
+                    <input type="checkbox" name="enabled_manual" id="enabled_manual" value="1"{if $enabled_manual} checked="checked"{/if} />
+                    <label for="enabled_manual">{translate key="payment.method.enableThis"}</label>
+                    <br><br>
+                    <textarea name="manual_instructions" id="manual_instructions" cols="60" rows="4" class="textArea" placeholder="{translate key="payment.method.manualInstructionsPlaceholder"}">{$manual_instructions|escape}</textarea>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td class="label">{translate key="payment.method.paypal"}</td>
+                <td class="value">
+                    <input type="checkbox" name="enabled_paypal" id="enabled_paypal" value="1"{if $enabled_paypal} checked="checked"{/if} />
+                    <label for="enabled_paypal">{translate key="payment.method.enableThis"}</label>
+                    <br><br>
+                    <input type="email" name="paypal_seller_email" id="paypal_seller_email" value="{$paypal_seller_email|escape}" size="40" class="textField" placeholder="seller@example.com" />
+                </td>
+            </tr>
+            <tr valign="top">
+                <td class="label">{translate key="payment.method.midtrans"}</td>
+                <td class="value">
+                    <input type="checkbox" name="enabled_midtrans" id="enabled_midtrans" value="1"{if $enabled_midtrans} checked="checked"{/if} />
+                    <label for="enabled_midtrans">{translate key="payment.method.enableThis"}</label>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td class="label">{translate key="payment.method.xendit"}</td>
+                <td class="value">
+                    <input type="checkbox" name="enabled_xendit" id="enabled_xendit" value="1"{if $enabled_xendit} checked="checked"{/if} />
+                    <label for="enabled_xendit">{translate key="payment.method.enableThis"}</label>
+                </td>
+            </tr>
+        </table>
+        <span style="font-size: 11px; color: #666;">{translate key="payment.enabledMethods.description"}</span>
     </div>
 
     <div style="margin-bottom: 30px; border: 1px solid #0056b3; padding: 20px; border-radius: 5px; background: #f4f9ff;">
