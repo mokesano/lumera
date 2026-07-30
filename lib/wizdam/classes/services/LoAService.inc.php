@@ -181,7 +181,7 @@ class LoAService {
         $journal = $journalDao->getById($journalId);
 
         if ($journal) {
-            return $journal->getLocalizedSetting('name');
+            return $journal->getLocalizedTitle();
         }
 
         // [FIX] Fallback sebelumnya hardcode "Sangia Frontedge Publisher" --
