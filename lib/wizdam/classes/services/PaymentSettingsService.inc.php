@@ -20,7 +20,7 @@ class PaymentSettingsService {
 
     /** @var null|object $journalSettingsDao */
     private object $siteSettingsDao;
-
+    
     /** @var null|object $journalSettingsDao */
     private ?object $journalSettingsDao = null;
 
@@ -94,7 +94,6 @@ class PaymentSettingsService {
     // 
     // GETTER SPECIFIC (Helpers)
     // 
-
     /**
      * Daftar gateway yang AKTIF (bukan lagi satu pilihan tunggal).
      * Backward-compatible: kalau 'enabled_gateways' belum pernah di-set,
@@ -184,7 +183,39 @@ class PaymentSettingsService {
     }
 
     /**
-     * Instruksi pembayaran manual (rekening bank, dst).
+     * [BARU] Daftar rekening bank untuk instruksi transfer manual --
+     * MENGGANTIKAN model teks-bebas-satu-rekening. Mendukung banyak
+     * rekening sekaligus, supaya pengguna bisa memilih bank yang sama
+     * dengan bank mereka sendiri (transfer sesama bank), bukan dipaksa
+     * satu rekening saja.
+     * @return array setiap elemen: ['bankName','accountNumber','accountHolder','branch','notes']
+     */
+    public function getBankAccounts(): array {
+        $raw = $this->getSetting('bank_accounts', null);
+        if ($raw === null) {
+            // [BACKWARD COMPAT] Kalau belum pernah diisi lewat form baru,
+            // tapi ada 'manual_instructions' lama (teks bebas satu rekening),
+            // tampilkan sebagai satu entri "Catatan Lainnya" -- supaya data
+            // lama yang sudah diisi admin tidak hilang begitu saja.
+            $legacyText = (string) $this->getSetting('manual_instructions', '');
+            if ($legacyText !== '') {
+                return [[
+                    'bankName' => '',
+                    'accountNumber' => '',
+                    'accountHolder' => '',
+                    'branch' => '',
+                    'notes' => $legacyText,
+                ]];
+            }
+            return [];
+        }
+        $decoded = is_array($raw) ? $raw : json_decode((string) $raw, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * @deprecated Gunakan getBankAccounts(). Dipertahankan hanya sebagai
+     * fallback baca data lama di dalam getBankAccounts() itu sendiri.
      */
     public function getManualInstructions(): string {
         return (string) $this->getSetting('manual_instructions', '');

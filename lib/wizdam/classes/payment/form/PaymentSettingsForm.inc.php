@@ -12,7 +12,8 @@ declare(strict_types=1);
  * @class PaymentSettingsForm
  * 
  * @brief Form untuk mengatur Payment Gateway Keys di level Admin -- termasuk
- * toggle Manual/PayPal dan daftar gateway aktif (multi-gateway).
+ * toggle Manual/PayPal, daftar gateway aktif, dan daftar rekening bank
+ * (multi-rekening) untuk instruksi transfer manual.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -34,11 +35,8 @@ class PaymentSettingsForm extends Form {
     }
 
     /**
-     * [FIX] csrfToken TIDAK di-generate ulang di sini -- sudah tersedia
-     * global di setiap template lewat PKPTemplateManager (konteks 'global').
-     * Menimpanya di sini dengan konteks berbeda ($sessionId) menyebabkan
-     * validasi CSRF saat submit SELALU gagal (konteks token vs konteks
-     * pengecekan tidak cocok).
+     * csrfToken TIDAK di-generate ulang di sini -- sudah tersedia global
+     * di setiap template lewat PKPTemplateManager (konteks 'global').
      */
     public function display($request = null, $template = null): void {
         parent::display($request, $template);
@@ -58,7 +56,7 @@ class PaymentSettingsForm extends Form {
             'enabled_xendit' => in_array('xendit', $this->settingsService->getEnabledGateways(), true) ? 1 : 0,
 
             'paypal_seller_email' => $this->settingsService->getPayPalSellerEmail(),
-            'manual_instructions' => $this->settingsService->getManualInstructions(),
+            'bank_accounts' => $this->settingsService->getBankAccounts(),
 
             'midtrans_server_key' => $this->settingsService->getMidtransServerKey(),
             'midtrans_client_key' => $this->settingsService->getMidtransClientKey(),
@@ -80,7 +78,13 @@ class PaymentSettingsForm extends Form {
             'enabled_midtrans',
             'enabled_xendit',
             'paypal_seller_email',
-            'manual_instructions',
+            // [BARU] Array paralel -- satu elemen per baris rekening bank
+            // yang diinput admin lewat form repeatable.
+            'bank_name',
+            'account_number',
+            'account_holder',
+            'bank_branch',
+            'bank_notes',
             'midtrans_server_key',
             'midtrans_client_key',
             'xendit_api_key',
@@ -104,7 +108,33 @@ class PaymentSettingsForm extends Form {
         $this->settingsService->updateSetting('enabled_gateways', json_encode($enabledGateways), 'string');
 
         $this->settingsService->updateSetting('paypal_seller_email', $this->getData('paypal_seller_email'), 'string');
-        $this->settingsService->updateSetting('manual_instructions', $this->getData('manual_instructions'), 'string');
+
+        // [BARU] Rakit array paralel dari form repeatable menjadi daftar
+        // rekening terstruktur. Baris yang bankName DAN accountNumber-nya
+        // sama-sama kosong dilewati (dianggap baris kosong yang tidak diisi).
+        $bankNames = (array) $this->getData('bank_name');
+        $accountNumbers = (array) $this->getData('account_number');
+        $accountHolders = (array) $this->getData('account_holder');
+        $bankBranches = (array) $this->getData('bank_branch');
+        $bankNotes = (array) $this->getData('bank_notes');
+
+        $bankAccounts = [];
+        $rowCount = count($bankNames);
+        for ($i = 0; $i < $rowCount; $i++) {
+            $bankName = trim((string) ($bankNames[$i] ?? ''));
+            $accountNumber = trim((string) ($accountNumbers[$i] ?? ''));
+
+            if ($bankName === '' && $accountNumber === '') continue;
+
+            $bankAccounts[] = [
+                'bankName' => $bankName,
+                'accountNumber' => $accountNumber,
+                'accountHolder' => trim((string) ($accountHolders[$i] ?? '')),
+                'branch' => trim((string) ($bankBranches[$i] ?? '')),
+                'notes' => trim((string) ($bankNotes[$i] ?? '')),
+            ];
+        }
+        $this->settingsService->updateSetting('bank_accounts', json_encode($bankAccounts), 'string');
         
         $this->settingsService->updateSetting('midtrans_server_key', $this->getData('midtrans_server_key'), 'string');
         $this->settingsService->updateSetting('midtrans_client_key', $this->getData('midtrans_client_key'), 'string');
@@ -112,6 +142,6 @@ class PaymentSettingsForm extends Form {
         $this->settingsService->updateSetting('xendit_api_key', $this->getData('xendit_api_key'), 'string');
         $this->settingsService->updateSetting('xendit_webhook_token', $this->getData('xendit_webhook_token'), 'string');
     }
-
+    
 }
 ?>

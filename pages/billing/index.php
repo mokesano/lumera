@@ -22,7 +22,7 @@ switch ($op) {
     case 'history':   // Arsip Tagihan (PAID/VOID/EXPIRED)
     case 'invoice':   // Smart Router (HTML & PDF Download) dengan Validasi Hash
     case 'pay':       // Proses Pembayaran ke Payment Gateway
-    case 'confirmManual': // [BARU] Konfirmasi niat bayar Manual
+    case 'submitTransferReference': // [GANTI] sebelumnya 'confirmManual' -- Tahap Konfirmasi Transfer Bank
     case 'cancel':    // Pembatalan Tagihan
         define('HANDLER_CLASS', 'BillingHandler');
         import('pages.billing.BillingHandler');
@@ -30,7 +30,7 @@ switch ($op) {
     // 
     // [WIZDAM CORE LOGIC] Payment Gateway Integration
     // 
-    // Endpoint Callback/Webhook dari Xendit/Midtrans.
+    // Endpoint Callback/Webhook dari Xendit/Midtrans/PayPal.
     // Menangani update status dari UNPAID menjadi PAID secara otomatis.
     case 'webhook':
         define('HANDLER_CLASS', 'WebhookHandler');

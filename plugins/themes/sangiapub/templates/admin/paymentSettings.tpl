@@ -15,15 +15,23 @@
 
 {if $smarty.get.saved}
     <div style="background-color: #d4edda; color: #155724; padding: 15px; margin-bottom: 20px; border: 1px solid #c3e6cb; border-radius: 4px;">
-        <<strong>{translate key="common.success"}</strong> {translate key="payment.settingsSaved"}
+        <strong>{translate key="common.success"}</strong> {translate key="payment.settingsSaved"}
     </div>
 {/if}
 
-{* Pesan Error bawaan Form OJS jika validasi gagal (misal CSRF tidak valid) *}
 {include file="common/formErrors.tpl"}
 
+{literal}
+<style>
+    .wi-bank-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; padding: 10px; background: #f9f9f9; border-radius: 4px; }
+    .wi-bank-row input { padding: 6px; border: 1px solid #ccc; border-radius: 3px; width: 100%; box-sizing: border-box; }
+    .wi-bank-row .wi-remove-bank { background: #dc3545; color: #fff; border: none; border-radius: 3px; padding: 6px 10px; cursor: pointer; }
+    .wi-add-bank { margin-top: 8px; background: #28a745; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+</style>
+{/literal}
+
 <form method="post" action="{url page="admin" op="save-payment-settings"}">
-    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
+    <input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
     <div style="margin-bottom: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 5px; background: #fff;">
         <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">Pengaturan Lingkungan (Environment)</h3>
         <table class="data" width="100%">
@@ -58,8 +66,37 @@
                 <td width="75%" class="value">
                     <input type="checkbox" name="enabled_manual" id="enabled_manual" value="1"{if $enabled_manual} checked="checked"{/if} />
                     <label for="enabled_manual">{translate key="payment.method.enableThis"}</label>
-                    <br><br>
-                    <textarea name="manual_instructions" id="manual_instructions" cols="60" rows="4" class="textArea" placeholder="{translate key="payment.method.manualInstructionsPlaceholder"}">{$manual_instructions|escape}</textarea>
+
+                    <div style="margin-top: 15px;">
+                        <strong style="font-size: 13px;">{translate key="payment.bankAccounts.title"}</strong>
+                        <p style="font-size: 11px; color: #666; margin: 4px 0 10px;">{translate key="payment.bankAccounts.description"}</p>
+
+                        <div id="bankAccountsContainer">
+                            {foreach from=$bank_accounts item=account name=bankLoop}
+                            <div class="wi-bank-row">
+                                <input type="text" name="bank_name[]" value="{$account.bankName|escape}" placeholder="{translate key="payment.bankAccounts.bankNamePlaceholder"|escape}">
+                                <input type="text" name="account_number[]" value="{$account.accountNumber|escape}" placeholder="{translate key="payment.bankAccounts.accountNumberPlaceholder"|escape}">
+                                <input type="text" name="account_holder[]" value="{$account.accountHolder|escape}" placeholder="{translate key="payment.bankAccounts.accountHolderPlaceholder"|escape}">
+                                <input type="text" name="bank_branch[]" value="{$account.branch|escape}" placeholder="{translate key="payment.bankAccounts.branchPlaceholder"|escape}">
+                                <button type="button" class="wi-remove-bank" onclick="this.parentElement.remove();">&times;</button>
+                            </div>
+                            {foreachelse}
+                            <div class="wi-bank-row">
+                                <input type="text" name="bank_name[]" value="" placeholder="{translate key="payment.bankAccounts.bankNamePlaceholder"|escape}">
+                                <input type="text" name="account_number[]" value="" placeholder="{translate key="payment.bankAccounts.accountNumberPlaceholder"|escape}">
+                                <input type="text" name="account_holder[]" value="" placeholder="{translate key="payment.bankAccounts.accountHolderPlaceholder"|escape}">
+                                <input type="text" name="bank_branch[]" value="" placeholder="{translate key="payment.bankAccounts.branchPlaceholder"|escape}">
+                                <button type="button" class="wi-remove-bank" onclick="this.parentElement.remove();">&times;</button>
+                            </div>
+                            {/foreach}
+                        </div>
+                        <button type="button" class="wi-add-bank" onclick="addBankRow()">+ {translate key="payment.bankAccounts.addAnother"}</button>
+
+                        <div style="margin-top: 12px;">
+                            <label style="font-size: 12px; color: #666;">{translate key="payment.bankAccounts.generalNotes"}</label>
+                            <textarea name="bank_notes[]" cols="60" rows="2" class="textArea" placeholder="{translate key="payment.bankAccounts.generalNotesPlaceholder"|escape}">{if $bank_accounts|@count > 0}{$bank_accounts[0].notes|escape}{/if}</textarea>
+                        </div>
+                    </div>
                 </td>
             </tr>
             <tr valign="top">
@@ -95,7 +132,6 @@
             <tr valign="top">
                 <td width="25%" class="label"><label for="xendit_api_key">Secret API Key</label></td>
                 <td width="75%" class="value">
-                    {* Menggunakan type password agar API Key tidak terlihat saat ada orang di belakang layar *}
                     <input type="password" name="xendit_api_key" id="xendit_api_key" value="{$xendit_api_key|escape}" size="60" maxlength="255" class="textField" />
                 </td>
             </tr>
@@ -120,7 +156,6 @@
             <tr valign="top">
                 <td class="label"><label for="midtrans_client_key">Client Key</label></td>
                 <td class="value">
-                    {* Client key bersifat publik, jadi biarkan bertipe text *}
                     <input type="text" name="midtrans_client_key" id="midtrans_client_key" value="{$midtrans_client_key|escape}" size="60" maxlength="255" class="textField" />
                 </td>
             </tr>
@@ -133,17 +168,31 @@
         </button>
 
         {if $smarty.get.saved}
-            {* WIZDAM UX: Jika baru saja disimpan, berikan tombol KEMBALI yang jelas *}
             <a href="{url page="admin"}" style="margin-left: 15px; padding: 10px 25px; background: #6c757d; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold; transition: 0.3s;">
                 &larr; Selesai & Kembali
             </a>
         {else}
-            {* Jika sedang mengedit biasa, tampilkan batal *}
             <a href="{url page="admin"}" style="margin-left: 15px; text-decoration: none; color: #666; padding: 10px 15px;">
                 Batal
             </a>
         {/if}
     </div>
 </form>
+
+<script>
+{literal}
+function addBankRow() {
+    const container = document.getElementById('bankAccountsContainer');
+    const row = document.createElement('div');
+    row.className = 'wi-bank-row';
+    row.innerHTML = '<input type="text" name="bank_name[]" placeholder="Nama Bank">' +
+        '<input type="text" name="account_number[]" placeholder="Nomor Rekening">' +
+        '<input type="text" name="account_holder[]" placeholder="Atas Nama">' +
+        '<input type="text" name="bank_branch[]" placeholder="Cabang (opsional)">' +
+        '<button type="button" class="wi-remove-bank" onclick="this.parentElement.remove();">&times;</button>';
+    container.appendChild(row);
+}
+{/literal}
+</script>
 
 {include file="common/footer.tpl"}

@@ -1438,6 +1438,8 @@
             <DEFAULT VALUE="UNPAID"/>
         </field>
         <field name="payment_method" type="C2" size="50" />
+		<field name="transfer_bank" type="C2" size="100" />
+		<field name="transfer_reference" type="C2" size="100" />
         <field name="date_billed" type="T">
             <NOTNULL/>
         </field>
@@ -1459,6 +1461,10 @@
 			<col>legacy_source_id</col>
 			<UNIQUE/>
 		</index>
+        <index name="uniq_invoices_transfer_reference">
+            <col>transfer_reference</col>
+            <UNIQUE/>
+        </index>
     </table>
 
 	<!--

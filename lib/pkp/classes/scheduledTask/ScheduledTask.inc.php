@@ -20,26 +20,26 @@ import('lib.pkp.classes.scheduledTask.ScheduledTaskHelper');
 
 class ScheduledTask {
 
-    /** @var array task arguments */
-    protected $_args;
+    /** @var array Task arguments */
+    protected $_args = [];
 
-    /** @var string? This process id. */
+    /** @var string|null This process id. */
     protected $_processId = null;
 
-    /** @var string File path in which execution log messages will be written. */
-    protected $_executionLogFile;
+    /** @var string|null File path in which execution log messages will be written. */
+    protected $_executionLogFile = null;
 
-    /** @var ScheduledTaskHelper */
-    protected $_helper;
+    /** @var ScheduledTaskHelper|null */
+    protected $_helper = null;
 
 
     /**
      * Constructor.
-     * @param $args array
+     * @param array $args
      */
-    public function __construct($args = array()) {
-        $this->_args = $args;
-        $this->_processId = uniqid();
+    public function __construct($args = []) {
+        $this->_args = is_array($args) ? $args : [];
+        $this->_processId = (string) uniqid();
 
         // Ensure common locale keys are available
         AppLocale::requireComponents(LOCALE_COMPONENT_CORE_ADMIN, LOCALE_COMPONENT_CORE_COMMON);
@@ -49,7 +49,7 @@ class ScheduledTask {
         $fileMgr = new PrivateFileManager();
 
         $scheduledTaskFilesPath = realpath($fileMgr->getBasePath()) . DIRECTORY_SEPARATOR . SCHEDULED_TASK_EXECUTION_LOG_DIR;
-        $this->_executionLogFile = $scheduledTaskFilesPath . DIRECTORY_SEPARATOR . str_replace(' ', '', $this->getName()) . 
+        $this->_executionLogFile = $scheduledTaskFilesPath . DIRECTORY_SEPARATOR . str_replace(' ', '', (string) $this->getName()) . 
             '-' . $this->getProcessId() . '-' . date('Ymd') . '.log';
         
         if (!$fileMgr->fileExists($scheduledTaskFilesPath, 'dir')) {
@@ -57,23 +57,25 @@ class ScheduledTask {
             if (!$success) {
                 // files directory wrong configuration?
                 // [LUMERA] Fatal Error yang lebih informatif daripada assert(false)
-                fatalError("Scheduled Task Log Directory is missing and cannot be created: $scheduledTaskFilesPath");
+                fatalError("Scheduled Task Log Directory is missing and cannot be created: " . $scheduledTaskFilesPath);
                 $this->_executionLogFile = null;
             }
         }
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param array $args
      */
-    public function ScheduledTask($args = array()) {
+    public function ScheduledTask($args = []) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($args);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
 
@@ -83,10 +85,10 @@ class ScheduledTask {
 
     /**
      * Get this process id.
-     * @return int
+     * @return string
      */
     public function getProcessId() {
-        return $this->_processId;
+        return (string) $this->_processId;
     }
 
     /**
@@ -94,7 +96,9 @@ class ScheduledTask {
      * @return ScheduledTaskHelper
      */
     public function getHelper() {
-        if (!$this->_helper) $this->_helper = new ScheduledTaskHelper();
+        if ($this->_helper === null) {
+            $this->_helper = new ScheduledTaskHelper();
+        }
         return $this->_helper;
     }
 
@@ -103,31 +107,36 @@ class ScheduledTask {
      * @return string
      */
     public function getName() {
-        return __('admin.scheduledTask');
+        return (string) __('admin.scheduledTask');
     }
 
     /**
      * Add an entry into the execution log.
-     * @param string $message string
-     * @param $type string (optional)
+     * @param string $message
+     * @param string|null $type
+     * @return void
      */
     public function addExecutionLogEntry($message, $type = null) {
         $logFile = $this->_executionLogFile;
 
-        if (!$message) return;
+        if ($message === null || $message === '') {
+            return;
+        }
 
-        if ($type) {
-            $log = '[' . Core::getCurrentDate() . '] ' . '[' . __($type) . '] ' . $message;
+        if ($type !== null && $type !== '') {
+            $log = '[' . Core::getCurrentDate() . '] ' . '[' . __((string) $type) . '] ' . (string) $message;
         } else {
-            $log = $message;
+            $log = (string) $message;
         }
 
         // [LUMERA] Modern File Write
         // Menggunakan file_put_contents dengan LOCK_EX (Exclusive Lock) untuk thread safety.
         // FILE_APPEND agar log tidak menimpa data sebelumnya.
-        if (file_put_contents($logFile, $log . PHP_EOL, FILE_APPEND | LOCK_EX) === false) {
-             // Jika gagal (misal disk penuh), log ke error log server sebagai cadangan
-             error_log("Lumera ScheduledTask Error: Could not write to log file: $logFile");
+        if ($logFile !== null) {
+            if (file_put_contents($logFile, $log . PHP_EOL, FILE_APPEND | LOCK_EX) === false) {
+                // Jika gagal (misal disk penuh), log ke error log server sebagai cadangan
+                error_log("Lumera ScheduledTask Error: Could not write to log file: " . $logFile);
+            }
         }
     }
 
@@ -152,18 +161,18 @@ class ScheduledTask {
     
     /**
      * Make sure the execution process follow the required steps.
-     * @return boolean
+     * @return bool
      */
     public function execute() {
-        $this->addExecutionLogEntry(Config::getVar('general', 'base_url'));
+        $this->addExecutionLogEntry((string) Config::getVar('general', 'base_url'));
         $this->addExecutionLogEntry(__('admin.scheduledTask.startTime'), SCHEDULED_TASK_MESSAGE_TYPE_NOTICE);
 
-        $result = $this->executeActions();
+        $result = (bool) $this->executeActions();
 
         $this->addExecutionLogEntry(__('admin.scheduledTask.stopTime'), SCHEDULED_TASK_MESSAGE_TYPE_NOTICE);
 
         $helper = $this->getHelper();
-        $helper->notifyExecutionResult($this->_processId, $this->getName(), $result, $this->_executionLogFile);
+        $helper->notifyExecutionResult((string) $this->_processId, (string) $this->getName(), $result, $this->_executionLogFile);
 
         return $result;
     }

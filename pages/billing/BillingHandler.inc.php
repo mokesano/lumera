@@ -190,7 +190,7 @@ class BillingHandler extends Handler {
     /**
      * Memproses permintaan inisiasi pembayaran ke Payment Gateway (AJAX/POST).
      * Rute: POST /billing/pay/[hash]-[id]
-     * Metode 'manual' TIDAK melalui method ini -- lihat confirmManual().
+     * Metode 'manual' TIDAK melalui method ini -- lihat submitTransferReference().
      * @param array $args Harus berisi format keamanan: [hash]-[id]
      * @param Request|null $request
      */
@@ -233,8 +233,10 @@ class BillingHandler extends Handler {
             $this->_sendJsonResponse($request, 'error', __('billing.error.alreadyPaid'));
         }
 
-        // [FIX] 'manual' tidak punya URL checkout gateway -- tolak eksplisit
-        // dan arahkan pengguna ke confirmManual() yang memang dirancang untuknya.
+        // [FIX] 'manual' tidak punya URL checkout gateway -- tidak seharusnya
+        // pernah tiba di sini sama sekali (tombol Transfer Bank memanggil
+        // toggleTransferBox() di JS, murni tampil/sembunyi, tanpa fetch()).
+        // Baris ini dipertahankan sebagai pertahanan berlapis saja.
         if ($method === 'manual') {
             $this->_sendJsonResponse($request, 'error', __('billing.error.useManualEndpoint'));
         }
@@ -281,17 +283,16 @@ class BillingHandler extends Handler {
     }
 
     /**
-     * Memproses konfirmasi niat bayar Manual (bukan gateway online). TIDAK
-     * menandai invoice PAID -- uang belum diterima. Mengembalikan TEKS
-     * INSTRUKSI PEMBAYARAN langsung di respons JSON (supaya tercetak di
-     * halaman invoice, bukan cuma dikirim lewat email), dan mengirim SATU
-     * notifikasi ke admin (bukan email palsu ke pengguna yang templatenya
-     * tidak pernah ada).
-     * Rute: POST /billing/confirmManual/[hash]-[id]
-     * @param array $args Harus berisi format keamanan: [hash]-[id]
+     * [BARU] Tahap Konfirmasi Transfer -- pengguna mengirim kode referensi
+     * transfer bank + bank tujuan sebagai bukti. TIDAK menandai invoice
+     * PAID -- wewenang yang berhak (Admin Publisher untuk jurnal biasa,
+     * Journal Manager untuk jurnal Partnership) yang memverifikasi manual
+     * lewat mutasi rekening. MENGGANTIKAN confirmManual() sepenuhnya.
+     * Rute: POST /billing/submitTransferReference/[hash]-[id]
+     * @param array $args
      * @param Request|null $request
      */
-    public function confirmManual(array $args = [], $request = null): void {
+    public function submitTransferReference(array $args = [], $request = null): void {
         $this->validate();
         if (!$request) $request = Application::get()->getRequest();
 
@@ -327,41 +328,63 @@ class BillingHandler extends Handler {
             $this->_sendJsonResponse($request, 'error', __('billing.error.alreadyPaid'));
         }
 
-        $marked = $this->invoiceService->markPendingManualConfirmation($invoiceId);
-        if (!$marked) {
-            $this->_sendJsonResponse($request, 'error', __('billing.error.gatewayFailed'));
+        $referenceCode = trim((string) $request->getUserVar('transferReference'));
+        $bankName = trim((string) $request->getUserVar('transferBank'));
+        if ($referenceCode === '') {
+            $this->_sendJsonResponse($request, 'error', __('billing.error.transferReferenceRequired'));
+        }
+
+        $saved = $this->invoiceService->submitTransferReference($invoiceId, $referenceCode, $bankName);
+        if (!$saved) {
+            // Pesan digeneralisasi (bukan "kode sudah dipakai invoice X")
+            // supaya tidak membocorkan data invoice orang lain lewat
+            // percobaan tebak kode.
+            $this->_sendJsonResponse($request, 'error', __('billing.error.transferReferenceDuplicateOrInvalid'));
         }
 
         $journalDao = DAORegistry::getDAO('JournalDAO'); /** @var JournalDAO $journalDao */
         $journal = $journalDao->getById((int) $invoice->getData('journalId'));
-        $settingsService = PaymentSettingsService::resolveForJournal($journal);
 
-        $summary = $this->invoiceService->getInvoiceSummary($invoice);
-        $manualInstructions = $settingsService->getManualInstructions();
+        import('lib.wizdam.classes.services.PaymentAuthorityResolver');
+        $authorityResolver = new PaymentAuthorityResolver();
+        $authorities = $authorityResolver->getAuthorities($journal);
 
-        import('classes.mail.MailTemplate');
-        $contactEmail = $journal ? (string) $journal->getSetting('contactEmail') : (string) Config::getVar('email', 'contact_email');
-        $contactName = $journal ? (string) $journal->getSetting('contactName') : (string) Config::getVar('email', 'contact_name');
+        import('classes.notification.NotificationManager');
+        $notificationManager = new NotificationManager();
+        foreach ($authorities as $authority) {
+            $notificationManager->createTrivialNotification(
+                (int) $authority->getId(),
+                NOTIFICATION_TYPE_INFORMATION,
+                ['contents' => __('billing.notification.transferReferenceSubmitted', [
+                    'invoiceNumber' => (string) $invoice->getData('invoiceNumber'),
+                    'referenceCode' => $referenceCode,
+                ])]
+            );
+        }
 
-        $mailAdmin = new MailTemplate('MANUAL_PAYMENT_NOTIFICATION');
-        $mailAdmin->setFrom($contactEmail, $contactName);
-        $mailAdmin->addRecipient($contactEmail, $contactName);
-        $mailAdmin->assignParams([
-            'journalName'      => $journal ? $journal->getLocalizedTitle() : $contactName,
-            'userFullName'     => (string) $user->getFullName(),
-            'userName'         => (string) $user->getUsername(),
-            'itemName'         => (string) $invoice->getData('invoiceNumber'),
-            'itemCost'         => number_format($invoice->getAmount(), 2),
-            'itemCurrencyCode' => (string) $invoice->getCurrencyCode(),
-        ]);
-        $mailAdmin->send();
+        if (!empty($authorities)) {
+            import('classes.mail.MailTemplate');
+            $publisherName = (new PublisherProfileService())->getProfile()['name'];
+            foreach ($authorities as $authority) {
+                $mailAuthority = new MailTemplate('MANUAL_PAYMENT_NOTIFICATION');
+                $mailAuthority->setFrom(
+                    (string) ($journal ? $journal->getSetting('contactEmail') : Config::getVar('email', 'contact_email')),
+                    (string) ($journal ? $journal->getSetting('contactName') : Config::getVar('email', 'contact_name'))
+                );
+                $mailAuthority->addRecipient((string) $authority->getEmail(), (string) $authority->getFullName());
+                $mailAuthority->assignParams([
+                    'journalName'      => $journal ? $journal->getLocalizedTitle() : $publisherName,
+                    'userFullName'     => (string) $user->getFullName(),
+                    'userName'         => (string) $user->getUsername(),
+                    'itemName'         => (string) $invoice->getData('invoiceNumber') . ' (Ref: ' . $referenceCode . ($bankName !== '' ? ', ' . $bankName : '') . ')',
+                    'itemCost'         => number_format($invoice->getAmount(), 2),
+                    'itemCurrencyCode' => (string) $invoice->getCurrencyCode(),
+                ]);
+                $mailAuthority->send();
+            }
+        }
 
-        $this->_sendJsonResponse($request, 'success', __('billing.success.manualConfirmationSent'), [
-            'instructions'  => $manualInstructions,
-            'invoiceNumber' => $summary['wizdamInvoiceNumber'],
-            'amount'        => $summary['formattedAmount'],
-            'currencyCode'  => $summary['currencyCode'],
-        ]);
+        $this->_sendJsonResponse($request, 'success', __('billing.success.transferReferenceSubmitted'));
     }
 
     /**
@@ -432,11 +455,19 @@ class BillingHandler extends Handler {
             [$request->url(null, 'billing', 'index'), 'billing.globalBilling']
         ];
 
-        // [BARU] Daftar semua metode pembayaran (dengan status
+        // Daftar semua metode pembayaran (dengan status
         // dikonfigurasi/direkomendasikan) dan identitas resmi Penerbit.
         $methodResolver = new PaymentMethodResolver();
         $viewData['availablePaymentMethods'] = $methodResolver->getAvailableMethods($invoice);
         $viewData['publisher'] = (new PublisherProfileService())->getProfile();
+
+        // [BARU] Daftar rekening bank -- dirender LANGSUNG server-side
+        // (Tahap A: lihat instruksi TIDAK PERNAH butuh AJAX sama sekali).
+        // Menggantikan $manualInstructions (teks bebas satu rekening).
+        /** @var JournalDAO $journalDaoForBanks */
+        $journalDaoForBanks = DAORegistry::getDAO('JournalDAO');
+        $journalForBanks = $journalDaoForBanks->getById((int) $invoice->getData('journalId'));
+        $viewData['bankAccounts'] = PaymentSettingsService::resolveForJournal($journalForBanks)->getBankAccounts();
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign($viewData);
