@@ -140,7 +140,7 @@ class CertificateService {
         /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
 
-        $reviewAssignments = $reviewAssignmentDao->getReviewAssignmentsByUserId($userId);
+        $reviewAssignments = $reviewAssignmentDao->getByUserId($userId);
         foreach ($reviewAssignments as $reviewAssignment) {
             if (!$reviewAssignment->getDateCompleted()) continue;
             $article = $articleDao->getArticle((int) $reviewAssignment->getSubmissionId());
@@ -154,8 +154,8 @@ class CertificateService {
             ];
         }
 
-        $editAssignments = $editAssignmentDao->getEditAssignmentsByUserId($userId);
-        foreach ($editAssignments as $editAssignment) {
+        $editAssignmentResult = $editAssignmentDao->getEditAssignmentsByUserId($userId);
+        while ($editAssignment = $editAssignmentResult->next()) {
             if (!$editAssignment->getDateNotified()) continue;
             $article = $articleDao->getArticle((int) $editAssignment->getArticleId());
             if (!$article) continue;
