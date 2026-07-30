@@ -113,7 +113,7 @@ class CertificateHandler extends Handler {
         if ($type === 'reviewer') {
             /** @var ReviewAssignmentDAO $reviewAssignmentDao */
             $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
-            $assignment = $reviewAssignmentDao->getReviewAssignmentById($id);
+            $assignment = $reviewAssignmentDao->getById($id);
             if (!$assignment || $assignment->getReviewerId() !== (int) $user->getId()) {
                 $this->_redirectWithError($request, 'document.cert.unauthorized');
             }
