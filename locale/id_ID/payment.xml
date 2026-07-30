@@ -31,6 +31,15 @@
     <message key="payment.method.enableThis">Aktifkan metode ini</message>
     <message key="payment.method.manualInstructionsPlaceholder">Contoh: Transfer ke BCA 1234567890 a.n. PT Sangia Research Media</message>
     <message key="payment.settingsSaved">Pengaturan Payment Gateway telah disimpan ke dalam database.</message>
+    <message key="payment.bankAccounts.title">Rekening Bank</message>
+    <message key="payment.bankAccounts.description">Tambahkan satu atau lebih rekening bank. Pembayar bisa memilih yang sesuai dengan bank mereka sendiri.</message>
+    <message key="payment.bankAccounts.bankNamePlaceholder">Nama Bank (contoh: BCA)</message>
+    <message key="payment.bankAccounts.accountNumberPlaceholder">Nomor Rekening</message>
+    <message key="payment.bankAccounts.accountHolderPlaceholder">Nama Pemilik Rekening</message>
+    <message key="payment.bankAccounts.branchPlaceholder">Cabang (opsional)</message>
+    <message key="payment.bankAccounts.addAnother">Tambah Rekening Lain</message>
+    <message key="payment.bankAccounts.generalNotes">Catatan Umum (tampil di bawah semua rekening)</message>
+    <message key="payment.bankAccounts.generalNotesPlaceholder">contoh: Mohon cantumkan nomor invoice pada berita transfer.</message>
 
     <!-- Checkout -->
     <message key="checkout.globalBilling">Billing</message>
@@ -88,6 +97,8 @@
     <message key="billing.error.csrfInvalid">Sesi Anda telah kedaluwarsa atau permintaan tidak valid. Silakan muat ulang halaman dan coba lagi.</message>
     <message key="billing.error.methodNotAllowed">Metode permintaan ini tidak diizinkan.</message>
     <message key="billing.error.gatewayFailed">Gagal terhubung ke payment gateway</message>
+    <message key="billing.bankAccountHolder">Atas Nama</message>
+    <message key="billing.transferBankUsedLabel">Transfer dari bank mana?</message>
 
     <message key="billing.invoiceLabel">FAKTUR</message>
     <message key="billing.invoiceNumberLabel">Nomor Invoice</message>
@@ -128,6 +139,19 @@
     <message key="billing.gatewayError">Gateway tidak dikenali atau respons tidak lengkap.</message>
     <message key="billing.connectionError">Terjadi kesalahan koneksi. Silakan coba lagi.</message>
     <message key="billing.paymentFailed">Pembayaran gagal</message>
+    <message key="billing.manualPreparing">Menyiapkan instruksi pembayaran manual...</message>
+
+    <message key="billing.transferInstructionsTitle">Instruksi Transfer Bank</message>
+    <message key="billing.transferInstructionsEmpty">Instruksi transfer belum diatur oleh penerbit. Silakan hubungi kontak jurnal untuk informasi rekening.</message>
+    <message key="billing.transferReferenceLabel">Konfirmasi Transfer Anda</message>
+    <message key="billing.transferReferenceHelp">Setelah transfer, masukkan nomor referensi/transaksi dari struk bank Anda agar staf kami bisa mencocokkannya dengan mutasi rekening masuk.</message>
+    <message key="billing.transferReferencePlaceholder">contoh: TRX20260730123456</message>
+    <message key="billing.transferReferenceSubmit">Kirim Kode Referensi</message>
+    <message key="billing.transferReferenceSubmitting">Mengirim...</message>
+    <message key="billing.error.transferReferenceRequired">Silakan masukkan kode referensi transfer Anda.</message>
+    <message key="billing.error.transferReferenceDuplicateOrInvalid">Kode referensi ini sudah pernah dipakai, atau invoice sudah tidak bisa dikonfirmasi lagi.</message>
+    <message key="billing.success.transferReferenceSubmitted">Kode referensi transfer Anda telah tercatat. Akan segera diverifikasi oleh staf kami.</message>
+    <message key="billing.notification.transferReferenceSubmitted">Invoice {$invoiceNumber} menerima kode referensi transfer bank ({$referenceCode}) menunggu verifikasi Anda.</message>
 
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Keranjang Belanja</message>

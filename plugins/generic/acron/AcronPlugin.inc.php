@@ -180,6 +180,18 @@ class AcronPlugin extends GenericPlugin {
 
             case 'reload':
                 $this->_parseCrontab();
+
+                /** @var ScheduledTaskDAO $taskDao */
+                $taskDao = DAORegistry::getDAO('ScheduledTaskDAO');
+                $repairedCount = $taskDao->repairInvalidLastRunTimes();
+
+                import('classes.notification.NotificationManager');
+                $notificationMgr = new NotificationManager();
+                $notificationMgr->createTrivialNotification(
+                    $request->getUser()->getId(),
+                    NOTIFICATION_TYPE_SUCCESS,
+                    array('contents' => __('plugins.generic.acron.reloaded', array('count' => $repairedCount)))
+                );
                 break;
         }
         return false;

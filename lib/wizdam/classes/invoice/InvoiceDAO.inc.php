@@ -46,6 +46,11 @@ class InvoiceDAO extends DAO {
         $invoice->setData('paymentMethod', $row['payment_method']);
         $invoice->setData('legacySourceTable', $row['legacy_source_table'] ?? null);
         $invoice->setData('legacySourceId', $row['legacy_source_id'] ?? null);
+        // [BARU] Kode referensi transfer bank + nama bank yang dipakai
+        // (Tahap Konfirmasi Transfer) -- ditampilkan di daftar konfirmasi
+        // staf/Journal Manager untuk dicocokkan dengan mutasi rekening.
+        $invoice->setData('transferReference', $row['transfer_reference'] ?? null);
+        $invoice->setData('transferBank', $row['transfer_bank'] ?? null);
         $invoice->setData('dateBilled', $this->datetimeFromDB($row['date_billed']));
         $invoice->setData('datePaid', $this->datetimeFromDB($row['date_paid']));
         return $invoice;
@@ -275,6 +280,54 @@ class InvoiceDAO extends DAO {
         $invoice->setData('status', Invoice::STATUS_UNPAID);
 
         return $this->insertObject($invoice);
+    }
+
+    /**
+     * [BARU] Cek cepat apakah kode referensi transfer sudah dipakai --
+     * untuk validasi awal yang ramah pengguna. BUKAN satu-satunya jaminan
+     * keunikan; itu tetap tanggung jawab UNIQUE INDEX di database
+     * (uniq_invoices_transfer_reference), menutup celah race condition
+     * kalau dua orang submit kode identik nyaris bersamaan.
+     * @param string $referenceCode
+     * @return bool
+     */
+    public function isTransferReferenceUsed(string $referenceCode): bool {
+        $result = $this->retrieve('SELECT invoice_id FROM invoices WHERE transfer_reference = ?', [$referenceCode]);
+        $found = ($result && $result->RecordCount() > 0);
+        if ($result) $result->Close();
+        return $found;
+    }
+
+    /**
+     * [BARU] Menyimpan kode referensi transfer bank + nama bank yang dipakai
+     * (Tahap Konfirmasi Transfer). Keunikan kode DIJAMIN oleh UNIQUE INDEX
+     * database -- pengecekan isTransferReferenceUsed() di atas cuma UX
+     * cepat, bukan satu-satunya penjamin.
+     * @param int $invoiceId
+     * @param string $referenceCode
+     * @param string $bankName Nama bank yang dipilih pengguna (opsional, informasional)
+     * @return bool false kalau kode sudah dipakai invoice lain, invoice
+     * tidak UNPAID, atau constraint database gagal.
+     */
+    public function saveTransferReference(int $invoiceId, string $referenceCode, string $bankName = ''): bool {
+        if ($this->isTransferReferenceUsed($referenceCode)) {
+            return false;
+        }
+
+        try {
+            $success = $this->update(
+                'UPDATE invoices SET transfer_reference = ?, transfer_bank = ?, payment_method = ? WHERE invoice_id = ? AND status = ?',
+                [$referenceCode, $bankName, 'BankTransferPending', $invoiceId, Invoice::STATUS_UNPAID]
+            );
+            return (bool) $success;
+        } catch (\Throwable $e) {
+            // Constraint UNIQUE gagal di database (race condition -- dua
+            // submit nyaris bersamaan lolos pengecekan awal). Ini KEGAGALAN
+            // YANG DIHARAPKAN (kode memang sudah dipakai), bukan error
+            // tak terduga yang perlu merambat lebih jauh.
+            error_log('WIZDAM saveTransferReference: ' . $e->getMessage());
+            return false;
+        }
     }
     
 }

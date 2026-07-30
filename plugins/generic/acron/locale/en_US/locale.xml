@@ -19,4 +19,5 @@
 	<message key="plugins.generic.acron.disabled">The Acron Plugin has been disabled.</message>
 
 	<message key="plugins.generic.acron.reload">Reload Scheduled Tasks</message>
+  <message key="plugins.generic.acron.reloaded">Scheduled tasks reloaded. {$count} stuck task(s) repaired and unblocked.</message>
 </locale>

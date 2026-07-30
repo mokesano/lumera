@@ -31,6 +31,15 @@
     <message key="payment.method.manualInstructionsPlaceholder">Example: Transfer to BCA 1234567890 a/n PT Sangia Research Media</message>
     <message key="payment.settingsSaved">Payment Gateway settings have been saved to the database.</message>
     <message key="payment.gatewaySettings">Payment Gateway Settings</message>
+    <message key="payment.bankAccounts.title">Bank Accounts</message>
+    <message key="payment.bankAccounts.description">Add one or more bank accounts. Payers will be able to choose whichever matches their own bank.</message>
+    <message key="payment.bankAccounts.bankNamePlaceholder">Bank Name (e.g. BCA)</message>
+    <message key="payment.bankAccounts.accountNumberPlaceholder">Account Number</message>
+    <message key="payment.bankAccounts.accountHolderPlaceholder">Account Holder Name</message>
+    <message key="payment.bankAccounts.branchPlaceholder">Branch (optional)</message>
+    <message key="payment.bankAccounts.addAnother">Add Another Bank</message>
+    <message key="payment.bankAccounts.generalNotes">General Notes (shown below all accounts)</message>
+    <message key="payment.bankAccounts.generalNotesPlaceholder">e.g. Please include the invoice number in your transfer notes.</message>
 
     <!-- Checkout -->
     <message key="checkout.cart.title">Checkout Cart Details</message>
@@ -88,6 +97,8 @@
     <message key="billing.error.csrfInvalid">Your session has expired or the request is invalid. Please refresh the page and try again.</message>
     <message key="billing.error.methodNotAllowed">This request method is not allowed.</message>
     <message key="billing.error.gatewayFailed">Failed to connect to the payment gateway</message>
+    <message key="billing.bankAccountHolder">Account Holder</message>
+    <message key="billing.transferBankUsedLabel">Which bank did you transfer from?</message>
 
     <message key="billing.invoiceLabel">INVOICE</message>
     <message key="billing.invoiceNumberLabel">Invoice Number</message>
@@ -128,6 +139,19 @@
     <message key="billing.gatewayError">Gateway not recognized or the response was incomplete.</message>
     <message key="billing.connectionError">A connection error occurred. Please try again.</message>
     <message key="billing.paymentFailed">Payment failed</message>
+    <message key="billing.manualPreparing">Preparing manual payment instructions...</message>
+
+    <message key="billing.transferInstructionsTitle">Bank Transfer Instructions</message>
+    <message key="billing.transferInstructionsEmpty">Transfer instructions have not been configured by the publisher. Please contact the journal for account details.</message>
+    <message key="billing.transferReferenceLabel">Confirm Your Transfer</message>
+    <message key="billing.transferReferenceHelp">After transferring, enter the reference/transaction number from your bank's receipt so our staff can match it against incoming transfers.</message>
+    <message key="billing.transferReferencePlaceholder">e.g. TRX20260730123456</message>
+    <message key="billing.transferReferenceSubmit">Submit Reference Code</message>
+    <message key="billing.transferReferenceSubmitting">Submitting...</message>
+    <message key="billing.error.transferReferenceRequired">Please enter your transfer reference code.</message>
+    <message key="billing.error.transferReferenceDuplicateOrInvalid">This reference code has already been used, or the invoice is no longer eligible for confirmation.</message>
+    <message key="billing.success.transferReferenceSubmitted">Your transfer reference has been recorded. It will be verified by our staff shortly.</message>
+    <message key="billing.notification.transferReferenceSubmitted">Invoice {$invoiceNumber} received a bank transfer reference ({$referenceCode}) awaiting your verification.</message>
 
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Shopping Cart</message>

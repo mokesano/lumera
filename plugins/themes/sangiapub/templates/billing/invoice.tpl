@@ -45,8 +45,6 @@
     .wi-total-box .label { font-size: 16px; font-weight: bold; text-transform: uppercase; }
     .wi-total-box .amount { font-size: 24px; font-weight: bold; color: #28a745; }
 
-    .wi-notes-box { border: 1px solid #ffeeba; background: #fffaf0; padding: 15px; border-radius: 4px; font-size: 12px; margin-top: 30px; }
-
     .wi-actions { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
     .wi-pay-btn { background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 4px; cursor: pointer; text-align: center; transition: 0.2s; }
     .wi-pay-btn:hover { border-color: #1a4f8b; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -54,12 +52,22 @@
     .wi-pay-btn-disabled:hover { border-color: #ccc; box-shadow: none; }
     .wi-badge-recommended { display: inline-block; font-size: 10px; background: #28a745; color: #fff; padding: 2px 6px; border-radius: 10px; vertical-align: middle; }
 
-    .wi-manual-instructions-box { display:none; margin-top:20px; padding:20px; background:#fffaf0; border:1px solid #ffeeba; border-radius:4px; }
-    .wi-manual-instructions-box h3 { margin-top:0; color:#856404; }
-    .wi-manual-instructions-box h4 { margin: 0 0 8px; color:#856404; font-size: 13px; text-transform: uppercase; }
-    .wi-manual-instructions-text { white-space: pre-line; line-height:1.6; font-size: 15px; font-weight: 600; }
-    .wi-manual-instructions-divider { margin: 15px 0; border: none; border-top: 1px solid #ffeeba; }
-    .wi-manual-instructions-note { margin: 0; font-size:13px; color:#666; }
+    .wi-transfer-box { display:none; margin-top:20px; padding:20px; background:#fffaf0; border:1px solid #ffeeba; border-radius:4px; }
+    .wi-transfer-box h3 { margin-top:0; color:#856404; }
+    .wi-transfer-box h4 { margin: 15px 0 8px; color:#856404; font-size: 13px; text-transform: uppercase; }
+    .wi-transfer-instructions-empty { color: #dc3545; font-style: italic; }
+    .wi-bank-card { border: 1px solid #ffeeba; border-radius: 4px; padding: 12px; margin-bottom: 10px; background: #fff; }
+    .wi-bank-card .bank-name { font-size: 15px; color: #856404; }
+    .wi-bank-card .account-number { font-size: 18px; font-weight: 700; letter-spacing: 1px; margin: 4px 0; }
+    .wi-bank-card .account-holder { font-size: 13px; color: #555; }
+    .wi-bank-card .branch { font-size: 12px; color: #777; }
+    .wi-transfer-divider { margin: 15px 0; border: none; border-top: 1px solid #ffeeba; }
+    .wi-transfer-help { margin: 0 0 10px; font-size:13px; color:#666; }
+    .wi-transfer-bank-select-label { font-size: 13px; color: #666; display:block; margin-bottom:4px; }
+    .wi-transfer-bank-select { width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; margin-bottom: 10px; }
+    .wi-transfer-input-row { display:flex; gap:10px; }
+    .wi-transfer-input-row input { flex:1; padding:8px; border:1px solid #ccc; border-radius:4px; }
+    .wi-transfer-result { margin-top:10px; font-size: 13px; }
 
     .action-button { margin-top: 20px; text-align: right; display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
     .action-button a { text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 4px; font-weight: 700; transition: 0.2s; }
@@ -184,7 +192,7 @@
         {foreach from=$availablePaymentMethods item=method}
         <button type="button" class="wi-pay-btn {if !$method.is_configured}wi-pay-btn-disabled{/if}"
                 {if !$method.is_configured}disabled{/if}
-                onclick="processPayment('{$method.id}', 'all')">
+                onclick="{if $method.id == 'manual'}toggleTransferBox(){else}processPayment('{$method.id}', 'all'){/if}">
             <strong>{$method.label|escape}</strong>{if $method.is_recommended} <span class="wi-badge-recommended">{translate key="billing.recommended"}</span>{/if}
             {if !$method.is_configured}<br><small>{translate key="billing.notAvailable"}</small>{/if}
         </button>
@@ -192,14 +200,52 @@
     </div>
     <div id="loadingIndicator" style="display: none; text-align: center; padding: 15px; color: #1a4f8b; font-weight: bold;"></div>
 
-    <div id="manualInstructionsBox" class="wi-manual-instructions-box">
-        <h3>{translate key="billing.manualInstructionsTitle"}</h3>
-        <h4>{translate key="billing.manualTransferInstructionsLabel"}</h4>
-        <div id="manualInstructionsText" class="wi-manual-instructions-text"></div>
-        <hr class="wi-manual-instructions-divider">
-        <p class="wi-manual-instructions-note">
-            <strong>{translate key="billing.manualNoteTitle"}:</strong> {translate key="billing.manualNote"}
-        </p>
+    {* [DESAIN] Tahap A (lihat instruksi) -- MURNI tampil/sembunyi elemen
+       yang SUDAH dirender server-side lewat $bankAccounts. TIDAK ADA
+       fetch() apapun untuk membuka kotak ini -- tidak mungkin gagal karena
+       "koneksi", karena tidak ada request ke server sama sekali di sini. *}
+    <div id="transferBox" class="wi-transfer-box">
+        <h3>{translate key="billing.transferInstructionsTitle"}</h3>
+
+        {if $bankAccounts|@count > 0}
+            {foreach from=$bankAccounts item=account}
+                {if $account.bankName != '' || $account.accountNumber != ''}
+                <div class="wi-bank-card">
+                    <div class="bank-name"><strong>{$account.bankName|escape}</strong></div>
+                    <div class="account-number">{$account.accountNumber|escape}</div>
+                    <div class="account-holder">{translate key="billing.bankAccountHolder"}: {$account.accountHolder|escape}</div>
+                    {if $account.branch}<div class="branch">{$account.branch|escape}</div>{/if}
+                </div>
+                {/if}
+                {if $account.notes}
+                <p class="wi-transfer-help" style="font-style: italic;">{$account.notes|escape}</p>
+                {/if}
+            {/foreach}
+        {else}
+            <span class="wi-transfer-instructions-empty">{translate key="billing.transferInstructionsEmpty"}</span>
+        {/if}
+
+        <hr class="wi-transfer-divider">
+
+        <h4>{translate key="billing.transferReferenceLabel"}</h4>
+        <p class="wi-transfer-help">{translate key="billing.transferReferenceHelp"}</p>
+
+        {if $bankAccounts|@count > 0}
+        <label class="wi-transfer-bank-select-label">{translate key="billing.transferBankUsedLabel"}</label>
+        <select id="transferBankSelect" class="wi-transfer-bank-select">
+            {foreach from=$bankAccounts item=account}
+                {if $account.bankName != ''}
+                <option value="{$account.bankName|escape}">{$account.bankName|escape} - {$account.accountNumber|escape}</option>
+                {/if}
+            {/foreach}
+        </select>
+        {/if}
+
+        <div class="wi-transfer-input-row">
+            <input type="text" id="transferReferenceInput" placeholder="{translate key="billing.transferReferencePlaceholder"|escape}" maxlength="100">
+            <button type="button" class="wizdam-btn btn-primary" onclick="submitTransferReference()">{translate key="billing.transferReferenceSubmit"}</button>
+        </div>
+        <div id="transferReferenceResult" class="wi-transfer-result"></div>
     </div>
     {/if}
 
@@ -223,57 +269,76 @@
 <script>
     const csrfToken = "{$csrfToken|escape}";
     const payUrl    = "{url page="billing" op="pay" path=$securePath}";
-    const confirmManualUrl = "{url page="billing" op="confirmManual" path=$securePath}";
-    const manualInstructionsFallback = "{translate key="billing.manualInstructionsFallback"|escape:"javascript"}";
+    const submitTransferReferenceUrl = "{url page="billing" op="submitTransferReference" path=$securePath}";
     const connectionErrorMessage = "{translate key="billing.connectionError"|escape:"javascript"}";
     const gatewayUnknownMessage = "{translate key="billing.gatewayError"|escape:"javascript"}";
     const paymentFailedPrefix = "{translate key="billing.paymentFailed"|escape:"javascript"}";
-function processPayment(method, paymentType) {
-    const indicator = document.getElementById('loadingIndicator');
-    // [FIX] Teks dibedakan sesuai konteks nyata -- Manual TIDAK memproses
-    // apapun yang perlu "diamankan" (tidak ada uang lewat aplikasi ini,
-    // cuma update status + kirim email ke admin), beda dari gateway
-    // (Midtrans/Xendit/PayPal) yang genuinely memanggil API pihak ketiga.
-    indicator.textContent = (method === 'manual')
-        ? manualPreparingMessage
-        : gatewayProcessingMessage;
-    indicator.style.display = 'block';
-    ...
-    {literal}
-    function processPayment(method, paymentType) {
-        document.getElementById('loadingIndicator').style.display = 'block';
+    const gatewayProcessingMessage = "{translate key="billing.processingPayment"|escape:"javascript"}";
+    const transferReferenceRequiredMessage = "{translate key="billing.error.transferReferenceRequired"|escape:"javascript"}";
+    const transferSubmittingMessage = "{translate key="billing.transferReferenceSubmitting"|escape:"javascript"}";
 
-        if (method === 'manual') {
-            const manualData = new URLSearchParams();
-            manualData.append('csrfToken', csrfToken);
-            manualData.append('ajax', '1');
-            fetch(confirmManualUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: manualData.toString()const manualPreparingMessage = "{translate key="billing.manualPreparing"|escape:"javascript"}";
-const gatewayProcessingMessage = "{translate key="billing.processingPayment"|escape:"javascript"}";
-            })
-            .then(response => response.json())
-            .then(res => {
-                document.getElementById('loadingIndicator').style.display = 'none';
-                if (res.status === 'success') {
-                    const box = document.getElementById('manualInstructionsBox');
-                    const text = document.getElementById('manualInstructionsText');
-                    text.textContent = (res.data.instructions && res.data.instructions.trim() !== '')
-                        ? res.data.instructions
-                        : manualInstructionsFallback;
-                    box.style.display = 'block';
-                    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } else {
-                    alert('Error: ' + res.message);
-                }
-            })
-            .catch(function() {
-                document.getElementById('loadingIndicator').style.display = 'none';
-                alert(connectionErrorMessage);
-            });
+    {literal}
+    // Tahap A: TIDAK ADA fetch() sama sekali -- murni tampil/sembunyi
+    // elemen yang sudah dirender server-side. Tidak mungkin gagal karena
+    // "koneksi", karena tidak ada request apapun ke server di sini.
+    function toggleTransferBox() {
+        const box = document.getElementById('transferBox');
+        const isHidden = box.style.display === 'none' || box.style.display === '';
+        box.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) {
+            box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    // Tahap B: AJAX genuinely relevan -- mengirim kode referensi + bank
+    // yang dipakai. Kegagalan di sini TIDAK PERNAH menyembunyikan
+    // instruksi rekening yang sudah tampil sejak Tahap A.
+    function submitTransferReference() {
+        const input = document.getElementById('transferReferenceInput');
+        const bankSelect = document.getElementById('transferBankSelect');
+        const resultBox = document.getElementById('transferReferenceResult');
+        const code = input.value.trim();
+        const bankName = bankSelect ? bankSelect.value : '';
+
+        if (code === '') {
+            resultBox.innerHTML = '<span style="color:#dc3545;">' + transferReferenceRequiredMessage + '</span>';
             return;
         }
+
+        resultBox.innerHTML = '<span style="color:#1a4f8b;">' + transferSubmittingMessage + '</span>';
+
+        const formData = new URLSearchParams();
+        formData.append('csrfToken', csrfToken);
+        formData.append('ajax', '1');
+        formData.append('transferReference', code);
+        formData.append('transferBank', bankName);
+
+        fetch(submitTransferReferenceUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        })
+        .then(response => response.json())
+        .then(res => {
+            if (res.status === 'success') {
+                resultBox.innerHTML = '<span style="color:#28a745;">' + res.message + '</span>';
+                input.disabled = true;
+                if (bankSelect) bankSelect.disabled = true;
+            } else {
+                resultBox.innerHTML = '<span style="color:#dc3545;">' + res.message + '</span>';
+            }
+        })
+        .catch(function() {
+            resultBox.innerHTML = '<span style="color:#dc3545;">' + connectionErrorMessage + '</span>';
+        });
+    }
+
+    // Khusus jalur gateway (Midtrans/Xendit/PayPal) -- Manual TIDAK lewat
+    // fungsi ini lagi sama sekali.
+    function processPayment(method, paymentType) {
+        const indicator = document.getElementById('loadingIndicator');
+        indicator.textContent = gatewayProcessingMessage;
+        indicator.style.display = 'block';
 
         const formData = new URLSearchParams();
         formData.append('csrfToken', csrfToken);
@@ -288,7 +353,7 @@ const gatewayProcessingMessage = "{translate key="billing.processingPayment"|esc
         })
         .then(response => response.json())
         .then(res => {
-            document.getElementById('loadingIndicator').style.display = 'none';
+            indicator.style.display = 'none';
             if (res.status === 'success') {
                 if (res.data.gateway === 'midtrans' && res.data.token) {
                     window.snap.pay(res.data.token, {
@@ -306,7 +371,7 @@ const gatewayProcessingMessage = "{translate key="billing.processingPayment"|esc
             }
         })
         .catch(function() {
-            document.getElementById('loadingIndicator').style.display = 'none';
+            indicator.style.display = 'none';
             alert(connectionErrorMessage);
         });
     }

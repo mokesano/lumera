@@ -235,10 +235,9 @@ class InvoiceService {
     }
 
     /**
-     * [BARU] Menandai invoice sebagai "menunggu konfirmasi manual" -- status
-     * TETAP UNPAID (uang belum diterima), hanya payment_method diberi
-     * penanda supaya staf/admin bisa memfilter daftar "perlu diverifikasi
-     * manual" di dashboard (lihat AdminPaymentHandler::manualPayments()).
+     * @deprecated Digantikan oleh submitTransferReference() -- alur Tahap
+     * Konfirmasi Transfer yang mewajibkan kode referensi. Dipertahankan
+     * hanya untuk backward-compatibility kalau ada pemanggil lama.
      * @param int $invoiceId
      * @return bool
      */
@@ -250,6 +249,25 @@ class InvoiceService {
         $invoice->setData('paymentMethod', 'ManualPending');
         $this->invoiceDao->updateObject($invoice);
         return true;
+    }
+
+    /**
+     * [BARU] Tahap Konfirmasi Transfer: menyimpan kode referensi transfer
+     * bank + nama bank yang dipakai (bukti dari pengguna), menandai invoice
+     * menunggu verifikasi wewenang yang berhak (Admin Publisher untuk
+     * jurnal biasa, Journal Manager untuk jurnal Partnership).
+     * @param int $invoiceId
+     * @param string $referenceCode
+     * @param string $bankName
+     * @return bool false kalau kode sudah dipakai invoice lain, invoice
+     * tidak valid/sudah lunas, atau constraint database gagal.
+     */
+    public function submitTransferReference(int $invoiceId, string $referenceCode, string $bankName = ''): bool {
+        $invoice = $this->getInvoiceById($invoiceId);
+        if (!$invoice || $invoice->isLegacy() || $invoice->getStatus() === Invoice::STATUS_PAID) {
+            return false;
+        }
+        return $this->invoiceDao->saveTransferReference($invoiceId, $referenceCode, $bankName);
     }
     
     /**
@@ -457,6 +475,8 @@ class InvoiceService {
             'datePaid'             => $invoice->getData('datePaid'),
             'isPaid'               => ($invoice->getData('status') === Invoice::STATUS_PAID),
             'paymentMethod'        => $invoice->getData('paymentMethod'),
+            'transferReference'    => $invoice->getData('transferReference'),
+            'transferBank'         => $invoice->getData('transferBank'),
             'taxPercentage'        => $settingTaxRate,
             'formattedBaseFee'     => number_format($feeBase, 2),
             'formattedFastTrackFee'=> number_format($feeFastTrack, 2),

@@ -64,6 +64,11 @@ scheduled_tasks = Off
 ; warnings and notices.
 scheduled_tasks_report_error_only = On
 
+; [LUMERA] Probability Gate, tipe data integer untuk mt_rand
+; untuk menghindari serangan bot yang mengakibatkan database overload request
+; Default: 100 (Artinya hanya 1 dari 100 request yang akan memicu cek database)
+; acron_throttle = 100
+
 ; Short and long date formats
 date_format_trunc = "%m-%d"
 date_format_short = "%Y-%m-%d"
