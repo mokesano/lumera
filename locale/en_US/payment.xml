@@ -88,7 +88,47 @@
     <message key="billing.error.csrfInvalid">Your session has expired or the request is invalid. Please refresh the page and try again.</message>
     <message key="billing.error.methodNotAllowed">This request method is not allowed.</message>
     <message key="billing.error.gatewayFailed">Failed to connect to the payment gateway</message>
-    
+
+    <message key="billing.invoiceLabel">INVOICE</message>
+    <message key="billing.invoiceNumberLabel">Invoice Number</message>
+    <message key="billing.billedTo">Billed To</message>
+    <message key="billing.email">Email</message>
+    <message key="billing.invoiceCode">Invoice Code</message>
+    <message key="billing.dateBilled">Date Billed</message>
+    <message key="billing.statusLabel">Status</message>
+    <message key="billing.statusPaid">PAID</message>
+    <message key="billing.statusUnpaid">UNPAID</message>
+    <message key="billing.datePaid">Date Paid</message>
+    <message key="billing.articleDetails">Article Details</message>
+    <message key="billing.titleLabel">Title</message>
+    <message key="billing.noArticleLinked">Manuscript not yet linked</message>
+    <message key="billing.descriptionLabel">Description</message>
+    <message key="billing.paymentVia">Payment Via</message>
+    <message key="billing.feesBreakdown">Fees Breakdown</message>
+    <message key="billing.baseFee">Base Fee (Submission / Publication)</message>
+    <message key="billing.fastTrackFee">Fast-Track Review Fee</message>
+    <message key="billing.discount">Discount (Trade / Promo)</message>
+    <message key="billing.subtotal">Subtotal (Taxable Amount)</message>
+    <message key="billing.taxVat">Tax/VAT</message>
+    <message key="billing.taxInclusive">Inclusive</message>
+    <message key="billing.taxExclusive">Exclusive</message>
+    <message key="billing.amountDue">Amount Due</message>
+    <message key="billing.taxDisclaimer">* Taxable Amount calculated after stated trade discounts. Tax/VAT applied per Indonesian VAT Law and OECD Guidelines.</message>
+    <message key="billing.notAvailable">Not available</message>
+    <message key="billing.recommended">Recommended</message>
+    <message key="billing.processingPayment">Processing secure payment channel... Please wait.</message>
+    <message key="billing.manualInstructionsTitle">Manual Payment Instructions</message>
+    <message key="billing.manualTransferInstructionsLabel">Transfer To</message>
+    <message key="billing.manualInstructionsFallback">Payment instructions have not been configured by the publisher. Please contact the journal for account details.</message>
+    <message key="billing.manualNoteTitle">Next Steps</message>
+    <message key="billing.manualNote">After transferring, this invoice will be marked as pending staff verification. You do not need to upload proof of transfer separately unless requested.</message>
+    <message key="billing.cancelBilling">Cancel Billing</message>
+    <message key="billing.cancelConfirm">Are you sure you want to cancel this bill?</message>
+    <message key="billing.downloadInvoice">Download Invoice</message>
+    <message key="billing.gatewayError">Gateway not recognized or the response was incomplete.</message>
+    <message key="billing.connectionError">A connection error occurred. Please try again.</message>
+    <message key="billing.paymentFailed">Payment failed</message>
+
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Shopping Cart</message>
     <message key="order.error.invalidMethod">Request method not allowed.</message>
