@@ -38,12 +38,12 @@ class PaymentMethodResolver {
         $methods = [
             [
                 'id' => 'manual',
-                'label' => __('plugins.paymethod.manual.displayName'),
+                'label' => __('payment.method.manual'),
                 'is_configured' => $settings->isManualEnabled(),
             ],
             [
                 'id' => 'paypal',
-                'label' => __('plugins.paymethod.paypal.displayName'),
+                'label' => __('payment.method.paypal'),
                 'is_configured' => $settings->isPayPalEnabled() && $settings->getPayPalSellerEmail() !== '',
             ],
             [
