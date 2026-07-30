@@ -45,7 +45,7 @@ jobs:
         include:
         - language: actions
           build-mode: none
-        - language: javascript-typescript
+        - language: javascript-javascript
           build-mode: none
         - language: ruby
           build-mode: none
