@@ -11,7 +11,8 @@ declare(strict_types=1);
  * [WIZDAM EDITION]
  * @class PaymentSettingsForm
  * 
- * @brief Form untuk mengatur Payment Gateway Keys di level Admin.
+ * @brief Form untuk mengatur Payment Gateway Keys di level Admin -- termasuk
+ * toggle Manual/PayPal dan daftar gateway aktif (multi-gateway).
  */
 
 import('lib.pkp.classes.form.Form');
@@ -19,10 +20,13 @@ import('lib.wizdam.classes.services.PaymentSettingsService');
 
 class PaymentSettingsForm extends Form {
 
+    /** @var \PaymentSettingsService $settingsService */
     private PaymentSettingsService $settingsService;
 
+    /**
+     * Constructor.
+     */
     public function __construct() {
-        // Arahkan ke template Smarty yang akan kita buat nanti
         parent::__construct('admin/paymentSettings.tpl');
         
         $this->settingsService = new PaymentSettingsService();
@@ -30,17 +34,13 @@ class PaymentSettingsForm extends Form {
     }
 
     /**
-     * Override method display untuk menyuntikkan CSRF Token ke UI
+     * [FIX] csrfToken TIDAK di-generate ulang di sini -- sudah tersedia
+     * global di setiap template lewat PKPTemplateManager (konteks 'global').
+     * Menimpanya di sini dengan konteks berbeda ($sessionId) menyebabkan
+     * validasi CSRF saat submit SELALU gagal (konteks token vs konteks
+     * pengecekan tidak cocok).
      */
     public function display($request = null, $template = null): void {
-        $validRequest = $request ? $request : Application::get()->getRequest();
-        $templateMgr = TemplateManager::getManager($validRequest);
-        
-        // [WIZDAM SECURITY] Gunakan Validator CSRF
-        import('lib.pkp.classes.validation.ValidatorCSRF');
-        $sessionId = $validRequest->getSession()->getId();
-        $templateMgr->assign('csrfToken', ValidatorCSRF::generateToken($sessionId));
-
         parent::display($request, $template);
     }
 
@@ -51,7 +51,15 @@ class PaymentSettingsForm extends Form {
         $this->_data = [
             'active_gateway' => $this->settingsService->getActiveGateway(),
             'is_production' => $this->settingsService->isProduction() ? 1 : 0,
-            
+
+            'enabled_manual' => $this->settingsService->isManualEnabled() ? 1 : 0,
+            'enabled_paypal' => $this->settingsService->isPayPalEnabled() ? 1 : 0,
+            'enabled_midtrans' => in_array('midtrans', $this->settingsService->getEnabledGateways(), true) ? 1 : 0,
+            'enabled_xendit' => in_array('xendit', $this->settingsService->getEnabledGateways(), true) ? 1 : 0,
+
+            'paypal_seller_email' => $this->settingsService->getPayPalSellerEmail(),
+            'manual_instructions' => $this->settingsService->getManualInstructions(),
+
             'midtrans_server_key' => $this->settingsService->getMidtransServerKey(),
             'midtrans_client_key' => $this->settingsService->getMidtransClientKey(),
             
@@ -67,6 +75,12 @@ class PaymentSettingsForm extends Form {
         $this->readUserVars([
             'active_gateway',
             'is_production',
+            'enabled_manual',
+            'enabled_paypal',
+            'enabled_midtrans',
+            'enabled_xendit',
+            'paypal_seller_email',
+            'manual_instructions',
             'midtrans_server_key',
             'midtrans_client_key',
             'xendit_api_key',
@@ -80,6 +94,17 @@ class PaymentSettingsForm extends Form {
     public function execute($object = null): void {
         $this->settingsService->updateSetting('active_gateway', $this->getData('active_gateway'), 'string');
         $this->settingsService->updateSetting('is_production', (bool) $this->getData('is_production'), 'bool');
+
+        $this->settingsService->updateSetting('enabled_manual', (bool) $this->getData('enabled_manual'), 'bool');
+        $this->settingsService->updateSetting('enabled_paypal', (bool) $this->getData('enabled_paypal'), 'bool');
+
+        $enabledGateways = [];
+        if ($this->getData('enabled_midtrans')) $enabledGateways[] = 'midtrans';
+        if ($this->getData('enabled_xendit')) $enabledGateways[] = 'xendit';
+        $this->settingsService->updateSetting('enabled_gateways', json_encode($enabledGateways), 'string');
+
+        $this->settingsService->updateSetting('paypal_seller_email', $this->getData('paypal_seller_email'), 'string');
+        $this->settingsService->updateSetting('manual_instructions', $this->getData('manual_instructions'), 'string');
         
         $this->settingsService->updateSetting('midtrans_server_key', $this->getData('midtrans_server_key'), 'string');
         $this->settingsService->updateSetting('midtrans_client_key', $this->getData('midtrans_client_key'), 'string');
@@ -87,5 +112,6 @@ class PaymentSettingsForm extends Form {
         $this->settingsService->updateSetting('xendit_api_key', $this->getData('xendit_api_key'), 'string');
         $this->settingsService->updateSetting('xendit_webhook_token', $this->getData('xendit_webhook_token'), 'string');
     }
+
 }
 ?>
