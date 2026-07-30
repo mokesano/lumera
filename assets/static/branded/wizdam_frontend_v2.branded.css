@@ -6,6 +6,7 @@ html {
  font:1.25rem sans-serif;
  -webkit-text-size-adjust:100%;
  -ms-text-size-adjust:100%;
+ text-size-adjust:100%;
  box-sizing:content-box;
  font-variant-numeric:lining-nums proportional-nums;
  line-height:1.76;
@@ -5391,7 +5392,7 @@ section.medium-10.cms-person {
   overflow-x:visible
  }
 }
-##articleMetrics .title-text,
+#articleMetrics .title-text,
 .search-page .sub-search__filtering h3,
 .u-upper,
 body .navwrapper nav ul#global-nav>li .nav-main a {
@@ -8536,9 +8537,10 @@ li.pubDOI {
 :before,
 body .row {
  -moz-box-sizing:border-box;
- -webkit-box-sizing:border-box
+ -webkit-box-sizing:border-box;
+ box-sizing:border-box;
 }
-/ img,
+img,
 ol,
 ul {
  margin-top:0
@@ -9506,7 +9508,7 @@ button:active {
 .live-area-wrapper:nth-child(2) .box,
 .live-area-wrapper:nth-child(4) .box,
 .live-area-wrapper:nth-child(6) .box,
-html. body {
+html, body {
  background-color:#fff
 }
 .cms-widget-subscription h4 {

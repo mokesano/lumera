@@ -58,7 +58,18 @@
     <message key="authenticate.invoice.verifiedTitle">Validated Invoice Document</message>
     <message key="authenticate.cert.verifiedTitle">Validated Certificate</message>
     <message key="authenticate.cert.incompleteReview">Invalid document. The review process for this manuscript has not been completed.</message>
-    
+
+    <!-- Document Index -->
+    <message key="document.index.pageTitle">My Documents</message>
+    <message key="document.index.loaDescription">Letters of Acceptance for your published/accepted manuscripts.</message>
+    <message key="document.index.certificateDescription">Certificates for your review and editorial contributions.</message>
+    <message key="document.index.statusDate">Status Date</message>
+    <message key="document.index.actions">Actions</message>
+    <message key="document.index.viewDetail">View</message>
+    <message key="document.index.downloadPdf">Download PDF</message>
+    <message key="document.index.loaEmpty">No Letters of Acceptance yet.</message>
+    <message key="document.index.certificateEmpty">No certificates yet.</message>
+
     <!-- Letter of Acceptance -->
     <message key="document.loa.pageTitle">Letter of Acceptance</message>
     <message key="document.loa.invalidRequest">The document link is invalid or malformed.</message>
@@ -66,14 +77,22 @@
     <message key="document.loa.pendingPaymentAlert">The document (LoA) cannot be issued yet. Please settle the pending invoice below.</message>
     <message key="document.loa.notFound">Manuscript data or acceptance status not found in the system.</message>
     <message key="document.error.hashValidationFailed">Security verification failed. The document link may have been tampered with.</message>
-    
+
     <!-- Certificate -->
+    <message key="document.cert.indexTitle">My Certificates</message>
+    <message key="document.cert.status.reviewCompleted">Review Completed</message>
+    <message key="document.cert.status.editorialAssignment">Editorial Assignment</message>
     <message key="document.cert.pageTitle">Certificate of Achievement</message>
     <message key="document.cert.invalidRequest">The certificate link is invalid or malformed.</message>
     <message key="document.cert.unauthorized">Access Denied. This certificate does not belong to you.</message>
     <message key="document.cert.incompleteReview">The certificate cannot be issued yet because the review task is incomplete.</message>
     <message key="document.cert.notFound">Certificate data not found.</message>
-    
+
+    <message key="billing.loa.indexTitle">Letters of Acceptance</message>
+    <message key="billing.loa.status.accepted">Accepted</message>
+    <message key="billing.loa.status.inProduction">In Production</message>
+    <message key="billing.loa.status.published">Published</message>
+
 	<!-- Billing -->
 	<message key="billing.globalBilling">All Billings</message>
 	<message key="billing.activeInvoices">Billing Active Invoices</message>

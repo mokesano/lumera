@@ -189,5 +189,69 @@ class LoAService {
         return (new PublisherProfileService())->getProfile()['name'];
     }
 
+    /**
+     * [BARU] Daftar semua naskah milik pengguna yang sudah punya LoA (invoice
+     * lunas) -- untuk halaman indeks.
+     * [SEMENTARA] Status memakai 3 tahap yang SUDAH TERVERIFIKASI solid
+     * (Accepted / In Production / Published). Pemisahan Layout vs
+     * Proofreading BELUM ditambahkan -- menunggu keputusan Anda.
+     * @param int $userId
+     * @return array
+     */
+    public function getLoAIndexForUser(int $userId): array {
+        /** @var ArticleDAO $articleDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO');
+        $submissions = $articleDao->getArticlesByUserId($userId);
+
+        $entries = [];
+        foreach ($submissions as $submission) {
+            $paidInvoice = $this->getPaidInvoiceForSubmission((int) $submission->getId());
+            if (!$paidInvoice) continue;
+
+            $entries[] = [
+                'submissionId' => (int) $submission->getId(),
+                'title' => $submission->getLocalizedTitle(),
+                'statusLabel' => $this->_resolveArticleStageLabel($submission),
+                'statusDate' => $this->_resolveArticleStageDate($submission),
+            ];
+        }
+
+        usort($entries, fn($a, $b) => strtotime($b['statusDate']) <=> strtotime($a['statusDate']));
+
+        return $entries;
+    }
+
+    /**
+     * HELPER
+     * @param object $submission
+     * @return string
+     */
+    private function _resolveArticleStageLabel($submission): string {
+        if ($submission->getStatus() == STATUS_PUBLISHED) {
+            return __('billing.loa.status.published');
+        }
+        $copyeditSignoff = $submission->getSignoff('SIGNOFF_COPYEDITING_INITIAL');
+        if ($copyeditSignoff && $copyeditSignoff->getDateCompleted()) {
+            return __('billing.loa.status.inProduction');
+        }
+        return __('billing.loa.status.accepted');
+    }
+
+    /**
+     * HELPER
+     * @param object $submission
+     * @return string
+     */
+    private function _resolveArticleStageDate($submission): string {
+        if ($submission->getStatus() == STATUS_PUBLISHED && $submission->getDatePublished()) {
+            return $submission->getDatePublished();
+        }
+        $copyeditSignoff = $submission->getSignoff('SIGNOFF_COPYEDITING_INITIAL');
+        if ($copyeditSignoff && $copyeditSignoff->getDateCompleted()) {
+            return $copyeditSignoff->getDateCompleted();
+        }
+        return $submission->getDateSubmitted();
+    }
+
 }
 ?>
