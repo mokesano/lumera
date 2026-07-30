@@ -53,13 +53,12 @@ class LoAHandler extends Handler {
      */
     public function setupTemplate($request = null): void {
         parent::setupTemplate($request);
-        AppLocale::requireComponents(
-            [
-                LOCALE_COMPONENT_CORE_COMMON, 
-                LOCALE_COMPONENT_CORE_USER, 
-                LOCALE_COMPONENT_APPLICATION_COMMON
-            ]
-        );
+        AppLocale::requireComponents([
+            LOCALE_COMPONENT_CORE_COMMON, 
+            LOCALE_COMPONENT_CORE_USER, 
+            LOCALE_COMPONENT_APPLICATION_COMMON,
+            LOCALE_COMPONENT_APP_PAYMENT
+        ]);
     }
 
     /**
@@ -168,6 +167,36 @@ class LoAHandler extends Handler {
             // tidak pernah ada -- akan fatal "template not found").
             $templateMgr->display('document/loa/loaPrivate.tpl');
         }
+    }
+
+    /**
+     * [BARU] Halaman indeks -- daftar semua naskah penulis yang punya LoA.
+     * Rute: /document/loaIndex
+     * @param array $args
+     * @param Request|null $request
+     */
+    public function loaIndex(array $args = [], $request = null): void {
+        $this->validate();
+        if (!$request) $request = Application::get()->getRequest();
+        $this->setupTemplate($request);
+        $user = $request->getUser();
+
+        $entries = $this->loaService->getLoAIndexForUser((int) $user->getId());
+
+        foreach ($entries as &$entry) {
+            $hash = $this->securityHashService->generateHash('loa', (int) $entry['submissionId']);
+            $entry['detailUrl'] = $request->url(null, 'document', 'loa', ["{$hash}-{$entry['submissionId']}"]);
+            $entry['pdfUrl'] = $request->url(null, 'document', 'loa', ["pdf-{$hash}-{$entry['submissionId']}"]);
+        }
+        unset($entry);
+
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign([
+            'loaEntries' => $entries,
+            'pageTitle' => 'billing.loa.indexTitle',
+            'pageHierarchy' => [[$request->url(null, 'document', 'index'), 'document.index.pageTitle']]
+        ]);
+        $templateMgr->display('document/loa/loaIndex.tpl');
     }
 
     /**

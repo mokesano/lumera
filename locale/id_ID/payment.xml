@@ -58,7 +58,18 @@
     <message key="authenticate.invoice.verifiedTitle">Dokumen Tagihan Tervalidasi</message>
     <message key="authenticate.cert.verifiedTitle">Sertifikat Tervalidasi</message>
     <message key="authenticate.cert.incompleteReview">Dokumen tidak valid. Proses review (ulasan) untuk naskah ini belum diselesaikan.</message>
-    
+
+    <!-- Document Index -->
+    <message key="document.index.pageTitle">Dokumen Saya</message>
+    <message key="document.index.loaDescription">Letter of Acceptance untuk naskah Anda yang diterima/terbit.</message>
+    <message key="document.index.certificateDescription">Sertifikat untuk kontribusi review dan editorial Anda.</message>
+    <message key="document.index.statusDate">Tanggal Status</message>
+    <message key="document.index.actions">Aksi</message>
+    <message key="document.index.viewDetail">Lihat</message>
+    <message key="document.index.downloadPdf">Unduh PDF</message>
+    <message key="document.index.loaEmpty">Belum ada Letter of Acceptance.</message>
+    <message key="document.index.certificateEmpty">Belum ada sertifikat.</message>
+
     <!-- Letter of Acceptance -->
     <message key="document.loa.pageTitle">Letter of Acceptance</message>
     <message key="document.loa.invalidRequest">Tautan dokumen tidak valid atau rusak.</message>
@@ -68,12 +79,20 @@
     <message key="document.error.hashValidationFailed">Verifikasi keamanan gagal. Tautan dokumen mungkin telah dimanipulasi.</message>
     
     <!-- Certificate -->
+    <message key="document.cert.indexTitle">Sertifikat Saya</message>
+    <message key="document.cert.status.reviewCompleted">Review Selesai</message>
+    <message key="document.cert.status.editorialAssignment">Penugasan Editorial</message>
     <message key="document.cert.pageTitle">Sertifikat Penghargaan</message>
     <message key="document.cert.invalidRequest">Tautan sertifikat tidak valid atau rusak.</message>
     <message key="document.cert.unauthorized">Akses Ditolak. Ini bukan sertifikat milik Anda.</message>
     <message key="document.cert.incompleteReview">Sertifikat belum dapat diterbitkan karena tugas ulasan (review) belum selesai.</message>
     <message key="document.cert.notFound">Data sertifikat tidak ditemukan.</message>
-    
+
+    <message key="billing.loa.indexTitle">Letter of Acceptance</message>
+    <message key="billing.loa.status.accepted">Diterima</message>
+    <message key="billing.loa.status.inProduction">Dalam Produksi</message>
+    <message key="billing.loa.status.published">Terbit</message>
+
 	<!-- Billing -->
 	<message key="billing.globalBilling">Billing Invoices</message>
 	<message key="billing.activeInvoices">Active Invoices</message>

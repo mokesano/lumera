@@ -34,7 +34,7 @@ class CertificateService {
         /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
-        $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
+        $reviewAssignment = $reviewAssignmentDao->getReviewAssignmentById($reviewId);
 
         if (!$reviewAssignment) {
             throw new \Exception('NOT_FOUND');
@@ -122,6 +122,55 @@ class CertificateService {
             'signatoryNames' => $signatory['names'],
             'certificateNumber' => 'CERT-EDT-' . date('Y', strtotime($dateRef)) . '-' . str_pad((string) $editId, 5, '0', STR_PAD_LEFT),
         ];
+    }
+
+    /**
+     * [BARU] Daftar semua Sertifikat (Reviewer + Editor) milik pengguna --
+     * untuk halaman indeks. Digabung satu daftar, ditandai 'type'.
+     * @param int $userId
+     * @return array setiap elemen: ['type','id','articleTitle','statusLabel','dateCompleted']
+     */
+    public function getCertificateIndexForUser(int $userId): array {
+        $entries = [];
+
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
+        $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
+        /** @var EditAssignmentDAO $editAssignmentDao */
+        $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
+        /** @var ArticleDAO $articleDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO');
+
+        $reviewAssignments = $reviewAssignmentDao->getReviewAssignmentsByUserId($userId);
+        foreach ($reviewAssignments as $reviewAssignment) {
+            if (!$reviewAssignment->getDateCompleted()) continue;
+            $article = $articleDao->getArticle((int) $reviewAssignment->getSubmissionId());
+            if (!$article) continue;
+            $entries[] = [
+                'type' => 'reviewer',
+                'id' => (int) $reviewAssignment->getId(),
+                'articleTitle' => $article->getLocalizedTitle(),
+                'statusLabel' => __('document.cert.status.reviewCompleted'),
+                'dateCompleted' => $reviewAssignment->getDateCompleted(),
+            ];
+        }
+
+        $editAssignments = $editAssignmentDao->getEditAssignmentsByUserId($userId);
+        foreach ($editAssignments as $editAssignment) {
+            if (!$editAssignment->getDateNotified()) continue;
+            $article = $articleDao->getArticle((int) $editAssignment->getArticleId());
+            if (!$article) continue;
+            $entries[] = [
+                'type' => 'editor',
+                'id' => (int) $editAssignment->getEditId(),
+                'articleTitle' => $article->getLocalizedTitle(),
+                'statusLabel' => __('document.cert.status.editorialAssignment'),
+                'dateCompleted' => $editAssignment->getDateAssigned() ?: $editAssignment->getDateNotified(),
+            ];
+        }
+
+        usort($entries, fn($a, $b) => strtotime($b['dateCompleted']) <=> strtotime($a['dateCompleted']));
+
+        return $entries;
     }
     
 }

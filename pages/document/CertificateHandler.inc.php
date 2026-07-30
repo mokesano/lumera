@@ -54,7 +54,8 @@ class CertificateHandler extends Handler {
         AppLocale::requireComponents([
             LOCALE_COMPONENT_CORE_COMMON, 
             LOCALE_COMPONENT_CORE_USER, 
-            LOCALE_COMPONENT_APPLICATION_COMMON
+            LOCALE_COMPONENT_APPLICATION_COMMON,
+            LOCALE_COMPONENT_APP_PAYMENT
         ]);
     }
 
@@ -112,7 +113,7 @@ class CertificateHandler extends Handler {
         if ($type === 'reviewer') {
             /** @var ReviewAssignmentDAO $reviewAssignmentDao */
             $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
-            $assignment = $reviewAssignmentDao->getById($id);
+            $assignment = $reviewAssignmentDao->getReviewAssignmentById($id);
             if (!$assignment || $assignment->getReviewerId() !== (int) $user->getId()) {
                 $this->_redirectWithError($request, 'document.cert.unauthorized');
             }
@@ -165,6 +166,37 @@ class CertificateHandler extends Handler {
 
             $templateMgr->display('document/certificate/certificatePrivate.tpl');
         }
+    }
+
+    /**
+     * [BARU] Halaman indeks -- daftar semua Sertifikat (Reviewer+Editor) milik pengguna.
+     * Rute: /document/certificateIndex
+     * @param array $args
+     * @param Request|null $request
+     */
+    public function certificateIndex(array $args = [], $request = null): void {
+        $this->validate();
+        if (!$request) $request = Application::get()->getRequest();
+        $this->setupTemplate($request);
+        $user = $request->getUser();
+
+        $entries = $this->certService->getCertificateIndexForUser((int) $user->getId());
+
+        foreach ($entries as &$entry) {
+            $scope = $entry['type'] === 'editor' ? 'certificate_editor' : 'certificate';
+            $hash = $this->securityHashService->generateHash($scope, $entry['id']);
+            $entry['detailUrl'] = $request->url(null, 'document', 'certificate', [$entry['type'], "{$hash}-{$entry['id']}"]);
+            $entry['pdfUrl'] = $request->url(null, 'document', 'certificate', [$entry['type'], "pdf-{$hash}-{$entry['id']}"]);
+        }
+        unset($entry);
+
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign([
+            'certificateEntries' => $entries,
+            'pageTitle' => 'document.cert.indexTitle',
+            'pageHierarchy' => [[$request->url(null, 'document', 'index'), 'document.index.pageTitle']]
+        ]);
+        $templateMgr->display('document/certificate/certificateIndex.tpl');
     }
 
     /**
