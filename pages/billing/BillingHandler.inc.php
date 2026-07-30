@@ -344,19 +344,17 @@ class BillingHandler extends Handler {
         $contactName = $journal ? (string) $journal->getSetting('contactName') : (string) Config::getVar('email', 'contact_name');
 
         $mailAdmin = new MailTemplate('MANUAL_PAYMENT_NOTIFICATION');
-        if ($mailAdmin->isEnabled()) {
-            $mailAdmin->setFrom($contactEmail, $contactName);
-            $mailAdmin->addRecipient($contactEmail, $contactName);
-            $mailAdmin->assignParams([
-                'journalName'      => $journal ? $journal->getLocalizedTitle() : $contactName,
-                'userFullName'     => (string) $user->getFullName(),
-                'userName'         => (string) $user->getUsername(),
-                'itemName'         => (string) $invoice->getData('invoiceNumber'),
-                'itemCost'         => number_format($invoice->getAmount(), 2),
-                'itemCurrencyCode' => (string) $invoice->getCurrencyCode(),
-            ]);
-            $mailAdmin->send();
-        }
+        $mailAdmin->setFrom($contactEmail, $contactName);
+        $mailAdmin->addRecipient($contactEmail, $contactName);
+        $mailAdmin->assignParams([
+            'journalName'      => $journal ? $journal->getLocalizedTitle() : $contactName,
+            'userFullName'     => (string) $user->getFullName(),
+            'userName'         => (string) $user->getUsername(),
+            'itemName'         => (string) $invoice->getData('invoiceNumber'),
+            'itemCost'         => number_format($invoice->getAmount(), 2),
+            'itemCurrencyCode' => (string) $invoice->getCurrencyCode(),
+        ]);
+        $mailAdmin->send();
 
         $this->_sendJsonResponse($request, 'success', __('billing.success.manualConfirmationSent'), [
             'instructions'  => $manualInstructions,
