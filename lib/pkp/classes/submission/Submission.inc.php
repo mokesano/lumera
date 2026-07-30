@@ -304,7 +304,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getDiscipline($locale) {
-        return (string) $this->getData('discipline', $locale);
+        return $this->getData('discipline', $locale);
     }
 
     /**
@@ -330,7 +330,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getSubjectClass($locale) {
-        return (string) $this->getData('subjectClass', $locale);
+        return $this->getData('subjectClass', $locale);
     }
 
     /**
@@ -463,7 +463,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getType($locale) {
-        return (string) $this->getData('type', $locale);
+        return $this->getData('type', $locale);
     }
 
     /**
