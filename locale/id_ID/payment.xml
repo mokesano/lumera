@@ -89,6 +89,46 @@
     <message key="billing.error.methodNotAllowed">Metode permintaan ini tidak diizinkan.</message>
     <message key="billing.error.gatewayFailed">Gagal terhubung ke payment gateway</message>
 
+    <message key="billing.invoiceLabel">FAKTUR</message>
+    <message key="billing.invoiceNumberLabel">Nomor Invoice</message>
+    <message key="billing.billedTo">Ditagihkan Kepada</message>
+    <message key="billing.email">Email</message>
+    <message key="billing.invoiceCode">Kode Invoice</message>
+    <message key="billing.dateBilled">Tanggal Ditagihkan</message>
+    <message key="billing.statusLabel">Status</message>
+    <message key="billing.statusPaid">LUNAS</message>
+    <message key="billing.statusUnpaid">BELUM LUNAS</message>
+    <message key="billing.datePaid">Tanggal Lunas</message>
+    <message key="billing.articleDetails">Detail Naskah</message>
+    <message key="billing.titleLabel">Judul</message>
+    <message key="billing.noArticleLinked">Naskah belum terhubung</message>
+    <message key="billing.descriptionLabel">Deskripsi</message>
+    <message key="billing.paymentVia">Dibayar Melalui</message>
+    <message key="billing.feesBreakdown">Rincian Biaya</message>
+    <message key="billing.baseFee">Biaya Dasar (Submission / Publikasi)</message>
+    <message key="billing.fastTrackFee">Biaya Review Cepat (Fast-Track)</message>
+    <message key="billing.discount">Diskon (Dagang / Promo)</message>
+    <message key="billing.subtotal">Subtotal (Jumlah Kena Pajak)</message>
+    <message key="billing.taxVat">Pajak/PPN</message>
+    <message key="billing.taxInclusive">Termasuk Pajak</message>
+    <message key="billing.taxExclusive">Belum Termasuk Pajak</message>
+    <message key="billing.amountDue">Jumlah Tagihan</message>
+    <message key="billing.taxDisclaimer">* Jumlah Kena Pajak dihitung setelah diskon dagang yang tercantum. Pajak/PPN diterapkan sesuai UU PPN Indonesia dan Pedoman OECD.</message>
+    <message key="billing.notAvailable">Tidak tersedia</message>
+    <message key="billing.recommended">Direkomendasikan</message>
+    <message key="billing.processingPayment">Memproses jalur pembayaran aman... Mohon tunggu.</message>
+    <message key="billing.manualInstructionsTitle">Instruksi Pembayaran Manual</message>
+    <message key="billing.manualTransferInstructionsLabel">Transfer Ke</message>
+    <message key="billing.manualInstructionsFallback">Instruksi pembayaran belum diatur oleh penerbit. Silakan hubungi kontak jurnal untuk informasi rekening.</message>
+    <message key="billing.manualNoteTitle">Langkah Selanjutnya</message>
+    <message key="billing.manualNote">Setelah transfer, invoice ini akan berstatus menunggu verifikasi staf. Anda tidak perlu mengunggah bukti transfer secara terpisah kecuali diminta.</message>
+    <message key="billing.cancelBilling">Batalkan Tagihan</message>
+    <message key="billing.cancelConfirm">Apakah Anda yakin ingin membatalkan tagihan ini?</message>
+    <message key="billing.downloadInvoice">Unduh Invoice</message>
+    <message key="billing.gatewayError">Gateway tidak dikenali atau respons tidak lengkap.</message>
+    <message key="billing.connectionError">Terjadi kesalahan koneksi. Silakan coba lagi.</message>
+    <message key="billing.paymentFailed">Pembayaran gagal</message>
+
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Keranjang Belanja</message>
     <message key="order.error.invalidMethod">Metode permintaan tidak diizinkan.</message>

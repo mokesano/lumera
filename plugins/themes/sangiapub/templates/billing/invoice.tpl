@@ -56,8 +56,10 @@
 
     .wi-manual-instructions-box { display:none; margin-top:20px; padding:20px; background:#fffaf0; border:1px solid #ffeeba; border-radius:4px; }
     .wi-manual-instructions-box h3 { margin-top:0; color:#856404; }
-    .wi-manual-instructions-text { white-space: pre-line; line-height:1.6; }
-    .wi-manual-instructions-note { margin-top:15px; margin-bottom:0; font-size:13px; color:#666; }
+    .wi-manual-instructions-box h4 { margin: 0 0 8px; color:#856404; font-size: 13px; text-transform: uppercase; }
+    .wi-manual-instructions-text { white-space: pre-line; line-height:1.6; font-size: 15px; font-weight: 600; }
+    .wi-manual-instructions-divider { margin: 15px 0; border: none; border-top: 1px solid #ffeeba; }
+    .wi-manual-instructions-note { margin: 0; font-size:13px; color:#666; }
 
     .action-button { margin-top: 20px; text-align: right; display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
     .action-button a { text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 4px; font-weight: 700; transition: 0.2s; }
@@ -78,40 +80,39 @@
             <h4>{$publisher.legalEntity|escape|nl2br}</h4>
             {if $publisher.address}<p>{$publisher.address|nl2br}</p>{/if}
         </div>
-        {* [NOTE] Bagian ini masih HARDCODE dan belum menggunakan locale *}
         <div class="wi-title">
-            <h1>INVOICE</h1>
-            <div class="inv-num">Invoice Number: <strong>{$wizdamInvoiceNumber|escape}</strong></div>
+            <h1>{translate key="billing.invoiceLabel"}</h1>
+            <div class="inv-num">{translate key="billing.invoiceNumberLabel"}: <strong>{$wizdamInvoiceNumber|escape}</strong></div>
         </div>
     </div>
 
     {* ===== META GRID ===== *}
     <div class="wi-meta-grid">
         <div class="wi-meta-box">
-            <strong>Billed To:</strong>
+            <strong>{translate key="billing.billedTo"}:</strong>
             <div style="font-size: 15px; font-weight: bold; margin-bottom: 4px;">{$authorName|escape}</div>
             <div>{$authorAffiliation|nl2br}</div>
-            <div style="margin-top: 5px;">Email: <span style="color: #0056b3;">{$authorEmail|escape}</span></div>
+            <div style="margin-top: 5px;">{translate key="billing.email"}: <span style="color: #0056b3;">{$authorEmail|escape}</span></div>
         </div>
         <div class="wi-meta-box right-align">
             <table>
                 <tr>
-                    <td style="color:#666;">Invoice Code:</td>
+                    <td style="color:#666;">{translate key="billing.invoiceCode"}:</td>
                     <td style="text-align:right; font-weight:bold;">{$wizdamInvoiceCode|escape}</td>
                 </tr>
                 <tr>
-                    <td style="color:#666;">Date Billed:</td>
+                    <td style="color:#666;">{translate key="billing.dateBilled"}:</td>
                     <td style="text-align:right; font-weight:bold;">{$dateBilled|date_format:"%d %B %Y"}</td>
                 </tr>
                 <tr>
-                    <td style="color:#666;">Status:</td>
+                    <td style="color:#666;">{translate key="billing.statusLabel"}:</td>
                     <td style="text-align:right; font-weight:bold; color:{if $isPaid}#28a745{else}#dc3545{/if};">
-                        {if $isPaid}PAID{else}UNPAID{/if}
+                        {if $isPaid}{translate key="billing.statusPaid"}{else}{translate key="billing.statusUnpaid"}{/if}
                     </td>
                 </tr>
                 {if $isPaid && $datePaid}
                 <tr>
-                    <td style="color:#666;">Date Paid:</td>
+                    <td style="color:#666;">{translate key="billing.datePaid"}:</td>
                     <td style="text-align:right; font-weight:bold; color:#28a745;">{$datePaid|date_format:"%d %B %Y"}</td>
                 </tr>
                 {/if}
@@ -120,62 +121,61 @@
     </div>
 
     {* ===== ARTICLE DETAILS ===== *}
-    <div class="wi-section-title">Article Details</div>
+    <div class="wi-section-title">{translate key="billing.articleDetails"}</div>
     <table class="wi-details-table">
         <tr>
-            <td>Title</td>
-            <td>{if $articleTitle}{$articleTitle|strip_unsafe_html|nl2br}{else}<em>Judul naskah belum terhubung</em>{/if}</td>
+            <td>{translate key="billing.titleLabel"}</td>
+            <td>{if $articleTitle}{$articleTitle|strip_unsafe_html|nl2br}{else}<em>{translate key="billing.noArticleLinked"}</em>{/if}</td>
         </tr>
         <tr>
-            <td>Description</td>
+            <td>{translate key="billing.descriptionLabel"}</td>
             <td style="font-style: italic; color: #555;">{$localizedFeeName|escape}</td>
         </tr>
         {if $paymentMethod}
         <tr>
-            <td>Payment Via</td>
+            <td>{translate key="billing.paymentVia"}</td>
             <td>{$paymentMethod|escape}</td>
         </tr>
         {/if}
     </table>
 
     {* ===== FEES BREAKDOWN ===== *}
-    <div class="wi-section-title">Fees Breakdown</div>
+    <div class="wi-section-title">{translate key="billing.feesBreakdown"}</div>
     <table class="wi-fees-table">
         {if $formattedBaseFee != "0.00"}
         <tr>
-            <td>Base Fee (Submission / Publication)</td>
+            <td>{translate key="billing.baseFee"}</td>
             <td class="amount">{$currencyCode} {$formattedBaseFee}</td>
         </tr>
         {/if}
         {if $formattedFastTrackFee != "0.00"}
         <tr>
-            <td>Fast-Track Review Fee</td>
+            <td>{translate key="billing.fastTrackFee"}</td>
             <td class="amount">{$currencyCode} {$formattedFastTrackFee}</td>
         </tr>
         {/if}
         {if $formattedDiscount != "0.00"}
         <tr>
-            <td style="color: #28a745;">Discount (Trade / Promo)</td>
+            <td style="color: #28a745;">{translate key="billing.discount"}</td>
             <td class="amount" style="color: #28a745;">- {$currencyCode} {$formattedDiscount}</td>
         </tr>
         {/if}
         <tr class="subtotal">
-            <td>Subtotal (Taxable Amount)</td>
+            <td>{translate key="billing.subtotal"}</td>
             <td class="amount">{$currencyCode} {$formattedSubtotal}</td>
         </tr>
         <tr class="tax">
-            <td>Tax/VAT ({$taxPercentage}%) {if $isTaxInclusive}Inclusive{else}Exclusive{/if}</td>
+            <td>{translate key="billing.taxVat"} ({$taxPercentage}%) {if $isTaxInclusive}{translate key="billing.taxInclusive"}{else}{translate key="billing.taxExclusive"}{/if}</td>
             <td class="amount">{$currencyCode} {$formattedTax}</td>
         </tr>
     </table>
 
     <div class="wi-total-box">
-        <div class="label" style="margin-top: 0;">Amount Due</div>
+        <div class="label" style="margin-top: 0;">{translate key="billing.amountDue"}</div>
         <div class="amount">{$currencyCode} {$formattedAmount}</div>
     </div>
-    {* [NOTE] Bagian ini juga masih hardcode --- belum menggunakan locale *}
     <div style="font-size: 10px; color: #888; text-align: center; margin-top: 5px;">
-        * Taxable Amount calculated after stated trade discounts. Tax/VAT applied per Indonesian VAT Law and OECD Guidelines.
+        {translate key="billing.taxDisclaimer"}
     </div>
 
     {* ===== PAYMENT OPTIONS (hanya untuk tagihan yang belum lunas) ===== *}
@@ -185,30 +185,22 @@
         <button type="button" class="wi-pay-btn {if !$method.is_configured}wi-pay-btn-disabled{/if}"
                 {if !$method.is_configured}disabled{/if}
                 onclick="processPayment('{$method.id}', 'all')">
-            <strong>{$method.label|escape}</strong>{if $method.is_recommended} <span class="wi-badge-recommended">Recommended</span>{/if}
-            {if !$method.is_configured}<br><small>Not available</small>{/if}
+            <strong>{$method.label|escape}</strong>{if $method.is_recommended} <span class="wi-badge-recommended">{translate key="billing.recommended"}</span>{/if}
+            {if !$method.is_configured}<br><small>{translate key="billing.notAvailable"}</small>{/if}
         </button>
         {/foreach}
     </div>
-    {* [NOTE] Bagian notifikasi ini juga masih hardcode. Jika beralih locale maka ini masalah *}
     <div id="loadingIndicator" style="display: none; text-align: center; padding: 15px; color: #1a4f8b; font-weight: bold;">
-        Memproses jalur pembayaran aman... Mohon tunggu.
+        {translate key="billing.processingPayment"}
     </div>
 
-    {* [BARU] Kotak instruksi pembayaran Manual -- tercetak LANGSUNG di
-       halaman ini setelah tombol "Manual" diklik dan berhasil, bukan
-       lewat email/alert generik. Kosong & tersembunyi sampai diisi JS. *}
     <div id="manualInstructionsBox" class="wi-manual-instructions-box">
-        <h3>Instruksi Pembayaran Manual</h3>
+        <h3>{translate key="billing.manualInstructionsTitle"}</h3>
+        <h4>{translate key="billing.manualTransferInstructionsLabel"}</h4>
         <div id="manualInstructionsText" class="wi-manual-instructions-text"></div>
-        {* [NOTE PENTING] Bagian ini Seharusnya menampilkan Informasi Rekening yang di input pada halaman 
-           Pengaturan pembayaran manual -- Karena pengguna tidak tahu ke rekening mana 
-           pembayaran manual dilakukan --- Karena itu diberitahu di Instruksi pembayaran ini 
-           Sementara Instruksi yang kamu buat ini juga masih hardcode 
-           dan lebih berfungsi sebagai Notifikasi BUKAN Instruksi Pembayaran Manual *}
+        <hr class="wi-manual-instructions-divider">
         <p class="wi-manual-instructions-note">
-            Setelah transfer, invoice ini akan berstatus <strong>menunggu verifikasi staf</strong>.
-            Anda tidak perlu mengunggah bukti transfer secara terpisah kecuali diminta.
+            <strong>{translate key="billing.manualNoteTitle"}:</strong> {translate key="billing.manualNote"}
         </p>
     </div>
     {/if}
@@ -218,12 +210,12 @@
         {if !$isPaid}
         <a class="cancel-action"
            href="{url page="billing" op="cancel" path=$securePath}"
-           onclick="return confirm('Apakah Anda yakin ingin membatalkan tagihan ini?');">
-            <i class="icon-remove"></i> Cancel Billing
+           onclick="return confirm('{translate key="billing.cancelConfirm"|escape:"javascript"}');">
+            <i class="icon-remove"></i> {translate key="billing.cancelBilling"}
         </a>
         {/if}
         <a class="download" href="{$pdfDownloadUrl|escape}" target="_blank">
-            <i class="icon-download"></i> Download Invoice
+            <i class="icon-download"></i> {translate key="billing.downloadInvoice"}
         </a>
     </div>
 
@@ -234,6 +226,10 @@
     const csrfToken = "{$csrfToken|escape}";
     const payUrl    = "{url page="billing" op="pay" path=$securePath}";
     const confirmManualUrl = "{url page="billing" op="confirmManual" path=$securePath}";
+    const manualInstructionsFallback = "{translate key="billing.manualInstructionsFallback"|escape:"javascript"}";
+    const connectionErrorMessage = "{translate key="billing.connectionError"|escape:"javascript"}";
+    const gatewayUnknownMessage = "{translate key="billing.gatewayError"|escape:"javascript"}";
+    const paymentFailedPrefix = "{translate key="billing.paymentFailed"|escape:"javascript"}";
 
     {literal}
     function processPayment(method, paymentType) {
@@ -252,13 +248,11 @@
             .then(res => {
                 document.getElementById('loadingIndicator').style.display = 'none';
                 if (res.status === 'success') {
-                    // [FIX] Instruksi tercetak LANGSUNG di halaman -- bukan
-                    // alert() generik + reload seperti sebelumnya.
                     const box = document.getElementById('manualInstructionsBox');
                     const text = document.getElementById('manualInstructionsText');
                     text.textContent = (res.data.instructions && res.data.instructions.trim() !== '')
                         ? res.data.instructions
-                        : 'Instruksi pembayaran belum diatur oleh penerbit. Silakan hubungi kontak jurnal untuk informasi rekening.';
+                        : manualInstructionsFallback;
                     box.style.display = 'block';
                     box.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } else {
@@ -267,7 +261,7 @@
             })
             .catch(function() {
                 document.getElementById('loadingIndicator').style.display = 'none';
-                alert('Terjadi kesalahan koneksi. Silakan coba lagi.');
+                alert(connectionErrorMessage);
             });
             return;
         }
@@ -291,12 +285,12 @@
                     window.snap.pay(res.data.token, {
                         onSuccess: function() { window.location.reload(); },
                         onPending: function() { window.location.reload(); },
-                        onError:   function(result) { alert('Pembayaran gagal: ' + result.status_message); }
+                        onError:   function(result) { alert(paymentFailedPrefix + ': ' + result.status_message); }
                     });
                 } else if ((res.data.gateway === 'xendit' || res.data.gateway === 'paypal') && res.data.url) {
                     window.location.href = res.data.url;
                 } else {
-                    alert('Gateway tidak dikenali atau respons tidak lengkap.');
+                    alert(gatewayUnknownMessage);
                 }
             } else {
                 alert('Error: ' + res.message);
@@ -304,7 +298,7 @@
         })
         .catch(function() {
             document.getElementById('loadingIndicator').style.display = 'none';
-            alert('Terjadi kesalahan koneksi. Silakan coba lagi.');
+            alert(connectionErrorMessage);
         });
     }
     {/literal}
