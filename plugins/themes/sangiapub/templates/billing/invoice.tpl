@@ -75,9 +75,10 @@
         <div class="wi-journal">
             {if $publisher.logoUrl}<img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" class="wi-publisher-logo">{/if}
             <h2>{if $journal}{$journal->getLocalizedTitle()|escape}{else}{$publisher.name|escape}{/if}</h2>
-            <p>{$publisher.legalEntity|escape}</p>
+            <h4>{$publisher.legalEntity|escape|nl2br}</h4>
             {if $publisher.address}<p>{$publisher.address|nl2br}</p>{/if}
         </div>
+        {* [NOTE] Bagian ini masih HARDCODE dan belum menggunakan locale *}
         <div class="wi-title">
             <h1>INVOICE</h1>
             <div class="inv-num">Invoice Number: <strong>{$wizdamInvoiceNumber|escape}</strong></div>
@@ -172,14 +173,12 @@
         <div class="label" style="margin-top: 0;">Amount Due</div>
         <div class="amount">{$currencyCode} {$formattedAmount}</div>
     </div>
+    {* [NOTE] Bagian ini juga masih hardcode --- belum menggunakan locale *}
     <div style="font-size: 10px; color: #888; text-align: center; margin-top: 5px;">
         * Taxable Amount calculated after stated trade discounts. Tax/VAT applied per Indonesian VAT Law and OECD Guidelines.
     </div>
 
     {* ===== PAYMENT OPTIONS (hanya untuk tagihan yang belum lunas) ===== *}
-    {* Tombol dinamis dari PaymentMethodResolver -- rekomendasi Journal
-       Manager disorot, metode yang belum dikonfigurasi tetap tampil
-       tapi nonaktif (bukan disembunyikan). *}
     {if !$isPaid}
     <div class="wi-actions">
         {foreach from=$availablePaymentMethods item=method}
@@ -191,6 +190,7 @@
         </button>
         {/foreach}
     </div>
+    {* [NOTE] Bagian notifikasi ini juga masih hardcode. Jika beralih locale maka ini masalah *}
     <div id="loadingIndicator" style="display: none; text-align: center; padding: 15px; color: #1a4f8b; font-weight: bold;">
         Memproses jalur pembayaran aman... Mohon tunggu.
     </div>
@@ -201,6 +201,11 @@
     <div id="manualInstructionsBox" class="wi-manual-instructions-box">
         <h3>Instruksi Pembayaran Manual</h3>
         <div id="manualInstructionsText" class="wi-manual-instructions-text"></div>
+        {* [NOTE PENTING] Bagian ini Seharusnya menampilkan Informasi Rekening yang di input pada halaman 
+           Pengaturan pembayaran manual -- Karena pengguna tidak tahu ke rekening mana 
+           pembayaran manual dilakukan --- Karena itu diberitahu di Instruksi pembayaran ini 
+           Sementara Instruksi yang kamu buat ini juga masih hardcode 
+           dan lebih berfungsi sebagai Notifikasi BUKAN Instruksi Pembayaran Manual *}
         <p class="wi-manual-instructions-note">
             Setelah transfer, invoice ini akan berstatus <strong>menunggu verifikasi staf</strong>.
             Anda tidak perlu mengunggah bukti transfer secara terpisah kecuali diminta.

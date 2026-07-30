@@ -73,7 +73,7 @@
                 <div class="wi-journal">
                     {if $publisher.logoUrl}<img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" class="wi-publisher-logo"><br>{/if}
                     <h2>{if $journal}{$journal->getLocalizedTitle()|escape}{else}{$publisher.name|escape}{/if}</h2>
-                    <p>{$publisher.legalEntity|escape}</p>
+                    <p>{$publisher.legalEntity|escape|nl2br}</p>
                     {if $publisher.address}<p>{$publisher.address|nl2br}</p>{/if}
                 </div>
             </td>
