@@ -53,14 +53,12 @@
 
     <div class="wi-section-title">Editorial Team</div>
     <div class="wi-meta-grid">
+        {if $loaData.editorNames|@count > 0}
         <div class="wi-meta-box">
             <strong>Handling Editor{if $loaData.editorNames|@count > 1}s{/if}</strong>
-            {if $loaData.editorNames|@count > 0}
-                {foreach from=$loaData.editorNames item=name}{$name|escape}<br>{/foreach}
-            {else}
-                <em>Not yet assigned</em>
-            {/if}
+            {foreach from=$loaData.editorNames item=name}{$name|escape}<br>{/foreach}
         </div>
+        {/if}
         <div class="wi-meta-box">
             <strong>Journal Manager{if $loaData.managerNames|@count > 1}s{/if}</strong>
             {if $loaData.managerNames|@count > 0}

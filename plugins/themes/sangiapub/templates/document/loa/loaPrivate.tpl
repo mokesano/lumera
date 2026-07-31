@@ -45,7 +45,7 @@
 
     <p>Dear <strong>{$loaData.authors|escape}</strong>,</p>
     <p>We are pleased to inform you that your manuscript entitled:</p>
-    <div class="wi-manuscript-box" style="border-left: 4px solid {$publisher.colorPrimary|escape};"><em>"{$loaData.title|escape}"</em></div>
+    <div class="wi-manuscript-box" style="border-left: 4px solid {$publisher.colorPrimary|escape};"><em>"{$loaData.title|strip_unsafe_html}"</em></div>
     <p>has been officially <strong>ACCEPTED</strong> for publication in {$loaData.journalTitle|escape}.</p>
 
     <div class="wi-meta-grid">
@@ -61,14 +61,12 @@
 
     <div class="wi-section-title">Editorial Team</div>
     <div class="wi-meta-grid">
+        {if $loaData.editorNames|@count > 0}
         <div class="wi-meta-box">
             <strong>Handling Editor{if $loaData.editorNames|@count > 1}s{/if}</strong>
-            {if $loaData.editorNames|@count > 0}
-                {foreach from=$loaData.editorNames item=name}{$name|escape}<br>{/foreach}
-            {else}
-                <em>Not yet assigned</em>
-            {/if}
+            {foreach from=$loaData.editorNames item=name}{$name|escape}<br>{/foreach}
         </div>
+        {/if}
         <div class="wi-meta-box">
             <strong>Journal Manager{if $loaData.managerNames|@count > 1}s{/if}</strong>
             {if $loaData.managerNames|@count > 0}
@@ -85,7 +83,7 @@
             <p><strong>Editorial Board</strong><br>{$loaData.journalTitle|escape}</p>
         </div>
         <div class="wi-qr-box">
-            <img src="{$qrCodeImage}" alt="QR Code" width="100">
+            <img src="{$qrCodeImage}" height="140" width="140" alt="QR Code">
             <p><small>Scan to Verify</small></p>
         </div>
     </div>
