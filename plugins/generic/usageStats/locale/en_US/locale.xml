@@ -39,6 +39,7 @@
 	<message key="plugins.generic.usageStats.invalidLogEntry">The line number {$lineNumber} from the file {$file} is not a valid log entry and the file was rejected.</message>
 	<message key="plugins.generic.usageStats.removeUrlError">The line number {$lineNumber} from the file {$file} contains an url that the system can't remove the base url from.</message>
 	<message key="plugins.generic.usageStats.loadDataError">Couldn't load data extracted from file {$file}. The error was: {$error}. The file was moved to stage again.</message>
+	<message key="plugins.generic.usageStats.noParsedRecords">No records could be parsed from load id "{$loadId}"; existing metrics data was left untouched.</message>
 	<message key="plugins.generic.usageStats.displayName">Usage Statistics</message>
 	<message key="plugins.generic.usageStats.description">Present data objects usage statistics. Can use server access log files to extract statistics.</message>
 	<message key="plugins.generic.usageStats.pluginDisabled">Usage statistics plugin is disabled. No log files processed.</message>
@@ -46,8 +47,8 @@
 	<message key="plugins.generic.usageStats.noCounterBotList">The COUNTER bot list could not be found, or more than one list is present. The file {$file} could not be processed.</message>
 	<message key="plugins.generic.usageStats.failedCounterBotList">The COUNTER bot list {$botlist} could not be opened. The file {$file} could not be processed.</message>
 	
-	<message key="plugins.reports.usageStats.report.displayName">OJS usage statistics report</message>
-	<message key="plugins.reports.usageStats.report.description">OJS default usage statistics report (COUNTER ready)</message>
+	<message key="plugins.reports.usageStats.report.displayName">Lumera App usage statistics report</message>
+	<message key="plugins.reports.usageStats.report.description">Lumera App default usage statistics report (COUNTER ready)</message>
 
 	<message key="plugins.reports.usageStats.optout.displayName">Usage Statistics Privacy Information</message>
 	<message key="plugins.reports.usageStats.optout.description">Usage Statistics Privacy Information</message>
@@ -75,5 +76,5 @@
 		<p>If you wish you can opt-out of the data collection process. By clicking the opt-out button below, you can actively decide against participating in the statistical analysis. When clicking the opt-out button a <em>cookie</em> is being created on your system to store your decision. If the privacy settings of your browser lead to cookies being automatically deleted you will have to opt-out again the next time you access this journal. The cookie is only valid for one browser. If you use a different browser, you will have to opt out again. No individual information is stored within this cookie. This cookie lease is valid for one year after your last access.</p>
 		<p>Please bear in mind that general server logs are not affected by your decision to opt-out of the detailed evaluation process. Please refer to our general <a href="{$privacyStatementUrl}">privacy statement</a>.</p>]]></message>
 	<message key="plugins.reports.usageStats.metricType">OJS/COUNTER</message>
-	<message key="plugins.reports.usageStats.metricType.full">Open Journal Systems statistics (COUNTER ready)</message>
+	<message key="plugins.reports.usageStats.metricType.full">Lumera Application Systems Statistics (COUNTER ready)</message>
 </locale>
