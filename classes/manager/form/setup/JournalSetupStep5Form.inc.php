@@ -52,12 +52,12 @@ class JournalSetupStep5Form extends JournalSetupForm {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function JournalSetupStep5Form() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -84,30 +84,29 @@ class JournalSetupStep5Form extends JournalSetupForm {
      * Display the form.
      * @param object|null $request
      * @param object|null $template
+     * @return void
      */
     public function display($request = null, $template = null) {
-        // [WIZDAM] Request Singleton
         $request = $request ?? Application::get()->getRequest();
         $journal = $request->getJournal();
 
         $allThemes = PluginRegistry::loadCategory('themes');
         $journalThemes = [];
-        foreach ($allThemes as $key => $junk) {
-            $plugin = $allThemes[$key];
-            $journalThemes[basename($plugin->getPluginPath())] = $plugin;
+        if (is_array($allThemes)) {
+            foreach ($allThemes as $plugin) {
+                $journalThemes[basename($plugin->getPluginPath())] = $plugin;
+            }
         }
 
         $templateMgr = TemplateManager::getManager();
 
         $templateMgr->assign([
-            // Tambahkan ?? [] pada setting yang multi-bahasa (terutama gambar)
             'homeHeaderTitleImage' => $journal->getSetting('homeHeaderTitleImage') ?? [],
             'homeHeaderLogoImage'=> $journal->getSetting('homeHeaderLogoImage') ?? [],
             'journalThumbnail'=> $journal->getSetting('journalThumbnail') ?? [],
             'pageHeaderTitleImage' => $journal->getSetting('pageHeaderTitleImage') ?? [],
             'pageHeaderLogoImage' => $journal->getSetting('pageHeaderLogoImage') ?? [],
             'homepageImage' => $journal->getSetting('homepageImage') ?? [],
-            
             'journalStyleSheet' => $journal->getSetting('journalStyleSheet'),
             'readerInformation' => $journal->getSetting('readerInformation'),
             'authorInformation' => $journal->getSetting('authorInformation'),
@@ -116,22 +115,28 @@ class JournalSetupStep5Form extends JournalSetupForm {
             'journalFavicon' => $journal->getSetting('journalFavicon')
         ]);
 
-        // Make lists of the sidebar blocks available.
-        $leftBlockPlugins = $disabledBlockPlugins = $rightBlockPlugins = [];
+        $leftBlockPlugins = [];
+        $disabledBlockPlugins = [];
+        $rightBlockPlugins = [];
+        
         $plugins = PluginRegistry::loadCategory('blocks');
-        foreach ($plugins as $key => $junk) {
-            if (!$plugins[$key]->getEnabled() || $plugins[$key]->getBlockContext() == '') {
-                if (count(array_intersect($plugins[$key]->getSupportedContexts(), [BLOCK_CONTEXT_LEFT_SIDEBAR, BLOCK_CONTEXT_RIGHT_SIDEBAR])) > 0) 
-                    $disabledBlockPlugins[] = $plugins[$key];
-            } else switch ($plugins[$key]->getBlockContext()) {
-                case BLOCK_CONTEXT_LEFT_SIDEBAR:
-                    $leftBlockPlugins[] = $plugins[$key];
-                    break;
-                case BLOCK_CONTEXT_RIGHT_SIDEBAR:
-                    $rightBlockPlugins[] = $plugins[$key];
-                    break;
+        if (is_array($plugins)) {
+            foreach ($plugins as $plugin) {
+                if (!$plugin->getEnabled() || $plugin->getBlockContext() === '') {
+                    if (count(array_intersect($plugin->getSupportedContexts(), [BLOCK_CONTEXT_LEFT_SIDEBAR, BLOCK_CONTEXT_RIGHT_SIDEBAR])) > 0) {
+                        $disabledBlockPlugins[] = $plugin;
+                    }
+                } else {
+                    $context = $plugin->getBlockContext();
+                    if ($context === BLOCK_CONTEXT_LEFT_SIDEBAR) {
+                        $leftBlockPlugins[] = $plugin;
+                    } elseif ($context === BLOCK_CONTEXT_RIGHT_SIDEBAR) {
+                        $rightBlockPlugins[] = $plugin;
+                    }
+                }
             }
         }
+        
         $templateMgr->assign([
             'disabledBlockPlugins' => $disabledBlockPlugins,
             'leftBlockPlugins' => $leftBlockPlugins,
@@ -144,54 +149,58 @@ class JournalSetupStep5Form extends JournalSetupForm {
 
     /**
      * Uploads a journal image.
-     * @param string $settingName setting key associated with the file
+     * @param string $settingName Setting key associated with the file
      * @param string $locale
-     * @return boolean
+     * @return bool
      */
     public function uploadImage($settingName, $locale) {
-        // [WIZDAM] Request Singleton
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
         
-        $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $faviconTypes = ['.ico', '.png', '.gif'];
 
         import('classes.file.PublicFileManager');
         $fileManager = new PublicFileManager();
+        
         if ($fileManager->uploadedFileExists($settingName)) {
             $type = $fileManager->getUploadedFileType($settingName);
             $extension = $fileManager->getImageExtension($type);
             if (!$extension) {
                 return false;
             }
-            if ($settingName == 'journalFavicon' && !in_array($extension, $faviconTypes)) {
+            if ($settingName === 'journalFavicon' && !in_array($extension, $faviconTypes, true)) {
                 return false;
             }
 
             $uploadName = $settingName . '_' . $locale . $extension;
             if ($fileManager->uploadJournalFile($journal->getId(), $settingName, $uploadName)) {
-                // Get image dimensions
                 $filePath = $fileManager->getJournalFilesPath($journal->getId());
-                list($width, $height) = getimagesize($filePath . '/' . $uploadName);
+                $imageSize = getimagesize($filePath . '/' . $uploadName);
+                $width = $imageSize ? (int) $imageSize[0] : 0;
+                $height = $imageSize ? (int) $imageSize[1] : 0;
 
                 $value = $journal->getSetting($settingName);
+                if (!is_array($value)) {
+                    $value = [];
+                }
                 $newImage = empty($value[$locale]);
 
+                // [WIZDAM FIX] getUploadedFileName expects the input name ($settingName), not $locale
                 $value[$locale] = [
-                    'name' => $fileManager->getUploadedFileName($settingName, $locale),
+                    'name' => (string) $fileManager->getUploadedFileName($settingName),
                     'uploadName' => $uploadName,
                     'width' => $width,
                     'height' => $height,
-                    'mimeType' => $type,
+                    'mimeType' => (string) $type,
                     'dateUploaded' => Core::getCurrentDate()
                 ];
 
                 $journal->updateSetting($settingName, $value, 'object', true);
 
                 if ($newImage) {
-                    $altText = $journal->getSetting($settingName.'AltText');
-                    if (!empty($altText[$locale])) {
-                        $this->setData($settingName.'AltText', $altText);
+                    $altText = $journal->getSetting($settingName . 'AltText');
+                    if (is_array($altText) && !empty($altText[$locale])) {
+                        $this->setData($settingName . 'AltText', $altText);
                     }
                 }
 
@@ -204,12 +213,11 @@ class JournalSetupStep5Form extends JournalSetupForm {
 
     /**
      * Deletes a journal image.
-     * @param string $settingName setting key associated with the file
+     * @param string $settingName Setting key associated with the file
      * @param string|null $locale
-     * @return boolean
+     * @return bool
      */
     public function deleteImage($settingName, $locale = null) {
-        // [WIZDAM] Request Singleton
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
         
@@ -219,9 +227,18 @@ class JournalSetupStep5Form extends JournalSetupForm {
 
         import('classes.file.PublicFileManager');
         $fileManager = new PublicFileManager();
-        if ($fileManager->removeJournalFile($journal->getId(), $locale !== null ? $setting[$locale]['uploadName'] : $setting['uploadName'] )) {
+        
+        $uploadName = '';
+        if (is_array($setting)) {
+            if ($locale !== null && isset($setting[$locale]['uploadName'])) {
+                $uploadName = (string) $setting[$locale]['uploadName'];
+            } elseif (isset($setting['uploadName'])) {
+                $uploadName = (string) $setting['uploadName'];
+            }
+        }
+
+        if ($uploadName !== '' && $fileManager->removeJournalFile($journal->getId(), $uploadName)) {
             $returner = $settingsDao->deleteSetting($journal->getId(), $settingName, $locale);
-            // Ensure page header is refreshed
             if ($returner) {
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign([
@@ -229,19 +246,18 @@ class JournalSetupStep5Form extends JournalSetupForm {
                     'displayPageHeaderLogo' => $journal->getLocalizedPageHeaderLogo()
                 ]);
             }
-            return $returner;
-        } else {
-            return false;
+            return (bool) $returner;
         }
+        
+        return false;
     }
 
     /**
      * Uploads journal custom stylesheet.
-     * @param string $settingName setting key associated with the file
-     * @return boolean
+     * @param string $settingName Setting key associated with the file
+     * @return bool
      */
     public function uploadStyleSheet($settingName) {
-        // [WIZDAM] Request Singleton
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
         
@@ -250,16 +266,17 @@ class JournalSetupStep5Form extends JournalSetupForm {
 
         import('classes.file.PublicFileManager');
         $fileManager = new PublicFileManager();
+        
         if ($fileManager->uploadedFileExists($settingName)) {
             $type = $fileManager->getUploadedFileType($settingName);
-            if ($type != 'text/css') {
+            if ($type !== 'text/css') {
                 return false;
             }
 
             $uploadName = $settingName . '.css';
-            if($fileManager->uploadJournalFile($journal->getId(), $settingName, $uploadName)) {
+            if ($fileManager->uploadJournalFile($journal->getId(), $settingName, $uploadName)) {
                 $value = [
-                    'name' => $fileManager->getUploadedFileName($settingName),
+                    'name' => (string) $fileManager->getUploadedFileName($settingName),
                     'uploadName' => $uploadName,
                     'dateUploaded' => Core::getCurrentDate()
                 ];
@@ -273,35 +290,38 @@ class JournalSetupStep5Form extends JournalSetupForm {
     }
 
     /**
-     * Execute the form
+     * Execute the form.
      * @param object|null $object
+     * @return mixed
      */
     public function execute($object = null) {
-        // [WIZDAM] Request Singleton
         $request = Application::get()->getRequest();
 
-        // Save the block plugin layout settings.
         $blockVars = ['blockSelectLeft', 'blockUnselected', 'blockSelectRight'];
+        $blockData = [];
         foreach ($blockVars as $varName) {
-            $$varName = array_map('urldecode', explode(' ', (string) $request->getUserVar($varName)));
+            $blockData[$varName] = array_map('urldecode', explode(' ', (string) $request->getUserVar($varName)));
         }
 
         $plugins = PluginRegistry::loadCategory('blocks');
-        foreach ($plugins as $key => $junk) {
-            $plugin = $plugins[$key];
-            $plugin->setEnabled(!in_array($plugin->getName(), $blockUnselected));
-            if (in_array($plugin->getName(), $blockSelectLeft)) {
-                $plugin->setBlockContext(BLOCK_CONTEXT_LEFT_SIDEBAR);
-                $plugin->setSeq(array_search($key, $blockSelectLeft));
+        if (is_array($plugins)) {
+            foreach ($plugins as $plugin) {
+                $plugin->setEnabled(!in_array($plugin->getName(), $blockData['blockUnselected'], true));
+                
+                // [WIZDAM FIX] Use plugin name for array_search instead of array key, 
+                // as $blockData contains plugin names, not array indices.
+                if (in_array($plugin->getName(), $blockData['blockSelectLeft'], true)) {
+                    $plugin->setBlockContext(BLOCK_CONTEXT_LEFT_SIDEBAR);
+                    $plugin->setSeq(array_search($plugin->getName(), $blockData['blockSelectLeft'], true));
+                } elseif (in_array($plugin->getName(), $blockData['blockSelectRight'], true)) {
+                    $plugin->setBlockContext(BLOCK_CONTEXT_RIGHT_SIDEBAR);
+                    $plugin->setSeq(array_search($plugin->getName(), $blockData['blockSelectRight'], true));
+                }
             }
-            else if (in_array($plugin->getName(), $blockSelectRight)) {
-                $plugin->setBlockContext(BLOCK_CONTEXT_RIGHT_SIDEBAR);
-                $plugin->setSeq(array_search($key, $blockSelectRight));
-            }
-            unset($plugin);
         }
 
         return parent::execute($object);
     }
+
 }
 ?>
