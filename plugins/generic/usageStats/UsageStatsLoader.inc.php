@@ -661,12 +661,22 @@ class UsageStatsLoader extends FileLoader {
         $statsDao = DAORegistry::getDAO('UsageStatsTemporaryRecordDAO');
         /** @var MetricsDAO $metricsDao */
         $metricsDao = DAORegistry::getDAO('MetricsDAO');
-        $metricsDao->purgeLoadBatch($loadId);
-        
+
+        $records = [];
         while ($record = $statsDao->getNextByLoadId($loadId)) {
             $record['metric_type'] = OJS_METRIC_TYPE_COUNTER;
-            $errorMsg = null;
+            $records[] = $record;
+        }
 
+        if (empty($records)) {
+            $errorMsg = __('plugins.generic.usageStats.noParsedRecords', ['loadId' => $loadId]);
+            return false;
+        }
+
+        $metricsDao->purgeLoadBatch($loadId);
+
+        foreach ($records as $record) {
+            $errorMsg = null;
             if (!$metricsDao->insertRecord($record, $errorMsg)) {
                 return false;
             }
