@@ -470,7 +470,8 @@ if (isset($_GET['action'])) {
             if (!$detectedHost) {
                 // Fallback: deteksi ulang dari isi file kalau front-end
                 // tidak mengirimkannya (mis. dipanggil manual tanpa scan).
-                if (preg_match('/"[^"]*"\s+(\S+)\s+\S+\s+"/', strtok($content, "\n"), $m)) {
+                $firstLine = strtok($content, "\n");
+                if ($firstLine !== false && preg_match('/"[^"]*"\s+(\S+)\s+\S+\s+"/', $firstLine, $m)) {
                     $detectedHost = parse_url($m[1], PHP_URL_HOST);
                 }
             }
