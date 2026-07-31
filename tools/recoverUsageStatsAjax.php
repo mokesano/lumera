@@ -651,7 +651,6 @@ if (isset($_GET['action'])) {
         .step { border: 1px solid #444; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
         .step h3 { margin-top: 0; }
         .step.locked { opacity: 0.5; }
-        .note { color: #ffa502; font-size: 0.9em; }
         .danger { color: #ff6b81; font-size: 0.9em; }
         .progress-container { width: 100%; background: #444; border-radius: 4px; margin-top: 10px; height: 25px; overflow: hidden; }
         .progress-bar { height: 100%; background: linear-gradient(90deg, #2ed573, #7bed9f); width: 0%; transition: width 0.3s ease; text-align: center; line-height: 25px; color: #000; font-weight: bold; font-size: 14px; }
@@ -673,9 +672,8 @@ if (isset($_GET['action'])) {
         Halaman ini AMAN dibuka/dimuat ulang kapan saja — tidak ada satupun query database/pemindahan file yang berjalan tanpa Anda menekan tombol secara eksplisit.
     </div>
     <div class="warn-banner">
-        [NOTE Prasyarat harian] PASTIKAN: baris <code>in_array($entryData['returnCode'], ['200', '304'], true)</code> di <code>UsageStatsLoader.inc.php</code> HARUS literal tertulis begitu, karena scheduled task harian (Acron/cron) untuk memproses file BARU bergantung pada baris itu -- kalau belum sesuai, lakukan penyesuaian agar pemrosesan harian tidak gagal. Langkah Proses di ALAT INI TIDAK terpengaruh oleh status baris itu: ia menjalankan salinan parsing baris log-nya sendiri (<code>RecoverBatchUsageStatsLoader::processLogBatch()</code>), sudah termasuk perbaikan yang sama, independen dari <code>UsageStatsLoader::processFile()</code>.
+        [NOTE] Alat sekali-pakai. Jalankan Scan dulu, tinjau daftarnya, baru Proses. Setelah selesai dan diverifikasi, hapus file ini dari server.
     </div>
-    <p class="note">Alat sekali-pakai. Jalankan Scan dulu, tinjau daftarnya, baru Proses. Setelah selesai dan diverifikasi, hapus file ini dari server.</p>
 
     <div class="step" id="stepScan">
         <h3>Langkah 1 — Scan archive/</h3>
