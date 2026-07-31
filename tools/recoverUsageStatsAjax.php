@@ -857,7 +857,7 @@ if (isset($_GET['action'])) {
             const mismatchCount = data.affected.filter(f => f.domain_mismatch).length;
             document.getElementById('scanStatus').innerText =
                 `Total file di archive/: ${data.total_files}. Sudah ada data (aman): ${data.ok_count}. Perlu diproses ulang: ${data.affected_count}` +
-                (mismatchCount > 0 ? `. PERINGATAN: ${mismatchCount} file domainnya beda dari situs saat ini (${data.site_host}) -- kemungkinan besar akan GAGAL diresolve.` : '.');
+                (mismatchCount > 0 ? `. INFO: ${mismatchCount} file domainnya beda dari situs saat ini (${data.site_host}) -- domain ini akan otomatis ditulis-ulang ke base_url saat ini sebelum diproses (lihat action=process_start), jadi tetap diharapkan berhasil diresolve.` : '.');
 
             affectedFiles = data.affected.map(f => ({ filename: f.filename, detectedHost: f.detected_host || '' }));
             const tbody = document.querySelector('#scanTable tbody');
