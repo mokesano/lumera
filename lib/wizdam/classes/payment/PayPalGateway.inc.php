@@ -126,6 +126,7 @@ class PayPalGateway implements PaymentGatewayInterface {
             'invoiceId' => $invoiceId,
             'status'    => $status,
             'method'    => 'PayPal',
+            'reference' => (string) ($payload['txn_id'] ?? '')
         ];
     }
 

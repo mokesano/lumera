@@ -145,10 +145,10 @@
             <td>Fee Type</td>
             <td style="font-style: italic; color: #555;">{$localizedFeeName|escape}</td>
         </tr>
-        {if $paymentMethod}
+        {if $invoice->getData('paymentReference')}
         <tr>
-            <td>Payment Via</td>
-            <td>{$paymentMethod|escape}</td>
+            <td>{translate key="billing.paymentReference"}</td>
+            <td>{$invoice->getData('paymentReference')|escape}</td>
         </tr>
         {/if}
     </table>

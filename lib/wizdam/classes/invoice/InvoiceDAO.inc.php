@@ -49,7 +49,7 @@ class InvoiceDAO extends DAO {
         // [BARU] Kode referensi transfer bank + nama bank yang dipakai
         // (Tahap Konfirmasi Transfer) -- ditampilkan di daftar konfirmasi
         // staf/Journal Manager untuk dicocokkan dengan mutasi rekening.
-        $invoice->setData('transferReference', $row['transfer_reference'] ?? null);
+        $invoice->setData('paymentReference', $row['payment_reference'] ?? null);
         $invoice->setData('transferBank', $row['transfer_bank'] ?? null);
         $invoice->setData('dateBilled', $this->datetimeFromDB($row['date_billed']));
         $invoice->setData('datePaid', $this->datetimeFromDB($row['date_paid']));
@@ -291,41 +291,63 @@ class InvoiceDAO extends DAO {
      * @param string $referenceCode
      * @return bool
      */
-    public function isTransferReferenceUsed(string $referenceCode): bool {
-        $result = $this->retrieve('SELECT invoice_id FROM invoices WHERE transfer_reference = ?', [$referenceCode]);
+    public function isPaymentReferenceUsed(string $referenceCode): bool {
+        $result = $this->retrieve('SELECT invoice_id FROM invoices WHERE payment_reference = ?', [$referenceCode]);
         $found = ($result && $result->RecordCount() > 0);
         if ($result) $result->Close();
         return $found;
     }
 
     /**
-     * [BARU] Menyimpan kode referensi transfer bank + nama bank yang dipakai
-     * (Tahap Konfirmasi Transfer). Keunikan kode DIJAMIN oleh UNIQUE INDEX
-     * database -- pengecekan isTransferReferenceUsed() di atas cuma UX
-     * cepat, bukan satu-satunya penjamin.
+     * [Tahap Konfirmasi Transfer -- KHUSUS Manual] Menyimpan kode
+     * referensi transfer bank + nama bank yang dipakai. Keunikan DIJAMIN
+     * UNIQUE INDEX database.
      * @param int $invoiceId
      * @param string $referenceCode
      * @param string $bankName Nama bank yang dipilih pengguna (opsional, informasional)
-     * @return bool false kalau kode sudah dipakai invoice lain, invoice
-     * tidak UNPAID, atau constraint database gagal.
+     * @return bool
      */
     public function saveTransferReference(int $invoiceId, string $referenceCode, string $bankName = ''): bool {
-        if ($this->isTransferReferenceUsed($referenceCode)) {
+        if ($this->isPaymentReferenceUsed($referenceCode)) {
             return false;
         }
 
         try {
             $success = $this->update(
-                'UPDATE invoices SET transfer_reference = ?, transfer_bank = ?, payment_method = ? WHERE invoice_id = ? AND status = ?',
+                'UPDATE invoices SET payment_reference = ?, transfer_bank = ?, payment_method = ? WHERE invoice_id = ? AND status = ?',
                 [$referenceCode, $bankName, 'BankTransferPending', $invoiceId, Invoice::STATUS_UNPAID]
             );
             return (bool) $success;
         } catch (\Throwable $e) {
-            // Constraint UNIQUE gagal di database (race condition -- dua
-            // submit nyaris bersamaan lolos pengecekan awal). Ini KEGAGALAN
-            // YANG DIHARAPKAN (kode memang sudah dipakai), bukan error
-            // tak terduga yang perlu merambat lebih jauh.
             error_log('WIZDAM saveTransferReference: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * [BARU] Melekatkan referensi transaksi dari GATEWAY (Xendit/Midtrans/
+     * PayPal) ke invoice -- dipanggil dari markAsPaid() HANYA kalau
+     * gateway benar-benar mengirim referensi baru. TIDAK PERNAH menimpa
+     * dengan string kosong/null -- kalau invoice sudah punya referensi
+     * dari Tahap Konfirmasi Transfer manual sebelumnya, itu tidak boleh
+     * terhapus oleh proses markAsPaid() yang tidak membawa referensi baru.
+     * @param int $invoiceId
+     * @param string $reference
+     * @return bool
+     */
+    public function attachPaymentReference(int $invoiceId, string $reference): bool {
+        if ($reference === '') return false;
+        if ($this->isPaymentReferenceUsed($reference)) {
+            error_log("WIZDAM attachPaymentReference: referensi '{$reference}' sudah dipakai invoice lain, dilewati untuk invoice #{$invoiceId}.");
+            return false;
+        }
+        try {
+            return (bool) $this->update(
+                'UPDATE invoices SET payment_reference = ? WHERE invoice_id = ?',
+                [$reference, $invoiceId]
+            );
+        } catch (\Throwable $e) {
+            error_log('WIZDAM attachPaymentReference: ' . $e->getMessage());
             return false;
         }
     }

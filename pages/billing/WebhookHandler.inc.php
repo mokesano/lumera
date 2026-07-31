@@ -107,7 +107,7 @@ class WebhookHandler extends Handler {
             $invoiceId = (int) $result['invoiceId'];
             
             if ($result['status'] === 'PAID') {
-                $success = $this->invoiceService->markAsPaid($invoiceId, $result['method']);
+                $success = $this->invoiceService->markAsPaid($invoiceId, $result['method'], $result['reference'] ?? null);
                 
                 if ($success) {
                     error_log("WIZDAM PAYMENT SUCCESS: Invoice #{$invoiceId} cleared via {$result['method']} ({$gatewayName})");

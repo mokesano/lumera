@@ -114,7 +114,8 @@ class MidtransGateway implements PaymentGatewayInterface {
         return [
             'invoiceId' => $invoiceId,
             'status' => $wizdamStatus,
-            'method' => 'Midtrans - ' . ($payload['payment_type'] ?? 'Unknown')
+            'method' => 'Midtrans - ' . ($payload['payment_type'] ?? 'Unknown'),
+            'reference' => (string) ($payload['transaction_id'] ?? '')
         ];
     }
 

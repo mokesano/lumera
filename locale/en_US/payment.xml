@@ -118,6 +118,8 @@
     <message key="billing.error.gatewayFailed">Failed to connect to the payment gateway</message>
     <message key="billing.bankAccountHolder">Account Holder</message>
     <message key="billing.transferBankUsedLabel">Which bank did you transfer from?</message>
+    <message key="billing.paymentReference">Transaction Reference</message>
+    <message key="billing.paymentReference.legacy">Not recorded (transaction predates this feature)</message>
 
     <message key="billing.invoiceLabel">INVOICE</message>
     <message key="billing.invoiceNumberLabel">Invoice Number</message>

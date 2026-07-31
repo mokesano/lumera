@@ -13,17 +13,28 @@ declare(strict_types=1);
  * @see ReviewAssignment
  *
  * @brief Class for DAO relating reviewers to articles.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance & HookRegistry::dispatch
  */
 
 import('classes.submission.reviewAssignment.ReviewAssignment');
 import('lib.pkp.classes.submission.reviewAssignment.PKPReviewAssignmentDAO');
+import('classes.article.ArticleFileDAO');
+import('classes.article.SuppFileDAO');
+import('classes.article.ArticleCommentDAO');
+import('classes.user.UserDAO');
 
 class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
-    public $articleFileDao = null;
-    public $suppFileDao = null;
-    public $articleCommentDao = null;
+    
+    /** 
+     * @var ArticleFileDAO 
+     * @method ArticleFile _returnArticleFileFromRow(array $row)
+     */
+    public $articleFileDao;
+
+    /** @var SuppFileDAO */
+    public $suppFileDao;
+
+    /** @var ArticleCommentDAO */
+    public $articleCommentDao;
 
     /**
      * Constructor.
@@ -36,12 +47,12 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ReviewAssignmentDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -50,66 +61,85 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
     }
 
     /**
-     * Return the review file ID for a submission, given its submission ID.
+     * Retrieve the review file ID for a submission.
      * @param int $submissionId
      * @return int|null
      */
     public function _getSubmissionReviewFileId($submissionId) {
         $result = $this->retrieve(
             'SELECT review_file_id FROM articles WHERE article_id = ?',
-            (int) $submissionId
+            [(int) $submissionId]
         );
-        $returner = isset($result->fields[0]) ? (int) $result->fields[0] : null;
-        $result->Close();
-        unset($result);
+        
+        $returner = null;
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $returner = isset($row['review_file_id']) ? (int) $row['review_file_id'] : null;
+        }
+        if ($result) {
+            $result->Close();
+        }
+        
         return $returner;
     }
 
     /**
-     * Retrieve a review assignment by review assignment id.
+     * Retrieve a review assignment by review assignment ID.
      * @param int $reviewId
      * @return ReviewAssignment|null
+     * @deprecated Use getById() instead.
      */
     public function getReviewAssignmentById($reviewId) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->getById($reviewId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        return $this->getById((int) $reviewId);
     }
 
     /**
-     * Get all review assignments for an article.
+     * Retrieve all review assignments for a specific article.
      * @param int $articleId
      * @param int|null $round
-     * @return array ReviewAssignments
+     * @return array
+     * @deprecated Use getBySubmissionId() instead.
      */
     public function getReviewAssignmentsByArticleId($articleId, $round = null) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->getBySubmissionId($articleId, $round);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        return $this->getBySubmissionId((int) $articleId, $round);
     }
 
     /**
-     * Get all review assignments for a reviewer.
+     * Retrieve all review assignments for a specific reviewer.
      * @param int $userId
-     * @return array ReviewAssignments
+     * @return array
+     * @deprecated Use getByUserId() instead.
      */
     public function getReviewAssignmentsByUserId($userId) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->getByUserId($userId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        return $this->getByUserId((int) $userId);
     }
 
     /**
-     * Get all review assignments for a review form.
+     * Retrieve all review assignments for a specific review form.
      * @param int $reviewFormId
-     * @return array ReviewAssignments
+     * @return array
+     * @deprecated Use getByReviewFormId() instead.
      */
     public function getReviewAssignmentsByReviewFormId($reviewFormId) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->getByReviewFormId($reviewFormId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        return $this->getByReviewFormId((int) $reviewFormId);
     }
 
     /**
-     * Get a review file for an article for each round.
+     * Retrieve the review file for an article for each round.
      * @param int $articleId
-     * @return array ArticleFiles
+     * @return array
      */
     public function getReviewFilesByRound($articleId) {
         $returner = [];
@@ -124,25 +154,26 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
                 r.submission_id = f.article_id AND
                 f.file_id = a.review_file_id AND
                 f.revision = r.review_revision',
-            (int) $articleId
+            [(int) $articleId]
         );
 
-        while (!$result->EOF) {
-            $row = $result->GetRowAssoc(false);
-            $returner[$row['round']] = $this->articleFileDao->_returnArticleFileFromRow($row);
-            $result->MoveNext();
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                // @method annotation on property satisfies linter for protected legacy method
+                $returner[(int) $row['round']] = $this->articleFileDao->_returnArticleFileFromRow($row);
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $returner;
     }
 
     /**
-     * Get all author-viewable reviewer files for an article for each round.
+     * Retrieve all author-viewable reviewer files for an article, grouped by round and reviewer.
      * @param int $articleId
-     * @return array returned[round][reviewer_index] = array of ArticleFiles
+     * @return array
      */
     public function getAuthorViewableFilesByRound($articleId) {
         $files = [];
@@ -158,34 +189,39 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
             [(int) $articleId]
         );
 
-        // [WIZDAM] Initialize variable to prevent undefined variable warning in loop
         $thisReviewerId = null;
         $reviewerIndex = 0;
 
-        while (!$result->EOF) {
-            $row = $result->GetRowAssoc(false);
-            
-            if (!isset($files[$row['round']]) || !is_array($files[$row['round']])) {
-                $files[$row['round']] = [];
-                $thisReviewerId = $row['reviewer_id'];
-                $reviewerIndex = 0;
-            } else if ($thisReviewerId != $row['reviewer_id']) {
-                $thisReviewerId = $row['reviewer_id'];
-                $reviewerIndex++;
-            }
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $round = (int) $row['round'];
+                $reviewerId = (int) $row['reviewer_id'];
+                $reviewId = (int) $row['review_id'];
+                
+                if (!isset($files[$round]) || !is_array($files[$round])) {
+                    $files[$round] = [];
+                    $thisReviewerId = $reviewerId;
+                    $reviewerIndex = 0;
+                } elseif ($thisReviewerId !== $reviewerId) {
+                    $thisReviewerId = $reviewerId;
+                    $reviewerIndex++;
+                }
 
-            $thisArticleFile = $this->articleFileDao->_returnArticleFileFromRow($row);
-            // Ensure nested array keys exist
-            if (!isset($files[$row['round']][$reviewerIndex])) {
-                $files[$row['round']][$reviewerIndex] = [];
+                $thisArticleFile = $this->articleFileDao->_returnArticleFileFromRow($row);
+                
+                if (!isset($files[$round][$reviewerIndex])) {
+                    $files[$round][$reviewerIndex] = [];
+                }
+                if (!isset($files[$round][$reviewerIndex][$reviewId])) {
+                    $files[$round][$reviewerIndex][$reviewId] = [];
+                }
+                $files[$round][$reviewerIndex][$reviewId][] = $thisArticleFile;
+                
+                $result->MoveNext();
             }
-            $files[$row['round']][$reviewerIndex][$row['review_id']][] = $thisArticleFile;
-            
-            $result->MoveNext();
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $files;
     }
@@ -193,37 +229,39 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
     /**
      * Delete review assignments by article.
      * @param int $articleId
-     * @return boolean
+     * @return bool
+     * @deprecated Use deleteBySubmissionId() instead.
      */
     public function deleteReviewAssignmentsByArticle($articleId) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->deleteBySubmissionId($articleId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        return (bool) $this->deleteBySubmissionId((int) $articleId);
     }
 
     /**
-     * Get the average quality ratings and number of ratings for all users of a journal.
+     * Retrieve the average quality ratings and the number of ratings for all reviewers in a journal.
      * @param int $journalId
      * @return array
      */
     public function getAverageQualityRatings($journalId) {
         $averageQualityRatings = [];
-
-        // MODIFIKASI: Inisialisasi nilai default (0) untuk SEMUA reviewer
         $roleIdReviewer = defined('ROLE_ID_REVIEWER') ? ROLE_ID_REVIEWER : 4096;
+        
         $initResult = $this->retrieve(
             'SELECT user_id FROM roles WHERE journal_id = ? AND role_id = ?',
             [(int) $journalId, (int) $roleIdReviewer]
         );
-        while (!$initResult->EOF) {
-            $row = $initResult->GetRowAssoc(false);
-            // Set rata-rata dan jumlah rating menjadi 0 sebagai default
-            $averageQualityRatings[$row['user_id']] = ['average' => 0, 'count' => 0];
-            $initResult->MoveNext();
+        
+        if ($initResult) {
+            while (!$initResult->EOF) {
+                $row = $initResult->GetRowAssoc(false);
+                $averageQualityRatings[(int) $row['user_id']] = ['average' => 0.0, 'count' => 0];
+                $initResult->MoveNext();
+            }
+            $initResult->Close();
         }
-        $initResult->Close();
-        unset($initResult);
 
-        // KODE ASLI UNTUK MENGAMBIL DATA AKTUAL
         $result = $this->retrieve(
             'SELECT r.reviewer_id, AVG(r.quality) AS average, COUNT(r.quality) AS count
             FROM    review_assignments r, articles a
@@ -233,47 +271,47 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
             [(int) $journalId]
         );
 
-        while (!$result->EOF) {
-            $row = $result->GetRowAssoc(false);
-            // Data aktual ini akan menimpa nilai default 0 di atas (jika reviewer punya data)
-            $averageQualityRatings[$row['reviewer_id']] = ['average' => $row['average'], 'count' => $row['count']];
-            $result->MoveNext();
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $averageQualityRatings[(int) $row['reviewer_id']] = [
+                    'average' => (float) $row['average'], 
+                    'count' => (int) $row['count']
+                ];
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $averageQualityRatings;
     }
 
     /**
-     * Get the completed review counts for all users of a journal.
+     * Retrieve the number of completed reviews for all reviewers in a journal.
      * @param int $journalId
      * @return array
      */
     public function getCompletedReviewCounts($journalId) {
         $returner = [];
-
-        // MODIFIKASI: Inisialisasi nilai default (0) untuk SEMUA reviewer
         $roleIdReviewer = defined('ROLE_ID_REVIEWER') ? ROLE_ID_REVIEWER : 4096;
+        
         $initResult = $this->retrieve(
             'SELECT user_id FROM roles WHERE journal_id = ? AND role_id = ?',
             [(int) $journalId, (int) $roleIdReviewer]
         );
-        while (!$initResult->EOF) {
-            $row = $initResult->GetRowAssoc(false);
-            // Set jumlah review selesai menjadi 0
-            $returner[$row['user_id']] = 0;
-            $initResult->MoveNext();
+        
+        if ($initResult) {
+            while (!$initResult->EOF) {
+                $row = $initResult->GetRowAssoc(false);
+                $returner[(int) $row['user_id']] = 0;
+                $initResult->MoveNext();
+            }
+            $initResult->Close();
         }
-        $initResult->Close();
-        unset($initResult);
 
-        // KODE ASLI UNTUK MENGAMBIL DATA AKTUAL
         $result = $this->retrieve(
             'SELECT r.reviewer_id, COUNT(r.review_id) AS count
-            FROM    review_assignments r,
-                articles a
+            FROM    review_assignments r, articles a
             WHERE   r.submission_id = a.article_id AND
                 a.journal_id = ? AND
                 r.date_completed IS NOT NULL AND
@@ -282,15 +320,14 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
             [(int) $journalId]
         );
 
-        while (!$result->EOF) {
-            $row = $result->GetRowAssoc(false);
-            // Menimpa nilai 0 dengan jumlah aslinya
-            $returner[$row['reviewer_id']] = $row['count'];
-            $result->MoveNext();
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $returner[(int) $row['reviewer_id']] = (int) $row['count'];
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $returner;
     }
@@ -301,63 +338,69 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
      */
     public function newDataObject() {
         $reviewAssignment = new ReviewAssignment();
-        $reviewAssignment->setStageId(1); // Ensure correct default is used
+        $reviewAssignment->setStageId(1);
         return $reviewAssignment;
     }
 
     /**
-     * Internal function to return a review assignment object from a row.
+     * Internal function to return a ReviewAssignment object from a database row.
      * @param array $row
      * @return ReviewAssignment
      */
     public function _fromRow($row) {
         $reviewAssignment = parent::_fromRow($row);
-        $reviewFileId = $this->_getSubmissionReviewFileId($reviewAssignment->getSubmissionId());
+        $reviewFileId = $this->_getSubmissionReviewFileId((int) $reviewAssignment->getSubmissionId());
         $reviewAssignment->setReviewFileId($reviewFileId);
 
         // Files
-        $reviewAssignment->setReviewFile($this->articleFileDao->getArticleFile($reviewFileId, $row['review_revision']));
-        $reviewAssignment->setReviewerFile($this->articleFileDao->getArticleFile($row['reviewer_file_id']));
-        $reviewAssignment->setReviewerFileRevisions($this->articleFileDao->getArticleFileRevisions($row['reviewer_file_id']));
-        $reviewAssignment->setSuppFiles($this->suppFileDao->getSuppFilesByArticle($row['submission_id']));
+        $reviewAssignment->setReviewFile($this->articleFileDao->getArticleFile($reviewFileId, $row['review_revision'] ?? null));
+        $reviewAssignment->setReviewerFile($this->articleFileDao->getArticleFile((int) ($row['reviewer_file_id'] ?? 0)));
+        $reviewAssignment->setReviewerFileRevisions($this->articleFileDao->getArticleFileRevisions((int) ($row['reviewer_file_id'] ?? 0)));
+        $reviewAssignment->setSuppFiles($this->suppFileDao->getSuppFilesByArticle((int) ($row['submission_id'] ?? 0)));
 
         // Comments
-        $reviewAssignment->setMostRecentPeerReviewComment($this->articleCommentDao->getMostRecentArticleComment($row['submission_id'], COMMENT_TYPE_PEER_REVIEW, $row['review_id']));
+        $reviewAssignment->setMostRecentPeerReviewComment(
+            $this->articleCommentDao->getMostRecentArticleComment(
+                (int) ($row['submission_id'] ?? 0), 
+                COMMENT_TYPE_PEER_REVIEW, 
+                (int) ($row['review_id'] ?? 0)
+            )
+        );
 
-        // [WIZDAM] REPLACEMENT: HookRegistry::call -> HookRegistry::dispatch
-        HookRegistry::dispatch('ReviewAssignmentDAO::_fromRow', [&$reviewAssignment, &$row]);
+        $tempAssignment = $reviewAssignment;
+        $tempRow = $row;
+        HookRegistry::dispatch('ReviewAssignmentDAO::_fromRow', [&$tempAssignment, &$tempRow]);
         
         return $reviewAssignment;
     }
 
     /**
-    * @see PKPReviewAssignmentDAO::getReviewRoundJoin()
-    */
+     * Retrieve the JOIN clause for review rounds.
+     * @return string
+     */
     public function getReviewRoundJoin() {
         return 'r.submission_id = r2.submission_id AND r.round = r2.round';
     }
     
     /**
-     * [MOD FORK] Mengambil data User Reviewer lengkap untuk halaman artikel.
+     * Retrieve detailed data of active reviewers for a specific article, excluding cancelled or declined assignments.
      * @param int $articleId
      * @return array
      */
     public function getReviewersWithDetails($articleId) {
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $reviewersData = [];
         
         $reviewAssignments = $this->getBySubmissionId((int) $articleId);
         
         foreach ($reviewAssignments as $assignment) {
-            // FILTER TEGAS: 
-            // 1. Tidak dibatalkan (dateCancelled)
-            // 2. Tidak menolak tugas (declined)
-            // 3. Sudah memberikan respon (dateConfirmed) atau sudah selesai
+            // Filter: Exclude cancelled or declined assignments
             if ($assignment->getDateCancelled() || $assignment->getDeclined()) {
                 continue; 
             }
     
-            $reviewer = $userDao->getById($assignment->getReviewerId());
+            $reviewer = $userDao->getById((int) $assignment->getReviewerId());
             if ($reviewer instanceof User) {
                 $assignment->setData('reviewerUser', $reviewer);
                 $reviewersData[] = $assignment;
@@ -365,5 +408,6 @@ class ReviewAssignmentDAO extends PKPReviewAssignmentDAO {
         }
         return $reviewersData;
     }
+
 }
 ?>
