@@ -135,6 +135,7 @@ class LanguageSettingsForm extends Form {
      */
     public function execute($object = null) {
         $journal = Application::get()->getRequest()->getJournal();
+        /** @var JournalSettingsDAO $settingsDao */
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
 
         // Verify additional locales
@@ -178,9 +179,11 @@ class LanguageSettingsForm extends Form {
             );
         }
 
+        /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal->setPrimaryLocale($this->getData('primaryLocale'));
         $journalDao->updateJournal($journal);
     }
+
 }
 ?>
