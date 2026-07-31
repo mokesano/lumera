@@ -20,5 +20,4 @@
 
 	<message key="plugins.generic.acron.reload">Reload Scheduled Tasks</message>
 	<message key="plugins.generic.acron.reloaded">Scheduled tasks reloaded. {$count} stuck task(s) repaired and unblocked.</message>
-	<message key="plugins.generic.usageStats.noParsedRecords">No records could be parsed from load id "{$loadId}"; existing metrics data was left untouched.</message>
 </locale>
