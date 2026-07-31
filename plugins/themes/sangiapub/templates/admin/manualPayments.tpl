@@ -30,10 +30,17 @@
                     <td style="padding: 10px;">{$invoice->getData('currencyCode')|escape} {$invoice->getData('amount')|number_format:2}</td>
                     <td style="padding: 10px;">{$invoice->getData('dateBilled')|date_format:"%d %b %Y"}</td>
                     <td style="padding: 10px;">
-                        <form method="post" action="{url page="admin" op="confirmManualPaymentAction" path=$invoice->getInvoiceId()}">
+                        <form method="post" action="{url page="admin" op="confirmManualPaymentAction" path=$invoice->getInvoiceId()}" style="display:inline;">
                             <input type="hidden" name="csrfToken" value="{$csrfToken|escape}">
-                            <button type="submit" class="wizdam-btn wizdam-btn-primary" onclick="return confirm('{translate key="admin.manualPayments.confirmPrompt"}');">
-                                {translate key="admin.manualPayments.confirmButton"}
+                            <button type="submit" class="wizdam-btn wizdam-btn-primary" onclick="return confirm('Konfirmasi dana sudah diterima untuk invoice ini?');">
+                                Confirm Received
+                            </button>
+                        </form>
+                        <form method="post" action="{url page="admin" op="rejectManualPaymentAction" path=$invoice->getInvoiceId()}" style="display:inline;" onsubmit="return wizdamPromptReject(this);">
+                            <input type="hidden" name="csrfToken" value="{$csrfToken|escape}">
+                            <input type="hidden" name="rejectReason" value="">
+                            <button type="submit" class="wizdam-btn" style="background:#dc3545; color:#fff;">
+                                Reject
                             </button>
                         </form>
                     </td>
@@ -44,5 +51,16 @@
         </tbody>
     </table>
 </div>
+
+<script>
+{literal}
+function wizdamPromptReject(form) {
+    const reason = prompt('Alasan penolakan (akan dikirim ke pengguna):');
+    if (!reason || reason.trim() === '') return false;
+    form.querySelector('input[name="rejectReason"]').value = reason.trim();
+    return true;
+}
+{/literal}
+</script>
 
 {include file="common/footer.tpl"}

@@ -144,11 +144,52 @@ class AdminPaymentHandler extends Handler {
         }
 
         $invoiceId = (int) ($args[0] ?? 0);
+        $adminUser = $request->getUser();
 
         $invoiceService = new InvoiceService();
+        // [BARU] Catat SIAPA yang mengonfirmasi SEBELUM menandai lunas --
+        // menutup celah audit trail.
+        $invoiceService->recordTransferConfirmedBy($invoiceId, (int) $adminUser->getId());
         $invoiceService->markAsPaid($invoiceId, 'ManualPayment');
 
         $request->redirect(null, 'admin', 'payment-settings', 'manualPayments', null, ['confirmed' => 1]);
+    }
+
+    /**
+     * [BARU] Menolak submission transfer manual -- invoice kembali ke
+     * status menunggu, pengguna diberi tahu alasannya dan bisa kirim ulang.
+     * Rute: POST /admin/payment-settings/rejectManualPaymentAction/[invoiceId]
+     * @param array $args
+     * @param Request|null $request
+     */
+    public function rejectManualPaymentAction(array $args = [], $request = null): void {
+        $this->validate();
+        if (!$request) $request = Application::get()->getRequest();
+
+        import('lib.pkp.classes.validation.ValidatorCSRF');
+        if (!$request->isPost() || !\ValidatorCSRF::checkToken($request->getUserVar('csrfToken'))) {
+            $request->redirect(null, 'admin', 'payment-settings', 'manualPayments');
+            return;
+        }
+
+        $invoiceId = (int) ($args[0] ?? 0);
+        $reason = trim((string) $request->getUserVar('rejectReason'));
+
+        $invoiceService = new InvoiceService();
+        $invoice = $invoiceService->getInvoiceById($invoiceId);
+        $rejected = $invoiceService->rejectTransferPayment($invoiceId, $reason);
+
+        if ($rejected && $invoice) {
+            import('classes.notification.NotificationManager');
+            $notificationManager = new NotificationManager();
+            $notificationManager->createTrivialNotification(
+                (int) $invoice->getUserId(),
+                NOTIFICATION_TYPE_ERROR,
+                ['contents' => __('billing.notification.transferRejected', ['reason' => $reason])]
+            );
+        }
+
+        $request->redirect(null, 'admin', 'payment-settings', 'manualPayments', null, ['rejected' => 1]);
     }
     
 }

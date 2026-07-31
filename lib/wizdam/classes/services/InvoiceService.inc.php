@@ -532,5 +532,31 @@ class InvoiceService {
         return $this->invoiceDao->deleteInvoiceById((int) $invoice->getInvoiceId());
     }
 
+    /**
+     * [BARU] Mencatat staf yang mengonfirmasi transfer manual.
+     * @param int $invoiceId
+     * @param int $confirmedByUserId
+     * @return bool
+     */
+    public function recordTransferConfirmedBy(int $invoiceId, int $confirmedByUserId): bool {
+        return $this->invoiceDao->recordTransferConfirmedBy($invoiceId, $confirmedByUserId);
+    }
+
+    /**
+     * [BARU] Menolak submission transfer manual -- invoice kembali UNPAID
+     * murni, referensi lama dikosongkan, pengguna bisa mengirim ulang kode
+     * yang benar.
+     * @param int $invoiceId
+     * @param string $reason
+     * @return bool
+     */
+    public function rejectTransferPayment(int $invoiceId, string $reason): bool {
+        $invoice = $this->getInvoiceById($invoiceId);
+        if (!$invoice || $invoice->isLegacy() || $invoice->getStatus() === Invoice::STATUS_PAID) {
+            return false;
+        }
+        return $this->invoiceDao->rejectTransferPayment($invoiceId, $reason);
+    }
+
 }
 ?>
