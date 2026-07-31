@@ -67,16 +67,33 @@ function recoverAjaxGetTask() {
  * @return int
  */
 function recoverAjaxCountMetrics(string $loadId): int {
+    return recoverAjaxMetricsStats($loadId)['total'];
+}
+
+/**
+ * Hitung total baris DAN berapa di antaranya yang country_id-nya kosong,
+ * untuk load_id tertentu. Dipakai untuk membedakan "tidak ada data sama
+ * sekali" dari "ada data tapi geolocation-nya belum lengkap" -- dua
+ * kondisi yang butuh penanganan Scan/Proses berbeda.
+ * @param string $loadId
+ * @return array{total:int,no_geo:int}
+ */
+function recoverAjaxMetricsStats(string $loadId): array {
     /** @var MetricsDAO $metricsDao */
     $metricsDao = DAORegistry::getDAO('MetricsDAO');
-    $result = $metricsDao->retrieve('SELECT COUNT(*) AS total FROM metrics WHERE load_id = ?', [$loadId]);
-    $total = 0;
+    $result = $metricsDao->retrieve(
+        "SELECT COUNT(*) AS total, SUM(CASE WHEN country_id IS NULL OR country_id = '' THEN 1 ELSE 0 END) AS no_geo
+         FROM metrics WHERE load_id = ?",
+        [$loadId]
+    );
+    $total = 0; $noGeo = 0;
     if ($result && !$result->EOF) {
         $row = $result->GetRowAssoc(false);
         $total = (int) ($row['total'] ?? 0);
+        $noGeo = (int) ($row['no_geo'] ?? 0);
     }
     if ($result) $result->Close();
-    return $total;
+    return ['total' => $total, 'no_geo' => $noGeo];
 }
 
 /**
@@ -143,20 +160,32 @@ if (isset($_GET['action'])) {
 
             $siteHost = parse_url((string) Config::getVar('general', 'base_url'), PHP_URL_HOST);
 
-            $affected = [];
-            $ok = [];
+            $affected = [];      // count = 0: tidak ada data sama sekali
+            $geoIncomplete = []; // count > 0 tapi sebagian/semua baris tanpa geolocation
+            $ok = [];            // count > 0 dan geolocation lengkap
             foreach ($files as $filePath) {
                 if (!is_file($filePath)) continue;
                 $filename = basename($filePath);
                 $loadId = recoverAjaxLoadIdFromFilename($filename);
-                $count = recoverAjaxCountMetrics($loadId);
-                $entry = ['filename' => $filename, 'load_id' => $loadId, 'metrics_count' => $count, 'size' => filesize($filePath)];
-                if ($count === 0) {
+                $stats = recoverAjaxMetricsStats($loadId);
+                $count = $stats['total'];
+                $entry = [
+                    'filename' => $filename,
+                    'load_id' => $loadId,
+                    'metrics_count' => $count,
+                    'no_geo_count' => $stats['no_geo'],
+                    'size' => filesize($filePath),
+                ];
+                if ($count === 0 || $stats['no_geo'] > 0) {
                     $isGz = (substr($filename, -3) === '.gz');
                     $fileHost = recoverAjaxPeekHost($filePath, $isGz);
                     $entry['detected_host'] = $fileHost;
                     $entry['domain_mismatch'] = ($fileHost !== null && $siteHost !== null && strcasecmp($fileHost, $siteHost) !== 0);
-                    $affected[] = $entry;
+                    if ($count === 0) {
+                        $affected[] = $entry;
+                    } else {
+                        $geoIncomplete[] = $entry;
+                    }
                 } else {
                     $ok[] = $entry;
                 }
@@ -166,9 +195,11 @@ if (isset($_GET['action'])) {
                 'status' => 'done',
                 'total_files' => count($files),
                 'affected_count' => count($affected),
+                'geo_incomplete_count' => count($geoIncomplete),
                 'ok_count' => count($ok),
                 'site_host' => $siteHost,
                 'affected' => $affected,
+                'geo_incomplete' => $geoIncomplete,
             ]);
             exit;
         }
@@ -267,13 +298,15 @@ if (isset($_GET['action'])) {
             // hanya hapus sumber yang barusan kita baca)
             unlink($sourcePath);
 
-            $countBefore = recoverAjaxCountMetrics($loadId);
+            $statsBefore = recoverAjaxMetricsStats($loadId);
+            $countBefore = $statsBefore['total'];
 
             import('plugins.generic.usageStats.UsageStatsLoader');
             $runTask = new UsageStatsLoader([]); // tanpa 'autoStage' -> hanya memproses isi stage/ saat ini
             $execResult = $runTask->execute();
 
-            $countAfter = recoverAjaxCountMetrics($loadId);
+            $statsAfter = recoverAjaxMetricsStats($loadId);
+            $countAfter = $statsAfter['total'];
 
             $stillInStage = is_file($stagePath . DIRECTORY_SEPARATOR . $loadId);
             $stillInProcessing = is_file($processingPath . DIRECTORY_SEPARATOR . $loadId);
@@ -300,6 +333,8 @@ if (isset($_GET['action'])) {
                 'exec_result' => (bool) $execResult,
                 'metrics_before' => $countBefore,
                 'metrics_after' => $countAfter,
+                'no_geo_before' => $statsBefore['no_geo'],
+                'no_geo_after' => $statsAfter['no_geo'],
                 'domain_rewritten' => $domainRewritten,
                 'detected_host' => $detectedHost,
                 'moved_to_reject' => $movedToReject,
@@ -378,11 +413,25 @@ if (isset($_GET['action'])) {
         <div class="info-text" id="status">Status: Menunggu instruksi...</div>
         <div class="log-box" id="logs"></div>
     </div>
+
+    <div class="step locked" id="stepGeo">
+        <h3>Langkah 3 (opsional) — Lengkapi Geolocation pada Data yang Sudah Ada</h3>
+        <p class="danger">BEDA dari Langkah 2: file di daftar ini SUDAH punya baris di metrics, tapi sebagian/semua tanpa country/region/city (kemungkinan diproses sebelum GeoIP aktif, atau IP-nya gagal di-lookup saat itu). Memproses ulang di sini akan MENGHAPUS baris lama file itu dan menggantinya dengan hasil baru (termasuk geolocation, kalau sekarang bisa ter-resolve). Tinjau dulu sebelum menekan tombol.</p>
+        <div id="geoTableWrap" style="display:none;">
+            <table id="geoTable"><thead><tr><th>File</th><th>Total baris</th><th>Tanpa geo</th><th>Domain di file</th></tr></thead><tbody></tbody></table>
+        </div>
+        <button onclick="startGeoProcess()" id="btnGeoStart" disabled>PROSES ULANG UNTUK LENGKAPI GEOLOCATION</button>
+        <div class="progress-container"><div class="progress-bar" id="geoProgressBar">0%</div></div>
+        <div class="info-text" id="geoStatus">Status: Menunggu instruksi...</div>
+        <div class="log-box" id="geoLogs"></div>
+    </div>
 </div>
 
 <script>
     let affectedFiles = [];
+    let geoFiles = [];
     let currentIndex = 0;
+    let geoCurrentIndex = 0;
 
     function runScan() {
         document.getElementById('btnScan').disabled = true;
@@ -415,10 +464,90 @@ if (isset($_GET['action'])) {
                 document.getElementById('stepProcess').classList.remove('locked');
                 document.getElementById('btnStart').disabled = false;
             }
+
+            // Langkah 3: file yang SUDAH punya baris tapi geolocation-nya bolong
+            geoFiles = data.geo_incomplete.map(f => ({ filename: f.filename, detectedHost: f.detected_host || '' }));
+            const geoTbody = document.querySelector('#geoTable tbody');
+            geoTbody.innerHTML = '';
+            data.geo_incomplete.forEach(f => {
+                const tr = document.createElement('tr');
+                const hostCell = f.domain_mismatch
+                    ? `<span style="color:#ffa502">${f.detected_host || '?'} (beda!)</span>`
+                    : (f.detected_host || '-');
+                tr.innerHTML = `<td>${f.filename}</td><td>${f.metrics_count}</td><td style="color:#ffa502">${f.no_geo_count}</td><td>${hostCell}</td>`;
+                geoTbody.appendChild(tr);
+            });
+            document.getElementById('geoTableWrap').style.display = data.geo_incomplete.length ? 'block' : 'none';
+            document.getElementById('geoStatus').innerText =
+                `Ditemukan ${data.geo_incomplete_count} file dengan data ada tapi geolocation belum lengkap.`;
+            if (geoFiles.length > 0) {
+                document.getElementById('stepGeo').classList.remove('locked');
+                document.getElementById('btnGeoStart').disabled = false;
+            }
         }).catch(err => {
             document.getElementById('btnScan').disabled = false;
             document.getElementById('scanStatus').innerText = "Gagal: " + err.message;
         });
+    }
+
+    function startGeoProcess() {
+        if (!confirm(`${geoFiles.length} file yang SUDAH punya data akan DIHAPUS baris lamanya lalu diproses ulang untuk melengkapi geolocation. Ini menyentuh data yang sudah ada (bukan yang kosong). Lanjutkan?`)) return;
+        document.getElementById('btnGeoStart').disabled = true;
+        document.getElementById('btnGeoStart').innerText = "SEDANG BERJALAN...";
+        geoCurrentIndex = 0;
+        geoProcessNext();
+    }
+
+    function geoLog(html) {
+        let div = document.createElement('div');
+        div.innerHTML = html;
+        let box = document.getElementById('geoLogs');
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function geoProcessNext() {
+        if (geoCurrentIndex >= geoFiles.length) {
+            document.getElementById('geoProgressBar').style.width = "100%";
+            document.getElementById('geoProgressBar').innerText = "100%";
+            document.getElementById('geoStatus').innerText = "Proses pelengkapan geolocation selesai untuk semua file.";
+            document.getElementById('btnGeoStart').innerText = "SELESAI";
+            return;
+        }
+
+        const { filename, detectedHost } = geoFiles[geoCurrentIndex];
+        document.getElementById('geoStatus').innerText = `Memproses (${geoCurrentIndex + 1}/${geoFiles.length}): ${filename}...`;
+
+        fetch('?action=process&file=' + encodeURIComponent(filename) + '&detected_host=' + encodeURIComponent(detectedHost ? ('https://' + detectedHost) : ''))
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'busy') {
+                    geoLog(`<span class="skip">[${filename}] ${data.message} Dicoba lagi 3 detik lagi.</span>`);
+                    setTimeout(geoProcessNext, 3000);
+                    return;
+                }
+                if (data.status !== 'done') {
+                    geoLog(`<span class="error">[${filename}] GAGAL: ${data.message}</span>`);
+                } else if (data.metrics_after > 0 && data.no_geo_after < data.no_geo_before) {
+                    const rewriteNote = data.domain_rewritten ? ` (domain ${data.detected_host} ditulis-ulang otomatis)` : '';
+                    geoLog(`<span class="success">[${filename}] BERHASIL${rewriteNote}. Baris tanpa geo: ${data.no_geo_before} -> ${data.no_geo_after} (dari total ${data.metrics_after} baris).</span>`);
+                } else if (data.metrics_after > 0 && data.no_geo_after >= data.no_geo_before) {
+                    geoLog(`<span class="skip">[${filename}] Diproses ulang, tapi geolocation TIDAK bertambah lengkap (tetap ${data.no_geo_after} dari ${data.metrics_after} baris tanpa geo) -- kemungkinan IP di file ini memang tidak ada di database GeoIP. Data tetap ada, tidak hilang.</span>`);
+                } else if (data.moved_to_reject) {
+                    geoLog(`<span class="error">[${filename}] GAGAL PERMANEN saat diproses ulang -- baris LAMA sudah terhapus dan TIDAK ADA PENGGANTI (metrics_before=${data.metrics_before}). File dipindah ke reject/, PERLU DITINJAU MANUAL SEGERA.</span>`);
+                } else {
+                    geoLog(`<span class="error">[${filename}] Selesai diproses TAPI baris metrics jadi 0 (metrics_before=${data.metrics_before}, still_in_processing=${data.still_in_processing}). Perlu ditinjau manual.</span>`);
+                }
+                geoCurrentIndex++;
+                document.getElementById('geoProgressBar').style.width = Math.round(geoCurrentIndex / geoFiles.length * 100) + "%";
+                document.getElementById('geoProgressBar').innerText = Math.round(geoCurrentIndex / geoFiles.length * 100) + "%";
+                setTimeout(geoProcessNext, 300);
+            })
+            .catch(err => {
+                geoLog(`<span class="error">[${filename}] Connection Error: ${err.message}</span>`);
+                geoCurrentIndex++;
+                setTimeout(geoProcessNext, 300);
+            });
     }
 
     function startProcess() {
