@@ -21,19 +21,28 @@ declare(strict_types=1);
  *                 file cek apakah tabel metrics sudah punya baris dengan
  *                 load_id = nama file tsb (tanpa akhiran .gz). File yang
  *                 metrics-nya 0 baris ditandai "perlu diproses ulang".
- *  2) PROSES   -> untuk tiap file yang ditandai, satu per satu (via AJAX,
- *                 supaya tidak timeout kalau filenya banyak):
- *                   a. Kalau file terkompresi (.gz), didekompres dengan
- *                      zlib PHP murni (tidak bergantung binary gzip di
- *                      server, karena banyak hosting men-nonaktifkan
- *                      exec()/shell_exec()).
- *                   b. File dipindah ke stage/.
- *                   c. UsageStatsLoader dijalankan langsung (setara
- *                      dengan scheduled task, tanpa argumen 'autoStage'
- *                      supaya HANYA memproses file yang baru kita taruh
- *                      di stage/, bukan menyapu ulang usageEventLogs/).
- *                   d. Jumlah baris metrics untuk load_id itu dicek lagi
- *                      setelah eksekusi, untuk konfirmasi berhasil/tidak.
+ *  2) PROSES   -> untuk tiap file yang ditandai, satu per satu, dan DALAM
+ *                 satu file, per-BATCH baris (bukan satu file sekaligus
+ *                 dalam satu eksekusi PHP) -- supaya tidak ada satu request
+ *                 pun yang berpotensi kena max_execution_time, baik karena
+ *                 banyak file maupun karena satu file isinya banyak baris:
+ *                   a. ?action=process_start: file didekompres (zlib PHP
+ *                      murni, tidak bergantung binary gzip/exec()), domain
+ *                      lama ditulis-ulang kalau perlu, lalu dipindah ke
+ *                      processing/ (BUKAN stage/, supaya real cron/Acron
+ *                      yang mungkin jalan bersamaan tidak ikut mengklaim
+ *                      file yang sama selama proses batch berlangsung).
+ *                   b. ?action=process_batch (dipanggil berulang oleh
+ *                      front-end dengan parameter offset & batch_size,
+ *                      dengan jeda di antaranya): setiap panggilan HANYA
+ *                      memproses N baris log mulai dari offset byte
+ *                      terakhir, lalu mengembalikan next_offset untuk
+ *                      panggilan berikutnya, sampai file habis dibaca.
+ *                   c. ?action=process_commit: setelah semua baris selesai
+ *                      dibaca, baris-baris yang terkumpul di tabel sementara
+ *                      dipindahkan ke tabel metrics (purge+insert, sama
+ *                      seperti UsageStatsLoader::_loadData()), lalu file
+ *                      dipindah ke archive/ (berhasil) atau reject/ (gagal).
  *
  * Setelah selesai dan diverifikasi, HAPUS file ini dari server.
  */
@@ -46,15 +55,201 @@ if (!Validation::isLoggedIn() || !Validation::isSiteAdmin()) {
     die("Akses Ditolak. Harap login sebagai Site Administrator.");
 }
 
+import('plugins.generic.usageStats.UsageStatsLoader');
+
 /**
- * Siapkan instance UsageStatsLoader (tanpa argumen 'autoStage') untuk
- * dipakai membaca path stage/processing/archive dan, saat action=process,
- * untuk benar-benar menjalankan pemrosesan file.
- * @return UsageStatsLoader|null null kalau plugin usageStats tidak aktif.
+ * Subclass UsageStatsLoader khusus alat ini, menambahkan kemampuan memproses
+ * satu file LOG SECARA BERTAHAP (per batch baris) alih-alih sekaligus dalam
+ * satu eksekusi PHP seperti UsageStatsLoader::processFile() aslinya.
+ *
+ * processLogBatch() adalah versi "dipotong-potong" dari logika baris-demi-
+ * baris di processFile() (parsing, filter bot/return-code, resolve
+ * jurnal/artikel, GeoIP, filter double-klik COUNTER, insert ke tabel
+ * sementara) -- HANYA menangani sejumlah baris terbatas per panggilan, lalu
+ * berhenti dan melaporkan posisi berhenti (byte offset) supaya panggilan
+ * AJAX berikutnya bisa melanjutkan dari situ.
+ *
+ * commitLoad() adalah versi terpisah dari _loadData(): mengumpulkan semua
+ * baris yang sudah masuk tabel sementara untuk satu load_id, lalu
+ * purge+insert ke tabel metrics -- dipanggil SEKALI di akhir, setelah semua
+ * batch baris selesai, bukan di setiap batch.
+ */
+class RecoverBatchUsageStatsLoader extends UsageStatsLoader {
+
+    /**
+     * Proses maksimal $batchSize baris dari $filePath mulai dari posisi byte
+     * $startOffset. $dedupState adalah state filter double-klik COUNTER
+     * (peta hash-entri => timestamp terakhir) yang dibawa dari panggilan
+     * batch sebelumnya untuk file yang sama, supaya filter itu tetap akurat
+     * lintas batas batch (bukan direset tiap panggilan AJAX).
+     *
+     * @param string $filePath
+     * @param string $loadId
+     * @param int $startOffset
+     * @param int $batchSize
+     * @param array $dedupState
+     * @return array{done:bool,next_offset:int,lines_read:int,error:?string,dedup_state:array}
+     */
+    public function processLogBatch(string $filePath, string $loadId, int $startOffset, int $batchSize, array $dedupState): array {
+        $fhandle = fopen($filePath, 'rb');
+        if (!$fhandle) {
+            return ['done' => true, 'next_offset' => $startOffset, 'lines_read' => 0, 'error' => "Gagal membuka file \"$filePath\".", 'dedup_state' => $dedupState];
+        }
+        if ($startOffset > 0) {
+            fseek($fhandle, $startOffset);
+        }
+
+        if (!$this->_counterRobotsListFile || !file_exists($this->_counterRobotsListFile)) {
+            fclose($fhandle);
+            return ['done' => true, 'next_offset' => $startOffset, 'lines_read' => 0, 'error' => 'Daftar bot COUNTER tidak ditemukan atau tidak valid.', 'dedup_state' => $dedupState];
+        }
+
+        /** @var UsageStatsTemporaryRecordDAO $statsDao */
+        $statsDao = DAORegistry::getDAO('UsageStatsTemporaryRecordDAO');
+        $geoTool = $this->_geoLocationTool;
+
+        $linesRead = 0;
+        $error = null;
+        $biggestTimeFilter = COUNTER_DOUBLE_CLICK_TIME_FILTER_SECONDS_OTHER;
+
+        while ($linesRead < $batchSize && !feof($fhandle)) {
+            $rawLine = fgets($fhandle);
+            if ($rawLine === false) {
+                break;
+            }
+            $linesRead++;
+
+            $line = trim($rawLine);
+            if ($line === '' || substr($line, 0, 1) === '#') {
+                continue;
+            }
+
+            $entryData = $this->_getDataFromLogEntry($line);
+            if (!$this->_isLogEntryValid($entryData, $linesRead)) {
+                // Sama seperti processFile() asli: satu baris tidak valid
+                // membatalkan TOTAL pemrosesan file ini (bukan cuma baris
+                // ini). Data metrics lama (kalau ada) tidak disentuh, karena
+                // commitLoad() tidak akan pernah dipanggil untuk load_id ini.
+                $error = __('plugins.generic.usageStats.invalidLogEntry', ['file' => $filePath, 'lineNumber' => $linesRead]);
+                break;
+            }
+
+            if ($entryData['url'] === '*') {
+                continue; // Apache internal
+            }
+            if (!in_array($entryData['returnCode'], ['200', '304'], true)) {
+                continue; // Non-success codes
+            }
+            if (Core::isUserAgentBot($entryData['userAgent'], $this->_counterRobotsListFile)) {
+                continue; // Bots
+            }
+
+            [$assocId, $assocType] = $this->_getAssocFromUrl($entryData['url'], $filePath, $linesRead);
+            if (!$assocId || !$assocType) {
+                continue;
+            }
+
+            $countryCode = null;
+            $cityName = null;
+            $region = null;
+            if ($geoTool) {
+                $geoResult = $geoTool->getGeoLocation($entryData['ip']);
+                if (is_array($geoResult)) {
+                    $countryCode = $geoResult[0] ?? null;
+                    $cityName = $geoResult[1] ?? null;
+                    $region = $geoResult[2] ?? null;
+                }
+            }
+
+            $day = date('Ymd', $entryData['date']);
+            $type = $this->_getFileType($assocType, $assocId);
+
+            $entryHash = $assocType . $assocId . $entryData['ip'];
+            foreach ($dedupState as $hash => $time) {
+                if ($time + $biggestTimeFilter < $entryData['date']) {
+                    unset($dedupState[$hash]);
+                }
+            }
+
+            if (isset($dedupState[$entryHash])) {
+                if ($type === STATISTICS_FILE_TYPE_PDF || $type === STATISTICS_FILE_TYPE_OTHER) {
+                    $timeFilter = COUNTER_DOUBLE_CLICK_TIME_FILTER_SECONDS_OTHER;
+                } else {
+                    $timeFilter = COUNTER_DOUBLE_CLICK_TIME_FILTER_SECONDS_HTML;
+                }
+                $secondsBetweenRequests = $entryData['date'] - $dedupState[$entryHash];
+                if ($secondsBetweenRequests < $timeFilter) {
+                    $statsDao->deleteRecord($assocType, $assocId, $dedupState[$entryHash], $loadId);
+                }
+            }
+            $dedupState[$entryHash] = $entryData['date'];
+
+            $statsDao->insert($assocType, $assocId, $day, $entryData['date'], $countryCode, $region, $cityName, $type, $loadId);
+        }
+
+        $nextOffset = ftell($fhandle);
+        $isEof = feof($fhandle);
+        fclose($fhandle);
+
+        return [
+            'done' => ($error !== null) || $isEof || $linesRead === 0,
+            'next_offset' => $nextOffset,
+            'lines_read' => $linesRead,
+            'error' => $error,
+            'dedup_state' => $dedupState,
+        ];
+    }
+
+    /**
+     * Setara _loadData(): kumpulkan semua baris tabel sementara untuk
+     * $loadId, purge baris lama di metrics untuk load_id itu (HANYA kalau
+     * ada baris baru pengganti -- lihat _loadData()), lalu insert baris
+     * baru. Dipanggil sekali di akhir, setelah seluruh file selesai dibaca
+     * per-batch.
+     * @param string $loadId
+     * @return array{success:bool,error:?string}
+     */
+    public function commitLoad(string $loadId): array {
+        $errorMsg = null;
+        $result = $this->_loadData($loadId, $errorMsg);
+        /** @var UsageStatsTemporaryRecordDAO $statsDao */
+        $statsDao = DAORegistry::getDAO('UsageStatsTemporaryRecordDAO');
+        $statsDao->deleteByLoadId($loadId);
+        return ['success' => $result, 'error' => $errorMsg];
+    }
+
+    /**
+     * Setara FileLoader::_archiveFile(), tapi tanpa bergantung pada state
+     * protected ($_claimedFilename dkk) yang hanya terisi lewat alur
+     * _claimNextFile() normal -- di alat ini file dipindah manual.
+     * @param string $sourceDir
+     * @param string $filename
+     * @return bool
+     */
+    public function archiveProcessedFile(string $sourceDir, string $filename): bool {
+        $this->moveFile($sourceDir, $this->getArchivePath(), $filename);
+        if (!$this->getCompressArchives()) {
+            return true;
+        }
+        import('lib.pkp.classes.file.FileManager');
+        $fileMgr = new FileManager();
+        $errorMsg = null;
+        if (!$fileMgr->compressFile($this->getArchivePath() . DIRECTORY_SEPARATOR . $filename, $errorMsg)) {
+            return false;
+        }
+        return true;
+    }
+}
+
+/**
+ * Siapkan instance RecoverBatchUsageStatsLoader (tanpa argumen 'autoStage')
+ * untuk dipakai membaca path stage/processing/archive dan, saat
+ * action=process_start/process_batch/process_commit, untuk benar-benar
+ * menjalankan pemrosesan file per-batch.
+ * @return RecoverBatchUsageStatsLoader|null null kalau plugin usageStats tidak aktif.
  */
 function recoverAjaxGetTask() {
-    import('plugins.generic.usageStats.UsageStatsLoader');
-    $task = new UsageStatsLoader([]);
+    $task = new RecoverBatchUsageStatsLoader([]);
     if (!$task->getArchivePath()) {
         return null;
     }
@@ -204,7 +399,7 @@ if (isset($_GET['action'])) {
             exit;
         }
 
-        if ($_GET['action'] === 'process') {
+        if ($_GET['action'] === 'process_start') {
             $filename = basename((string) ($_GET['file'] ?? ''));
             if ($filename === '') {
                 echo json_encode(['status' => 'error', 'message' => 'Nama file tidak dikirim.']);
@@ -222,7 +417,10 @@ if (isset($_GET['action'])) {
             }
 
             // Jangan tabrakan dengan proses lain (Acron/cron) yang mungkin
-            // sedang jalan bersamaan.
+            // sedang jalan bersamaan. processing/ sengaja tetap diperiksa di
+            // sini walau file KITA SENDIRI akan duduk di situ selama proses
+            // batch berlangsung -- supaya file kedua tidak bisa dimulai
+            // sampai file pertama benar-benar selesai (commit/reject).
             $stageBusy = array_filter((array) glob($stagePath . DIRECTORY_SEPARATOR . '*'), 'is_file');
             $processingBusy = array_filter((array) glob($processingPath . DIRECTORY_SEPARATOR . '*'), 'is_file');
             if (count($stageBusy) > 0 || count($processingBusy) > 0) {
@@ -232,10 +430,18 @@ if (isset($_GET['action'])) {
 
             $loadId = recoverAjaxLoadIdFromFilename($filename);
             $isGz = (substr($filename, -3) === '.gz');
-            $destPath = $stagePath . DIRECTORY_SEPARATOR . $loadId;
+            // Ditulis ke processing/, BUKAN stage/: kalau real cron/Acron
+            // menjalankan UsageStatsLoader normal di tengah-tengah proses
+            // batch kita (yang kini bisa berlangsung lama, tidak lagi
+            // sekejap), _claimNextFile() miliknya membaca folder stage/ --
+            // dengan file kita di processing/, ia tidak akan pernah
+            // menyentuhnya.
+            $destPath = $processingPath . DIRECTORY_SEPARATOR . $loadId;
 
             // Baca isi file (decompress dulu kalau .gz) ke memori -- file log
             // per hari ukurannya wajar (ratusan KB), aman dibaca sekaligus.
+            // (Baris-per-baris tetap diproses bertahap lewat action=process_batch;
+            // ini cuma membaca isi file dari disk, bukan memprosesnya.)
             if ($isGz) {
                 $gz = gzopen($sourcePath, 'rb');
                 if (!$gz) {
@@ -259,11 +465,6 @@ if (isset($_GET['action'])) {
             // (log lama/legacy), tulis-ulang domainnya SEBELUM diproses --
             // supaya Core::removeBaseUrl()/_getAssocFromUrl() bisa
             // meresolve jurnal & artikelnya seperti log format baru.
-            // Sudah dibuktikan lewat pengujian: baris yang tadinya gagal
-            // 100% jadi berhasil 100% setelah rewrite ini, dan resolusi
-            // geolocation (yang baru jalan SETELAH jurnal ter-resolve,
-            // lihat UsageStatsLoader.inc.php:219-235) otomatis ikut aktif,
-            // tanpa perlu logika terpisah.
             $domainRewritten = false;
             $detectedHost = parse_url((string) ($_GET['detected_host'] ?? ''), PHP_URL_HOST);
             if (!$detectedHost) {
@@ -290,56 +491,137 @@ if (isset($_GET['action'])) {
             }
 
             if (file_put_contents($destPath, $content) === false) {
-                echo json_encode(['status' => 'error', 'message' => "Gagal menulis file tujuan \"$loadId\" di stage/."]);
+                echo json_encode(['status' => 'error', 'message' => "Gagal menulis file tujuan \"$loadId\" di processing/."]);
                 exit;
             }
             // Sumber di archive/ baru dihapus setelah tujuan berhasil ditulis.
-            // (kalau ada sisa file .gz asli dengan nama beda, biarkan --
-            // hanya hapus sumber yang barusan kita baca)
             unlink($sourcePath);
 
             $statsBefore = recoverAjaxMetricsStats($loadId);
-            $countBefore = $statsBefore['total'];
 
-            import('plugins.generic.usageStats.UsageStatsLoader');
-            $runTask = new UsageStatsLoader([]); // tanpa 'autoStage' -> hanya memproses isi stage/ saat ini
-            $execResult = $runTask->execute();
+            // Bersihkan sisa baris tabel sementara dari percobaan sebelumnya
+            // untuk load_id ini (kalau ada, mis. karena batch sebelumnya
+            // gagal di tengah jalan), dan reset state filter double-klik
+            // COUNTER untuk load_id ini.
+            /** @var UsageStatsTemporaryRecordDAO $statsDao */
+            $statsDao = DAORegistry::getDAO('UsageStatsTemporaryRecordDAO');
+            $statsDao->deleteByLoadId($loadId);
+            unset($_SESSION['recoverAjaxDedup'][$loadId]);
 
-            $statsAfter = recoverAjaxMetricsStats($loadId);
-            $countAfter = $statsAfter['total'];
+            // Simpan snapshot "sebelum" + info domain di sesi PHP (bukan di
+            // front-end), supaya action=process_commit nanti bisa melaporkan
+            // perbandingan before/after tanpa harus percaya nilai yang
+            // dikirim balik oleh browser.
+            $_SESSION['recoverAjaxProcess'][$loadId] = [
+                'metrics_before' => $statsBefore['total'],
+                'no_geo_before' => $statsBefore['no_geo'],
+                'domain_rewritten' => $domainRewritten,
+                'detected_host' => $detectedHost,
+            ];
 
-            $stillInStage = is_file($stagePath . DIRECTORY_SEPARATOR . $loadId);
-            $stillInProcessing = is_file($processingPath . DIRECTORY_SEPARATOR . $loadId);
-            $movedToReject = false;
+            echo json_encode([
+                'status' => 'ready',
+                'load_id' => $loadId,
+                'total_bytes' => strlen($content),
+            ]);
+            exit;
+        }
 
-            // Kalau UsageStatsLoader gagal total memproses (0 baris terus,
-            // biasanya karena URL di file itu tidak cocok dengan base_url
-            // situs saat ini -- domain lama/berbeda), FileLoader mengembalikan
-            // filenya ke stage/, BUKAN ke archive atau reject. Kalau
-            // dibiarkan, file itu akan memblokir SEMUA proses file
-            // berikutnya di alat ini (guard "busy" di atas selalu terpicu).
-            // Pindahkan sendiri ke reject/ supaya antrean tidak macet, dan
-            // supaya kegagalannya terlihat jelas untuk ditinjau manual.
-            if ($stillInStage && $countAfter === 0) {
-                $rejectPath = $runTask->getRejectPath();
-                $runTask->moveFile($stagePath, $rejectPath, $loadId);
-                $stillInStage = false;
-                $movedToReject = true;
+        if ($_GET['action'] === 'process_batch') {
+            $loadId = basename((string) ($_GET['load_id'] ?? ''));
+            $offset = (int) ($_GET['offset'] ?? 0);
+            $batchSize = max(1, min(2000, (int) ($_GET['batch_size'] ?? 300)));
+
+            if ($loadId === '') {
+                echo json_encode(['status' => 'error', 'message' => 'load_id tidak dikirim.']);
+                exit;
+            }
+
+            $processingPath = $task->getProcessingPath();
+            $filePath = $processingPath . DIRECTORY_SEPARATOR . $loadId;
+            if (!is_file($filePath)) {
+                echo json_encode(['status' => 'error', 'message' => "File proses \"$loadId\" tidak ditemukan di processing/ (sesi mungkin sudah berakhir atau sudah selesai di-commit).", 'done' => true]);
+                exit;
+            }
+
+            $dedupState = $_SESSION['recoverAjaxDedup'][$loadId] ?? [];
+            $result = $task->processLogBatch($filePath, $loadId, $offset, $batchSize, $dedupState);
+            $_SESSION['recoverAjaxDedup'][$loadId] = $result['dedup_state'];
+
+            if ($result['error'] !== null) {
+                // Sama seperti UsageStatsLoader::processFile() asli: satu
+                // baris log yang tidak valid membatalkan TOTAL pemrosesan
+                // file ini. Tabel metrics TIDAK disentuh (commit tidak
+                // pernah dipanggil) -- data lama untuk load_id ini (kalau
+                // ada) tetap utuh. File dipindah ke reject/ untuk ditinjau
+                // manual, supaya antrean file berikutnya tidak macet.
+                $meta = $_SESSION['recoverAjaxProcess'][$loadId] ?? ['metrics_before' => null, 'no_geo_before' => null];
+                /** @var UsageStatsTemporaryRecordDAO $statsDao */
+                $statsDao = DAORegistry::getDAO('UsageStatsTemporaryRecordDAO');
+                $statsDao->deleteByLoadId($loadId);
+                $task->moveFile($processingPath, $task->getRejectPath(), $loadId);
+                unset($_SESSION['recoverAjaxDedup'][$loadId], $_SESSION['recoverAjaxProcess'][$loadId]);
+
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => $result['error'],
+                    'done' => true,
+                    'moved_to_reject' => true,
+                    'metrics_before' => $meta['metrics_before'],
+                    'no_geo_before' => $meta['no_geo_before'],
+                ]);
+                exit;
             }
 
             echo json_encode([
                 'status' => 'done',
+                'next_offset' => $result['next_offset'],
+                'lines_read' => $result['lines_read'],
+                'done' => $result['done'],
+            ]);
+            exit;
+        }
+
+        if ($_GET['action'] === 'process_commit') {
+            $loadId = basename((string) ($_GET['load_id'] ?? ''));
+            if ($loadId === '') {
+                echo json_encode(['status' => 'error', 'message' => 'load_id tidak dikirim.']);
+                exit;
+            }
+
+            $meta = $_SESSION['recoverAjaxProcess'][$loadId] ?? null;
+            if ($meta === null) {
+                echo json_encode(['status' => 'error', 'message' => "Sesi proses untuk \"$loadId\" tidak ditemukan (mungkin sudah kedaluwarsa atau sudah pernah di-commit)."]);
+                exit;
+            }
+
+            $processingPath = $task->getProcessingPath();
+            $commitResult = $task->commitLoad($loadId);
+            $statsAfter = recoverAjaxMetricsStats($loadId);
+
+            $movedToReject = false;
+            if ($commitResult['success'] && $statsAfter['total'] > 0) {
+                $task->archiveProcessedFile($processingPath, $loadId);
+            } else {
+                // commitLoad() gagal (tidak ada baris terkumpul sama sekali
+                // -- lihat _loadData(): kalau begitu ia TIDAK purge/insert
+                // apa pun, jadi data lama untuk load_id ini tetap aman).
+                $task->moveFile($processingPath, $task->getRejectPath(), $loadId);
+                $movedToReject = true;
+            }
+
+            unset($_SESSION['recoverAjaxProcess'][$loadId], $_SESSION['recoverAjaxDedup'][$loadId]);
+
+            echo json_encode([
+                'status' => 'done',
                 'load_id' => $loadId,
-                'exec_result' => (bool) $execResult,
-                'metrics_before' => $countBefore,
-                'metrics_after' => $countAfter,
-                'no_geo_before' => $statsBefore['no_geo'],
+                'metrics_before' => $meta['metrics_before'],
+                'metrics_after' => $statsAfter['total'],
+                'no_geo_before' => $meta['no_geo_before'],
                 'no_geo_after' => $statsAfter['no_geo'],
-                'domain_rewritten' => $domainRewritten,
-                'detected_host' => $detectedHost,
+                'domain_rewritten' => $meta['domain_rewritten'],
+                'detected_host' => $meta['detected_host'],
                 'moved_to_reject' => $movedToReject,
-                'still_in_stage' => $stillInStage,
-                'still_in_processing' => $stillInProcessing,
             ]);
             exit;
         }
@@ -407,7 +689,7 @@ if (isset($_GET['action'])) {
 
     <div class="step locked" id="stepProcess">
         <h3>Langkah 2 — Proses Ulang File yang Kosong</h3>
-        <p class="danger">Setiap file diproses satu per satu: dipindah ke stage/, dijalankan lewat UsageStatsLoader, lalu diverifikasi jumlah baris metrics-nya.</p>
+        <p class="danger">Setiap file diproses satu per satu, dan dalam satu file baris lognya dibaca per-batch (bukan sekaligus) supaya tidak berisiko time-out, lalu diverifikasi jumlah baris metrics-nya.</p>
         <button onclick="startProcess()" id="btnStart" disabled>MULAI PROSES</button>
         <div class="progress-container"><div class="progress-bar" id="progressBar">0%</div></div>
         <div class="info-text" id="status">Status: Menunggu instruksi...</div>
@@ -417,6 +699,15 @@ if (isset($_GET['action'])) {
     <div class="step locked" id="stepGeo">
         <h3>Langkah 3 (opsional) — Lengkapi Geolocation pada Data yang Sudah Ada</h3>
         <p class="danger">BEDA dari Langkah 2: file di daftar ini SUDAH punya baris di metrics, tapi sebagian/semua tanpa country/region/city (kemungkinan diproses sebelum GeoIP aktif, atau IP-nya gagal di-lookup saat itu). Memproses ulang di sini akan MENGHAPUS baris lama file itu dan menggantinya dengan hasil baru (termasuk geolocation, kalau sekarang bisa ter-resolve). Tinjau dulu sebelum menekan tombol.</p>
+        <p class="note">Opsional: batasi cakupan berdasarkan tanggal file (diambil dari nama file <code>usage_events_YYYYMMDD</code>) sebelum memproses, alih-alih sekaligus ke seluruh riwayat. Kosongkan untuk memproses semua file pada daftar.</p>
+        <div style="margin-bottom:10px;">
+            <label>Dari tanggal: <input type="date" id="geoFromDate"></label>
+            &nbsp;&nbsp;
+            <label>Sampai tanggal: <input type="date" id="geoToDate"></label>
+            &nbsp;&nbsp;
+            <button onclick="applyGeoDateFilter()" style="background:#3742fa;">TERAPKAN FILTER</button>
+            <button onclick="resetGeoDateFilter()" style="background:#57606f;">RESET</button>
+        </div>
         <div id="geoTableWrap" style="display:none;">
             <table id="geoTable"><thead><tr><th>File</th><th>Total baris</th><th>Tanpa geo</th><th>Domain di file</th></tr></thead><tbody></tbody></table>
         </div>
@@ -430,8 +721,129 @@ if (isset($_GET['action'])) {
 <script>
     let affectedFiles = [];
     let geoFiles = [];
+    let geoIncompleteRaw = []; // daftar mentah hasil scan, sebelum filter tanggal diterapkan
     let currentIndex = 0;
     let geoCurrentIndex = 0;
+
+    const BATCH_SIZE = 300;      // baris log per panggilan action=process_batch
+    const BATCH_DELAY_MS = 250;  // jeda antar batch baris DALAM satu file
+    const FILE_DELAY_MS = 300;   // jeda antar file (setelah satu file selesai commit/reject)
+
+    // Proses SATU file secara bertahap: process_start -> loop process_batch
+    // (dengan jeda BATCH_DELAY_MS di antaranya, sampai seluruh isi file
+    // habis dibaca) -> process_commit. Prinsipnya sama seperti kode AJAX
+    // anti time-out: setiap panggilan HTTP hanya menangani sebagian kecil
+    // pekerjaan (di sini: N baris log), bukan satu file utuh dalam satu
+    // eksekusi PHP -- supaya file besar pun tidak berisiko kena
+    // max_execution_time di server.
+    function processOneFileBatched(filename, detectedHost, onProgress) {
+        return new Promise((resolve) => {
+            const hostParam = detectedHost ? ('https://' + detectedHost) : '';
+            fetch('?action=process_start&file=' + encodeURIComponent(filename) + '&detected_host=' + encodeURIComponent(hostParam))
+                .then(r => r.json())
+                .then(startData => {
+                    if (startData.status === 'busy') {
+                        resolve({ outcome: 'busy', message: startData.message });
+                        return;
+                    }
+                    if (startData.status !== 'ready') {
+                        resolve({ outcome: 'error', message: startData.message || 'Gagal memulai proses file.' });
+                        return;
+                    }
+
+                    const loadId = startData.load_id;
+                    const totalBytes = startData.total_bytes || 0;
+
+                    function nextBatch(offset) {
+                        fetch('?action=process_batch&load_id=' + encodeURIComponent(loadId) + '&offset=' + offset + '&batch_size=' + BATCH_SIZE)
+                            .then(r => r.json())
+                            .then(batchData => {
+                                if (batchData.status === 'error') {
+                                    // Baris log tidak valid -> sudah dipindah ke
+                                    // reject/ oleh backend, tidak ada commit.
+                                    resolve({
+                                        outcome: 'rejected',
+                                        message: batchData.message,
+                                        metricsBefore: batchData.metrics_before,
+                                        noGeoBefore: batchData.no_geo_before,
+                                    });
+                                    return;
+                                }
+                                if (onProgress) onProgress(batchData.next_offset, totalBytes);
+                                if (!batchData.done) {
+                                    setTimeout(() => nextBatch(batchData.next_offset), BATCH_DELAY_MS);
+                                    return;
+                                }
+                                // Seluruh baris file sudah terbaca -> commit ke tabel metrics.
+                                fetch('?action=process_commit&load_id=' + encodeURIComponent(loadId))
+                                    .then(r => r.json())
+                                    .then(commitData => {
+                                        if (commitData.status !== 'done') {
+                                            resolve({ outcome: 'error', message: commitData.message || 'Gagal commit ke tabel metrics.' });
+                                            return;
+                                        }
+                                        resolve(Object.assign({ outcome: 'done' }, commitData));
+                                    })
+                                    .catch(err => resolve({ outcome: 'error', message: 'Gagal commit: ' + err.message }));
+                            })
+                            .catch(err => resolve({ outcome: 'error', message: 'Koneksi batch gagal: ' + err.message }));
+                    }
+
+                    nextBatch(0);
+                })
+                .catch(err => resolve({ outcome: 'error', message: 'Gagal memulai: ' + err.message }));
+        });
+    }
+
+    // Ambil tanggal dari nama file pola "usage_events_YYYYMMDD(.gz)". Kalau
+    // polanya tidak cocok, filter tanggal tidak diterapkan pada file itu
+    // (file tetap ikut diproses supaya tidak ada yang diam-diam terlewat).
+    function extractFileDate(filename) {
+        const m = filename.match(/(\d{4})(\d{2})(\d{2})/);
+        if (!m) return null;
+        return `${m[1]}-${m[2]}-${m[3]}`;
+    }
+
+    function renderGeoTable(list) {
+        geoFiles = list.map(f => ({ filename: f.filename, detectedHost: f.detected_host || '' }));
+        const geoTbody = document.querySelector('#geoTable tbody');
+        geoTbody.innerHTML = '';
+        list.forEach(f => {
+            const tr = document.createElement('tr');
+            const hostCell = f.domain_mismatch
+                ? `<span style="color:#ffa502">${f.detected_host || '?'} (beda!)</span>`
+                : (f.detected_host || '-');
+            tr.innerHTML = `<td>${f.filename}</td><td>${f.metrics_count}</td><td style="color:#ffa502">${f.no_geo_count}</td><td>${hostCell}</td>`;
+            geoTbody.appendChild(tr);
+        });
+        document.getElementById('geoTableWrap').style.display = list.length ? 'block' : 'none';
+        document.getElementById('geoStatus').innerText =
+            `${list.length} dari ${geoIncompleteRaw.length} file dengan geolocation belum lengkap dipilih untuk diproses.`;
+        document.getElementById('btnGeoStart').disabled = (list.length === 0);
+    }
+
+    function applyGeoDateFilter() {
+        const fromVal = document.getElementById('geoFromDate').value;
+        const toVal = document.getElementById('geoToDate').value;
+        if (!fromVal && !toVal) {
+            renderGeoTable(geoIncompleteRaw);
+            return;
+        }
+        const filtered = geoIncompleteRaw.filter(f => {
+            const fileDate = extractFileDate(f.filename);
+            if (!fileDate) return true; // nama tidak cocok pola -> jangan diam-diam dilewati
+            if (fromVal && fileDate < fromVal) return false;
+            if (toVal && fileDate > toVal) return false;
+            return true;
+        });
+        renderGeoTable(filtered);
+    }
+
+    function resetGeoDateFilter() {
+        document.getElementById('geoFromDate').value = '';
+        document.getElementById('geoToDate').value = '';
+        renderGeoTable(geoIncompleteRaw);
+    }
 
     function runScan() {
         document.getElementById('btnScan').disabled = true;
@@ -465,24 +877,13 @@ if (isset($_GET['action'])) {
                 document.getElementById('btnStart').disabled = false;
             }
 
-            // Langkah 3: file yang SUDAH punya baris tapi geolocation-nya bolong
-            geoFiles = data.geo_incomplete.map(f => ({ filename: f.filename, detectedHost: f.detected_host || '' }));
-            const geoTbody = document.querySelector('#geoTable tbody');
-            geoTbody.innerHTML = '';
-            data.geo_incomplete.forEach(f => {
-                const tr = document.createElement('tr');
-                const hostCell = f.domain_mismatch
-                    ? `<span style="color:#ffa502">${f.detected_host || '?'} (beda!)</span>`
-                    : (f.detected_host || '-');
-                tr.innerHTML = `<td>${f.filename}</td><td>${f.metrics_count}</td><td style="color:#ffa502">${f.no_geo_count}</td><td>${hostCell}</td>`;
-                geoTbody.appendChild(tr);
-            });
-            document.getElementById('geoTableWrap').style.display = data.geo_incomplete.length ? 'block' : 'none';
-            document.getElementById('geoStatus').innerText =
-                `Ditemukan ${data.geo_incomplete_count} file dengan data ada tapi geolocation belum lengkap.`;
-            if (geoFiles.length > 0) {
+            // Langkah 3: file yang SUDAH punya baris tapi geolocation-nya bolong.
+            // Simpan daftar mentahnya supaya filter tanggal (opsional) bisa
+            // diterapkan/dilepas berkali-kali tanpa perlu Scan ulang.
+            geoIncompleteRaw = data.geo_incomplete;
+            renderGeoTable(geoIncompleteRaw);
+            if (geoIncompleteRaw.length > 0) {
                 document.getElementById('stepGeo').classList.remove('locked');
-                document.getElementById('btnGeoStart').disabled = false;
             }
         }).catch(err => {
             document.getElementById('btnScan').disabled = false;
@@ -518,36 +919,34 @@ if (isset($_GET['action'])) {
         const { filename, detectedHost } = geoFiles[geoCurrentIndex];
         document.getElementById('geoStatus').innerText = `Memproses (${geoCurrentIndex + 1}/${geoFiles.length}): ${filename}...`;
 
-        fetch('?action=process&file=' + encodeURIComponent(filename) + '&detected_host=' + encodeURIComponent(detectedHost ? ('https://' + detectedHost) : ''))
-            .then(r => r.json())
-            .then(data => {
-                if (data.status === 'busy') {
-                    geoLog(`<span class="skip">[${filename}] ${data.message} Dicoba lagi 3 detik lagi.</span>`);
-                    setTimeout(geoProcessNext, 3000);
-                    return;
-                }
-                if (data.status !== 'done') {
-                    geoLog(`<span class="error">[${filename}] GAGAL: ${data.message}</span>`);
-                } else if (data.metrics_after > 0 && data.no_geo_after < data.no_geo_before) {
-                    const rewriteNote = data.domain_rewritten ? ` (domain ${data.detected_host} ditulis-ulang otomatis)` : '';
-                    geoLog(`<span class="success">[${filename}] BERHASIL${rewriteNote}. Baris tanpa geo: ${data.no_geo_before} -> ${data.no_geo_after} (dari total ${data.metrics_after} baris).</span>`);
-                } else if (data.metrics_after > 0 && data.no_geo_after >= data.no_geo_before) {
-                    geoLog(`<span class="skip">[${filename}] Diproses ulang, tapi geolocation TIDAK bertambah lengkap (tetap ${data.no_geo_after} dari ${data.metrics_after} baris tanpa geo) -- kemungkinan IP di file ini memang tidak ada di database GeoIP. Data tetap ada, tidak hilang.</span>`);
-                } else if (data.moved_to_reject) {
-                    geoLog(`<span class="error">[${filename}] GAGAL PERMANEN saat diproses ulang -- baris LAMA sudah terhapus dan TIDAK ADA PENGGANTI (metrics_before=${data.metrics_before}). File dipindah ke reject/, PERLU DITINJAU MANUAL SEGERA.</span>`);
-                } else {
-                    geoLog(`<span class="error">[${filename}] Selesai diproses TAPI baris metrics jadi 0 (metrics_before=${data.metrics_before}, still_in_processing=${data.still_in_processing}). Perlu ditinjau manual.</span>`);
-                }
-                geoCurrentIndex++;
-                document.getElementById('geoProgressBar').style.width = Math.round(geoCurrentIndex / geoFiles.length * 100) + "%";
-                document.getElementById('geoProgressBar').innerText = Math.round(geoCurrentIndex / geoFiles.length * 100) + "%";
-                setTimeout(geoProcessNext, 300);
-            })
-            .catch(err => {
-                geoLog(`<span class="error">[${filename}] Connection Error: ${err.message}</span>`);
-                geoCurrentIndex++;
-                setTimeout(geoProcessNext, 300);
-            });
+        processOneFileBatched(filename, detectedHost, (offset, total) => {
+            const pct = total ? Math.round(offset / total * 100) : 0;
+            document.getElementById('geoStatus').innerText = `Memproses (${geoCurrentIndex + 1}/${geoFiles.length}): ${filename} (${pct}% baris terbaca)...`;
+        }).then(data => {
+            if (data.outcome === 'busy') {
+                geoLog(`<span class="skip">[${filename}] ${data.message} Dicoba lagi 3 detik lagi.</span>`);
+                setTimeout(geoProcessNext, 3000);
+                return;
+            }
+            if (data.outcome === 'rejected') {
+                geoLog(`<span class="error">[${filename}] GAGAL PERMANEN -- ${data.message} Baris LAMA (metrics_before=${data.metricsBefore}) tidak disentuh/tidak hilang karena commit dibatalkan. File dipindah ke reject/, PERLU DITINJAU MANUAL.</span>`);
+            } else if (data.outcome === 'error') {
+                geoLog(`<span class="error">[${filename}] GAGAL: ${data.message}</span>`);
+            } else if (data.metrics_after > 0 && data.no_geo_after < data.no_geo_before) {
+                const rewriteNote = data.domain_rewritten ? ` (domain ${data.detected_host} ditulis-ulang otomatis)` : '';
+                geoLog(`<span class="success">[${filename}] BERHASIL${rewriteNote}. Baris tanpa geo: ${data.no_geo_before} -> ${data.no_geo_after} (dari total ${data.metrics_after} baris).</span>`);
+            } else if (data.metrics_after > 0 && data.no_geo_after >= data.no_geo_before) {
+                geoLog(`<span class="skip">[${filename}] Diproses ulang, tapi geolocation TIDAK bertambah lengkap (tetap ${data.no_geo_after} dari ${data.metrics_after} baris tanpa geo) -- kemungkinan IP di file ini memang tidak ada di database GeoIP. Data tetap ada, tidak hilang.</span>`);
+            } else if (data.moved_to_reject) {
+                geoLog(`<span class="error">[${filename}] GAGAL PERMANEN saat diproses ulang -- baris LAMA sudah terhapus dan TIDAK ADA PENGGANTI (metrics_before=${data.metrics_before}). File dipindah ke reject/, PERLU DITINJAU MANUAL SEGERA.</span>`);
+            } else {
+                geoLog(`<span class="error">[${filename}] Selesai diproses TAPI baris metrics jadi 0 (metrics_before=${data.metrics_before}). Perlu ditinjau manual.</span>`);
+            }
+            geoCurrentIndex++;
+            document.getElementById('geoProgressBar').style.width = Math.round(geoCurrentIndex / geoFiles.length * 100) + "%";
+            document.getElementById('geoProgressBar').innerText = Math.round(geoCurrentIndex / geoFiles.length * 100) + "%";
+            setTimeout(geoProcessNext, FILE_DELAY_MS);
+        });
     }
 
     function startProcess() {
@@ -570,34 +969,32 @@ if (isset($_GET['action'])) {
         const { filename, detectedHost } = affectedFiles[currentIndex];
         document.getElementById('status').innerText = `Memproses (${currentIndex + 1}/${affectedFiles.length}): ${filename}...`;
 
-        fetch('?action=process&file=' + encodeURIComponent(filename) + '&detected_host=' + encodeURIComponent(detectedHost ? ('https://' + detectedHost) : ''))
-            .then(r => r.json())
-            .then(data => {
-                if (data.status === 'busy') {
-                    log(`<span class="skip">[${filename}] ${data.message} Dicoba lagi 3 detik lagi.</span>`);
-                    setTimeout(processNext, 3000);
-                    return;
-                }
-                if (data.status !== 'done') {
-                    log(`<span class="error">[${filename}] GAGAL: ${data.message}</span>`);
-                } else if (data.metrics_after > 0) {
-                    const rewriteNote = data.domain_rewritten ? ` (domain ${data.detected_host} ditulis-ulang otomatis)` : '';
-                    log(`<span class="success">[${filename}] BERHASIL${rewriteNote}. Baris metrics: ${data.metrics_before} -> ${data.metrics_after}.</span>`);
-                } else if (data.moved_to_reject) {
-                    log(`<span class="error">[${filename}] GAGAL PERMANEN (baris metrics tetap 0, kemungkinan URL di file ini tidak cocok dengan base_url situs sekarang / kontennya sudah tidak ada). File dipindah ke reject/ untuk ditinjau manual, antrean tetap lanjut.</span>`);
-                } else {
-                    log(`<span class="error">[${filename}] Selesai diproses TAPI baris metrics masih 0 (still_in_processing=${data.still_in_processing}). Perlu ditinjau manual.</span>`);
-                }
-                currentIndex++;
-                document.getElementById('progressBar').style.width = Math.round(currentIndex / affectedFiles.length * 100) + "%";
-                document.getElementById('progressBar').innerText = Math.round(currentIndex / affectedFiles.length * 100) + "%";
-                setTimeout(processNext, 300);
-            })
-            .catch(err => {
-                log(`<span class="error">[${filename}] Connection Error: ${err.message}</span>`);
-                currentIndex++;
-                setTimeout(processNext, 300);
-            });
+        processOneFileBatched(filename, detectedHost, (offset, total) => {
+            const pct = total ? Math.round(offset / total * 100) : 0;
+            document.getElementById('status').innerText = `Memproses (${currentIndex + 1}/${affectedFiles.length}): ${filename} (${pct}% baris terbaca)...`;
+        }).then(data => {
+            if (data.outcome === 'busy') {
+                log(`<span class="skip">[${filename}] ${data.message} Dicoba lagi 3 detik lagi.</span>`);
+                setTimeout(processNext, 3000);
+                return;
+            }
+            if (data.outcome === 'rejected') {
+                log(`<span class="error">[${filename}] GAGAL PERMANEN -- ${data.message} File dipindah ke reject/, PERLU DITINJAU MANUAL.</span>`);
+            } else if (data.outcome === 'error') {
+                log(`<span class="error">[${filename}] GAGAL: ${data.message}</span>`);
+            } else if (data.metrics_after > 0) {
+                const rewriteNote = data.domain_rewritten ? ` (domain ${data.detected_host} ditulis-ulang otomatis)` : '';
+                log(`<span class="success">[${filename}] BERHASIL${rewriteNote}. Baris metrics: ${data.metrics_before} -> ${data.metrics_after}.</span>`);
+            } else if (data.moved_to_reject) {
+                log(`<span class="error">[${filename}] GAGAL PERMANEN (baris metrics tetap 0, kemungkinan URL di file ini tidak cocok dengan base_url situs sekarang / kontennya sudah tidak ada). File dipindah ke reject/ untuk ditinjau manual, antrean tetap lanjut.</span>`);
+            } else {
+                log(`<span class="error">[${filename}] Selesai diproses TAPI baris metrics masih 0. Perlu ditinjau manual.</span>`);
+            }
+            currentIndex++;
+            document.getElementById('progressBar').style.width = Math.round(currentIndex / affectedFiles.length * 100) + "%";
+            document.getElementById('progressBar').innerText = Math.round(currentIndex / affectedFiles.length * 100) + "%";
+            setTimeout(processNext, FILE_DELAY_MS);
+        });
     }
 
     function log(html) {
