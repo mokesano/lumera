@@ -69,7 +69,7 @@
                     Journal Manager{if $certData.signatoryNames|@count > 1}s{/if}
                 </td>
                 <td width="30%" class="cert-qr">
-                    <img src="{$qrCodeBase64}" alt="QR Verification">
+                    <img src="{$qrCodeBase64}" height="120" width="120" alt="QR Verification">
                     <div style="font-size: 9px;">Scan to verify</div>
                 </td>
                 <td width="35%"></td>

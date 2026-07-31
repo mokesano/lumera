@@ -14,10 +14,11 @@
  
 <locale name="en_US" full_name="U.S. English">
 	<message key="plugins.generic.acron.name">Acron Plugin</message>
-	<message key="plugins.generic.acron.description"><![CDATA[This plugin attempts to reduce the dependance of OJS on periodic scheduling tools such as 'cron.']]></message>
+	<message key="plugins.generic.acron.description"><![CDATA[This plugin attempts to reduce the dependance of Lumera App on periodic scheduling tools such as 'cron.']]></message>
 	<message key="plugins.generic.acron.enabled">The Acron Plugin has been enabled.</message>
 	<message key="plugins.generic.acron.disabled">The Acron Plugin has been disabled.</message>
 
 	<message key="plugins.generic.acron.reload">Reload Scheduled Tasks</message>
-  <message key="plugins.generic.acron.reloaded">Scheduled tasks reloaded. {$count} stuck task(s) repaired and unblocked.</message>
+	<message key="plugins.generic.acron.reloaded">Scheduled tasks reloaded. {$count} stuck task(s) repaired and unblocked.</message>
+	<message key="plugins.generic.usageStats.noParsedRecords">No records could be parsed from load id "{$loadId}"; existing metrics data was left untouched.</message>
 </locale>

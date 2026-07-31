@@ -40,7 +40,7 @@
 <div class="wi-body">
     <p>Dear <strong>{$loaData.authors|escape}</strong>,</p>
     <p>We are pleased to inform you that your manuscript entitled:</p>
-    <div class="wi-manuscript-box" style="border-left: 3px solid {$publisher.colorPrimary|escape};">"{$loaData.title|escape}"</div>
+    <div class="wi-manuscript-box" style="border-left: 3px solid {$publisher.colorPrimary|escape};">"{$loaData.title|strip_unsafe_html}"</div>
     <p>has been officially <strong>ACCEPTED</strong> for publication in {$loaData.journalTitle|escape}.</p>
     <p>Date Submitted: {$loaData.dateSubmitted|date_format:"%d %B %Y"}</p>
     <p>Date Accepted: {$loaData.dateAccepted|date_format:"%d %B %Y"}</p>
@@ -49,14 +49,12 @@
 <table class="wi-meta-grid">
     <tr>
         <td>
+            {if $loaData.editorNames|@count > 0}
             <div class="wi-meta-box">
                 <div class="label">Handling Editor{if $loaData.editorNames|@count > 1}s{/if}</div>
-                {if $loaData.editorNames|@count > 0}
-                    {foreach from=$loaData.editorNames item=name}{$name|escape}<br>{/foreach}
-                {else}
-                    <em>Not yet assigned</em>
-                {/if}
+                {foreach from=$loaData.editorNames item=name}{$name|escape}<br>{/foreach}
             </div>
+            {/if}
         </td>
         <td>
             <div class="wi-meta-box">
@@ -79,8 +77,8 @@
                 <p><strong>Editorial Board</strong><br>{$loaData.journalTitle|escape}</p>
             </td>
             <td width="30%" class="wi-qr" style="text-align:center;">
-                <img src="{$qrCodeBase64}" alt="QR Verification">
-                <p><small>Scan to verify</small></p>
+                <img src="{$qrCodeBase64}" height="120" width="120" alt="QR Verification">
+                <p><small>Verify this Letter of Acceptance</small></p>
             </td>
         </tr>
     </table>

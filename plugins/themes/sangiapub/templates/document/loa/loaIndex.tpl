@@ -24,7 +24,7 @@
     <tbody>
         {foreach from=$loaEntries item=entry}
             <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 10px;">{$entry.title|escape}</td>
+                <td style="padding: 10px;">{$entry.title|strip_unsafe_html}</td>
                 <td style="padding: 10px;">{$entry.statusLabel|escape}</td>
                 <td style="padding: 10px;">{$entry.statusDate|date_format:"%d %b %Y"}</td>
                 <td style="padding: 10px;">

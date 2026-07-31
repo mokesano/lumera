@@ -77,7 +77,7 @@ class LoAService {
 
             // [BARU] Editor yang menangani naskah + Journal Manager penanda
             // tangan -- tampil di LoA privat/publik/PDF bersama QR Code.
-            'editorNames' => $this->_getHandlingEditorNames($submissionId),
+            'editorNames' => $this->_hasMeaningfulSections($journalId) ? $this->_getHandlingEditorNames($submissionId) : [],
             'managerNames' => (new JournalManagerResolver())->resolve($journalId)['names'],
 
             'journalTitle' => $this->getJournalTitle($journalId)
@@ -251,6 +251,23 @@ class LoAService {
             return $copyeditSignoff->getDateCompleted();
         }
         return $submission->getDateSubmitted();
+    }
+
+    /**
+     * Section di Lumera = topik khusus/mini-jurnal, BUKAN sekadar label
+     * kategori artikel seperti OJS pada umumnya. Handling Editor cuma
+     * relevan ditampilkan kalau jurnal genuinely memakai Section lebih dari
+     * satu (section tunggal = section default bawaan OJS, bukan pembagian
+     * bermakna). Untuk jurnal tanpa Section bermakna, MUTLAK cuma nama
+     * Editor-in-Chief (Journal Manager) yang tercantum.
+     * @param int $journalId
+     * @return bool
+     */
+    private function _hasMeaningfulSections(int $journalId): bool {
+        /** @var SectionDAO $sectionDao */
+        $sectionDao = DAORegistry::getDAO('SectionDAO');
+        $result = $sectionDao->getJournalSections($journalId);
+        return $result->getCount() > 1;
     }
 
 }
