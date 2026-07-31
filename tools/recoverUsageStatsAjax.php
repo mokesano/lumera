@@ -651,6 +651,7 @@ if (isset($_GET['action'])) {
         .step { border: 1px solid #444; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
         .step h3 { margin-top: 0; }
         .step.locked { opacity: 0.5; }
+        .note { color: #ffa502; font-size: 0.9em; }
         .danger { color: #ff6b81; font-size: 0.9em; }
         .progress-container { width: 100%; background: #444; border-radius: 4px; margin-top: 10px; height: 25px; overflow: hidden; }
         .progress-bar { height: 100%; background: linear-gradient(90deg, #2ed573, #7bed9f); width: 0%; transition: width 0.3s ease; text-align: center; line-height: 25px; color: #000; font-weight: bold; font-size: 14px; }
