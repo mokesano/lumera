@@ -21,10 +21,10 @@ import('lib.pkp.classes.reviewForm.ReviewFormElement');
 class ReviewFormElementForm extends Form {
 
     /** @var int The ID of the review form being edited */
-    public $reviewFormId;
+    protected $_reviewFormId;
 
     /** @var int|null The ID of the review form element being edited */
-    public $reviewFormElementId;
+    protected $_reviewFormElementId;
 
     /**
      * Constructor.
@@ -34,8 +34,8 @@ class ReviewFormElementForm extends Form {
     public function __construct($reviewFormId, $reviewFormElementId = null) {
         parent::__construct('manager/reviewForms/reviewFormElementForm.tpl');
 
-        $this->reviewFormId = (int) $reviewFormId;
-        $this->reviewFormElementId = $reviewFormElementId ? (int) $reviewFormElementId : null;
+        $this->_reviewFormId = (int) $reviewFormId;
+        $this->_reviewFormElementId = $reviewFormElementId !== null ? (int) $reviewFormElementId : null;
 
         // Validation checks for this form
         $this->addCheck(new FormValidatorLocale($this, 'question', 'required', 'manager.reviewFormElements.form.questionRequired'));
@@ -44,12 +44,14 @@ class ReviewFormElementForm extends Form {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param int $reviewFormId
+     * @param int|null $reviewFormElementId
      */
     public function ReviewFormElementForm($reviewFormId, $reviewFormElementId = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -70,15 +72,20 @@ class ReviewFormElementForm extends Form {
      * Display the form.
      * @param mixed $request
      * @param mixed $template
+     * @return void
      */
     public function display($request = null, $template = null) {
         $templateMgr = TemplateManager::getManager();
-        $templateMgr->assign('reviewFormId', $this->reviewFormId);
-        $templateMgr->assign('reviewFormElementId', $this->reviewFormElementId);
-        $templateMgr->assign('multipleResponsesElementTypes', ReviewFormElement::getMultipleResponsesElementTypes());
-        // in order to be able to search for an element in the array in the javascript function 'togglePossibleResponses':
-        $templateMgr->assign('multipleResponsesElementTypesString', ';' . implode(';', ReviewFormElement::getMultipleResponsesElementTypes()) . ';');
-        $templateMgr->assign('reviewFormElementTypeOptions', ReviewFormElement::getReviewFormElementTypeOptions());
+        $templateMgr->assign('reviewFormId', $this->_reviewFormId);
+        $templateMgr->assign('reviewFormElementId', $this->_reviewFormElementId);
+        
+        // [WIZDAM FIX] Instantiate ReviewFormElement to call non-static methods safely
+        $reviewFormElement = new ReviewFormElement();
+        $multipleResponsesElementTypes = $reviewFormElement->getMultipleResponsesElementTypes();
+        
+        $templateMgr->assign('multipleResponsesElementTypes', $multipleResponsesElementTypes);
+        $templateMgr->assign('multipleResponsesElementTypesString', ';' . implode(';', $multipleResponsesElementTypes) . ';');
+        $templateMgr->assign('reviewFormElementTypeOptions', $reviewFormElement->getReviewFormElementTypeOptions());
         $templateMgr->assign('helpTopicId', 'journal.managementPages.reviewForms');
         
         parent::display($request, $template);
@@ -86,24 +93,26 @@ class ReviewFormElementForm extends Form {
 
     /**
      * Initialize form data from current review form.
+     * @return void
      */
     public function initData() {
-        if ($this->reviewFormElementId != null) {
+        if ($this->_reviewFormElementId !== null) {
+            /** @var ReviewFormElementDAO $reviewFormElementDao */
             $reviewFormElementDao = DAORegistry::getDAO('ReviewFormElementDAO');
-            $reviewFormElement = $reviewFormElementDao->getReviewFormElement($this->reviewFormElementId);
+            $reviewFormElement = $reviewFormElementDao->getReviewFormElement($this->_reviewFormElementId);
 
-            if ($reviewFormElement == null) {
-                $this->reviewFormElementId = null;
+            if ($reviewFormElement === null) {
+                $this->_reviewFormElementId = null;
                 $this->_data = [
                     'included' => 1
                 ];
             } else {
                 $this->_data = [
                     'question' => $reviewFormElement->getQuestion(null), // Localized
-                    'required' => $reviewFormElement->getRequired(),
-                    'included' => $reviewFormElement->getIncluded(),
-                    'elementType' => $reviewFormElement->getElementType(),
-                    'possibleResponses' => $reviewFormElement->getPossibleResponses(null) //Localized
+                    'required' => (int) $reviewFormElement->getRequired(),
+                    'included' => (int) $reviewFormElement->getIncluded(),
+                    'elementType' => (string) $reviewFormElement->getElementType(),
+                    'possibleResponses' => $reviewFormElement->getPossibleResponses(null) // Localized
                 ];
             }
         }
@@ -111,6 +120,7 @@ class ReviewFormElementForm extends Form {
 
     /**
      * Assign form data to user-submitted data.
+     * @return void
      */
     public function readInputData() {
         $this->readUserVars(['question', 'required', 'included', 'elementType', 'possibleResponses']);
@@ -118,39 +128,46 @@ class ReviewFormElementForm extends Form {
 
     /**
      * Save review form element.
+     * @param mixed $object
+     * @return void
      */
     public function execute($object = null) {
+        /** @var ReviewFormElementDAO $reviewFormElementDao */
         $reviewFormElementDao = DAORegistry::getDAO('ReviewFormElementDAO');
-
-        if ($this->reviewFormElementId != null) {
-            $reviewFormElement = $reviewFormElementDao->getReviewFormElement($this->reviewFormElementId);
+        
+        $reviewFormElement = null;
+        if ($this->_reviewFormElementId !== null) {
+            $reviewFormElement = $reviewFormElementDao->getReviewFormElement($this->_reviewFormElementId);
         }
 
-        if (!isset($reviewFormElement)) {
+        if ($reviewFormElement === null) {
             $reviewFormElement = new ReviewFormElement();
-            $reviewFormElement->setReviewFormId($this->reviewFormId);
+            $reviewFormElement->setReviewFormId($this->_reviewFormId);
             $reviewFormElement->setSequence(defined('REALLY_BIG_NUMBER') ? REALLY_BIG_NUMBER : 99999);
         }
 
         $reviewFormElement->setQuestion($this->getData('question'), null); // Localized
-        $reviewFormElement->setRequired($this->getData('required') ? 1 : 0);
-        $reviewFormElement->setIncluded($this->getData('included') ? 1 : 0);
-        $reviewFormElement->setElementType($this->getData('elementType'));
+        $reviewFormElement->setRequired((int) $this->getData('required'));
+        $reviewFormElement->setIncluded((int) $this->getData('included'));
+        $reviewFormElement->setElementType((string) $this->getData('elementType'));
 
-        if (in_array($this->getData('elementType'), ReviewFormElement::getMultipleResponsesElementTypes())) {
+        // [WIZDAM FIX] Instantiate ReviewFormElement to call non-static methods safely
+        $tempElement = new ReviewFormElement();
+        if (in_array($this->getData('elementType'), $tempElement->getMultipleResponsesElementTypes(), true)) {
             $reviewFormElement->setPossibleResponses($this->getData('possibleResponses'), null); // Localized
         } else {
             $reviewFormElement->setPossibleResponses(null, null);
         }
 
-        if ($reviewFormElement->getId() != null) {
-            $reviewFormElementDao->deleteSetting($reviewFormElement->getId(), 'possibleResponses');
+        if ($reviewFormElement->getId() !== null) {
+            $reviewFormElementDao->deleteSetting((int) $reviewFormElement->getId(), 'possibleResponses');
             $reviewFormElementDao->updateObject($reviewFormElement);
-            $this->reviewFormElementId = $reviewFormElement->getId();
+            $this->_reviewFormElementId = (int) $reviewFormElement->getId();
         } else {
-            $this->reviewFormElementId = $reviewFormElementDao->insertObject($reviewFormElement);
-            $reviewFormElementDao->resequenceReviewFormElements($this->reviewFormId);
+            $this->_reviewFormElementId = (int) $reviewFormElementDao->insertObject($reviewFormElement);
+            $reviewFormElementDao->resequenceReviewFormElements($this->_reviewFormId);
         }
     }
+
 }
 ?>
