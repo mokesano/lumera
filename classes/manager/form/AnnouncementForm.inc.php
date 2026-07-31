@@ -23,9 +23,9 @@ import('lib.pkp.classes.manager.form.PKPAnnouncementForm');
 class AnnouncementForm extends PKPAnnouncementForm {
     
     /**
-     * Constructor
+     * Constructor.
      * @param int $journalId
-     * @param int|null $announcementId leave as default for new announcement
+     * @param int|null $announcementId
      */
     public function __construct($journalId, $announcementId = null) {
         parent::__construct($journalId, $announcementId);
@@ -36,6 +36,7 @@ class AnnouncementForm extends PKPAnnouncementForm {
             'optional', 
             'manager.announcements.form.typeIdValid', 
             function($typeId) use ($journalId) {
+                /** @var AnnouncementTypeDAO $announcementTypeDao */
                 $announcementTypeDao = DAORegistry::getDAO('AnnouncementTypeDAO');
                 return $announcementTypeDao->announcementTypeExistsByTypeId($typeId, ASSOC_TYPE_JOURNAL, $journalId);
             }, 
@@ -44,7 +45,9 @@ class AnnouncementForm extends PKPAnnouncementForm {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param int $journalId
+     * @param int|null $announcementId
      */
     public function AnnouncementForm($journalId, $announcementId = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -79,8 +82,7 @@ class AnnouncementForm extends PKPAnnouncementForm {
     }
 
     /**
-     * Helper function to assign the AssocType and the AssocId
-     * [WIZDAM] Protected visibility matched in parent
+     * Helper function to assign the AssocType and the AssocId.
      * @param Announcement $announcement the announcement to be modified
      */
     protected function _setAnnouncementAssocId($announcement) {
@@ -102,6 +104,7 @@ class AnnouncementForm extends PKPAnnouncementForm {
             // Send a notification to associated users
             import('classes.notification.NotificationManager');
             $notificationManager = new NotificationManager();
+            /** @var RoleDAO $roleDao */
             $roleDao = DAORegistry::getDAO('RoleDAO');
             
             $notificationUsers = [];
@@ -138,5 +141,6 @@ class AnnouncementForm extends PKPAnnouncementForm {
         
         return $announcement;
     }
+
 }
 ?>
