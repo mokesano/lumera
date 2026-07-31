@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see ReviewAssignmentDAO
  *
  * @brief Describes review assignment properties.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('lib.pkp.classes.submission.reviewAssignment.PKPReviewAssignment');
@@ -29,12 +27,12 @@ class ReviewAssignment extends PKPReviewAssignment {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ReviewAssignment() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -48,49 +46,52 @@ class ReviewAssignment extends PKPReviewAssignment {
 
     /**
      * Get ID of article.
-     * DEPRICATED
+     * @deprecated Use getSubmissionId() instead.
      * @return int
      */
     public function getArticleId() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->getSubmissionId();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        return (int) $this->getSubmissionId();
     }
 
     /**
      * Set ID of article.
-     * DEPRICATED
+     * @deprecated Use setSubmissionId() instead.
      * @param int $articleId
      */
     public function setArticleId($articleId) {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
-        return $this->setSubmissionId($articleId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
+        $this->setSubmissionId((int) $articleId);
     }
 
     /**
-     * [WIZDAM] Get date cancelled.
-     * @return string
+     * Get the date the review was cancelled.
+     * @return string|null
      */
-    function getDateCancelled() {
-        return $this->getData('dateCancelled');
+    public function getDateCancelled() {
+        $date = $this->getData('dateCancelled');
+        return $date !== null ? (string) $date : null;
     }
 
     /**
-     * [WIZDAM] Get declined flag.
-     * @return boolean
+     * Get the declined flag.
+     * @return int|null
      */
-    function getDeclined() {
-        return $this->getData('declined');
+    public function getDeclined() {
+        $declined = $this->getData('declined');
+        return $declined !== null ? (int) $declined : null;
     }
 
     /**
-     * Get an associative array matching reviewer recommendation codes 
-     * with locale strings.
+     * Get an associative array matching reviewer recommendation codes with locale strings.
      * (Includes default '' => "Choose One" string.)
-     * [WIZDAM] Made static to allow static calls from Handlers
-     * @return array recommendation => localeString
+     * @return array
      */
     public static function getReviewerRecommendationOptions() {
-        // Bring in reviewer constants
         import('classes.submission.reviewer.ReviewerSubmission');
 
         static $reviewerRecommendationOptions = [
@@ -102,14 +103,13 @@ class ReviewAssignment extends PKPReviewAssignment {
             SUBMISSION_REVIEWER_RECOMMENDATION_DECLINE => 'reviewer.article.decision.decline',
             SUBMISSION_REVIEWER_RECOMMENDATION_SEE_COMMENTS => 'reviewer.article.decision.seeComments'
         ];
+        
         return $reviewerRecommendationOptions;
     }
 
     /**
-     * Get an associative array matching reviewer rating codes 
-     * with locale strings.
-     * [WIZDAM] Made static to allow static calls
-     * @return array recommendation => localeString
+     * Get an associative array matching reviewer rating codes with locale strings.
+     * @return array
      */
     public static function getReviewerRatingOptions() {
         static $reviewerRatingOptions = [
@@ -119,7 +119,9 @@ class ReviewAssignment extends PKPReviewAssignment {
             SUBMISSION_REVIEWER_RATING_POOR => 'editor.article.reviewerRating.poor',
             SUBMISSION_REVIEWER_RATING_VERY_POOR => 'editor.article.reviewerRating.veryPoor'
         ];
+        
         return $reviewerRatingOptions;
     }
+    
 }
 ?>

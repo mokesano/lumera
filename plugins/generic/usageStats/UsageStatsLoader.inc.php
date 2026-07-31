@@ -208,7 +208,7 @@ class UsageStatsLoader extends FileLoader {
             if ($entryData['url'] === '*') {
                 continue; // Apache internal
             }
-            if (!in_array($entryData['returnCode'], [200, 304], true)) {
+            if (!in_array($entryData['returnCode'], ['200', '304'], true)) {
                 continue; // Non-success codes
             }
             if (Core::isUserAgentBot($entryData['userAgent'], $this->_counterRobotsListFile)) {

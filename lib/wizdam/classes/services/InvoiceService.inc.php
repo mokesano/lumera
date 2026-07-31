@@ -221,7 +221,7 @@ class InvoiceService {
      * @param string $paymentMethod
      * @return bool
      */
-    public function markAsPaid(int $invoiceId, string $paymentMethod): bool {
+    public function markAsPaid(int $invoiceId, string $paymentMethod, ?string $reference = null): bool {
         $invoice = $this->getInvoiceById($invoiceId);
         if (!$invoice || $invoice->isLegacy() || $invoice->getStatus() === Invoice::STATUS_PAID) {
             return false;
@@ -230,6 +230,12 @@ class InvoiceService {
         $invoice->setData('paymentMethod', $paymentMethod);
         $invoice->setData('datePaid',      Core::getCurrentDate());
         $this->invoiceDao->updateObject($invoice);
+
+        // [BARU] Referensi transaksi dari gateway (Xendit/Midtrans/PayPal) --
+        if ($reference !== null && $reference !== '') {
+            $this->invoiceDao->attachPaymentReference($invoiceId, $reference);
+        }
+
         HookRegistry::dispatch('Wizdam::InvoicePaid', [$invoice]);
         return true;
     }

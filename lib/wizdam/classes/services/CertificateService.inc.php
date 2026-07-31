@@ -34,7 +34,7 @@ class CertificateService {
         /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
-        $reviewAssignment = $reviewAssignmentDao->getReviewAssignmentById($reviewId);
+        $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
 
         if (!$reviewAssignment) {
             throw new \Exception('NOT_FOUND');

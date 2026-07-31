@@ -26,12 +26,12 @@ class ReviewerAction extends Action {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ReviewerAction() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -46,33 +46,40 @@ class ReviewerAction extends Action {
     /**
      * Records whether or not the reviewer accepts the review assignment.
      * @param object $reviewerSubmission ReviewerSubmission
-     * @param boolean $decline
-     * @param boolean $send
+     * @param bool $decline
+     * @param bool $send
      * @param object $request PKPRequest
+     * @return bool
      */
     public function confirmReview($reviewerSubmission, $decline, $send, $request) {
         // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
         
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $reviewId = (int) $reviewerSubmission->getReviewId();
 
         $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
-        $reviewer = $userDao->getById((int) $reviewAssignment->getReviewerId());
-        
-        if (!($reviewer instanceof User)) return true;
+        if ($reviewAssignment === null) {
+            return true;
+        }
 
-        // Only confirm the review for the reviewer if
-        // he has not previously done so.
-        if ($reviewAssignment->getDateConfirmed() == null) {
+        $reviewer = $userDao->getById((int) $reviewAssignment->getReviewerId());
+        if (!($reviewer instanceof User)) {
+            return true;
+        }
+
+        // Only confirm the review for the reviewer if he has not previously done so.
+        if ($reviewAssignment->getDateConfirmed() === null) {
             import('classes.mail.ArticleMailTemplate');
             $email = new ArticleMailTemplate($reviewerSubmission, $decline ? 'REVIEW_DECLINE' : 'REVIEW_CONFIRM');
             
             // Must explicitly set sender because we may be here on an access
             // key, in which case the user is not technically logged in
-            $email->setFrom($reviewer->getEmail(), $reviewer->getFullName());
+            $email->setFrom((string) $reviewer->getEmail(), (string) $reviewer->getFullName());
             
             if (!$email->isEnabled() || ($send && !$email->hasErrors())) {
                 HookRegistry::dispatch('ReviewerAction::confirmReview', [&$reviewerSubmission, &$email, $decline]);
@@ -83,7 +90,7 @@ class ReviewerAction extends Action {
 
                 $reviewAssignment->setDateReminded(null);
                 $reviewAssignment->setReminderWasAutomatic(null);
-                $reviewAssignment->setDeclined($decline);
+                $reviewAssignment->setDeclined((int) $decline);
                 $reviewAssignment->setDateConfirmed(Core::getCurrentDate());
                 $reviewAssignment->stampModified();
                 $reviewAssignmentDao->updateReviewAssignment($reviewAssignment);
@@ -97,46 +104,57 @@ class ReviewerAction extends Action {
                     $decline ? ARTICLE_LOG_REVIEW_DECLINE : ARTICLE_LOG_REVIEW_ACCEPT, 
                     $decline ? 'log.review.reviewDeclined' : 'log.review.reviewAccepted', 
                     [
-                        'reviewerName' => $reviewer->getFullName(), 
-                        'articleId' => $reviewAssignment->getSubmissionId(), 
-                        'round' => $reviewAssignment->getRound(), 
-                        'reviewId' => $reviewAssignment->getId()
+                        'reviewerName' => (string) $reviewer->getFullName(), 
+                        'articleId' => (int) $reviewAssignment->getSubmissionId(), 
+                        'round' => (int) $reviewAssignment->getRound(), 
+                        'reviewId' => (int) $reviewAssignment->getId()
                     ]
                 );
                 return true;
             } else {
                 if (!$request->getUserVar('continued')) {
-                    $assignedEditors = $email->ccAssignedEditors($reviewerSubmission->getId());
-                    $reviewingSectionEditors = $email->toAssignedReviewingSectionEditors($reviewerSubmission->getId());
+                    $assignedEditors = $email->ccAssignedEditors((int) $reviewerSubmission->getId());
+                    $reviewingSectionEditors = $email->toAssignedReviewingSectionEditors((int) $reviewerSubmission->getId());
                     
                     if (empty($assignedEditors) && empty($reviewingSectionEditors)) {
                         $journal = $request->getJournal();
-                        $email->addRecipient($journal->getSetting('contactEmail'), $journal->getSetting('contactName'));
-                        $editorialContactName = $journal->getSetting('contactName');
+                        if ($journal !== null) {
+                            $email->addRecipient((string) $journal->getSetting('contactEmail'), (string) $journal->getSetting('contactName'));
+                            $editorialContactName = (string) $journal->getSetting('contactName');
+                        } else {
+                            $editorialContactName = '';
+                        }
                     } else {
-                        if (!empty($reviewingSectionEditors)) $editorialContact = array_shift($reviewingSectionEditors);
-                        else $editorialContact = array_shift($assignedEditors);
-                        
-                        $editorialContactName = $editorialContact->getEditorFullName();
+                        if (!empty($reviewingSectionEditors)) {
+                            $editorialContact = array_shift($reviewingSectionEditors);
+                        } else {
+                            $editorialContact = array_shift($assignedEditors);
+                        }
+                        $editorialContactName = (string) $editorialContact->getEditorFullName();
                     }
                     $email->promoteCcsIfNoRecipients();
 
                     // Format the review due date
-                    $reviewDueDate = strtotime($reviewAssignment->getDateDue());
+                    $reviewDueDate = strtotime((string) $reviewAssignment->getDateDue());
                     $dateFormatShort = Config::getVar('general', 'date_format_short');
                     
-                    if ($reviewDueDate == -1) $reviewDueDate = $dateFormatShort; // Default to something human-readable if no date specified
-                    else $reviewDueDate = strftime($dateFormatShort, $reviewDueDate);
+                    if ($reviewDueDate === -1) {
+                        $reviewDueDate = (string) $dateFormatShort; // Default to something human-readable if no date specified
+                    } else {
+                        $reviewDueDate = strftime((string) $dateFormatShort, $reviewDueDate);
+                    }
 
                     $email->assignParams([
                         'editorialContactName' => $editorialContactName,
-                        'reviewerName' => $reviewer->getFullName(),
-                        'reviewDueDate' => $reviewDueDate
+                        'reviewerName' => (string) $reviewer->getFullName(),
+                        'reviewDueDate' => (string) $reviewDueDate
                     ]);
                 }
                 
                 $paramArray = ['reviewId' => $reviewId];
-                if ($decline) $paramArray['declineReview'] = 1;
+                if ($decline) {
+                    $paramArray['declineReview'] = 1;
+                }
                 
                 $email->displayEditForm($request->url(null, 'reviewer', 'confirmReview'), $paramArray);
                 return false;
@@ -149,33 +167,44 @@ class ReviewerAction extends Action {
      * Records the reviewer's submission recommendation.
      * @param object $reviewerSubmission ReviewerSubmission
      * @param int $recommendation
-     * @param boolean $send
+     * @param bool $send
      * @param object $request PKPRequest
+     * @return bool
      */
     public function recordRecommendation($reviewerSubmission, $recommendation, $send, $request) {
         // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         // Check validity of selected recommendation
         $reviewerRecommendationOptions = ReviewAssignment::getReviewerRecommendationOptions();
-        if (!isset($reviewerRecommendationOptions[$recommendation])) return true;
+        if (!isset($reviewerRecommendationOptions[(string) $recommendation])) {
+            return true;
+        }
 
-        $reviewAssignment = $reviewAssignmentDao->getById($reviewerSubmission->getReviewId());
+        $reviewAssignment = $reviewAssignmentDao->getById((int) $reviewerSubmission->getReviewId());
+        if ($reviewAssignment === null) {
+            return true;
+        }
+
         $reviewer = $userDao->getById((int) $reviewAssignment->getReviewerId());
-        
-        if (!($reviewer instanceof User)) return true;
+        if (!($reviewer instanceof User)) {
+            return true;
+        }
 
-        // Only record the reviewers recommendation if
-        // no recommendation has previously been submitted.
-        if ($reviewAssignment->getRecommendation() === null || $reviewAssignment->getRecommendation() === '') {
+        // Only record the reviewers recommendation if no recommendation has previously been submitted.
+        $currentRecommendation = $reviewAssignment->getRecommendation();
+        if ($currentRecommendation === null || $currentRecommendation === '') {
             import('classes.mail.ArticleMailTemplate');
             $email = new ArticleMailTemplate($reviewerSubmission, 'REVIEW_COMPLETE');
+            
             // Must explicitly set sender because we may be here on an access
             // key, in which case the user is not technically logged in
-            $email->setFrom($reviewer->getEmail(), $reviewer->getFullName());
+            $email->setFrom((string) $reviewer->getEmail(), (string) $reviewer->getFullName());
 
             if (!$email->isEnabled() || ($send && !$email->hasErrors())) {
                 HookRegistry::dispatch('ReviewerAction::recordRecommendation', [&$reviewerSubmission, &$email, $recommendation]);
@@ -184,7 +213,7 @@ class ReviewerAction extends Action {
                     $email->send($request);
                 }
 
-                $reviewAssignment->setRecommendation($recommendation);
+                $reviewAssignment->setRecommendation((int) $recommendation);
                 $reviewAssignment->setDateCompleted(Core::getCurrentDate());
                 $reviewAssignment->stampModified();
                 $reviewAssignmentDao->updateReviewAssignment($reviewAssignment);
@@ -198,41 +227,47 @@ class ReviewerAction extends Action {
                     ARTICLE_LOG_REVIEW_RECOMMENDATION, 
                     'log.review.reviewRecommendationSet', 
                     [
-                        'reviewerName' => $reviewer->getFullName(), 
-                        'articleId' => $reviewAssignment->getSubmissionId(), 
-                        'round' => $reviewAssignment->getRound(), 
-                        'reviewId' => $reviewAssignment->getId()
+                        'reviewerName' => (string) $reviewer->getFullName(), 
+                        'articleId' => (int) $reviewAssignment->getSubmissionId(), 
+                        'round' => (int) $reviewAssignment->getRound(), 
+                        'reviewId' => (int) $reviewAssignment->getId()
                     ]
                 );
             } else {
                 if (!$request->getUserVar('continued')) {
-                    $assignedEditors = $email->ccAssignedEditors($reviewerSubmission->getId());
-                    $reviewingSectionEditors = $email->toAssignedReviewingSectionEditors($reviewerSubmission->getId());
+                    $assignedEditors = $email->ccAssignedEditors((int) $reviewerSubmission->getId());
+                    $reviewingSectionEditors = $email->toAssignedReviewingSectionEditors((int) $reviewerSubmission->getId());
                     
                     if (empty($assignedEditors) && empty($reviewingSectionEditors)) {
                         $journal = $request->getJournal();
-                        $email->addRecipient($journal->getSetting('contactEmail'), $journal->getSetting('contactName'));
-                        $editorialContactName = $journal->getSetting('contactName');
+                        if ($journal !== null) {
+                            $email->addRecipient((string) $journal->getSetting('contactEmail'), (string) $journal->getSetting('contactName'));
+                            $editorialContactName = (string) $journal->getSetting('contactName');
+                        } else {
+                            $editorialContactName = '';
+                        }
                     } else {
-                        if (!empty($reviewingSectionEditors)) $editorialContact = array_shift($reviewingSectionEditors);
-                        else $editorialContact = array_shift($assignedEditors);
-                        
-                        $editorialContactName = $editorialContact->getEditorFullName();
+                        if (!empty($reviewingSectionEditors)) {
+                            $editorialContact = array_shift($reviewingSectionEditors);
+                        } else {
+                            $editorialContact = array_shift($assignedEditors);
+                        }
+                        $editorialContactName = (string) $editorialContact->getEditorFullName();
                     }
 
                     $reviewerRecommendationOptions = ReviewAssignment::getReviewerRecommendationOptions();
 
                     $email->assignParams([
                         'editorialContactName' => $editorialContactName,
-                        'reviewerName' => $reviewer->getFullName(),
-                        'articleTitle' => strip_tags($reviewerSubmission->getLocalizedTitle()),
-                        'recommendation' => __($reviewerRecommendationOptions[$recommendation])
+                        'reviewerName' => (string) $reviewer->getFullName(),
+                        'articleTitle' => strip_tags((string) $reviewerSubmission->getLocalizedTitle()),
+                        'recommendation' => __((string) $reviewerRecommendationOptions[(string) $recommendation])
                     ]);
                 }
 
                 $email->displayEditForm(
                     $request->url(null, 'reviewer', 'recordRecommendation'),
-                    ['reviewId' => $reviewerSubmission->getReviewId(), 'recommendation' => $recommendation]
+                    ['reviewId' => (int) $reviewerSubmission->getReviewId(), 'recommendation' => (int) $recommendation]
                 );
                 return false;
             }
@@ -245,50 +280,60 @@ class ReviewerAction extends Action {
      * @param int $reviewId
      * @param object $reviewerSubmission ReviewerSubmission
      * @param object $request PKPRequest
+     * @return void
      */
     public static function uploadReviewerVersion($reviewId, $reviewerSubmission, $request) {
         // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         import('classes.file.ArticleFileManager');
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
-        $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
+        $reviewAssignment = $reviewAssignmentDao->getById((int) $reviewId);
 
-        $articleFileManager = new ArticleFileManager($reviewAssignment->getSubmissionId());
+        if ($reviewAssignment === null) {
+            return;
+        }
+
+        $articleFileManager = new ArticleFileManager((int) $reviewAssignment->getSubmissionId());
 
         // Only upload the file if the reviewer has yet to submit a recommendation
         // and if review forms are not used
         $fileId = 0;
-        if (($reviewAssignment->getRecommendation() === null || $reviewAssignment->getRecommendation() === '') && !$reviewAssignment->getCancelled()) {
+        $currentRecommendation = $reviewAssignment->getRecommendation();
+        if (($currentRecommendation === null || $currentRecommendation === '') && !$reviewAssignment->getCancelled()) {
             $fileName = 'upload';
             if ($articleFileManager->uploadedFileExists($fileName)) {
                 HookRegistry::dispatch('ReviewerAction::uploadReviewFile', [&$reviewAssignment]);
-                if ($reviewAssignment->getReviewerFileId() != null) {
-                    $fileId = $articleFileManager->uploadReviewFile($fileName, $reviewAssignment->getReviewerFileId());
+                if ($reviewAssignment->getReviewerFileId() !== null) {
+                    $fileId = $articleFileManager->uploadReviewFile($fileName, (int) $reviewAssignment->getReviewerFileId());
                 } else {
                     $fileId = $articleFileManager->uploadReviewFile($fileName);
                 }
             }
         }
 
-        if (isset($fileId) && $fileId != 0) {
-            $reviewAssignment->setReviewerFileId($fileId);
+        if (isset($fileId) && $fileId !== 0) {
+            $reviewAssignment->setReviewerFileId((int) $fileId);
             $reviewAssignment->stampModified();
             $reviewAssignmentDao->updateReviewAssignment($reviewAssignment);
 
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $reviewer = $userDao->getById((int) $reviewAssignment->getReviewerId());
 
-            // Add log
-            import('classes.article.log.ArticleLog');
-            ArticleLog::logEventHeadless(
-                $request->getJournal(), 
-                (int) $reviewer->getId(), 
-                $reviewerSubmission, 
-                ARTICLE_LOG_REVIEW_FILE, 
-                'log.review.reviewerFile', 
-                ['reviewId' => $reviewAssignment->getId()]
-            );
+            if ($reviewer !== null) {
+                // Add log
+                import('classes.article.log.ArticleLog');
+                ArticleLog::logEventHeadless(
+                    $request->getJournal(), 
+                    (int) $reviewer->getId(), 
+                    $reviewerSubmission, 
+                    ARTICLE_LOG_REVIEW_FILE, 
+                    'log.review.reviewerFile', 
+                    ['reviewId' => (int) $reviewAssignment->getId()]
+                );
+            }
         }
     }
 
@@ -297,20 +342,26 @@ class ReviewerAction extends Action {
      * @param int $reviewId
      * @param int $fileId
      * @param int|null $revision If null, then all revisions are deleted.
+     * @return void
      */
     public function deleteReviewerVersion($reviewId, $fileId, $revision = null) {
         import('classes.file.ArticleFileManager');
 
         // [WIZDAM] Modern Request Usage
         $request = Application::get()->getRequest();
-        $articleId = $request->getUserVar('articleId');
+        $articleId = (int) $request->getUserVar('articleId');
         
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
-        $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
+        $reviewAssignment = $reviewAssignmentDao->getById((int) $reviewId);
+
+        if ($reviewAssignment === null) {
+            return;
+        }
 
         if (!HookRegistry::dispatch('ReviewerAction::deleteReviewerVersion', [&$reviewAssignment, &$fileId, &$revision])) {
-            $articleFileManager = new ArticleFileManager($reviewAssignment->getSubmissionId());
-            $articleFileManager->deleteFile($fileId, $revision);
+            $articleFileManager = new ArticleFileManager((int) $reviewAssignment->getSubmissionId());
+            $articleFileManager->deleteFile((int) $fileId, $revision !== null ? (int) $revision : null);
         }
     }
 
@@ -319,15 +370,16 @@ class ReviewerAction extends Action {
      * @param object $user Current user
      * @param object $article
      * @param int $reviewId
+     * @return void
      */
     public function viewPeerReviewComments($user, $article, $reviewId) {
         if (!HookRegistry::dispatch('ReviewerAction::viewPeerReviewComments', [&$user, &$article, &$reviewId])) {
             import('classes.submission.form.comment.PeerReviewCommentForm');
 
-            $commentForm = new PeerReviewCommentForm($article, $reviewId, ROLE_ID_REVIEWER);
+            $commentForm = new PeerReviewCommentForm($article, (int) $reviewId, ROLE_ID_REVIEWER);
             $commentForm->setUser($user);
             $commentForm->initData();
-            $commentForm->setData('reviewId', $reviewId);
+            $commentForm->setData('reviewId', (int) $reviewId);
             $commentForm->display();
         }
     }
@@ -337,8 +389,9 @@ class ReviewerAction extends Action {
      * @param object $user Current user
      * @param object $article
      * @param int $reviewId
-     * @param boolean $emailComment
+     * @param bool $emailComment
      * @param object $request Request
+     * @return bool
      */
     public function postPeerReviewComment($user, $article, $reviewId, $emailComment, $request) {
         // [WIZDAM] Strict Type Guard
@@ -347,7 +400,7 @@ class ReviewerAction extends Action {
         if (!HookRegistry::dispatch('ReviewerAction::postPeerReviewComment', [&$user, &$article, &$reviewId, &$emailComment])) {
             import('classes.submission.form.comment.PeerReviewCommentForm');
 
-            $commentForm = new PeerReviewCommentForm($article, $reviewId, ROLE_ID_REVIEWER);
+            $commentForm = new PeerReviewCommentForm($article, (int) $reviewId, ROLE_ID_REVIEWER);
             $commentForm->setUser($user);
             $commentForm->readInputData();
 
@@ -361,36 +414,38 @@ class ReviewerAction extends Action {
                 foreach ($notificationUsers as $userRole) {
                     $notificationManager->createNotification(
                         $request, 
-                        $userRole['id'], 
+                        (int) $userRole['id'], 
                         NOTIFICATION_TYPE_REVIEWER_COMMENT,
-                        $article->getJournalId(), 
+                        (int) $article->getJournalId(), 
                         ASSOC_TYPE_ARTICLE, 
-                        $article->getId()
+                        (int) $article->getId()
                     );
                 }
 
                 if ($emailComment) {
-                    $commentForm->email($request);
+                    $recipients = [];
+                    $commentForm->email($recipients, $request);
                 }
-
             } else {
                 $commentForm->display();
                 return false;
             }
             return true;
         }
+        return false;
     }
 
     /**
      * Edit review form response.
      * @param int $reviewId
      * @param int $reviewFormId
+     * @return void
      */
     public function editReviewFormResponse($reviewId, $reviewFormId) {
-        if (!HookRegistry::dispatch('ReviewerAction::editReviewFormResponse', [$reviewId, $reviewFormId])) {
+        if (!HookRegistry::dispatch('ReviewerAction::editReviewFormResponse', [(int) $reviewId, (int) $reviewFormId])) {
             import('classes.submission.form.ReviewFormResponseForm');
 
-            $reviewForm = new ReviewFormResponseForm($reviewId, $reviewFormId);
+            $reviewForm = new ReviewFormResponseForm((int) $reviewId, (int) $reviewFormId);
             $reviewForm->initData();
             $reviewForm->display();
         }
@@ -401,15 +456,16 @@ class ReviewerAction extends Action {
      * @param int $reviewId
      * @param int $reviewFormId
      * @param object $request Request
+     * @return bool
      */
     public function saveReviewFormResponse($reviewId, $reviewFormId, $request) {
         // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
-        if (!HookRegistry::dispatch('ReviewerAction::saveReviewFormResponse', [$reviewId, $reviewFormId])) {
+        if (!HookRegistry::dispatch('ReviewerAction::saveReviewFormResponse', [(int) $reviewId, (int) $reviewFormId])) {
             import('classes.submission.form.ReviewFormResponseForm');
 
-            $reviewForm = new ReviewFormResponseForm($reviewId, $reviewFormId);
+            $reviewForm = new ReviewFormResponseForm((int) $reviewId, (int) $reviewFormId);
             $reviewForm->readInputData();
             if ($reviewForm->validate()) {
                 $reviewForm->execute();
@@ -417,29 +473,38 @@ class ReviewerAction extends Action {
                 // Send a notification to associated users
                 import('classes.notification.NotificationManager');
                 $notificationManager = new NotificationManager();
+                /** @var ReviewAssignmentDAO $reviewAssignmentDao */
                 $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
-                $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
-                $articleId = $reviewAssignment->getSubmissionId();
-                $articleDao = DAORegistry::getDAO('ArticleDAO');
-                $article = $articleDao->getArticle($articleId);
-                $notificationUsers = $article->getAssociatedUserIds(false, false);
-                foreach ($notificationUsers as $userRole) {
-                    $notificationManager->createNotification(
-                        $request, 
-                        $userRole['id'], 
-                        NOTIFICATION_TYPE_REVIEWER_FORM_COMMENT,
-                        $article->getJournalId(), 
-                        ASSOC_TYPE_ARTICLE, 
-                        $article->getId()
-                    );
-                }
+                $reviewAssignment = $reviewAssignmentDao->getById((int) $reviewId);
+                
+                if ($reviewAssignment !== null) {
+                    $articleId = (int) $reviewAssignment->getSubmissionId();
 
+                    /** @var ArticleDAO $articleDao */
+                    $articleDao = DAORegistry::getDAO('ArticleDAO');
+                    $article = $articleDao->getArticle($articleId);
+                    
+                    if ($article !== null) {
+                        $notificationUsers = $article->getAssociatedUserIds(false, false);
+                        foreach ($notificationUsers as $userRole) {
+                            $notificationManager->createNotification(
+                                $request, 
+                                (int) $userRole['id'], 
+                                NOTIFICATION_TYPE_REVIEWER_FORM_COMMENT,
+                                (int) $article->getJournalId(), 
+                                ASSOC_TYPE_ARTICLE, 
+                                (int) $article->getId()
+                            );
+                        }
+                    }
+                }
             } else {
                 $reviewForm->display();
                 return false;
             }
             return true;
         }
+        return false;
     }
 
     //
@@ -452,11 +517,17 @@ class ReviewerAction extends Action {
      * @param object $article
      * @param int $fileId
      * @param int|null $revision
+     * @return bool
      */
     public function downloadReviewerFile($reviewId, $article, $fileId, $revision = null) {
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
-        $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
+        $reviewAssignment = $reviewAssignmentDao->getById((int) $reviewId);
         
+        if ($reviewAssignment === null) {
+            return false;
+        }
+
         // [WIZDAM] Singleton Fallback for Request
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
@@ -467,18 +538,27 @@ class ReviewerAction extends Action {
         // 1) The current revision of the file to be reviewed.
         // 2) Any file that he uploads.
         // 3) Any supplementary file that is visible to reviewers.
-        if ((!$reviewAssignment->getDateConfirmed() || $reviewAssignment->getDeclined()) && $journal->getSetting('restrictReviewerFileAccess')) {
+        $dateConfirmed = $reviewAssignment->getDateConfirmed();
+        $declined = $reviewAssignment->getDeclined();
+        
+        if ((!$dateConfirmed || $declined) && $journal !== null && $journal->getSetting('restrictReviewerFileAccess')) {
             // Restrict files until review is accepted
-        } else if ($reviewAssignment->getReviewFileId() == $fileId) {
-            if ($revision != null) {
-                $canDownload = ($reviewAssignment->getReviewRevision() == $revision);
+        } else if ($reviewAssignment->getReviewFileId() === (int) $fileId) {
+            if ($revision !== null) {
+                $canDownload = ($reviewAssignment->getReviewRevision() === (int) $revision);
+            } else {
+                $canDownload = true;
             }
-        } else if ($reviewAssignment->getReviewerFileId() == $fileId) {
+        } else if ($reviewAssignment->getReviewerFileId() === (int) $fileId) {
             $canDownload = true;
         } else {
-            foreach ($reviewAssignment->getSuppFiles() as $suppFile) {
-                if ($suppFile->getFileId() == $fileId && $suppFile->getShowReviewers()) {
-                    $canDownload = true;
+            $suppFiles = $reviewAssignment->getSuppFiles();
+            if (is_array($suppFiles)) {
+                foreach ($suppFiles as $suppFile) {
+                    if ($suppFile->getFileId() === (int) $fileId && $suppFile->getShowReviewers()) {
+                        $canDownload = true;
+                        break;
+                    }
                 }
             }
         }
@@ -486,18 +566,19 @@ class ReviewerAction extends Action {
         $result = false;
         if (!HookRegistry::dispatch('ReviewerAction::downloadReviewerFile', [&$article, &$fileId, &$revision, &$canDownload, &$result])) {
             if ($canDownload) {
-                return Action::downloadFile($article->getId(), $fileId, $revision);
+                return Action::downloadFile((int) $article->getId(), (int) $fileId, $revision !== null ? (int) $revision : null);
             } else {
                 return false;
             }
         }
-        return $result;
+        return (bool) $result;
     }
 
     /**
      * Edit comment.
      * @param object $article
      * @param object $comment
+     * @return void
      */
     public static function editComment($article, $comment) {
         // [WIZDAM] Safety check for undefined variable in legacy code
@@ -512,5 +593,6 @@ class ReviewerAction extends Action {
             $commentForm->display(['reviewId' => $reviewId]);
         }
     }
+    
 }
 ?>

@@ -13,44 +13,64 @@ declare(strict_types=1);
  * @see ReviewerSubmission
  *
  * @brief Operations for retrieving and modifying ReviewerSubmission objects.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.submission.reviewer.ReviewerSubmission');
 
 class ReviewerSubmissionDAO extends DAO {
-    public $articleDao = null;
-    public $authorDao = null;
-    public $userDao = null;
-    public $reviewAssignmentDao = null;
-    public $editAssignmentDao = null;
-    public $articleFileDao = null;
-    public $suppFileDao = null;
-    public $articleCommentDao = null;
+    
+    /** 
+     * @var ArticleDAO 
+     * @method void _articleFromRow(ReviewerSubmission $reviewerSubmission, array $row)
+     */
+    protected $_articleDao;
+
+    /** @var AuthorDAO */
+    protected $_authorDao;
+
+    /** @var UserDAO */
+    protected $_userDao;
+
+    /** @var ReviewAssignmentDAO */
+    protected $_reviewAssignmentDao;
+
+    /** 
+     * @var EditAssignmentDAO 
+     * @method ItemIterator getEditAssignmentsByArticleId(int $articleId)
+     */
+    protected $_editAssignmentDao;
+
+    /** @var ArticleFileDAO */
+    protected $_articleFileDao;
+
+    /** @var SuppFileDAO */
+    protected $_suppFileDao;
+
+    /** @var ArticleCommentDAO */
+    protected $_articleCommentDao;
 
     /**
      * Constructor.
      */
     public function __construct() {
         parent::__construct();
-        $this->articleDao = DAORegistry::getDAO('ArticleDAO');
-        $this->authorDao = DAORegistry::getDAO('AuthorDAO');
-        $this->userDao = DAORegistry::getDAO('UserDAO');
-        $this->reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
-        $this->editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
-        $this->articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
-        $this->suppFileDao = DAORegistry::getDAO('SuppFileDAO');
-        $this->articleCommentDao = DAORegistry::getDAO('ArticleCommentDAO');
+        $this->_articleDao = DAORegistry::getDAO('ArticleDAO');
+        $this->_authorDao = DAORegistry::getDAO('AuthorDAO');
+        $this->_userDao = DAORegistry::getDAO('UserDAO');
+        $this->_reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
+        $this->_editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
+        $this->_articleFileDao = DAORegistry::getDAO('ArticleFileDAO');
+        $this->_suppFileDao = DAORegistry::getDAO('SuppFileDAO');
+        $this->_articleCommentDao = DAORegistry::getDAO('ArticleCommentDAO');
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ReviewerSubmissionDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -59,13 +79,14 @@ class ReviewerSubmissionDAO extends DAO {
     }
 
     /**
-     * Retrieve a reviewer submission by article ID.
+     * Retrieve a reviewer submission by review ID.
      * @param int $reviewId
      * @return ReviewerSubmission|null
      */
     public function getReviewerSubmission($reviewId) {
         $primaryLocale = AppLocale::getPrimaryLocale();
         $locale = AppLocale::getLocale();
+        
         $result = $this->retrieve(
             'SELECT a.*,
                 r.*,
@@ -97,13 +118,13 @@ class ReviewerSubmissionDAO extends DAO {
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if ($result && !$result->EOF) {
             $row = $result->GetRowAssoc(false);
             $returner = $this->_returnReviewerSubmissionFromRow($row);
         }
-
-        $result->Close();
-        unset($result);
+        if ($result) {
+            $result->Close();
+        }
 
         return $returner;
     }
@@ -117,31 +138,39 @@ class ReviewerSubmissionDAO extends DAO {
         $reviewerSubmission = new ReviewerSubmission();
 
         // Editor Assignment
-        $editAssignments = $this->editAssignmentDao->getEditAssignmentsByArticleId($row['article_id']);
+        // [WIZDAM FIX] @method annotation on property satisfies linter for this specific DAO method
+        $editAssignments = $this->_editAssignmentDao->getEditAssignmentsByArticleId((int) $row['article_id']);
         $reviewerSubmission->setEditAssignments($editAssignments->toArray());
 
         // Files
-        $reviewerSubmission->setSubmissionFile($this->articleFileDao->getArticleFile($row['submission_file_id']));
-        $reviewerSubmission->setRevisedFile($this->articleFileDao->getArticleFile($row['revised_file_id']));
-        $reviewerSubmission->setSuppFiles($this->suppFileDao->getSuppFilesByArticle($row['article_id']));
-        $reviewerSubmission->setReviewFile($this->articleFileDao->getArticleFile($row['review_file_id']));
-        $reviewerSubmission->setReviewerFile($this->articleFileDao->getArticleFile($row['reviewer_file_id']));
-        $reviewerSubmission->setReviewerFileRevisions($this->articleFileDao->getArticleFileRevisions($row['reviewer_file_id']));
+        $reviewerSubmission->setSubmissionFile($this->_articleFileDao->getArticleFile((int) $row['submission_file_id']));
+        $reviewerSubmission->setRevisedFile($this->_articleFileDao->getArticleFile((int) $row['revised_file_id']));
+        $reviewerSubmission->setSuppFiles($this->_suppFileDao->getSuppFilesByArticle((int) $row['article_id']));
+        $reviewerSubmission->setReviewFile($this->_articleFileDao->getArticleFile((int) $row['review_file_id']));
+        $reviewerSubmission->setReviewerFile($this->_articleFileDao->getArticleFile((int) $row['reviewer_file_id']));
+        $reviewerSubmission->setReviewerFileRevisions($this->_articleFileDao->getArticleFileRevisions((int) $row['reviewer_file_id']));
 
         // Comments
-        $reviewerSubmission->setMostRecentPeerReviewComment($this->articleCommentDao->getMostRecentArticleComment($row['article_id'], COMMENT_TYPE_PEER_REVIEW, $row['review_id']));
+        $reviewerSubmission->setMostRecentPeerReviewComment(
+            $this->_articleCommentDao->getMostRecentArticleComment(
+                (int) $row['article_id'], 
+                COMMENT_TYPE_PEER_REVIEW, 
+                (int) $row['review_id']
+            )
+        );
 
         // Editor Decisions
-        for ($i = 1; $i <= $row['current_round']; $i++) {
-            $reviewerSubmission->setDecisions($this->getEditorDecisions($row['article_id'], $i), $i);
+        $currentRound = (int) $row['current_round'];
+        for ($i = 1; $i <= $currentRound; $i++) {
+            $reviewerSubmission->setDecisions($this->getEditorDecisions((int) $row['article_id'], $i), $i);
         }
 
         // Review Assignment
-        $reviewerSubmission->setReviewId($row['review_id']);
-        $reviewerSubmission->setReviewerId($row['reviewer_id']);
-        $reviewerSubmission->setReviewerFullName($row['first_name'].' '.$row['last_name']);
-        $reviewerSubmission->setCompetingInterests($row['competing_interests']);
-        $reviewerSubmission->setRecommendation($row['recommendation']);
+        $reviewerSubmission->setReviewId((int) $row['review_id']);
+        $reviewerSubmission->setReviewerId((int) $row['reviewer_id']);
+        $reviewerSubmission->setReviewerFullName((string) $row['first_name'] . ' ' . (string) $row['last_name']);
+        $reviewerSubmission->setCompetingInterests((string) $row['competing_interests']);
+        $reviewerSubmission->setRecommendation((string) $row['recommendation']);
         $reviewerSubmission->setDateAssigned($this->datetimeFromDB($row['date_assigned']));
         $reviewerSubmission->setDateNotified($this->datetimeFromDB($row['date_notified']));
         $reviewerSubmission->setDateConfirmed($this->datetimeFromDB($row['date_confirmed']));
@@ -149,21 +178,24 @@ class ReviewerSubmissionDAO extends DAO {
         $reviewerSubmission->setDateAcknowledged($this->datetimeFromDB($row['date_acknowledged']));
         $reviewerSubmission->setDateDue($this->datetimeFromDB($row['date_due']));
 
-        // [WIZDAM FIX] Strict Type Casting to prevent Logic Errors in View
+        // Strict Type Casting to prevent Logic Errors in View
         $reviewerSubmission->setDeclined((int) $row['declined']); 
         $reviewerSubmission->setReplaced((int) $row['replaced']);
-        $reviewerSubmission->setCancelled(isset($row['cancelled']) && $row['cancelled'] == 1 ? 1 : 0);
+        $reviewerSubmission->setCancelled(isset($row['cancelled']) && (int) $row['cancelled'] === 1 ? 1 : 0);
         
-        $reviewerSubmission->setReviewerFileId($row['reviewer_file_id']);
-        $reviewerSubmission->setQuality($row['quality']);
-        $reviewerSubmission->setRound($row['round']);
-        $reviewerSubmission->setReviewFileId($row['review_file_id']);
-        $reviewerSubmission->setReviewRevision($row['review_revision']);
+        $reviewerSubmission->setReviewerFileId((int) $row['reviewer_file_id']);
+        $reviewerSubmission->setQuality((int) $row['quality']);
+        $reviewerSubmission->setRound((int) $row['round']);
+        $reviewerSubmission->setReviewFileId((int) $row['review_file_id']);
+        $reviewerSubmission->setReviewRevision((int) $row['review_revision']);
 
         // Article attributes
-        $this->articleDao->_articleFromRow($reviewerSubmission, $row);
+        // [WIZDAM FIX] @method annotation on property satisfies linter for this protected legacy method
+        $this->_articleDao->_articleFromRow($reviewerSubmission, $row);
 
-        HookRegistry::dispatch('ReviewerSubmissionDAO::_returnReviewerSubmissionFromRow', [&$reviewerSubmission, &$row]);
+        $tempSubmission = $reviewerSubmission;
+        $tempRow = $row;
+        HookRegistry::dispatch('ReviewerSubmissionDAO::_returnReviewerSubmissionFromRow', [&$tempSubmission, &$tempRow]);
 
         return $reviewerSubmission;
     }
@@ -171,12 +203,14 @@ class ReviewerSubmissionDAO extends DAO {
     /**
      * Update an existing review submission.
      * @param ReviewerSubmission $reviewerSubmission
+     * @return bool
      */
     public function updateReviewerSubmission($reviewerSubmission) {
-        // [WIZDAM] Type Guard
-        if (!($reviewerSubmission instanceof ReviewerSubmission)) return false;
+        if (!($reviewerSubmission instanceof ReviewerSubmission)) {
+            return false;
+        }
 
-        return $this->update(
+        return (bool) $this->update(
             sprintf('UPDATE review_assignments
                 SET submission_id = ?,
                     reviewer_id = ?,
@@ -206,31 +240,32 @@ class ReviewerSubmissionDAO extends DAO {
                 (int) $reviewerSubmission->getId(),
                 (int) $reviewerSubmission->getReviewerId(),
                 (int) $reviewerSubmission->getRound(),
-                $reviewerSubmission->getCompetingInterests(),
-                $reviewerSubmission->getRecommendation(),
-                $reviewerSubmission->getDeclined(),
-                $reviewerSubmission->getReplaced(),
-                $reviewerSubmission->getCancelled(),
-                $reviewerSubmission->getReviewerFileId(),
-                $reviewerSubmission->getQuality(),
+                (string) $reviewerSubmission->getCompetingInterests(),
+                (string) $reviewerSubmission->getRecommendation(),
+                (int) $reviewerSubmission->getDeclined(),
+                (int) $reviewerSubmission->getReplaced(),
+                (int) $reviewerSubmission->getCancelled(),
+                (int) $reviewerSubmission->getReviewerFileId(),
+                (int) $reviewerSubmission->getQuality(),
                 (int) $reviewerSubmission->getReviewId()
             ]
         );
     }
 
     /**
-     * Get all submissions for a reviewer of a journal.
+     * Retrieve all submissions for a reviewer of a specific journal.
      * @param int $reviewerId
      * @param int $journalId
-     * @param boolean $active
-     * @param object|null $rangeInfo
+     * @param bool $active
+     * @param mixed $rangeInfo
      * @param string|null $sortBy
      * @param int $sortDirection
-     * @return object DAOResultFactory
+     * @return DAOResultFactory
      */
     public function getReviewerSubmissionsByReviewerId($reviewerId, $journalId, $active = true, $rangeInfo = null, $sortBy = null, $sortDirection = SORT_DIRECTION_ASC) {
         $primaryLocale = AppLocale::getPrimaryLocale();
         $locale = AppLocale::getLocale();
+        
         $sql = 'SELECT  a.*,
                 r.*,
                 r2.review_revision,
@@ -259,7 +294,7 @@ class ReviewerSubmissionDAO extends DAO {
             $sql .= ' AND (r.date_completed IS NOT NULL OR r.cancelled = 1 OR r.declined = 1 OR a.status <> ' . STATUS_QUEUED . ')';
         }
 
-        if ($sortBy) {
+        if ($sortBy !== null && $sortBy !== '') {
             $sql .= ' ORDER BY ' . $this->getSortMapping($sortBy) . ' ' . $this->getDirectionMapping($sortDirection);
         }
 
@@ -287,15 +322,13 @@ class ReviewerSubmissionDAO extends DAO {
     }
 
     /**
-     * Get count of active and complete assignments
+     * Retrieve the count of active and complete assignments for a reviewer.
      * @param int $reviewerId
      * @param int $journalId
      * @return array
      */
     public function getSubmissionsCount($reviewerId, $journalId) {
-        $submissionsCount = [];
-        $submissionsCount[0] = 0;
-        $submissionsCount[1] = 0;
+        $submissionsCount = [0 => 0, 1 => 0];
 
         $sql = 'SELECT r.date_completed, r.declined, r.cancelled, a.status
             FROM    articles a
@@ -309,23 +342,30 @@ class ReviewerSubmissionDAO extends DAO {
 
         $result = $this->retrieve($sql, [(int) $journalId, (int) $reviewerId]);
 
-        while (!$result->EOF) {
-            if ($result->fields['date_completed'] == null && $result->fields['declined'] != 1 && $result->fields['cancelled'] != 1 && $result->fields['status'] == STATUS_QUEUED) {
-                $submissionsCount[0] += 1;
-            } else {
-                $submissionsCount[1] += 1;
-            }
-            $result->moveNext();
-        }
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                
+                $isCompleted = $row['date_completed'] !== null;
+                $isDeclined = (int) $row['declined'] === 1;
+                $isCancelled = (int) $row['cancelled'] === 1;
+                $isQueued = (int) $row['status'] === STATUS_QUEUED;
 
-        $result->Close();
-        unset($result);
+                if (!$isCompleted && !$isDeclined && !$isCancelled && $isQueued) {
+                    $submissionsCount[0]++;
+                } else {
+                    $submissionsCount[1]++;
+                }
+                $result->MoveNext();
+            }
+            $result->Close();
+        }
 
         return $submissionsCount;
     }
 
     /**
-     * Get the editor decisions for a review round of an article.
+     * Retrieve the editor decisions for a review round of an article.
      * @param int $articleId
      * @param int|null $round
      * @return array
@@ -333,10 +373,10 @@ class ReviewerSubmissionDAO extends DAO {
     public function getEditorDecisions($articleId, $round = null) {
         $decisions = [];
 
-        if ($round == null) {
+        if ($round === null) {
             $result = $this->retrieve(
                 'SELECT edit_decision_id, editor_id, decision, date_decided FROM edit_decisions WHERE article_id = ? ORDER BY date_decided ASC',
-                (int) $articleId
+                [(int) $articleId]
             );
         } else {
             $result = $this->retrieve(
@@ -345,24 +385,25 @@ class ReviewerSubmissionDAO extends DAO {
             );
         }
 
-        while (!$result->EOF) {
-            $decisions[] = [
-                'editDecisionId' => $result->fields['edit_decision_id'],
-                'editorId' => $result->fields['editor_id'],
-                'decision' => $result->fields['decision'],
-                'dateDecided' => $this->datetimeFromDB($result->fields['date_decided'])
-            ];
-            $result->moveNext();
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $decisions[] = [
+                    'editDecisionId' => (int) $row['edit_decision_id'],
+                    'editorId' => (int) $row['editor_id'],
+                    'decision' => (int) $row['decision'],
+                    'dateDecided' => $this->datetimeFromDB($row['date_decided'])
+                ];
+                $result->MoveNext();
+            }
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
 
         return $decisions;
     }
 
     /**
-     * Map a column heading value to a database value for sorting
+     * Map a column heading value to a database value for sorting.
      * @param string $heading
      * @return string|null
      */
@@ -378,5 +419,6 @@ class ReviewerSubmissionDAO extends DAO {
             default: return null;
         }
     }
+    
 }
 ?>

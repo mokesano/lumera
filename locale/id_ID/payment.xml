@@ -118,6 +118,8 @@
     <message key="billing.error.gatewayFailed">Gagal terhubung ke payment gateway</message>
     <message key="billing.bankAccountHolder">Atas Nama</message>
     <message key="billing.transferBankUsedLabel">Transfer dari bank mana?</message>
+    <message key="billing.paymentReference">Referensi Transaksi</message>
+    <message key="billing.paymentReference.legacy">Tidak tercatat (transaksi sebelum fitur ini ada)</message>
 
     <message key="billing.invoiceLabel">FAKTUR</message>
     <message key="billing.invoiceNumberLabel">Nomor Invoice</message>

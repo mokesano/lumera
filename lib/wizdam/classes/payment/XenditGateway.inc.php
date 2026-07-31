@@ -116,7 +116,8 @@ class XenditGateway implements PaymentGatewayInterface {
         return [
             'invoiceId' => $invoiceId,
             'status' => $wizdamStatus,
-            'method' => 'Xendit - ' . ($payload['payment_method'] ?? 'Unknown')
+            'method' => 'Xendit - ' . ($payload['payment_method'] ?? 'Unknown'),
+            'reference' => (string) ($payload['id'] ?? '')
         ];
     }
     

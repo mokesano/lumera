@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see ReviewerSubmissionDAO
  *
  * @brief ReviewerSubmission class.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('classes.article.Article');
@@ -531,6 +529,6 @@ class ReviewerSubmission extends Article {
     public function setMostRecentPeerReviewComment($peerReviewComment) {
         return $this->setData('peerReviewComment', $peerReviewComment);
     }
+    
 }
-
 ?>
