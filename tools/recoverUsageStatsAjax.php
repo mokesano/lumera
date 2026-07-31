@@ -673,7 +673,7 @@ if (isset($_GET['action'])) {
         Halaman ini AMAN dibuka/dimuat ulang kapan saja — tidak ada satupun query database/pemindahan file yang berjalan tanpa Anda menekan tombol secara eksplisit.
     </div>
     <div class="warn-banner">
-        Prasyarat: baris <code>in_array($entryData['returnCode'], ['200', '304'], true)</code> di <code>UsageStatsLoader.inc.php</code> harus SUDAH diperbaiki sebelum memakai alat ini. Kalau belum, langkah Proses di bawah akan gagal lagi dengan cara yang sama.
+        Langkah Proses di alat ini menjalankan salinan parsing baris log-nya SENDIRI (<code>RecoverBatchUsageStatsLoader::processLogBatch()</code>), sudah termasuk perbaikan <code>in_array($entryData['returnCode'], ['200', '304'], true)</code> -- TIDAK lagi memanggil <code>UsageStatsLoader::processFile()</code>, jadi Proses di sini tidak bergantung pada status perbaikan baris itu di <code>UsageStatsLoader.inc.php</code>. Yang tetap bergantung pada fix di file itu adalah scheduled task harian (Acron/cron) untuk memproses file BARU -- pastikan itu tetap sudah diperbaiki untuk operasional harian, terpisah dari alat pemulihan ini.
     </div>
     <p class="note">Alat sekali-pakai. Jalankan Scan dulu, tinjau daftarnya, baru Proses. Setelah selesai dan diverifikasi, hapus file ini dari server.</p>
 
