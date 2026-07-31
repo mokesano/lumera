@@ -368,15 +368,19 @@ class AcronPlugin extends GenericPlugin {
 
         // Race condition handling
         $updateResult = 0;
-        if (in_array($task, $currentTasksToRun)) { 
+        if (in_array($task, $currentTasksToRun)) {
             $updateResult = $taskDao->updateLastRunTime($className, time());
         }
 
         // Jika berhasil mengambil alih eksekusi (lock), jalankan
         if ($updateResult === false || $updateResult === 1) {
-            import($className);
-            $taskInstance = new $baseClassName($taskArgs);
-            $taskInstance->execute();
+            try {
+                import($className);
+                $taskInstance = new $baseClassName($taskArgs);
+                $taskInstance->execute();
+            } catch (Throwable $e) {
+                error_log('Acron: task "' . $className . '" gagal dengan exception: ' . $e->getMessage());
+            }
         }
     }
 
