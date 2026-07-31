@@ -173,6 +173,7 @@
     <message key="billing.error.transferReferenceDuplicateOrInvalid">Kode referensi ini sudah pernah dipakai, atau invoice sudah tidak bisa dikonfirmasi lagi.</message>
     <message key="billing.success.transferReferenceSubmitted">Kode referensi transfer Anda telah tercatat. Akan segera diverifikasi oleh staf kami.</message>
     <message key="billing.notification.transferReferenceSubmitted">Invoice {$invoiceNumber} menerima kode referensi transfer bank ({$referenceCode}) menunggu verifikasi Anda.</message>
+    <message key="billing.notification.transferRejected">Konfirmasi transfer untuk invoice Anda ditolak. Alasan: {$reason}. Silakan periksa dan kirim ulang kode referensi transfer Anda.</message>
 
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Keranjang Belanja</message>

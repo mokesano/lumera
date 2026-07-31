@@ -72,12 +72,13 @@ switch ($op) {
 		import('pages.admin.AdminPeopleHandler');
 		break;
 	//
-    // AREA ADMIN WIZDAM PAYMENT ---
+    // ADMIN PAYMENT ---
     //
 	case 'payment-settings':
 	case 'save-payment-settings':
-	case 'manualPayments':               // [BARU]
-	case 'confirmManualPaymentAction':   // [BARU]
+	case 'manualPayments':
+	case 'confirmManualPaymentAction':
+	case 'rejectManualPaymentAction': // [BARU]
 		define('HANDLER_CLASS', 'AdminPaymentHandler'); 
 		import('pages.admin.AdminPaymentHandler');
 		break;
@@ -110,7 +111,9 @@ switch ($op) {
 		define('HANDLER_CLASS', 'AdminCategoriesHandler');
 		import('pages.admin.AdminCategoriesHandler');
 		break;
-		
+	// 
+	// About Publisher
+	//
 	case 'index':
 	case 'aboutSite':
     case 'saveAboutSite':

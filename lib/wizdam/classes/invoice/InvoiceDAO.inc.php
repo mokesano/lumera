@@ -46,10 +46,9 @@ class InvoiceDAO extends DAO {
         $invoice->setData('paymentMethod', $row['payment_method']);
         $invoice->setData('legacySourceTable', $row['legacy_source_table'] ?? null);
         $invoice->setData('legacySourceId', $row['legacy_source_id'] ?? null);
-        // [BARU] Kode referensi transfer bank + nama bank yang dipakai
-        // (Tahap Konfirmasi Transfer) -- ditampilkan di daftar konfirmasi
-        // staf/Journal Manager untuk dicocokkan dengan mutasi rekening.
         $invoice->setData('paymentReference', $row['payment_reference'] ?? null);
+        $invoice->setData('transferConfirmedBy', $row['transfer_confirmed_by'] ?? null);
+        $invoice->setData('transferRejectedReason', $row['transfer_rejected_reason'] ?? null);
         $invoice->setData('transferBank', $row['transfer_bank'] ?? null);
         $invoice->setData('dateBilled', $this->datetimeFromDB($row['date_billed']));
         $invoice->setData('datePaid', $this->datetimeFromDB($row['date_paid']));
@@ -350,6 +349,37 @@ class InvoiceDAO extends DAO {
             error_log('WIZDAM attachPaymentReference: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * [BARU] Mencatat staf yang mengonfirmasi Tahap Konfirmasi Transfer --
+     * menutup celah audit "siapa yang menyetujui ini".
+     * @param int $invoiceId
+     * @param int $confirmedByUserId
+     * @return bool
+     */
+    public function recordTransferConfirmedBy(int $invoiceId, int $confirmedByUserId): bool {
+        return (bool) $this->update(
+            'UPDATE invoices SET transfer_confirmed_by = ? WHERE invoice_id = ?',
+            [$confirmedByUserId, $invoiceId]
+        );
+    }
+
+    /**
+     * [BARU] Menolak Tahap Konfirmasi Transfer -- mengosongkan referensi
+     * lama (supaya pengguna bisa submit ulang dengan kode baru, dan tidak
+     * bentrok dengan UNIQUE INDEX kalau kode yang sama dipakai lagi setelah
+     * dikoreksi), menyimpan alasan penolakan, dan mengembalikan status
+     * pembayaran ke kosong (siap disubmit ulang).
+     * @param int $invoiceId
+     * @param string $reason
+     * @return bool
+     */
+    public function rejectTransferPayment(int $invoiceId, string $reason): bool {
+        return (bool) $this->update(
+            "UPDATE invoices SET payment_reference = NULL, transfer_bank = NULL, payment_method = '', transfer_rejected_reason = ? WHERE invoice_id = ? AND status = ?",
+            [$reason, $invoiceId, Invoice::STATUS_UNPAID]
+        );
     }
     
 }

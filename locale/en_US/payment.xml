@@ -173,6 +173,7 @@
     <message key="billing.error.transferReferenceDuplicateOrInvalid">This reference code has already been used, or the invoice is no longer eligible for confirmation.</message>
     <message key="billing.success.transferReferenceSubmitted">Your transfer reference has been recorded. It will be verified by our staff shortly.</message>
     <message key="billing.notification.transferReferenceSubmitted">Invoice {$invoiceNumber} received a bank transfer reference ({$referenceCode}) awaiting your verification.</message>
+    <message key="billing.notification.transferRejected">Your transfer confirmation for invoice was rejected. Reason: {$reason}. Please review and resubmit your transfer reference.</message>
 
     <!-- Order Shopping Cart -->
     <message key="order.shoppingCart">Shopping Cart</message>

@@ -1440,6 +1440,8 @@
         <field name="payment_method" type="C2" size="50" />
 		<field name="transfer_bank" type="C2" size="100" />
 		<field name="payment_reference" type="C2" size="100" />
+		<field name="transfer_confirmed_by" type="I8" />
+		<field name="transfer_rejected_reason" type="X" />
         <field name="date_billed" type="T">
             <NOTNULL/>
         </field>
