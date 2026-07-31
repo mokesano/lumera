@@ -27,6 +27,8 @@ class EmailTemplateForm extends Form {
 
     /**
      * Constructor.
+     * @param mixed $emailKey
+     * @param mixed $journal
      */
     public function __construct($emailKey, $journal) {
         parent::__construct('manager/emails/emailTemplateForm.tpl');
@@ -42,7 +44,9 @@ class EmailTemplateForm extends Form {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param mixed $emailKey
+     * @param mixed $journal
      */
     public function EmailTemplateForm($emailKey, $journal) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -64,6 +68,7 @@ class EmailTemplateForm extends Form {
         $templateMgr = TemplateManager::getManager();
         $journal = Application::get()->getRequest()->getJournal();
         
+        /** @var EmailTemplateDAO $emailTemplateDao */
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
         $emailTemplate = $emailTemplateDao->getBaseEmailTemplate($this->emailKey, $journal->getId());
         
@@ -79,6 +84,7 @@ class EmailTemplateForm extends Form {
      */
     public function initData() {
         $journal = Application::get()->getRequest()->getJournal();
+        /** @var EmailTemplateDAO $emailTemplateDao */
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
         $emailTemplate = $emailTemplateDao->getLocaleEmailTemplate($this->emailKey, $journal->getId());
         $thisLocale = AppLocale::getLocale();
@@ -134,6 +140,7 @@ class EmailTemplateForm extends Form {
         $this->readUserVars(['emailId', 'subject', 'body', 'enabled', 'journalId', 'emailKey']);
 
         $journalId = $this->journal->getId();
+        /** @var EmailTemplateDAO $emailTemplateDao */
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
         $emailTemplate = $emailTemplateDao->getLocaleEmailTemplate($this->emailKey, $journalId);
         
@@ -149,6 +156,7 @@ class EmailTemplateForm extends Form {
     public function execute($object = null) {
         $journal = Application::get()->getRequest()->getJournal();
 
+        /** @var EmailTemplateDAO $emailTemplateDao */
         $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
         $emailTemplate = $emailTemplateDao->getLocaleEmailTemplate($this->emailKey, $journal->getId());
 
@@ -186,5 +194,6 @@ class EmailTemplateForm extends Form {
             $emailTemplateDao->insertLocaleEmailTemplate($emailTemplate);
         }
     }
+
 }
 ?>
