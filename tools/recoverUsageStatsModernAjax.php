@@ -749,7 +749,7 @@ if (isset($_GET['action'])) {
         .pag-btn:disabled { opacity: 0.4; cursor: not-allowed; background: #3a3a3a; }
 
         /* Spinner kecil di dalam tombol aksi */
-        .btn-spinner { display: none; width: 13px; height: 13px; border: 4px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: proc-spin 0.6s linear infinite; margin-left: 8px; vertical-align: middle; }
+        .btn-spinner { display: none; width: 14px; height: 14px; border: 6px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: proc-spin 0.6s linear infinite; margin-left: 8px; vertical-align: middle; }
         @keyframes proc-spin { to { transform: rotate(360deg); } }
 
         /* Ikon "sedang berjalan" di baris file dalam jendela pop-up: cincin
@@ -757,9 +757,9 @@ if (isset($_GET['action'])) {
            warna kuning/amber khas status "in progress" GitHub Actions. */
         /* Titik inti DIAM (bukan pulse) -- hanya cincin di sekelilingnya
            yang berputar, persis ikon "in progress" GitHub Actions. */
-        .spinner-combo { position: relative; display: inline-block; width: 17px; height: 17px; }
+        .spinner-combo { position: relative; display: inline-block; width: 18px; height: 18px; }
         .spinner-combo .ring { position: absolute; inset: 0; border: 3px solid rgba(227, 179, 65, 0.25); border-top-color: #e3b341; border-radius: 50%; animation: proc-spin 0.8s linear infinite; will-change: transform; }
-        .spinner-combo .dot { position: absolute; top: 50%; left: 50%; width: 7px; height: 7px; margin: -3.8px 0 0 -3.8px; background: #e3b341; border-radius: 50%; }
+        .spinner-combo .dot { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; background: #e3b341; border-radius: 50%; }
 
         /* Jendela pop-up (modal) pemrosesan, gaya mirip ringkasan run GitHub Actions */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
@@ -781,7 +781,7 @@ if (isset($_GET['action'])) {
         .proc-message { flex: 1 1 auto; color: #9aa0a6; }
         .proc-row.status-queued .proc-icon { color: #666; }
         .proc-row.status-running .proc-message { color: #1e90ff; }
-        .proc-row.status-success .proc-icon { color: #2ed573; font-weight: bold; }
+        .proc-row.status-success .proc-icon { color: #2ed573; font-weight: bold; border: 1px solid #2ed573; border-radius: 50%;}
         .proc-row.status-success .proc-message { color: #2ed573; }
         .proc-row.status-warn .proc-icon { color: #ffa502; }
         .proc-row.status-warn .proc-message { color: #ffa502; }
