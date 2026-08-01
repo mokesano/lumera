@@ -749,7 +749,7 @@ if (isset($_GET['action'])) {
         .pag-btn:disabled { opacity: 0.4; cursor: not-allowed; background: #3a3a3a; }
 
         /* Spinner kecil di dalam tombol aksi */
-        .btn-spinner { display: none; width: 13px; height: 13px; border: 3px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: proc-spin 0.6s linear infinite; margin-left: 8px; vertical-align: middle; }
+        .btn-spinner { display: none; width: 13px; height: 13px; border: 4px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: proc-spin 0.6s linear infinite; margin-left: 8px; vertical-align: middle; }
         @keyframes proc-spin { to { transform: rotate(360deg); } }
 
         /* Ikon "sedang berjalan" di baris file dalam jendela pop-up: cincin
@@ -759,7 +759,7 @@ if (isset($_GET['action'])) {
            yang berputar, persis ikon "in progress" GitHub Actions. */
         .spinner-combo { position: relative; display: inline-block; width: 17px; height: 17px; }
         .spinner-combo .ring { position: absolute; inset: 0; border: 3px solid rgba(227, 179, 65, 0.25); border-top-color: #e3b341; border-radius: 50%; animation: proc-spin 0.8s linear infinite; will-change: transform; }
-        .spinner-combo .dot { position: absolute; top: 50%; left: 50%; width: 7px; height: 7px; margin: -3px 0 0 -3px; background: #e3b341; border-radius: 50%; }
+        .spinner-combo .dot { position: absolute; top: 50%; left: 50%; width: 7px; height: 7px; margin: -3.8px 0 0 -3.8px; background: #e3b341; border-radius: 50%; }
 
         /* Jendela pop-up (modal) pemrosesan, gaya mirip ringkasan run GitHub Actions */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
