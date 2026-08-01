@@ -757,9 +757,9 @@ if (isset($_GET['action'])) {
            warna kuning/amber khas status "in progress" GitHub Actions. */
         /* Titik inti DIAM (bukan pulse) -- hanya cincin di sekelilingnya
            yang berputar, persis ikon "in progress" GitHub Actions. */
-        .spinner-combo { position: relative; display: inline-block; width: 18px; height: 18px; }
+        .spinner-combo { position: relative; display: inline-block; width: 20px; height: 20px; }
         .spinner-combo .ring { position: absolute; inset: 0; border: 3px solid rgba(227, 179, 65, 0.25); border-top-color: #e3b341; border-radius: 50%; animation: proc-spin 0.8s linear infinite; will-change: transform; }
-        .spinner-combo .dot { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; background: #e3b341; border-radius: 50%; }
+        .spinner-combo .dot { position: absolute; top: 50%; left: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; background: #e3b341; border-radius: 50%; }
 
         /* Jendela pop-up (modal) pemrosesan, gaya mirip ringkasan run GitHub Actions */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
