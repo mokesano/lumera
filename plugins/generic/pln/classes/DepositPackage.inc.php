@@ -175,7 +175,11 @@ class DepositPackage {
         $id = $this->_generateElement($atom, 'id', 'urn:uuid:' . $this->_deposit->getUUID());
         $entry->appendChild($id);
         
-        $updated = $this->_generateElement($atom, 'updated', date('Y-m-d\TH:i:s\Z', strtotime((string) $this->_deposit->getDateModified())));
+        $modifiedTimestamp = strtotime((string) $this->_deposit->getDateModified());
+        if ($modifiedTimestamp === false) {
+            $modifiedTimestamp = time();
+        }
+        $updated = $this->_generateElement($atom, 'updated', date('Y-m-d\TH:i:s\Z', $modifiedTimestamp));
         $entry->appendChild($updated);
         
         $url = $journal->getUrl() . '/' . PLN_PLUGIN_ARCHIVE_FOLDER . '/deposits/' . $this->_deposit->getUUID();
