@@ -749,7 +749,7 @@ if (isset($_GET['action'])) {
         .pag-btn:disabled { opacity: 0.4; cursor: not-allowed; background: #3a3a3a; }
 
         /* Spinner kecil di dalam tombol aksi */
-        .btn-spinner { display: none; width: 14px; height: 14px; border: 6px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: proc-spin 0.6s linear infinite; margin-left: 8px; vertical-align: middle; }
+        .btn-spinner { display: none; width: 14px; height: 14px; border: 3px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: proc-spin 0.6s linear infinite; margin-left: 8px; vertical-align: middle; }
         @keyframes proc-spin { to { transform: rotate(360deg); } }
 
         /* Ikon "sedang berjalan" di baris file dalam jendela pop-up: cincin
@@ -757,7 +757,7 @@ if (isset($_GET['action'])) {
            warna kuning/amber khas status "in progress" GitHub Actions. */
         /* Titik inti DIAM (bukan pulse) -- hanya cincin di sekelilingnya
            yang berputar, persis ikon "in progress" GitHub Actions. */
-        .spinner-combo { position: relative; display: inline-block; width: 20px; height: 20px; }
+        .spinner-combo { position: relative; display: inline-block; width: 18px; height: 18px; }
         .spinner-combo .ring { position: absolute; inset: 0; border: 3px solid rgba(227, 179, 65, 0.25); border-top-color: #e3b341; border-radius: 50%; animation: proc-spin 0.8s linear infinite; will-change: transform; }
         .spinner-combo .dot { position: absolute; top: 50%; left: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; background: #e3b341; border-radius: 50%; }
 
@@ -776,12 +776,12 @@ if (isset($_GET['action'])) {
         .modal-summary { padding: 14px 20px; border-top: 1px solid #444; font-weight: bold; flex: 0 0 auto; }
         .proc-row { display: flex; align-items: center; gap: 10px; padding: 6px 4px; border-bottom: 1px solid #383838; font-size: 13px; }
         .proc-row:last-child { border-bottom: none; }
-        .proc-icon { flex: 0 0 18px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .proc-icon { flex: 0 0 16px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
         .proc-filename { flex: 0 0 auto; min-width: 210px; font-family: monospace; word-break: break-all; }
         .proc-message { flex: 1 1 auto; color: #9aa0a6; }
         .proc-row.status-queued .proc-icon { color: #666; }
         .proc-row.status-running .proc-message { color: #1e90ff; }
-        .proc-row.status-success .proc-icon { color: #2ed573; font-weight: bold; border: 1px solid #2ed573; border-radius: 50%;}
+        .proc-row.status-success .proc-icon { color: #2ed573; font-weight: bold; border: 1px solid #2ed573; border-radius: 50%; width: 16px; height: 16px; flex: 0 0 16px;}
         .proc-row.status-success .proc-message { color: #2ed573; }
         .proc-row.status-warn .proc-icon { color: #ffa502; }
         .proc-row.status-warn .proc-message { color: #ffa502; }
