@@ -732,7 +732,7 @@ if (isset($_GET['action'])) {
         .panel-head button { margin: 0; }
         .danger { color: #ff6b81; font-size: 0.9em; }
         .progress-container { width: 100%; background: #444; border-radius: 4px; margin-top: 10px; height: 22px; overflow: hidden; }
-        .progress-bar { height: 100%; background: linear-gradient(90deg, #2ed573, #7bed9f); width: 0%; transition: width 0.3s ease; text-align: center; line-height: 20px; color: #000; font-weight: bold; font-size: 14px; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #2ed573, #7bed9f); width: 0%; transition: width 0.3s ease; text-align: center; line-height: 20px; color: #000; font-weight: bold; font-size: 12px; }
         .info-text { margin-top: 10px; font-size: 0.95em; font-weight: bold; color: #1e90ff; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { border: 1px solid #444; padding: 6px 8px; text-align: left; }
