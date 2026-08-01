@@ -743,7 +743,7 @@ if (isset($_GET['action'])) {
         .table-toolbar select { background: #1a1a1a; color: #ddd; border: 1px solid #555; border-radius: 4px; padding: 3px 6px; }
         .pagination { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 8px; font-size: 0.85em; }
         .pag-info { color: #9aa0a6; margin-right: 8px; }
-        .pag-btn { background: #3a3a3a; color: #ddd; border: 1px solid #555; padding: 4px 9px; border-radius: 4px; cursor: pointer; font-size: 0.85em; font-weight: normal; margin: 0; }
+        .pag-btn { background: #3a3a3a; color: #ddd; border: 1px solid #555; padding: 4px 9px; border-radius: 4px; cursor: pointer; font-size: 1em; font-weight: normal; margin: 0; }
         .pag-btn:hover:not(:disabled) { background: #4a4a4a; filter: none; }
         .pag-btn.active { background: #3742fa; border-color: #3742fa; color: #fff; }
         .pag-btn:disabled { opacity: 0.4; cursor: not-allowed; background: #3a3a3a; }
@@ -792,7 +792,7 @@ if (isset($_GET['action'])) {
 <body>
 
 <div class="container">
-    <h2>Pemulihan Data UsageStats</h2>
+    <h2>Pemulihan Data UsageStats ke Tabel Metrics</h2>
     <div class="safe-banner">
         Halaman ini AMAN dibuka/dimuat ulang kapan saja — tidak ada satupun query database/pemindahan file yang berjalan tanpa Anda menekan tombol secara eksplisit.
     </div>
@@ -1354,23 +1354,24 @@ if (isset($_GET['action'])) {
             }
             if (data.outcome === 'rejected') {
                 procCounts.error++;
-                setProcRowStatus(filename, 'error', `GAGAL PERMANEN -- ${data.message} Data lama (before=${data.metricsBefore}) tidak disentuh. Dipindah ke reject/.`);
+                setProcRowStatus(filename, 'error', `Gagal permanen: ${data.message} Data lama tetap aman (${data.metricsBefore} baris, tidak diubah) karena proses dibatalkan sebelum sempat disimpan. File dipindahkan ke folder reject/ untuk ditinjau manual.`);
             } else if (data.outcome === 'error') {
                 procCounts.error++;
-                setProcRowStatus(filename, 'error', `GAGAL: ${data.message}`);
+                setProcRowStatus(filename, 'error', `Gagal: ${data.message}`);
             } else if (data.metrics_after > 0 && data.no_geo_after < data.no_geo_before) {
                 procCounts.success++;
-                const rewriteNote = data.domain_rewritten ? ` (domain ${data.detected_host} ditulis-ulang)` : '';
-                setProcRowStatus(filename, 'success', `Berhasil${rewriteNote}. Tanpa geo: ${data.no_geo_before} -> ${data.no_geo_after} (dari ${data.metrics_after} baris).`);
+                const rewriteNote = data.domain_rewritten ? ` (domain asal ${data.detected_host} ditulis-ulang otomatis ke base_url situs saat ini)` : '';
+                const improved = data.no_geo_before - data.no_geo_after;
+                setProcRowStatus(filename, 'success', `Berhasil${rewriteNote}. Baris tanpa geolocation: ${data.no_geo_before} -> ${data.no_geo_after} (dari total ${data.metrics_after} baris) -- ${improved} baris kini punya geolocation yang sebelumnya tidak ada.`);
             } else if (data.metrics_after > 0 && data.no_geo_after >= data.no_geo_before) {
                 procCounts.warn++;
-                setProcRowStatus(filename, 'warn', `Tidak bertambah lengkap (tetap ${data.no_geo_after}/${data.metrics_after}) -- IP kemungkinan tidak ada di GeoIP. Data aman, tidak hilang.`);
+                setProcRowStatus(filename, 'warn', `Diproses ulang, tapi geolocation TIDAK bertambah lengkap: tetap ${data.no_geo_after} dari total ${data.metrics_after} baris tanpa geolocation -- kemungkinan besar IP di baris-baris itu tidak terdaftar di database GeoIP. Data aman, tidak ada yang hilang. File ini tidak akan ditawarkan lagi di Scan berikutnya.`);
             } else if (data.moved_to_reject) {
                 procCounts.error++;
-                setProcRowStatus(filename, 'error', `GAGAL PERMANEN -- baris lama terhapus TANPA pengganti (before=${data.metrics_before}). PERLU DITINJAU SEGERA.`);
+                setProcRowStatus(filename, 'error', `Gagal permanen: baris lama (${data.metrics_before} baris) sudah terhapus dan TIDAK ADA PENGGANTI. File dipindahkan ke reject/ -- PERLU DITINJAU MANUAL SEGERA.`);
             } else {
                 procCounts.error++;
-                setProcRowStatus(filename, 'error', `Selesai diproses TAPI metrics jadi 0 (before=${data.metrics_before}). Perlu ditinjau manual.`);
+                setProcRowStatus(filename, 'error', `Selesai diproses, tapi baris metrics menjadi 0 (sebelumnya ${data.metrics_before} baris). Perlu ditinjau manual.`);
             }
             geoCurrentIndex++;
             updateProcProgress(geoCurrentIndex, geoFiles.length);
@@ -1410,20 +1411,20 @@ if (isset($_GET['action'])) {
             }
             if (data.outcome === 'rejected') {
                 procCounts.error++;
-                setProcRowStatus(filename, 'error', `GAGAL PERMANEN -- ${data.message} Dipindah ke reject/.`);
+                setProcRowStatus(filename, 'error', `Gagal permanen: ${data.message} File dipindahkan ke folder reject/ untuk ditinjau manual.`);
             } else if (data.outcome === 'error') {
                 procCounts.error++;
-                setProcRowStatus(filename, 'error', `GAGAL: ${data.message}`);
+                setProcRowStatus(filename, 'error', `Gagal: ${data.message}`);
             } else if (data.metrics_after > 0) {
                 procCounts.success++;
-                const rewriteNote = data.domain_rewritten ? ` (domain ${data.detected_host} ditulis-ulang)` : '';
-                setProcRowStatus(filename, 'success', `Berhasil${rewriteNote}. Baris metrics: ${data.metrics_before} -> ${data.metrics_after}.`);
+                const rewriteNote = data.domain_rewritten ? ` (domain asal ${data.detected_host} ditulis-ulang otomatis ke base_url situs saat ini)` : '';
+                setProcRowStatus(filename, 'success', `Berhasil${rewriteNote}. Baris metrics: ${data.metrics_before} -> ${data.metrics_after} (total baris yang berhasil dipulihkan: ${data.metrics_after}).`);
             } else if (data.moved_to_reject) {
                 procCounts.error++;
-                setProcRowStatus(filename, 'error', `GAGAL PERMANEN (metrics tetap 0, kemungkinan URL tidak cocok base_url / konten sudah tidak ada). Dipindah ke reject/.`);
+                setProcRowStatus(filename, 'error', `Gagal permanen: baris metrics tetap 0, kemungkinan URL di file ini tidak cocok dengan base_url situs saat ini atau kontennya sudah tidak ada. File dipindahkan ke reject/.`);
             } else {
                 procCounts.error++;
-                setProcRowStatus(filename, 'error', `Selesai diproses TAPI metrics masih 0. Perlu ditinjau manual.`);
+                setProcRowStatus(filename, 'error', `Selesai diproses, tapi baris metrics masih 0. Perlu ditinjau manual.`);
             }
             currentIndex++;
             updateProcProgress(currentIndex, affectedFiles.length);
