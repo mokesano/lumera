@@ -57,23 +57,6 @@ if (!Validation::isLoggedIn() || !Validation::isSiteAdmin()) {
 
 import('plugins.generic.usageStats.UsageStatsLoader');
 
-/**
- * Subclass UsageStatsLoader khusus alat ini, menambahkan kemampuan memproses
- * satu file LOG SECARA BERTAHAP (per batch baris) alih-alih sekaligus dalam
- * satu eksekusi PHP seperti UsageStatsLoader::processFile() aslinya.
- *
- * processLogBatch() adalah versi "dipotong-potong" dari logika baris-demi-
- * baris di processFile() (parsing, filter bot/return-code, resolve
- * jurnal/artikel, GeoIP, filter double-klik COUNTER, insert ke tabel
- * sementara) -- HANYA menangani sejumlah baris terbatas per panggilan, lalu
- * berhenti dan melaporkan posisi berhenti (byte offset) supaya panggilan
- * AJAX berikutnya bisa melanjutkan dari situ.
- *
- * commitLoad() adalah versi terpisah dari _loadData(): mengumpulkan semua
- * baris yang sudah masuk tabel sementara untuk satu load_id, lalu
- * purge+insert ke tabel metrics -- dipanggil SEKALI di akhir, setelah semua
- * batch baris selesai, bukan di setiap batch.
- */
 class RecoverBatchUsageStatsLoader extends UsageStatsLoader {
 
     /**
