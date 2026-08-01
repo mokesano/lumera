@@ -749,7 +749,7 @@ if (isset($_GET['action'])) {
         .pag-btn:disabled { opacity: 0.4; cursor: not-allowed; background: #3a3a3a; }
 
         /* Spinner kecil di dalam tombol aksi */
-        .btn-spinner { display: none; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: proc-spin 0.6s linear infinite; margin-left: 8px; vertical-align: middle; }
+        .btn-spinner { display: none; width: 13px; height: 13px; border: 3px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: proc-spin 0.6s linear infinite; margin-left: 8px; vertical-align: middle; }
         @keyframes proc-spin { to { transform: rotate(360deg); } }
 
         /* Ikon "sedang berjalan" di baris file dalam jendela pop-up: cincin
