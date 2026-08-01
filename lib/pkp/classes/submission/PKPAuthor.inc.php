@@ -220,7 +220,7 @@ class PKPAuthor extends DataObject {
      * @return string
      */
     public function getAffiliation($locale) {
-        return (string) $this->getData('affiliation', $locale);
+        return $this->getData('affiliation', $locale);
     }
 
     /**
