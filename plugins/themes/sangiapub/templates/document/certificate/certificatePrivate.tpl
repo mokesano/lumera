@@ -31,7 +31,7 @@
             {if $publisher.logoUrl}<img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" class="wi-publisher-logo"><br>{/if}
             <h1>{if $certData.type === 'EDITOR_CERTIFICATE'}{translate key="document.cert.headingEditor"}{else}{translate key="document.cert.headingReviewer"}{/if}</h1>
         </div>
-        <a href="{$pdfDownloadUrl|escape}" class="action-button"><i class="icon-download"></i> {translate key="document.cert.downloadPdf"}</a>
+        <a href="{$pdfDownloadUrl|escape}" class="action-button"><i class="icon-download"></i> {translate key="document.downloadPdf"}</a>
     </div>
 
     <div class="cert-card">
@@ -63,13 +63,13 @@
                     {if $certData.signatoryNames|@count > 0}
                         {foreach from=$certData.signatoryNames item=name name=sig}{$name|escape}{if !$smarty.foreach.sig.last} &amp; {/if}{/foreach}
                     {else}
-                        {translate key="document.cert.editorialBoard"}
+                        {translate key="document.editorialBoard"}
                     {/if}
-                </strong><br>{if $certData.signatoryNames|@count > 1}{translate key="document.cert.journalManagers"}{else}{translate key="document.cert.journalManager"}{/if}<br>{$certData.journalTitle|escape}</p>
+                </strong><br>{if $certData.signatoryNames|@count > 1}{translate key="document.journalManagers"}{else}{translate key="document.journalManager"}{/if}<br>{$certData.journalTitle|escape}</p>
             </div>
             <div class="wi-qr-box">
                 <img src="{$qrCodeImage}" alt="QR Code" width="100">
-                <p><small>{translate key="document.cert.scanToVerify"}</small></p>
+                <p><small>{translate key="document.scanToVerify"}</small></p>
             </div>
         </div>
     </div>

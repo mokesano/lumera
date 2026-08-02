@@ -21,6 +21,9 @@ import('lib.wizdam.classes.services.CertificateService');
 
 class DocumentIndexHandler extends Handler {
 
+    /**
+     * Constructor
+     */
     public function __construct() {
         parent::__construct();
         $this->addCheck(new HandlerValidatorCustom($this, true, null, null, function() {
@@ -28,6 +31,10 @@ class DocumentIndexHandler extends Handler {
         }));
     }
 
+    /**
+     * Memuat dependensi antarmuka dan Locale
+     * @param \PKPRequest|null $request
+     */
     public function setupTemplate($request = null): void {
         parent::setupTemplate($request);
         AppLocale::requireComponents([

@@ -1,15 +1,22 @@
 {**
  * File: /templates/user/login.tpl
  *
- * Modern login form yang kompatibel dengan OJS v2.4.8.2
- * Production-ready dengan struktur OJS asli
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
+ * User index.
+ * 
+ * Modern login form yang kompatibel dengan fork Lumera App
+ * Production-ready
+ *
  *}
 {strip}
-{assign var="pageTitle" value="user.login"}
-{include file="common/header-parts/header-welcome.tpl"}
+    {assign var="pageTitle" value="user.login"}
+    {include file="common/header-parts/header-welcome.tpl"}
 {/strip}
 
-{* Handle OJS default variables *}
+{* Handle default variables *}
 {if !$registerOp}
     {assign var="registerOp" value="register"}
 {/if}
@@ -99,7 +106,7 @@
         {if !$implicitAuth || $implicitAuth === $smarty.const.IMPLICIT_AUTH_OPTIONAL}
             <form id="signinForm" method="post" action="{$loginUrl}">
                 {* WIZDAM SECURITY: Token CSRF Wajib Ada *}
-                <input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
+                <input type="hidden" name="csrfToken" value="{$csrfToken|escape}">
                 <input type="hidden" name="source" value="{$source|strip_unsafe_html|escape}" />
                 
                 {* Username Field *}
@@ -249,7 +256,7 @@
                 </div>
                 {/if}
 
-                {* Auto-focus Script - Sesuai OJS Original *}
+                {* Auto-focus Script *}
                 <script type="text/javascript">
                 <!--
                     document.getElementById('{if $username}loginPassword{else}loginUsername{/if}').focus();

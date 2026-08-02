@@ -37,51 +37,51 @@
             <fig class="trust-icon">
                 <img src="{$baseUrl}/assets/static/images/trust-icon.png" alt="Paid and Verified" width="32" height="32">
             </fig>
-            <h2 class="text-success mt-3">PAID & VERIFIED</h2>
-            <p class="text-muted">This invoice is authentic, registered in our system, and has been <strong>fully settled</strong>.</p>
+            <h2 class="text-success mt-3">{translate key="authenticate.invoice.paidVerifiedHeading"}</h2>
+            <p class="text-muted">{translate key="authenticate.invoice.paidVerifiedSubtitle"}</p>
         {else}
             <i class="icon-clock" style="font-size: 60px; color: #ff9800;"></i>
-            <h2 class="text-warning mt-3">AUTHENTIC (UNPAID)</h2>
-            <p class="text-muted">This invoice is an authentic document issued by our system, but the payment is currently <strong>pending</strong>.</p>
+            <h2 class="text-warning mt-3">{translate key="authenticate.invoice.unpaidHeading"}</h2>
+            <p class="text-muted">{translate key="authenticate.invoice.unpaidSubtitle"}</p>
         {/if}
     </div>
 
     {* -- KARTU DETAIL INVOICE -- *}
     <div class="wizdam-card bg-light p-4" style="max-width: 600px; margin: 0 auto; text-align: left;">
         <h3 style="border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; color: #333;">
-            Invoice Summary #{$invoice->getInvoiceId()}
+            {translate key="authenticate.invoice.summaryTitle" invoiceId=$invoice->getInvoiceId()}
         </h3>
         <table style="width: 100%; line-height: 2;">
             <tr>
-                <td style="width: 40%; font-weight: bold; color: #555;">Fee Type</td>
+                <td style="width: 40%; font-weight: bold; color: #555;">{translate key="authenticate.invoice.feeTypeLabel"}</td>
                 <td>: {$invoice->getFeeType()|escape}</td>
             </tr>
             <tr>
-                <td style="font-weight: bold; color: #555;">Date Billed</td>
+                <td style="font-weight: bold; color: #555;">{translate key="billing.dateBilled"}</td>
                 <td>: {$invoice->getData('dateBilled')|date_format:"%d %B %Y"}</td>
             </tr>
             {if $invoice->isPaid() && $invoice->getData('datePaid')}
                 <tr>
-                    <td style="font-weight: bold; color: #555;">Date Paid</td>
+                    <td style="font-weight: bold; color: #555;">{translate key="billing.datePaid"}</td>
                     <td>: {$invoice->getData('datePaid')|date_format:"%d %B %Y"}</td>
                 </tr>
             {/if}
             <tr>
-                <td style="font-weight: bold; color: #555;">Amount Due</td>
+                <td style="font-weight: bold; color: #555;">{translate key="billing.amountDue"}</td>
                 <td style="font-size: 1.2em;">
                     : <strong>{$invoice->getCurrencyCode()} {$invoice->getAmount()|number_format:2}</strong>
                 </td>
             </tr>
             <tr>
-                <td style="font-weight: bold; color: #555;">Payment Status</td>
+                <td style="font-weight: bold; color: #555;">{translate key="billing.statusLabel"}</td>
                 <td>: 
                     {if $invoice->isPaid()}
                         <span class="wizdam-badge" style="background-color: #28a745; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;">
-                            PAID {if $invoice->getPaymentMethod()}via {$invoice->getPaymentMethod()|escape}{/if}
+                            {translate key="billing.statusPaid"} {if $invoice->getPaymentMethod()}{translate key="authenticate.invoice.viaLabel"} {$invoice->getPaymentMethod()|escape}{/if}
                         </span>
                     {else}
                         <span class="wizdam-badge" style="background-color: #ffc107; color: #333; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;">
-                            UNPAID
+                            {translate key="billing.statusUnpaid"}
                         </span>
                     {/if}
                 </td>
@@ -91,8 +91,8 @@
         {* -- CALL TO ACTION JIKA BELUM LUNAS -- *}
         {if !$invoice->isPaid()}
             <div style="margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ccc; text-align: center;">
-                <p style="font-size: 0.9em; color: #666;">Are you the author? Log in to your dashboard to complete this payment via our secure gateway.</p>
-                <a href="{url router=$smarty.const.ROUTE_PAGE page="login"}" class="wizdam-btn wizdam-btn-outline mt-2">Go to Login</a>
+                <p style="font-size: 0.9em; color: #666;">{translate key="authenticate.invoice.loginPrompt"}</p>
+                <a href="{url router=$smarty.const.ROUTE_PAGE page="login"}" class="wizdam-btn wizdam-btn-outline mt-2">{translate key="user.login"}</a>
             </div>
         {/if}
     </div>
@@ -100,7 +100,7 @@
 
 <div class="wf_authenticate u-mt-32">
     <div class="verify-footer mt-4">
-        <p><small>Secured by <strong>Sangia Frontedge Authenticate System</strong></small></p>
+        <p><small>{translate key="document.securedBy"} <strong>{$publisher.name|escape}</strong></small></p>
     </div>
 </div>
 

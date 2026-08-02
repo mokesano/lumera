@@ -13,6 +13,22 @@
 
 <locale name="id_ID" full_name="Bahasa Indonesia">
 
+    <!-- Document (shared between LoA & Certificate) -->
+    <message key="document.downloadPdf">Unduh PDF Resmi</message>
+    <message key="document.editorialBoard">Dewan Editorial</message>
+    <message key="document.journalManager">Journal Manager</message>
+    <message key="document.journalManagers">Journal Manager</message>
+    <message key="document.scanToVerify">Pindai untuk Verifikasi</message>
+    <message key="document.verifiedTitle">DOKUMEN TERVERIFIKASI</message>
+
+    <!-- Payment Gateway: peringatan keamanan ke Site Admin (notifikasi in-app) -->
+    <message key="payment.gateway.alert.tokenNotConfigured">Token webhook belum dikonfigurasi -- webhook ditolak (fail-closed).</message>
+    <message key="payment.gateway.alert.serverKeyNotConfigured">Server key belum dikonfigurasi -- webhook ditolak (fail-closed).</message>
+    <message key="payment.gateway.alert.forgedWebhookDetected">Percobaan webhook palsu terdeteksi dan ditolak.</message>
+    <message key="payment.gateway.alert.forgedWebhookDetectedForOrder">Percobaan webhook palsu terdeteksi untuk Order ID {$orderId}.</message>
+    <message key="payment.gateway.alert.receiverMismatch">Penerima IPN tidak cocok. Diharapkan {$expectedEmail}, diterima {$actualEmail}.</message>
+    <message key="payment.gateway.alert.amountMismatch">Nominal IPN tidak cocok untuk invoice #{$invoiceId}. Diharapkan {$expectedAmount} {$expectedCurrency}, diterima {$paidGross} {$paidCurrency}.</message>
+
     <!-- Admin manual Payment -->
     <message key="admin.manualPayments.pageTitle">Konfirmasi Pembayaran Manual</message>
     <message key="admin.manualPayments.description">Daftar tagihan yang menunggu verifikasi transfer manual staf.</message>
@@ -59,6 +75,22 @@
     <message key="authenticate.cert.verifiedTitle">Sertifikat Tervalidasi</message>
     <message key="authenticate.cert.incompleteReview">Dokumen tidak valid. Proses review (ulasan) untuk naskah ini belum diselesaikan.</message>
 
+    <!-- Authenticate: Halaman LoA Menunggu Pembayaran (authenticate/loaPending.tpl) -->
+    <message key="authenticate.loa.pendingHeading">VERIFIKASI TERTUNDA</message>
+    <message key="authenticate.loa.pendingStatusLabel">Status Dokumen: Belum Terselesaikan</message>
+    <message key="authenticate.loa.pendingLoginPrompt">Jika Anda adalah penulis, silakan masuk ke dasbor Anda dan selesaikan pembayaran melalui bagian Tagihan.</message>
+
+    <!-- Authenticate: Halaman verifikasi Invoice (authenticate/invoicePublic.tpl) -->
+    <message key="authenticate.invoice.paidVerifiedHeading">LUNAS &amp; TERVERIFIKASI</message>
+    <message key="authenticate.invoice.paidVerifiedSubtitle">Tagihan ini asli, terdaftar dalam sistem kami, dan telah dilunasi sepenuhnya.</message>
+    <message key="authenticate.invoice.unpaidHeading">ASLI (BELUM LUNAS)</message>
+    <message key="authenticate.invoice.unpaidSubtitle">Tagihan ini adalah dokumen asli yang diterbitkan oleh sistem kami, namun pembayarannya masih tertunda.</message>
+    <message key="authenticate.invoice.summaryTitle">Ringkasan Tagihan #{$invoiceId}</message>
+    <message key="authenticate.invoice.feeTypeLabel">Jenis Biaya</message>
+    <message key="authenticate.invoice.viaLabel">melalui</message>
+    <message key="authenticate.invoice.loginPrompt">Apakah Anda penulisnya? Masuk ke dasbor Anda untuk menyelesaikan pembayaran ini melalui gateway aman kami.</message>
+    <message key="document.securedBy">Diamankan oleh</message>
+
     <!-- Document Index -->
     <message key="document.index.pageTitle">Dokumen Saya</message>
     <message key="document.index.loaDescription">Letter of Acceptance untuk naskah Anda yang diterima/terbit.</message>
@@ -72,7 +104,6 @@
 
     <!-- Letter of Acceptance -->
     <message key="document.loa.pageTitle">Letter of Acceptance</message>
-    <message key="document.loa.invalidRequest">Tautan dokumen tidak valid atau rusak.</message>
     <message key="document.loa.unauthorized">Akses Ditolak. Anda tidak memiliki hak akses untuk mengunduh dokumen naskah ini.</message>
     <message key="document.loa.pendingPaymentAlert">Dokumen (LoA) belum dapat diterbitkan. Silakan selesaikan tagihan yang masih tertunda di bawah ini.</message>
     <message key="document.loa.notFound">Data naskah atau status penerimaan tidak ditemukan di dalam sistem.</message>
@@ -81,7 +112,6 @@
 
     <!-- Letter of Acceptance: isi dokumen (tampilan HTML + PDF) -->
     <message key="document.loa.heading">SURAT PENERIMAAN NASKAH</message>
-    <message key="document.loa.downloadPdf">Unduh PDF Resmi</message>
     <message key="document.loa.dearAuthor">Kepada Yth.</message>
     <message key="document.loa.introText">Dengan hormat, kami sampaikan bahwa naskah Anda yang berjudul:</message>
     <message key="document.loa.acceptanceStatementBefore">secara resmi telah</message>
@@ -92,13 +122,13 @@
     <message key="document.loa.editorialTeamTitle">Tim Editorial</message>
     <message key="document.loa.handlingEditor">Editor Penanggung Jawab</message>
     <message key="document.loa.handlingEditors">Editor Penanggung Jawab</message>
-    <message key="document.loa.journalManager">Journal Manager</message>
-    <message key="document.loa.journalManagers">Journal Manager</message>
     <message key="document.loa.notConfigured">Belum diatur</message>
     <message key="document.loa.sincerely">Hormat kami,</message>
-    <message key="document.loa.editorialBoard">Dewan Editorial</message>
-    <message key="document.loa.scanToVerify">Pindai untuk Verifikasi</message>
     <message key="document.loa.verifyThisDocument">Verifikasi Surat Penerimaan Naskah Ini</message>
+
+    <!-- Letter of Acceptance: halaman verifikasi publik (authenticate/loaPublic.tpl) -->
+    <message key="document.loa.verifiedSubtitle">Surat Penerimaan Naskah ini asli dan terdaftar dalam sistem kami.</message>
+    <message key="document.loa.abstractTitle">Abstrak</message>
 
     <!-- Certificate -->
     <message key="document.cert.indexTitle">Sertifikat Saya</message>
@@ -113,7 +143,6 @@
     <!-- Certificate: isi dokumen (tampilan HTML + PDF) -->
     <message key="document.cert.headingEditor">Sertifikat Layanan Editorial</message>
     <message key="document.cert.headingReviewer">Sertifikat Penghargaan (Reviewer)</message>
-    <message key="document.cert.downloadPdf">Unduh PDF Resmi</message>
     <message key="document.cert.presentedTo">Sertifikat ini dengan bangga dipersembahkan kepada</message>
     <message key="document.cert.editorRecognitionText">Sebagai pengakuan atas dedikasi layanan editorial untuk naskah:</message>
     <message key="document.cert.reviewerRecognitionText">Sebagai pengakuan atas kontribusi telaah sejawat (peer-review) yang berharga untuk naskah:</message>
@@ -121,10 +150,9 @@
     <message key="document.cert.dateAssignedLabel">Tanggal Penugasan</message>
     <message key="document.cert.dateCompletedLabel">Tanggal Selesai</message>
     <message key="document.cert.bestRegards">Hormat kami,</message>
-    <message key="document.cert.editorialBoard">Dewan Editorial</message>
-    <message key="document.cert.journalManager">Journal Manager</message>
-    <message key="document.cert.journalManagers">Journal Manager</message>
-    <message key="document.cert.scanToVerify">Pindai untuk Verifikasi</message>
+
+    <!-- Certificate: halaman verifikasi publik (authenticate/certificatePublic.tpl) -->
+    <message key="document.cert.verifiedSubtitle">Sertifikat ini asli dan terdaftar dalam sistem kami.</message>
 
     <message key="billing.loa.indexTitle">Letter of Acceptance</message>
     <message key="billing.loa.status.accepted">Diterima</message>
@@ -143,7 +171,6 @@
     <message key="billing.error.hashValidationFailed">Verifikasi keamanan gagal. Dokumen mungkin telah dimanipulasi.</message>
     <message key="billing.error.invoiceNotFound">Tagihan tidak ditemukan atau Anda tidak memiliki hak akses.</message>
     <message key="billing.error.alreadyPaid">Tindakan ditolak. Tagihan ini sudah dilunasi.</message>
-    <message key="billing.error.pdfGenerationFailed">Sistem gagal memproduksi dokumen PDF saat ini. Silakan hubungi administrator.</message>
     <message key="billing.error.cannotCancel">Tagihan tidak dapat dibatalkan karena mungkin sudah lunas atau Anda tidak memiliki akses.</message>
     <message key="billing.success.paymentSessionCreated">Sesi pembayaran berhasil dibuat.</message>
     <message key="billing.success.invoiceCancelled">Tagihan berhasil dibatalkan.</message>
