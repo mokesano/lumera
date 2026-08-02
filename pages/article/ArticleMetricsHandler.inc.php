@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * File: MetricsHandler.inc.php
+ * File: pages/article/ArticleMetricsHandler.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady

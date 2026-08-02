@@ -46,8 +46,19 @@ class CertificateService {
         }
 
         $article = $articleDao->getArticle($reviewAssignment->getSubmissionId());
+        if (!$article) {
+            throw new \Exception('NOT_FOUND');
+        }
+
         $journal = $journalDao->getById($article->getJournalId());
+        if (!$journal) {
+            throw new \Exception('NOT_FOUND');
+        }
+
         $reviewer = $userDao->getById($reviewAssignment->getReviewerId());
+        if (!$reviewer) {
+            throw new \Exception('NOT_FOUND');
+        }
 
         // [BARU] Nama Journal Manager penanda tangan -- lihat aturan
         // 1/2/>2 manager di JournalManagerResolver.
@@ -103,7 +114,14 @@ class CertificateService {
         }
 
         $journal = $journalDao->getById($article->getJournalId());
+        if (!$journal) {
+            throw new \Exception('NOT_FOUND');
+        }
+
         $editor = $userDao->getById($editAssignment->getEditorId());
+        if (!$editor) {
+            throw new \Exception('NOT_FOUND');
+        }
 
         $dateRef = $editAssignment->getDateAssigned() ?: $editAssignment->getDateNotified();
 

@@ -84,7 +84,7 @@ class LoAHandler extends Handler {
 
         $param = $args[0] ?? '';
         if (empty($param)) {
-            $this->_redirectWithError($request, 'billing.loa.invalidRequest');
+            $this->_redirectWithError($request, 'document.loa.invalidRequest');
         }
 
         // 1. Deteksi Mode & Ekstraksi String
@@ -93,7 +93,7 @@ class LoAHandler extends Handler {
 
         // Validasi struktur hash (64 char + '-' + ID)
         if (strlen($cleanParam) <= 65 || $cleanParam[64] !== '-') {
-            $this->_redirectWithError($request, 'billing.loa.invalidRequest');
+            $this->_redirectWithError($request, 'document.loa.invalidRequest');
         }
 
         $providedHash = substr($cleanParam, 0, 64);
@@ -110,7 +110,7 @@ class LoAHandler extends Handler {
         $article = $articleDao->getArticle($submissionId);
         
         if (!$article || $article->getUserId() !== (int) $user->getId()) {
-            $this->_redirectWithError($request, 'billing.loa.unauthorized');
+            $this->_redirectWithError($request, 'document.loa.unauthorized');
         }
 
         // 4. Proses Logika Bisnis LoA
@@ -118,11 +118,15 @@ class LoAHandler extends Handler {
 
         if ($loaData['status'] === 'PENDING_PAYMENT') {
             // [UX Fix] Arahkan ke dasbor tagihan aktif dengan notifikasi ramah
-            $this->_redirectWithError($request, 'billing.loa.pendingPaymentAlert');
+            $this->_redirectWithError($request, 'document.loa.pendingPaymentAlert');
+        }
+
+        if ($loaData['status'] === 'NOT_YET_ACCEPTED') {
+            $this->_redirectWithError($request, 'document.loa.notYetAccepted');
         }
 
         if ($loaData['status'] === 'NOT_FOUND') {
-            $this->_redirectWithError($request, 'billing.loa.notFound');
+            $this->_redirectWithError($request, 'document.loa.notFound');
         }
 
         // 5. Generate QR Code untuk Autentikasi Publik
@@ -154,17 +158,13 @@ class LoAHandler extends Handler {
                 'pdfDownloadUrl' => $pdfDownloadUrl,
                 // [BARU] Identitas resmi Penerbit -- untuk letterhead logo/warna.
                 'publisher' => (new PublisherProfileService())->getProfile(),
-                'pageTitle' => 'billing.loa.pageTitle',
+                'pageTitle' => 'document.loa.pageTitle',
                 'pageHierarchy' => [
                     [$request->url(null, 'user'), 'navigation.user'],
                     [$request->url(null, 'billing', 'index'), 'billing.globalBilling']
                 ]
             ]);
 
-            // [FIX] Path template disesuaikan dengan file yang benar-benar ada:
-            // plugins/themes/sangiapub/templates/document/loa/loaPrivate.tpl
-            // (sebelumnya salah menunjuk ke 'billing/loa/private.tpl' yang
-            // tidak pernah ada -- akan fatal "template not found").
             $templateMgr->display('document/loa/loaPrivate.tpl');
         }
     }

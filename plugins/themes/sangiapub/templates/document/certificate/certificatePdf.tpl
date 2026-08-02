@@ -33,44 +33,44 @@
 <div class="cert-border" style="border-color: {$publisher.colorPrimary|escape};">
     {if $publisher.logoUrl}<img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" class="wi-publisher-logo"><br>{/if}
     <div class="cert-journal">{$certData.journalTitle|escape}</div>
-    <div class="cert-title">CERTIFICATE OF {if $certData.type === 'EDITOR_CERTIFICATE'}EDITORIAL SERVICE{else}RECOGNITION{/if}</div>
+    <div class="cert-title">{if $certData.type === 'EDITOR_CERTIFICATE'}{translate key="document.cert.headingEditor"|upper}{else}{translate key="document.cert.headingReviewer"|upper}{/if}</div>
 
-    <p style="font-size: 13px;">This certificate is proudly presented to</p>
+    <p style="font-size: 13px;">{translate key="document.cert.presentedTo"}</p>
     {if $certData.type === 'EDITOR_CERTIFICATE'}
         <div class="cert-name">{$certData.editorName|escape}</div><br>
         <div class="cert-affil">{$certData.editorAffiliation|escape}</div>
         <div class="cert-body">
-            In recognition of dedicated editorial service for the manuscript:
+            {translate key="document.cert.editorRecognitionText"}
             <div class="cert-manuscript">"{$certData.articleTitle|escape}"</div>
         </div>
-        <div class="cert-number">Certificate No. {$certData.certificateNumber|escape} &bull; Date Assigned: {$certData.dateAssigned|date_format:"%d %B %Y"}</div>
+        <div class="cert-number">{translate key="document.cert.certificateNumberLabel"} {$certData.certificateNumber|escape} &bull; {translate key="document.cert.dateAssignedLabel"}: {$certData.dateAssigned|date_format:"%d %B %Y"}</div>
     {else}
         <div class="cert-name">{$certData.reviewerName|escape}</div><br>
         <div class="cert-affil">{$certData.reviewerAffiliation|escape}</div>
         <div class="cert-body">
-            In recognition of a valuable peer-review contribution for the manuscript:
+            {translate key="document.cert.reviewerRecognitionText"}
             <div class="cert-manuscript">"{$certData.articleTitle|escape}"</div>
         </div>
-        <div class="cert-number">Certificate No. {$certData.certificateNumber|escape} &bull; Date Completed: {$certData.dateCompleted|date_format:"%d %B %Y"}</div>
+        <div class="cert-number">{translate key="document.cert.certificateNumberLabel"} {$certData.certificateNumber|escape} &bull; {translate key="document.cert.dateCompletedLabel"}: {$certData.dateCompleted|date_format:"%d %B %Y"}</div>
     {/if}
 
     <div class="cert-footer">
         <table>
             <tr>
                 <td width="35%" class="cert-signatory">
-                    Best regards,<br>
+                    {translate key="document.cert.bestRegards"}<br>
                     <strong>
                         {if $certData.signatoryNames|@count > 0}
                             {foreach from=$certData.signatoryNames item=name name=sig}{$name|escape}{if !$smarty.foreach.sig.last}<br>{/if}{/foreach}
                         {else}
-                            Editorial Board
+                            {translate key="document.cert.editorialBoard"}
                         {/if}
                     </strong><br>
-                    Journal Manager{if $certData.signatoryNames|@count > 1}s{/if}
+                    {if $certData.signatoryNames|@count > 1}{translate key="document.cert.journalManagers"}{else}{translate key="document.cert.journalManager"}{/if}
                 </td>
                 <td width="30%" class="cert-qr">
                     <img src="{$qrCodeBase64}" height="120" width="120" alt="QR Verification">
-                    <div style="font-size: 9px;">Scan to verify</div>
+                    <div style="font-size: 9px;">{translate key="document.cert.scanToVerify"}</div>
                 </td>
                 <td width="35%"></td>
             </tr>

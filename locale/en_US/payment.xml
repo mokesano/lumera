@@ -76,7 +76,29 @@
     <message key="document.loa.unauthorized">Access Denied. You do not have permission to download this manuscript document.</message>
     <message key="document.loa.pendingPaymentAlert">The document (LoA) cannot be issued yet. Please settle the pending invoice below.</message>
     <message key="document.loa.notFound">Manuscript data or acceptance status not found in the system.</message>
+    <message key="document.loa.notYetAccepted">This manuscript has not yet received an official Accept decision from the editor.</message>
     <message key="document.error.hashValidationFailed">Security verification failed. The document link may have been tampered with.</message>
+
+    <!-- Letter of Acceptance: document body (HTML view + PDF) -->
+    <message key="document.loa.heading">LETTER OF ACCEPTANCE</message>
+    <message key="document.loa.downloadPdf">Download Official PDF</message>
+    <message key="document.loa.dearAuthor">Dear</message>
+    <message key="document.loa.introText">We are pleased to inform you that your manuscript entitled:</message>
+    <message key="document.loa.acceptanceStatementBefore">has been officially</message>
+    <message key="document.loa.acceptedWord">ACCEPTED</message>
+    <message key="document.loa.acceptanceStatementAfter">for publication in {$journalTitle}.</message>
+    <message key="document.loa.dateSubmittedLabel">Date Submitted</message>
+    <message key="document.loa.dateAcceptedLabel">Date Accepted</message>
+    <message key="document.loa.editorialTeamTitle">Editorial Team</message>
+    <message key="document.loa.handlingEditor">Handling Editor</message>
+    <message key="document.loa.handlingEditors">Handling Editors</message>
+    <message key="document.loa.journalManager">Journal Manager</message>
+    <message key="document.loa.journalManagers">Journal Managers</message>
+    <message key="document.loa.notConfigured">Not configured</message>
+    <message key="document.loa.sincerely">Sincerely,</message>
+    <message key="document.loa.editorialBoard">Editorial Board</message>
+    <message key="document.loa.scanToVerify">Scan to Verify</message>
+    <message key="document.loa.verifyThisDocument">Verify this Letter of Acceptance</message>
 
     <!-- Certificate -->
     <message key="document.cert.indexTitle">My Certificates</message>
@@ -87,6 +109,22 @@
     <message key="document.cert.unauthorized">Access Denied. This certificate does not belong to you.</message>
     <message key="document.cert.incompleteReview">The certificate cannot be issued yet because the review task is incomplete.</message>
     <message key="document.cert.notFound">Certificate data not found.</message>
+
+    <!-- Certificate: document body (HTML view + PDF) -->
+    <message key="document.cert.headingEditor">Certificate of Editorial Service</message>
+    <message key="document.cert.headingReviewer">Certificate of Recognition (Reviewer)</message>
+    <message key="document.cert.downloadPdf">Download Official PDF</message>
+    <message key="document.cert.presentedTo">This certificate is proudly presented to</message>
+    <message key="document.cert.editorRecognitionText">In recognition of dedicated editorial service for the manuscript:</message>
+    <message key="document.cert.reviewerRecognitionText">In recognition of a valuable peer-review contribution for the manuscript:</message>
+    <message key="document.cert.certificateNumberLabel">Certificate Number</message>
+    <message key="document.cert.dateAssignedLabel">Date Assigned</message>
+    <message key="document.cert.dateCompletedLabel">Date Completed</message>
+    <message key="document.cert.bestRegards">Best regards,</message>
+    <message key="document.cert.editorialBoard">Editorial Board</message>
+    <message key="document.cert.journalManager">Journal Manager</message>
+    <message key="document.cert.journalManagers">Journal Managers</message>
+    <message key="document.cert.scanToVerify">Scan to Verify</message>
 
     <message key="billing.loa.indexTitle">Letters of Acceptance</message>
     <message key="billing.loa.status.accepted">Accepted</message>

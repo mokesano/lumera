@@ -481,7 +481,8 @@ class InvoiceService {
             'datePaid'             => $invoice->getData('datePaid'),
             'isPaid'               => ($invoice->getData('status') === Invoice::STATUS_PAID),
             'paymentMethod'        => $invoice->getData('paymentMethod'),
-            'transferReference'    => $invoice->getData('transferReference'),
+            // SESUDAH — pakai key yang benar-benar diisi InvoiceDAO
+            'transferReference'    => $invoice->getData('paymentReference'),
             'transferBank'         => $invoice->getData('transferBank'),
             'taxPercentage'        => $settingTaxRate,
             'formattedBaseFee'     => number_format($feeBase, 2),

@@ -17,6 +17,7 @@ declare(strict_types=1);
  * @ingroup pages_login
  */
 
+/** @var string $op */
 switch ($op) {
 	case 'index':
 	case 'implicitAuthLogin':
@@ -30,11 +31,11 @@ switch ($op) {
 	case 'savePassword':
 	case 'signInAsUser':
 	case 'signOutAsUser':
-	// --- [WIZDAM SSO] RUTE ORCID ---
+	// --- [LUMERA SSO] RUTE ORCID ---
     case 'orcid-auth':
     case 'orcid-callback':
     case 'orcid-unlink':
-    // --- [WIZDAM SSO] RUTE GOOGLE ---
+    // --- [LUMERA SSO] RUTE GOOGLE ---
     case 'google-auth':
     case 'google-callback':
     case 'google-unlink':    

@@ -36,7 +36,7 @@ switch($op) {
 	case 'submissions':
 	case 'sponsorship':
 	case 'sitemap':
-	// case 'journal-history':
+	case 'journal-history':
 	case 'aboutThisPublishingSystem':
 	case 'insights':
 	case 'statistics':
@@ -56,4 +56,5 @@ switch($op) {
 		import('pages.about.PublisherAboutHandler');
 		break;
 }
+
 ?>

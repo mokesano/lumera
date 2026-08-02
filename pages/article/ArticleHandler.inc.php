@@ -225,7 +225,7 @@ class ArticleHandler extends Handler {
             }
         }
 
-        // [WIZDAM FIX] PEMBERSIH SPASI pada abstract
+        // [LUMERA] Pembersih spasi pada abstract
         $allAbstracts = $article->getData('abstract'); 
         if (is_array($allAbstracts)) {
             foreach ($allAbstracts as $localeKey => $textValue) {
@@ -239,7 +239,7 @@ class ArticleHandler extends Handler {
             }
         }
 
-        // [WIZDAM] Micro-payloads untuk data utama
+        // [LUMERA] Micro-payloads untuk data utama
         $templateMgr->assign([
             'issue'      => $issue,
             'article'    => $article,
@@ -261,10 +261,8 @@ class ArticleHandler extends Handler {
             'indexTerms' => 'search.indexTerms',
             'galleyFullText' => 'search.fullText'
         ]);
-        
-        //======================================================================
-        // --- START MODIFIKASI FORK Lumera ---
-        
+
+        // --- START MODERNISASI FORK Lumera ---        
         // --- 1. INTEGRASI DATA GENESIS ---
         /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
@@ -278,7 +276,6 @@ class ArticleHandler extends Handler {
         // --- 2. Penugasan Editor/Reviewer ---
         /** @var EditAssignmentDAO $editAssignmentDao */
         $editAssignmentDao = DAORegistry::getDAO('EditAssignmentDAO');
-        // [WIZDAM] BUGFIX: Hapus duplikasi pemanggilan yang menimpa variabel
         $editorsData = $editAssignmentDao ? $editAssignmentDao->getEditorsWithDetails($article) : [];
         
         /** @var ReviewAssignmentDAO $reviewAssignmentDao */
@@ -291,13 +288,15 @@ class ArticleHandler extends Handler {
             'locale'            => AppLocale::getLocale()
         ]);
 
-        // --- 3. Foto Penulis ---
+        // --- 3. Foto Penulis & Peta Afiliasi ---
         $authors = $article->getAuthors(); 
         /** @var AuthorDAO $authorDao */
         $authorDao = DAORegistry::getDAO('AuthorDAO');
         $authorProfileData = $authorDao ? $authorDao->getAuthorProfileDataMaps($authors) : ['profileImages' => [], 'gravatars' => [], 'userData' => []]; 
+        $affiliationMap = PKPAuthor::buildAffiliationMap($authors);
         
         $templateMgr->assign([
+            'affiliationMap'      => $affiliationMap,
             'authorProfileImages' => $authorProfileData['profileImages'] ?? [],
             'authorGravatarMap'   => $authorProfileData['gravatars'] ?? [],
             'authorUserDataMap'   => $authorProfileData['userData'] ?? []

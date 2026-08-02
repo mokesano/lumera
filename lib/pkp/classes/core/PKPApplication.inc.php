@@ -135,8 +135,7 @@ class PKPApplication {
     }
 
     /**
-     * Get the current application object
-     * 
+     * Get the current application object.
      * @return PKPApplication|object|null
      */
     public static function getApplication() {
@@ -144,8 +143,7 @@ class PKPApplication {
     }
 
     /**
-     * Get the request implementation singleton
-     * 
+     * Get the request implementation singleton.
      * @return Request
      */
     public static function getRequest(): PKPRequest {
@@ -153,8 +151,7 @@ class PKPApplication {
     }
 
     /**
-     * Get the dispatcher implementation singleton
-     * 
+     * Get the dispatcher implementation singleton.
      * @return Dispatcher
      */
     public static function getDispatcher(): Dispatcher {
@@ -179,7 +176,6 @@ class PKPApplication {
 
     /**
      * This executes the application by delegating the request to the dispatcher.
-     * 
      * @return void
      */
     public function execute(): void {
@@ -188,8 +184,7 @@ class PKPApplication {
     }
 
     /**
-     * Get the symbolic name of this application
-     * 
+     * Get the symbolic name of this application.
      * @return string
      */
     public function getName(): string {
@@ -198,7 +193,6 @@ class PKPApplication {
 
     /**
      * Get the locale key for the name of this application.
-     * 
      * @return string
      */
     public function getNameKey(): string {
@@ -208,7 +202,6 @@ class PKPApplication {
 
     /**
      * Get the "context depth" of this application.
-     * 
      * @return int
      */
     public function getContextDepth(): int {
@@ -217,8 +210,7 @@ class PKPApplication {
     }
 
     /**
-     * Get the list of the contexts available for this application
-     * 
+     * Get the list of the contexts available for this application.
      * @return array
      */
     public static function getContextList(): array {
@@ -228,7 +220,6 @@ class PKPApplication {
 
     /**
      * Get the URL to the XML descriptor for the current version of this application.
-     * 
      * @return string
      */
     public function getVersionDescriptorUrl(): string {
@@ -238,7 +229,6 @@ class PKPApplication {
 
     /**
      * This function retrieves all enabled product versions.
-     * 
      * @param string|null $category
      * @param int|null $mainContextId
      * @return array
@@ -283,7 +273,6 @@ class PKPApplication {
 
     /**
      * Get the list of plugin categories for this application.
-     * 
      * @return array
      */
     public function getPluginCategories(): array {
@@ -293,7 +282,6 @@ class PKPApplication {
 
     /**
      * Return the current version of the application.
-     * 
      * @return Version
      */
     public function getCurrentVersion(): Version {
@@ -303,7 +291,6 @@ class PKPApplication {
 
     /**
      * Get the map of DAOName => full.class.Path for this application.
-     * 
      * @return array
      */
     public function getDAOMap(): array {
@@ -349,7 +336,6 @@ class PKPApplication {
 
     /**
      * Return the fully-qualified (e.g. page.name.ClassNameDAO) name of the given DAO.
-     * 
      * @param string $name
      * @return string|null
      */
@@ -361,7 +347,6 @@ class PKPApplication {
 
     /**
      * Instantiate the help object for this application.
-     * 
      * @return object
      */
     public function instantiateHelp(): object {
@@ -371,7 +356,6 @@ class PKPApplication {
 
     /**
      * Custom error handler.
-     * 
      * @param int $errorno
      * @param string $errstr
      * @param string $errfile
@@ -393,7 +377,6 @@ class PKPApplication {
 
     /**
      * Auxiliary function to errorHandler that returns a formatted error message.
-     * 
      * @param int $errorno
      * @param string $errstr
      * @param string $errfile
@@ -502,7 +485,6 @@ class PKPApplication {
 
     /**
      * Send a flash notification to the current user interface.
-     * 
      * @param string $message
      * @param string $type
      * @param bool $blocked
@@ -543,7 +525,6 @@ class PKPApplication {
 
     /**
      * Define a constant so that it can be exposed to the JS front-end.
-     * 
      * @param string $name
      * @param mixed $value
      * @return void
@@ -562,7 +543,6 @@ class PKPApplication {
      * Get an associative array of defined constants that should be exposed
      * to the JS front-end.
      * Returns REFERENCE to support defineExposedConstant modification.
-     * 
      * @return array
      */
     public static function getExposedConstants(): array {
@@ -573,7 +553,6 @@ class PKPApplication {
     /**
      * Get an array of locale keys that define strings that should be made available to
      * JavaScript classes in the JS front-end.
-     * 
      * @return array<string>
      */
     public function getJSLocaleKeys(): array {

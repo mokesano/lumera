@@ -93,7 +93,10 @@ class WizdamStatsDAO extends DAO {
                 if ($r) {
                     while (!$r->EOF) {
                         $row = $r->GetRowAssoc(false);
-                        $info['metricsColumns'][] = (string) $row['Field']; // MySQL SHOW COLUMNS uses 'Field'
+                        $fieldName = $row['Field'] ?? $row['field'] ?? '';
+                        if (!empty($fieldName)) {
+                            $info['metricsColumns'][] = (string) $fieldName;
+                        }
                         $r->MoveNext();
                     }
                     $r->Close();

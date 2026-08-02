@@ -8,7 +8,6 @@
  * Reviewer atau Editor -- TIDAK untuk Author (Author memakai LoA).
  *}
 {strip}
-    {assign var="pageTitle" value="My Certificate"}
     {include file="common/header.tpl"}
 {/strip}
 
@@ -30,47 +29,47 @@
     <div class="wi-header">
         <div class="wi-title">
             {if $publisher.logoUrl}<img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" class="wi-publisher-logo"><br>{/if}
-            <h1>Certificate of {if $certData.type === 'EDITOR_CERTIFICATE'}Editorial Service{else}Recognition (Reviewer){/if}</h1>
+            <h1>{if $certData.type === 'EDITOR_CERTIFICATE'}{translate key="document.cert.headingEditor"}{else}{translate key="document.cert.headingReviewer"}{/if}</h1>
         </div>
-        <a href="{$pdfDownloadUrl|escape}" class="action-button"><i class="icon-download"></i> Download Official PDF</a>
+        <a href="{$pdfDownloadUrl|escape}" class="action-button"><i class="icon-download"></i> {translate key="document.cert.downloadPdf"}</a>
     </div>
 
     <div class="cert-card">
         <h2 style="text-transform: uppercase; letter-spacing: 2px;">{$certData.journalTitle|escape}</h2>
         <hr style="width: 50px; border-top: 2px solid {$publisher.colorPrimary|escape}; margin: 15px auto;">
 
-        <p style="margin-top: 20px;">This certificate is proudly presented to</p>
+        <p style="margin-top: 20px;">{translate key="document.cert.presentedTo"}</p>
 
         {if $certData.type === 'EDITOR_CERTIFICATE'}
             <h2 style="font-family: Georgia, serif;">{$certData.editorName|escape}</h2>
             <p>{$certData.editorAffiliation|escape}</p>
-            <p style="margin-top: 20px;">In recognition of dedicated editorial service for the manuscript:</p>
+            <p style="margin-top: 20px;">{translate key="document.cert.editorRecognitionText"}</p>
             <div class="wi-manuscript-box"><em>"{$certData.articleTitle|escape}"</em></div>
-            <p>Certificate Number: <strong>{$certData.certificateNumber|escape}</strong></p>
-            <p>Date Assigned: {$certData.dateAssigned|date_format:"%d %B %Y"}</p>
+            <p>{translate key="document.cert.certificateNumberLabel"}: <strong>{$certData.certificateNumber|escape}</strong></p>
+            <p>{translate key="document.cert.dateAssignedLabel"}: {$certData.dateAssigned|date_format:"%d %B %Y"}</p>
         {else}
             <h2 style="font-family: Georgia, serif;">{$certData.reviewerName|escape}</h2>
             <p>{$certData.reviewerAffiliation|escape}</p>
-            <p style="margin-top: 20px;">In recognition of a valuable peer-review contribution for the manuscript:</p>
+            <p style="margin-top: 20px;">{translate key="document.cert.reviewerRecognitionText"}</p>
             <div class="wi-manuscript-box"><em>"{$certData.articleTitle|escape}"</em></div>
-            <p>Certificate Number: <strong>{$certData.certificateNumber|escape}</strong></p>
-            <p>Date Completed: {$certData.dateCompleted|date_format:"%d %B %Y"}</p>
+            <p>{translate key="document.cert.certificateNumberLabel"}: <strong>{$certData.certificateNumber|escape}</strong></p>
+            <p>{translate key="document.cert.dateCompletedLabel"}: {$certData.dateCompleted|date_format:"%d %B %Y"}</p>
         {/if}
 
         <div class="wi-footer-row">
             <div style="text-align:left;">
-                <p>Best regards,</p>
+                <p>{translate key="document.cert.bestRegards"}</p>
                 <p><strong>
                     {if $certData.signatoryNames|@count > 0}
                         {foreach from=$certData.signatoryNames item=name name=sig}{$name|escape}{if !$smarty.foreach.sig.last} &amp; {/if}{/foreach}
                     {else}
-                        Editorial Board
+                        {translate key="document.cert.editorialBoard"}
                     {/if}
-                </strong><br>Journal Manager{if $certData.signatoryNames|@count > 1}s{/if}<br>{$certData.journalTitle|escape}</p>
+                </strong><br>{if $certData.signatoryNames|@count > 1}{translate key="document.cert.journalManagers"}{else}{translate key="document.cert.journalManager"}{/if}<br>{$certData.journalTitle|escape}</p>
             </div>
             <div class="wi-qr-box">
                 <img src="{$qrCodeImage}" alt="QR Code" width="100">
-                <p><small>Scan to Verify</small></p>
+                <p><small>{translate key="document.cert.scanToVerify"}</small></p>
             </div>
         </div>
     </div>
