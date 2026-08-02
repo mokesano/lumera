@@ -750,6 +750,11 @@ class AboutHandler extends Handler {
 
     /**
      * Display journal history.
+     * @deprecated Rute op='history' TIDAK LAGI mengarah ke sini -- direbut
+     * PublisherAboutHandler (lihat pages/about/index.php) untuk halaman
+     * History level Penerbit. Method ini dipertahankan sebagai logika inti;
+     * dipanggil lewat alias journalHistory() di bawah, yang benar-benar
+     * routable lewat op='journal-history'.
      */
     public function history() {
         $this->addCheck(new HandlerValidatorJournal($this));
@@ -762,6 +767,20 @@ class AboutHandler extends Handler {
         $templateMgr->assign('history', $journal->getLocalizedSetting('history'));
 
         $templateMgr->display('about/history.tpl');
+    }
+
+    /**
+     * [FIX] Alias routable untuk history() di atas. PKPPageRouter::route()
+     * mengubah op 'journal-history' (lihat pages/about/index.php dan link
+     * menu navmenu.tpl/navigation.tpl) menjadi nama method camelCase
+     * 'journalHistory' sebelum memanggilnya -- method dengan nama itu HARUS
+     * benar-benar ada di class ini, karena router tidak pernah memetakan op
+     * ke method lain secara otomatis.
+     * @param array $args
+     * @param Request|null $request
+     */
+    public function journalHistory($args = [], $request = null) {
+        $this->history();
     }
 
     /**
@@ -1099,5 +1118,6 @@ class AboutHandler extends Handler {
         
         return '';
     }
+    
 }
 ?>

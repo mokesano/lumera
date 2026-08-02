@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 import('lib.wizdam.classes.payment.PaymentGatewayInterface');
 import('lib.wizdam.classes.invoice.Invoice');
+import('lib.wizdam.classes.invoice.InvoiceDAO');
 
 class PayPalGateway implements PaymentGatewayInterface {
 
@@ -102,6 +103,12 @@ class PayPalGateway implements PaymentGatewayInterface {
             return null;
         }
 
+        $receiverEmail = (string) ($payload['business'] ?? $payload['receiver_email'] ?? '');
+        if ($receiverEmail === '' || !hash_equals(strtolower($this->sellerEmail), strtolower($receiverEmail))) {
+            $this->_alertSiteAdmins('PayPal', "IPN receiver tidak cocok. Diharapkan {$this->sellerEmail}, diterima {$receiverEmail}.");
+            return null;
+        }
+
         $custom = (string) ($payload['custom'] ?? '');
         $parts = explode('-', $custom);
         if (count($parts) < 3 || $parts[0] !== 'WIZDAM' || $parts[1] !== 'PP') {
@@ -109,6 +116,23 @@ class PayPalGateway implements PaymentGatewayInterface {
         }
 
         $invoiceId = (int) $parts[2];
+        /** @var InvoiceDAO $invoiceDao */
+        $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
+        $paidInvoice = $invoiceDao->getById($invoiceId);
+        if (!$paidInvoice) {
+            return null;
+        }
+
+        $paidGross = (float) ($payload['mc_gross'] ?? 0);
+        $paidCurrency = strtoupper((string) ($payload['mc_currency'] ?? ''));
+        $expectedAmount = $paidInvoice->getAmount();
+        $expectedCurrency = strtoupper($paidInvoice->getCurrencyCode());
+
+        if (abs($paidGross - $expectedAmount) > 0.01 || $paidCurrency !== $expectedCurrency) {
+            $this->_alertSiteAdmins('PayPal', "Nominal IPN tidak cocok untuk invoice #{$invoiceId}. Diharapkan {$expectedAmount} {$expectedCurrency}, diterima {$paidGross} {$paidCurrency}.");
+            return null;
+        }
+
         $paymentStatus = (string) ($payload['payment_status'] ?? '');
 
         $status = 'UNPAID';
@@ -117,8 +141,6 @@ class PayPalGateway implements PaymentGatewayInterface {
         } elseif (in_array($paymentStatus, ['Denied', 'Expired', 'Failed', 'Voided'], true)) {
             $status = 'CANCELLED';
         } else {
-            // Pending/lainnya -- bukan status final, jangan proses apapun,
-            // biarkan IPN berikutnya (biasanya 'Completed') yang menentukan.
             return null;
         }
 
@@ -201,6 +223,25 @@ class PayPalGateway implements PaymentGatewayInterface {
         $invoiceId = $invoice->getInvoiceId();
         $hash = $hashService->generateHash('invoice', $invoiceId);
         return "{$hash}-{$invoiceId}";
+    }
+
+    /**
+     * [SECURITY SHIELD] Kirim notifikasi ke semua Site Admin jika ada
+     * percobaan webhook palsu dari Xendit.
+     * @param string $message
+     */
+    private function _alertSiteAdmins(string $gatewayLabel, string $message): void {
+        import('classes.notification.NotificationManager');
+        $roleDao = DAORegistry::getDAO('RoleDAO'); /** @var RoleDAO $roleDao */
+        $result = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN, null);
+        $notificationManager = new NotificationManager();
+        while ($result && ($admin = $result->next())) {
+            $notificationManager->createTrivialNotification(
+                (int) $admin->getId(),
+                NOTIFICATION_TYPE_ERROR,
+                ['contents' => '[Xendit] ' . $message]
+            );
+        }
     }
 
 }

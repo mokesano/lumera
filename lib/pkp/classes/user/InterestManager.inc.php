@@ -11,6 +11,7 @@ declare(strict_types=1);
  * @class InterestManager
  * @ingroup user
  * @see InterestDAO
+ * 
  * @brief Handle user interest functions.
  */
 
@@ -23,28 +24,39 @@ class InterestManager {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function InterestManager() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::InterestManager(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Get all interests for all users in the system
-     * @param $filter string
+     * Get all interests for all users in the system.
+     * @param string|null $filter
      * @return array
      */
     public function getAllInterests($filter = null) {
-        $interestDao = DAORegistry::getDAO('InterestDAO'); /* @var $interestDao InterestDAO */
+        /** @var InterestDAO $interestDao */
+        $interestDao = DAORegistry::getDAO('InterestDAO');
         $interests = $interestDao->getAllInterests($filter);
 
-        $interestReturner = array();
-        while($interest = $interests->next()) {
-            $interestReturner[] = $interest->getInterest();
-            unset($interest);
+        $interestReturner = [];
+        if ($interests !== null) {
+            while ($interest = $interests->next()) {
+                // [WIZDAM FIX] ControlledVocabEntry uses getName(), not getInterest()
+                if (method_exists($interest, 'getName')) {
+                    $interestReturner[] = (string) $interest->getName();
+                } elseif (method_exists($interest, 'getInterest')) { // Fallback for legacy
+                    $interestReturner[] = (string) $interest->getInterest();
+                }
+            }
         }
 
         return $interestReturner;
@@ -52,26 +64,40 @@ class InterestManager {
 
     /**
      * Get user reviewing interests. (Cached in memory for batch fetches.)
-     * @param $user PKPUser
+     * @param object $user PKPUser
      * @return array
      */
     public function getInterestsForUser($user) {
-        static $interestsCache = array();
-        $interests = array();
+        static $interestsCache = [];
+        $interests = [];
 
+        /** @var InterestDAO $interestDao */
         $interestDao = DAORegistry::getDAO('InterestDAO');
+        /** @var InterestEntryDAO $interestEntryDao */
         $interestEntryDao = DAORegistry::getDAO('InterestEntryDAO');
         
         $controlledVocab = $interestDao->build();
-        foreach($interestDao->getUserInterestIds($user->getId()) as $interestEntryId) {
-            if (!isset($interestsCache[$interestEntryId])) {
-                $interestsCache[$interestEntryId] = $interestEntryDao->getById(
-                    $interestEntryId,
-                    $controlledVocab->getId()
-                );
-            }
-            if (isset($interestsCache[$interestEntryId])) {
-                $interests[] = $interestsCache[$interestEntryId]->getInterest();
+        $userId = (int) $user->getId();
+        $vocabId = (int) $controlledVocab->getId();
+
+        $userInterestIds = $interestDao->getUserInterestIds($userId);
+        if (is_array($userInterestIds)) {
+            foreach ($userInterestIds as $interestEntryId) {
+                $entryId = (int) $interestEntryId;
+                if (!isset($interestsCache[$entryId])) {
+                    $interestsCache[$entryId] = $interestEntryDao->getById($entryId, $vocabId);
+                }
+                
+                if (isset($interestsCache[$entryId]) && $interestsCache[$entryId] !== null) {
+                    $entry = $interestsCache[$entryId];
+                    
+                    if (method_exists($entry, 'getName')) {
+                        $interests[] = (string) $entry->getName(AppLocale::getLocale());
+                    } elseif (method_exists($entry, 'getInterest')) {
+                        // Fallback for any legacy custom implementation
+                        $interests[] = (string) $entry->getInterest();
+                    }
+                }
             }
         }
 
@@ -79,27 +105,35 @@ class InterestManager {
     }
 
     /**
-     * Returns a comma separated string of a user's interests
-     * @param $user PKPUser
+     * Returns a comma-separated string of a user's interests.
+     * @param object $user PKPUser
      * @return string
      */
     public function getInterestsString($user) {
         $interests = $this->getInterestsForUser($user);
-
-        return implode(', ', $interests);
+        return is_array($interests) ? implode(', ', $interests) : '';
     }
 
     /**
-     * Set a user's interests
-     * @param $user PKPUser
-     * @param $interests mixed
+     * Set a user's interests.
+     * @param object $user PKPUser
+     * @param mixed $interests
+     * @return void
      */
     public function setInterestsForUser($user, $interests) {
+        /** @var InterestDAO $interestDao */
         $interestDao = DAORegistry::getDAO('InterestDAO');
         
-        $interests = is_array($interests) ? $interests : (empty($interests) ? null : explode(",", $interests));
-        $interestDao->setUserInterests($interests, $user->getId());
+        if (is_array($interests)) {
+            $parsedInterests = $interests;
+        } elseif (empty($interests)) {
+            $parsedInterests = null;
+        } else {
+            $parsedInterests = explode(',', (string) $interests);
+        }
+        
+        $interestDao->setUserInterests($parsedInterests, (int) $user->getId());
     }
-}
 
+}
 ?>

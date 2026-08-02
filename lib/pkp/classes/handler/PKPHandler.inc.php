@@ -312,20 +312,27 @@ class PKPHandler {
                 
                 /** LUMERA: CSRF global */
                 if (!ValidatorCSRF::checkSignedToken($clientToken, 'global', [], false)) {
+                    $isAjaxRequest = $request->getUserVar('ajax') == 1
+                        || strtolower((string) ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest';
+
+                    if ($isAjaxRequest) {
+                        header('Content-Type: application/json');
+                        http_response_code(403);
+                        echo json_encode(['status' => 'error', 'message' => __('common.csrf.validation.error')]);
+                        exit;
+                    }
+
                     $session = $request->getSession();
-                    
                     $userInput = $request->getUserVars();
-                    unset($userInput[ValidatorCSRF::FIELD_NAME]); 
+                    unset($userInput[ValidatorCSRF::FIELD_NAME]);
                     $session->setSessionVar('wizdam_old_input', $userInput);
 
                     import('classes.notification.NotificationManager');
                     $notificationManager = new NotificationManager();
                     $user = $request->getUser();
                     $userId = $user ? $user->getId() : 0;
-                    
                     $notificationManager->createTrivialNotification(
-                        $userId,
-                        NOTIFICATION_TYPE_ERROR,
+                        $userId, NOTIFICATION_TYPE_ERROR,
                         ['contents' => __('common.csrf.validation.error')]
                     );
 

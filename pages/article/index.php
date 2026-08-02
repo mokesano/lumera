@@ -19,6 +19,9 @@ declare(strict_types=1);
 
 /** @var string $op */
 switch ($op) {
+	//
+	// Aticle View
+	//
 	case 'view':
 	case 'pii':
 	case 'viewPDFInterstitial':
@@ -30,6 +33,13 @@ switch ($op) {
 	case 'downloadSuppFile':
 		define('HANDLER_CLASS', 'ArticleHandler');
 		import('pages.article.ArticleHandler');
+		break;
+	//
+	// Article Metrics
+	//
+	case 'metrics':
+		define('HANDLER_CLASS', 'ArticleMetricsHandler');
+		import('pages.article.ArticleMetricsHandler');
 		break;
 }
 

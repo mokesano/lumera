@@ -76,8 +76,30 @@
     <message key="document.loa.unauthorized">Akses Ditolak. Anda tidak memiliki hak akses untuk mengunduh dokumen naskah ini.</message>
     <message key="document.loa.pendingPaymentAlert">Dokumen (LoA) belum dapat diterbitkan. Silakan selesaikan tagihan yang masih tertunda di bawah ini.</message>
     <message key="document.loa.notFound">Data naskah atau status penerimaan tidak ditemukan di dalam sistem.</message>
+    <message key="document.loa.notYetAccepted">Naskah ini belum menerima keputusan Accept resmi dari editor.</message>
     <message key="document.error.hashValidationFailed">Verifikasi keamanan gagal. Tautan dokumen mungkin telah dimanipulasi.</message>
-    
+
+    <!-- Letter of Acceptance: isi dokumen (tampilan HTML + PDF) -->
+    <message key="document.loa.heading">SURAT PENERIMAAN NASKAH</message>
+    <message key="document.loa.downloadPdf">Unduh PDF Resmi</message>
+    <message key="document.loa.dearAuthor">Kepada Yth.</message>
+    <message key="document.loa.introText">Dengan hormat, kami sampaikan bahwa naskah Anda yang berjudul:</message>
+    <message key="document.loa.acceptanceStatementBefore">secara resmi telah</message>
+    <message key="document.loa.acceptedWord">DITERIMA</message>
+    <message key="document.loa.acceptanceStatementAfter">untuk diterbitkan di {$journalTitle}.</message>
+    <message key="document.loa.dateSubmittedLabel">Tanggal Diserahkan</message>
+    <message key="document.loa.dateAcceptedLabel">Tanggal Diterima</message>
+    <message key="document.loa.editorialTeamTitle">Tim Editorial</message>
+    <message key="document.loa.handlingEditor">Editor Penanggung Jawab</message>
+    <message key="document.loa.handlingEditors">Editor Penanggung Jawab</message>
+    <message key="document.loa.journalManager">Journal Manager</message>
+    <message key="document.loa.journalManagers">Journal Manager</message>
+    <message key="document.loa.notConfigured">Belum diatur</message>
+    <message key="document.loa.sincerely">Hormat kami,</message>
+    <message key="document.loa.editorialBoard">Dewan Editorial</message>
+    <message key="document.loa.scanToVerify">Pindai untuk Verifikasi</message>
+    <message key="document.loa.verifyThisDocument">Verifikasi Surat Penerimaan Naskah Ini</message>
+
     <!-- Certificate -->
     <message key="document.cert.indexTitle">Sertifikat Saya</message>
     <message key="document.cert.status.reviewCompleted">Review Selesai</message>
@@ -87,6 +109,22 @@
     <message key="document.cert.unauthorized">Akses Ditolak. Ini bukan sertifikat milik Anda.</message>
     <message key="document.cert.incompleteReview">Sertifikat belum dapat diterbitkan karena tugas ulasan (review) belum selesai.</message>
     <message key="document.cert.notFound">Data sertifikat tidak ditemukan.</message>
+
+    <!-- Certificate: isi dokumen (tampilan HTML + PDF) -->
+    <message key="document.cert.headingEditor">Sertifikat Layanan Editorial</message>
+    <message key="document.cert.headingReviewer">Sertifikat Penghargaan (Reviewer)</message>
+    <message key="document.cert.downloadPdf">Unduh PDF Resmi</message>
+    <message key="document.cert.presentedTo">Sertifikat ini dengan bangga dipersembahkan kepada</message>
+    <message key="document.cert.editorRecognitionText">Sebagai pengakuan atas dedikasi layanan editorial untuk naskah:</message>
+    <message key="document.cert.reviewerRecognitionText">Sebagai pengakuan atas kontribusi telaah sejawat (peer-review) yang berharga untuk naskah:</message>
+    <message key="document.cert.certificateNumberLabel">Nomor Sertifikat</message>
+    <message key="document.cert.dateAssignedLabel">Tanggal Penugasan</message>
+    <message key="document.cert.dateCompletedLabel">Tanggal Selesai</message>
+    <message key="document.cert.bestRegards">Hormat kami,</message>
+    <message key="document.cert.editorialBoard">Dewan Editorial</message>
+    <message key="document.cert.journalManager">Journal Manager</message>
+    <message key="document.cert.journalManagers">Journal Manager</message>
+    <message key="document.cert.scanToVerify">Pindai untuk Verifikasi</message>
 
     <message key="billing.loa.indexTitle">Letter of Acceptance</message>
     <message key="billing.loa.status.accepted">Diterima</message>

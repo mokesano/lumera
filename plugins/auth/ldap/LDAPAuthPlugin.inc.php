@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_auth_ldap
  *
  * @brief LDAP authentication plugin.
- * [WIZDAM EDITION] Refactored for PHP 7.4/8.0+ (Strict Types, LDAP Objects, Signature Fixes)
  */
 
 import('classes.plugins.AuthPlugin');
@@ -20,19 +19,23 @@ import('classes.plugins.AuthPlugin');
 class LDAPAuthPlugin extends AuthPlugin {
     
     /** @var resource|\LDAP\Connection|null The LDAP connection */
-    public $conn = null;
+    protected $conn = null;
 
     /**
-     * Constructor
+     * Constructor.
+     * @param array|null $settings
+     * @param int|null $authId
      */
     public function __construct($settings = null, $authId = null) {
         parent::__construct($settings, $authId);
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param array|null $settings
+     * @param int|null $authId
      */
-    public function LDAPAuthPlugin() {
+    public function LDAPAuthPlugin($settings = null, $authId = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
@@ -44,7 +47,7 @@ class LDAPAuthPlugin extends AuthPlugin {
     }
 
     /**
-     * Called as a plugin is registered to the registry
+     * Called as a plugin is registered to the registry.
      * @param string $category Name of category plugin was registered to
      * @param string $path The path the plugin was found in
      * @return bool True iff plugin initialized successfully
@@ -84,9 +87,9 @@ class LDAPAuthPlugin extends AuthPlugin {
     //
 
     /**
-     * Returns an instance of the authentication plugin
-     * @param array|null $settings settings specific to this instance.
-     * @param int|null $authId identifier for this instance
+     * Returns an instance of the authentication plugin.
+     * @param array|null $settings Settings specific to this instance.
+     * @param int|null $authId Identifier for this instance.
      * @return LDAPAuthPlugin
      */
     public function getInstance($settings, $authId): LDAPAuthPlugin {
@@ -97,19 +100,17 @@ class LDAPAuthPlugin extends AuthPlugin {
      * Authenticate a username and password.
      * @param string $username
      * @param string $password
-     * @return bool true if authentication is successful
+     * @return bool True if authentication is successful
      */
     public function authenticate(string $username, string $password): bool {
         $valid = false;
-        if (!empty($password)) {
+        if ($password !== '') {
             if ($this->open()) {
                 $entry = $this->getUserEntry($username);
-                if ($entry) {
-                    if ($this->conn) {
-                        $userdn = ldap_get_dn($this->conn, $entry);
-                        if ($userdn && $this->bind($userdn, $password)) {
-                            $valid = true;
-                        }
+                if ($entry && $this->conn) {
+                    $userdn = @ldap_get_dn($this->conn, $entry);
+                    if ($userdn !== false && $this->bind($userdn, $password)) {
+                        $valid = true;
                     }
                 }
                 $this->close();
@@ -131,9 +132,9 @@ class LDAPAuthPlugin extends AuthPlugin {
         $exists = false;
         if ($this->open()) {
             if ($this->bind()) {
-                $result = ldap_search($this->conn, $this->settings['basedn'], $this->settings['uid'] . '=' . $username);
-                if ($result) {
-                    $exists = (ldap_count_entries($this->conn, $result) !== 0);
+                $result = @ldap_search($this->conn, (string) ($this->settings['basedn'] ?? ''), (string) ($this->settings['uid'] ?? 'uid') . '=' . $username);
+                if ($result !== false) {
+                    $exists = (@ldap_count_entries($this->conn, $result) > 0);
                 }
             }
             $this->close();
@@ -143,16 +144,16 @@ class LDAPAuthPlugin extends AuthPlugin {
 
     /**
      * Retrieve user profile information from the LDAP server.
-     * @param User $user User to update
-     * @return bool true if successful
+     * @param object $user User to update
+     * @return bool True if successful
      */
     public function getUserInfo($user): bool {
         $valid = false;
         if ($this->open()) {
-            $entry = $this->getUserEntry($user->getUsername());
-            if ($entry) {
+            $entry = $this->getUserEntry((string) $user->getUsername());
+            if ($entry && $this->conn) {
                 $valid = true;
-                $attr = ldap_get_attributes($this->conn, $entry);
+                $attr = @ldap_get_attributes($this->conn, $entry);
                 if (is_array($attr)) {
                     $this->userFromAttr($user, $attr);
                 }
@@ -164,19 +165,19 @@ class LDAPAuthPlugin extends AuthPlugin {
 
     /**
      * Store user profile information on the LDAP server.
-     * @param User $user User to store
-     * @return bool true if successful
+     * @param object $user User to store
+     * @return bool True if successful
      */
     public function setUserInfo($user): bool {
         $valid = false;
         if ($this->open()) {
-            $entry = $this->getUserEntry($user->getUsername());
-            if ($entry) {
-                $userdn = ldap_get_dn($this->conn, $entry);
-                if ($userdn && $this->bind($this->settings['managerdn'], $this->settings['managerpwd'])) {
+            $entry = $this->getUserEntry((string) $user->getUsername());
+            if ($entry && $this->conn) {
+                $userdn = @ldap_get_dn($this->conn, $entry);
+                if ($userdn !== false && $this->bind((string) ($this->settings['managerdn'] ?? ''), (string) ($this->settings['managerpwd'] ?? ''))) {
                     $attr = [];
                     $this->userToAttr($user, $attr);
-                    $valid = ldap_modify($this->conn, $userdn, $attr);
+                    $valid = (bool) @ldap_modify($this->conn, $userdn, $attr);
                 }
             }
             $this->close();
@@ -186,20 +187,19 @@ class LDAPAuthPlugin extends AuthPlugin {
 
     /**
      * Change a user's password on the LDAP server.
-     * [FIX] Signature updated to return bool to match Parent::setUserPassword
-     * @param string $username user to update
-     * @param string $password the new password
+     * @param string $username User to update
+     * @param string $password The new password
      * @return bool
      */
     public function setUserPassword(string $username, string $password): bool {
         $success = false;
         if ($this->open()) {
             $entry = $this->getUserEntry($username);
-            if ($entry) {
-                $userdn = ldap_get_dn($this->conn, $entry);
-                if ($userdn && $this->bind($this->settings['managerdn'], $this->settings['managerpwd'])) {
+            if ($entry && $this->conn) {
+                $userdn = @ldap_get_dn($this->conn, $entry);
+                if ($userdn !== false && $this->bind((string) ($this->settings['managerdn'] ?? ''), (string) ($this->settings['managerpwd'] ?? ''))) {
                     $attr = ['userPassword' => $this->encodePassword($password)];
-                    $success = ldap_modify($this->conn, $userdn, $attr);
+                    $success = (bool) @ldap_modify($this->conn, $userdn, $attr);
                 }
             }
             $this->close();
@@ -209,22 +209,22 @@ class LDAPAuthPlugin extends AuthPlugin {
 
     /**
      * Create a user on the LDAP server.
-     * @param User $user User to create
-     * @return bool true if successful
+     * @param object $user User to create
+     * @return bool True if successful
      */
     public function createUser($user): bool {
         $valid = false;
         if ($this->open()) {
-            if (!$this->getUserEntry($user->getUsername())) {
-                if ($this->bind($this->settings['managerdn'], $this->settings['managerpwd'])) {
-                    $userdn = $this->settings['uid'] . '=' . $user->getUsername() . ',' . $this->settings['basedn'];
+            if (!$this->getUserEntry((string) $user->getUsername())) {
+                if ($this->bind((string) ($this->settings['managerdn'] ?? ''), (string) ($this->settings['managerpwd'] ?? ''))) {
+                    $userdn = (string) ($this->settings['uid'] ?? 'uid') . '=' . $user->getUsername() . ',' . (string) ($this->settings['basedn'] ?? '');
                     $attr = [
                         'objectclass' => ['top', 'person', 'organizationalPerson', 'inetorgperson'],
-                        $this->settings['uid'] => $user->getUsername(),
-                        'userPassword' => $this->encodePassword($user->getPassword())
+                        (string) ($this->settings['uid'] ?? 'uid') => $user->getUsername(),
+                        'userPassword' => $this->encodePassword((string) $user->getPassword())
                     ];
                     $this->userToAttr($user, $attr);
-                    $valid = ldap_add($this->conn, $userdn, $attr);
+                    $valid = (bool) @ldap_add($this->conn, $userdn, $attr);
                 }
             }
             $this->close();
@@ -234,17 +234,17 @@ class LDAPAuthPlugin extends AuthPlugin {
 
     /**
      * Delete a user from the LDAP server.
-     * @param string $username user to delete
-     * @return bool true if successful
+     * @param string $username User to delete
+     * @return bool True if successful
      */
     public function deleteUser(string $username): bool {
         $valid = false;
         if ($this->open()) {
             $entry = $this->getUserEntry($username);
-            if ($entry) {
-                $userdn = ldap_get_dn($this->conn, $entry);
-                if ($userdn && $this->bind($this->settings['managerdn'], $this->settings['managerpwd'])) {
-                    $valid = ldap_delete($this->conn, $userdn);
+            if ($entry && $this->conn) {
+                $userdn = @ldap_get_dn($this->conn, $entry);
+                if ($userdn !== false && $this->bind((string) ($this->settings['managerdn'] ?? ''), (string) ($this->settings['managerpwd'] ?? ''))) {
+                    $valid = (bool) @ldap_delete($this->conn, $userdn);
                 }
             }
             $this->close();
@@ -261,26 +261,27 @@ class LDAPAuthPlugin extends AuthPlugin {
      * @return resource|\LDAP\Connection|false
      */
     public function open() {
-        $hostname = (string) $this->settings['hostname'];
-        $port = (int) $this->settings['port'];
+        $hostname = (string) ($this->settings['hostname'] ?? '');
+        $port = (int) ($this->settings['port'] ?? 389);
 
         if (strpos($hostname, 'ldap://') === false && strpos($hostname, 'ldaps://') === false) {
             $protocol = ($port === 636) ? 'ldaps://' : 'ldap://';
             $uri = $protocol . $hostname . ':' . $port;
-            $this->conn = ldap_connect($uri);
+            $this->conn = @ldap_connect($uri);
         } else {
-            $this->conn = ldap_connect($hostname, $port);
+            $this->conn = @ldap_connect($hostname, $port);
         }
 
         if ($this->conn) {
-            ldap_set_option($this->conn, LDAP_OPT_PROTOCOL_VERSION, 3);
-            ldap_set_option($this->conn, LDAP_OPT_REFERRALS, 0);
+            @ldap_set_option($this->conn, LDAP_OPT_PROTOCOL_VERSION, 3);
+            @ldap_set_option($this->conn, LDAP_OPT_REFERRALS, 0);
         }
         return $this->conn;
     }
 
     /**
      * Close connection.
+     * @return void
      */
     public function close(): void {
         if ($this->conn) {
@@ -291,25 +292,30 @@ class LDAPAuthPlugin extends AuthPlugin {
 
     /**
      * Bind to a directory.
-     * @param string|null $binddn directory to bind (optional)
-     * @param string|null $password (optional)
+     * @param string|null $binddn Directory to bind (optional)
+     * @param string|null $password Password (optional)
      * @return bool
      */
     public function bind($binddn = null, $password = null): bool {
-        if (!$this->conn) return false;
+        if (!$this->conn) {
+            return false;
+        }
 
-        if (isset($this->settings['sasl'])) {
-            return @ldap_sasl_bind(
+        $binddnStr = $binddn !== null ? (string) $binddn : null;
+        $passwordStr = $password !== null ? (string) $password : null;
+
+        if (isset($this->settings['sasl']) && $this->settings['sasl']) {
+            return (bool) @ldap_sasl_bind(
                 $this->conn, 
-                $binddn, 
-                $password, 
-                $this->settings['saslmech'], 
-                $this->settings['saslrealm'], 
-                $this->settings['saslauthzid'], 
-                $this->settings['saslprop']
+                $binddnStr, 
+                $passwordStr, 
+                (string) ($this->settings['saslmech'] ?? ''), 
+                (string) ($this->settings['saslrealm'] ?? ''), 
+                (string) ($this->settings['saslauthzid'] ?? ''), 
+                (string) ($this->settings['saslprop'] ?? '')
             );
         }
-        return @ldap_bind($this->conn, $binddn, $password);
+        return (bool) @ldap_bind($this->conn, $binddnStr, $passwordStr);
     }
 
     /**
@@ -319,10 +325,10 @@ class LDAPAuthPlugin extends AuthPlugin {
      */
     public function getUserEntry(string $username) {
         $entry = false;
-        if ($this->bind($this->settings['managerdn'], $this->settings['managerpwd'])) {
-            $result = ldap_search($this->conn, $this->settings['basedn'], $this->settings['uid'] . '=' . $username);
-            if ($result && ldap_count_entries($this->conn, $result) === 1) {
-                $entry = ldap_first_entry($this->conn, $result);
+        if ($this->bind((string) ($this->settings['managerdn'] ?? ''), (string) ($this->settings['managerpwd'] ?? ''))) {
+            $result = @ldap_search($this->conn, (string) ($this->settings['basedn'] ?? ''), (string) ($this->settings['uid'] ?? 'uid') . '=' . $username);
+            if ($result !== false && @ldap_count_entries($this->conn, $result) === 1) {
+                $entry = @ldap_first_entry($this->conn, $result);
             }
         }
         return $entry;
@@ -330,8 +336,9 @@ class LDAPAuthPlugin extends AuthPlugin {
 
     /**
      * Update User object from entry attributes.
-     * @param User $user
+     * @param object $user
      * @param array $uattr
+     * @return void
      */
     public function userFromAttr($user, array $uattr): void {
         $attr = array_change_key_case($uattr, CASE_LOWER);
@@ -343,65 +350,82 @@ class LDAPAuthPlugin extends AuthPlugin {
         $phone = $attr['telephonenumber'][0] ?? null;
         $fax = $attr['facsimiletelephonenumber'][0] ?? $attr['fax'][0] ?? null;
         $mailingAddress = $attr['postaladdress'][0] ?? $attr['registeredaddress'][0] ?? null;
-        
-        $middleName = null;
-        $initials = null;
-        $biography = null;
-        $interests = null;
 
-        if ($firstName) $user->setFirstName($firstName);
-        if ($middleName) $user->setMiddleName($middleName);
-        if ($initials) $user->setInitials($initials);
-        if ($lastName) $user->setLastName($lastName);
-        if ($affiliation) $user->setAffiliation($affiliation, AppLocale::getLocale());
-        if ($email) $user->setEmail($email);
-        if ($phone) $user->setPhone($phone);
-        if ($fax) $user->setFax($fax);
-        if ($mailingAddress) $user->setMailingAddress($mailingAddress);
-        if ($biography) $user->setBiography($biography, AppLocale::getLocale());
-        if ($interests) $user->setInterests($interests, AppLocale::getLocale());
+        /** @var PKPUser $user */
+        if ($firstName) {
+            $user->setFirstName((string) $firstName);
+        }
+        if ($lastName) {
+            $user->setLastName((string) $lastName);
+        }
+        if ($affiliation) {
+            $user->setAffiliation((string) $affiliation, AppLocale::getLocale());
+        }
+        if ($email) {
+            $user->setEmail((string) $email);
+        }
+        if ($phone) {
+            $user->setPhone((string) $phone);
+        }
+        if ($fax) {
+            $user->setFax((string) $fax);
+        }
+        if ($mailingAddress) {
+            $user->setMailingAddress((string) $mailingAddress);
+        }
     }
 
     /**
      * Update entry attributes from User object.
-     * @param User $user
+     * @param object $user
      * @param array $attr
+     * @return void
      */
     public function userToAttr($user, array &$attr): void {
-        if ($user->getFullName())
-            $attr['cn'] = $user->getFullName();
-        if ($user->getFirstName())
-            $attr['givenName'] = $user->getFirstName();
-        if ($user->getLastName())
-            $attr['sn'] = $user->getLastName();
-        if ($user->getAffiliation())
-            $attr['organizationName'] = $user->getAffiliation(AppLocale::getLocale());
-        if ($user->getEmail())
-            $attr['mail'] = $user->getEmail();
-        if ($user->getPhone())
-            $attr['telephoneNumber'] = $user->getPhone();
-        if ($user->getFax())
-            $attr['facsimileTelephoneNumber'] = $user->getFax();
-        if ($user->getMailingAddress())
-            $attr['postalAddress'] = $user->getMailingAddress();
+        if ($user->getFullName()) {
+            $attr['cn'] = (string) $user->getFullName();
+        }
+        if ($user->getFirstName()) {
+            $attr['givenName'] = (string) $user->getFirstName();
+        }
+        if ($user->getLastName()) {
+            $attr['sn'] = (string) $user->getLastName();
+        }
+        if ($user->getAffiliation(AppLocale::getLocale())) {
+            $attr['organizationName'] = (string) $user->getAffiliation(AppLocale::getLocale());
+        }
+        if ($user->getEmail()) {
+            $attr['mail'] = (string) $user->getEmail();
+        }
+        if ($user->getPhone()) {
+            $attr['telephoneNumber'] = (string) $user->getPhone();
+        }
+        if ($user->getFax()) {
+            $attr['facsimileTelephoneNumber'] = (string) $user->getFax();
+        }
+        if ($user->getMailingAddress()) {
+            $attr['postalAddress'] = (string) $user->getMailingAddress();
+        }
     }
 
     /**
      * Encode password for the 'userPassword' field using the specified hash.
      * @param string $password
-     * @return string hashed string (with prefix).
+     * @return string Hashed string (with prefix).
      */
     public function encodePassword(string $password): string {
-        switch ($this->settings['pwhash']) {
+        $hashType = (string) ($this->settings['pwhash'] ?? 'md5');
+        
+        switch ($hashType) {
             case 'md5':
                 return '{MD5}' . base64_encode(pack('H*', md5($password)));
             case 'smd5':
-                $salt = pack('C*', mt_rand(), mt_rand(), mt_rand(), mt_rand(), mt_rand(), mt_rand());
+                $salt = random_bytes(6);
                 return '{SMD5}' . base64_encode(pack('H*', md5($password . $salt)) . $salt);
             case 'sha':
                 return '{SHA}' . base64_encode(pack('H*', sha1($password)));
             case 'ssha':
-                $salt = pack('C*', mt_rand(), mt_rand(), mt_rand(), mt_rand(), mt_rand(), mt_rand());
+                $salt = random_bytes(6);
                 return '{SSHA}' . base64_encode(pack('H*', sha1($password . $salt)) . $salt);
             case 'crypt':
                 return '{CRYPT}' . crypt($password, '$1$' . uniqid() . '$');
@@ -409,6 +433,6 @@ class LDAPAuthPlugin extends AuthPlugin {
                 return $password;
         }
     }
-}
 
+}
 ?>

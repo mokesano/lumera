@@ -383,6 +383,81 @@ class PKPAuthor extends DataObject {
     public function setSequence($sequence) {
         $this->setData('sequence', $sequence !== null ? (float) $sequence : null);
     }
+
+    /**
+     * Build a deduplicated affiliation reference map for a set of authors.
+     *
+     * Setiap baris afiliasi (dipisah newline, satu author bisa punya lebih
+     * dari satu afiliasi) dikumpulkan dari seluruh author lalu diberi nomor
+     * referensi unik berurutan sesuai kemunculan pertama; author yang
+     * berbagi teks afiliasi yang sama otomatis berbagi nomor yang sama,
+     * persis seperti superscript referensi pada paper akademik.
+     *
+     * Static: fungsi ini beroperasi atas kumpulan author ($authors), bukan
+     * atas satu instance -- tidak menyentuh $this sama sekali, sehingga
+     * secara arsitektural bukan perilaku milik satu Author, melainkan
+     * utilitas lintas-author. Dipanggil langsung dari template:
+     *   PKPAuthor::buildAffiliationMap($authors)
+     *
+     * @param PKPAuthor[] $authors Hasil $article->getAuthors()
+     * @return array{
+     *     affiliations: array<int, array{index:int, text:string}>,
+     *     refsByAuthorId: array<int, int[]>
+     * }
+     */
+    public static function buildAffiliationMap($authors) {
+        $affiliations = [];
+        $affiliationIndexByText = [];
+        $refsByAuthorId = [];
+        $nextIndex = 1;
+
+        if (!is_array($authors)) {
+            return ['affiliations' => $affiliations, 'refsByAuthorId' => $refsByAuthorId];
+        }
+
+        foreach ($authors as $author) {
+            $lines = preg_split('/\r\n|\r|\n/', (string) $author->getLocalizedAffiliation());
+            $lines = array_values(array_filter(array_map('trim', $lines), function($line) {
+                return $line !== '';
+            }));
+
+            // Nama negara ditempel ke baris afiliasi terakhir author.
+            if (!empty($lines) && $author->getCountry()) {
+                $countryName = (string) $author->getCountryLocalized();
+                if ($countryName !== '') {
+                    $lastIndex = count($lines) - 1;
+                    $lines[$lastIndex] .= ', ' . $countryName;
+                }
+            }
+
+            $authorRefs = [];
+            foreach ($lines as $text) {
+                if (!isset($affiliationIndexByText[$text])) {
+                    $affiliationIndexByText[$text] = $nextIndex;
+                    $affiliations[] = ['index' => $nextIndex, 'text' => $text];
+                    $nextIndex++;
+                }
+                $index = $affiliationIndexByText[$text];
+                if (!in_array($index, $authorRefs, true)) {
+                    $authorRefs[] = $index;
+                }
+            }
+            sort($authorRefs, SORT_NUMERIC);
+
+            $refsByAuthorId[(int) $author->getId()] = $authorRefs;
+        }
+
+        if (count($affiliations) <= 1) {
+            foreach ($refsByAuthorId as $authorId => $refs) {
+                $refsByAuthorId[$authorId] = [];
+            }
+        }
+
+        return [
+            'affiliations' => $affiliations,
+            'refsByAuthorId' => $refsByAuthorId,
+        ];
+    }
     
 }
 ?>

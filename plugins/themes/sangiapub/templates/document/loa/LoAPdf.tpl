@@ -35,15 +35,15 @@
     <h2>{$loaData.journalTitle|escape}</h2>
 </div>
 
-<div class="wi-title">LETTER OF ACCEPTANCE</div>
+<div class="wi-title">{translate key="document.loa.heading"}</div>
 
 <div class="wi-body">
-    <p>Dear <strong>{$loaData.authors|escape}</strong>,</p>
-    <p>We are pleased to inform you that your manuscript entitled:</p>
+    <p>{translate key="document.loa.dearAuthor"} <strong>{$loaData.authors|escape}</strong>,</p>
+    <p>{translate key="document.loa.introText"}</p>
     <div class="wi-manuscript-box" style="border-left: 3px solid {$publisher.colorPrimary|escape};">"{$loaData.title|strip_unsafe_html}"</div>
-    <p>has been officially <strong>ACCEPTED</strong> for publication in {$loaData.journalTitle|escape}.</p>
-    <p>Date Submitted: {$loaData.dateSubmitted|date_format:"%d %B %Y"}</p>
-    <p>Date Accepted: {$loaData.dateAccepted|date_format:"%d %B %Y"}</p>
+    <p>{translate key="document.loa.acceptanceStatementBefore"} <strong>{translate key="document.loa.acceptedWord"}</strong> {translate key="document.loa.acceptanceStatementAfter" journalTitle=$loaData.journalTitle|escape}</p>
+    <p>{translate key="document.loa.dateSubmittedLabel"}: {$loaData.dateSubmitted|date_format:"%d %B %Y"}</p>
+    <p>{translate key="document.loa.dateAcceptedLabel"}: {$loaData.dateAccepted|date_format:"%d %B %Y"}</p>
 </div>
 
 <table class="wi-meta-grid">
@@ -51,18 +51,18 @@
         <td>
             {if $loaData.editorNames|@count > 0}
             <div class="wi-meta-box">
-                <div class="label">Handling Editor{if $loaData.editorNames|@count > 1}s{/if}</div>
+                <div class="label">{if $loaData.editorNames|@count > 1}{translate key="document.loa.handlingEditors"}{else}{translate key="document.loa.handlingEditor"}{/if}</div>
                 {foreach from=$loaData.editorNames item=name}{$name|escape}<br>{/foreach}
             </div>
             {/if}
         </td>
         <td>
             <div class="wi-meta-box">
-                <div class="label">Journal Manager{if $loaData.managerNames|@count > 1}s{/if}</div>
+                <div class="label">{if $loaData.managerNames|@count > 1}{translate key="document.loa.journalManagers"}{else}{translate key="document.loa.journalManager"}{/if}</div>
                 {if $loaData.managerNames|@count > 0}
                     {foreach from=$loaData.managerNames item=name}{$name|escape}<br>{/foreach}
                 {else}
-                    <em>Not configured</em>
+                    <em>{translate key="document.loa.notConfigured"}</em>
                 {/if}
             </div>
         </td>
@@ -73,12 +73,12 @@
     <table>
         <tr>
             <td width="70%">
-                <p>Sincerely,</p>
-                <p><strong>Editorial Board</strong><br>{$loaData.journalTitle|escape}</p>
+                <p>{translate key="document.loa.sincerely"}</p>
+                <p><strong>{translate key="document.loa.editorialBoard"}</strong><br>{$loaData.journalTitle|escape}</p>
             </td>
             <td width="30%" class="wi-qr" style="text-align:center;">
                 <img src="{$qrCodeBase64}" height="120" width="120" alt="QR Verification">
-                <p><small>Verify this Letter of Acceptance</small></p>
+                <p><small>{translate key="document.loa.verifyThisDocument"}</small></p>
             </td>
         </tr>
     </table>

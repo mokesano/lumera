@@ -343,7 +343,7 @@ class ProfileForm extends Form {
             'gossip' => is_array($user->getSetting('gossip')) ? $user->getSetting('gossip') : [],
         ];
 
-        return parent::initData($args, $request);
+        return parent::initData();
     }
 
     /**

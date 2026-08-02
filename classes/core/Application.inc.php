@@ -137,7 +137,8 @@ class Application extends PKPApplication {
      */
     public function getNameKey(): string {
         // [PERINGATAN] Jika ubah 'ojs2' ubah pemanggilan nama aplikasi.
-        // Menjadi common.wizdamEditionSystems
+        // Sebelumnya: common.wizdamEditionSystems
+        // Menjadi: common.lumeraEditorialSystems
         return 'common.openJournalSystems';
     }
 
@@ -148,7 +149,7 @@ class Application extends PKPApplication {
     public function getVersionDescriptorUrl(): string {
         // [PERINGATAN] Jika ubah 'ojs2' siapkan url cek versi aplikasi.
         // Gunakan url wizdamEditin untuk versi fork Wizdam Fork Edition
-        // return 'http://pkp.sfu.ca/ojs/xml/ojs-version.xml';
+        // Sebelumnya: return 'http://pkp.sfu.ca/ojs/xml/ojs-version.xml';
         return 'https://wizdam.sangia.org/xml/lumera-version.xml';
     }
 
@@ -181,6 +182,7 @@ class Application extends PKPApplication {
             'GroupMembershipDAO' => 'lib.pkp.classes.group.GroupMembershipDAO',
             'IndividualSubscriptionDAO' => 'classes.subscription.IndividualSubscriptionDAO',
             'InstitutionalSubscriptionDAO' => 'classes.subscription.InstitutionalSubscriptionDAO',
+            'InvoiceDAO' => 'lib.wizdam.classes.invoice.InvoiceDAO',
             'IssueDAO' => 'classes.issue.IssueDAO',
             'IssueGalleyDAO' => 'classes.issue.IssueGalleyDAO',
             'IssueFileDAO' => 'classes.issue.IssueFileDAO',

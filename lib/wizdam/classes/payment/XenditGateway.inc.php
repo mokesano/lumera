@@ -89,9 +89,14 @@ class XenditGateway implements PaymentGatewayInterface {
     public function processWebhook(array $payload): ?array {
         // [SECURITY SHIELD] Validasi Xendit Callback Token dari HTTP Header
         $incomingToken = $_SERVER['HTTP_X_CALLBACK_TOKEN'] ?? '';
-        if ($this->webhookToken !== '' && !hash_equals($this->webhookToken, $incomingToken)) {
-            error_log("WIZDAM SECURITY WARNING: Fake Xendit Webhook detected!");
-            return null; // Tolak mentah-mentah!
+
+        if ($this->webhookToken === '' || !hash_equals($this->webhookToken, $incomingToken)) {
+            $this->_alertSiteAdmins(
+                $this->webhookToken === ''
+                    ? 'Xendit webhook token belum dikonfigurasi -- webhook ditolak.'
+                    : 'Percobaan webhook Xendit palsu terdeteksi dan ditolak.'
+            );
+            return null;
         }
 
         if (!isset($payload['external_id']) || !isset($payload['status'])) {
@@ -119,6 +124,25 @@ class XenditGateway implements PaymentGatewayInterface {
             'method' => 'Xendit - ' . ($payload['payment_method'] ?? 'Unknown'),
             'reference' => (string) ($payload['id'] ?? '')
         ];
+    }
+
+    /**
+     * Kirim notifikasi ke semua admin situs jika ada masalah keamanan
+     * @param string $message
+     * @return void
+     */
+    private function _alertSiteAdmins(string $message): void {
+        import('classes.notification.NotificationManager');
+        $roleDao = DAORegistry::getDAO('RoleDAO'); /** @var RoleDAO $roleDao */
+        $result = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN, null);
+        $notificationManager = new NotificationManager();
+        while ($result && ($admin = $result->next())) {
+            $notificationManager->createTrivialNotification(
+                (int) $admin->getId(),
+                NOTIFICATION_TYPE_ERROR,
+                ['contents' => '[Xendit] ' . $message]
+            );
+        }
     }
     
 }

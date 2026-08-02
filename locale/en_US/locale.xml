@@ -91,7 +91,6 @@
 
 	<!-- Common Form Messages -->
 	
-
 	<!-- Common Email Messages -->
 
 	<!-- Common Localization Terms -->
@@ -128,7 +127,6 @@
 
 	<!-- Common Error Messages -->
 	
-
 	<!-- Navigation -->
 	<message key="navigation.nextIssue">Next issue</message>
 	<message key="navigation.prevIssue">Previous issue</message>
@@ -374,7 +372,6 @@
 	<message key="submission.event.general.articlePublished">Article published</message>
 
 	<message key="submission.event.author.authorRevision">Author revision submitted</message>
-
 	<message key="submission.event.general.authorRevision">Author revision file updated</message>
 
 	<message key="submission.event.editor.editorAssigned">Editor assigned to submission</message>
@@ -383,7 +380,6 @@
 	<message key="submission.event.editor.editorFile">Editor file updated</message>
 	<message key="submission.event.editor.submissionArchived">Submission sent to archive</message>
 	<message key="submission.event.editor.submissionRestored">Submission restored from archive</message>
-
 
 	<message key="submission.event.copyedit.copyeditorAssigned">Copyeditor assigned to submission</message>
 	<message key="submission.event.copyedit.copyeditorUnassigned">Copyeditor unassigned from submission</message>
@@ -404,6 +400,7 @@
 	<message key="submission.event.layout.layoutInitiated">Layout assignment initiated</message>
 	<message key="submission.event.layout.layoutGalleyCreated">Layout galley updated</message>
 	<message key="submission.event.layout.layoutComplete">Layout assignment completed</message>
+
 	<!--
 	 *
 	 * INTERFACE - Contains phrases organized by the section of the
@@ -424,31 +421,35 @@
 
 	<!-- Site Administration -->
 
-	<message key="admin.settings.oaiRegistrationDescription"><![CDATA[To have the contents of all journals hosted on this site indexed within a globally distributed system of research databases, <a href="http://pkp.sfu.ca/harvester/add.php" target="_blank">register</a> your site's URL with the Public Knowledge Project metadata <a href="http://pkp.sfu.ca/harvester/" target="_blank">harvester</a>. This tool collects the metadata from each indexed item in this journal, enabling accurate and collective searching among the research sites that adhere to the <a href="http://www.openarchives.org/OAI/openarchivesprotocol.htm#Introduction" target="_blank">Open Archives Initiative Protocol for Metadata Harvesting</a>.
-<br /><br />
-<a href="http://pkp.sfu.ca/harvester/add.php" target="_blank">Click here</a> and enter <span class="highlight">{$siteUrl}</span> under <strong>Site URL</strong>, and <span class="highlight">{$oaiUrl}</span> under <strong>Base URL for OAI Archive</strong>.
-<br /><br />
-Note that the OAI interface can be disabled for this site by editing the OJS system configuration. Future versions of OJS will allow the OAI interface to be enabled or disabled for individual journals within the site.]]></message>
-
-
+	<message key="admin.settings.oaiRegistrationDescription"><![CDATA[
+		To have the contents of all journals hosted on this site indexed within a globally distributed system of research databases, <a href="http://pkp.sfu.ca/harvester/add.php" target="_blank">register</a> your site's URL with the Public Knowledge Project metadata <a href="http://pkp.sfu.ca/harvester/" target="_blank">harvester</a>. This tool collects the metadata from each indexed item in this journal, enabling accurate and collective searching among the research sites that adhere to the <a href="http://www.openarchives.org/OAI/openarchivesprotocol.htm#Introduction" target="_blank">Open Archives Initiative Protocol for Metadata Harvesting</a>.
+		<br /><br />
+		<a href="http://pkp.sfu.ca/harvester/add.php" target="_blank">Click here</a> and enter <span class="highlight">{$siteUrl}</span> under <strong>Site URL</strong>, and <span class="highlight">{$oaiUrl}</span> under <strong>Base URL for OAI Archive</strong>.
+		<br /><br />
+		Note that the OAI interface can be disabled for this site by editing the OJS system configuration. Future versions of OJS will allow the OAI interface to be enabled or disabled for individual journals within the site.]]>
+	</message>
 
 	<!-- Languages -->
-	<message key="admin.languages.downloadUnavailable"><![CDATA[<p>Downloading language packs from the Public Knowledge Project web server is not currently available because:</p>
-	<ul>
-		<li>Your server does not have or allow execution of the GNU "tar" utility</li>
-		<li>OJS is unable to modify the locale registry file, typically "registry/locales.xml".</li>
-	</ul>
-<p>Language packs can be manually downloaded from the <a href="http://pkp.sfu.ca">PKP web site</a>.</p>]]></message>
+	<message key="admin.languages.downloadUnavailable"><![CDATA[
+		<p>Downloading language packs from the Public Knowledge Project web server is not currently available because:</p>
+		<ul>
+			<li>Your server does not have or allow execution of the GNU "tar" utility</li>
+			<li>Lumera App is unable to modify the locale registry file, typically "registry/locales.xml".</li>
+		</ul>
+		<p>Language packs can be manually downloaded from the <a href="http://pkp.sfu.ca">PKP web site</a>.</p>]]>
+	</message>
 
-	<message key="admin.auth.defaultSourceDescription"><![CDATA[<p>Specifying a default authentication source other than OJS has the following effects:</p>
-<ul>
-	<li>If a user attempts to register a new account with this site with a username that exists on the authentication source (but not in the OJS database), the registration attempt is only allowed if the supplied password is valid for that user account.</li>
-</ul>]]></message>
+	<message key="admin.auth.defaultSourceDescription"><![CDATA[
+		<p>Specifying a default authentication source other than OJS has the following effects:</p>
+		<ul>
+			<li>If a user attempts to register a new account with this site with a username that exists on the authentication source (but not in the Lumera App database), the registration attempt is only allowed if the supplied password is valid for that user account.</li>
+		</ul>]]>
+	</message>
 
 	<!-- System Information -->
 	<message key="admin.overwriteConfigFileInstructions"><![CDATA[<h4>NOTE!</h4>
-<p>The system could not automatically overwrite the configuration file. To apply your configuration changes you must open <tt>config.inc.php</tt> in a suitable text editor and replace its contents with the contents of the text field below.</p>]]></message>
-
+		<p>The system could not automatically overwrite the configuration file. To apply your configuration changes you must open <tt>config.inc.php</tt> in a suitable text editor and replace its contents with the contents of the text field below.</p>]]>
+	</message>
 
 	<!-- Site Administrator Merge Users -->
 
@@ -484,52 +485,56 @@ Note that the OAI interface can be disabled for this site by editing the OJS sys
 	<!-- Setup Step 1 -->
 
 	<!-- Setup Step 2 -->
-
-
-	<message key="manager.setup.reviewProcessEmailDescription">Editors send
-	Reviewers the request to review with the submission attached to the email. Reviewers email editors their assent (or regrets), as well as the review and recommendation. Editors enter Reviewers' assent (or regrets), as well as the review and recommendation on the submission's Review page, to record the review process.</message>
-
-
+	<message key="manager.setup.reviewProcessEmailDescription">Editors send Reviewers the request to review with the submission attached to the email. Reviewers email editors their assent (or regrets), as well as the review and recommendation. Editors enter Reviewers' assent (or regrets), as well as the review and recommendation on the submission's Review page, to record the review process.</message>
 	<message key="manager.setup.preservationDescription"><![CDATA[Open Journal Systems supports the <a href="http://www.lockss.org/" target="_blank">LOCKSS</a> (Lots of Copies Keep Stuff Safe) system to ensure secure and permanent preservation of your journal. You have several options for including your journal in a LOCKSS network:]]></message>
 
-<message key="manager.setup.lockssDescription"><![CDATA[<strong>PKP Private LOCKSS Network</strong>
-<p>Any OJS journal that has an ISSN and has published at least one article can choose to agree to the terms of use and be preserved in the PKP PLN at no cost.</p>
-<p>To join, go to <a href="{$genericPluginsUrl}">Generic Plugins</a>, find PKP PLN Plugin, select Enable, and then select Settings, and accept the Terms of Use. Your content will then be automatically included in the network. No further action is required.</p>
-<strong>Other LOCKSS Networks</strong>
-<p>If you believe you have access to one or more of the LOCKSS networks listed <a href="http://www.lockss.org/community/networks/" target="_blank">here</a>, please contact the appropriate LOCKSS Network administrator to apply for inclusion. Completing the form below will allow for inclusion of your journal in those networks. <em>No content will be preserved before you have notified the appropriate network</em>.</p>]]></message>
+	<message key="manager.setup.lockssDescription"><![CDATA[<strong>PKP Private LOCKSS Network</strong>
+		<p>Any Lumera App journal that has an ISSN and has published at least one article can choose to agree to the terms of use and be preserved in the PKP PLN at no cost.</p>
+		<p>To join, go to <a href="{$genericPluginsUrl}">Generic Plugins</a>, find PKP PLN Plugin, select Enable, and then select Settings, and accept the Terms of Use. Your content will then be automatically included in the network. No further action is required.</p>
+		<strong>Other LOCKSS Networks</strong>
+		<p>If you believe you have access to one or more of the LOCKSS networks listed <a href="http://www.lockss.org/community/networks/" target="_blank">here</a>, please contact the appropriate LOCKSS Network administrator to apply for inclusion. Completing the form below will allow for inclusion of your journal in those networks. <em>No content will be preserved before you have notified the appropriate network</em>.</p>]]>
+	</message>
+
 	<!-- Setup Step 3 -->
 	<message key="manager.setup.authorCopyrightNotice.sample"><![CDATA[<h3>Examples of Creative Commons Licensing Notifications in the Copyright Notices</h3>
-<h4>1. Proposed Policy for Journals That Offer Open Access</h4>
-Authors who publish with this journal agree to the following terms:
-<ol type="a">
-	<li>Authors retain copyright and grant the journal right of first publication with the work simultaneously licensed under a <a target="_new" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution License</a> that allows others to share the work with an acknowledgement of the work's authorship and initial publication in this journal.</li>
-	<li>Authors are able to enter into separate, additional contractual arrangements for the non-exclusive distribution of the journal's published version of the work (e.g., post it to an institutional repository or publish it in a book), with an acknowledgement of its initial publication in this journal.</li>
-	<li>Authors are permitted and encouraged to post their work online (e.g., in institutional repositories or on their website) prior to and during the submission process, as it can lead to productive exchanges, as well as earlier and greater citation of published work (See <a target="_new" href="http://opcit.eprints.org/oacitation-biblio.html">The Effect of Open Access</a>).</li>
-</ol>
+		<h4>1. Proposed Policy for Journals That Offer Open Access</h4>
+		Authors who publish with this journal agree to the following terms:
+		<ol type="a">
+			<li>Authors retain copyright and grant the journal right of first publication with the work simultaneously licensed under a <a target="_new" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution License</a> that allows others to share the work with an acknowledgement of the work's authorship and initial publication in this journal.</li>
+			<li>Authors are able to enter into separate, additional contractual arrangements for the non-exclusive distribution of the journal's published version of the work (e.g., post it to an institutional repository or publish it in a book), with an acknowledgement of its initial publication in this journal.</li>
+			<li>Authors are permitted and encouraged to post their work online (e.g., in institutional repositories or on their website) prior to and during the submission process, as it can lead to productive exchanges, as well as earlier and greater citation of published work (See <a target="_new" href="http://opcit.eprints.org/oacitation-biblio.html">The Effect of Open Access</a>).</li>
+		</ol>
 
-<h4>2. Proposed Policy for Journals That Offer Delayed Open Access</h4>
-Authors who publish with this journal agree to the following terms:
-<ol type="a">
-	<li>Authors retain copyright and grant the journal right of first publication, with the work [SPECIFY PERIOD OF TIME] after publication simultaneously licensed under a <a target="_new" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution License</a> that allows others to share the work with an acknowledgement of the work's authorship and initial publication in this journal.</li>
-	 <li>Authors are able to enter into separate, additional contractual arrangements for the non-exclusive distribution of the journal's published version of the work (e.g., post it to an institutional repository or publish it in a book), with an acknowledgement of its initial publication in this journal.</li>
-	 <li>Authors are permitted and encouraged to post their work online (e.g., in institutional repositories or on their website) prior to and during the submission process, as it can lead to productive exchanges, as well as earlier and greater citation of published work (See <a target="_new" href="http://opcit.eprints.org/oacitation-biblio.html"> The Effect of Open Access</a>).</li>
-</ol>]]></message>
+		<h4>2. Proposed Policy for Journals That Offer Delayed Open Access</h4>
+		Authors who publish with this journal agree to the following terms:
+		<ol type="a">
+			<li>Authors retain copyright and grant the journal right of first publication, with the work [SPECIFY PERIOD OF TIME] after publication simultaneously licensed under a <a target="_new" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution License</a> that allows others to share the work with an acknowledgement of the work's authorship and initial publication in this journal.</li>
+			<li>Authors are able to enter into separate, additional contractual arrangements for the non-exclusive distribution of the journal's published version of the work (e.g., post it to an institutional repository or publish it in a book), with an acknowledgement of its initial publication in this journal.</li>
+			<li>Authors are permitted and encouraged to post their work online (e.g., in institutional repositories or on their website) prior to and during the submission process, as it can lead to productive exchanges, as well as earlier and greater citation of published work (See <a target="_new" href="http://opcit.eprints.org/oacitation-biblio.html"> The Effect of Open Access</a>).</li>
+		</ol>]]>
+	</message>
+
 	<message key="manager.setup.subjectClassificationDescription"><![CDATA[Journal will use a subject classification system available on the web.<br />
-Title of classification system]]></message>
+		Title of classification system]]></message>
+
 	<message key="manager.setup.registerJournalForIndexingDescription"><![CDATA[To have the contents of this journal indexed within a globally distributed system of research databases, please read <a href="http://www.oclc.org/oaister/contribute.en.html" target="_blank">the steps to becoming a data contributor</a> and register your journal with the official <a href="http://www.openarchives.org/data/registerasprovider.html" target="_blank">Open Archives registry</a>.  To register, you will need the base URL for your repository: <span class="highlight">{$oaiUrl}</span>.  Afterwards, you can register your journal at the <a href="http://gita.grainger.uiuc.edu/registry/" target="_blank">UIUC OAI registry</a> and <a href="http://www.oclc.org/oaister" target="_blank">OAIster</a>.
-<br /><br />
-Note that if your site administrator has already registered this site with these services, your journal will be indexed automatically and you do not need to register your journal.]]></message>
+		<br /><br />
+		Note that if your site administrator has already registered this site with these services, your journal will be indexed automatically and you do not need to register your journal.]]>
+	</message>
+
 	<message key="manager.setup.citations">Enable the Citation Markup Assistant</message>
 
 	<!-- Setup Step 4 -->
 	<message key="manager.setup.basicEditorialStepsDescription"><![CDATA[Steps: Submission Queue &gt; Submission Review &gt; Submission Editing &gt; Table of Contents.<br /><br />
-Select a model for handling these aspects of the editorial process. (To designate a Managing Editor and Section Editors, go to Editors in Journal Management.)]]></message>
+		Select a model for handling these aspects of the editorial process. (To designate a Managing Editor and Section Editors, go to Editors in Journal Management.)]]>
+	</message>
+	
 	<message key="manager.setup.referenceLinkingDescription"><![CDATA[<p>To enable readers to locate online versions of the work cited by an author, the following options are available.</p>
-
-<ol>
-	<li><strong>Add a Reading Tool</strong><p>The Journal Manager can add "Find References" to the Reading Tools that accompany published items, which enables readers to paste a reference's title and then search pre-selected scholarly databases for the cited work.</p></li>
-	<li><strong>Embed Links in the References</strong><p>The Layout Editor can add a link to references that can be found online by using the following instructions (which can be edited).</p></li>
-</ol>]]></message>
+		<ol>
+			<li><strong>Add a Reading Tool</strong><p>The Journal Manager can add "Find References" to the Reading Tools that accompany published items, which enables readers to paste a reference's title and then search pre-selected scholarly databases for the cited work.</p></li>
+			<li><strong>Embed Links in the References</strong><p>The Layout Editor can add a link to references that can be found online by using the following instructions (which can be edited).</p></li>
+		</ol>]]>
+	</message>
 
 	<!-- Setup Step 5 -->
 
@@ -541,12 +546,9 @@ Select a model for handling these aspects of the editorial process. (To designat
 
 	<!-- Groups / Editorial Team -->
 
-
-
 	<!-- People Management -->
 	<message key="manager.people.confirmDisable">Disable this user? This will prevent the user from logging into the system.
-
-You may optionally provide the user with a reason for disabling their account.</message>
+		You may optionally provide the user with a reason for disabling their account.</message>
 	<message key="manager.people.noAdministrativeRights"><![CDATA[Sorry, you do not have administrative rights over this user. This may be because:
 		<ul>
 			<li>The user is a site administrator</li>
@@ -554,8 +556,6 @@ You may optionally provide the user with a reason for disabling their account.</
 		</ul>
 	This task must be performed by a site administrator.
 	]]></message>
-
-
 
 	<!-- Email Management -->
 
@@ -570,29 +570,31 @@ You may optionally provide the user with a reason for disabling their account.</
 	<!-- Announcements Management -->
 
 	<!-- Editor -->
-	<message key="editor.submissionReview.notes">
-	<![CDATA[<ol>
-	<li>Highlighted items indicate action is required by an editor, labelled as follows:
-		<ul>
-			<li class="highlightReviewerNotNotified">A Reviewer has been assigned but not notified by email</li>
-			<li class="highlightNoDecision">All Reviewers have returned with their comments, but no decision is recorded</li>
-			<li class="highlightRevisedCopyUploaded">Author has uploaded a revised manuscript</li>
-			<li class="highlightReviewerConfirmationOverdue">Reviewer is overdue to confirm peer review invitation</li>
-			<li class="highlightReviewerCompletionOverdue">Reviewer is overdue to complete review</li>
-		</ul>
-	</li>
-	<li>"Due" is filled in when reviewer accepts request to review; it displays number of weeks to review's due date or (-) weeks that it is overdue.</li>
-</ol>]]></message>
-	<message key="editor.submissionEditing.notes">
-	<![CDATA[<ol>
-	<li>Highlighted items indicate action is required by an editor, labelled as follows:
-		<ul>
-			<li class="highlightCopyediting">An action is required in the copyediting stage</li>
-			<li class="highlightLayoutEditing">An action is required in the layout editing stage</li>
-			<li class="higlightProofreading">An action is required in the proofreading stage</li>
-		</ul>
-	</li>
-</ol>]]></message>
+	<message key="editor.submissionReview.notes"><![CDATA[
+		<ol>
+			<li>Highlighted items indicate action is required by an editor, labelled as follows:
+				<ul>
+					<li class="highlightReviewerNotNotified">A Reviewer has been assigned but not notified by email</li>
+					<li class="highlightNoDecision">All Reviewers have returned with their comments, but no decision is recorded</li>
+					<li class="highlightRevisedCopyUploaded">Author has uploaded a revised manuscript</li>
+					<li class="highlightReviewerConfirmationOverdue">Reviewer is overdue to confirm peer review invitation</li>
+					<li class="highlightReviewerCompletionOverdue">Reviewer is overdue to complete review</li>
+				</ul>
+			</li>
+			<li>"Due" is filled in when reviewer accepts request to review; it displays number of weeks to review's due date or (-) weeks that it is overdue.</li>
+		</ol>]]>
+	</message>
+	<message key="editor.submissionEditing.notes"><![CDATA[
+		<ol>
+			<li>Highlighted items indicate action is required by an editor, labelled as follows:
+				<ul>
+					<li class="highlightCopyediting">An action is required in the copyediting stage</li>
+					<li class="highlightLayoutEditing">An action is required in the layout editing stage</li>
+					<li class="higlightProofreading">An action is required in the proofreading stage</li>
+				</ul>
+			</li>
+		</ol>]]>
+	</message>
 
 	<!-- Editor Index Page -->
 	<message key="submission.guidelines">Submission guidelines</message>
@@ -607,15 +609,11 @@ You may optionally provide the user with a reason for disabling their account.</
 
 	<!-- Used by editor in submission review / editing -->
 	<message key="editor.article.selectReviewerNotes"><![CDATA[Name links to reviewer's profile.<br />
-Ratings is out of 5 (Excellent).<br />
-Weeks refers to average period of time to complete a review.<br />
-Latest is date of most recently accepted review.<br />
-Active is how many reviews are currently being considered or underway.]]></message>
-
-
-
-
-
+		Ratings is out of 5 (Excellent).<br />
+		Weeks refers to average period of time to complete a review.<br />
+		Latest is date of most recently accepted review.<br />
+		Active is how many reviews are currently being considered or underway.]]>
+	</message>
 
 	<!-- Section Editor -->
 	<message key="sectionEditor.activeEditorialAssignments">Active Editorial Assignments</message>
@@ -670,31 +668,31 @@ Active is how many reviews are currently being considered or underway.]]></messa
 	<message key="reviewer.article.uploadedFile">Uploaded files</message>
 	<message key="reviewer.article.reviewersAnnotatedVersion">Version uploaded by reviewer</message>
 	<message key="reviewer.article.reviewersAnnotatedVersionDescription">(If you want to annotate the file, for the editor, save on your hard drive and use Browse/Upload.)</message>
-        <message key="reviewer.article.schedule.request">Editor's Request</message>
-        <message key="reviewer.article.schedule.response">Your Response</message>
-        <message key="reviewer.article.schedule.submitted">Review Submitted</message>
-        <message key="reviewer.article.schedule.due">Review Due</message>
+    <message key="reviewer.article.schedule.request">Editor's Request</message>
+    <message key="reviewer.article.schedule.response">Your Response</message>
+    <message key="reviewer.article.schedule.submitted">Review Submitted</message>
+    <message key="reviewer.article.schedule.due">Review Due</message>
 	<message key="reviewer.article.decision.accept">Accept Submission</message>
 	<message key="reviewer.article.decision.pendingRevisions">Revisions Required</message>
 	<message key="reviewer.article.decision.resubmitHere">Resubmit for Review</message>
-        <message key="reviewer.article.decision.resubmitElsewhere">Resubmit Elsewhere</message>
+    <message key="reviewer.article.decision.resubmitElsewhere">Resubmit Elsewhere</message>
 	<message key="reviewer.article.decision.decline">Decline Submission</message>
 	<message key="reviewer.article.decision.seeComments">See Comments</message>
 	<message key="reviewer.article.schedule">Schedule</message>
-        <message key="reviewer.article.submissionToBeReviewed">Submission To Be Reviewed</message>
-        <message key="reviewer.article.reviewSchedule">Review Schedule</message>
-        <message key="reviewer.article.reviewSteps">Review Steps</message>
-        <message key="reviewer.article.reviewerGuidelines">Reviewer Guidelines</message>
+    <message key="reviewer.article.submissionToBeReviewed">Submission To Be Reviewed</message>
+    <message key="reviewer.article.reviewSchedule">Review Schedule</message>
+    <message key="reviewer.article.reviewSteps">Review Steps</message>
+    <message key="reviewer.article.reviewerGuidelines">Reviewer Guidelines</message>
 	<message key="reviewer.article.reviewGuidelinesDescription"><![CDATA[The Review Guidelines will provide reviewers with criteria for judging a submission's suitability for publication in the journal, and can include any special instructions for preparing an effective and helpful review. In conducting the review, reviewers are presented with with two open text boxes, the first "for author and editor," and the second "for editor." Alternatively, the Journal Manager can create a peer review form under Review Forms. In all cases, editors will have the option of including the reviews in corresponding with the author.]]></message>
-        <message key="reviewer.article.notifyEditorA">Notify the submission's editor</message>
-        <message key="reviewer.article.notifyEditorB">as to whether you will undertake the review.</message>
-        <message key="reviewer.article.consultGuidelines">If you are going to do the review, consult Reviewer Guidelines below.</message>
-        <message key="reviewer.article.downloadSubmission">Click on file names to download and review (on screen or by printing) the files associated with this submission.</message>
-        <message key="reviewer.article.enterCompetingInterests"><![CDATA[Declare whether or not you have competing interests with regard to this research (see <a target="_new" class="action" href="{$competingInterestGuidelinesUrl}">CI&nbsp;Policy</a>).]]></message>
+    <message key="reviewer.article.notifyEditorA">Notify the submission's editor</message>
+    <message key="reviewer.article.notifyEditorB">as to whether you will undertake the review.</message>
+    <message key="reviewer.article.consultGuidelines">If you are going to do the review, consult Reviewer Guidelines below.</message>
+    <message key="reviewer.article.downloadSubmission">Click on file names to download and review (on screen or by printing) the files associated with this submission.</message>
+    <message key="reviewer.article.enterCompetingInterests"><![CDATA[Declare whether or not you have competing interests with regard to this research (see <a target="_new" class="action" href="{$competingInterestGuidelinesUrl}">CI&nbsp;Policy</a>).]]></message>
 	<message key="reviewer.competingInterests">Competing Interests</message>
-        <message key="reviewer.article.enterReviewA">Click on icon to enter (or paste) your review of this submission.</message>
-        <message key="reviewer.article.uploadFile">In addition, you can upload files for the editor and/or author to consult.</message>
-        <message key="reviewer.article.selectRecommendation">Select a recommendation and submit the review to complete the process. You must enter a review or upload a file before selecting a recommendation.</message>
+    <message key="reviewer.article.enterReviewA">Click on icon to enter (or paste) your review of this submission.</message>
+    <message key="reviewer.article.uploadFile">In addition, you can upload files for the editor and/or author to consult.</message>
+    <message key="reviewer.article.selectRecommendation">Select a recommendation and submit the review to complete the process. You must enter a review or upload a file before selecting a recommendation.</message>
 	<message key="reviewer.article.mustSelectDecision">No recommendation was selected. You must choose a recommendation to submit.</message>
 	<message key="reviewer.article.confirmDecision">Once you have recorded a decision you will no longer be able to make changes to this review. Are you sure you wish to continue?</message>
 	<message key="reviewer.article.ensuringBlindReview">Ensuring a Blind Review</message>
@@ -718,14 +716,15 @@ Active is how many reviews are currently being considered or underway.]]></messa
 
 	<!-- Article Submission Step 3 -->
 	<message key="author.submit.uploadInstructions"><![CDATA[
-<p>To upload a manuscript to this journal, complete the following steps.</p>
-<ol>
-<li>On this page, click Browse (or Choose File) which opens a Choose File window for locating the file on the hard drive of your computer.</li>
-<li>Locate the file you wish to submit and highlight it.</li>
-<li>Click Open on the Choose File window, which places the name of the file on this page.</li>
-<li>Click Upload on this page, which uploads the file from the computer to the journal's web site and renames it following the journal's conventions.</li>
-<li>Once the submission is uploaded, click Save and Continue at the bottom of this page.</li>
-</ol>]]></message>
+		<p>To upload a manuscript to this journal, complete the following steps.</p>
+		<ol>
+			<li>On this page, click Browse (or Choose File) which opens a Choose File window for locating the file on the hard drive of your computer.</li>
+			<li>Locate the file you wish to submit and highlight it.</li>
+			<li>Click Open on the Choose File window, which places the name of the file on this page.</li>
+			<li>Click Upload on this page, which uploads the file from the computer to the journal's web site and renames it following the journal's conventions.</li>
+			<li>Once the submission is uploaded, click Save and Continue at the bottom of this page.</li>
+		</ol>]]>
+	</message>
 
 	<!-- Article Submission Step 4 -->
 
@@ -783,7 +782,7 @@ Active is how many reviews are currently being considered or underway.]]></messa
 	<message key="submission.comments.editorAuthorCorrespondence">Editor/Author Correspondence</message>
 	<message key="submission.comments.copyeditComments">Copyedit Comments</message>
 	<message key="submission.comments.viewableDescription"><![CDATA[These comments can be shared with the author.<br />
-(After saving, further comments can be added.)]]></message>
+		(After saving, further comments can be added.)]]></message>
 	<message key="submission.comments.canShareWithAuthor">For author and editor</message>
 	<message key="submission.comments.cannotShareWithAuthor">For editor</message>
 	<message key="submission.comments.blindCcReviewers">After sending, present an editable BCC copy to send to reviewers.</message>
@@ -794,8 +793,7 @@ Active is how many reviews are currently being considered or underway.]]></messa
 
 	<!-- Login -->
 	<message key="user.login.registerNewAccount">Not a user? Register with this site</message>
-	<message key="user.login.resetPasswordInstructions"><![CDATA[For security reasons, this system emails a reset password to registered users, rather than recalling the
-current password.<br /><br />Enter your email address below to reset your password. A confirmation will be sent to this email address.]]></message>
+	<message key="user.login.resetPasswordInstructions"><![CDATA[For security reasons, this system emails a reset password to registered users, rather than recalling the current password.<br /><br />Enter your email address below to reset your password. A confirmation will be sent to this email address.]]></message>
 	<message key="user.login.implicitAuthLogin">Login via Shibboleth</message>
 
 	<!-- Registration -->
@@ -858,7 +856,6 @@ current password.<br /><br />Enter your email address below to reset your passwo
 	<message key="user.subscriptions.form.deleteIpRange">Delete</message>
 	<message key="user.subscriptions.form.addIpRange">Add</message>
 
-
 	<!-- Search -->
 	<message key="search.browseAuthorIndex">Browse Author Index</message>
 	<message key="search.searchFor">Search articles for</message>
@@ -867,22 +864,23 @@ current password.<br /><br />Enter your email address below to reset your passwo
 	<message key="search.allJournals">All Journals</message>
 	<message key="search.authorIndex">Browse Author Index</message>
 	<message key="search.authorDetails">Author Details</message>
-	<message key="search.syntaxInstructions"><![CDATA[<h4>Search tips: </h4><ul>
-<li>Search terms are case-insensitive</li>
-<li>Common words are ignored</li>
-<li>By default only articles containing <em>all</em> terms in the query are returned (i.e., <em>AND</em> is implied)</li>
-<li>Combine multiple words with <em>OR</em> to find articles containing either term; e.g., <em>education OR research</em></li>
-<li>Use parentheses to create more complex queries; e.g., <em>archive ((journal OR conference) NOT theses)</em></li>
-<li>Search for an exact phrase by putting it in quotes; e.g., <em>"open access publishing"</em></li>
-<li>Exclude a word by prefixing it with <strong>-</strong> or <em>NOT</em>; e.g. <em>online -politics</em> or <em>online NOT politics</em></li>
-<li>Use <strong>*</strong> in a term as a wildcard to match any sequence of characters; e.g., <em>soci* morality</em> would match documents containing "sociological" or "societal"</li>
-</ul>]]></message>
+	<message key="search.syntaxInstructions"><![CDATA[<h4>Search tips: </h4>
+		<ul>
+			<li>Search terms are case-insensitive</li>
+			<li>Common words are ignored</li>
+			<li>By default only articles containing <em>all</em> terms in the query are returned (i.e., <em>AND</em> is implied)</li>
+			<li>Combine multiple words with <em>OR</em> to find articles containing either term; e.g., <em>education OR research</em></li>
+			<li>Use parentheses to create more complex queries; e.g., <em>archive ((journal OR conference) NOT theses)</em></li>
+			<li>Search for an exact phrase by putting it in quotes; e.g., <em>"open access publishing"</em></li>
+			<li>Exclude a word by prefixing it with <strong>-</strong> or <em>NOT</em>; e.g. <em>online -politics</em> or <em>online NOT politics</em></li>
+			<li>Use <strong>*</strong> in a term as a wildcard to match any sequence of characters; e.g., <em>soci* morality</em> would match documents containing "sociological" or "societal"</li>
+		</ul>]]>
+	</message>
 
 	<!-- Interstitial page for PDFs -->
 	<message key="article.pdf.title">Portable Document Format (PDF)</message>
 	<message key="article.pdf.download">Download this PDF file</message>
 	<message key="article.pdf.pluginMissing"><![CDATA[<p>The PDF file you selected should load here if your Web browser has a PDF reader plug-in installed (for example, a recent version of <a href="https://get.adobe.com/reader/">Adobe Acrobat Reader</a>).</p> <p>If you would like more information about how to print, save, and work with PDFs, Highwire Press provides a helpful <a href="http://highwire.stanford.edu/help/pdf-faq.dtl">Frequently Asked Questions about PDFs</a>.</p> <p>Alternatively, you can download the PDF file directly to your computer, from where it can be opened using a PDF reader. To download the PDF, click the Download link above.</p>]]></message>
-
 
 	<!-- Interstitial page for non-PDF non-HTML galleys -->
 	<message key="article.nonpdf.title">Article Download</message>
@@ -913,6 +911,13 @@ current password.<br /><br />Enter your email address below to reset your passwo
 	<message key="about.journalPolicies">Editorial Policies</message>
 	<message key="about.publicationEthics">Publication Ethics</message>
 	<message key="about.history">Journal History</message>
+
+	<!-- About The Publisher (site-level static pages, PublisherAboutHandler) -->
+	<message key="about.publisher.mission">Our Mission</message>
+	<message key="about.publisher.history">Our History</message>
+	<message key="about.publisher.leadership">Leadership</message>
+	<message key="about.publisher.award">Awards &amp; Recognition</message>
+	<message key="about.publisher.noContent">Content for this page has not been added yet. Please check back later.</message>
 	<message key="about.editorialTeam">Editorial Team</message>
 	<message key="about.editorProfiles">Editor Profiles</message>
 	<message key="about.editorialTeam.biography">Biography</message>

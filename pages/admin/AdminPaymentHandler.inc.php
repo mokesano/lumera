@@ -109,7 +109,7 @@ class AdminPaymentHandler extends Handler {
         /** @var InvoiceDAO $invoiceDao */
         $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
         $result = $invoiceDao->retrieve(
-            "SELECT * FROM invoices WHERE status = 'UNPAID' AND payment_method = 'ManualPending' ORDER BY date_billed ASC"
+            "SELECT * FROM invoices WHERE status = 'UNPAID' AND payment_method = 'BankTransferPending' ORDER BY date_billed ASC"
         );
         $pendingInvoices = [];
         while ($result && !$result->EOF) {

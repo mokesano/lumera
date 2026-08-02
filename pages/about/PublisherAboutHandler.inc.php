@@ -53,7 +53,7 @@ class PublisherAboutHandler extends Handler {
      */
     public function mission($args, $request = null) {
         if (!$request) $request = Application::get()->getRequest();
-        $this->_renderPublisherPage($request, 'about.mission', 'publisherMission');
+        $this->_renderPublisherPage($request, 'about.publisher.mission', 'publisherMission');
     }
 
     /**
@@ -64,7 +64,7 @@ class PublisherAboutHandler extends Handler {
      */
     public function history($args, $request = null) {
         if (!$request) $request = Application::get()->getRequest();
-        $this->_renderPublisherPage($request, 'about.history', 'publisherHistory');
+        $this->_renderPublisherPage($request, 'about.publisher.history', 'publisherHistory');
     }
 
     /**
@@ -75,7 +75,7 @@ class PublisherAboutHandler extends Handler {
      */
     public function leadership($args, $request = null) {
         if (!$request) $request = Application::get()->getRequest();
-        $this->_renderPublisherPage($request, 'about.leaderships', 'publisherLeaderships');
+        $this->_renderPublisherPage($request, 'about.publisher.leadership', 'publisherLeaderships');
     }
 
     /**
@@ -86,13 +86,19 @@ class PublisherAboutHandler extends Handler {
      */
     public function award($args, $request = null) {
         if (!$request) $request = Application::get()->getRequest();
-        $this->_renderPublisherPage($request, 'about.awards', 'publisherAwards');
+        $this->_renderPublisherPage($request, 'about.publisher.award', 'publisherAwards');
     }
 
     /**
      * Helper bersama untuk keempat halaman statis Penerbit di atas --
      * satu template generik (about/publisherPage.tpl), dibedakan lewat
      * $pageTitleKey + $pageContent.
+     * [FIX] Sebelumnya memakai key 'about.mission'/'about.leaderships'/
+     * 'about.awards' yang TIDAK terdaftar di locale mana pun (tampil
+     * ##key## mentah), dan 'about.history' yang SUDAH dipakai untuk History
+     * level Jurnal (lihat AboutHandler::history()) -- menimbulkan judul
+     * halaman yang salah/tertukar. Diganti ke prefix about.publisher, yang
+     * khusus dan sudah didefinisikan di locale.xml (en_US dan id_ID).
      * @param PKPRequest $request
      * @param string $pageTitleKey
      * @param string $settingName
@@ -104,8 +110,12 @@ class PublisherAboutHandler extends Handler {
         $templateMgr = TemplateManager::getManager($request);
         $site = $request->getSite();
 
+        import('lib.wizdam.classes.services.PublisherProfileService');
+
         $templateMgr->assign('pageTitleKey', $pageTitleKey);
         $templateMgr->assign('pageContent', $site->getLocalizedSetting($settingName));
+        // [BARU] Identitas resmi Penerbit -- konsisten dengan Invoice/LoA/Sertifikat.
+        $templateMgr->assign('publisher', (new PublisherProfileService())->getProfile());
 
         $templateMgr->display('about/publisherPage.tpl');
     }

@@ -280,7 +280,6 @@
 	<message key="submission.event.general.articlePublished">Artikel yang terbit</message>
 
 	<message key="submission.event.author.authorRevision">Revisi Penulis yang diserahkan</message>
-
 	<message key="submission.event.general.authorRevision">revisi penulis yang telah diperbaharui</message>
 	
 	<message key="submission.event.editor.editorAssigned">Editor yang ditugaskan untuk naskah</message>
@@ -289,7 +288,6 @@
 	<message key="submission.event.editor.editorFile">File Editor diperbaharui</message>
 	<message key="submission.event.editor.submissionArchived">Naskah yang dikirim ke arsip</message>
 	<message key="submission.event.editor.submissionRestored">Naskah dari arsip yang disimpan kembali</message>
-	
 	
 	<message key="submission.event.copyedit.copyeditorAssigned">Copy editor yang ditugaskan untuk naskah</message>
 	<message key="submission.event.copyedit.copyeditorUnassigned">Copy editor yang tidak ditugaskan untuk naskah</message>
@@ -310,6 +308,7 @@
 	<message key="submission.event.layout.layoutInitiated">Tugas layout dimulai</message>
 	<message key="submission.event.layout.layoutGalleyCreated">Galley layout diperbaharui</message>
 	<message key="submission.event.layout.layoutComplete">Tugas Layout selesai</message>
+
 	<!--
 	 *
 	 * INTERFACE - Contains phrases organized by the section of the
@@ -331,26 +330,28 @@
 	<!-- Site Administration -->
 	
 	<message key="admin.settings.oaiRegistrationDescription"><![CDATA[Untuk mengindeks konten jurnal yang ada di situs ini ke dalam Sistem Database Riset Global Terdistribusi, <a href="http://pkp.sfu.ca/harvester/add.php" target="_blank">daftarkan</a> URL situs Anda pada Open Journal Systems Metadata <a href="http://pkp.sfu.ca/harvester/" target="_blank">Harvester</a>. Alat ini mengumpulkan metadata dari tiap item yang terindeks di jurnal, memungkinkan pencarian kolektif dan akurat di antara situs riset yang melekat pada <a href="http://www.openarchives.org/OAI/openarchivesprotocol.htm#Introduction" target="_blank">Open Archives Initiative Protocol for Metadata Harvesting</a>.
-<br /><br />
-<a href="http://pkp.sfu.ca/harvester/add.php" target="_blank">Klik di sini</a> dan masukkan <span class="highlight">{$siteUrl}</span> di bawah <strong>URL situs</strong>, dan <span class="highlight">{$oaiUrl}</span> di bawah <strong>URL Base untuk arsip OAI</strong>.
-<br /><br />
-Perhatikan bahwa OAI antarmuka dapat dinonaktifkan dengan mengedit konfigurasi sistem OJS. Pada versi selanjutnya OJS akan membuat pengaktifan OAI antarmuka pada masing-masing jurnal yang terdaftar di situs.]]></message>
+		<br /><br />
+		<a href="http://pkp.sfu.ca/harvester/add.php" target="_blank">Klik di sini</a> dan masukkan <span class="highlight">{$siteUrl}</span> di bawah <strong>URL situs</strong>, dan <span class="highlight">{$oaiUrl}</span> di bawah <strong>URL Base untuk arsip OAI</strong>.
+		<br /><br />
+		Perhatikan bahwa OAI antarmuka dapat dinonaktifkan dengan mengedit konfigurasi sistem OJS. Pada versi selanjutnya OJS akan membuat pengaktifan OAI antarmuka pada masing-masing jurnal yang terdaftar di situs.]]>
+	</message>
 
-	
-	
 	<!-- Languages -->
-		<message key="admin.auth.defaultSourceDescription"><![CDATA[<p>Menentukan sumber pengesahan selain OJS memiliki dampak berikut:</p>
-<ul>
-	<li>Jika pengguna mencoba mendaftar dengan akun baru pada situs ini, dengan menggunakan nama pengguna yang ada di sumber pengesahan (tetapi tidak dalam database OJS), pendaftaran hanya diperbolehkan jika kata sandi yang diberikan berlaku untuk akun pengguna.</li>
-</ul>]]></message>
+	<message key="admin.auth.defaultSourceDescription"><![CDATA[<p>Menentukan sumber pengesahan selain OJS memiliki dampak berikut:</p>
+		<ul>
+			<li>Jika pengguna mencoba mendaftar dengan akun baru pada situs ini, dengan menggunakan nama pengguna yang ada di sumber pengesahan (tetapi tidak dalam database OJS), pendaftaran hanya diperbolehkan jika kata sandi yang diberikan berlaku untuk akun pengguna.</li>
+		</ul>]]>
+	</message>
 	
 	<!-- Informasi Sistem -->
 	<message key="admin.editSystemConfigInstructions"><![CDATA[Gunakan form ini untuk memodifikasi konfigurasi sistem Anda yang ada pada file (<tt>config.inc.php</tt>). Klik "Simpan Konfigurasi" untuk menyimpan konfigurasi baru Anda, atau "Tampilkan Konfigurasi Baru" untuk menampilkan file konfigurasi yang telah diupdate dan tidak memodifikasi konfigurasi yang sudah ada. <br /><br />
-<span class="formError">Peringatan: Mengubah pengaturan ini berpotensi membuat situs Anda dalam keadaan tidak dapat diakses (memerlukan file konfigurasi untuk diperbaiki secara manual). Sangat dianjurkan untuk tidak melakukan perubahan apapun kecuali Anda tahu persis apa yang Anda lakukan.</span>]]></message>
-	<message key="admin.overwriteConfigFileInstructions"><![CDATA[<h4>Catatan!</h4>
-<p>Sistem tidak dapat secara otomatis menimpa file konfigurasi. Untuk menerapkan perubahan konfigurasi Anda, Anda harus membuka <tt>config.inc.php</tt> di text editor yang cocok dan mengganti isinya dengan isi text field di bawah ini.</p>]]></message>
-	
+		<span class="formError">Peringatan: Mengubah pengaturan ini berpotensi membuat situs Anda dalam keadaan tidak dapat diakses (memerlukan file konfigurasi untuk diperbaiki secara manual). Sangat dianjurkan untuk tidak melakukan perubahan apapun kecuali Anda tahu persis apa yang Anda lakukan.</span>]]>
+	</message>
 
+	<message key="admin.overwriteConfigFileInstructions"><![CDATA[<h4>Catatan!</h4>
+		<p>Sistem tidak dapat secara otomatis menimpa file konfigurasi. Untuk menerapkan perubahan konfigurasi Anda, Anda harus membuka <tt>config.inc.php</tt> di text editor yang cocok dan mengganti isinya dengan isi text field di bawah ini.</p>]]>
+	</message>
+	
 	<!--  Administrator Situs Menggabungkan Pengguna -->	
 
 	<!-- Manajemen Langganan -->
@@ -363,33 +364,18 @@ Perhatikan bahwa OAI antarmuka dapat dinonaktifkan dengan mengedit konfigurasi s
 
 	<!-- Statistik & Laporan -->
 
-
 	<!--  Manajemen Plugin -->
 	
 	<!-- Manajemen Pembayaran -->
 
-
-		
-
-
 	<!-- Informasi Plugin Umum -->
 	<message key="plugins.categories.auth.description">Pengesaham Plugin mengizinkan Open Journal Systems untuk mendelegasikan tugas pengesahan pengguna ke sistem lain, seperti server LDAP.</message>
-
-
 	<message key="plugins.categories.citationFormats.description">Plugin format sitiran menyediakan pengguna dengan format yang bermacam-macam untuk mengakses sitiran artikel.</message>
-
-
 	<message key="plugins.categories.generic.description">Plugin umum digunakan untuk memperluas Open Journal Systems dalam banyak cara yang bervariasi yang tidak didukung oleh kategori plugin yang lain.</message>
-
 	<message key="plugins.categories.implicitAuth">Plugin Pengesahan Implisit</message>
 	<message key="plugins.categories.implicitAuth.description"> Plugin Pengesahan Implisit mengimplementasikan dukungan untuk mengesahkan  dukungan untuk pengguna yang mengesahkan berdasarkan http header.</message>
-
-
 	<message key="plugins.categories.oaiMetadataFormats">Plugin Format Metadata OAI</message>
 	<message key="plugins.categories.oaiMetadataFormats.description">Plugin format ini mengekspresikan metadata in komunikasi OAI.</message>
-
-
- 
 
 	<!-- Browser File -->
 
@@ -399,44 +385,45 @@ Perhatikan bahwa OAI antarmuka dapat dinonaktifkan dengan mengedit konfigurasi s
 
 	<!-- Setup Langkah 2 -->
 
-
 	<message key="manager.setup.reviewProcessEmailDescription">Editor mengirimkan permintaan kepada Reviewer untuk mereview naskah yang dilampirkan di email. Reviewer mengirimkan editor persetujuan atau penolakan, seperti halnya review dan rekomendasi di halaman review naskah, untuk mencatat proses review.</message>
-
-
 	<message key="manager.setup.lockssDescription"><![CDATA[OJS support <a href="http://www.lockss.org/" target="_blank">LOCKSS</a> (Lots of Copies Keep Stuff Safe). Sebuah sistem untuk mengarsipkan jurnal secara permanen dan aman. LOCKSS adalah perangkat lunak open source yang dikembangkan di Library of Stanford University yang memungkinkan perpustakaan untuk menjaga website jurnal yang dipilih dengan mengumpulkan backup data secara teratur dari website jurnal yang terdaftar untuk konten yang baru diterbitkan dan mengarsipkannya. Tiap arsip divalidasi secara terus menerus terhadap library caches yang lain, dan jika konten ditemukan dalam keadaan rusak atau hilang, caches atau jurnal yang lain digunakan untuk menyimpan ulang.
-<br /><br />
-LOCKSS dapat digunakan setelah penerbitan berlangsung sepenuhnya, dengan mengikuti dua langkah berikut:]]></message>
+		<br /><br />
+		LOCKSS dapat digunakan setelah penerbitan berlangsung sepenuhnya, dengan mengikuti dua langkah berikut:]]>
+	</message>
 	
 	<!-- Setup Langkah 3 -->
 	<message key="manager.setup.authorCopyrightNotice.sample"><![CDATA[<h3>Usulan Pembuatan Informasi Hak Cipta</h3>
-<h4>1. Kebijakan yang diajukan untuk jurnal yang menawarkan akses terbuka</h4>
-Syarat yang harus dipenuhi oleh Penulis sebagai berikut:
-<ol type="a">
-	<li>Penulis menyimpan hak cipta dan memberikan jurnal hak penerbitan pertama naskah secara simultan dengan lisensi di bawah <a target="_new" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution License</a> yang mengizinkan orang lain untuk berbagi pekerjaan dengan sebuah pernyataan kepenulisan pekerjaan dan penerbitan awal di jurnal ini.</li>
-	<li>Penulis bisa memasukkan ke dalam penyusunan kontraktual tambahan terpisah untuk distribusi non ekslusif versi kaya terbitan jurnal (contoh: mempostingnya ke repositori institusional atau menerbitkannya dalam sebuah buku), dengan pengakuan penerbitan awalnya di jurnal ini.</li>
-	<li>Penulis diizinkan dan didorong untuk mem-posting karya mereka online (contoh: di repositori institusional atau di website mereka) sebelum dan selama proses penyerahan, karena dapat mengarahkan ke pertukaran produktif, seperti halnya sitiran yang lebih awal dan lebih hebat dari karya yang diterbitkan. (Lihat <a target="_new" href="http://opcit.eprints.org/oacitation-biblio.html">Efek Akses Terbuka</a>).</li>
-</ol>
+		<h4>1. Kebijakan yang diajukan untuk jurnal yang menawarkan akses terbuka</h4>
+		Syarat yang harus dipenuhi oleh Penulis sebagai berikut:
+		<ol type="a">
+			<li>Penulis menyimpan hak cipta dan memberikan jurnal hak penerbitan pertama naskah secara simultan dengan lisensi di bawah <a target="_new" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution License</a> yang mengizinkan orang lain untuk berbagi pekerjaan dengan sebuah pernyataan kepenulisan pekerjaan dan penerbitan awal di jurnal ini.</li>
+			<li>Penulis bisa memasukkan ke dalam penyusunan kontraktual tambahan terpisah untuk distribusi non ekslusif versi kaya terbitan jurnal (contoh: mempostingnya ke repositori institusional atau menerbitkannya dalam sebuah buku), dengan pengakuan penerbitan awalnya di jurnal ini.</li>
+			<li>Penulis diizinkan dan didorong untuk mem-posting karya mereka online (contoh: di repositori institusional atau di website mereka) sebelum dan selama proses penyerahan, karena dapat mengarahkan ke pertukaran produktif, seperti halnya sitiran yang lebih awal dan lebih hebat dari karya yang diterbitkan. (Lihat <a target="_new" href="http://opcit.eprints.org/oacitation-biblio.html">Efek Akses Terbuka</a>).</li>
+		</ol>
 
-<h4>Kebijakan yang diajukan untuk jurnal yang menawarkan akses terbuka yang tertunda</h4>
-Penulis yang menerbitkan dengan jurnal ini setuju pada persyaratan berikut ini:<ol type="a">
-	<li>Penulis menyimpan hak cipta dan memberikan jurnal hak penerbitan pertama, dengan pekerjaan [TENTUKAN PERIODE WAKTU] setelah penerbitan secara simultan dengan lisensi di bawah:  <a target="_new" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution License</a> yang memudahkan yang lain untuk berbagi karya dengan pengakuan penerbitan awal dan kepenulisan karya di jurnal ini.</li>
-	 <li>Penulis bisa memasukkan ke dalam penyusunan kontraktual tambahan terpisah untuk distribusi non-ekslusif versi kaya terbitan jurnal (contoh: mempostingnya ke repositori institusional atau menerbitkannya dalam sebuah buku), dengan pengakuan penerbitan awalnya di jurnal ini.</li>
-	 <li>Penulis diizinkan dan didorong untuk mem-posting karya mereka online (contoh: di repositori institusional atau di website mereka) sebelum dan selama proses penyerahan, karena dapat mengarahkan ke pertukaran produktif, seperti halnya sitiran yang lebih awal dan lebih hebat dari karya yang diterbitkan. (Lihat <a target="_new" href="http://opcit.eprints.org/oacitation-biblio.html">Efek Akses Terbuka</a>).</li>
-</ol>]]></message>
-	<message key="manager.setup.subjectClassificationDescription"><![CDATA[[Jurnal akan menggunakan sistem klasifikasi subjek yang tersedia di web.<br />
-Judul Sistem Klasifikasi]]></message>
-	<message key="manager.setup.registerJournalForIndexingDescription"><![CDATA[Untuk mengindeks konten jurnal kedalam sistem terdistribusi global dari database riset, baca <a href="http://www.oclc.org/oaister/contribute.en.html" target="_blank">langkah-langkah untuk menjadi kontributor data</a> dan daftarkan jurnal Anda di<a href="http://www.openarchives.org/data/registerasprovider.html" target="_blank">Pendaftaran Open Archives</a>.  Untuk mendaftar, Anda akan membutuhkan URL untuk repositori:<span class="highlight">{$oaiUrl}</span>. Setelah itu, Anda dapat mendaftarkan jurnal Anda di <a href="http://gita.grainger.uiuc.edu/registry/" target="_blank">UIUC OAI registry</a>dan<a href="http://www.oclc.org/oaister" target="_blank">OAIster</a>.
-<br /><br />Perhatikan jika Administrator Situs Anda sudah mendaftarkan situs ini pada layanan ini, jurnal Anda akan diindeks secara otomatis dan Anda tidak perlu mendaftarkan lagi.]]></message>
+		<h4>Kebijakan yang diajukan untuk jurnal yang menawarkan akses terbuka yang tertunda</h4>
+		Penulis yang menerbitkan dengan jurnal ini setuju pada persyaratan berikut ini:<ol type="a">
+			<li>Penulis menyimpan hak cipta dan memberikan jurnal hak penerbitan pertama, dengan pekerjaan [TENTUKAN PERIODE WAKTU] setelah penerbitan secara simultan dengan lisensi di bawah:  <a target="_new" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution License</a> yang memudahkan yang lain untuk berbagi karya dengan pengakuan penerbitan awal dan kepenulisan karya di jurnal ini.</li>
+			<li>Penulis bisa memasukkan ke dalam penyusunan kontraktual tambahan terpisah untuk distribusi non-ekslusif versi kaya terbitan jurnal (contoh: mempostingnya ke repositori institusional atau menerbitkannya dalam sebuah buku), dengan pengakuan penerbitan awalnya di jurnal ini.</li>
+			<li>Penulis diizinkan dan didorong untuk mem-posting karya mereka online (contoh: di repositori institusional atau di website mereka) sebelum dan selama proses penyerahan, karena dapat mengarahkan ke pertukaran produktif, seperti halnya sitiran yang lebih awal dan lebih hebat dari karya yang diterbitkan. (Lihat <a target="_new" href="http://opcit.eprints.org/oacitation-biblio.html">Efek Akses Terbuka</a>).</li>
+		</ol>]]>
+	</message>
+
+	<message key="manager.setup.subjectClassificationDescription"><![CDATA[[Jurnal akan menggunakan sistem klasifikasi subjek yang tersedia di web.<br /> Judul Sistem Klasifikasi]]></message>
+	<message key="manager.setup.registerJournalForIndexingDescription"><![CDATA[Untuk mengindeks konten jurnal kedalam sistem terdistribusi global dari database riset, baca <a href="http://www.oclc.org/oaister/contribute.en.html" target="_blank">langkah-langkah untuk menjadi kontributor data</a> dan daftarkan jurnal Anda di<a href="http://www.openarchives.org/data/registerasprovider.html" target="_blank">Pendaftaran Open Archives</a>.  Untuk mendaftar, Anda akan membutuhkan URL untuk repositori:<span class="highlight">{$oaiUrl}</span>. Setelah itu, Anda dapat mendaftarkan jurnal Anda di <a href="http://gita.grainger.uiuc.edu/registry/" target="_blank">UIUC OAI registry</a>dan<a href="http://www.oclc.org/oaister" target="_blank">OAIster</a>.<br /><br />Perhatikan jika Administrator Situs Anda sudah mendaftarkan situs ini pada layanan ini, jurnal Anda akan diindeks secara otomatis dan Anda tidak perlu mendaftarkan lagi.]]></message>
 	<message key="manager.setup.citations">Memungkinkan Bantuan Koreksi sitiran</message>
 
 	<!-- Setup Langkah 4 -->
 	<message key="manager.setup.basicEditorialStepsDescription"><![CDATA[Langkah: Antrian Penyerahan &gt; Review Naskah &gt; Pengediatan Naskah &gt; Daftar Isi.<br /><br />
-Pilih model untuk menangani aspek proses editorial ni. (Untuk menunjuk Editor Pengaturan dan Editor Bagian, lihat di Editor di Manajemen Jurnal)]]></message>
+		Pilih model untuk menangani aspek proses editorial ni. (Untuk menunjuk Editor Pengaturan dan Editor Bagian, lihat di Editor di Manajemen Jurnal)]]>
+	</message>
+	
 	<message key="manager.setup.referenceLinkingDescription"><![CDATA[<p>Untuk memudahkan pembaca dalam mencari karya lain dari penulis secara online. Pilihan berikut yang tersedia.</p>
-<ol>
-	<li><strong>Tambah Alat Membaca</strong><p>Manajer jurnal dapat menambah "Cari Referensi" ke Alat Membaca yang disertakan pada item yang diterbitkan, yang memudahkan Pembaca untuk menyalin judul referensi dan kemudian mencarinya di database ilmiah.</p></li>
-	<li><strong>tautan yang melekat di referensi</strong><p>Editor Layout dapat menambah tautan ke referensi yang dapat ditemukan online dengan menggunakan instruksi berikut ini (yang dapat diedit).</p></li>
-</ol>]]></message>
+		<ol>
+			<li><strong>Tambah Alat Membaca</strong><p>Manajer jurnal dapat menambah "Cari Referensi" ke Alat Membaca yang disertakan pada item yang diterbitkan, yang memudahkan Pembaca untuk menyalin judul referensi dan kemudian mencarinya di database ilmiah.</p></li>
+			<li><strong>tautan yang melekat di referensi</strong><p>Editor Layout dapat menambah tautan ke referensi yang dapat ditemukan online dengan menggunakan instruksi berikut ini (yang dapat diedit).</p></li>
+		</ol>]]>
+	</message>
 
 	<!-- Setup Langkah 5 -->
 
@@ -448,8 +435,6 @@ Pilih model untuk menangani aspek proses editorial ni. (Untuk menunjuk Editor Pe
 
 	<!-- Grup / Tim Editorial -->
 
-
-
 	<!-- Manajemen Pegawai/ Orang -->
 	<message key="manager.people.confirmDisable">Membuat pengguna ini tidak bisa mengakses? Ini akan mencegah pengguna dari login ke sistem. Anda dapat memberi alasan kepada pengguna untuk membuat mereka tidak bisa mengakses akun mereka.</message>
 	<message key="manager.people.noAdministrativeRights"><![CDATA[Maaf, Anda tidak mempunya hak administratif pada pengguna ini. Hal ini mungkin karena:
@@ -457,9 +442,8 @@ Pilih model untuk menangani aspek proses editorial ni. (Untuk menunjuk Editor Pe
 			<li>Pengguna adalah administrator situs</li>
 			<li>Pengguna aktif di jurnal yang tidak Anda atur.</li>
 		</ul>
-	Tugas ini harus dilakukan oleh administrator situs.]]></message>
-
-
+		Tugas ini harus dilakukan oleh administrator situs.]]>
+	</message>
 	
 	<!-- Manajemen Email -->
 
@@ -474,10 +458,12 @@ Pilih model untuk menangani aspek proses editorial ni. (Untuk menunjuk Editor Pe
 	<!--Manajemen Pengumuman -->
 
 	<!-- Editor -->
-	<message key="editor.submissionReview.notes"><![CDATA[<ol>
-	<li>Item yang disorot menunjukkan tindakan yang dibutuhkan oleh editor.</li>
-	<li>"Jatuh Tempo" diisi saat Reviewer menerima permintaan untuk mereview; menampilkan berapa minggu menjelang jatuh tempo atau berapa minggu sudah lewat dari jatuh tempo.</li>
-</ol>]]></message>
+	<message key="editor.submissionReview.notes"><![CDATA[
+		<ol>
+			<li>Item yang disorot menunjukkan tindakan yang dibutuhkan oleh editor.</li>
+			<li>"Jatuh Tempo" diisi saat Reviewer menerima permintaan untuk mereview; menampilkan berapa minggu menjelang jatuh tempo atau berapa minggu sudah lewat dari jatuh tempo.</li>
+		</ol>]]>
+	</message>
 
 	<!--Halaman Index Editor -->
 
@@ -491,10 +477,11 @@ Pilih model untuk menangani aspek proses editorial ni. (Untuk menunjuk Editor Pe
 	
 	<!-- digunakan oleh editor dalam review naskah/ pengeditan -->
 	<message key="editor.article.selectReviewerNotes"><![CDATA[tautan nama ke profil Reviewer. <br />
-Penilaian adalah dari 5 (Bagus sekali).<br />
-Minggu mengacu ke periode waktu rata-rata untuk menyelesaikan review.<br />
-Yang terbaru adalah tanggal review paling baru yang diterima.<br />
-Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berlangsung.]]></message>
+		Penilaian adalah dari 5 (Bagus sekali).<br />
+		Minggu mengacu ke periode waktu rata-rata untuk menyelesaikan review.<br />
+		Yang terbaru adalah tanggal review paling baru yang diterima.<br />
+		Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berlangsung.]]>
+	</message>
 	
 	<!-- Editor Bagian -->
 	<message key="sectionEditor.activeEditorialAssignments">Tugas Editorial Aktif</message>
@@ -549,31 +536,31 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<message key="reviewer.article.uploadedFile">File yang diunggah</message>	
 	<message key="reviewer.article.reviewersAnnotatedVersion">Versi yang diunggah Reviewer</message>
 	<message key="reviewer.article.reviewersAnnotatedVersionDescription"> (Jika Anda ingin menambahkan penjelasan lebih lanjut pada file, untuk editor, simpan di hard drive dan gunakan Telusuri/ Unggah.) </message>
-        <message key="reviewer.article.schedule.request">Permintaan Editor</message>
-        <message key="reviewer.article.schedule.response">Respon Anda</message>
-        <message key="reviewer.article.schedule.submitted">Review Dikumpulkan</message>
-        <message key="reviewer.article.schedule.due">Jatuh Tempo Review</message>
+    <message key="reviewer.article.schedule.request">Permintaan Editor</message>
+    <message key="reviewer.article.schedule.response">Respon Anda</message>
+    <message key="reviewer.article.schedule.submitted">Review Dikumpulkan</message>
+    <message key="reviewer.article.schedule.due">Jatuh Tempo Review</message>
 	<message key="reviewer.article.decision.accept">Terima Penyerahan</message>
 	<message key="reviewer.article.decision.pendingRevisions">Revisi dibutuhkan</message>
 	<message key="reviewer.article.decision.resubmitHere">Menyerahkan ulang untuk review</message>
-        <message key="reviewer.article.decision.resubmitElsewhere">Menyerahkan ulang di mana saja</message>
+    <message key="reviewer.article.decision.resubmitElsewhere">Menyerahkan ulang di mana saja</message>
 	<message key="reviewer.article.decision.decline">Menolak Penyerahan</message>
 	<message key="reviewer.article.decision.seeComments">Lihat Komentar</message>
 	<message key="reviewer.article.schedule">Jadwal</message>
-        <message key="reviewer.article.submissionToBeReviewed">naskah untuk direview</message>
-        <message key="reviewer.article.reviewSchedule">Jadwal Review</message>
-        <message key="reviewer.article.reviewSteps">langkah-langkah review</message>
-        <message key="reviewer.article.reviewerGuidelines"> Petunjuk Reviewer</message>
+    <message key="reviewer.article.submissionToBeReviewed">naskah untuk direview</message>
+    <message key="reviewer.article.reviewSchedule">Jadwal Review</message>
+    <message key="reviewer.article.reviewSteps">langkah-langkah review</message>
+    <message key="reviewer.article.reviewerGuidelines"> Petunjuk Reviewer</message>
 	<message key="reviewer.article.reviewGuidelinesDescription"><![CDATA[Petunjuk Review akan menyediakan Reviewer dengan kriteria untuk menilai kesesuaian naskah untuk penerbitan di jurnal, dan dapat termasuk instruksi khusus apapun untuk menyiapkan review efektif dan membantu. Dalam melakukan review, Reviewer ditampilkan dengan dua kotak teks terbuka, yang pertama "untuk penulis dan editor", dan yang kedua "untuk editor". Sebagai alternatif, manajer jurnal dapat membuat form peer review di bawah Form Review. Dalam semua kasus, editor akan mempunyai pilihan termasuk review yang disesuaikan dengan penulis.]]></message>
-        <message key="reviewer.article.notifyEditorA">Beritahu editor penyerahan</message>
-        <message key="reviewer.article.notifyEditorB">apakah Anda ingin bertanggungjawab atas review.</message>
-        <message key="reviewer.article.consultGuidelines">Jika Anda akan melakukan review, konsultasikan dengan Petunjuk Reviewer di bawah ini.</message>
-        <message key="reviewer.article.downloadSubmission">Klik di nama file untuk mengunduh dan mereview (di layar atau dengan menge-print file yang berkaitan dengan penyerahan ini.</message>
-        <message key="reviewer.article.enterCompetingInterests"><![CDATA[Nyatakan iya atau tidak Anda tertarik dengan penelitian ini (lihat<a target="_new" class="action" href="{$competingInterestGuidelinesUrl}">CI&nbsp;Policy</a>).]]></message>
+    <message key="reviewer.article.notifyEditorA">Beritahu editor penyerahan</message>
+    <message key="reviewer.article.notifyEditorB">apakah Anda ingin bertanggungjawab atas review.</message>
+    <message key="reviewer.article.consultGuidelines">Jika Anda akan melakukan review, konsultasikan dengan Petunjuk Reviewer di bawah ini.</message>
+    <message key="reviewer.article.downloadSubmission">Klik di nama file untuk mengunduh dan mereview (di layar atau dengan menge-print file yang berkaitan dengan penyerahan ini.</message>
+    <message key="reviewer.article.enterCompetingInterests"><![CDATA[Nyatakan iya atau tidak Anda tertarik dengan penelitian ini (lihat<a target="_new" class="action" href="{$competingInterestGuidelinesUrl}">CI&nbsp;Policy</a>).]]></message>
 	<message key="reviewer.competingInterests">Competing Interest</message>
-        <message key="reviewer.article.enterReviewA">Klik di ikon untuk memasukkan (atau menyalin) review Anda tentang naskah ini.</message>
-        <message key="reviewer.article.uploadFile">Sebagai tambahan, Anda dapat mengunggah file untuk editor dan/atau berkonsultasi.</message>
-        <message key="reviewer.article.selectRecommendation">Pilih rekomendasi dan serahkan untuk melengkapi proses. Anda harus memasukkan review atau mengunggah file sebelum memilih rekomendasi.</message>
+    <message key="reviewer.article.enterReviewA">Klik di ikon untuk memasukkan (atau menyalin) review Anda tentang naskah ini.</message>
+    <message key="reviewer.article.uploadFile">Sebagai tambahan, Anda dapat mengunggah file untuk editor dan/atau berkonsultasi.</message>
+    <message key="reviewer.article.selectRecommendation">Pilih rekomendasi dan serahkan untuk melengkapi proses. Anda harus memasukkan review atau mengunggah file sebelum memilih rekomendasi.</message>
 	<message key="reviewer.article.mustSelectDecision">Tidak ada rekomendasi dipilih. Anda harus memilih satu rekomendasi untuk diserahkan.</message>
 	<message key="reviewer.article.confirmDecision">Saat Anda sudah menyimpan keputusan, Anda tidak akan bisa membuat perubahan untuk review ini. Apakah Anda yakin untuk melanjutkan?</message>
 	<message key="reviewer.article.ensuringBlindReview">Memastikan Review Anonim</message>
@@ -589,22 +576,21 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 
 	<!-- Author -->
 
-
 	<!-- Article Submission Step 1 -->
-
 	
 	<!-- Article Submission Step 2 -->
 	
 	<!-- Article Submission Step 3 -->
 	<message key="author.submit.uploadInstructions"><![CDATA[
-<p>Untuk mengunggah naskah pada jurnalss, selesaikan langkah-langkah berikut ini</p>
-<ol>
-<li>Pada halaman ini, klik Telusuri yang akan membuka jendela Pilih File untuk mengambil file dari hard drive komputer Anda.</li>
-<li>Cari file yang Anda inginkan dan sorot file tersebut.</li>
-<li>Klik tombol Buka pada jendela Pilih File, yang akan menempatkan nama file pada halaman ini.</li>
-<li>Klik tombol Unggah pada halaman ini, untuk mengunggah file dari komputer kedalam situs jurnal dan rubah nama file sesuai konvensi jurnal ini.</li>
-<li>Setelah naskah berhasil di unggah, klik tombol Simpan dan Lanjutkan.</li>
-</ol>]]></message>
+		<p>Untuk mengunggah naskah pada jurnalss, selesaikan langkah-langkah berikut ini</p>
+		<ol>
+			<li>Pada halaman ini, klik Telusuri yang akan membuka jendela Pilih File untuk mengambil file dari hard drive komputer Anda.</li>
+			<li>Cari file yang Anda inginkan dan sorot file tersebut.</li>
+			<li>Klik tombol Buka pada jendela Pilih File, yang akan menempatkan nama file pada halaman ini.</li>
+			<li>Klik tombol Unggah pada halaman ini, untuk mengunggah file dari komputer kedalam situs jurnal dan rubah nama file sesuai konvensi jurnal ini.</li>
+			<li>Setelah naskah berhasil di unggah, klik tombol Simpan dan Lanjutkan.</li>
+		</ol>]]>
+	</message>
 
 	<!-- Article Submission Step 4 -->
 	
@@ -638,14 +624,12 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<message key="submission.layout.instructions">Instruksi Layout</message>
 	<message key="submission.layout.referenceLinking">Tautan Terkait</message>
 	
-	
 	<!-- Submission Tracking - Proofread Specific -->
 	<message key="submission.proofreadingComments">Komentar Proofreading</message>
 	<message key="submission.proofread.corrections">Koreksi Proofreading</message>
 	<message key="submission.proofread.instructions">Instruksi Proofing</message>
 
 	<!-- Submission History -->
-	
 	<message key="submission.logType.article">Artikel</message>
 	<message key="submission.logType.author">Penulis</message>
 	<message key="submission.logType.editor">Editor</message>
@@ -661,8 +645,7 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<!-- Submission Comments -->
 	<message key="submission.comments.editorAuthorCorrespondence">Korespondensi Editor/Penulis</message>
 	<message key="submission.comments.copyeditComments">Komentar Copyedit</message>
-	<message key="submission.comments.viewableDescription"><![CDATA[Komentar ini dapat dibagi dengan penulis.<br />
-(Setelah menyimpan, komentar selanjutnya dapat ditambahkan.)]]></message>
+	<message key="submission.comments.viewableDescription"><![CDATA[Komentar ini dapat dibagi dengan penulis.<br /> (Setelah menyimpan, komentar selanjutnya dapat ditambahkan.)]]></message>
 	<message key="submission.comments.canShareWithAuthor">Untuk penulis dan editor</message>
 	<message key="submission.comments.cannotShareWithAuthor">Untuk penulis</message>
 	<message key="submission.comments.blindCcReviewers">Setelah mengirim, tampilkan salinan BCC yang dapat diedit untuk dikirim ke Reviewer.</message>
@@ -733,7 +716,6 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<message key="user.subscriptions.form.deleteIpRange">Hapus</message>
 	<message key="user.subscriptions.form.addIpRange">Tambah</message>
 
-
 	<!-- Search -->
 	<message key="search.browseAuthorIndex">Menelusuri Indeks Penulis</message>
 	<message key="search.searchFor">Cari artikel untuk</message>
@@ -742,24 +724,25 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<message key="search.allJournals">Semua Jurnal</message>
 	<message key="search.authorIndex">Menelusuri Indeks Penulis</message>
 	<message key="search.authorDetails">Rincian Penulis</message>
-	<message key="search.syntaxInstructions"><![CDATA[<h4>Tip Pencarian: </h4><ul>
-<li>Istilah pencarian tidak mempedulikan besar-kecilnya huruf</li>
-<li>Kata-kata umum diabaikan</li>
-<li>Secara default hanya artikel yang berisi semua istilah query akan muncul (contoh: <em>dan</em>)</li>
-<li>Gabungkan beberapa kata dengan <em>ATAU</em> untuk mencari artikel yang berisi salah satu istilah; contoh: <em>pendidikan ATAU riset</em></li>
-<li>Gunakan tanda kurung tutup untuk menggunakan pencarian kompleks; contoh: <em>arsip ((jurnal ATAU konferensi) BUKAN tesis)</em></li>
-<li>Pencarian untuk frasa yang pasti dengan meletakkannya di antara tanda petik dua; contoh: <em>"penerbitan akses terbuka"</em>atau <em>"open access publishing"</em></li>
-<li>Pengecualian kata dengan memberi awalan tanda (<strong>-</strong>) atau <em>BUKAN</em>; contoh: <em>online -politik</em> atau <em>online BUKAN politik</em></li>
-<li>Gunakan tanda bintang (<strong>*</strong>) dalam istilah untuk menghasilkan semua urutan karakter; contoh: <em>soci*</em> morality akan cocok dengan dokumen yang berisi "sociological" atau "societal"</li>
-
-</ul>]]></message>
+	<message key="search.syntaxInstructions"><![CDATA[
+		<h4>Tip Pencarian: </h4>
+		<ul>
+			<li>Istilah pencarian tidak mempedulikan besar-kecilnya huruf</li>
+			<li>Kata-kata umum diabaikan</li>
+			<li>Secara default hanya artikel yang berisi semua istilah query akan muncul (contoh: <em>dan</em>)</li>
+			<li>Gabungkan beberapa kata dengan <em>ATAU</em> untuk mencari artikel yang berisi salah satu istilah; contoh: <em>pendidikan ATAU riset</em></li>
+			<li>Gunakan tanda kurung tutup untuk menggunakan pencarian kompleks; contoh: <em>arsip ((jurnal ATAU konferensi) BUKAN tesis)</em></li>
+			<li>Pencarian untuk frasa yang pasti dengan meletakkannya di antara tanda petik dua; contoh: <em>"penerbitan akses terbuka"</em>atau <em>"open access publishing"</em></li>
+			<li>Pengecualian kata dengan memberi awalan tanda (<strong>-</strong>) atau <em>BUKAN</em>; contoh: <em>online -politik</em> atau <em>online BUKAN politik</em></li>
+			<li>Gunakan tanda bintang (<strong>*</strong>) dalam istilah untuk menghasilkan semua urutan karakter; contoh: <em>soci*</em> morality akan cocok dengan dokumen yang berisi "sociological" atau "societal"</li>
+		</ul>]]>
+	</message>
 
 	<!-- Interstitial page for PDFs -->
 	<message key="article.pdf.title">Portable Document Format (PDF)</message>
 	<message key="article.pdf.download">Unduh file PDF  ini</message>
 	<message key="article.pdf.pluginMissing"><![CDATA[<p>File PDF yang Anda pilih harus dimuat di sini jika perambah web mempunyai plugin PDF reader diinstall (sebagai contoh: versi sekarang dari <a href="https://get.adobe.com/reader/">Adobe Acrobat Reader</a>).</p> <p>Alternatif lain, Anda juga bisa mengunduh file PDF langsung ke komputer Anda, dan bisa dibuka dengan menggunakan PDF reader. Untuk mengunduh PDF, klik tautan Unduh di bawah ini</p> <p>Jika ada membutuhkan informasi lebih lanjut tentang cara mencetak, simpan dan bekerja dengan PDF, menyediakan Highwire Press bantuan <a href="http://highwire.stanford.edu/help/pdf-faq.dtl">Pertanyaan yang sering diajuka mengenai PDF</a>.</p>]]></message>
 
-	
 	<!-- Interstitial page for non-PDF non-HTML galleys -->
 	<message key="article.nonpdf.title">Unduh Artikel</message>
 	<message key="article.nonpdf.note"><![CDATA[File yang Anda pilih dapat meng-unggah secara otomatis. Jika tidak, klik tautan dibawah ini. Perhatikan file ini mungkin memerlukan plugin untuk dilihat.<br /><br />Jika file tidak meng-unggah secara otomatis <a href="{$url}">klik disini</a>.]]></message>
@@ -770,7 +753,6 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<message key="site.journalRegister">Daftar</message>
 	<message key="site.journalCurrent">Terbitan Terkini</message>
 	
-
 	<!-- Current index -->
 	<message key="current.current">Terkini</message>
 	<message key="current.noCurrentIssue">Tidak Ada Terbitan Terkini</message>
@@ -786,6 +768,13 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<message key="about.journalContact">Kontak Jurnal</message>
 	<message key="about.aboutTheJournal">Tentang Kami</message>
 	<message key="about.history">Visi dan Tujuan Jurnal</message>
+
+	<!-- About The Publisher (halaman statis level situs, PublisherAboutHandler) -->
+	<message key="about.publisher.mission">Misi Kami</message>
+	<message key="about.publisher.history">Sejarah Kami</message>
+	<message key="about.publisher.leadership">Kepemimpinan</message>
+	<message key="about.publisher.award">Penghargaan</message>
+	<message key="about.publisher.noContent">Konten untuk halaman ini belum ditambahkan. Silakan periksa kembali nanti.</message>
 	<message key="about.editorialTeam">Dewan Editorial</message>
 	<message key="about.editorialTeam.biography">Biografi</message>
 	<message key="about.editorialPolicies">Kebijakan Editorial</message>
@@ -901,7 +890,6 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<message key="log.review.reviewerFile">File review telah diunggah.</message>
 	<message key="log.editor.decision">Keputusan editor ({$decision}) untuk artikel {$articleId} dicatat oleh {$editorName}.</message>
 
-
 	<message key="log.copyedit.initiate">Copyediting naskah {$articleId} telah dimulai oleh {$copyeditorName}.</message>
 	<message key="log.copyedit.copyeditFileSet">File copyedit default telah dipilih.</message>
 	<message key="log.copyedit.initialEditComplete">{$copyeditorName} telah menyelesaikan copyedit awal naskah {$articleId}.</message>
@@ -927,9 +915,7 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<message key="log.imported">{$userName} telah mengimpor artikel {$articleId}.</message>
 
 	<!-- Reading Tools entries -->
-	
 	<message key="rt.admin.settings">Pilihan Alat Membaca</message>
-
 	<message key="rt.admin.settings.description">Alat membaca ditampilkan di bingkai di sebelah item yang sudah diterbitkan di bagian jurnal yang telah ditentukan untuk pengindeksan. Alat membaca terdiri dari satu set alat pilihan yang berkaitan dengan item yang diterbitkan, terdaftar di bawah ini, dan satu set alat yang menyediakan akses ke item yang berkaitan, disusun oleh bidang dan disiplin.</message>
 	<message key="rt.admin.settings.enableReadingTools">Memudahkan alat membaca untuk bagian jurnal yang telah ditentukan</message>
 	<message key="rt.admin.settings.relatedItems">Bidang</message>
@@ -943,7 +929,6 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<message key="rt.admin.settings.addComment.anonymous">Pengguna harus terdaftar dan login ke post, dan anonim diizinkan.</message>
 	<message key="rt.admin.settings.addComment.unauthenticated">Pengguna tidak perlu terdaftar untuk mem-posting, dengan izin anonimitas.</message>
 
-
 	<!-- RT Versions -->
 
 	<!-- RT Contexts -->
@@ -951,31 +936,21 @@ Aktif berarti berapa jumlah review yang sedang dipertimbangkan atau sedang berla
 	<!-- RT Searches -->
 
 	<message key="rt.admin.validateUrls.description"><![CDATA[URL invalid yang mungkin untuk situs pencari ditampilkan di bawah ini.<br />Anda harus memverifikasi secara manual URL apapun yang ditandai sebagai invalid, karena tes ini tidak 100% akurat.<br/>
-Validasi mungkin gagal dalam pencarian URL memerlukan form data yang diposting.]]></message>
+		Validasi mungkin gagal dalam pencarian URL memerlukan form data yang diposting.]]>
+	</message>
 	
 	<!-- RT Entities -->
-
-
-
-
 	<message key="rt.metadata.dublinCore.primaryAuthor">Pengarang</message>
 
 	<message key="rt.metadata.pkp.primaryAuthor">Nama Penulis, afiliasi, negara</message>
 	<message key="rt.metadata.pkp.peerReviewed">Artikel yang dipeer-review</message>
 	<message key="rt.metadata.pkp.doi">Digital Object Identifier</message>
 
-
-
-
-
 	<message key="rt.beNotifiedWhen">Diberitahu saat....</message>
 
 	<message key="rt.thisJournal">Cari Jurnal</message>
 	
-
 	<message key="rt.context.authorTermsDescription">Untuk item dengan lebih dari satu penulis, centang semua nama untuk mencari kemiripan naskah yang ditulis bersama, atau cari satu dalam waktu yang sama dengan mencentang hanya satu nama.</message>
-	
-	
 	
 	<!-- Common Notification -->
 	<message key="notification.csrfInvalid">Terdapat kendala keamanan (Token CSRF tidak valid). Form tidak dapat diproses. Silakan muat ulang halaman dan coba lagi.</message>
@@ -1007,6 +982,7 @@ Validasi mungkin gagal dalam pencarian URL memerlukan form data yang diposting.]
 	 * MISC - Entries that do not belong in the other sections.
 	 *
 	-->
+
 	<!-- Authorization -->
 	<message key="user.authorization.copyeditorAssignmentMissing">Akses ditolak! Anda belum ditugaskan sebagai copy editor untuk artikel ini.</message>
 	<message key="user.authorization.noJournal">Tidak ada jurnal di konteks!</message>
