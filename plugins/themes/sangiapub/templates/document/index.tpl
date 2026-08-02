@@ -13,7 +13,7 @@
 {literal}
 <style>
     .wi-doc-landing { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .wi-doc-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 30px; text-align: center; text-decoration: none; color: #333; transition: 0.2s; }
+    .wi-doc-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 30px; text-align: center; text-decoration: none !important; color: #333; transition: 0.2s; }
     .wi-doc-card:hover { border-color: #1a4f8b; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     .wi-doc-card .count { font-size: 32px; font-weight: 800; color: #1a4f8b; }
     .wi-doc-card h3 { margin: 10px 0 5px; }

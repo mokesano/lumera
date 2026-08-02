@@ -91,11 +91,22 @@ class XenditGateway implements PaymentGatewayInterface {
         $incomingToken = $_SERVER['HTTP_X_CALLBACK_TOKEN'] ?? '';
 
         if ($this->webhookToken === '' || !hash_equals($this->webhookToken, $incomingToken)) {
-            $this->_alertSiteAdmins(
-                $this->webhookToken === ''
-                    ? 'Xendit webhook token belum dikonfigurasi -- webhook ditolak.'
-                    : 'Percobaan webhook Xendit palsu terdeteksi dan ditolak.'
-            );
+            $localeKey = $this->webhookToken === ''
+                ? 'payment.gateway.alert.tokenNotConfigured'
+                : 'payment.gateway.alert.forgedWebhookDetected';
+
+            import('classes.notification.NotificationManager');
+            $notificationManager = new NotificationManager();
+            /** @var RoleDAO $roleDao */
+            $roleDao = DAORegistry::getDAO('RoleDAO');
+            $result = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN, null);
+            while ($result && ($admin = $result->next())) {
+                $notificationManager->createTrivialNotification(
+                    (int) $admin->getId(),
+                    NOTIFICATION_TYPE_ERROR,
+                    ['contents' => '[Xendit] ' . __($localeKey)]
+                );
+            }
             return null;
         }
 
@@ -124,25 +135,6 @@ class XenditGateway implements PaymentGatewayInterface {
             'method' => 'Xendit - ' . ($payload['payment_method'] ?? 'Unknown'),
             'reference' => (string) ($payload['id'] ?? '')
         ];
-    }
-
-    /**
-     * Kirim notifikasi ke semua admin situs jika ada masalah keamanan
-     * @param string $message
-     * @return void
-     */
-    private function _alertSiteAdmins(string $message): void {
-        import('classes.notification.NotificationManager');
-        $roleDao = DAORegistry::getDAO('RoleDAO'); /** @var RoleDAO $roleDao */
-        $result = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN, null);
-        $notificationManager = new NotificationManager();
-        while ($result && ($admin = $result->next())) {
-            $notificationManager->createTrivialNotification(
-                (int) $admin->getId(),
-                NOTIFICATION_TYPE_ERROR,
-                ['contents' => '[Xendit] ' . $message]
-            );
-        }
     }
     
 }

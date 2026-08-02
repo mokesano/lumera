@@ -5,8 +5,12 @@
  * Copyright (c) 2017-2026 Rochmady
  * Distributed under the GNU GPL v3.
  *}
+{**
+ * [FIX] TIDAK ADA {assign var="pageTitle"...} di sini -- AuthenticateHandler::certificate()
+ * SUDAH benar mengirim pageTitle = 'authenticate.cert.verifiedTitle' sebelum
+ * memanggil display().
+ *}
 {strip}
-    {assign var="pageTitle" value="Document Validation - Certificate"}
     {include file="common/header.tpl"}
 {/strip}
 
@@ -24,46 +28,46 @@
     <div class="verify-badge-wrapper">
         {if $publisher.logoUrl}<img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" class="wi-publisher-logo"><br>{/if}
         <img src="{$baseUrl}/plugins/themes/wizdam/images/verified-seal.png" alt="Verified" width="80">
-        <h2 class="text-success">DOCUMENT VERIFIED</h2>
-        <p class="text-muted">This certificate is authentic and registered in our system.</p>
+        <h2 class="text-success">{translate key="document.verifiedTitle"}</h2>
+        <p class="text-muted">{translate key="document.cert.verifiedSubtitle"}</p>
     </div>
 
     <h2 style="text-transform: uppercase; letter-spacing: 2px;">{$certData.journalTitle|escape}</h2>
     <hr style="width: 50px; border-top: 2px solid {$publisher.colorPrimary|escape}; margin: 15px auto;">
 
-    <p style="margin-top: 20px;">This certificate is proudly presented to</p>
+    <p style="margin-top: 20px;">{translate key="document.cert.presentedTo"}</p>
 
     {if $certData.type === 'EDITOR_CERTIFICATE'}
         <h2 style="font-family: Georgia, serif;">{$certData.editorName|escape}</h2>
         <p>{$certData.editorAffiliation|escape}</p>
-        <p style="margin-top: 20px;">In recognition of dedicated editorial service for the manuscript:</p>
+        <p style="margin-top: 20px;">{translate key="document.cert.editorRecognitionText"}</p>
         <div class="wi-manuscript-box"><em>"{$certData.articleTitle|escape}"</em></div>
-        <p>Certificate Number: <strong>{$certData.certificateNumber|escape}</strong></p>
-        <p>Date Assigned: {$certData.dateAssigned|date_format:"%d %B %Y"}</p>
+        <p>{translate key="document.cert.certificateNumberLabel"}: <strong>{$certData.certificateNumber|escape}</strong></p>
+        <p>{translate key="document.cert.dateAssignedLabel"}: {$certData.dateAssigned|date_format:"%d %B %Y"}</p>
     {else}
         <h2 style="font-family: Georgia, serif;">{$certData.reviewerName|escape}</h2>
         <p>{$certData.reviewerAffiliation|escape}</p>
-        <p style="margin-top: 20px;">In recognition of a valuable peer-review contribution for the manuscript:</p>
+        <p style="margin-top: 20px;">{translate key="document.cert.reviewerRecognitionText"}</p>
         <div class="wi-manuscript-box"><em>"{$certData.articleTitle|escape}"</em></div>
-        <p>Certificate Number: <strong>{$certData.certificateNumber|escape}</strong></p>
-        <p>Date Completed: {$certData.dateCompleted|date_format:"%d %B %Y"}</p>
+        <p>{translate key="document.cert.certificateNumberLabel"}: <strong>{$certData.certificateNumber|escape}</strong></p>
+        <p>{translate key="document.cert.dateCompletedLabel"}: {$certData.dateCompleted|date_format:"%d %B %Y"}</p>
     {/if}
 
     <div class="wi-footer-row" style="text-align:left;">
         <div>
-            <p>Best regards,</p>
+            <p>{translate key="document.cert.bestRegards"}</p>
             <p><strong>
                 {if $certData.signatoryNames|@count > 0}
                     {foreach from=$certData.signatoryNames item=name name=sig}{$name|escape}{if !$smarty.foreach.sig.last} &amp; {/if}{/foreach}
                 {else}
-                    Editorial Board
+                    {translate key="document.editorialBoard"}
                 {/if}
-            </strong><br>Journal Manager{if $certData.signatoryNames|@count > 1}s{/if}<br>{$certData.journalTitle|escape}</p>
+            </strong><br>{if $certData.signatoryNames|@count > 1}{translate key="document.journalManagers"}{else}{translate key="document.journalManager"}{/if}<br>{$certData.journalTitle|escape}</p>
         </div>
     </div>
 
     <div class="verify-footer mt-4" style="margin-top:20px;">
-        <p><small>Secured by <strong>{$publisher.name|escape}</strong></small></p>
+        <p><small>{translate key="document.securedBy"} <strong>{$publisher.name|escape}</strong></small></p>
     </div>
 </div>
 

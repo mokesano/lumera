@@ -105,7 +105,21 @@ class PayPalGateway implements PaymentGatewayInterface {
 
         $receiverEmail = (string) ($payload['business'] ?? $payload['receiver_email'] ?? '');
         if ($receiverEmail === '' || !hash_equals(strtolower($this->sellerEmail), strtolower($receiverEmail))) {
-            $this->_alertSiteAdmins('PayPal', "IPN receiver tidak cocok. Diharapkan {$this->sellerEmail}, diterima {$receiverEmail}.");
+            import('classes.notification.NotificationManager');
+            $notificationManager = new NotificationManager();
+            /** @var RoleDAO $roleDao */
+            $roleDao = DAORegistry::getDAO('RoleDAO');
+            $result = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN, null);
+            while ($result && ($admin = $result->next())) {
+                $notificationManager->createTrivialNotification(
+                    (int) $admin->getId(),
+                    NOTIFICATION_TYPE_ERROR,
+                    ['contents' => '[PayPal] ' . __('payment.gateway.alert.receiverMismatch', [
+                        'expectedEmail' => $this->sellerEmail,
+                        'actualEmail'   => $receiverEmail,
+                    ])]
+                );
+            }
             return null;
         }
 
@@ -129,7 +143,24 @@ class PayPalGateway implements PaymentGatewayInterface {
         $expectedCurrency = strtoupper($paidInvoice->getCurrencyCode());
 
         if (abs($paidGross - $expectedAmount) > 0.01 || $paidCurrency !== $expectedCurrency) {
-            $this->_alertSiteAdmins('PayPal', "Nominal IPN tidak cocok untuk invoice #{$invoiceId}. Diharapkan {$expectedAmount} {$expectedCurrency}, diterima {$paidGross} {$paidCurrency}.");
+            import('classes.notification.NotificationManager');
+            $notificationManager = new NotificationManager();
+            /** @var RoleDAO $roleDao */
+            $roleDao = DAORegistry::getDAO('RoleDAO');
+            $result = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN, null);
+            while ($result && ($admin = $result->next())) {
+                $notificationManager->createTrivialNotification(
+                    (int) $admin->getId(),
+                    NOTIFICATION_TYPE_ERROR,
+                    ['contents' => '[PayPal] ' . __('payment.gateway.alert.amountMismatch', [
+                        'invoiceId'        => $invoiceId,
+                        'expectedAmount'   => $expectedAmount,
+                        'expectedCurrency' => $expectedCurrency,
+                        'paidGross'        => $paidGross,
+                        'paidCurrency'     => $paidCurrency,
+                    ])]
+                );
+            }
             return null;
         }
 
@@ -223,25 +254,6 @@ class PayPalGateway implements PaymentGatewayInterface {
         $invoiceId = $invoice->getInvoiceId();
         $hash = $hashService->generateHash('invoice', $invoiceId);
         return "{$hash}-{$invoiceId}";
-    }
-
-    /**
-     * [SECURITY SHIELD] Kirim notifikasi ke semua Site Admin jika ada
-     * percobaan webhook palsu dari Xendit.
-     * @param string $message
-     */
-    private function _alertSiteAdmins(string $gatewayLabel, string $message): void {
-        import('classes.notification.NotificationManager');
-        $roleDao = DAORegistry::getDAO('RoleDAO'); /** @var RoleDAO $roleDao */
-        $result = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN, null);
-        $notificationManager = new NotificationManager();
-        while ($result && ($admin = $result->next())) {
-            $notificationManager->createTrivialNotification(
-                (int) $admin->getId(),
-                NOTIFICATION_TYPE_ERROR,
-                ['contents' => '[Xendit] ' . $message]
-            );
-        }
     }
 
 }

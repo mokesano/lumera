@@ -63,14 +63,14 @@
                         {if $certData.signatoryNames|@count > 0}
                             {foreach from=$certData.signatoryNames item=name name=sig}{$name|escape}{if !$smarty.foreach.sig.last}<br>{/if}{/foreach}
                         {else}
-                            {translate key="document.cert.editorialBoard"}
+                            {translate key="document.editorialBoard"}
                         {/if}
                     </strong><br>
-                    {if $certData.signatoryNames|@count > 1}{translate key="document.cert.journalManagers"}{else}{translate key="document.cert.journalManager"}{/if}
+                    {if $certData.signatoryNames|@count > 1}{translate key="document.journalManagers"}{else}{translate key="document.journalManager"}{/if}
                 </td>
                 <td width="30%" class="cert-qr">
                     <img src="{$qrCodeBase64}" height="120" width="120" alt="QR Verification">
-                    <div style="font-size: 9px;">{translate key="document.cert.scanToVerify"}</div>
+                    <div style="font-size: 9px;">{translate key="document.scanToVerify"}</div>
                 </td>
                 <td width="35%"></td>
             </tr>

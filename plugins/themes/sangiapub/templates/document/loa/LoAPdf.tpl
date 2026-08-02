@@ -58,7 +58,7 @@
         </td>
         <td>
             <div class="wi-meta-box">
-                <div class="label">{if $loaData.managerNames|@count > 1}{translate key="document.loa.journalManagers"}{else}{translate key="document.loa.journalManager"}{/if}</div>
+                <div class="label">{if $loaData.managerNames|@count > 1}{translate key="document.journalManagers"}{else}{translate key="document.journalManager"}{/if}</div>
                 {if $loaData.managerNames|@count > 0}
                     {foreach from=$loaData.managerNames item=name}{$name|escape}<br>{/foreach}
                 {else}
@@ -74,7 +74,7 @@
         <tr>
             <td width="70%">
                 <p>{translate key="document.loa.sincerely"}</p>
-                <p><strong>{translate key="document.loa.editorialBoard"}</strong><br>{$loaData.journalTitle|escape}</p>
+                <p><strong>{translate key="document.editorialBoard"}</strong><br>{$loaData.journalTitle|escape}</p>
             </td>
             <td width="30%" class="wi-qr" style="text-align:center;">
                 <img src="{$qrCodeBase64}" height="120" width="120" alt="QR Verification">

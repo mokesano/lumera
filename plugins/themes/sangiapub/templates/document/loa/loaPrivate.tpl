@@ -34,7 +34,7 @@
             <h1>{translate key="document.loa.heading"}</h1>
         </div>
         <a href="{$pdfDownloadUrl|escape}" class="wizdam-btn wizdam-btn-primary" style="align-self:center;">
-            <i class="icon-download"></i> {translate key="document.loa.downloadPdf"}
+            <i class="icon-download"></i> {translate key="document.downloadPdf"}
         </a>
     </div>
 
@@ -67,7 +67,7 @@
         </div>
         {/if}
         <div class="wi-meta-box">
-            <strong>{if $loaData.managerNames|@count > 1}{translate key="document.loa.journalManagers"}{else}{translate key="document.loa.journalManager"}{/if}</strong>
+            <strong>{if $loaData.managerNames|@count > 1}{translate key="document.journalManagers"}{else}{translate key="document.journalManager"}{/if}</strong>
             {if $loaData.managerNames|@count > 0}
                 {foreach from=$loaData.managerNames item=name}{$name|escape}<br>{/foreach}
             {else}
@@ -79,11 +79,11 @@
     <div class="wi-footer-row">
         <div>
             <p>{translate key="document.loa.sincerely"}</p>
-            <p><strong>{translate key="document.loa.editorialBoard"}</strong><br>{$loaData.journalTitle|escape}</p>
+            <p><strong>{translate key="document.editorialBoard"}</strong><br>{$loaData.journalTitle|escape}</p>
         </div>
         <div class="wi-qr-box">
             <img src="{$qrCodeImage}" height="140" width="140" alt="QR Code">
-            <p><small>{translate key="document.loa.scanToVerify"}</small></p>
+            <p><small>{translate key="document.scanToVerify"}</small></p>
         </div>
     </div>
 </div>

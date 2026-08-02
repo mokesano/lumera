@@ -84,7 +84,7 @@ class LoAHandler extends Handler {
 
         $param = $args[0] ?? '';
         if (empty($param)) {
-            $this->_redirectWithError($request, 'document.loa.invalidRequest');
+            $this->_redirectWithError($request, 'billing.error.malformedRequest');
         }
 
         // 1. Deteksi Mode & Ekstraksi String
@@ -93,7 +93,7 @@ class LoAHandler extends Handler {
 
         // Validasi struktur hash (64 char + '-' + ID)
         if (strlen($cleanParam) <= 65 || $cleanParam[64] !== '-') {
-            $this->_redirectWithError($request, 'document.loa.invalidRequest');
+            $this->_redirectWithError($request, 'billing.error.malformedRequest');
         }
 
         $providedHash = substr($cleanParam, 0, 64);

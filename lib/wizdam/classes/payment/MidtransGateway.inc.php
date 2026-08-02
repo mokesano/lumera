@@ -24,7 +24,7 @@ use Midtrans\Snap;
 class MidtransGateway implements PaymentGatewayInterface {
     
     /**
-     * MidtransGateway constructor.
+     * Constructor.
      * @param string $serverKey
      * @param bool $isProduction
      */
@@ -89,11 +89,37 @@ class MidtransGateway implements PaymentGatewayInterface {
             return null;
         }
 
-        // [SECURITY SHIELD] Validasi Signature Key Asli dari Midtrans
+        if (Config::$serverKey === '') {
+            import('classes.notification.NotificationManager');
+            $notificationManager = new NotificationManager();
+            /** @var RoleDAO $roleDao */
+            $roleDao = DAORegistry::getDAO('RoleDAO');
+            $result = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN, null);
+            while ($result && ($admin = $result->next())) {
+                $notificationManager->createTrivialNotification(
+                    (int) $admin->getId(),
+                    NOTIFICATION_TYPE_ERROR,
+                    ['contents' => '[Midtrans] ' . __('payment.gateway.alert.serverKeyNotConfigured')]
+                );
+            }
+            return null;
+        }
+
         $expectedSignature = hash('sha512', $payload['order_id'] . $payload['status_code'] . $payload['gross_amount'] . Config::$serverKey);
         if (!hash_equals($expectedSignature, $payload['signature_key'])) {
-            error_log("WIZDAM SECURITY WARNING: Fake Midtrans Webhook detected for Order ID " . $payload['order_id']);
-            return null; // Tolak mentah-mentah!
+            import('classes.notification.NotificationManager');
+            $notificationManager = new NotificationManager();
+            /** @var RoleDAO $roleDao */
+            $roleDao = DAORegistry::getDAO('RoleDAO');
+            $result = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN, null);
+            while ($result && ($admin = $result->next())) {
+                $notificationManager->createTrivialNotification(
+                    (int) $admin->getId(),
+                    NOTIFICATION_TYPE_ERROR,
+                    ['contents' => '[Midtrans] ' . __('payment.gateway.alert.forgedWebhookDetectedForOrder', ['orderId' => $payload['order_id']])]
+                );
+            }
+            return null;
         }
 
         $orderParts = explode('-', $payload['order_id']);

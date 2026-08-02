@@ -9,9 +9,64 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="user.userHome"}
-{include file="common/header-parts/header-admin.tpl"}
+    {assign var="pageTitle" value="user.userHome"}
+    {include file="common/header-parts/header-admin.tpl"}
 {/strip}
+
+<section class="account-container__section u-mt-48">
+    <ul class="account-container__grid">
+        <li><article class="eds-c-card-composable eds-c-card-composable--faux-link">
+            <div class="eds-c-card-composable__container eds-c-card-composable__container--with-sidebar">
+                <div class="eds-c-card-composable__body">
+                    <div class="eds-c-card-composable__content">
+                        <h3 class="eds-c-card-composable__title"><a data-track="click_show_your_certificate_item" data-track-context="show-your-certificate" data-track-label="{translate key="document.cert.indexTitle"}" data-track-value="{translate key="document.cert.indexTitle"}" href="{url journal="index" page="document" op="certificateIndex"}">{translate key="document.cert.indexTitle"}</a>
+                        </h3>
+                        <p class="eds-c-card-composable__summary">{translate key="document.index.certificateDescription"}</p>
+                    </div>
+                </div>
+                <div class="eds-c-card-composable__icon-container"><svg class="eds-c-card-composable__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"><path d="M3 7H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M5 7H19V20.5C19 21.3284 18.3036 22 17.4444 22H6.55556C5.69645 22 5 21.3284 5 20.5V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M8 7V6.16667C8 3.86548 9.79086 2 12 2C14.2091 2 16 3.86548 16 6.16667V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M10 12V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M14 12V18.0048" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+            </div>
+        </article></li>
+        <li><article class="eds-c-card-composable eds-c-card-composable--faux-link">
+            <div class="eds-c-card-composable__container eds-c-card-composable__container--with-sidebar">
+                <div class="eds-c-card-composable__body">
+                    <div class="eds-c-card-composable__content">
+                        <h3 class="eds-c-card-composable__title"><a data-track="click_show_your_loa_item" data-track-context="show-your-loa" data-track-label="{translate key="billing.loa.indexTitle"}" data-track-value="{translate key="billing.loa.indexTitle"}" href="{url journal="index" page="document" op="loaIndex"}">{translate key="billing.loa.indexTitle"}</a>
+                        </h3>
+                        <p class="eds-c-card-composable__summary">{translate key="document.index.loaDescription"}</p>
+                    </div>
+                </div>
+                <div class="eds-c-card-composable__icon-container"><svg class="eds-c-card-composable__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5229 22 22 17.5229 22 12C22 6.47715 17.5229 2 12 2C6.47715 2 2 6.47715 2 12C2 14.0934 2.64327 16.0366 3.74292 17.6426L2 22L7.4538 20.9092C8.81774 21.6066 10.3629 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M11.9999 18.1113C11.7874 18.1113 11.6152 17.9391 11.6152 17.7267C11.6152 17.5142 11.7874 17.342 11.9999 17.342" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 18.1113C12.2124 18.1113 12.3846 17.9391 12.3846 17.7267C12.3846 17.5142 12.2124 17.342 12 17.342" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M9.30811 9.69231C9.30811 8.20539 10.5135 7 12.0004 7C13.4873 7 14.6927 8.20539 14.6927 9.69231C14.6927 11.1792 13.4873 12.3846 12.0004 12.3846V13.9231" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+            </div>
+        </article></li>
+        <li><article class="eds-c-card-composable eds-c-card-composable--faux-link">
+            <div class="eds-c-card-composable__container eds-c-card-composable__container--with-sidebar">
+                <div class="eds-c-card-composable__body">
+                    <div class="eds-c-card-composable__content">
+                        <h2 class="eds-c-card-composable__title"><a data-track="click_my-billing" data-track-context="my-billing" data-track-label="Account" data-track-value="Billing and invoice" href="{url journal="index" page="billing"}" target="_blank">{translate key="payment.mybilling"}</a>
+                        </h2>
+                        <p class="eds-c-card-composable__summary">View active invoice and history your billings.</p>
+                    </div>
+                </div>
+                <div class="eds-c-card-composable__icon-container">
+                    <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" fill="currentColor">
+                        <g><g><path d="M189.218,200.348c-27.618,0-50.087,22.469-50.087,50.087c0,27.618,22.469,50.087,50.087,50.087    c27.618,0,50.087-22.469,50.087-50.087C239.305,222.817,216.836,200.348,189.218,200.348z M189.218,267.13    c-9.206,0-16.696-7.49-16.696-16.696c0-9.206,7.49-16.696,16.696-16.696s16.696,7.49,16.696,16.696    C205.913,259.641,198.424,267.13,189.218,267.13z"></path>
+                        	</g></g>
+                        <g><g><path d="M322.783,333.913c-27.618,0-50.087,22.469-50.087,50.087s22.469,50.087,50.087,50.087S372.87,411.618,372.87,384    S350.401,333.913,322.783,333.913z M322.783,400.696c-9.206,0-16.696-7.49-16.696-16.696s7.49-16.696,16.696-16.696    c9.206,0,16.696,7.49,16.696,16.696S331.989,400.696,322.783,400.696z"></path></g></g>
+                        <g><g><path d="M338.635,234.588c-6.519-6.52-17.091-6.52-23.611,0L173.357,376.255c-6.52,6.52-6.52,17.091,0,23.611    c3.26,3.26,7.533,4.891,11.805,4.891c4.272,0,8.546-1.629,11.805-4.891l141.667-141.667    C345.155,251.679,345.155,241.109,338.635,234.588z"></path></g></g>
+                        <g><g><path d="M456.348,0H55.652c-9.22,0-16.696,7.475-16.696,16.696v478.609c0,5.787,2.996,11.161,7.918,14.202    c4.923,3.043,11.069,3.317,16.244,0.731l59.316-29.658l59.316,29.658c4.7,2.35,10.232,2.35,14.933,0L256,480.58l59.316,29.658    c2.35,1.175,4.909,1.762,7.466,1.762c2.558,0,5.117-0.588,7.466-1.762l59.316-29.658l59.316,29.658    c5.173,2.587,11.32,2.312,16.244-0.731c4.922-3.042,7.918-8.416,7.918-14.202V16.696C473.044,7.475,465.569,0,456.348,0z     M439.652,468.29l-42.621-21.31c-4.7-2.35-10.232-2.35-14.933,0l-59.316,29.658l-59.316-29.658    c-2.35-1.175-4.909-1.762-7.466-1.762s-5.117,0.588-7.466,1.762l-59.316,29.658l-59.316-29.658c-4.7-2.35-10.232-2.35-14.933,0    l-42.621,21.31V33.391h367.304V468.29z"></path></g></g>
+                        <g><g><path d="M389.565,66.783H189.218c-9.22,0-16.696,7.475-16.696,16.696s7.475,16.696,16.696,16.696h200.348    c9.22,0,16.696-7.475,16.696-16.696S398.786,66.783,389.565,66.783z"></path></g></g>
+                        <g><g><path d="M389.565,133.565H189.218c-9.22,0-16.696,7.475-16.696,16.696s7.475,16.696,16.696,16.696h200.348    c9.22,0,16.696-7.475,16.696-16.696S398.786,133.565,389.565,133.565z"></path></g></g>
+                        <g><g><circle cx="122.435" cy="83.478" r="16.696"></circle></g></g>
+                        <g><g><circle cx="122.435" cy="150.261" r="16.696"></circle></g></g>
+                    </svg>
+                </div>
+            </div>
+        </article></li>
+    </ul>
+</section>
 
 {if $isSiteAdmin}
 {assign var="hasRole" value=1}
@@ -88,163 +143,164 @@
 {/if}
 
 <section class="old-dashboard account-container__section{if $currentJournal} u-js-hide{/if}">
-<div id="myJournals" class="block">
-{if !$currentJournal}<h3 class="u-h2">{translate key="user.myJournals"}</h3>{/if}
+    <div id="myJournals" class="block">
+        {if !$currentJournal}<h3 class="u-h2">{translate key="user.myJournals"}</h3>{/if}
 
-{foreach from=$userJournals item=journal}
-	<div id="{$journal->getPath()|escape}" class="block">
-	{assign var="hasRole" value=1}
-	{if !$currentJournal}<h4 class="u-h2"><a href="{url journal=$journal->getPath() page="user"}">{$journal->getLocalizedTitle()|escape}</a></h4>
-	{else}<h3 class="u-h2"><a href="{url page="index"}">{$journal->getLocalizedTitle()|escape}</a></h3>{/if}
-	
-	{assign var="journalId" value=$journal->getId()}
-	{assign var="journalPath" value=$journal->getPath()}
-	<table width="100%" class="info u-hide">
-		<tr class="tableHeading">
-			<th>User Pages</th>
-			<th>Assign</th>
-			<th>Review</th>
-			<th>Edit</th>
-			<th>Frequent Tasks</th>
-		</tr>
-		{if $isValid.JournalManager.$journalId}
-			<tr>
-				<td><a href="{url journal=$journalPath page="manager"}">{translate key="user.role.manager"}</a></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td align="right">[<a href="{url journal=$journalPath page="manager" op="setup" path="1"}">{translate key="manager.setup"}</a>]</td>
-			</tr>
-		{/if}
-		{if $isValid.SubscriptionManager.$journalId}
-			<tr>
-				<td width="20%" colspan="1"><a href="{url journal=$journalPath page="subscriptionManager"}">{translate key="user.role.subscriptionManager"}</a></td>
-				<td colspan="4"></td>
-			</tr>
-		{/if}
-		{if $isValid.Editor.$journalId || $isValid.SectionEditor.$journalId || $isValid.LayoutEditor.$journalId || $isValid.Copyeditor.$journalId || $isValid.Proofreader.$journalId}
-			<tr><td class="separator" width="100%" colspan="5">&nbsp;</td></tr>
-		{/if}
-		{if $isValid.Editor.$journalId}
-			<tr>
-				{assign var="editorSubmissionsCount" value=$submissionsCount.Editor.$journalId}
-				<td><a href="{url journal=$journalPath page="editor"}">{translate key="user.role.editor"}</a></td>
-				<td>{if $editorSubmissionsCount[0]}
-						<a href="{url journal=$journalPath page="editor" op="submissions" path="submissionsUnassigned"}">{$editorSubmissionsCount[0]} {translate key="common.queue.short.submissionsUnassigned"}</a>
-					{else}<span class="disabled">0 {translate key="common.queue.short.submissionsUnassigned"}</span>{/if}
-				</td>
-				<td>{if $editorSubmissionsCount[1]}
-						<a href="{url journal=$journalPath page="editor" op="submissions" path="submissionsInReview"}">{$editorSubmissionsCount[1]} {translate key="common.queue.short.submissionsInReview"}</a>
-					{else}<span class="disabled">0 {translate key="common.queue.short.submissionsInReview"}</span>{/if}
-				</td>
-				<td>{if $editorSubmissionsCount[2]}
-						<a href="{url journal=$journalPath page="editor" op="submissions" path="submissionsInEditing"}">{$editorSubmissionsCount[2]} {translate key="common.queue.short.submissionsInEditing"}</a>
-					{else}<span class="disabled">0 {translate key="common.queue.short.submissionsInEditing"}</span>{/if}
-				</td>
-				<td align="right">[<a href="{url journal=$journalPath page="editor" op="createIssue"}">{translate key="editor.issues.createIssue"}</a>] [<a href="{url journal=$journalPath page="editor" op="notifyUsers"}">{translate key="editor.notifyUsers"}</a>]</td>
-			</tr>
-		{/if}
-		{if $isValid.SectionEditor.$journalId}
-			{assign var="sectionEditorSubmissionsCount" value=$submissionsCount.SectionEditor.$journalId}
-			<tr>
-				<td><a href="{url journal=$journalPath page="sectionEditor"}">{translate key="user.role.sectionEditor"}</a></td>
-				<td></td>
-				<td>{if $sectionEditorSubmissionsCount[0]}
-						<a href="{url journal=$journalPath page="sectionEditor" op="index" path="submissionsInReview"}">{$sectionEditorSubmissionsCount[0]} {translate key="common.queue.short.submissionsInReview"}</a>
-					{else}<span class="disabled">0 {translate key="common.queue.short.submissionsInReview"}</span>{/if}
-				</td>
-				<td>{if $sectionEditorSubmissionsCount[1]}
-						<a href="{url journal=$journalPath page="sectionEditor" op="index" path="submissionsInEditing"}">{$sectionEditorSubmissionsCount[1]} {translate key="common.queue.short.submissionsInEditing"}</a>
-					{else}<span class="disabled">0 {translate key="common.queue.short.submissionsInEditing"}</span>{/if}
-				</td>
-				<td align="right"></td>
-			</tr>
-		{/if}
-		{if $isValid.LayoutEditor.$journalId}
-			{assign var="layoutEditorSubmissionsCount" value=$submissionsCount.LayoutEditor.$journalId}
-			<tr>
-				<td><a href="{url journal=$journalPath page="layoutEditor"}">{translate key="user.role.layoutEditor"}</a></td>
-				<td></td>
-				<td></td>
-				<td>{if $layoutEditorSubmissionsCount[0]}
-						<a href="{url journal=$journalPath page="layoutEditor" op="submissions"}">{$layoutEditorSubmissionsCount[0]} {translate key="common.queue.short.submissionsInEditing"}</a>
-					{else}<span class="disabled">0 {translate key="common.queue.short.submissionsInEditing"}</span>{/if}
-				</td>
-				<td align="right"></td>
-			</tr>
-		{/if}
-		{if $isValid.Copyeditor.$journalId}
-			{assign var="copyeditorSubmissionsCount" value=$submissionsCount.Copyeditor.$journalId}
-			<tr>
-				<td><a href="{url journal=$journalPath page="copyeditor"}">{translate key="user.role.copyeditor"}</a></td>
-				<td></td>
-				<td></td>
-				<td>{if $copyeditorSubmissionsCount[0]}
-						<a href="{url journal=$journalPath page="copyeditor"}">{$copyeditorSubmissionsCount[0]} {translate key="common.queue.short.submissionsInEditing"}</a>
-					{else}<span class="disabled">0 {translate key="common.queue.short.submissionsInEditing"}</span>{/if}
-				</td>
-				<td align="right"></td>
-			</tr>
-		{/if}
-		{if $isValid.Proofreader.$journalId}
-			{assign var="proofreaderSubmissionsCount" value=$submissionsCount.Proofreader.$journalId}
-			<tr>
-				<td><a href="{url journal=$journalPath page="proofreader"}">{translate key="user.role.proofreader"}</a></td>
-				<td></td>
-				<td></td>
-				<td>{if $proofreaderSubmissionsCount[0]}
-						<a href="{url journal=$journalPath page="proofreader"}">{$proofreaderSubmissionsCount[0]} {translate key="common.queue.short.submissionsInEditing"}</a>
-					{else}<span class="disabled">0 {translate key="common.queue.short.submissionsInEditing"}</span>{/if}
-				</td>
-				<td align="right"></td>
-			</tr>
-		{/if}
-		{if $isValid.Author.$journalId || $isValid.Reviewer.$journalId}
-			<tr><td class="separator" width="100%" colspan="5">&nbsp;</td></tr>
-		{/if}
-		{if $isValid.Author.$journalId}
-			{assign var="authorSubmissionsCount" value=$submissionsCount.Author.$journalId}
-			<tr>
-				<td><a href="{url journal=$journalPath page="author"}">{translate key="user.role.author"}</a></td>
-				<td></td>
-				<td>{if $authorSubmissionsCount[0]}
-						<a href="{url journal=$journalPath page="author"}">{$authorSubmissionsCount[0]} {translate key="common.queue.short.active"}</a>
-					{else}<span class="disabled">0 {translate key="common.queue.short.active"}</span>{/if}
-				</td>
-				{* This is for all non-pending items*}
-				<td>{if $authorSubmissionsCount[1]}
-						<a href="{url journal=$journalPath path="completed" page="author"}">{$authorSubmissionsCount[1]} {translate key="common.queue.short.completed"}</a>
-					{else}<span class="disabled">0 {translate key="common.queue.short.completed"}</span>{/if}
-				</td>
-				<td align="right">[<a href="{url journal=$journalPath page="author" op="submit"}">{translate key="author.submit"}</a>]</td>
-			</tr>
-		{/if}
-		{if $isValid.Reviewer.$journalId}
-			{assign var="reviewerSubmissionsCount" value=$submissionsCount.Reviewer.$journalId}
-			<tr>
-				<td><a href="{url journal=$journalPath page="reviewer"}">{translate key="user.role.reviewer"}</a></td>
-				<td></td>
-				<td></td>
-				<td>{if $reviewerSubmissionsCount[0]}
-						<a href="{url journal=$journalPath page="reviewer"}">{$reviewerSubmissionsCount[0]} {translate key="common.queue.short.active"}</a>
-					{else}<span class="disabled">0 {translate key="common.queue.short.active"}</span>{/if}
-				</td>
-				<td align="right"></td>
-			</tr>
-		{/if}
-		{* Add a row to the bottom of each table to ensure all have same width*}
-		<tr>
-			<td width="22%"></td>
-			<td width="16%"></td>
-			<td width="16%"></td>
-			<td width="16%"></td>
-			<td width="30%"></td>
-		</tr>
-	</table>
-	{call_hook name="Templates::User::Index::Journal" journal=$journal}
-	</div>
-{/foreach}
-</div>
+        {foreach from=$userJournals item=journal}
+            <div id="{$journal->getPath()|escape}" class="block">
+            {assign var="hasRole" value=1}
+            {if !$currentJournal}<h4 class="u-h2"><a href="{url journal=$journal->getPath() page="user"}">{$journal->getLocalizedTitle()|escape}</a></h4>
+            {else}<h3 class="u-h2"><a href="{url page="index"}">{$journal->getLocalizedTitle()|escape}</a></h3>{/if}
+            
+            {assign var="journalId" value=$journal->getId()}
+            {assign var="journalPath" value=$journal->getPath()}
+            <table width="100%" class="info u-hide">
+                <tr class="tableHeading">
+                    <th>User Pages</th>
+                    <th>Assign</th>
+                    <th>Review</th>
+                    <th>Edit</th>
+                    <th>Frequent Tasks</th>
+                </tr>
+                {if $isValid.JournalManager.$journalId}
+                    <tr>
+                        <td><a href="{url journal=$journalPath page="manager"}">{translate key="user.role.manager"}</a></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td align="right">[<a href="{url journal=$journalPath page="manager" op="setup" path="1"}">{translate key="manager.setup"}</a>]</td>
+                    </tr>
+                {/if}
+                {if $isValid.SubscriptionManager.$journalId}
+                    <tr>
+                        <td width="20%" colspan="1"><a href="{url journal=$journalPath page="subscriptionManager"}">{translate key="user.role.subscriptionManager"}</a></td>
+                        <td colspan="4"></td>
+                    </tr>
+                {/if}
+                {if $isValid.Editor.$journalId || $isValid.SectionEditor.$journalId || $isValid.LayoutEditor.$journalId || $isValid.Copyeditor.$journalId || $isValid.Proofreader.$journalId}
+                    <tr><td class="separator" width="100%" colspan="5">&nbsp;</td></tr>
+                {/if}
+                {if $isValid.Editor.$journalId}
+                    <tr>
+                        {assign var="editorSubmissionsCount" value=$submissionsCount.Editor.$journalId}
+                        <td><a href="{url journal=$journalPath page="editor"}">{translate key="user.role.editor"}</a></td>
+                        <td>{if $editorSubmissionsCount[0]}
+                                <a href="{url journal=$journalPath page="editor" op="submissions" path="submissionsUnassigned"}">{$editorSubmissionsCount[0]} {translate key="common.queue.short.submissionsUnassigned"}</a>
+                            {else}<span class="disabled">0 {translate key="common.queue.short.submissionsUnassigned"}</span>{/if}
+                        </td>
+                        <td>{if $editorSubmissionsCount[1]}
+                                <a href="{url journal=$journalPath page="editor" op="submissions" path="submissionsInReview"}">{$editorSubmissionsCount[1]} {translate key="common.queue.short.submissionsInReview"}</a>
+                            {else}<span class="disabled">0 {translate key="common.queue.short.submissionsInReview"}</span>{/if}
+                        </td>
+                        <td>{if $editorSubmissionsCount[2]}
+                                <a href="{url journal=$journalPath page="editor" op="submissions" path="submissionsInEditing"}">{$editorSubmissionsCount[2]} {translate key="common.queue.short.submissionsInEditing"}</a>
+                            {else}<span class="disabled">0 {translate key="common.queue.short.submissionsInEditing"}</span>{/if}
+                        </td>
+                        <td align="right">[<a href="{url journal=$journalPath page="editor" op="createIssue"}">{translate key="editor.issues.createIssue"}</a>] [<a href="{url journal=$journalPath page="editor" op="notifyUsers"}">{translate key="editor.notifyUsers"}</a>]</td>
+                    </tr>
+                {/if}
+                {if $isValid.SectionEditor.$journalId}
+                    {assign var="sectionEditorSubmissionsCount" value=$submissionsCount.SectionEditor.$journalId}
+                    <tr>
+                        <td><a href="{url journal=$journalPath page="sectionEditor"}">{translate key="user.role.sectionEditor"}</a></td>
+                        <td></td>
+                        <td>{if $sectionEditorSubmissionsCount[0]}
+                                <a href="{url journal=$journalPath page="sectionEditor" op="index" path="submissionsInReview"}">{$sectionEditorSubmissionsCount[0]} {translate key="common.queue.short.submissionsInReview"}</a>
+                            {else}<span class="disabled">0 {translate key="common.queue.short.submissionsInReview"}</span>{/if}
+                        </td>
+                        <td>{if $sectionEditorSubmissionsCount[1]}
+                                <a href="{url journal=$journalPath page="sectionEditor" op="index" path="submissionsInEditing"}">{$sectionEditorSubmissionsCount[1]} {translate key="common.queue.short.submissionsInEditing"}</a>
+                            {else}<span class="disabled">0 {translate key="common.queue.short.submissionsInEditing"}</span>{/if}
+                        </td>
+                        <td align="right"></td>
+                    </tr>
+                {/if}
+                {if $isValid.LayoutEditor.$journalId}
+                    {assign var="layoutEditorSubmissionsCount" value=$submissionsCount.LayoutEditor.$journalId}
+                    <tr>
+                        <td><a href="{url journal=$journalPath page="layoutEditor"}">{translate key="user.role.layoutEditor"}</a></td>
+                        <td></td>
+                        <td></td>
+                        <td>{if $layoutEditorSubmissionsCount[0]}
+                                <a href="{url journal=$journalPath page="layoutEditor" op="submissions"}">{$layoutEditorSubmissionsCount[0]} {translate key="common.queue.short.submissionsInEditing"}</a>
+                            {else}<span class="disabled">0 {translate key="common.queue.short.submissionsInEditing"}</span>{/if}
+                        </td>
+                        <td align="right"></td>
+                    </tr>
+                {/if}
+                {if $isValid.Copyeditor.$journalId}
+                    {assign var="copyeditorSubmissionsCount" value=$submissionsCount.Copyeditor.$journalId}
+                    <tr>
+                        <td><a href="{url journal=$journalPath page="copyeditor"}">{translate key="user.role.copyeditor"}</a></td>
+                        <td></td>
+                        <td></td>
+                        <td>{if $copyeditorSubmissionsCount[0]}
+                                <a href="{url journal=$journalPath page="copyeditor"}">{$copyeditorSubmissionsCount[0]} {translate key="common.queue.short.submissionsInEditing"}</a>
+                            {else}<span class="disabled">0 {translate key="common.queue.short.submissionsInEditing"}</span>{/if}
+                        </td>
+                        <td align="right"></td>
+                    </tr>
+                {/if}
+                {if $isValid.Proofreader.$journalId}
+                    {assign var="proofreaderSubmissionsCount" value=$submissionsCount.Proofreader.$journalId}
+                    <tr>
+                        <td><a href="{url journal=$journalPath page="proofreader"}">{translate key="user.role.proofreader"}</a></td>
+                        <td></td>
+                        <td></td>
+                        <td>{if $proofreaderSubmissionsCount[0]}
+                                <a href="{url journal=$journalPath page="proofreader"}">{$proofreaderSubmissionsCount[0]} {translate key="common.queue.short.submissionsInEditing"}</a>
+                            {else}<span class="disabled">0 {translate key="common.queue.short.submissionsInEditing"}</span>{/if}
+                        </td>
+                        <td align="right"></td>
+                    </tr>
+                {/if}
+                {if $isValid.Author.$journalId || $isValid.Reviewer.$journalId}
+                    <tr><td class="separator" width="100%" colspan="5">&nbsp;</td></tr>
+                {/if}
+                {if $isValid.Author.$journalId}
+                    {assign var="authorSubmissionsCount" value=$submissionsCount.Author.$journalId}
+                    <tr>
+                        <td><a href="{url journal=$journalPath page="author"}">{translate key="user.role.author"}</a></td>
+                        <td></td>
+                        <td>{if $authorSubmissionsCount[0]}
+                                <a href="{url journal=$journalPath page="author"}">{$authorSubmissionsCount[0]} {translate key="common.queue.short.active"}</a>
+                            {else}<span class="disabled">0 {translate key="common.queue.short.active"}</span>{/if}
+                        </td>
+                        {* This is for all non-pending items*}
+                        <td>{if $authorSubmissionsCount[1]}
+                                <a href="{url journal=$journalPath path="completed" page="author"}">{$authorSubmissionsCount[1]} {translate key="common.queue.short.completed"}</a>
+                            {else}<span class="disabled">0 {translate key="common.queue.short.completed"}</span>{/if}
+                        </td>
+                        <td align="right">[<a href="{url journal=$journalPath page="author" op="submit"}">{translate key="author.submit"}</a>]</td>
+                    </tr>
+                {/if}
+                {if $isValid.Reviewer.$journalId}
+                    {assign var="reviewerSubmissionsCount" value=$submissionsCount.Reviewer.$journalId}
+                    <tr>
+                        <td><a href="{url journal=$journalPath page="reviewer"}">{translate key="user.role.reviewer"}</a></td>
+                        <td></td>
+                        <td></td>
+                        <td>{if $reviewerSubmissionsCount[0]}
+                                <a href="{url journal=$journalPath page="reviewer"}">{$reviewerSubmissionsCount[0]} {translate key="common.queue.short.active"}</a>
+                            {else}<span class="disabled">0 {translate key="common.queue.short.active"}</span>{/if}
+                        </td>
+                        <td align="right"></td>
+                    </tr>
+                {/if}
+                {* Add a row to the bottom of each table to ensure all have same width*}
+                <tr>
+                    <td width="22%"></td>
+                    <td width="16%"></td>
+                    <td width="16%"></td>
+                    <td width="16%"></td>
+                    <td width="30%"></td>
+                </tr>
+            </table>
+            {call_hook name="Templates::User::Index::Journal" journal=$journal}
+            </div>
+        {/foreach}
+    </div>
+</section>
 
 {if !$hasRole}
 <div class="account-container__section account-container__section--centered-card-title has-role">
@@ -342,7 +398,6 @@
 	{/if}{* $currentJournal *}
 </div>
 {/if}{* !$hasRole *}
-</section>
 
 {if $hasRole && $currentJournal}
 {foreach from=$userJournals item=journal}
@@ -833,7 +888,7 @@
 {/if}
 
 {/foreach}
-{/if}{* !$hasRole *}
+{/if}{* END: $hasRole && $currentJournal *}
 
 <div class="account-container__section">
     <h1 class="u-h2">{translate key="user.myAccount"}</h1>
@@ -945,31 +1000,6 @@
     		{/if}{* $journalPaymentsEnabled && $membershipEnabled *}
     	{/if}{* $userJournal *}
     	
-        <li><article class="eds-c-card-composable eds-c-card-composable--faux-link">
-            <div class="eds-c-card-composable__container eds-c-card-composable__container--with-sidebar">
-                <div class="eds-c-card-composable__body">
-                    <div class="eds-c-card-composable__content">
-                        <h2 class="eds-c-card-composable__title"><a data-track="click_myprofile_homepage" data-track-context="my-billing" data-track-label="Account" data-track-value="Billing and invoice" href="{url journal="index" page="billing"}" target="_blank">{translate key="payment.mybilling"}</a>
-                        </h2>
-                        <p class="eds-c-card-composable__summary">View active invoice and history your billings.</p>
-                    </div>
-                </div>
-                <div class="eds-c-card-composable__icon-container">
-                    <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" fill="currentColor">
-                        <g><g><path d="M189.218,200.348c-27.618,0-50.087,22.469-50.087,50.087c0,27.618,22.469,50.087,50.087,50.087    c27.618,0,50.087-22.469,50.087-50.087C239.305,222.817,216.836,200.348,189.218,200.348z M189.218,267.13    c-9.206,0-16.696-7.49-16.696-16.696c0-9.206,7.49-16.696,16.696-16.696s16.696,7.49,16.696,16.696    C205.913,259.641,198.424,267.13,189.218,267.13z"></path>
-                        	</g></g>
-                        <g><g><path d="M322.783,333.913c-27.618,0-50.087,22.469-50.087,50.087s22.469,50.087,50.087,50.087S372.87,411.618,372.87,384    S350.401,333.913,322.783,333.913z M322.783,400.696c-9.206,0-16.696-7.49-16.696-16.696s7.49-16.696,16.696-16.696    c9.206,0,16.696,7.49,16.696,16.696S331.989,400.696,322.783,400.696z"></path></g></g>
-                        <g><g><path d="M338.635,234.588c-6.519-6.52-17.091-6.52-23.611,0L173.357,376.255c-6.52,6.52-6.52,17.091,0,23.611    c3.26,3.26,7.533,4.891,11.805,4.891c4.272,0,8.546-1.629,11.805-4.891l141.667-141.667    C345.155,251.679,345.155,241.109,338.635,234.588z"></path></g></g>
-                        <g><g><path d="M456.348,0H55.652c-9.22,0-16.696,7.475-16.696,16.696v478.609c0,5.787,2.996,11.161,7.918,14.202    c4.923,3.043,11.069,3.317,16.244,0.731l59.316-29.658l59.316,29.658c4.7,2.35,10.232,2.35,14.933,0L256,480.58l59.316,29.658    c2.35,1.175,4.909,1.762,7.466,1.762c2.558,0,5.117-0.588,7.466-1.762l59.316-29.658l59.316,29.658    c5.173,2.587,11.32,2.312,16.244-0.731c4.922-3.042,7.918-8.416,7.918-14.202V16.696C473.044,7.475,465.569,0,456.348,0z     M439.652,468.29l-42.621-21.31c-4.7-2.35-10.232-2.35-14.933,0l-59.316,29.658l-59.316-29.658    c-2.35-1.175-4.909-1.762-7.466-1.762s-5.117,0.588-7.466,1.762l-59.316,29.658l-59.316-29.658c-4.7-2.35-10.232-2.35-14.933,0    l-42.621,21.31V33.391h367.304V468.29z"></path></g></g>
-                        <g><g><path d="M389.565,66.783H189.218c-9.22,0-16.696,7.475-16.696,16.696s7.475,16.696,16.696,16.696h200.348    c9.22,0,16.696-7.475,16.696-16.696S398.786,66.783,389.565,66.783z"></path></g></g>
-                        <g><g><path d="M389.565,133.565H189.218c-9.22,0-16.696,7.475-16.696,16.696s7.475,16.696,16.696,16.696h200.348    c9.22,0,16.696-7.475,16.696-16.696S398.786,133.565,389.565,133.565z"></path></g></g>
-                        <g><g><circle cx="122.435" cy="83.478" r="16.696"></circle></g></g>
-                        <g><g><circle cx="122.435" cy="150.261" r="16.696"></circle></g></g>
-                    </svg>
-                </div>
-            </div>
-        </article></li>
-        
         {call_hook name="Templates::User::Index::MyAccount"}
     </ul>
 </div>

@@ -13,6 +13,22 @@
 
 <locale name="en_US" full_name="U.S. English">
 
+    <!-- Document (shared between LoA & Certificate) -->
+    <message key="document.downloadPdf">Download Official PDF</message>
+    <message key="document.editorialBoard">Editorial Board</message>
+    <message key="document.journalManager">Journal Manager</message>
+    <message key="document.journalManagers">Journal Managers</message>
+    <message key="document.scanToVerify">Scan to Verify</message>
+    <message key="document.verifiedTitle">DOCUMENT VERIFIED</message>
+
+    <!-- Payment Gateway: security alerts to Site Admin (in-app notification) -->
+    <message key="payment.gateway.alert.tokenNotConfigured">Webhook token has not been configured -- webhook rejected (fail-closed).</message>
+    <message key="payment.gateway.alert.serverKeyNotConfigured">Server key has not been configured -- webhook rejected (fail-closed).</message>
+    <message key="payment.gateway.alert.forgedWebhookDetected">A forged webhook attempt was detected and rejected.</message>
+    <message key="payment.gateway.alert.forgedWebhookDetectedForOrder">A forged webhook attempt was detected for Order ID {$orderId}.</message>
+    <message key="payment.gateway.alert.receiverMismatch">IPN receiver does not match. Expected {$expectedEmail}, received {$actualEmail}.</message>
+    <message key="payment.gateway.alert.amountMismatch">IPN amount does not match for invoice #{$invoiceId}. Expected {$expectedAmount} {$expectedCurrency}, received {$paidGross} {$paidCurrency}.</message>
+
     <!-- Admin Manual Payment -->
     <message key="admin.manualPayments.pageTitle">Manual Payment Confirmation</message>
     <message key="admin.manualPayments.description">List of invoices awaiting manual transfer verification by staff.</message>
@@ -59,6 +75,22 @@
     <message key="authenticate.cert.verifiedTitle">Validated Certificate</message>
     <message key="authenticate.cert.incompleteReview">Invalid document. The review process for this manuscript has not been completed.</message>
 
+    <!-- Authenticate: LoA Pending Payment page (authenticate/loaPending.tpl) -->
+    <message key="authenticate.loa.pendingHeading">VERIFICATION PENDING</message>
+    <message key="authenticate.loa.pendingStatusLabel">Document Status: Unresolved</message>
+    <message key="authenticate.loa.pendingLoginPrompt">If you are the author, please log in to your dashboard and complete your payment via the Billing section.</message>
+
+    <!-- Authenticate: Invoice verification page (authenticate/invoicePublic.tpl) -->
+    <message key="authenticate.invoice.paidVerifiedHeading">PAID &amp; VERIFIED</message>
+    <message key="authenticate.invoice.paidVerifiedSubtitle">This invoice is authentic, registered in our system, and has been fully settled.</message>
+    <message key="authenticate.invoice.unpaidHeading">AUTHENTIC (UNPAID)</message>
+    <message key="authenticate.invoice.unpaidSubtitle">This invoice is an authentic document issued by our system, but the payment is currently pending.</message>
+    <message key="authenticate.invoice.summaryTitle">Invoice Summary #{$invoiceId}</message>
+    <message key="authenticate.invoice.feeTypeLabel">Fee Type</message>
+    <message key="authenticate.invoice.viaLabel">via</message>
+    <message key="authenticate.invoice.loginPrompt">Are you the author? Log in to your dashboard to complete this payment via our secure gateway.</message>
+    <message key="document.securedBy">Secured by</message>
+
     <!-- Document Index -->
     <message key="document.index.pageTitle">My Documents</message>
     <message key="document.index.loaDescription">Letters of Acceptance for your published/accepted manuscripts.</message>
@@ -72,7 +104,6 @@
 
     <!-- Letter of Acceptance -->
     <message key="document.loa.pageTitle">Letter of Acceptance</message>
-    <message key="document.loa.invalidRequest">The document link is invalid or malformed.</message>
     <message key="document.loa.unauthorized">Access Denied. You do not have permission to download this manuscript document.</message>
     <message key="document.loa.pendingPaymentAlert">The document (LoA) cannot be issued yet. Please settle the pending invoice below.</message>
     <message key="document.loa.notFound">Manuscript data or acceptance status not found in the system.</message>
@@ -81,7 +112,6 @@
 
     <!-- Letter of Acceptance: document body (HTML view + PDF) -->
     <message key="document.loa.heading">LETTER OF ACCEPTANCE</message>
-    <message key="document.loa.downloadPdf">Download Official PDF</message>
     <message key="document.loa.dearAuthor">Dear</message>
     <message key="document.loa.introText">We are pleased to inform you that your manuscript entitled:</message>
     <message key="document.loa.acceptanceStatementBefore">has been officially</message>
@@ -92,13 +122,13 @@
     <message key="document.loa.editorialTeamTitle">Editorial Team</message>
     <message key="document.loa.handlingEditor">Handling Editor</message>
     <message key="document.loa.handlingEditors">Handling Editors</message>
-    <message key="document.loa.journalManager">Journal Manager</message>
-    <message key="document.loa.journalManagers">Journal Managers</message>
     <message key="document.loa.notConfigured">Not configured</message>
     <message key="document.loa.sincerely">Sincerely,</message>
-    <message key="document.loa.editorialBoard">Editorial Board</message>
-    <message key="document.loa.scanToVerify">Scan to Verify</message>
     <message key="document.loa.verifyThisDocument">Verify this Letter of Acceptance</message>
+
+    <!-- Letter of Acceptance: halaman verifikasi publik (authenticate/loaPublic.tpl) -->
+    <message key="document.loa.verifiedSubtitle">This Letter of Acceptance is authentic and registered in our system.</message>
+    <message key="document.loa.abstractTitle">Abstract</message>
 
     <!-- Certificate -->
     <message key="document.cert.indexTitle">My Certificates</message>
@@ -113,7 +143,6 @@
     <!-- Certificate: document body (HTML view + PDF) -->
     <message key="document.cert.headingEditor">Certificate of Editorial Service</message>
     <message key="document.cert.headingReviewer">Certificate of Recognition (Reviewer)</message>
-    <message key="document.cert.downloadPdf">Download Official PDF</message>
     <message key="document.cert.presentedTo">This certificate is proudly presented to</message>
     <message key="document.cert.editorRecognitionText">In recognition of dedicated editorial service for the manuscript:</message>
     <message key="document.cert.reviewerRecognitionText">In recognition of a valuable peer-review contribution for the manuscript:</message>
@@ -121,10 +150,9 @@
     <message key="document.cert.dateAssignedLabel">Date Assigned</message>
     <message key="document.cert.dateCompletedLabel">Date Completed</message>
     <message key="document.cert.bestRegards">Best regards,</message>
-    <message key="document.cert.editorialBoard">Editorial Board</message>
-    <message key="document.cert.journalManager">Journal Manager</message>
-    <message key="document.cert.journalManagers">Journal Managers</message>
-    <message key="document.cert.scanToVerify">Scan to Verify</message>
+
+    <!-- Certificate: halaman verifikasi publik (authenticate/certificatePublic.tpl) -->
+    <message key="document.cert.verifiedSubtitle">This certificate is authentic and registered in our system.</message>
 
     <message key="billing.loa.indexTitle">Letters of Acceptance</message>
     <message key="billing.loa.status.accepted">Accepted</message>
@@ -143,7 +171,6 @@
     <message key="billing.error.hashValidationFailed">Security verification failed. The document may have been tampered with.</message>
     <message key="billing.error.invoiceNotFound">Invoice not found or you do not have access permissions.</message>
     <message key="billing.error.alreadyPaid">Action rejected. This invoice has already been paid.</message>
-    <message key="billing.error.pdfGenerationFailed">The system failed to generate the PDF document at this time. Please contact the administrator.</message>
     <message key="billing.error.cannotCancel">Invoice cannot be canceled as it may already be paid or you lack the necessary access.</message>
     <message key="billing.success.paymentSessionCreated">Payment session successfully created.</message>
     <message key="billing.success.invoiceCancelled">Invoice successfully canceled.</message>
