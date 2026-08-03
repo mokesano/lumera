@@ -549,13 +549,14 @@
 	<!-- People Management -->
 	<message key="manager.people.confirmDisable">Disable this user? This will prevent the user from logging into the system.
 		You may optionally provide the user with a reason for disabling their account.</message>
-	<message key="manager.people.noAdministrativeRights"><![CDATA[Sorry, you do not have administrative rights over this user. This may be because:
+	<message key="manager.people.noAdministrativeRights"><![CDATA[
+		Sorry, you do not have administrative rights over this user. This may be because:
 		<ul>
 			<li>The user is a site administrator</li>
 			<li>The user is active in journals you do not manage</li>
 		</ul>
-	This task must be performed by a site administrator.
-	]]></message>
+		This task must be performed by a site administrator.]]>
+	</message>
 
 	<!-- Email Management -->
 
@@ -711,7 +712,6 @@
 
 	<!-- Article Submission Step 1 -->
 
-
 	<!-- Article Submission Step 2 -->
 
 	<!-- Article Submission Step 3 -->
@@ -758,14 +758,12 @@
 	<message key="submission.layout.instructions">Layout Instructions</message>
 	<message key="submission.layout.referenceLinking">Reference Linking</message>
 
-
 	<!-- Submission Tracking - Proofread Specific -->
 	<message key="submission.proofreadingComments">Proofreading Comments</message>
 	<message key="submission.proofread.corrections">Proofreading Corrections</message>
 	<message key="submission.proofread.instructions">Proofing Instructions</message>
 
 	<!-- Submission History -->
-
 	<message key="submission.logType.article">Article</message>
 	<message key="submission.logType.author">Author</message>
 	<message key="submission.logType.editor">Editor</message>
@@ -864,7 +862,8 @@
 	<message key="search.allJournals">All Journals</message>
 	<message key="search.authorIndex">Browse Author Index</message>
 	<message key="search.authorDetails">Author Details</message>
-	<message key="search.syntaxInstructions"><![CDATA[<h4>Search tips: </h4>
+	<message key="search.syntaxInstructions"><![CDATA[
+		<h4>Search tips: </h4>
 		<ul>
 			<li>Search terms are case-insensitive</li>
 			<li>Common words are ignored</li>
@@ -1135,31 +1134,20 @@
 
 	<!-- RT Searches -->
 
-	<message key="rt.admin.validateUrls.description"><![CDATA[Possibly invalid URLs for search sites are displayed below.<br />
-You should manually verify any URLs marked as invalid, as this test is not 100% accurate.<br />
-Validation may fail on search URLs that require posted form data.]]></message>
+	<message key="rt.admin.validateUrls.description"><![CDATA[
+		Possibly invalid URLs for search sites are displayed below.<br />
+		You should manually verify any URLs marked as invalid, as this test is not 100% accurate.<br />
+		Validation may fail on search URLs that require posted form data.]]>
+	</message>
 
 	<!-- RT Entities -->
-
-
-
-
 	<message key="rt.metadata.dublinCore.primaryAuthor">Creator</message>
-
 	<message key="rt.metadata.pkp.primaryAuthor">Author's name, affiliation, country</message>
 	<message key="rt.metadata.pkp.peerReviewed">Peer-reviewed Article</message>
 
-
-
-
-
 	<message key="rt.beNotifiedWhen">Be notified when...</message>
-
 	<message key="rt.thisJournal">Search journal</message>
-
-
 	<message key="rt.context.authorTermsDescription">For items with more than one author, leave all names checked to search for similarly co-authored work, or search one at a time by checking only a single name. To learn more about the resource searched, click on ABOUT. These resources have been selected because of their relevance and their open (free) access to all or part of their contents.</message>
-
 
 	<!-- Common Notification -->
 	<message key="notification.csrfInvalid">A security error occurred (Invalid CSRF Token). The form could not be processed. Please reload the page and try again.</message>

@@ -167,8 +167,8 @@
 	<message key="user.role.readers">Readers</message>
 	<message key="user.role.reviewer">Reviewer</message>
 	<message key="user.role.reviewers">Reviewers</message>
-	<message key="user.role.siteAdmin">Site Administrator</message>
-	<message key="user.role.siteAdmins">Site Administrators</message>
+	<message key="user.role.siteAdmin">Publisher Administrator</message>
+	<message key="user.role.siteAdmins">Publisher Administrators</message>
 	<message key="user.roles">Roles</message>
 	<message key="user.salutation">Your Title / Honorific</message>
 	<message key="user.salutation.description">e.g. Prof., Dr., Ir., Mr., Mrs., etc.</message>
