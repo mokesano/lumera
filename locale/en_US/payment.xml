@@ -13,6 +13,8 @@
 
 <locale name="en_US" full_name="U.S. English">
 
+    <message key="common.success">Success!</message>
+
     <!-- Document (shared between LoA & Certificate) -->
     <message key="document.downloadPdf">Download Official PDF</message>
     <message key="document.editorialBoard">Editorial Board</message>
@@ -20,6 +22,7 @@
     <message key="document.journalManagers">Journal Managers</message>
     <message key="document.scanToVerify">Scan to Verify</message>
     <message key="document.verifiedTitle">DOCUMENT VERIFIED</message>
+    <message key="document.downloadPdf">Download Official PDF</message>
 
     <!-- Payment Gateway: security alerts to Site Admin (in-app notification) -->
     <message key="payment.gateway.alert.tokenNotConfigured">Webhook token has not been configured -- webhook rejected (fail-closed).</message>
@@ -63,6 +66,7 @@
     <message key="checkout.payment.title">Checkout Payment Details</message>
     <message key="checkout.globalBilling">All Billing</message>
     <message key="checkout.invoiceDetail">Invoice Billing Details</message>
+    <message key="checkout.error.cartNotFound">Your cart could not be found or has expired.</message>
 
     <!-- Authenticate Management -->
     <message key="authenticate.invoiceTitle">Validation Invoice Document</message>

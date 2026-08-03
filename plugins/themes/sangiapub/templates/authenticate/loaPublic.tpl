@@ -25,7 +25,7 @@
 <div class="wizdam-loa-wrapper">
     <div class="verify-badge-wrapper">
         {if $publisher.logoUrl}<img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" class="wi-publisher-logo"><br>{/if}
-        <img src="{$baseUrl}/plugins/themes/wizdam/images/verified-seal.png" alt="Verified" width="80">
+        <img src="{$baseUrl}/assets/ico/verified.svg" alt="Verified" width="80">
         <h2 class="text-success">{translate key="document.verifiedTitle"}</h2>
         <p class="text-muted">{translate key="document.loa.verifiedSubtitle"}</p>
     </div>
@@ -36,7 +36,7 @@
 
     <p>{translate key="document.loa.dearAuthor"} <strong>{$loaData.authors|escape}</strong>,</p>
     <p>{translate key="document.loa.introText"}</p>
-    <div class="wi-manuscript-box" style="border-left: 4px solid {$publisher.colorPrimary|escape};"><em>"{$loaData.title|escape}"</em></div>
+    <div class="wi-manuscript-box" style="border-left: 4px solid {$publisher.colorPrimary|escape};"><em>"{$loaData.title|strip_unsafe_html}"</em></div>
     <p>{translate key="document.loa.acceptanceStatementBefore"} <strong>{translate key="document.loa.acceptedWord"}</strong> {translate key="document.loa.acceptanceStatementAfter" journalTitle=$loaData.journalTitle|escape}</p>
 
     <div class="wi-meta-grid">

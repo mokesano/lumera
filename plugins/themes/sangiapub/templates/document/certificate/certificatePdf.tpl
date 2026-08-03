@@ -15,7 +15,7 @@
         .wi-publisher-logo { max-height: 35px; margin-bottom: 6px; }
         .cert-border { border: 3px double #005c99; padding: 40px; margin: 10px; }
         .cert-journal { font-size: 14px; text-transform: uppercase; letter-spacing: 3px; color: #666; }
-        .cert-title { font-size: 30px; font-weight: bold; margin: 20px 0; letter-spacing: 4px; }
+        .cert-title { font-size: 26px; font-weight: bold; text-align: center; margin: 20px 0; letter-spacing: 3px; }
         .cert-name { font-size: 22px; font-family: Georgia, serif; margin: 15px 0; border-bottom: 1px solid #999; display: inline-block; padding: 0 20px 5px; }
         .cert-affil { font-size: 12px; color: #555; }
         .cert-body { font-size: 13px; margin: 20px 60px; line-height: 1.6; }
@@ -33,7 +33,12 @@
 <div class="cert-border" style="border-color: {$publisher.colorPrimary|escape};">
     {if $publisher.logoUrl}<img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" class="wi-publisher-logo"><br>{/if}
     <div class="cert-journal">{$certData.journalTitle|escape}</div>
-    <div class="cert-title">{if $certData.type === 'EDITOR_CERTIFICATE'}{translate key="document.cert.headingEditor"|upper}{else}{translate key="document.cert.headingReviewer"|upper}{/if}</div>
+    {if $certData.type === 'EDITOR_CERTIFICATE'}
+        {translate key="document.cert.headingEditor" assign="certPdfHeadingText"}
+    {else}
+        {translate key="document.cert.headingReviewer" assign="certPdfHeadingText"}
+    {/if}
+    <div class="cert-title">{$certPdfHeadingText|upper}</div>
 
     <p style="font-size: 13px;">{translate key="document.cert.presentedTo"}</p>
     {if $certData.type === 'EDITOR_CERTIFICATE'}
@@ -41,7 +46,7 @@
         <div class="cert-affil">{$certData.editorAffiliation|escape}</div>
         <div class="cert-body">
             {translate key="document.cert.editorRecognitionText"}
-            <div class="cert-manuscript">"{$certData.articleTitle|escape}"</div>
+            <div class="cert-manuscript">"{$certData.articleTitle|strip_unsafe_html}"</div>
         </div>
         <div class="cert-number">{translate key="document.cert.certificateNumberLabel"} {$certData.certificateNumber|escape} &bull; {translate key="document.cert.dateAssignedLabel"}: {$certData.dateAssigned|date_format:"%d %B %Y"}</div>
     {else}
@@ -49,7 +54,7 @@
         <div class="cert-affil">{$certData.reviewerAffiliation|escape}</div>
         <div class="cert-body">
             {translate key="document.cert.reviewerRecognitionText"}
-            <div class="cert-manuscript">"{$certData.articleTitle|escape}"</div>
+            <div class="cert-manuscript">"{$certData.articleTitle|strip_unsafe_html}"</div>
         </div>
         <div class="cert-number">{translate key="document.cert.certificateNumberLabel"} {$certData.certificateNumber|escape} &bull; {translate key="document.cert.dateCompletedLabel"}: {$certData.dateCompleted|date_format:"%d %B %Y"}</div>
     {/if}
