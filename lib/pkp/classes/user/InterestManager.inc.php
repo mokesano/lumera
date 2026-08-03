@@ -50,11 +50,10 @@ class InterestManager {
         $interestReturner = [];
         if ($interests !== null) {
             while ($interest = $interests->next()) {
-                // [WIZDAM FIX] ControlledVocabEntry uses getName(), not getInterest()
-                if (method_exists($interest, 'getName')) {
-                    $interestReturner[] = (string) $interest->getName();
-                } elseif (method_exists($interest, 'getInterest')) { // Fallback for legacy
+                if (method_exists($interest, 'getInterest')) {
                     $interestReturner[] = (string) $interest->getInterest();
+                } elseif (method_exists($interest, 'getName')) {
+                    $interestReturner[] = (string) $interest->getName(AppLocale::getLocale());
                 }
             }
         }
@@ -90,12 +89,10 @@ class InterestManager {
                 
                 if (isset($interestsCache[$entryId]) && $interestsCache[$entryId] !== null) {
                     $entry = $interestsCache[$entryId];
-                    
-                    if (method_exists($entry, 'getName')) {
-                        $interests[] = (string) $entry->getName(AppLocale::getLocale());
-                    } elseif (method_exists($entry, 'getInterest')) {
-                        // Fallback for any legacy custom implementation
+                    if (method_exists($entry, 'getInterest')) {
                         $interests[] = (string) $entry->getInterest();
+                    } elseif (method_exists($entry, 'getName')) {
+                        $interests[] = (string) $entry->getName(AppLocale::getLocale());
                     }
                 }
             }
