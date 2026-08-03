@@ -603,7 +603,7 @@ class SearchHandler extends Handler {
         $router = $request->getRouter();
         $pageHierarchy = [];
         if ($subclass && isset($opMap[$op])) {
-            $pageHierarchy = [[$router->url($request, null, 'search', $op), __($opMap[$op])]];
+            $pageHierarchy = [[$router->url($request, null, 'search', $op), $opMap[$op], false]];
         }
         
         $templateMgr->assign('pageHierarchy', $pageHierarchy);
