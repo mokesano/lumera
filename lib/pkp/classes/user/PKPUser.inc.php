@@ -128,7 +128,7 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getSignature($locale) {
-        return (string) $this->getData('signature', $locale);
+        return $this->getData('signature', $locale);
     }
 
     /**
@@ -274,7 +274,7 @@ class PKPUser extends DataObject {
      * @return string
      */
     public function getAffiliation($locale) {
-        return (string) $this->getData('affiliation', $locale);
+        return $this->getData('affiliation', $locale);
     }
 
     /**
@@ -606,7 +606,7 @@ class PKPUser extends DataObject {
             }
         }
 
-        return (string) $biography;
+        return $biography;
     }
 
     /**
