@@ -327,19 +327,8 @@ class PKPAuthor extends DataObject {
      * @return string
      */
     public function getBiography($locale) {
-        if (empty($locale)) {
-            $locale = AppLocale::getPrimaryLocale();
-        }
-
         $biography = $this->getData('biography', $locale);
-        if (is_array($biography)) {
-            $biography = reset($biography);
-            if (!is_string($biography)) {
-                $biography = '';
-            }
-        }
-
-        return (string) $biography;
+        return is_array($biography) ? $biography : (string) $biography;
     }
 
     /**

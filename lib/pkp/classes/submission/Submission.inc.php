@@ -187,7 +187,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocale() {
-        return (string) $this->getData('locale');
+        return $this->getData('locale');
     }
 
     /**
@@ -204,7 +204,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedTitle($preferredLocale = null) {
-        return (string) $this->getLocalizedData('title', $preferredLocale);
+        return $this->getLocalizedData('title', $preferredLocale);
     }
 
     /**
@@ -243,7 +243,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedPrefix() {
-        return (string) $this->getLocalizedData('prefix');
+        return $this->getLocalizedData('prefix');
     }
 
     /**
@@ -252,7 +252,8 @@ class Submission extends DataObject {
      * @return string
      */
     public function getPrefix($locale) {
-        return (string) $this->getData('prefix', $locale);
+        $value = $this->getData('prefix', $locale);
+        return is_array($value) ? $value : (string) $value;
     }
 
     /**
@@ -269,7 +270,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedAbstract() {
-        return (string) $this->getLocalizedData('abstract');
+        return $this->getLocalizedData('abstract');
     }
 
     /**
@@ -295,7 +296,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedDiscipline() {
-        return (string) $this->getLocalizedData('discipline');
+        return $this->getLocalizedData('discipline');
     }
 
     /**
@@ -321,7 +322,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedSubjectClass() {
-        return (string) $this->getLocalizedData('subjectClass');
+        return $this->getLocalizedData('subjectClass');
     }
 
     /**
@@ -347,7 +348,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedSubject() {
-        return (string) $this->getLocalizedData('subject');
+        return $this->getLocalizedData('subject');
     }
 
     /**
@@ -373,7 +374,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedCoverageGeo() {
-        return (string) $this->getLocalizedData('coverageGeo');
+        return $this->getLocalizedData('coverageGeo');
     }
 
     /**
@@ -400,7 +401,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedCoverageChron() {
-        return (string) $this->getLocalizedData('coverageChron');
+        return $this->getLocalizedData('coverageChron');
     }
 
     /**
@@ -427,7 +428,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedCoverageSample() {
-        return (string) $this->getLocalizedData('coverageSample');
+        return $this->getLocalizedData('coverageSample');
     }
 
     /**
@@ -454,7 +455,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedType() {
-        return (string) $this->getLocalizedData('type');
+        return $this->getLocalizedData('type');
     }
 
     /**
@@ -481,7 +482,8 @@ class Submission extends DataObject {
      * @return string
      */
     public function getRights($locale) {
-        return (string) $this->getData('rights', $locale);
+        $value = $this->getData('rights', $locale);
+        return is_array($value) ? $value : (string) $value;
     }
 
     /**
@@ -499,7 +501,8 @@ class Submission extends DataObject {
      * @return string
      */
     public function getSource($locale) {
-        return (string) $this->getData('source', $locale);
+        $value = $this->getData('source', $locale);
+        return is_array($value) ? $value : (string) $value;
     }
 
     /**
@@ -516,7 +519,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLanguage() {
-        return (string) $this->getData('language');
+        return $this->getData('language');
     }
 
     /**
@@ -532,7 +535,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedSponsor() {
-        return (string) $this->getLocalizedData('sponsor');
+        return $this->getLocalizedData('sponsor');
     }
 
     /**
@@ -559,7 +562,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getCitations() {
-        return (string) $this->getData('citations');
+        return $this->getData('citations');
     }
 
     /**
@@ -575,7 +578,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedFileName() {
-        return (string) $this->getLocalizedData('fileName');
+        return $this->getLocalizedData('fileName');
     }
 
     /**
@@ -584,7 +587,8 @@ class Submission extends DataObject {
      * @return string
      */
     public function getFileName($locale) {
-        return (string) $this->getData('fileName', $locale);
+        $value = $this->getData('fileName', $locale);
+        return is_array($value) ? $value : (string) $value;
     }
 
     /**
@@ -612,6 +616,7 @@ class Submission extends DataObject {
      */
     public function getWidth($locale) {
         $width = $this->getData('width', $locale);
+        if (is_array($width)) return $width;
         return $width !== null ? (int) $width : null;
     }
 
@@ -640,6 +645,7 @@ class Submission extends DataObject {
      */
     public function getHeight($locale) {
         $height = $this->getData('height', $locale);
+        if (is_array($height)) return $height;
         return $height !== null ? (int) $height : null;
     }
 
@@ -657,7 +663,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedOriginalFileName() {
-        return (string) $this->getLocalizedData('originalFileName');
+        return $this->getLocalizedData('originalFileName');
     }
 
     /**
@@ -666,7 +672,8 @@ class Submission extends DataObject {
      * @return string
      */
     public function getOriginalFileName($locale) {
-        return (string) $this->getData('originalFileName', $locale);
+        $value = $this->getData('originalFileName', $locale);
+        return is_array($value) ? $value : (string) $value;
     }
 
     /**
@@ -683,7 +690,7 @@ class Submission extends DataObject {
      * @return string
      */
     public function getLocalizedCoverPageAltText() {
-        return (string) $this->getLocalizedData('coverPageAltText');
+        return $this->getLocalizedData('coverPageAltText');
     }
 
     /**
@@ -692,7 +699,8 @@ class Submission extends DataObject {
      * @return string
      */
     public function getCoverPageAltText($locale) {
-        return (string) $this->getData('coverPageAltText', $locale);
+        $value = $this->getData('coverPageAltText', $locale);
+        return is_array($value) ? $value : (string) $value;
     }
 
     /**
@@ -720,6 +728,7 @@ class Submission extends DataObject {
      */
     public function getShowCoverPage($locale) {
         $show = $this->getData('showCoverPage', $locale);
+        if (is_array($show)) return $show;
         return $show !== null ? (int) $show : null;
     }
 
@@ -739,6 +748,7 @@ class Submission extends DataObject {
      */
     public function getHideCoverPageToc($locale) {
         $hide = $this->getData('hideCoverPageToc', $locale);
+        if (is_array($hide)) return $hide;
         return $hide !== null ? (int) $hide : null;
     }
 
@@ -758,6 +768,7 @@ class Submission extends DataObject {
      */
     public function getHideCoverPageAbstract($locale) {
         $hide = $this->getData('hideCoverPageAbstract', $locale);
+        if (is_array($hide)) return $hide;
         return $hide !== null ? (int) $hide : null;
     }
 
