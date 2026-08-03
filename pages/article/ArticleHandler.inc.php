@@ -794,23 +794,10 @@ class ArticleHandler extends Handler {
         $archiveDir = $filesDir . '/usageStats/archive/';
 
         if (is_dir($archiveDir)) {
-            $latestTimestamp = 0;
-            if ($handle = opendir($archiveDir)) {
-                while (false !== ($entry = readdir($handle))) {
-                    if (strpos($entry, '.log') !== false) {
-                        $fileTimestamp = filemtime($archiveDir . $entry);
-                        if ($fileTimestamp > $latestTimestamp) {
-                            $latestTimestamp = $fileTimestamp;
-                        }
-                    }
-                }
-                closedir($handle);
-            }
-            if ($latestTimestamp > 0) {
-                $lastUpdatedString = date('l, d M Y H:i:s T', $latestTimestamp);
-            } else {
-                $lastUpdatedString = 'Stats processing is pending';
-            }
+            $dirMtime = filemtime($archiveDir);
+            $lastUpdatedString = $dirMtime
+                ? date('l, d M Y H:i:s T', $dirMtime)
+                : 'Stats processing is pending';
         } else {
             $lastUpdatedString = 'N/A (Stats archive path not found)';
         }

@@ -18,7 +18,7 @@ declare(strict_types=1);
 import('pages.article.ArticleHandler');
 import('plugins.generic.usageStats.UsageStatsReportPlugin');
 
-class MetricsHandler extends ArticleHandler {
+class ArticleMetricsHandler extends ArticleHandler {
 
     /** Jumlah hari default untuk data grafik */
     const CHART_RANGE_DAYS = 30;
