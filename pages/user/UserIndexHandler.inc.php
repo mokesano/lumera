@@ -56,7 +56,6 @@ class UserIndexHandler extends UserHandler {
         $setupIncomplete = [];
         $userJournals = [];
 
-        // [WIZDAM HOTFIX] Explicitly initialize multi-dimensional structure.
         $isValid = [
             'JournalManager' => [],
             'SubscriptionManager' => [],
@@ -142,7 +141,6 @@ class UserIndexHandler extends UserHandler {
 
             $templateMgr->assign('allowRegAuthor', (bool) $journal->getSetting('allowRegAuthor'));
             $templateMgr->assign('allowRegReviewer', (bool) $journal->getSetting('allowRegReviewer'));
-
             $templateMgr->assign('userJournals', $userJournals);
         }
 
@@ -164,7 +162,6 @@ class UserIndexHandler extends UserHandler {
         $templateMgr->assign('isValid', $isValid);
         $templateMgr->assign('submissionsCount', $submissionsCount);
         $templateMgr->assign('setupIncomplete', $setupIncomplete);
-        
         $templateMgr->assign('isSiteAdmin', $roleDao->getRole(0, $userId, ROLE_ID_SITE_ADMIN));
         
         $templateMgr->display('user/index.tpl');
