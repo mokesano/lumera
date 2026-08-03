@@ -11,7 +11,7 @@
 
 {literal}
 <style>
-    .wizdam-loa-wrapper { background: #fff; padding: 40px; border-radius: 4px; border: 1px solid #e0e0e0; color: #333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 700px; margin: 0 auto; }
+    .wizdam-loa-wrapper { background: #fff; padding: 40px; border-radius: 4px; border: 1px solid #e0e0e0; color: #333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0 auto; }
     .wi-publisher-logo { max-height: 55px; margin-bottom: 10px; }
     .verify-badge-wrapper { text-align: center; margin-bottom: 25px; }
     .wi-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; font-size: 13px; }

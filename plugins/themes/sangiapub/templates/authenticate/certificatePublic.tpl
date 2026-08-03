@@ -16,7 +16,7 @@
 
 {literal}
 <style>
-    .wizdam-cert-wrapper { background: #fff; padding: 40px; border-radius: 4px; border: 1px solid #e0e0e0; color: #333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 700px; margin: 0 auto; text-align: center; }
+    .wizdam-cert-wrapper { background: #fff; padding: 40px; border-radius: 4px; border: 1px solid #e0e0e0; color: #333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0 auto; text-align: center; }
     .wi-publisher-logo { max-height: 50px; margin-bottom: 10px; }
     .verify-badge-wrapper { margin-bottom: 25px; }
     .wi-manuscript-box { font-size: 1.05rem; background: #f9f9f9; padding: 15px 20px; margin: 15px 0; text-align: left; }
