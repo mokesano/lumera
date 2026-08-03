@@ -656,6 +656,40 @@ class IssueHandler extends Handler {
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                 $publishedArticles   = $publishedArticleDao->getPublishedArticlesInSections($issue->getId(), true);
 
+                // [BATCH VIEWS] Ambil semua jumlah views sekaligus untuk seluruh
+                // artikel & galley di TOC issue ini — menghindari pola N+1 yang
+                // sama seperti yang sudah diperbaiki di halaman pencarian.
+                if (!empty($publishedArticles)) {
+                    /** @var MetricsDAO $metricsDao */
+                    $metricsDao = DAORegistry::getDAO('MetricsDAO');
+                    $contextId = $journal ? (int) $journal->getId() : null;
+
+                    $articleIds = [];
+                    $galleys = [];
+                    foreach ($publishedArticles as $section) {
+                        foreach ($section['articles'] as $sectionArticle) {
+                            $articleIds[] = (int) $sectionArticle->getId();
+                            foreach ((array) $sectionArticle->getGalleys() as $galley) {
+                                $galleys[] = $galley;
+                            }
+                        }
+                    }
+
+                    $articleViews = $metricsDao->getMetricsForAssocIds(ASSOC_TYPE_ARTICLE, $articleIds, $contextId);
+                    $galleyViews  = $metricsDao->getMetricsForAssocIds(
+                        ASSOC_TYPE_GALLEY, array_map(fn($g) => (int) $g->getId(), $galleys), $contextId
+                    );
+
+                    foreach ($publishedArticles as $section) {
+                        foreach ($section['articles'] as $sectionArticle) {
+                            $sectionArticle->setCachedViews($articleViews[(int) $sectionArticle->getId()] ?? 0);
+                        }
+                    }
+                    foreach ($galleys as $galley) {
+                        $galley->setCachedViews($galleyViews[(int) $galley->getId()] ?? 0);
+                    }
+                }
+
                 $templateMgr->assign('publishedArticles', $publishedArticles);
                 $showToc = true;
             }
@@ -722,5 +756,6 @@ class IssueHandler extends Handler {
         $templateMgr->assign('pageCrumbTitleTranslated', $issueCrumbTitle);
         $templateMgr->assign('issueHeadingTitle', $issueHeadingTitle);
     }
+
 }
 ?>
