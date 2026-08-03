@@ -66,7 +66,7 @@ class UserHandler extends Handler {
             if (!is_array($isValid['Author'])) $isValid['Author'] = [];
             /** @var AuthorSubmissionDAO $authorSubmissionDao */
             $authorSubmissionDao = DAORegistry::getDAO('AuthorSubmissionDAO');
-            $submissionsCount['Author'][$journalId] = (int) $authorSubmissionDao->getSubmissionsCount($userId, $journalId);
+            $submissionsCount['Author'][$journalId] = $authorSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid['Author'][$journalId] = true;
         }
         if (Validation::isCopyeditor($journalId)) {
@@ -74,7 +74,7 @@ class UserHandler extends Handler {
             if (!is_array($isValid['Copyeditor'])) $isValid['Copyeditor'] = [];
             /** @var CopyeditorSubmissionDAO $copyeditorSubmissionDao */
             $copyeditorSubmissionDao = DAORegistry::getDAO('CopyeditorSubmissionDAO');
-            $submissionsCount['Copyeditor'][$journalId] = (int) $copyeditorSubmissionDao->getSubmissionsCount($userId, $journalId);
+            $submissionsCount['Copyeditor'][$journalId] = $copyeditorSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid['Copyeditor'][$journalId] = true;
         }
         if (Validation::isLayoutEditor($journalId)) {
@@ -82,7 +82,7 @@ class UserHandler extends Handler {
             if (!is_array($isValid['LayoutEditor'])) $isValid['LayoutEditor'] = [];
             /** @var LayoutEditorSubmissionDAO $layoutEditorSubmissionDao */
             $layoutEditorSubmissionDao = DAORegistry::getDAO('LayoutEditorSubmissionDAO');
-            $submissionsCount['LayoutEditor'][$journalId] = (int) $layoutEditorSubmissionDao->getSubmissionsCount($userId, $journalId);
+            $submissionsCount['LayoutEditor'][$journalId] = $layoutEditorSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid['LayoutEditor'][$journalId] = true;
         }
         if (Validation::isEditor($journalId)) {
@@ -90,7 +90,7 @@ class UserHandler extends Handler {
             if (!is_array($isValid['Editor'])) $isValid['Editor'] = [];
             /** @var EditorSubmissionDAO $editorSubmissionDao */
             $editorSubmissionDao = DAORegistry::getDAO('EditorSubmissionDAO');
-            $submissionsCount['Editor'][$journalId] = (int) $editorSubmissionDao->getEditorSubmissionsCount($journalId);
+            $submissionsCount['Editor'][$journalId] = $editorSubmissionDao->getEditorSubmissionsCount($journalId);
             $isValid['Editor'][$journalId] = true;
         }
         if (Validation::isSectionEditor($journalId)) {
@@ -98,7 +98,7 @@ class UserHandler extends Handler {
             if (!is_array($isValid['SectionEditor'])) $isValid['SectionEditor'] = [];
             /** @var SectionEditorSubmissionDAO $sectionEditorSubmissionDao */
             $sectionEditorSubmissionDao = DAORegistry::getDAO('SectionEditorSubmissionDAO');
-            $submissionsCount['SectionEditor'][$journalId] = (int) $sectionEditorSubmissionDao->getSectionEditorSubmissionsCount($userId, $journalId);
+            $submissionsCount['SectionEditor'][$journalId] = $sectionEditorSubmissionDao->getSectionEditorSubmissionsCount($userId, $journalId);
             $isValid['SectionEditor'][$journalId] = true;
         }
         if (Validation::isProofreader($journalId)) {
@@ -106,7 +106,7 @@ class UserHandler extends Handler {
             if (!is_array($isValid['Proofreader'])) $isValid['Proofreader'] = [];
             /** @var ProofreaderSubmissionDAO $proofreaderSubmissionDao */
             $proofreaderSubmissionDao = DAORegistry::getDAO('ProofreaderSubmissionDAO');
-            $submissionsCount['Proofreader'][$journalId] = (int) $proofreaderSubmissionDao->getSubmissionsCount($userId, $journalId);
+            $submissionsCount['Proofreader'][$journalId] = $proofreaderSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid['Proofreader'][$journalId] = true;
         }
         if (Validation::isReviewer($journalId)) {
@@ -114,7 +114,7 @@ class UserHandler extends Handler {
             if (!is_array($isValid['Reviewer'])) $isValid['Reviewer'] = [];
             /** @var ReviewerSubmissionDAO $reviewerSubmissionDao */
             $reviewerSubmissionDao = DAORegistry::getDAO('ReviewerSubmissionDAO');
-            $submissionsCount['Reviewer'][$journalId] = (int) $reviewerSubmissionDao->getSubmissionsCount($userId, $journalId);
+            $submissionsCount['Reviewer'][$journalId] = $reviewerSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid['Reviewer'][$journalId] = true;
         }
     }
