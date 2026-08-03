@@ -52,50 +52,66 @@ class UserHandler extends Handler {
     public function _getRoleDataForJournal($userId, $journalId, &$submissionsCount, &$isValid) {
         $userId = (int) $userId;
         $journalId = (int) $journalId;
-
+        
         if (Validation::isJournalManager($journalId)) {
+            if (!is_array($isValid['JournalManager'])) $isValid['JournalManager'] = [];
             $isValid['JournalManager'][$journalId] = true;
         }
         if (Validation::isSubscriptionManager($journalId)) {
+            if (!is_array($isValid['SubscriptionManager'])) $isValid['SubscriptionManager'] = [];
             $isValid['SubscriptionManager'][$journalId] = true;
         }
         if (Validation::isAuthor($journalId)) {
+            if (!is_array($submissionsCount['Author'])) $submissionsCount['Author'] = [];
+            if (!is_array($isValid['Author'])) $isValid['Author'] = [];
             /** @var AuthorSubmissionDAO $authorSubmissionDao */
             $authorSubmissionDao = DAORegistry::getDAO('AuthorSubmissionDAO');
             $submissionsCount['Author'][$journalId] = (int) $authorSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid['Author'][$journalId] = true;
         }
         if (Validation::isCopyeditor($journalId)) {
+            if (!is_array($submissionsCount['Copyeditor'])) $submissionsCount['Copyeditor'] = [];
+            if (!is_array($isValid['Copyeditor'])) $isValid['Copyeditor'] = [];
             /** @var CopyeditorSubmissionDAO $copyeditorSubmissionDao */
             $copyeditorSubmissionDao = DAORegistry::getDAO('CopyeditorSubmissionDAO');
             $submissionsCount['Copyeditor'][$journalId] = (int) $copyeditorSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid['Copyeditor'][$journalId] = true;
         }
         if (Validation::isLayoutEditor($journalId)) {
+            if (!is_array($submissionsCount['LayoutEditor'])) $submissionsCount['LayoutEditor'] = [];
+            if (!is_array($isValid['LayoutEditor'])) $isValid['LayoutEditor'] = [];
             /** @var LayoutEditorSubmissionDAO $layoutEditorSubmissionDao */
             $layoutEditorSubmissionDao = DAORegistry::getDAO('LayoutEditorSubmissionDAO');
             $submissionsCount['LayoutEditor'][$journalId] = (int) $layoutEditorSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid['LayoutEditor'][$journalId] = true;
         }
         if (Validation::isEditor($journalId)) {
+            if (!is_array($submissionsCount['Editor'])) $submissionsCount['Editor'] = [];
+            if (!is_array($isValid['Editor'])) $isValid['Editor'] = [];
             /** @var EditorSubmissionDAO $editorSubmissionDao */
             $editorSubmissionDao = DAORegistry::getDAO('EditorSubmissionDAO');
             $submissionsCount['Editor'][$journalId] = (int) $editorSubmissionDao->getEditorSubmissionsCount($journalId);
             $isValid['Editor'][$journalId] = true;
         }
         if (Validation::isSectionEditor($journalId)) {
+            if (!is_array($submissionsCount['SectionEditor'])) $submissionsCount['SectionEditor'] = [];
+            if (!is_array($isValid['SectionEditor'])) $isValid['SectionEditor'] = [];
             /** @var SectionEditorSubmissionDAO $sectionEditorSubmissionDao */
             $sectionEditorSubmissionDao = DAORegistry::getDAO('SectionEditorSubmissionDAO');
             $submissionsCount['SectionEditor'][$journalId] = (int) $sectionEditorSubmissionDao->getSectionEditorSubmissionsCount($userId, $journalId);
             $isValid['SectionEditor'][$journalId] = true;
         }
         if (Validation::isProofreader($journalId)) {
+            if (!is_array($submissionsCount['Proofreader'])) $submissionsCount['Proofreader'] = [];
+            if (!is_array($isValid['Proofreader'])) $isValid['Proofreader'] = [];
             /** @var ProofreaderSubmissionDAO $proofreaderSubmissionDao */
             $proofreaderSubmissionDao = DAORegistry::getDAO('ProofreaderSubmissionDAO');
             $submissionsCount['Proofreader'][$journalId] = (int) $proofreaderSubmissionDao->getSubmissionsCount($userId, $journalId);
             $isValid['Proofreader'][$journalId] = true;
         }
         if (Validation::isReviewer($journalId)) {
+            if (!is_array($submissionsCount['Reviewer'])) $submissionsCount['Reviewer'] = [];
+            if (!is_array($isValid['Reviewer'])) $isValid['Reviewer'] = [];
             /** @var ReviewerSubmissionDAO $reviewerSubmissionDao */
             $reviewerSubmissionDao = DAORegistry::getDAO('ReviewerSubmissionDAO');
             $submissionsCount['Reviewer'][$journalId] = (int) $reviewerSubmissionDao->getSubmissionsCount($userId, $journalId);
@@ -168,8 +184,6 @@ class UserHandler extends Handler {
             }
         }
 
-        // TODO: this seems bad form, but is kept for legacy purposes
-        // Evaluate removal, or only trust the REFERER when it is a known base_url?
         if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER'] !== '') {
             $request->redirectUrl((string) $_SERVER['HTTP_REFERER']);
             return;
@@ -239,7 +253,6 @@ class UserHandler extends Handler {
         } else {
             $templateMgr = TemplateManager::getManager();
             $templateMgr->assign('message', $deniedKey);
-            
             $templateMgr->display('common/message.tpl');
         }
     }
@@ -261,7 +274,6 @@ class UserHandler extends Handler {
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('message', $authorizationMessage);
-
         $templateMgr->display('common/message.tpl');
     }
 
