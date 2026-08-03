@@ -22,10 +22,6 @@
 {/strip}
 
 <div id="publisherStaticPage" class="wizdam-publisher-page">
-    <div class="wi-page-header" style="border-bottom: 2px solid {$publisher.colorPrimary|escape|default:'#1a4f8b'}; padding-bottom: 12px; margin-bottom: 20px;">
-        <h1 style="margin: 0;">{translate key=$pageTitleKey}</h1>
-    </div>
-
     {if $pageContent|trim != ''}
         <div class="wi-page-content">
             {$pageContent|escape|nl2br}
