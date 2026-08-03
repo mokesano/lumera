@@ -234,7 +234,10 @@ class PKPApplication {
      * @return array
      */
     public function getEnabledProducts(?string $category = null, ?int $mainContextId = null): array {
-        if ($this->enabledProducts === null || $mainContextId !== null) {
+        static $cache = [];
+        $cacheKey = $mainContextId ?? 0;
+
+        if (!isset($cache[$cacheKey])) {
             $contextDepth = $this->getContextDepth();
 
             $settingContext = [];
@@ -252,15 +255,17 @@ class PKPApplication {
                 if ($mainContextId !== null) {
                     $settingContext[] = $mainContextId;
                 }
-                
+
                 $settingContext = array_pad($settingContext, $contextDepth, 0);
                 $settingContext = array_combine($this->getContextList(), $settingContext);
             }
 
             /** @var VersionDAO $versionDao */
             $versionDao = DAORegistry::getDAO('VersionDAO');
-            $this->enabledProducts = (array) $versionDao->getCurrentProducts($settingContext);
+            $cache[$cacheKey] = (array) $versionDao->getCurrentProducts($settingContext);
         }
+
+        $this->enabledProducts = $cache[$cacheKey];
 
         if ($category === null) {
             return $this->enabledProducts;

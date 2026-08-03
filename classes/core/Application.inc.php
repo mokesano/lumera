@@ -182,7 +182,7 @@ class Application extends PKPApplication {
             'GroupMembershipDAO' => 'lib.pkp.classes.group.GroupMembershipDAO',
             'IndividualSubscriptionDAO' => 'classes.subscription.IndividualSubscriptionDAO',
             'InstitutionalSubscriptionDAO' => 'classes.subscription.InstitutionalSubscriptionDAO',
-            'InvoiceDAO' => 'lib.wizdam.classes.invoice.InvoiceDAO',
+            'InvoiceDAO' => 'lib.wizdam.classes.invoice.InvoiceDAO', // [LUMERA] Override InvoiceDAO untuk mendukung Lumera Billing
             'IssueDAO' => 'classes.issue.IssueDAO',
             'IssueGalleyDAO' => 'classes.issue.IssueGalleyDAO',
             'IssueFileDAO' => 'classes.issue.IssueFileDAO',
@@ -306,7 +306,7 @@ class Application extends PKPApplication {
     }
 
     /**
-     * Main entry point for OJS statistics reports.
+     * Main entry point for App statistics reports.
      * @param string|array|null $metricType
      * @param array|string $columns
      * @param array $filter

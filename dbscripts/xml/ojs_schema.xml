@@ -999,6 +999,10 @@
 			<descr>Optional ID of an associated record (e.g., a file_id)</descr>
 		</field>
 		<descr>Indexed objects.</descr>
+		<index name="article_search_objects_article_id">
+			<col>article_id</col>
+			<col>type</col>
+		</index>
 	</table>
 
 	<!--

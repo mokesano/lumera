@@ -98,10 +98,22 @@ class ArticleGalley extends ArticleFile {
     }
 
     /**
+     * Set the cached views of the galley.
+     * @param int $views
+     * @return void
+     */
+    public function setCachedViews(int $views): void {
+        $this->setData('_cachedViews', $views);
+    }
+
+    /**
      * Get views count.
      * @return int
      */
     public function getViews() {
+        $cached = $this->getData('_cachedViews');
+        if ($cached !== null) return $cached;
+
         $application = PKPApplication::getApplication();
         return $application->getPrimaryMetricByAssoc(
             ASSOC_TYPE_GALLEY, 
