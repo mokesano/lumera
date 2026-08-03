@@ -147,7 +147,7 @@ class ProfileHandler extends UserHandler {
         $userId = (int) array_shift($args);
         $accountIsVisible = false;
 
-        // Logika murni: Apakah user ini berhak dilihat publik?
+        /** @var CommentDAO $commentDao */
         $commentDao = DAORegistry::getDAO('CommentDAO');
         if ($commentDao->attributedCommentsExistForUser($userId)) {
             $accountIsVisible = true;
@@ -159,6 +159,7 @@ class ProfileHandler extends UserHandler {
              return;
         }
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $user = $userDao->getById($userId);
         
@@ -232,7 +233,7 @@ class ProfileHandler extends UserHandler {
         $user = $request->getUser();
         $templateMgr = TemplateManager::getManager($request);
 
-        // Ambil data tautan dari profil dan tabel user_settings
+        /** @var UserSettingsDAO $userSettingsDao */
         $userSettingsDao = DAORegistry::getDAO('UserSettingsDAO');
         $googleId = $userSettingsDao->getSetting($user->getId(), 'google_id');
         $googleEmail = $userSettingsDao->getSetting($user->getId(), 'google_email');
@@ -253,5 +254,6 @@ class ProfileHandler extends UserHandler {
         // Tampilkan file template antarmuka
         $templateMgr->display('user/linkedAccounts.tpl');
     }
+    
 }
 ?>
