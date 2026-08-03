@@ -30,16 +30,19 @@ class PKPInstall extends Installer {
     /**
      * Constructor.
      * @see install.form.InstallForm for the expected parameters
-     * @param string $xmlDescriptor descriptor path
-     * @param array $params installer parameters
-     * @param bool $isPlugin true iff a plugin is being installed
+     * @param string $xmlDescriptor
+     * @param array $params
+     * @param bool $isPlugin
      */
     public function __construct($xmlDescriptor, $params, $isPlugin) {
         parent::__construct($xmlDescriptor, $params, $isPlugin);
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $xmlDescriptor
+     * @param array $params
+     * @param bool $isPlugin
      */
     public function PKPInstall($xmlDescriptor, $params, $isPlugin) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -251,6 +254,6 @@ class PKPInstall extends Installer {
             ]
         );
     }
-}
 
+}
 ?>
