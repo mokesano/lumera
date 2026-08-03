@@ -222,6 +222,9 @@ class TinyMCEPlugin extends GenericPlugin {
             case 'user/register':
             case 'user/saveProfile':
             case 'user/update-profile':
+            case 'user/affiliation':
+            case 'user/signature':
+            case 'user/gossip':
             case 'subscriptionManager/createUser':
             case 'subscriptionManager/updateUser':
             case 'manager/createUser':
@@ -229,6 +232,8 @@ class TinyMCEPlugin extends GenericPlugin {
             case 'manager/updateUser':
                 $fields[] = 'mailingAddress';
                 $fields[] = 'biography';
+                $fields[] = 'signature';
+                $fields[] = 'gossip';
                 break;
                 
             case 'manager/editReviewForm':
