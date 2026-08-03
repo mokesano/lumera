@@ -25,21 +25,21 @@ declare(strict_types=1);
  */
 define('PCRE_URI', '(?:([a-z][-+.a-z0-9]*):)?' .                                         // Scheme
                    '(?://' .
-                   '(?:((?:%[0-9a-f]{2}|[-a-z0-9_.!~*\'();:\&=+$,])*)@)?' .               // User
+                   '(?:((?:%[0-9a-f]{2}|[-a-z0-9_.!~*\'();:\&=+$,])*)@)?' .              // User
                    '(?:((?:[a-z0-9](?:[-a-z0-9]*[a-z0-9])?\.)*[a-z](?:[a-z0-9]+)?\.?)' . // Hostname
-                   '|([0-9]{1,3}(?:\.[0-9]{1,3}){3}))' .                                  // IP Address
-                   '(?::([0-9]*))?)' .                                                    // Port
+                   '|([0-9]{1,3}(?:\.[0-9]{1,3}){3}))' .                                 // IP Address
+                   '(?::([0-9]*))?)' .                                                   // Port
                    '((?:/(?:%[0-9a-f]{2}|[-a-z0-9_.!~*\'():@\&=+$,])*)*/?)?' .           // Path
-                   '(?:\?([^#]*))?' .                                                     // Query String
-                   '(?:\#((?:%[0-9a-f]{2}|[-a-z0-9_.!~*\'();/?:@\&=+$,])*))?');           // Fragment
+                   '(?:\?([^#]*))?' .                                                    // Query String
+                   '(?:\#((?:%[0-9a-f]{2}|[-a-z0-9_.!~*\'();/?:@\&=+$,])*))?');          // Fragment
 
 // RFC-2822 email addresses
 define('PCRE_EMAIL_ADDRESS',
-    '[-a-z0-9!#\$%&\'\*\+\/=\?\^_\`\{\|\}~]' . '+' . // One or more atom characters.
+    '[-a-z0-9!#\$%&\'\*\+\/=\?\^_\`\{\|\}~]' . '+' .          // One or more atom characters.
     '(\.' . '[-a-z0-9!#\$%&\'\*\+\/=\?\^_\`\{\|\}~]' . '+)*'. // Followed by zero or more dot separated sets of one or more atom characters.
     '@'. // Followed by an "at" character.
-    '(' . '([a-z0-9]([-a-z0-9]*[a-z0-9]+)?)' . '{1,63}\.)+'. // Followed by one or max 63 domain characters (dot separated).
-    '([a-z0-9]([-a-z0-9]*[a-z0-9]+)?)' . '{2,63}' // Must be followed by one set consisting a period of two or max 63 domain characters.
+    '(' . '([a-z0-9]([-a-z0-9]*[a-z0-9]+)?)' . '{1,63}\.)+'.  // Followed by one or max 63 domain characters (dot separated).
+    '([a-z0-9]([-a-z0-9]*[a-z0-9]+)?)' . '{2,63}'             // Must be followed by one set consisting a period of two or max 63 domain characters.
     );
 
 // Two different types of camel case: one for class names and one for method names
@@ -52,6 +52,7 @@ class PKPString {
     
     /**
      * Perform initialization required for the string wrapper library.
+     * @return void
      */
     public static function init(): void {
         $clientCharset = strtolower((string) Config::getVar('i18n', 'client_charset'));
@@ -128,6 +129,7 @@ class PKPString {
     //
 
     /**
+     * Get string length.
      * @see http://ca.php.net/manual/en/function.strlen.php
      * @param string $string
      * @return int
@@ -148,6 +150,7 @@ class PKPString {
     }
 
     /**
+     * Find the position of the first occurrence of a substring in a string.
      * @see http://ca.php.net/manual/en/function.strpos.php
      * @param string $haystack
      * @param string $needle
@@ -168,6 +171,7 @@ class PKPString {
     }
 
     /**
+     * Find the position of the last occurrence of a substring in a string.
      * @see http://ca.php.net/manual/en/function.strrpos.php
      * @param string $haystack
      * @param string $needle
@@ -187,6 +191,7 @@ class PKPString {
     }
 
     /**
+     * Get a substring from a string.
      * @see http://ca.php.net/manual/en/function.substr.php
      * @param string $string
      * @param int $start
@@ -209,6 +214,7 @@ class PKPString {
     }
 
     /**
+     * Replace text within a portion of a string.
      * @see http://ca.php.net/manual/en/function.substr_replace.php
      * @param string $string
      * @param string $replacement
@@ -245,6 +251,7 @@ class PKPString {
     }
 
     /**
+     * Convert a string to lowercase.
      * @see http://ca.php.net/manual/en/function.strtolower.php
      * @param string $string
      * @return string
@@ -263,6 +270,7 @@ class PKPString {
     }
 
     /**
+     * Convert a string to uppercase.
      * @see http://ca.php.net/manual/en/function.strtoupper.php
      * @param string $string
      * @return string
@@ -281,6 +289,7 @@ class PKPString {
     }
 
     /**
+     * Convert the first character of a string to uppercase.
      * @see http://ca.php.net/manual/en/function.ucfirst.php
      * @param string $string
      * @return string
@@ -301,6 +310,7 @@ class PKPString {
     }
 
     /**
+     * Count the number of substring occurrences.
      * @see http://ca.php.net/manual/en/function.substr_count.php
      * @param string $haystack
      * @param string $needle
@@ -315,6 +325,7 @@ class PKPString {
     }
 
     /**
+     * Encode a string for use in a MIME header.
      * @see http://ca.php.net/manual/en/function.encode_mime_header.php
      * @param string $string
      * @return string
@@ -328,6 +339,7 @@ class PKPString {
     }
 
     /**
+     * Send an email message.
      * @see http://ca.php.net/manual/en/function.mail.php
      * @param string $to
      * @param string $subject
@@ -351,6 +363,7 @@ class PKPString {
     //
 
     /**
+     * Quote a string for use in a regular expression.
      * @see http://ca.php.net/manual/en/function.regexp_quote.php
      * @param string $string
      * @param string $delimiter
@@ -361,6 +374,7 @@ class PKPString {
     }
 
     /**
+     * Filter an array using a regular expression.
      * @see http://ca.php.net/manual/en/function.regexp_grep.php
      * @param string $pattern
      * @param array $input
@@ -373,6 +387,7 @@ class PKPString {
     }
 
     /**
+     * Match a regular expression and return the matches.
      * @see http://ca.php.net/manual/en/function.regexp_match.php
      * @param string $pattern
      * @param string $subject
@@ -384,6 +399,7 @@ class PKPString {
     }
 
     /**
+     * Match a regular expression and return the matches.
      * @see http://ca.php.net/manual/en/function.regexp_match_get.php
      * @param string $pattern
      * @param string $subject
@@ -396,6 +412,7 @@ class PKPString {
     }
 
     /**
+     * Match all occurrences of a regular expression and return the matches.
      * @see http://ca.php.net/manual/en/function.regexp_match_all.php
      * @param string $pattern
      * @param string $subject
@@ -408,6 +425,7 @@ class PKPString {
     }
 
     /**
+     * Replace all matches of a regular expression with a replacement string.
      * @see http://ca.php.net/manual/en/function.regexp_replace.php
      * @param string|array $pattern
      * @param string|array $replacement
@@ -440,6 +458,7 @@ class PKPString {
     }
 
     /**
+     * Replace all matches of a regular expression with a callback function.
      * @see http://ca.php.net/manual/en/function.regexp_replace_callback.php
      * @param string|array $pattern
      * @param callable $callback
@@ -466,6 +485,7 @@ class PKPString {
     }
 
     /**
+     * Split a string by a regular expression.
      * @see http://ca.php.net/manual/en/function.regexp_split.php
      * @param string $pattern
      * @param string $subject
@@ -478,6 +498,7 @@ class PKPString {
     }
 
     /**
+     * Determine the MIME content type of a file.
      * @see http://ca.php.net/manual/en/function.mime_content_type.php
      * @param string $filename
      * @param string $suggestedExtension
@@ -792,7 +813,7 @@ class PKPString {
         for ($i=0; $i<$max; $i++) {
             $c = $str[$i];
             $c1 = ord($c);
-            if ($c1>>5 == 6) {                                            // 110x xxxx
+            if ($c1>>5 == 6) {                                    // 110x xxxx
                 $ret .= substr($str, $last, $i-$last);            // append regular chars
                 $c1 &= 31;
                 $c2 = ord($str[++$i]);
@@ -802,7 +823,7 @@ class PKPString {
                 $ret .= "&#" . ($c1 * 0x100 + $c2) . ";";
                 $last = $i+1;
             }
-            elseif ($c1>>4 == 14) {                                       // 1110 xxxx
+            elseif ($c1>>4 == 14) {                               // 1110 xxxx
                 $ret .= substr($str, $last, $i-$last);
                 $c2 = ord($str[++$i]);
                 $c3 = ord($str[++$i]);
@@ -936,7 +957,7 @@ class PKPString {
     }
 
     /**
-     * Wrapper around fputcsv
+     * Write a line to a CSV file, compatible with PHP < 5.5
      * @param resource $handle
      * @param array $fields
      * @param string $delimiter
@@ -1024,8 +1045,7 @@ class PKPString {
     }
 
     /**
-     * Transform "handler-class" to "HandlerClass"
-     * and "my-op" to "myOp".
+     * Transform "handler-class" to "HandlerClass" and "my-op" to "myOp".
      * @param string $string
      * @param int $type
      * @return string
@@ -1045,8 +1065,7 @@ class PKPString {
     }
 
     /**
-     * Transform "HandlerClass" to "handler-class"
-     * and "myOp" to "my-op".
+     * Transform "HandlerClass" to "handler-class" and "myOp" to "my-op".
      * @param string $string
      * @return string
      */
