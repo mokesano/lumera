@@ -239,6 +239,7 @@ class SectionHandler extends Handler {
      * @return Section|null
      */
     private function _resolveSection(string $op, $journal): ?object {
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $sections   = $sectionDao->getJournalSections($journal->getId());
 
@@ -258,7 +259,9 @@ class SectionHandler extends Handler {
      * @return array of ['user' => User, 'canReview' => bool, 'canEdit' => bool]
      */
     private function _getSectionEditors($section, $journal): array {
+        /** @var SectionEditorsDAO $sectionEditorsDao */
         $sectionEditorsDao = DAORegistry::getDAO('SectionEditorsDAO');
+        /** @var UserDAO $userDao */
         $userDao           = DAORegistry::getDAO('UserDAO');
         $rawEditors        = $sectionEditorsDao->getEditorsBySectionId(
             $journal->getId(),
@@ -288,7 +291,9 @@ class SectionHandler extends Handler {
      * @return User|null
      */
     private function _getLeadEditor($section, $journal): ?object {
+        /** @var SectionEditorsDAO $sectionEditorsDao */
         $sectionEditorsDao = DAORegistry::getDAO('SectionEditorsDAO');
+        /** @var UserDAO $userDao */
         $userDao           = DAORegistry::getDAO('UserDAO');
         $rawEditors        = $sectionEditorsDao->getEditorsBySectionId(
             $journal->getId(),
@@ -313,6 +318,7 @@ class SectionHandler extends Handler {
      * @return array of PublishedArticle
      */
     private function _getSectionArticles($section, $journal, int $limit = 0): array {
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $all = $publishedArticleDao->getPublishedArticlesByJournalId(
             $journal->getId(),
@@ -337,6 +343,7 @@ class SectionHandler extends Handler {
      * @return int
      */
     private function _getSectionArticleCount($section): int {
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         return count(
             $publishedArticleDao->getPublishedArticleIdsBySection($section->getId())
@@ -367,5 +374,6 @@ class SectionHandler extends Handler {
         $templateMgr->assign('pageHierarchy', $pageHierarchy);
         $templateMgr->assign('pageTitle',     $section ? $section->getLocalizedTitle() : 'common.section');
     }
+    
 }
 ?>
