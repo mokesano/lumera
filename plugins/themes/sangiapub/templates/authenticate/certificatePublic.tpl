@@ -27,7 +27,7 @@
 <div class="wizdam-cert-wrapper">
     <div class="verify-badge-wrapper">
         {if $publisher.logoUrl}<img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" class="wi-publisher-logo"><br>{/if}
-        <img src="{$baseUrl}/plugins/themes/wizdam/images/verified-seal.png" alt="Verified" width="80">
+        <img src="{$baseUrl}/assets/ico/verified.svg" alt="Verified" width="80">
         <h2 class="text-success">{translate key="document.verifiedTitle"}</h2>
         <p class="text-muted">{translate key="document.cert.verifiedSubtitle"}</p>
     </div>
@@ -41,14 +41,14 @@
         <h2 style="font-family: Georgia, serif;">{$certData.editorName|escape}</h2>
         <p>{$certData.editorAffiliation|escape}</p>
         <p style="margin-top: 20px;">{translate key="document.cert.editorRecognitionText"}</p>
-        <div class="wi-manuscript-box"><em>"{$certData.articleTitle|escape}"</em></div>
+        <div class="wi-manuscript-box"><em>"{$certData.articleTitle|strip_unsafe_html}"</em></div>
         <p>{translate key="document.cert.certificateNumberLabel"}: <strong>{$certData.certificateNumber|escape}</strong></p>
         <p>{translate key="document.cert.dateAssignedLabel"}: {$certData.dateAssigned|date_format:"%d %B %Y"}</p>
     {else}
         <h2 style="font-family: Georgia, serif;">{$certData.reviewerName|escape}</h2>
         <p>{$certData.reviewerAffiliation|escape}</p>
         <p style="margin-top: 20px;">{translate key="document.cert.reviewerRecognitionText"}</p>
-        <div class="wi-manuscript-box"><em>"{$certData.articleTitle|escape}"</em></div>
+        <div class="wi-manuscript-box"><em>"{$certData.articleTitle|strip_unsafe_html}"</em></div>
         <p>{translate key="document.cert.certificateNumberLabel"}: <strong>{$certData.certificateNumber|escape}</strong></p>
         <p>{translate key="document.cert.dateCompletedLabel"}: {$certData.dateCompleted|date_format:"%d %B %Y"}</p>
     {/if}

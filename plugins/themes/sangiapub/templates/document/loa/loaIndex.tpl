@@ -10,22 +10,20 @@
     {include file="common/header.tpl"}
 {/strip}
 
-<h1>{translate key="billing.loa.indexTitle"}</h1>
-
 <table class="wizdam-table" width="100%" style="border-collapse: collapse;">
     <thead>
         <tr style="border-bottom: 2px solid #ccc;">
-            <th style="padding: 10px; text-align: left;">{translate key="billing.titleLabel"}</th>
             <th style="padding: 10px; text-align: left;">{translate key="billing.statusLabel"}</th>
-            <th style="padding: 10px; text-align: left;">{translate key="document.index.statusDate"}</th>
-            <th style="padding: 10px; text-align: left;">{translate key="document.index.actions"}</th>
+            <th style="padding: 10px; text-align: left;">{translate key="billing.titleLabel"}</th>
+            <th style="padding: 10px; text-align: left;" width="15%">{translate key="document.index.statusDate"}</th>
+            <th style="padding: 10px; text-align: left;" width="20%">{translate key="document.index.actions"}</th>
         </tr>
     </thead>
     <tbody>
         {foreach from=$loaEntries item=entry}
             <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 10px;">{$entry.title|strip_unsafe_html}</td>
                 <td style="padding: 10px;">{$entry.statusLabel|escape}</td>
+                <td style="padding: 10px;">{$entry.title|strip_unsafe_html}</td>
                 <td style="padding: 10px;">{$entry.statusDate|date_format:"%d %b %Y"}</td>
                 <td style="padding: 10px;">
                     <a href="{$entry.detailUrl|escape}">{translate key="document.index.viewDetail"}</a>

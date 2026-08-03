@@ -44,14 +44,14 @@
             <h2 style="font-family: Georgia, serif;">{$certData.editorName|escape}</h2>
             <p>{$certData.editorAffiliation|escape}</p>
             <p style="margin-top: 20px;">{translate key="document.cert.editorRecognitionText"}</p>
-            <div class="wi-manuscript-box"><em>"{$certData.articleTitle|escape}"</em></div>
+            <div class="wi-manuscript-box"><em>"{$certData.articleTitle|strip_unsafe_html}"</em></div>
             <p>{translate key="document.cert.certificateNumberLabel"}: <strong>{$certData.certificateNumber|escape}</strong></p>
             <p>{translate key="document.cert.dateAssignedLabel"}: {$certData.dateAssigned|date_format:"%d %B %Y"}</p>
         {else}
             <h2 style="font-family: Georgia, serif;">{$certData.reviewerName|escape}</h2>
             <p>{$certData.reviewerAffiliation|escape}</p>
             <p style="margin-top: 20px;">{translate key="document.cert.reviewerRecognitionText"}</p>
-            <div class="wi-manuscript-box"><em>"{$certData.articleTitle|escape}"</em></div>
+            <div class="wi-manuscript-box"><em>"{$certData.articleTitle|strip_unsafe_html}"</em></div>
             <p>{translate key="document.cert.certificateNumberLabel"}: <strong>{$certData.certificateNumber|escape}</strong></p>
             <p>{translate key="document.cert.dateCompletedLabel"}: {$certData.dateCompleted|date_format:"%d %B %Y"}</p>
         {/if}

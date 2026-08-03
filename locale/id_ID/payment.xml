@@ -13,6 +13,8 @@
 
 <locale name="id_ID" full_name="Bahasa Indonesia">
 
+    <message key="common.success">Berhasil!</message>
+
     <!-- Document (shared between LoA & Certificate) -->
     <message key="document.downloadPdf">Unduh PDF Resmi</message>
     <message key="document.editorialBoard">Dewan Editorial</message>
@@ -20,6 +22,7 @@
     <message key="document.journalManagers">Journal Manager</message>
     <message key="document.scanToVerify">Pindai untuk Verifikasi</message>
     <message key="document.verifiedTitle">DOKUMEN TERVERIFIKASI</message>
+    <message key="document.downloadPdf">Unduh PDF Resmi</message>
 
     <!-- Payment Gateway: peringatan keamanan ke Site Admin (notifikasi in-app) -->
     <message key="payment.gateway.alert.tokenNotConfigured">Token webhook belum dikonfigurasi -- webhook ditolak (fail-closed).</message>
@@ -63,6 +66,7 @@
     <message key="checkout.cart.title">Detail Keranjang Checkout</message>
     <message key="checkout.billing.title">Detail Penagihan Checkout</message>
     <message key="checkout.payment.title">Detail Pembayaran Checkout</message>
+    <message key="checkout.error.cartNotFound">Keranjang Anda tidak ditemukan atau sudah kedaluwarsa.</message>
 
     <!-- Authenticate Management -->
     <message key="authenticate.invoiceTitle">Validasi Document Invoice</message>
