@@ -120,12 +120,23 @@ class PublishedArticle extends Article {
     }
 
     /**
+     * Set the cached views of the published article.
+     * @param int $views
+     * @return void
+     */
+    public function setCachedViews(int $views): void {
+        $this->setData('_cachedViews', $views);
+    }
+
+    /**
      * Get views of the published article.
      * @return int
      */
     public function getViews() {
+        $cached = $this->getData('_cachedViews');
+        if ($cached !== null) return $cached;
+
         $application = PKPApplication::getApplication();
-        // Casting (int) added here to fix the Fatal Error
         return $application->getPrimaryMetricByAssoc(ASSOC_TYPE_ARTICLE, (int) $this->getId());
     }
 

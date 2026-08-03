@@ -64,6 +64,14 @@
 			<col>context_id</col>
 			<col>assoc_type</col>
 		</index>
+		<index name="metrics_context_id">
+			<col>context_id</col>
+		</index>
+		<index name="metrics_assoc_lookup">
+			<col>assoc_type</col>
+			<col>assoc_id</col>
+			<col>context_id</col>
+		</index>
 		<!-- TODO: more indexes, depending on use cases. -->
 	</table>
 	

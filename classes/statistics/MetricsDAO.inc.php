@@ -294,6 +294,51 @@ class MetricsDAO extends DAO {
     }
 
     /**
+     * Ambil total metrik untuk banyak assoc_id sekaligus dalam SATU query
+     * (dipecah otomatis per batch 500 ID). Dipakai untuk menghindari pola N+1
+     * saat menampilkan daftar hasil (pencarian, browse, dsb).
+     *
+     * @param int $assocType ASSOC_TYPE_ARTICLE atau ASSOC_TYPE_GALLEY
+     * @param array $assocIds Daftar ID yang tampil di halaman
+     * @param int|null $contextId ID jurnal (null = lintas jurnal/situs)
+     * @return array [$assocId => $totalViews]
+     */
+    public function getMetricsForAssocIds(int $assocType, array $assocIds, ?int $contextId = null): array {
+        $assocIds = array_values(array_unique(array_map('intval', $assocIds)));
+        if (empty($assocIds)) return [];
+
+        $counts = array_fill_keys($assocIds, 0);
+
+        foreach (array_chunk($assocIds, 500) as $chunk) {
+            $placeholders = implode(',', array_fill(0, count($chunk), '?'));
+            $params = [$assocType];
+            $sql = "SELECT assoc_id, SUM(metric) AS metric
+                    FROM metrics
+                    WHERE assoc_type = ?
+                      AND assoc_id IN ($placeholders)";
+            foreach ($chunk as $id) { $params[] = $id; }
+
+            if ($contextId !== null) {
+                $sql .= " AND context_id = ?";
+                $params[] = $contextId;
+            }
+            $sql .= " GROUP BY assoc_id";
+
+            $result = $this->retrieve($sql, $params);
+            if ($result) {
+                while (!$result->EOF) {
+                    $row = $result->GetRowAssoc(false);
+                    $counts[(int) $row['assoc_id']] = (int) $row['metric'];
+                    $result->MoveNext();
+                }
+                $result->Close();
+            }
+        }
+
+        return $counts;
+    }
+
+    /**
      * Get all load ids that are associated with records filtered by the passed arguments.
      * 
      * @param int $assocType

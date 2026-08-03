@@ -373,7 +373,7 @@ class ArticleSearch {
      * @param mixed $results
      * @return array
      */
-    public static function formatResults($results) {
+    public static function formatResults($results, $journal = null) {
         if (!is_array($results) || empty($results)) {
             return [];
         }
@@ -403,7 +403,7 @@ class ArticleSearch {
                 $publishedArticleCache[$articleIdInt] = $publishedArticleDao->getPublishedArticleByArticleId($articleIdInt);
                 $articleCache[$articleIdInt] = $articleDao->getArticle($articleIdInt);
             }
-            
+
             $article = $articleCache[$articleIdInt];
             $publishedArticle = $publishedArticleCache[$articleIdInt];
             if ($publishedArticle && $article) {
@@ -422,8 +422,8 @@ class ArticleSearch {
                     $issue = $issueDao->getIssueById($issueId);
                     $issueCache[$issueId] = $issue;
                     import('classes.issue.IssueAction');
-                    $issueAvailabilityCache[$issueId] = !IssueAction::subscriptionRequired($issue) || 
-                        IssueAction::subscribedUser($journalCache[$journalId], $issueId, $articleIdInt) || 
+                    $issueAvailabilityCache[$issueId] = !IssueAction::subscriptionRequired($issue) ||
+                        IssueAction::subscribedUser($journalCache[$journalId], $issueId, $articleIdInt) ||
                         IssueAction::subscribedDomain($journalCache[$journalId], $issueId, $articleIdInt);
                 }
 
@@ -441,6 +441,34 @@ class ArticleSearch {
                 ];
             }
         }
+
+        if (!empty($returner)) {
+            /** @var MetricsDAO $metricsDao */
+            $metricsDao = DAORegistry::getDAO('MetricsDAO');
+            $contextId = $journal ? (int) $journal->getId() : null;
+
+            $articleIds = [];
+            $galleys = [];
+            foreach ($returner as $row) {
+                $articleIds[] = (int) $row['publishedArticle']->getId();
+                foreach ((array) $row['publishedArticle']->getGalleys() as $galley) {
+                    $galleys[] = $galley;
+                }
+            }
+
+            $articleViews = $metricsDao->getMetricsForAssocIds(ASSOC_TYPE_ARTICLE, $articleIds, $contextId);
+            $galleyViews  = $metricsDao->getMetricsForAssocIds(
+                ASSOC_TYPE_GALLEY, array_map(fn($g) => (int) $g->getId(), $galleys), $contextId
+            );
+
+            foreach ($returner as $row) {
+                $row['publishedArticle']->setCachedViews($articleViews[(int) $row['publishedArticle']->getId()] ?? 0);
+            }
+            foreach ($galleys as $galley) {
+                $galley->setCachedViews($galleyViews[(int) $galley->getId()] ?? 0);
+            }
+        }
+
         return $returner;
     }
 
@@ -498,7 +526,7 @@ class ArticleSearch {
             }
         }
 
-        $formattedResults = self::formatResults($results);
+        $formattedResults = self::formatResults($results, $journal);
 
         return new VirtualArrayIterator($formattedResults, $totalResults, $page, $itemsPerPage);
     }

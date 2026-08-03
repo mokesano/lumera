@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE data SYSTEM "../../../lib/pkp/dtd/xmlData.dtd">
+
+<!--
+  * dbscripts/xml/upgrade/lumera_search_metrics_indexes.xml
+  *
+  * Copyright (c) 2017-2024 Sangia Publishing House
+  * Copyright (c) 2017-2026 Rochmady
+  * Distributed under the GNU GPL v3.
+  * 
+  * Menambahkan index yang hilang untuk mempercepat pencarian artikel
+  * dan pengambilan jumlah views/downloads (mengatasi full table scan).
+  -->
+  
+<data>
+    <sql>
+        <query driver="mysql">
+            ALTER TABLE article_search_objects
+              ADD INDEX article_search_objects_article_id (article_id, type)
+        </query>
+        <query driver="mysql">
+            ALTER TABLE metrics
+              ADD INDEX metrics_context_id (context_id)
+        </query>
+        <query driver="mysql">
+            ALTER TABLE metrics
+              ADD INDEX metrics_assoc_lookup (assoc_type, assoc_id, context_id)
+        </query>
+    </sql>
+</data>
