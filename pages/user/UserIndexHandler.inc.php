@@ -57,7 +57,6 @@ class UserIndexHandler extends UserHandler {
         $userJournals = [];
 
         // [WIZDAM HOTFIX] Explicitly initialize multi-dimensional structure.
-        // Prevents PHP 8.4 Warning: "Trying to access array offset on null"
         $isValid = [
             'JournalManager' => [],
             'SubscriptionManager' => [],
@@ -80,6 +79,8 @@ class UserIndexHandler extends UserHandler {
             'Reviewer' => []
         ];
 
+        $lastProcessedJournalId = 0; // Track for defensive sanitization
+
         if ($journal === null) { // Currently at site level
             /** @var JournalDAO $journalDao */
             $journalDao = DAORegistry::getDAO('JournalDAO');
@@ -88,6 +89,7 @@ class UserIndexHandler extends UserHandler {
             // Fetch the user's roles for each journal
             while ($currentJournal = $journals->next()) {
                 $journalId = (int) $currentJournal->getId();
+                $lastProcessedJournalId = $journalId;
 
                 // Determine if journal setup is incomplete, to provide a message for JM
                 $setupIncomplete[$journalId] = $this->_checkIncompleteSetup($currentJournal);
@@ -107,6 +109,7 @@ class UserIndexHandler extends UserHandler {
 
         } else { // Currently within a journal's context.
             $journalId = (int) $journal->getId();
+            $lastProcessedJournalId = $journalId;
 
             // Determine if journal setup is incomplete, to provide a message for JM
             $setupIncomplete[$journalId] = $this->_checkIncompleteSetup($journal);
@@ -141,6 +144,21 @@ class UserIndexHandler extends UserHandler {
             $templateMgr->assign('allowRegReviewer', (bool) $journal->getSetting('allowRegReviewer'));
 
             $templateMgr->assign('userJournals', $userJournals);
+        }
+
+        foreach (array_keys($submissionsCount) as $role) {
+            if (!is_array($submissionsCount[$role])) {
+                $submissionsCount[$role] = is_scalar($submissionsCount[$role]) 
+                    ? [$lastProcessedJournalId => (int) $submissionsCount[$role]] 
+                    : [];
+            }
+        }
+        foreach (array_keys($isValid) as $role) {
+            if (!is_array($isValid[$role])) {
+                $isValid[$role] = is_scalar($isValid[$role]) 
+                    ? [$lastProcessedJournalId => (bool) $isValid[$role]] 
+                    : [];
+            }
         }
 
         $templateMgr->assign('isValid', $isValid);
