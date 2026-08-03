@@ -33,63 +33,62 @@ require_once './lib/pkp/lib/adodb/adodb-xmlschema.inc.php';
 
 class Installer {
 
-    /** @var string descriptor path (relative to INSTALLER_DATA_DIR) */
+    /** @var string Descriptor path (relative to INSTALLER_DATA_DIR) */
     public $descriptor;
 
-    /** @var bool indicates if a plugin is being installed (thus modifying the descriptor path) */
+    /** @var bool Indicates if a plugin is being installed (thus modifying the descriptor path) */
     public $isPlugin;
 
-    /** @var array installation parameters */
+    /** @var array Installation parameters */
     public $params;
 
-    /** @var Version currently installed version */
+    /** @var Version Currently installed version */
     public $currentVersion;
 
-    /** @var Version version after installation */
+    /** @var Version Version after installation */
     public $newVersion;
 
-    /** @var ADOConnection|object database connection */
+    /** @var ADOConnection|object Database connection */
     public $dbconn;
 
-    /** @var string default locale */
+    /** @var string Default locale */
     public $locale;
 
-    /** @var array available locales */
+    /** @var array Available locales */
     public $installedLocales;
 
-    /** @var DBDataXMLParser database data parser */
+    /** @var DBDataXMLParser Database data parser */
     public $dataXMLParser;
 
-    /** @var array installer actions to be performed */
+    /** @var array Installer actions to be performed */
     public $actions;
 
     /** @var array SQL statements for database installation */
     public $sql;
 
-    /** @var array installation notes */
+    /** @var array Installation notes */
     public $notes;
 
-    /** @var string contents of the updated config file */
+    /** @var string Contents of the updated config file */
     public $configContents;
 
-    /** @var bool indicating if config file was written or not */
+    /** @var bool Indicating if config file was written or not */
     public $wroteConfig;
 
-    /** @var int error code (null | INSTALLER_ERROR_GENERAL | INSTALLER_ERROR_DB) */
+    /** @var int Error code (null | INSTALLER_ERROR_GENERAL | INSTALLER_ERROR_DB) */
     public $errorType;
 
-    /** @var string the error message, if an installation error has occurred */
+    /** @var string The error message, if an installation error has occurred */
     public $errorMsg;
 
-    /** @var Logger|object logging object */
+    /** @var object Logging object */
     public $logger;
-
 
     /**
      * Constructor.
-     * @param string $descriptor descriptor path
-     * @param array $params installer parameters
-     * @param bool $isPlugin true iff a plugin is being installed
+     * @param string $descriptor Descriptor path
+     * @param array $params Installer parameters
+     * @param bool $isPlugin True iff a plugin is being installed
      */
     public function __construct($descriptor, $params = [], $isPlugin = false) {
         // Load all plugins. If any of them use installer hooks,
@@ -110,9 +109,12 @@ class Installer {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $descriptor
+     * @param array $params
+     * @param bool $isPlugin
      */
-    public function Installer() {
+    public function Installer($descriptor = null, $params = [], $isPlugin = false) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
@@ -125,13 +127,15 @@ class Installer {
 
     /**
      * Returns true iff this is an upgrade process.
+     * @return bool
      */
     public function isUpgrade() {
-        die ('ABSTRACT CLASS');
+        die('ABSTRACT CLASS');
     }
 
     /**
      * Destroy / clean-up after the installer.
+     * @return void
      */
     public function destroy() {
         if (isset($this->dataXMLParser)) {
@@ -160,7 +164,8 @@ class Installer {
 
         if (!isset($this->currentVersion)) {
             // Retrieve the currently installed version
-            $versionDao = DAORegistry::getDAO('VersionDAO'); /* @var $versionDao VersionDAO */
+            /** @var VersionDAO $versionDao */
+            $versionDao = DAORegistry::getDAO('VersionDAO');
             $this->currentVersion = $versionDao->getCurrentVersion();
         }
 
@@ -191,7 +196,7 @@ class Installer {
         // Ensure that the installation will not get interrupted if it takes
         // longer than max_execution_time (php.ini). Note that this does not
         // work under safe mode.
-        @set_time_limit (0);
+        @set_time_limit(0);
 
         if (!$this->preInstall()) {
             return false;
@@ -223,17 +228,16 @@ class Installer {
         return $result;
     }
 
-
     /**
      * Record message to installation log.
      * @param string $message
+     * @return void
      */
     public function log($message) {
         if (isset($this->logger)) {
             call_user_func([$this->logger, 'log'], $message);
         }
     }
-
 
     //
     // Main actions
@@ -249,6 +253,7 @@ class Installer {
         $xmlParser = new PKPXMLParser();
         $installPath = $this->isPlugin ? $this->descriptor : INSTALLER_DATA_DIR . DIRECTORY_SEPARATOR . $this->descriptor;
         $installTree = $xmlParser->parse($installPath);
+        
         if (!$installTree) {
             // Error reading installation file
             $xmlParser->destroy();
@@ -267,7 +272,7 @@ class Installer {
         $this->parseInstallNodes($installTree);
         $xmlParser->destroy();
 
-        $result = $this->getErrorType() == 0;
+        $result = $this->getErrorType() === 0;
 
         HookRegistry::dispatch('Installer::parseInstaller', [&$this, &$result]);
         return $result;
@@ -297,7 +302,8 @@ class Installer {
      */
     public function updateVersion() {
         if ($this->newVersion->compare($this->currentVersion) > 0) {
-            $versionDao = DAORegistry::getDAO('VersionDAO'); /* @var $versionDao VersionDAO */
+            /** @var VersionDAO $versionDao */
+            $versionDao = DAORegistry::getDAO('VersionDAO');
             if (!$versionDao->insertVersion($this->newVersion)) {
                 return false;
             }
@@ -309,7 +315,6 @@ class Installer {
         return $result;
     }
 
-
     //
     // Installer Parsing
     //
@@ -317,6 +322,7 @@ class Installer {
     /**
      * Parse children nodes in the install descriptor.
      * @param XMLNode $installTree
+     * @return void
      */
     public function parseInstallNodes(&$installTree) {
         foreach ($installTree->getChildren() as $node) {
@@ -341,6 +347,7 @@ class Installer {
     /**
      * Add an installer action from the descriptor.
      * @param XMLNode $node
+     * @return void
      */
     public function addInstallAction(&$node) {
         $fileName = $node->getAttribute('file');
@@ -348,7 +355,7 @@ class Installer {
         if (!isset($fileName)) {
             $this->actions[] = ['type' => $node->getName(), 'file' => null, 'attr' => $node->getAttributes()];
 
-        } else if (strstr($fileName, '{$installedLocale}')) {
+        } elseif (strpos($fileName, '{$installedLocale}') !== false) {
             // Filename substitution for locales
             foreach ($this->installedLocales as $thisLocale) {
                 $newFileName = str_replace('{$installedLocale}', $thisLocale, $fileName);
@@ -365,7 +372,6 @@ class Installer {
             $this->actions[] = ['type' => $node->getName(), 'file' => $newFileName, 'attr' => $node->getAttributes()];
         }
     }
-
 
     //
     // Installer Execution
@@ -395,27 +401,28 @@ class Installer {
                     $this->setError(INSTALLER_ERROR_DB, str_replace('{$file}', $fileName, __('installer.installParseDBFileError')));
                     return false;
                 }
-                break;
+                
             case 'data':
                 $fileName = $action['file'];
                 $condition = isset($action['attr']['condition']) ? $action['attr']['condition'] : null;
                 $includeAction = true;
                 if ($condition) {
-                    // Modern replacement for create_function using eval within closure context
                     $includeAction = (function ($installer, $action) use ($condition) {
                         return eval('return ' . $condition . ';');
                     })($this, $action);
                 }
                 $this->log('data: ' . $action['file'] . ($includeAction ? '' : ' (skipped)'));
-                if (!$includeAction) break;
+                if (!$includeAction) {
+                    break;
+                }
 
                 $sql = $this->dataXMLParser->parseData($fileName);
-                // We might get an empty SQL if the upgrade script has
-                // been executed before.
+                // We might get an empty SQL if the upgrade script has been executed before.
                 if ($sql) {
                     return $this->executeSQL($sql);
                 }
                 break;
+                
             case 'code':
                 $condition = isset($action['attr']['condition']) ? $action['attr']['condition'] : null;
                 $includeAction = true;
@@ -424,18 +431,27 @@ class Installer {
                         return eval('return ' . $condition . ';');
                     })($this, $action);
                 }
-                $this->log(sprintf('code: %s %s::%s' . ($includeAction ? '' : ' (skipped)'), isset($action['file']) ? $action['file'] : 'Installer', isset($action['attr']['class']) ? $action['attr']['class'] : 'Installer', $action['attr']['function']));
-                if (!$includeAction) return true; // Condition not met; skip the action.
+                
+                $className = isset($action['attr']['class']) ? $action['attr']['class'] : 'Installer';
+                $funcName = $action['attr']['function'];
+                $fileRef = isset($action['file']) ? $action['file'] : 'Installer';
+                
+                $this->log(sprintf('code: %s %s::%s' . ($includeAction ? '' : ' (skipped)'), $fileRef, $className, $funcName));
+                
+                if (!$includeAction) {
+                    return true; // Condition not met; skip the action.
+                }
 
                 if (isset($action['file'])) {
                     require_once($action['file']);
                 }
+                
                 if (isset($action['attr']['class'])) {
                     return call_user_func([$action['attr']['class'], $action['attr']['function']], $this, $action['attr']);
                 } else {
                     return call_user_func([$this, $action['attr']['function']], $this, $action['attr']);
                 }
-                break;
+                
             case 'note':
                 $condition = isset($action['attr']['condition']) ? $action['attr']['condition'] : null;
                 $includeAction = true;
@@ -444,10 +460,15 @@ class Installer {
                         return eval('return ' . $condition . ';');
                     })($this, $action);
                 }
-                if (!$includeAction) break;
+                if (!$includeAction) {
+                    break;
+                }
 
                 $this->log(sprintf('note: %s', $action['file']));
-                $this->notes[] = join('', file($action['file']));
+                $fileContents = @file($action['file']);
+                if (is_array($fileContents)) {
+                    $this->notes[] = implode('', $fileContents);
+                }
                 break;
         }
 
@@ -461,14 +482,14 @@ class Installer {
      */
     public function executeSQL($sql) {
         if (is_array($sql)) {
-            foreach($sql as $stmt) {
+            foreach ($sql as $stmt) {
                 if (!$this->executeSQL($stmt)) {
                     return false;
                 }
             }
         } else {
             $this->dbconn->execute($sql);
-            if ($this->dbconn->errorNo() != 0) {
+            if ($this->dbconn->errorNo() !== 0) {
                 $this->setError(INSTALLER_ERROR_DB, $this->dbconn->errorMsg());
                 return false;
             }
@@ -498,7 +519,6 @@ class Installer {
 
         return true;
     }
-
 
     //
     // Accessors
@@ -585,7 +605,7 @@ class Installer {
 
     /**
      * Return the error message as a localized string.
-     * @return string.
+     * @return string
      */
     public function getErrorString() {
         switch ($this->getErrorType()) {
@@ -597,9 +617,10 @@ class Installer {
     }
 
     /**
-     * Set the error type and messgae.
+     * Set the error type and message.
      * @param int $type
      * @param string $msg
+     * @return void
      */
     public function setError($type, $msg) {
         $this->errorType = $type;
@@ -608,15 +629,15 @@ class Installer {
 
     /**
      * Set the logger for this installer.
-     * @param Logger $logger
+     * @param object $logger
+     * @return void
      */
     public function setLogger($logger) {
         $this->logger = $logger;
     }
 
     /**
-     * Clear the data cache files (needed because of direct tinkering
-     * with settings tables)
+     * Clear the data cache files (needed because of direct tinkering with settings tables).
      * @return bool
      */
     public function clearDataCache() {
@@ -629,21 +650,21 @@ class Installer {
     /**
      * Set the current version for this installer.
      * @param Version $version
+     * @return void
      */
     public function setCurrentVersion(&$version) {
         $this->currentVersion = $version;
     }
 
     /**
-     * For upgrade: install email templates and data
+     * For upgrade: install email templates and data.
      * @param object $installer
-     * @param array $attr Attributes: array containing
-     * 'key' => 'EMAIL_KEY_HERE',
-     * 'locales' => 'en_US,fr_CA,...'
+     * @param array $attr Attributes: array containing 'key' => 'EMAIL_KEY_HERE', 'locales' => 'en_US,fr_CA,...'
      * @return bool
      */
     public function installEmailTemplate($installer, $attr) {
-        $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO'); /* @var $emailTemplateDao EmailTemplateDAO */
+        /** @var EmailTemplateDAO $emailTemplateDao */
+        $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
         $emailTemplateDao->installEmailTemplates($emailTemplateDao->getMainEmailTemplatesFilename(), false, $attr['key']);
         foreach (explode(',', $attr['locales']) as $locale) {
             $emailTemplateDao->installEmailTemplateData($emailTemplateDao->getMainEmailTemplateDataFilename($locale), false, $attr['key']);
@@ -654,7 +675,7 @@ class Installer {
     /**
      * Install the given filter configuration file.
      * @param string $filterConfigFile
-     * @return bool true when successful, otherwise false
+     * @return bool True when successful, otherwise false
      */
     public function installFilterConfig($filterConfigFile) {
         static $filterHelper = false;
@@ -684,7 +705,7 @@ class Installer {
         // Are there any filters to be installed?
         $filtersNode = $tree->getChildByName('filters');
         if ($filtersNode instanceof XMLNode) {
-            foreach ($filtersNode->getChildren() as $filterNode) { /* @var $filterNode XMLNode */
+            foreach ($filtersNode->getChildren() as $filterNode) {
                 $filterHelper->configureFilter($filterNode);
             }
         }
@@ -704,18 +725,25 @@ class Installer {
      * @return bool
      */
     public function columnExists($tableName, $columnName) {
-        $siteDao = DAORegistry::getDAO('SiteDAO'); /* @var $siteDao SiteDAO */
-        $dict = NewDataDictionary($siteDao->getDataSource());
+        /** @var SiteDAO $siteDao */
+        $siteDao = DAORegistry::getDAO('SiteDAO');
+        $dataSource = $siteDao->getDataSource();
+        $dict = NewDataDictionary($dataSource);
 
         // Make sure the table exists
         $tables = $dict->MetaTables('TABLES', false);
-        if (!in_array($tableName, $tables)) return false;
+        if (!is_array($tables) || !in_array($tableName, $tables, true)) {
+            return false;
+        }
 
         // Check to see whether it contains the specified column.
-        // Oddly, MetaColumnNames doesn't appear to be available.
         $columns = $dict->MetaColumns($tableName);
-        foreach ($columns as $column) {
-            if ($column->name == $columnName) return true;
+        if (is_array($columns)) {
+            foreach ($columns as $column) {
+                if ($column->name === $columnName) {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -727,12 +755,14 @@ class Installer {
      * @return bool
      */
     public function tableExists($tableName) {
-        $siteDao = DAORegistry::getDAO('SiteDAO'); /* @var $siteDao SiteDAO */
-        $dict = NewDataDictionary($siteDao->getDataSource());
+        /** @var SiteDAO $siteDao */
+        $siteDao = DAORegistry::getDAO('SiteDAO');
+        $dataSource = $siteDao->getDataSource();
+        $dict = NewDataDictionary($dataSource);
 
         // Check whether the table exists.
         $tables = $dict->MetaTables('TABLES', false);
-        return in_array($tableName, $tables);
+        return is_array($tables) && in_array($tableName, $tables, true);
     }
 
     /**
@@ -743,23 +773,25 @@ class Installer {
     public function fileExists($filePath) {
         import('lib.pkp.classes.file.FileManager');
         $fileMgr = new FileManager();
-
-        return $fileMgr->fileExists(realpath($filePath));
+        $resolvedPath = realpath($filePath);
+        return $resolvedPath !== false && $fileMgr->fileExists($resolvedPath);
     }
 
     /**
-     * Insert or update plugin data in versions
-     * and plugin_settings tables.
+     * Insert or update plugin data in versions and plugin_settings tables.
      * @return bool
      */
     public function addPluginVersions() {
-        $versionDao = DAORegistry::getDAO('VersionDAO'); /* @var $versionDao VersionDAO */
+        /** @var VersionDAO $versionDao */
+        $versionDao = DAORegistry::getDAO('VersionDAO');
         import('lib.pkp.classes.site.VersionCheck');
         $fileManager = new FileManager();
         $categories = PluginRegistry::getCategories();
+        
         foreach ($categories as $category) {
             PluginRegistry::loadCategory($category);
             $plugins = PluginRegistry::getPlugins($category);
+            
             if (is_array($plugins)) {
                 foreach ($plugins as $plugin) {
                     $versionFile = $plugin->getPluginPath() . '/version.xml';
@@ -772,7 +804,7 @@ class Installer {
                             1, 0, 0, 0, // Major, minor, revision, build
                             Core::getCurrentDate(), // Date installed
                             1,    // Current
-                            'plugins.'.$category, // Type
+                            'plugins.' . $category, // Type
                             basename($plugin->getPluginPath()), // Product
                             '',    // Class name
                             0,    // Lazy load
@@ -786,5 +818,6 @@ class Installer {
 
         return true;
     }
+    
 }
 ?>
