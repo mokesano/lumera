@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file plugins/generic/externalFeed/wrapper/SimplePie.inc.php
  * 
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2027-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  * 
  * @class SimplePieWrapper
  * @ingroup plugins_generic_externalFeed
@@ -53,6 +53,6 @@ else {
             class_alias('SimplePie\SimplePie', 'SimplePie');
         }
     }
-    
+
 }
 ?>
