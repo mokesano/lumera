@@ -185,7 +185,7 @@ class PdfService {
             'publisher' => (new PublisherProfileService())->getProfile(),
         ]);
 
-        $this->mpdf->AddPage('L');
+        // $this->mpdf->AddPage('L'); // Orientasi halaman
         $html = $templateMgr->fetch('document/certificate/certificatePdf.tpl');
 
         try {
