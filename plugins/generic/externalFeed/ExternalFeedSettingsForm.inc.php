@@ -11,82 +11,86 @@ declare(strict_types=1);
  * @class ExternalFeedSettingsForm
  * @ingroup plugins_generic_externalFeed
  *
- * @brief Form for journal managers to modify External Feed plugin settings
- * * MODERNIZED FOR PHP 7.4+ & OJS FORK
- * - Implemented __construct.
- * - Removed obsolete reference operators (&).
- * - Redirected template to 'templates/' folder.
- * - Cleaned up file upload naming logic.
+ * @brief Form for journal managers to modify External Feed plugin settings.
  */
 
 import('lib.pkp.classes.form.Form');
 
 class ExternalFeedSettingsForm extends Form {
 
-    /** @var $journalId int */
-    public $journalId;
+    /** @var int */
+    protected $_journalId;
 
-    /** @var $plugin object */
-    public $plugin;
+    /** @var object */
+    protected $_plugin;
 
     /**
-     * Constructor
-     * @param $plugin object
-     * @param $journalId int
+     * Constructor.
+     * @param object $plugin
+     * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
-        $this->journalId = $journalId;
-        $this->plugin = $plugin;
+        $this->_journalId = (int) $journalId;
+        $this->_plugin = $plugin;
 
-        // UPDATE PATH: Arahkan ke folder templates/
         parent::__construct($plugin->getTemplatePath() . 'templates/settingsForm.tpl');
 
         $this->addCheck(new FormValidatorPost($this));
     }
 
     /**
+     * [SHIM] Backward Compatibility.
+     * @param object $plugin
+     * @param int $journalId
+     */
+    public function ExternalFeedSettingsForm($plugin, $journalId) {
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
+    }
+
+    /**
      * Initialize form data.
+     * @return void
      */
     public function initData() {
-        $journalId = $this->journalId;
-        $plugin = $this->plugin;
-
-        $this->_data = array(
-            'externalFeedStyleSheet' => $plugin->getSetting($journalId, 'externalFeedStyleSheet')
-        );
+        $this->_data = [
+            'externalFeedStyleSheet' => $this->_plugin->getSetting($this->_journalId, 'externalFeedStyleSheet')
+        ];
     }
 
     /**
      * Assign form data to user-submitted data.
+     * @return void
      */
     public function readInputData() {
-        $this->readUserVars(array('externalFeedStyleSheet'));
+        $this->readUserVars(['externalFeedStyleSheet']);
     }
 
     /**
      * Display the form.
+     * @param object|null $request
+     * @param string|null $template
+     * @return void
      */
-    public function display($request = NULL, $template = NULL) {
+    public function display($request = null, $template = null) {
         $templateMgr = TemplateManager::getManager();
-        $templateMgr->assign(
-            'journalStyleSheet', 
-            $this->plugin->getSetting($this->journalId, 'externalFeedStyleSheet')
-        );
-        $templateMgr->assign(
-            'defaultStyleSheetUrl', 
-            Request::getBaseUrl() . '/' . $this->plugin->getDefaultStyleSheetFile()
-        );
+        $templateMgr->assign('journalStyleSheet', $this->_plugin->getSetting($this->_journalId, 'externalFeedStyleSheet'));
+        $templateMgr->assign('defaultStyleSheetUrl', Application::get()->getRequest()->getBaseUrl() . '/' . $this->_plugin->getDefaultStyleSheetFile());
     
-        // FIX: Teruskan parameter ke parent
         parent::display($request, $template);
     }
 
     /**
      * Uploads custom stylesheet.
+     * @return bool
      */
     public function uploadStyleSheet() {
-        $journalId = $this->journalId;
-        $plugin = $this->plugin;
         $settingName = 'externalFeedStyleSheet';
 
         import('classes.file.PublicFileManager');
@@ -94,23 +98,20 @@ class ExternalFeedSettingsForm extends Form {
 
         if ($fileManager->uploadedFileExists($settingName)) {
             $type = $fileManager->getUploadedFileType($settingName);
-            if ($type != 'text/plain' && $type != 'text/css') {
+            if ($type !== 'text/plain' && $type !== 'text/css') {
                 return false;
             }
 
-            // FIX: Gunakan nama file yang sederhana. 
-            // UploadJournalFile otomatis menaruhnya di public/journals/{id}/
-            // Tidak perlu memasukkan plugin path ke dalam nama file upload.
             $uploadName = $settingName . '.css';
             
-            if($fileManager->uploadJournalFile($journalId, $settingName, $uploadName)) {            
-                $value = array(
-                    'name' => $fileManager->getUploadedFileName($settingName),
+            if ($fileManager->uploadJournalFile($this->_journalId, $settingName, $uploadName)) {            
+                $value = [
+                    'name' => (string) $fileManager->getUploadedFileName($settingName),
                     'uploadName' => $uploadName,
                     'dateUploaded' => Core::getCurrentDate()
-                );
+                ];
 
-                $plugin->updateSetting($journalId, $settingName, $value, 'object');
+                $this->_plugin->updateSetting($this->_journalId, $settingName, $value, 'object');
                 return true;
             }
         }
@@ -120,24 +121,24 @@ class ExternalFeedSettingsForm extends Form {
 
     /**
      * Deletes a custom stylesheet.
+     * @return bool
      */
     public function deleteStyleSheet() {
-        $journalId = $this->journalId;
-        $plugin = $this->plugin;
         $settingName = 'externalFeedStyleSheet';
-
-        $setting = $plugin->getSetting($journalId, $settingName);
+        $setting = $this->_plugin->getSetting($this->_journalId, $settingName);
 
         import('classes.file.PublicFileManager');
         $fileManager = new PublicFileManager();
 
-        if ($fileManager->removeJournalFile($journalId, $setting['uploadName'])) {
-            $plugin->updateSetting($journalId, $settingName, null);
-            return true;
-        } else {
-            return false;
+        if (is_array($setting) && isset($setting['uploadName'])) {
+            if ($fileManager->removeJournalFile($this->_journalId, (string) $setting['uploadName'])) {
+                $this->_plugin->updateSetting($this->_journalId, $settingName, null);
+                return true;
+            }
         }
+        
+        return false;
     }
+    
 }
-
 ?>

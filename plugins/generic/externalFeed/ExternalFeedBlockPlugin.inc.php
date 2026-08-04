@@ -11,12 +11,7 @@ declare(strict_types=1);
  * @class ExternalFeedBlockPlugin
  * @ingroup plugins_generic_externalFeed
  *
- * @brief Class for block component of external feed plugin
- * * MODERNIZED FOR PHP 8.x & OJS FORK (Wizdam Edition)
- * - Added Block-Specific CSS injection.
- * - Implemented Firewall Bypass logic.
- * - Redirected template to 'templates/' folder.
- * - Strict Syntax Compliance.
+ * @brief Class for block component of external feed plugin.
  */
 
 import('lib.pkp.classes.plugins.BlockPlugin');
@@ -24,31 +19,34 @@ import('lib.pkp.classes.plugins.BlockPlugin');
 class ExternalFeedBlockPlugin extends BlockPlugin {
     
     /** @var string Name of parent plugin */
-    public $parentPluginName;
+    protected $_parentPluginName;
 
     /**
-     * Constructor
+     * Constructor.
+     * @param string $parentPluginName
      */
     public function __construct($parentPluginName) {
-        $this->parentPluginName = $parentPluginName;
+        $this->_parentPluginName = (string) $parentPluginName;
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $parentPluginName
      */
     public function ExternalFeedBlockPlugin($parentPluginName) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::ExternalFeedBlockPlugin(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($parentPluginName);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Hide this plugin from the management interface (it's subsidiary)
+     * Hide this plugin from the management interface.
      * @return bool
      */
     public function getHideManagement(): bool {
@@ -80,12 +78,11 @@ class ExternalFeedBlockPlugin extends BlockPlugin {
     }
 
     /**
-     * Get the external feed plugin
-     * @return object
+     * Get the external feed plugin.
+     * @return object|null
      */
     public function getExternalFeedPlugin() {
-        $plugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
-        return $plugin;
+        return PluginRegistry::getPlugin('generic', $this->_parentPluginName);
     }
 
     /**
@@ -94,12 +91,13 @@ class ExternalFeedBlockPlugin extends BlockPlugin {
      */
     public function getPluginPath(): string {
         $plugin = $this->getExternalFeedPlugin();
-        return $plugin->getPluginPath();
+        return $plugin !== null ? $plugin->getPluginPath() : '';
     }
 
     /**
      * Override Template Filename to point to 'templates/' folder.
-     * COMPATIBILITY FIX: Added $request = null to match Parent Class signature.
+     * @param object|null $request
+     * @return string
      */
     public function getBlockTemplateFilename($request = null) {
         return 'templates/block.tpl';
@@ -107,104 +105,104 @@ class ExternalFeedBlockPlugin extends BlockPlugin {
 
     /**
      * Get the HTML contents for this block.
-     * [WIZDAM LOGIC PRESERVED] Firewall Bypass & CSS Injection
+     * @param object $templateMgr
+     * @param object|null $request
+     * @return string
      */
     public function getContents($templateMgr, $request = null) {
-        // FIX: Gunakan $request jika tersedia, fallback ke Registry
-        if (!$request) {
-            $request = Registry::get('request');
+        $request = $request ?? Application::get()->getRequest();
+        $journal = $request->getJournal();
+        
+        if ($journal === null) {
+            return '';
         }
-        
-        $journal = $request ? $request->getJournal() : Request::getJournal();
-        if (!$journal) return '';
-    
+
         $plugin = $this->getExternalFeedPlugin();
-        
-        // FIX: Teruskan $request ke getEnabled()
-        if (!$plugin->getEnabled($request)) return '';
-    
-        $requestedPage = Request::getRequestedPage();
+        if ($plugin === null || !$plugin->getEnabled($request)) {
+            return '';
+        }
+
+        $requestedPage = $request->getRequestedPage();
         /** @var ExternalFeedDAO $externalFeedDao */
         $externalFeedDao = DAORegistry::getDAO('ExternalFeedDAO');
-        
-        require_once(Core::getBaseDir() . '/lib/wizdam/library/autoload.php');
+
+        require_once Core::getBaseDir() . '/lib/wizdam/library/autoload.php';
         if (!class_exists('SimplePie') && class_exists('SimplePie\SimplePie')) {
             class_alias('SimplePie\SimplePie', 'SimplePie');
         }
         import('lib.pkp.classes.core.PKPString');
-    
+
         $feeds = $externalFeedDao->getExternalFeedsByJournalId($journal->getId());
-        $externalFeeds = array();
-    
+        $externalFeeds = [];
+
         while ($currentFeed = $feeds->next()) {
-            $displayBlock = $currentFeed->getDisplayBlock();
+            $displayBlock = (int) $currentFeed->getDisplayBlock();
             
-            if (($displayBlock == EXTERNAL_FEED_DISPLAY_BLOCK_NONE) ||
-                (($displayBlock == EXTERNAL_FEED_DISPLAY_BLOCK_HOMEPAGE &&
-                (!empty($requestedPage)) && $requestedPage != 'index'))
-            ) continue;
-    
+            if ($displayBlock === EXTERNAL_FEED_DISPLAY_BLOCK_NONE ||
+                ($displayBlock === EXTERNAL_FEED_DISPLAY_BLOCK_HOMEPAGE && !empty($requestedPage) && $requestedPage !== 'index')
+            ) {
+                continue;
+            }
+
             $feed = new SimplePie();
-            $feedUrl = $currentFeed->getUrl();
-    
+            $feedUrl = (string) $currentFeed->getUrl();
             $feedParts = parse_url($feedUrl);
-            $feedHost = isset($feedParts['host']) ? $feedParts['host'] : '';
-            $currentHost = $_SERVER['HTTP_HOST'];
-    
+            $feedHost = $feedParts['host'] ?? '';
+            $currentHost = $_SERVER['HTTP_HOST'] ?? '';
+
             $cleanFeedHost = str_replace('www.', '', $feedHost);
             $cleanCurrentHost = str_replace('www.', '', $currentHost);
-    
-            $curlOptions = array(
+
+            $curlOptions = [
                 CURLOPT_SSL_VERIFYHOST => 0,
                 CURLOPT_SSL_VERIFYPEER => 0,
                 CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_MAXREDIRS      => 5,
                 CURLOPT_TIMEOUT        => 30,
                 CURLOPT_ENCODING       => '',
-            );
-    
-            if ($feedHost && stripos($cleanCurrentHost, $cleanFeedHost) !== false) {
-                $serverIP = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : '127.0.0.1';
-                $curlOptions[CURLOPT_RESOLVE] = array(
+            ];
+
+            if ($feedHost !== '' && stripos($cleanCurrentHost, $cleanFeedHost) !== false) {
+                $serverIP = $_SERVER['SERVER_ADDR'] ?? '127.0.0.1';
+                $curlOptions[CURLOPT_RESOLVE] = [
                     $feedHost . ":443:" . $serverIP,
                     $feedHost . ":80:" . $serverIP
-                );
+                ];
                 $feed->set_useragent('SangiaFeedSystem_Internal_Verif');
             } else {
                 $feed->set_useragent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
             }
-    
+
             $feed->set_curl_options($curlOptions);
             $feed->set_feed_url($feedUrl);
             $feed->enable_order_by_date(false);
             $feed->set_cache_location(CacheManager::getFileCachePath());
             $feed->init();
-    
-            if ($currentFeed->getLimitItems()) {
-                $recentItems = $currentFeed->getRecentItems();
-            } else {
-                $recentItems = 0;
-            }
-    
+
+            $recentItems = $currentFeed->getLimitItems() ? (int) $currentFeed->getRecentItems() : 0;
+
             if ($feed->get_item_quantity() > 0) {
-                $externalFeeds[] = array(
-                    'title' => $currentFeed->getLocalizedTitle(),
+                $externalFeeds[] = [
+                    'title' => (string) $currentFeed->getLocalizedTitle(),
                     'items' => $feed->get_items(0, $recentItems)
-                );
+                ];
             }
         }
-    
-        if (empty($externalFeeds)) return '';
-    
+
+        if (empty($externalFeeds)) {
+            return '';
+        }
+
         $templateMgr->addStyleSheet(
-            Request::getBaseUrl() . '/' . $this->getPluginPath() . '/css/externalFeedBlock.css'
+            'externalFeedBlockCss',
+            $request->getBaseUrl() . '/' . $this->getPluginPath() . '/css/externalFeedBlock.css'
         );
         $templateMgr->assign('externalFeeds', $externalFeeds);
-    
-        // FIX: Fetch template sendiri, jangan panggil parent yang return ''
+
         return $templateMgr->fetch(
             $this->getTemplatePath() . $this->getBlockTemplateFilename($request)
         );
     }
+    
 }
 ?>

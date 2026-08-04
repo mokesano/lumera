@@ -11,174 +11,171 @@ declare(strict_types=1);
  * @class ExternalFeedForm
  * @ingroup plugins_generic_externalFeed
  *
- * @brief Form for journal managers to modify external feed plugin settings
- * * MODERNIZED FOR PHP 8.x & OJS FORK (Wizdam Edition)
- * - Implemented proper __construct.
- * - Removed obsolete var keywords.
- * - Strict type casting for security.
+ * @brief Form for journal managers to modify external feed plugin settings.
  */
 
 import('lib.pkp.classes.form.Form');
 
 class ExternalFeedForm extends Form {
 
-    /** @var object The parent plugin object */
-    public $plugin;
+    /** @var object */
+    protected $_plugin;
 
-    /** @var int The feed ID being edited */
-    public $feedId;
+    /** @var int|null */
+    protected $_feedId;
 
     /**
-     * Constructor
-     * @param $plugin object
-     * @param $feedId int
+     * Constructor.
+     * @param object $plugin
+     * @param int|null $feedId
      */
     public function __construct($plugin, $feedId) {
-        $this->plugin = $plugin;
-        $this->feedId = isset($feedId) ? (int) $feedId : null;
+        $this->_plugin = $plugin;
+        $this->_feedId = $feedId !== null ? (int) $feedId : null;
 
-        // [WIZDAM FIX] Change parent::Form to parent::__construct
         parent::__construct($plugin->getTemplatePath() . 'templates/externalFeedForm.tpl');
 
-        // Feed URL is provided
         $this->addCheck(new FormValidatorUrl($this, 'feedUrl', 'required', 'plugins.generic.externalFeed.form.feedUrlValid'));
-
-        // Feed title is provided
         $this->addCheck(new FormValidatorLocale($this, 'title', 'required', 'plugins.generic.externalFeed.form.titleRequired'));
-
-        // CSRF Protection
         $this->addCheck(new FormValidatorPost($this));
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param object $plugin
+     * @param int|null $feedId
      */
     public function ExternalFeedForm($plugin, $feedId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::ExternalFeedForm(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($plugin, $feedId);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
-    /** 
+    /**
      * Get the names of fields for which localized data is allowed.
      * @return array
      */
     public function getLocaleFieldNames() {
+        /** @var ExternalFeedDAO $feedDao */
         $feedDao = DAORegistry::getDAO('ExternalFeedDAO');
         return $feedDao->getLocaleFieldNames();
     }
 
     /**
      * Display the form.
+     * @param object|null $request
+     * @param string|null $template
+     * @return void
      */
     public function display($request = null, $template = null) {
         $templateMgr = TemplateManager::getManager();
-        $templateMgr->assign('feedId', $this->feedId);
+        $templateMgr->assign('feedId', $this->_feedId);
 
-        $plugin = $this->plugin; 
-        $plugin->import('ExternalFeed');
+        $this->_plugin->import('ExternalFeed');
 
         parent::display($request, $template);
     }
 
     /**
      * Initialize form data.
+     * @return void
      */
     public function initData() {
-        if (isset($this->feedId)) {
+        if ($this->_feedId !== null) {
+            /** @var ExternalFeedDAO $feedDao */
             $feedDao = DAORegistry::getDAO('ExternalFeedDAO');
-            $feed = $feedDao->getExternalFeed($this->feedId);
+            $feed = $feedDao->getExternalFeed($this->_feedId);
 
-            if ($feed != null) {
-                $this->_data = array(
-                    'feedUrl' => $feed->getUrl(),
-                    'title' => $feed->getTitle(null), // Localized title
-                    'displayHomepage' => $feed->getDisplayHomepage(),
-                    'displayBlock' => $feed->getDisplayBlock(),
-                    'limitItems' => $feed->getLimitItems(),
-                    'recentItems' => $feed->getRecentItems()
-                );
+            if ($feed !== null) {
+                $this->_data = [
+                    'feedUrl' => (string) $feed->getUrl(),
+                    'title' => $feed->getTitle(null),
+                    'displayHomepage' => (int) $feed->getDisplayHomepage(),
+                    'displayBlock' => (int) $feed->getDisplayBlock(),
+                    'limitItems' => (int) $feed->getLimitItems(),
+                    'recentItems' => (int) $feed->getRecentItems()
+                ];
             } else {
-                $this->feedId = null;
+                $this->_feedId = null;
             }
         }
     }
 
     /**
      * Assign form data to user-submitted data.
+     * @return void
      */
     public function readInputData() {
-        $this->readUserVars(
-            array(
-                'feedUrl',
-                'title',
-                'displayHomepage',
-                'displayBlock',
-                'limitItems',
-                'recentItems'
-            )
-        );
+        $this->readUserVars([
+            'feedUrl',
+            'title',
+            'displayHomepage',
+            'displayBlock',
+            'limitItems',
+            'recentItems'
+        ]);
 
-        // Security: Ensure strict integer casting
-        if ((int) $this->getData('recentItems') <= 0) {
+        $recentItems = $this->getData('recentItems');
+        if ($recentItems !== null && (int) $recentItems <= 0) {
             $this->setData('recentItems', '');
         }
 
-        // If limit items is selected, check that we have a value
         if ($this->getData('limitItems')) {
             $this->addCheck(new FormValidator($this, 'recentItems', 'required', 'plugins.generic.externalFeed.settings.recentItemsRequired'));
         }
     }
 
     /**
-     * Save settings. 
+     * Save settings.
+     * @param mixed $object
+     * @return void
      */
     public function execute($object = null) {
-        $journal = Request::getJournal();
-        $journalId = $journal->getId();
-        $plugin = $this->plugin;
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+        $journalId = $journal !== null ? (int) $journal->getId() : 0;
+        $plugin = $this->_plugin;
 
+        /** @var ExternalFeedDAO $externalFeedDao */
         $externalFeedDao = DAORegistry::getDAO('ExternalFeedDAO');
         $plugin->import('ExternalFeed');
 
-        // Logic penentuan Update atau Insert
         $feed = null;
-        if (isset($this->feedId)) {
-            $feed = $externalFeedDao->getExternalFeed($this->feedId);
+        if ($this->_feedId !== null) {
+            $feed = $externalFeedDao->getExternalFeed($this->_feedId);
         }
 
-        if (!$feed) {
+        if ($feed === null) {
             $feed = new ExternalFeed();
         }
 
-        // Data Assignment with Type Casting (Security Best Practice)
-        $feed->setJournalId((int) $journalId);
-        $feed->setUrl($this->getData('feedUrl')); // URL is validated by FormValidatorUrl
-        $feed->setTitle($this->getData('title'), null); // Localized
+        $feed->setJournalId($journalId);
+        $feed->setUrl((string) $this->getData('feedUrl'));
+        $feed->setTitle($this->getData('title'), null);
         
         $feed->setDisplayHomepage($this->getData('displayHomepage') ? 1 : 0);
-        $feed->setDisplayBlock($this->getData('displayBlock') ? (int) $this->getData('displayBlock') : EXTERNAL_FEED_DISPLAY_BLOCK_NONE);
+        
+        $displayBlock = $this->getData('displayBlock');
+        $feed->setDisplayBlock($displayBlock ? (int) $displayBlock : EXTERNAL_FEED_DISPLAY_BLOCK_NONE);
+        
         $feed->setLimitItems($this->getData('limitItems') ? 1 : 0);
         
-        // Ensure recentItems is integer
-        $recentItems = $this->getData('recentItems') ? (int) $this->getData('recentItems') : 0;
-        $feed->setRecentItems($recentItems);
+        $recentItems = $this->getData('recentItems');
+        $feed->setRecentItems($recentItems !== null && $recentItems !== '' ? (int) $recentItems : 0);
 
-        // Update or insert external feed
-        if ($feed->getId() != null) {
+        if ($feed->getId() !== null) {
             $externalFeedDao->updateExternalFeed($feed);
         } else {
-            // Set initial sequence
-            $feed->setSeq(REALLY_BIG_NUMBER);
+            $feed->setSeq(defined('REALLY_BIG_NUMBER') ? REALLY_BIG_NUMBER : 99999);
             $externalFeedDao->insertExternalFeed($feed);
-
-            // Re-order the feeds so the new one is at the end of the list.
             $externalFeedDao->resequenceExternalFeeds($feed->getJournalId());
         }
     }
+    
 }
 ?>
