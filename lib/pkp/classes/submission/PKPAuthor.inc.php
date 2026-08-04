@@ -229,7 +229,7 @@ class PKPAuthor extends DataObject {
      * @param string|null $locale
      */
     public function setAffiliation($affiliation, $locale) {
-        $this->setData('affiliation', (string) $affiliation, $locale);
+        $this->setData('affiliation', $affiliation, $locale);
     }
 
     /**
@@ -337,7 +337,7 @@ class PKPAuthor extends DataObject {
      * @param string|null $locale
      */
     public function setBiography($biography, $locale) {
-        $this->setData('biography', (string) $biography, $locale);
+        $this->setData('biography', $biography, $locale);
     }
 
     /**

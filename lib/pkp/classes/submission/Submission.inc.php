@@ -320,7 +320,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setDiscipline($discipline, $locale) {
-        return $this->setData('discipline', (string) $discipline, $locale);
+        return $this->setData('discipline', is_array($discipline) ? $discipline : (string) $discipline, $locale);
     }
 
     /**
@@ -346,7 +346,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setSubjectClass($subjectClass, $locale) {
-        return $this->setData('subjectClass', (string) $subjectClass, $locale);
+        return $this->setData('subjectClass', is_array($subjectClass) ? $subjectClass : (string) $subjectClass, $locale);
     }
 
     /**
@@ -372,7 +372,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setSubject($subject, $locale) {
-        return $this->setData('subject', (string) $subject, $locale);
+        return $this->setData('subject', is_array($subject) ? $subject : (string) $subject, $locale);
     }
 
     /**
@@ -399,7 +399,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setCoverageGeo($coverageGeo, $locale) {
-        return $this->setData('coverageGeo', (string) $coverageGeo, $locale);
+        return $this->setData('coverageGeo', is_array($coverageGeo) ? $coverageGeo : (string) $coverageGeo, $locale);
     }
 
     /**
@@ -426,7 +426,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setCoverageChron($coverageChron, $locale) {
-        return $this->setData('coverageChron', (string) $coverageChron, $locale);
+        return $this->setData('coverageChron', is_array($coverageChron) ? $coverageChron : (string) $coverageChron, $locale);
     }
 
     /**
@@ -453,7 +453,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setCoverageSample($coverageSample, $locale) {
-        return $this->setData('coverageSample', (string) $coverageSample, $locale);
+        return $this->setData('coverageSample', is_array($coverageSample) ? $coverageSample : (string) $coverageSample, $locale);
     }
 
     /**
@@ -479,7 +479,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setType($type, $locale) {
-        return $this->setData('type', (string) $type, $locale);
+        return $this->setData('type', is_array($type) ? $type : (string) $type, $locale);
     }
 
     /**
@@ -560,7 +560,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setSponsor($sponsor, $locale) {
-        return $this->setData('sponsor', (string) $sponsor, $locale);
+        return $this->setData('sponsor', is_array($sponsor) ? $sponsor : (string) $sponsor, $locale);
     }
 
     /**
@@ -603,7 +603,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setFileName($fileName, $locale) {
-        return $this->setData('fileName', (string) $fileName, $locale);
+        return $this->setData('fileName', is_array($fileName) ? $fileName : (string) $fileName, $locale);
     }
 
     /**
@@ -632,7 +632,11 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setWidth($width, $locale) {
-        $this->setData('width', $width !== null ? (int) $width : null, $locale);
+        if (is_array($width)) {
+            $this->setData('width', $width, $locale);
+        } else {
+            $this->setData('width', $width !== null ? (int) $width : null, $locale);
+        }
     }
 
     /**
@@ -661,7 +665,11 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setHeight($height, $locale) {
-        $this->setData('height', $height !== null ? (int) $height : null, $locale);
+        if (is_array($height)) {
+            $this->setData('height', $height, $locale);
+        } else {
+            $this->setData('height', $height !== null ? (int) $height : null, $locale);
+        }
     }
 
     /**
@@ -688,7 +696,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setOriginalFileName($originalFileName, $locale) {
-        return $this->setData('originalFileName', (string) $originalFileName, $locale);
+        return $this->setData('originalFileName', is_array($originalFileName) ? $originalFileName : (string) $originalFileName, $locale);
     }
 
     /**
@@ -715,7 +723,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setCoverPageAltText($coverPageAltText, $locale) {
-        return $this->setData('coverPageAltText', (string) $coverPageAltText, $locale);
+        return $this->setData('coverPageAltText', is_array($coverPageAltText) ? $coverPageAltText : (string) $coverPageAltText, $locale);
     }
 
     /**
@@ -768,7 +776,11 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setHideCoverPageToc($hideCoverPageToc, $locale) {
-        $this->setData('hideCoverPageToc', $hideCoverPageToc !== null ? (int) $hideCoverPageToc : null, $locale);
+        if (is_array($hideCoverPageToc)) {
+            $this->setData('hideCoverPageToc', $hideCoverPageToc, $locale);
+        } else {
+            $this->setData('hideCoverPageToc', $hideCoverPageToc !== null ? (int) $hideCoverPageToc : null, $locale);
+        }
     }
 
     /**
@@ -788,7 +800,11 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setHideCoverPageAbstract($hideCoverPageAbstract, $locale) {
-        $this->setData('hideCoverPageAbstract', $hideCoverPageAbstract !== null ? (int) $hideCoverPageAbstract : null, $locale);
+        if (is_array($hideCoverPageAbstract)) {
+            $this->setData('hideCoverPageAbstract', $hideCoverPageAbstract, $locale);
+        } else {
+            $this->setData('hideCoverPageAbstract', $hideCoverPageAbstract !== null ? (int) $hideCoverPageAbstract : null, $locale);
+        }
     }
 
     /**

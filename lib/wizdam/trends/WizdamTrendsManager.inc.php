@@ -155,7 +155,7 @@ class WizdamTrendsManager {
                 'date_published_formatted' => $data['date_published'] ? date('Y-m-d', strtotime($data['date_published'])) : '',
                 'is_open_access'           => self::_checkWizdamOpenAccessStatus($article, $journalId),
                 'article_type'             => $articleType,
-                'cover_image'              => self::_findArticleCoverImage($journalId, $articleId),
+                'cover_image' => self::_findArticleCoverImage($article, $journalId, $request),
                 'article_url' => $request->url($journalPath, 'article', 'view', $articleId),
                 'keywords'                 => $keywords,
                 'doi'                      => method_exists($article, 'getPubId') ? (string)$article->getPubId('doi') : ''
@@ -172,46 +172,39 @@ class WizdamTrendsManager {
     /**
      * Find Article Cover Image with Multi-Locale Support.
      * @param int $journalId
-     * @param int $articleId
+     * @param mixed $article
      * @return array
      */
-    private static function _findArticleCoverImage(int $journalId, int $articleId): array {
-        $locales = ['en_US', 'id_ID', 'en', 'id'];
-        $extensions = ['jpg', 'jpeg', 'png', 'gif'];
-        
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $baseUrl = $protocol . '://' . $host . '/';
+    private static function _findArticleCoverImage($article, int $journalId, PKPRequest $request): array {
+        import('classes.file.PublicFileManager');
+        $publicFileManager = new PublicFileManager();
+        $journalFilesPath = $publicFileManager->getJournalFilesPath($journalId);
+
+        // Urutan locale yang dicoba: locale aktif saat ini, locale submission, lalu locale umum.
+        $locales = array_values(array_unique(array_filter([
+            AppLocale::getLocale(),
+            $article->getLocale(),
+            'en_US',
+            'id_ID'
+        ])));
 
         foreach ($locales as $locale) {
-            foreach ($extensions as $ext) {
-                $coverImagePath = "public/journals/{$journalId}/cover_article_{$articleId}_{$locale}.{$ext}";
-                if (file_exists($coverImagePath)) {
-                    return [
-                        'file_exists' => true,
-                        'file_url'    => $baseUrl . $coverImagePath,
-                        'file_path'   => $coverImagePath,
-                        'locale'      => $locale,
-                        'extension'   => $ext
-                    ];
-                }
+            $fileName = $article->getFileName($locale);
+            if ($fileName === '' || !$article->getShowCoverPage($locale)) {
+                continue;
             }
-        }
-        
-        // Fallback tanpa locale
-        foreach ($extensions as $ext) {
-            $coverImagePath = "public/journals/{$journalId}/cover_article_{$articleId}.{$ext}";
-            if (file_exists($coverImagePath)) {
+
+            $filePath = $journalFilesPath . '/' . $fileName;
+            if (file_exists($filePath)) {
                 return [
                     'file_exists' => true,
-                    'file_url'    => $baseUrl . $coverImagePath,
-                    'file_path'   => $coverImagePath,
-                    'locale'      => 'default',
-                    'extension'   => $ext
+                    'file_url'    => $request->getBaseUrl() . '/' . $filePath,
+                    'file_path'   => $filePath,
+                    'locale'      => $locale
                 ];
             }
         }
-        
+
         return ['file_exists' => false, 'file_url' => null, 'file_path' => null];
     }
 
