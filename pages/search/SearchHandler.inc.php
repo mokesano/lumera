@@ -466,7 +466,7 @@ class SearchHandler extends Handler {
         $limit = $rangeInfo ? $rangeInfo->getCount() : $totalResults;
         $articleIds = array_slice($articleIds, $offset, $limit);
         
-        $resultsArray = ArticleSearch::formatResults($articleIds);
+        $resultsArray = ArticleSearch::formatResults($articleIds, $journal);
         
         $sections = [];
         $issues = [];

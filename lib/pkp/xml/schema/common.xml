@@ -208,6 +208,10 @@
 			<col>email</col>
 			<UNIQUE />
 		</index>
+		<index name="users_name_lookup">
+			<col>first_name</col>
+			<col>last_name</col>
+		</index>
 	</table>
 
 	<!--
