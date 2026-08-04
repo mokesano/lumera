@@ -183,7 +183,7 @@
 					
 										{if not ($currentJournal->getSetting('publisherInstitution') == '' && $currentJournal->getLocalizedSetting('publisherNote') == '' && $currentJournal->getLocalizedSetting('contributorNote') == '' && empty($journalSettings.contributors) && $currentJournal->getLocalizedSetting('sponsorNote') == '' && empty($journalSettings.sponsors))}<li class="c-sidemenu"><a href="{url page="about" op="sponsorship"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.journalSponsorship"}</a></li>{/if}
 					
-										{if $currentJournal->getLocalizedSetting('history') != ''}<li class="c-sidemenu"><a href="{url op="history"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.history"}</a></li>{/if}
+										{if $currentJournal->getLocalizedSetting('history') != ''}<li class="c-sidemenu"><a href="{url page="about" op="journal-history"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.history"}</a></li>{/if}
 										
 										<li class="c-sidemenu"><a href="{url page="about" op="contact"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.contact"}</a></li>
 									</ul>
