@@ -214,7 +214,7 @@ class Submission extends DataObject {
      */
     public function getTitle($locale) {
         $title = $this->getData('title', $locale);
-        return is_array($title) ? '' : (string) $title;
+        return is_array($title) ? $title : (string) $title;
     }
 
     /**
@@ -224,7 +224,7 @@ class Submission extends DataObject {
      */
     public function setTitle($title, $locale) {
         $this->setCleanTitle($title, $locale);
-        return $this->setData('title', (string) $title, $locale);
+        return $this->setData('title', is_array($title) ? $title : (string) $title, $locale);
     }
 
     /**
@@ -234,7 +234,13 @@ class Submission extends DataObject {
      */
     public function setCleanTitle($cleanTitle, $locale) {
         $punctuation = ['"', "'", ',', '.', '!', '?', '-', '$', '(', ')'];
-        $cleanTitle = str_replace($punctuation, '', (string) $cleanTitle);
+        if (is_array($cleanTitle)) {
+            $cleanTitle = array_map(function ($value) use ($punctuation) {
+                return str_replace($punctuation, '', (string) $value);
+            }, $cleanTitle);
+        } else {
+            $cleanTitle = str_replace($punctuation, '', (string) $cleanTitle);
+        }
         return $this->setData('cleanTitle', $cleanTitle, $locale);
     }
 
@@ -262,7 +268,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setPrefix($prefix, $locale) {
-        return $this->setData('prefix', (string) $prefix, $locale);
+        return $this->setData('prefix', is_array($prefix) ? $prefix : (string) $prefix, $locale);
     }
 
     /**
@@ -288,7 +294,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setAbstract($abstract, $locale) {
-        return $this->setData('abstract', (string) $abstract, $locale);
+        return $this->setData('abstract', is_array($abstract) ? $abstract : (string) $abstract, $locale);
     }
 
     /**
@@ -384,7 +390,7 @@ class Submission extends DataObject {
      */
     public function getCoverageGeo($locale) {
         $coverageGeo = $this->getData('coverageGeo', $locale);
-        return is_array($coverageGeo) ? '' : (string) $coverageGeo;
+        return is_array($coverageGeo) ? $coverageGeo : (string) $coverageGeo;
     }
 
     /**
@@ -411,7 +417,7 @@ class Submission extends DataObject {
      */
     public function getCoverageChron($locale) {
         $coverageChron = $this->getData('coverageChron', $locale);
-        return is_array($coverageChron) ? '' : (string) $coverageChron;
+        return is_array($coverageChron) ? $coverageChron : (string) $coverageChron;
     }
 
     /**
@@ -438,7 +444,7 @@ class Submission extends DataObject {
      */
     public function getCoverageSample($locale) {
         $coverageSample = $this->getData('coverageSample', $locale);
-        return is_array($coverageSample) ? '' : (string) $coverageSample;
+        return is_array($coverageSample) ? $coverageSample : (string) $coverageSample;
     }
 
     /**
@@ -492,7 +498,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setRights($rights, $locale) {
-        return $this->setData('rights', (string) $rights, $locale);
+        return $this->setData('rights', is_array($rights) ? $rights : (string) $rights, $locale);
     }
 
     /**
@@ -511,7 +517,7 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setSource($source, $locale) {
-        return $this->setData('source', (string) $source, $locale);
+        return $this->setData('source', is_array($source) ? $source : (string) $source, $locale);
     }
 
     /**
@@ -545,7 +551,7 @@ class Submission extends DataObject {
      */
     public function getSponsor($locale) {
         $sponsor = $this->getData('sponsor', $locale);
-        return is_array($sponsor) ? '' : (string) $sponsor;
+        return is_array($sponsor) ? $sponsor : (string) $sponsor;
     }
 
     /**
@@ -738,7 +744,11 @@ class Submission extends DataObject {
      * @param string|null $locale
      */
     public function setShowCoverPage($showCoverPage, $locale) {
-        $this->setData('showCoverPage', $showCoverPage !== null ? (int) $showCoverPage : null, $locale);
+        if (is_array($showCoverPage)) {
+            $this->setData('showCoverPage', $showCoverPage, $locale);
+        } else {
+            $this->setData('showCoverPage', $showCoverPage !== null ? (int) $showCoverPage : null, $locale);
+        }
     }
 
     /**
@@ -792,50 +802,53 @@ class Submission extends DataObject {
 
     /**
      * Get submission date.
-     * @return string
+     * @return string|null
      */
     public function getDateSubmitted() {
-        return (string) $this->getData('dateSubmitted');
+        $value = $this->getData('dateSubmitted');
+        return $value !== null ? (string) $value : null;
     }
 
     /**
      * Set submission date.
-     * @param string $dateSubmitted
+     * @param string|null $dateSubmitted
      */
     public function setDateSubmitted($dateSubmitted) {
-        $this->setData('dateSubmitted', (string) $dateSubmitted);
+        $this->setData('dateSubmitted', $dateSubmitted !== null ? (string) $dateSubmitted : null);
     }
 
     /**
      * Get the date of the last status modification.
-     * @return string
+     * @return string|null
      */
     public function getDateStatusModified() {
-        return (string) $this->getData('dateStatusModified');
+        $value = $this->getData('dateStatusModified');
+        return $value !== null ? (string) $value : null;
     }
 
     /**
      * Set the date of the last status modification.
-     * @param string $dateModified
+     * @param string|null $dateModified
      */
     public function setDateStatusModified($dateModified) {
-        $this->setData('dateStatusModified', (string) $dateModified);
+        $this->setData('dateStatusModified', $dateModified !== null ? (string) $dateModified : null);
     }
 
     /**
      * Get the date of the last modification.
-     * @return string
+     * @return string|null
      */
     public function getLastModified() {
-        return (string) $this->getData('lastModified');
+        $value = $this->getData('lastModified');
+        return $value !== null ? (string) $value : null;
     }
 
     /**
      * Set the date of the last modification.
-     * @param string $dateModified
+     * @param string|null $dateModified
      */
     public function setLastModified($dateModified) {
-        $this->setData('lastModified', (string) $dateModified);
+        $this->setData('lastModified', $dateModified !== null ? (string) $dateModified : null);
     }
 
     /**
