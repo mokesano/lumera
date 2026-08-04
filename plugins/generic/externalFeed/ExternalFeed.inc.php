@@ -12,22 +12,33 @@ declare(strict_types=1);
  * @ingroup plugins_generic_externalFeed
  *
  * @brief Basic class describing an external feed.
- * * MODERNIZED FOR PHP 7.4+ & OJS FORK
- * - Implemented __construct.
- * - Added strict type casting (int/float) for data security.
  */
 
-define('EXTERNAL_FEED_DISPLAY_BLOCK_NONE',         0);
-define('EXTERNAL_FEED_DISPLAY_BLOCK_HOMEPAGE',     1);
-define('EXTERNAL_FEED_DISPLAY_BLOCK_ALL',          2);
+define('EXTERNAL_FEED_DISPLAY_BLOCK_NONE', 0);
+define('EXTERNAL_FEED_DISPLAY_BLOCK_HOMEPAGE', 1);
+define('EXTERNAL_FEED_DISPLAY_BLOCK_ALL', 2);
 
 class ExternalFeed extends DataObject {
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
+    }
+
+    /**
+     * [SHIM] Backward Compatibility.
+     */
+    public function ExternalFeed() {
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -39,15 +50,16 @@ class ExternalFeed extends DataObject {
      * @return int
      */
     public function getId() {
-        return (int) $this->getData('feedId');
+        $id = $this->getData('feedId');
+        return $id !== null ? (int) $id : 0;
     }
 
     /**
      * Set the ID of the external feed.
-     * @param $feedId int
+     * @param int $feedId
      */
     public function setId($feedId) {
-        return $this->setData('feedId', (int) $feedId);
+        $this->setData('feedId', $feedId !== null ? (int) $feedId : 0);
     }
 
     /**
@@ -55,47 +67,49 @@ class ExternalFeed extends DataObject {
      * @return int
      */
     public function getJournalId() {
-        return (int) $this->getData('journalId');
+        $id = $this->getData('journalId');
+        return $id !== null ? (int) $id : 0;
     }
 
     /**
      * Set the journal ID of the external feed.
-     * @param $journalId int
+     * @param int $journalId
      */
     public function setJournalId($journalId) {
-        return $this->setData('journalId', (int) $journalId);
+        $this->setData('journalId', $journalId !== null ? (int) $journalId : 0);
     }
 
     /**
      * Get feed URL.
-     * @return string 
+     * @return string
      */
     public function getUrl() {
-        return $this->getData('url');
+        return (string) $this->getData('url');
     }
 
     /**
      * Set feed URL.
-     * @param $url string
+     * @param string $url
      */
     public function setUrl($url) {
-        return $this->setData('url', (string) $url);
+        $this->setData('url', (string) $url);
     }
 
     /**
      * Get feed display sequence.
      * @return float
      */
-    public function getSeq(): int {
-        return (int) $this->getData('seq');
+    public function getSeq() {
+        $seq = $this->getData('seq');
+        return $seq !== null ? (float) $seq : 0.0;
     }
 
     /**
-     * Set feed display sequence
-     * @param $sequence float
+     * Set feed display sequence.
+     * @param float $seq
      */
-    public function setSeq($seq): int {
-        return (int) $this->setData('seq', (float) $seq);
+    public function setSeq($seq) {
+        $this->setData('seq', $seq !== null ? (float) $seq : 0.0);
     }
 
     /**
@@ -103,15 +117,16 @@ class ExternalFeed extends DataObject {
      * @return int
      */
     public function getDisplayHomepage() {
-        return (int) $this->getData('displayHomepage');
+        $display = $this->getData('displayHomepage');
+        return $display !== null ? (int) $display : 0;
     }
 
     /**
      * Set the homepage display of the external feed.
-     * @param $displayHomepage int
+     * @param int $displayHomepage
      */
     public function setDisplayHomepage($displayHomepage) {
-        return $this->setData('displayHomepage', (int) $displayHomepage);
+        $this->setData('displayHomepage', $displayHomepage !== null ? (int) $displayHomepage : 0);
     }
 
     /**
@@ -119,15 +134,16 @@ class ExternalFeed extends DataObject {
      * @return int
      */
     public function getDisplayBlock() {
-        return (int) $this->getData('displayBlock');
+        $display = $this->getData('displayBlock');
+        return $display !== null ? (int) $display : 0;
     }
 
     /**
      * Set the block display of the external feed.
-     * @param $displayBlock int
+     * @param int $displayBlock
      */
     public function setDisplayBlock($displayBlock) {
-        return $this->setData('displayBlock', (int) $displayBlock);
+        $this->setData('displayBlock', $displayBlock !== null ? (int) $displayBlock : 0);
     }
 
     /**
@@ -135,15 +151,16 @@ class ExternalFeed extends DataObject {
      * @return int
      */
     public function getLimitItems() {
-        return (int) $this->getData('limitItems');
+        $limit = $this->getData('limitItems');
+        return $limit !== null ? (int) $limit : 0;
     }
 
     /**
      * Set limit items of the external feed.
-     * @param $limitItems int
+     * @param int $limitItems
      */
     public function setLimitItems($limitItems) {
-        return $this->setData('limitItems', (int) $limitItems);
+        $this->setData('limitItems', $limitItems !== null ? (int) $limitItems : 0);
     }
 
     /**
@@ -151,43 +168,43 @@ class ExternalFeed extends DataObject {
      * @return int
      */
     public function getRecentItems() {
-        return (int) $this->getData('recentItems');
+        $recent = $this->getData('recentItems');
+        return $recent !== null ? (int) $recent : 0;
     }
 
     /**
      * Set recent items of the external feed.
-     * @param $recentItems int
+     * @param int $recentItems
      */
     public function setRecentItems($recentItems) {
-        return $this->setData('recentItems', (int) $recentItems);
+        $this->setData('recentItems', $recentItems !== null ? (int) $recentItems : 0);
     }
 
-
     /**
-     * Get the localized title
+     * Get the localized title.
      * @return string
      */
     public function getLocalizedTitle() {
-        return $this->getLocalizedData('title');
+        return (string) $this->getLocalizedData('title');
     }
 
     /**
-     * Get feed title
-     * @param $locale string
+     * Get feed title.
+     * @param string $locale
      * @return string
      */
     public function getTitle($locale) {
-        return $this->getData('title', $locale);
+        return (string) $this->getData('title', $locale);
     }
 
     /**
-     * Set feed title
-     * @param $title string
-     * @param $locale string
+     * Set feed title.
+     * @param string $title
+     * @param string $locale
      */
     public function setTitle($title, $locale) {
-        return $this->setData('title', $title, $locale);
+        $this->setData('title', (string) $title, $locale);
     }
+    
 }
-
 ?>
