@@ -250,7 +250,7 @@ class ExternalFeedPlugin extends GenericPlugin {
                     continue;
                 }
 
-                $feed = new SimplePie();
+                $feed = new SimplePie(); // @deprecated since SimplePie 1.7.0, use "SimplePie\SimplePie" instead
                 $feedUrl = (string) $currentFeed->getUrl();
                 $feedParts = parse_url($feedUrl);
                 $feedHost = $feedParts['host'] ?? '';
