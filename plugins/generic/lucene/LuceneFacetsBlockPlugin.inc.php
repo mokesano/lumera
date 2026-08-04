@@ -11,43 +11,47 @@ declare(strict_types=1);
  * @class LuceneFacetsBlockPlugin
  * @ingroup plugins_generic_lucene
  *
- * @brief Lucene plugin, faceting block component
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief Lucene plugin, faceting block component.
  */
 
 import('lib.pkp.classes.plugins.BlockPlugin');
 
 class LuceneFacetsBlockPlugin extends BlockPlugin {
 
-    /** @var string */
+    /** @var string The name of the parent plugin */
     protected $_parentPluginName;
 
     /**
-     * Constructor
+     * Constructor.
+     * @param string $parentPluginName
      */
     public function __construct($parentPluginName) {
-        $this->_parentPluginName = $parentPluginName;
+        $this->_parentPluginName = (string) $parentPluginName;
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $parentPluginName
      */
     public function LuceneFacetsBlockPlugin($parentPluginName) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::LuceneFacetsBlockPlugin(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
     // Implement template methods from PKPPlugin.
     //
+
     /**
-     * Manage the pluginn's installation and upgrade process.
-     * @return boolean True on success.
+     * Manage the plugin's installation and upgrade process.
+     * @return bool True on success.
      * @see PKPPlugin::getHideManagement()
      */
     public function getHideManagement(): bool {
@@ -56,6 +60,7 @@ class LuceneFacetsBlockPlugin extends BlockPlugin {
 
     /**
      * Get the plugin name.
+     * @return string
      * @see PKPPlugin::getName()
      */
     public function getName(): string {
@@ -64,6 +69,7 @@ class LuceneFacetsBlockPlugin extends BlockPlugin {
 
     /**
      * Get the display name of this plugin.
+     * @return string
      * @see PKPPlugin::getDisplayName()
      */
     public function getDisplayName(): string {
@@ -72,6 +78,7 @@ class LuceneFacetsBlockPlugin extends BlockPlugin {
 
     /**
      * Get the description of this plugin.
+     * @return string
      * @see PKPPlugin::getDescription()
      */
     public function getDescription(): string {
@@ -80,67 +87,65 @@ class LuceneFacetsBlockPlugin extends BlockPlugin {
 
     /**
      * Get the path to this plugin.
+     * @return string
      * @see PKPPlugin::getPluginPath()
      */
     public function getPluginPath(): string {
         $plugin = $this->_getLucenePlugin();
-        return $plugin->getPluginPath();
+        return $plugin !== null ? $plugin->getPluginPath() : '';
     }
 
     /**
      * Get the path to this plugin's templates.
+     * @return string
      * @see PKPPlugin::getTemplatePath()
      */
     public function getTemplatePath(): string {
         $plugin = $this->_getLucenePlugin();
-        return $plugin->getTemplatePath();
+        return $plugin !== null ? $plugin->getTemplatePath() : '';
     }
 
     /**
      * Get the sequence of this plugin.
+     * @return int
      * @see PKPPlugin::getSeq()
      */
     public function getSeq(): int {
-        // Identify the position of the faceting block.
         $seq = parent::getSeq();
+        if (!is_numeric($seq)) {
+            $seq = 0;
+        }
 
-        // If nothing has been configured then use the first
-        // position. This is ok as we'll only display facets
-        // in a search results context where they have a high
-        // relevance by default.
-        if (!is_numeric($seq)) $seq = 0;
-
-        return $seq;
+        return (int) $seq;
     }
-
 
     //
     // Implement template methods from LazyLoadPlugin
     //
+
     /**
      * Get the enabled status of this plugin.
+     * @param mixed $request
+     * @return bool
      * @see LazyLoadPlugin::getEnabled()
      */
-    public function getEnabled() {
+    public function getEnabled($request = null): bool {
         $plugin = $this->_getLucenePlugin();
-        return $plugin->getEnabled();
+        return $plugin !== null ? $plugin->getEnabled() : false;
     }
-
 
     //
     // Implement template methods from BlockPlugin
     //
+
     /**
      * Get the block context.
+     * @return string
      * @see BlockPlugin::getBlockContext()
      */
     public function getBlockContext() {
         $blockContext = parent::getBlockContext();
-
-        // Place the block on the left by default
-        // where navigation will usually be expected
-        // by the user.
-        if (!in_array($blockContext, $this->getSupportedContexts())) {
+        if (!is_string($blockContext) || !in_array($blockContext, $this->getSupportedContexts(), true)) {
             $blockContext = BLOCK_CONTEXT_LEFT_SIDEBAR;
         }
 
@@ -149,52 +154,60 @@ class LuceneFacetsBlockPlugin extends BlockPlugin {
 
     /**
      * Get the block's supported contexts.
+     * @param mixed $request
+     * @return string
      * @see BlockPlugin::getBlockTemplateFilename()
      */
-    public function getBlockTemplateFilename() {
+    public function getBlockTemplateFilename($request = null) {
         // Return the facets template.
         return 'facetsBlock.tpl';
     }
 
     /**
      * Get the block's contents.
+     * @param Smarty $templateMgr
+     * @param mixed $request
+     * @return string
      * @see BlockPlugin::getContents()
      */
     public function getContents($templateMgr, $request = null) {
         // Get facets from the parent plug-in.
         $plugin = $this->_getLucenePlugin();
+        if ($plugin === null) {
+            return '';
+        }
+        
         $facets = $plugin->getFacets();
-
-        // Check whether we got any facets to display.
         $hasFacets = false;
         if (is_array($facets)) {
-            foreach($facets as $facetCategory => $facetList) {
-                if (count($facetList) > 0) {
+            foreach ($facets as $facetCategory => $facetList) {
+                if (is_array($facetList) && count($facetList) > 0) {
                     $hasFacets = true;
                     break;
                 }
             }
         }
 
-        // Do not display the block if we got no facets.
-        if (!$hasFacets) return '';
+        if (!$hasFacets) {
+            return '';
+        }
 
         $templateMgr->assign('facets', $facets);
         return parent::getContents($templateMgr, $request);
     }
 
-
     //
     // Private helper methods
     //
+
     /**
-     * Get the lucene plugin object
-     * @return LucenePlugin
+     * Get the lucene plugin object.
+     * @return LucenePlugin|null
      */
     protected function _getLucenePlugin() {
         $plugin = PluginRegistry::getPlugin('generic', $this->_parentPluginName);
         return $plugin;
     }
-}
 
+}
 ?>

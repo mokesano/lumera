@@ -2,10 +2,6 @@
 declare(strict_types=1);
 
 /**
- * @defgroup process
- */
-
-/**
  * @file classes/process/Process.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
@@ -17,7 +13,6 @@ declare(strict_types=1);
  * @see ProcessDAO
  *
  * @brief A class representing a running process.
- * REFACTORED: Wizdam Edition (PHP 8 Constructor, Visibility)
  */
 
 // Process types
@@ -28,73 +23,80 @@ import('lib.pkp.classes.core.DataObject');
 class Process extends DataObject {
     
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function Process() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::Process(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
     // Setters and Getters
     //
+
     /**
-     * Set the process type
-     * @param $processType integer
+     * Set the process type.
+     * @param int $processType
+     * @return void
      */
     public function setProcessType($processType) {
-        $this->setData('processType', (integer)$processType);
+        $this->setData('processType', (int) $processType);
     }
 
     /**
-     * Get the process type
-     * @return integer
+     * Get the process type.
+     * @return int
      */
     public function getProcessType() {
-        return $this->getData('processType');
+        return (int) $this->getData('processType');
     }
 
     /**
-     * Set the starting time of the process
-     * @param $timeStarted integer unix timestamp
+     * Set the starting time of the process.
+     * @param int $timeStarted Unix timestamp
+     * @return void
      */
     public function setTimeStarted($timeStarted) {
-        $this->setData('timeStarted', (integer)$timeStarted);
+        $this->setData('timeStarted', (int) $timeStarted);
     }
 
     /**
-     * Get the starting time of the process
-     * @return integer unix timestamp
+     * Get the starting time of the process.
+     * @return int Unix timestamp
      */
     public function getTimeStarted() {
-        return $this->getData('timeStarted');
+        return (int) $this->getData('timeStarted');
     }
 
     /**
-     * Set the one-time-key usage flag
-     * @param $obliterated boolean
+     * Set the one-time-key usage flag.
+     * @param bool $obliterated
+     * @return void
      */
     public function setObliterated($obliterated) {
-        $this->setData('obliterated', (boolean)$obliterated);
+        $this->setData('obliterated', (bool) $obliterated);
     }
 
     /**
-     * Get the one-time-key usage flag
-     * @return boolean
+     * Get the one-time-key usage flag.
+     * @return bool
      */
     public function getObliterated() {
-        return $this->getData('obliterated');
+        return (bool) $this->getData('obliterated');
     }
+    
 }
-
 ?>
