@@ -135,7 +135,7 @@
     <message key="document.loa.abstractTitle">Abstrak</message>
 
     <!-- Certificate -->
-    <message key="document.cert.indexTitle">Sertifikat Saya</message>
+    <message key="document.cert.indexTitle">Sertifikat</message>
     <message key="document.cert.status.reviewCompleted">Review Selesai</message>
     <message key="document.cert.status.editorialAssignment">Penugasan Editorial</message>
     <message key="document.cert.pageTitle">Sertifikat Penghargaan</message>
