@@ -3,7 +3,7 @@
 # Dependencies
 vendor/
 library/
-lib/wizdam/library/
+# lib/wizdam/library/
 
 # Logs and temp files
 *.log
