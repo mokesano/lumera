@@ -10,9 +10,7 @@ declare(strict_types=1);
  *
  * @class GoogleViewerPlugin
  *
- * @brief This plugin enables embedding of the google document viewer for PDF display
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
+ * @brief This plugin enables embedding of the google document viewer for PDF display.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -61,7 +59,7 @@ class GoogleViewerPlugin extends GenericPlugin {
     public function _includeCallback($hookName, $args) {
         if ($this->getEnabled()) {
             $templateMgr = $args[0];
-            $params =& $args[1]; // [WIZDAM NOTE] Reference (&) restored to ensure modification affects the caller
+            $params =& $args[1]; // [NOTE] Reference (&) restored to ensure modification affects the caller
 
             if (!isset($params['smarty_include_tpl_file'])) return false;
 
@@ -82,7 +80,7 @@ class GoogleViewerPlugin extends GenericPlugin {
     public function _displayCallback($hookName, $args) {
         if ($this->getEnabled()) {
             $templateMgr = $args[0];
-            $template =& $args[1]; // [WIZDAM NOTE] Reference (&) restored to ensure modification affects the caller
+            $template =& $args[1]; // [NOTE] Reference (&) restored to ensure modification affects the caller
 
             switch ($template) {
                 case 'issue/issueGalley.tpl':
@@ -92,5 +90,6 @@ class GoogleViewerPlugin extends GenericPlugin {
             return false;
         }
     }
+
 }
 ?>
