@@ -233,7 +233,11 @@ class ExternalFeedPlugin extends GenericPlugin {
             if (empty($requestedPage) || $requestedPage == 'index') {
                 /** @var ExternalFeedDAO $externalFeedDao */
                 $externalFeedDao = DAORegistry::getDAO('ExternalFeedDAO');
-                $this->import('simplepie.SimplePie');
+
+                require_once(Core::getBaseDir() . '/lib/wizdam/library/autoload.php');
+                if (!class_exists('SimplePie') && class_exists('SimplePie\SimplePie')) {
+                    class_alias('SimplePie\SimplePie', 'SimplePie');
+                }
 
                 import('lib.pkp.classes.core.PKPString');
                 $feeds = $externalFeedDao->getExternalFeedsByJournalId($journal->getId());

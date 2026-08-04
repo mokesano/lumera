@@ -26,6 +26,7 @@
         "midtrans/midtrans-php": "^2.5",
         "xendit/xendit-php": "^7.0",
         "mpdf/mpdf": "^8.1",
-        "chillerlan/php-qrcode": "^4.3"
+        "chillerlan/php-qrcode": "^4.3",
+        "simplepie/simplepie": "^1.9"
     }
 }
