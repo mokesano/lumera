@@ -402,6 +402,7 @@
         <data file="dbscripts/xml/upgrade/lumera_schema.xml" />
         <code function="migrateLegacyInvoicesToLumera" />
 		<data file="dbscripts/xml/upgrade/lumera_search_metrics_indexes.xml" />
+		<data file="dbscripts/xml/upgrade/lumera_author_lookup_indexes.xml" />
     </upgrade>
     
     <!-- Prepare for Lumera schema upgrade from OJS 3.x -->
@@ -410,6 +411,7 @@
         <data file="dbscripts/xml/upgrade/lumera_schema.xml" />
         <code function="migrateLegacyInvoicesToLumera" />
 		<data file="dbscripts/xml/upgrade/lumera_search_metrics_indexes.xml" />
+		<data file="dbscripts/xml/upgrade/lumera_author_lookup_indexes.xml" />
     </upgrade>
     
     <!-- Lumera schema upgrade -->

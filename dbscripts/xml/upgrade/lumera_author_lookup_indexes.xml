@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE data SYSTEM "../../../lib/pkp/dtd/xmlData.dtd">
+
+<!--
+  * dbscripts/xml/upgrade/lumera_author_lookup_indexes.xml
+  *
+  * Copyright (c) 2017-2024 Sangia Publishing House
+  * Copyright (c) 2017-2026 Rochmady
+  * Distributed under the GNU GPL v3.
+  * 
+  * Menambahkan index yang hilang untuk mempercepat pencocokan identitas
+  * co-author (UserDAO::getAuthorUserMatch()) yang dipakai di halaman
+  * search/authors/view dan search/authors, mengatasi full table scan
+  * pada tabel users (pencarian nama) dan user_settings (pencarian ORCID).
+  -->
+<data>
+    <sql>
+        <query driver="mysql">
+            ALTER TABLE users
+              ADD INDEX users_name_lookup (first_name, last_name)
+        </query>
+        <query driver="mysql">
+            CREATE INDEX user_settings_orcid_lookup ON user_settings (setting_name(50), setting_value(150))
+        </query>
+
+        <query driver="postgres7">
+            CREATE INDEX users_name_lookup ON users (first_name, last_name)
+        </query>
+        <query driver="postgres7">
+            CREATE INDEX user_settings_orcid_lookup ON user_settings (setting_name, setting_value) WHERE setting_name = 'orcid'
+        </query>
+    </sql>
+</data>
