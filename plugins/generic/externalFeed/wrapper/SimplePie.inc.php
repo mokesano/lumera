@@ -1,7 +1,19 @@
 <?php
+declare(strict_types=1);
+
 /**
- * Wrapper SimplePie untuk OJS
- * Menjembatani OJS lama dengan SimplePie Modern (Namespaced)
+ * @file plugins/generic/externalFeed/wrapper/SimplePie.inc.php
+ * 
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2003-2019 John Willinsky
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING
+ * 
+ * @class SimplePieWrapper
+ * @ingroup plugins_generic_externalFeed
+ * 
+ * @brief Wrapper kompatibilitas SimplePie Modern (Namespaced)  
+ * SHIM Wrapper SimplePie untuk fork Lumera Editorial Workflow
+ * Menjembatani sistem lama dengan SimplePie Modern (Namespaced)
  */
 
 /** 
@@ -41,6 +53,6 @@ else {
             class_alias('SimplePie\SimplePie', 'SimplePie');
         }
     }
+    
 }
-
 ?>
