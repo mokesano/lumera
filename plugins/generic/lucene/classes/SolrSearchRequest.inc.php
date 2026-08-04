@@ -12,111 +12,81 @@ declare(strict_types=1);
  * @ingroup plugins_generic_lucene_classes
  *
  * @brief A value object containing all parameters of a solr search query.
- *
- * @edition Wizdam Edition (PHP 8.x Compatible)
  */
 
 class SolrSearchRequest {
 
-    /**
-     * @var Journal The journal to be queried. All journals of
-     * an OJS instance will be queried if no journal is given.
-     */
+    /** @var Journal|null */
     protected $_journal = null;
 
-    /**
-     * @var array A field->search phrase assignment defining fieldwise
-     * search phrases.
-     */
+    /** @var array */
     protected $_query = [];
 
-    /**
-     * @var integer For paginated queries: The page to be returned.
-     */
+    /** @var int */
     protected $_page = 1;
 
-    /**
-     * @var integer For paginated queries: The items per page.
-     */
+    /** @var int */
     protected $_itemsPerPage = 25;
 
-    /**
-     * @var string Timestamp representing the first publication date to be
-     * included in the result set. Null means: No limitation.
-     */
+    /** @var string|null */
     protected $_fromDate = null;
 
-    /**
-     * @var string Timestamp representing the last publication date to be
-     * included in the result set. Null means: No limitation.
-     */
+    /** @var string|null */
     protected $_toDate = null;
 
-    /**
-     * @var string Result set ordering. Can be any index field or the pseudo-
-     * field "score" for ordering by relevance.
-     */
+    /** @var string */
     protected $_orderBy = 'score';
 
-    /**
-     * @var boolean Result set ordering direction. Can be 'true' for ascending
-     * or 'false' for descending order.
-     */
+    /** @var bool */
     protected $_orderDir = false;
 
-    /**
-     * @var boolean Whether to enable spell checking.
-     */
+    /** @var bool */
     protected $_spellcheck = false;
 
-    /**
-     * @var boolean Whether to enable highlighting.
-     */
+    /** @var bool */
     protected $_highlighting = false;
 
-    /**
-     * @var boolean Enabled facet categories (none by default).
-     */
+    /** @var array */
     protected $_facetCategories = [];
 
-    /**
-     * @var array A field->value->boost factor assignment.
-     */
+    /** @var array */
     protected $_boostFactors = [];
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
-        // The constructor does nothing
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function SolrSearchRequest() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::SolrSearchRequest(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
-
 
     //
     // Getters and Setters
     //
+
     /**
      * Get the journal to be queried.
-     * @return Journal
+     * @return Journal|null
      */
     public function getJournal() {
         return $this->_journal;
     }
 
     /**
-     * Set the journal to be queried
-     * @param Journal $journal
+     * Set the journal to be queried.
+     * @param Journal|null $journal
      */
     public function setJournal($journal) {
         $this->_journal = $journal;
@@ -124,7 +94,7 @@ class SolrSearchRequest {
 
     /**
      * Get fieldwise search phrases.
-     * @return array A field -> search phrase assignment
+     * @return array
      */
     public function getQuery() {
         return $this->_query;
@@ -132,10 +102,10 @@ class SolrSearchRequest {
 
     /**
      * Set fieldwise search phrases.
-     * @param array $query A field -> search phrase assignment
+     * @param array $query
      */
     public function setQuery($query) {
-        $this->_query = $query;
+        $this->_query = is_array($query) ? $query : [];
     }
 
     /**
@@ -144,79 +114,79 @@ class SolrSearchRequest {
      * @param string $searchPhrase
      */
     public function addQueryFieldPhrase($field, $searchPhrase) {
-        // Ignore empty search phrases.
-        if (empty($searchPhrase)) return;
-        $this->_query[$field] = $searchPhrase;
+        if ($searchPhrase === null || trim((string) $searchPhrase) === '') {
+            return;
+        }
+        $this->_query[(string) $field] = (string) $searchPhrase;
     }
 
     /**
      * Get the page.
-     * @return integer
+     * @return int
      */
     public function getPage() {
         return $this->_page;
     }
 
     /**
-     * Set the page
-     * @param integer $page
+     * Set the page.
+     * @param mixed $page
      */
     public function setPage($page) {
-        $page = (int) $page;
-        if ($page < 0) $page = 0;
-        $this->_page = $page;
+        $page = is_numeric($page) ? (int) $page : 1;
+        $this->_page = $page < 0 ? 0 : $page;
     }
 
     /**
      * Get the items per page.
-     * @return integer
+     * @return int
      */
     public function getItemsPerPage() {
         return $this->_itemsPerPage;
     }
 
     /**
-     * Set the items per page
-     * @param integer $itemsPerPage
+     * Set the items per page.
+     * @param mixed $itemsPerPage
      */
     public function setItemsPerPage($itemsPerPage) {
-        $this->_itemsPerPage = $itemsPerPage;
+        $this->_itemsPerPage = is_numeric($itemsPerPage) ? (int) $itemsPerPage : 25;
     }
 
     /**
-     * Get the first publication date
-     * @return string
+     * Get the first publication date.
+     * @return string|null
      */
     public function getFromDate() {
         return $this->_fromDate;
     }
 
     /**
-     * Set the first publication date
-     * @param string $fromDate
+     * Set the first publication date.
+     * @param string|null $fromDate
      */
     public function setFromDate($fromDate) {
-        $this->_fromDate = $fromDate;
+        $this->_fromDate = $fromDate !== null ? (string) $fromDate : null;
     }
 
     /**
-     * Get the last publication date
-     * @return string
+     * Get the last publication date.
+     * @return string|null
      */
     public function getToDate() {
         return $this->_toDate;
     }
 
     /**
-     * Set the last publication date
-     * @param string $toDate
+     * Set the last publication date.
+     * @param string|null $toDate
      */
     public function setToDate($toDate) {
-        $this->_toDate = $toDate;
+        $this->_toDate = $toDate !== null ? (string) $toDate : null;
     }
 
     /**
-     * Get the result ordering criteria
+     * Get the result ordering criteria.
      * @return string
      */
     public function getOrderBy() {
@@ -224,32 +194,32 @@ class SolrSearchRequest {
     }
 
     /**
-     * Set the result ordering criteria
+     * Set the result ordering criteria.
      * @param string $orderBy
      */
     public function setOrderBy($orderBy) {
-        $this->_orderBy = $orderBy;
+        $this->_orderBy = (string) $orderBy;
     }
 
     /**
-     * Get the result ordering direction
-     * @return boolean
+     * Get the result ordering direction.
+     * @return bool
      */
     public function getOrderDir() {
         return $this->_orderDir;
     }
 
     /**
-     * Set the result ordering direction
-     * @param boolean $orderDir
+     * Set the result ordering direction.
+     * @param bool $orderDir
      */
     public function setOrderDir($orderDir) {
-        $this->_orderDir = $orderDir;
+        $this->_orderDir = (bool) $orderDir;
     }
 
     /**
      * Is spellchecking enabled?
-     * @return boolean
+     * @return bool
      */
     public function getSpellcheck() {
         return $this->_spellcheck;
@@ -257,15 +227,15 @@ class SolrSearchRequest {
 
     /**
      * Set whether spellchecking should be enabled.
-     * @param boolean $spellcheck
+     * @param bool $spellcheck
      */
     public function setSpellcheck($spellcheck) {
-        $this->_spellcheck = $spellcheck;
+        $this->_spellcheck = (bool) $spellcheck;
     }
 
     /**
      * Is highlighting enabled?
-     * @return boolean
+     * @return bool
      */
     public function getHighlighting() {
         return $this->_highlighting;
@@ -273,15 +243,14 @@ class SolrSearchRequest {
 
     /**
      * Set whether highlighting should be enabled.
-     * @param boolean $highlighting
+     * @param bool $highlighting
      */
     public function setHighlighting($highlighting) {
-        $this->_highlighting = $highlighting;
+        $this->_highlighting = (bool) $highlighting;
     }
 
     /**
-     * For which categories should faceting
-     * be enabled?
+     * Get enabled facet categories.
      * @return array
      */
     public function getFacetCategories() {
@@ -289,17 +258,16 @@ class SolrSearchRequest {
     }
 
     /**
-     * Set the categories for which faceting
-     * should be enabled.
+     * Set the categories for which faceting should be enabled.
      * @param array $facetCategories
      */
     public function setFacetCategories($facetCategories) {
-        $this->_facetCategories = $facetCategories;
+        $this->_facetCategories = is_array($facetCategories) ? $facetCategories : [];
     }
 
     /**
      * Get boost factors.
-     * @return array A field -> value -> boost factor assignment
+     * @return array
      */
     public function getBoostFactors() {
         return $this->_boostFactors;
@@ -307,10 +275,10 @@ class SolrSearchRequest {
 
     /**
      * Set boost factors.
-     * @param array $boostFactors A field -> value -> boost factor assignment
+     * @param array $boostFactors
      */
     public function setBoostFactors($boostFactors) {
-        $this->_boostFactors = $boostFactors;
+        $this->_boostFactors = is_array($boostFactors) ? $boostFactors : [];
     }
 
     /**
@@ -320,55 +288,55 @@ class SolrSearchRequest {
      * @param float $boostFactor
      */
     public function addBoostFactor($field, $value, $boostFactor) {
-        // Ignore empty values.
-        if (empty($value)) return;
+        if ($value === null || trim((string) $value) === '') {
+            return;
+        }
 
-        // Ignore neutral boost factors.
-        $boostFactor = (float)$boostFactor;
-        if ($boostFactor == LUCENE_PLUGIN_DEFAULT_RANKING_BOOST) return;
+        $boostFactor = is_numeric($boostFactor) ? (float) $boostFactor : 1.0;
+        
+        // Safe strict comparison for float constant
+        if ($boostFactor === (float) LUCENE_PLUGIN_DEFAULT_RANKING_BOOST) {
+            return;
+        }
 
-        // Save the boost factor.
+        $field = (string) $field;
         if (!isset($this->_boostFactors[$field])) {
             $this->_boostFactors[$field] = [];
         }
-        $this->_boostFactors[$field][$value] = $boostFactor;
+        $this->_boostFactors[$field][(string) $value] = $boostFactor;
     }
-
 
     //
     // Public methods
     //
+
     /**
-     * Configure the search request from a keywords
-     * array as required by ArticleSearch::retrieveResults()
-     *
-     * @param array $keywords See ArticleSearch::retrieveResults()
+     * Configure the search request from a keywords array.
+     * @param array $keywords
      */
     public function addQueryFromKeywords($keywords) {
-        // Get a mapping of OJS search fields bitmaps to index fields.
+        if (!is_array($keywords)) {
+            return;
+        }
+
         $indexFieldMap = ArticleSearch::getIndexFieldMap();
 
-        // The keywords list is indexed with a search field bitmap.
-        foreach($keywords as $searchFieldBitmap => $searchPhrase) {
-            // Translate the search field from OJS to solr nomenclature.
+        foreach ($keywords as $searchFieldBitmap => $searchPhrase) {
             if (empty($searchFieldBitmap)) {
-                // An empty search field means "all fields".
                 $solrFields = array_values($indexFieldMap);
             } else {
                 $solrFields = [];
-                foreach($indexFieldMap as $ojsField => $solrField) {
-                    // The search field bitmap may stand for
-                    // several actual index fields (e.g. the index terms
-                    // field).
+                foreach ($indexFieldMap as $ojsField => $solrField) {
                     if ($searchFieldBitmap & $ojsField) {
                         $solrFields[] = $solrField;
                     }
                 }
             }
+            
             $solrFieldString = implode('|', $solrFields);
             $this->addQueryFieldPhrase($solrFieldString, $searchPhrase);
         }
     }
+    
 }
-
 ?>
