@@ -366,6 +366,9 @@ class AcronPlugin extends GenericPlugin {
         $baseClassName = ($pos === false) ? $className : substr($className, $pos + 1);
         $taskArgs = isset($task['args']) ? $task['args'] : array();
 
+        // [LUMERA]: Pastikan koneksi DB hidup sebelum query DAO dijalankan
+        $this->_ensureDatabaseConnection();
+
         // Race condition handling
         $updateResult = 0;
         if (in_array($task, $currentTasksToRun)) {
@@ -534,6 +537,40 @@ class AcronPlugin extends GenericPlugin {
         $frequencyNode->setAttribute($key, current($task['frequency']));
         
         return ScheduledTaskHelper::checkFrequency($task['className'], $frequencyNode);
+    }
+
+    /**
+     * Memastikan koneksi database aktif sebelum mengeksekusi antrean tugas.
+     * Mencegah "MySQL server has gone away" pada task yang berjalan lama.
+     */
+    protected function _ensureDatabaseConnection(): void {
+        $conn = \Registry::get('dbconn', true, null) ?? \DBConnection::getConn();
+        
+        if ($conn && isset($conn->_connectionID) && $conn->_connectionID instanceof \mysqli) {
+            try {
+                $conn->_connectionID->query("SELECT 1");
+            } catch (\mysqli_sql_exception $e) {
+                if (in_array($e->getCode(), [2006, 2013], true)) {
+                    // Tutup resource lama agar tidak bocor memori
+                    @$conn->_connectionID->close();
+                    
+                    // Bangun ulang koneksi menggunakan kredensial aplikasi
+                    $conn->Connect(
+                        \Config::getVar('database', 'host'),
+                        \Config::getVar('database', 'username'),
+                        \Config::getVar('database', 'password'),
+                        \Config::getVar('database', 'name')
+                    );
+                    
+                    $charSet = \Config::getVar('i18n', 'connection_charset');
+                    if ($charSet) {
+                        $conn->_connectionID->set_charset($charSet);
+                    }
+                } else {
+                    throw $e;
+                }
+            }
+        }
     }
     
 }
