@@ -124,9 +124,13 @@ class ExternalFeedBlockPlugin extends BlockPlugin {
         if (!$plugin->getEnabled($request)) return '';
     
         $requestedPage = Request::getRequestedPage();
+        /** @var ExternalFeedDAO $externalFeedDao */
         $externalFeedDao = DAORegistry::getDAO('ExternalFeedDAO');
         
-        $plugin->import('simplepie.SimplePie');
+        require_once(Core::getBaseDir() . '/lib/wizdam/library/autoload.php');
+        if (!class_exists('SimplePie') && class_exists('SimplePie\SimplePie')) {
+            class_alias('SimplePie\SimplePie', 'SimplePie');
+        }
         import('lib.pkp.classes.core.PKPString');
     
         $feeds = $externalFeedDao->getExternalFeedsByJournalId($journal->getId());
