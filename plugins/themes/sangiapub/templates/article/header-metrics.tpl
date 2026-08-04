@@ -167,7 +167,7 @@
 	
 	<!-- preload -->
 	<link rel="preload" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" as="style" />
-	<link rel="preload" href="{$baseUrl}/plugins/themes/sangiapub/css/font.css" type="text/css" as="style" />
+	<link rel="preload" href="{$baseUrl}/assets/static/styles/font.css" type="text/css" as="style" />
     
 	{call_hook name="Templates::Article::Header::Metadata"}
 	{call_hook|assign:"leftSidebarCode" name="Templates::Common::LeftSidebar"}
@@ -187,7 +187,7 @@
     <link rel="preload" href="//assets.sangia.org/css/themes/art_srm.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="//assets.sangia.org/css/themes/art_srm.css"></noscript>
 
-    <link rel="preload" href="{$baseUrl}/assets/statics/styles/wizdam_article_v1.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{$baseUrl}/assets/static/styles/wizdam_article_v1.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     
 	<link rel="stylesheet preload" href="{$baseUrl}/assets/static/styles/font.css" type="text/css" as="style" />
 	

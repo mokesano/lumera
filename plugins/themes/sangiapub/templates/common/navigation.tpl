@@ -63,7 +63,7 @@
                             {if $paymentConfigured && $journalSettings.journalPaymentsEnabled && $journalSettings.acceptSubscriptionPayments && $journalSettings.purchaseArticleFeeEnabled && $journalSettings.purchaseArticleFee > 0}<li><a href="{url page="about" op="editorialPolicies" anchor="purchaseArticle"}">{translate key="about.purchaseArticle"}</a></li>{/if}
                         {/if}{* $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_SUBSCRIPTION *}
 
-                        {if $currentJournal->getLocalizedSetting('history') != ''}<li><a href="{url page="about" op="history"}">{translate key="about.history"}</a></li>{/if}
+                        {if $currentJournal->getLocalizedSetting('history') != ''}<li><a href="{url page="about" op="journal-history"}">{translate key="about.history"}</a></li>{/if}
 
                         {if $publicStatisticsEnabled}<li><a href="{url page="about" op="statistics"}">{translate key="about.statistics"}</a></li>{/if}
                         {call_hook name="Templates::About::Index::Other"}
