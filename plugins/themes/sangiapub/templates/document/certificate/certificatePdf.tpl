@@ -145,37 +145,5 @@
     </div>
 </div>
 
-{* ===== FOOTER 4 KOLOM ===== *}
-<div class="footer-full">
-    <table>
-        <tr>
-            <td class="footer-col-right">
-                &nbsp; {* kolom kosong *}
-            </td>
-            
-            <td class="footer-col-left">
-                <div class="footer-journal">{$certData.journalTitle|escape}</div>
-                <div class="footer-journal-sub">Open Access Journal</div>
-            </td>
-            <td class="footer-col-center1">
-                <div class="footer-label">Address</div>
-                <div class="footer-text">
-                    Frontiers Media SA<br>
-                    Avenue du Tribunal-Fédéral 34<br>
-                    1005 Lausanne, Switzerland
-                </div>
-            </td>
-            <td class="footer-col-center2">
-                <div class="footer-label">Contact</div>
-                <div class="footer-text">
-                    Tel +41 (0)21 519 17 00<br>
-                    <a href="mailto:remotesensing@frontiersin.org">remotesensing@frontiersin.org</a><br>
-                    <a href="https://frontiersin.org">frontiersin.org</a>
-                </div>
-            </td>
-        </tr>
-    </table>
-</div>
-
 </body>
 </html>
