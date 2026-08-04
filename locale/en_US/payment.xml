@@ -135,7 +135,7 @@
     <message key="document.loa.abstractTitle">Abstract</message>
 
     <!-- Certificate -->
-    <message key="document.cert.indexTitle">My Certificates</message>
+    <message key="document.cert.indexTitle">Certificates</message>
     <message key="document.cert.status.reviewCompleted">Review Completed</message>
     <message key="document.cert.status.editorialAssignment">Editorial Assignment</message>
     <message key="document.cert.pageTitle">Certificate of Achievement</message>
