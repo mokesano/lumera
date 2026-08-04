@@ -9,6 +9,7 @@ declare(strict_types=1);
  *
  * [WIZDAM EDITION] Refactored for PHP 8.4 Strict Compliance & DDD
  * @class DigitalSignatureService
+ * 
  * @brief Layanan kriptografi PAdES terintegrasi dengan Hierarki Konfigurasi.
  * Mendukung Auto-Generation dan kompatibilitas dengan CA Resmi (seperti BSrE).
  */
@@ -19,8 +20,10 @@ class DigitalSignatureService {
 
     /** @var string */
     private string $certPath;
+
     /** @var string */
     private string $privateKeyPath;
+    
     /** @var string */
     private string $certDir;
 
@@ -46,15 +49,15 @@ class DigitalSignatureService {
             'stateOrProvinceName'    => 'Riau Islands',
             'localityName'           => 'Tanjung Pinang',
             'organizationName'       => 'Sangia Publishing House',
-            'organizationalUnitName' => 'Wizdam Frontedge System',
+            'organizationalUnitName' => 'Sangia Publishing',
             'commonName'             => 'journals.sangia.org',
             'emailAddress'           => 'admin@sangia.org',
-            'signatureName'          => 'Wizdam Frontedge System',
+            'signatureName'          => 'Sangia Lumera Frontedge',
             'signatureLocation'      => 'Indonesia'
         ];
 
         $config = [];
-        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
+        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO'); /** @var JournalSettingsDAO $journalSettingsDao */
 
         foreach ($defaults as $key => $defaultVal) {
             $value = null;
@@ -250,5 +253,6 @@ class DigitalSignatureService {
 
         return openssl_verify($pdfOriginal, $signature, $pubKey, OPENSSL_ALGO_SHA256) === 1;
     }
+
 }
 ?>

@@ -65,7 +65,7 @@ class PdfService {
 
         // Tambahkan variabel tambahan yang dibutuhkan template PDF
         $flatData['qrCodeBase64']   = $qrCodeBase64;
-        $flatData['wizdamSignedBy'] = 'Wizdam Frontedge System';
+        $flatData['wizdamSignedBy'] = 'Sangia Lumera Frontedge';
 
         // [BARU] Identitas resmi Penerbit -- menggantikan hardcode di template.
         $flatData['publisher'] = (new PublisherProfileService())->getProfile();
@@ -185,7 +185,7 @@ class PdfService {
             'publisher' => (new PublisherProfileService())->getProfile(),
         ]);
 
-        // $this->mpdf->AddPage('L'); // Orientasi halaman
+        $this->mpdf->AddPage('L'); // Orientasi halaman
         $html = $templateMgr->fetch('document/certificate/certificatePdf.tpl');
 
         try {
