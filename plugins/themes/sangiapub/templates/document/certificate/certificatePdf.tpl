@@ -11,12 +11,9 @@
     <meta charset="utf-8">
     {literal}
     <style>
-        @page {
-            margin: 20mm 15mm 0mm 15mm;
-        }
         body { font-family: helvetica, sans-serif; color: #222; text-align: center; }
         .wi-publisher-logo { max-height: 35px; margin-bottom: 6px; }
-
+        .cert-border { border: 3px double #005c99; padding: 40px; margin: 10px; }
         .cert-journal { font-size: 14px; text-transform: uppercase; letter-spacing: 3px; color: #666; }
         .cert-title { font-size: 26px; font-weight: bold; text-align: center; margin: 20px 0; letter-spacing: 3px; }
         .cert-name { font-size: 22px; font-family: Georgia, serif; margin: 15px 0; border-bottom: 1px solid #999; display: inline-block; padding: 0 20px 5px; }
@@ -28,65 +25,6 @@
         .cert-footer table { width: 100%; }
         .cert-qr img { width: 65px; height: 65px; }
         .cert-signatory { font-size: 11px; text-align: left; }
-
-
-        /* === FOOTER 4 KOLOM (1 kosong) === */
-        .footer-full {
-            background: #f0f5fa;
-            border-top: 2px solid #005c99;
-            padding: 5px 0;           /* padding kecil */
-            margin: 10mm -20mm 0 -20mm; /* melebar penuh (sama dengan margin @page) */
-            font-size: 7.5pt;         /* font kecil */
-            color: #333;
-            box-sizing: border-box;
-        }
-        .footer-full table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-        .footer-full td {
-            padding: 0 8px;
-            vertical-align: middle;
-        }
-        .footer-col-left {
-            text-align: left;
-            width: 28%;
-        }
-        .footer-col-center1 {
-            text-align: center;
-            width: 26%;
-        }
-        .footer-col-center2 {
-            text-align: center;
-            width: 26%;
-        }
-        .footer-col-right {
-            text-align: right;
-            width: 20%;
-        }
-        .footer-journal {
-            font-weight: bold;
-            font-size: 8.5pt;
-            color: #005c99;
-        }
-        .footer-journal-sub {
-            font-size: 6.5pt;
-            color: #666;
-        }
-        .footer-label {
-            font-weight: bold;
-            font-size: 7.5pt;
-            color: #005c99;
-            margin-bottom: 10px;
-        }
-        .footer-text {
-            font-size: 6.5pt;
-            line-height: 1.2;
-        }
-        .footer-text a {
-            color: #005c99;
-        }
     </style>
     {/literal}
 </head>

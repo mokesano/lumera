@@ -263,7 +263,7 @@
                         langsung pakai sebagai src 
                     *}
                     <img src="{$qrCodeBase64}" height="120" width="120" alt="QR Verification" >
-                    <p>Scan untuk verifikasi<br>keaslian dokumen</p>
+                    <p>{translate key="document.scanToVerify"}</p>
                 </div>
                 {/if}
             </td>
