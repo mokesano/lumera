@@ -12,11 +12,6 @@ declare(strict_types=1);
  * @ingroup plugins_generic_externalFeed
  *
  * @brief Operations for retrieving and modifying ExternalFeed objects.
- * * MODERNIZED FOR PHP 8.x & OJS FORK (Wizdam Edition)
- * - Removed obsolete reference operators (&).
- * - Implemented strict Prepared Statements for SQLi protection.
- * - Added automatic cache flushing.
- * - Strict Constructor & Visibility.
  */
 
 import('lib.pkp.classes.db.DAO');
@@ -24,100 +19,105 @@ import('lib.pkp.classes.db.DAO');
 class ExternalFeedDAO extends DAO {
 
     /** @var string Name of parent plugin */
-    public $parentPluginName;
+    protected $_parentPluginName;
     
-    /** @var object Internal cache storage */
-    public $externalFeedCache;
+    /** @var FileCache|null Internal cache storage */
+    protected $_externalFeedCache;
 
     /**
-     * Constructor
+     * Constructor.
+     * @param string $parentPluginName
      */
     public function __construct($parentPluginName) {
-        $this->parentPluginName = $parentPluginName;
+        $this->_parentPluginName = (string) $parentPluginName;
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $parentPluginName
      */
     public function ExternalFeedDAO($parentPluginName) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::ExternalFeedDAO(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($parentPluginName);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Retrieve an ExternalFeed by ID.
-     * Uses prepared statement for SQLi safety.
-     * @param $feedId int
+     * @param int $feedId
      * @return ExternalFeed|null
      */
     public function getExternalFeed($feedId) {
         $result = $this->retrieve(
             'SELECT * FROM external_feeds WHERE feed_id = ?',
-            (int) $feedId
+            [(int) $feedId]
         );
 
         $returner = null;
-        if ($result->RecordCount() != 0) {
+        if ($result && !$result->EOF) {
             $returner = $this->_returnExternalFeedFromRow($result->GetRowAssoc(false));
         }
-        $result->Close();
+        if ($result) {
+            $result->Close();
+        }
         return $returner;
     }
 
     /**
      * Retrieve external feed journal ID by feed ID.
-     * @param $feedId int
+     * @param int $feedId
      * @return int
      */
     public function getExternalFeedJournalId($feedId) {
         $result = $this->retrieve(
-            'SELECT journal_id FROM external_feeds WHERE feed_id = ?',
-            (int) $feedId
+            'SELECT journal_id AS journal_id FROM external_feeds WHERE feed_id = ?',
+            [(int) $feedId]
         );
 
-        $journalId = isset($result->fields[0]) ? (int) $result->fields[0] : 0;
-        // FIX 1: Tutup result untuk mencegah memory leak
-        $result->Close();
-        return $journalId;  
+        $journalId = 0;
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $journalId = (int) $row['journal_id'];
+        }
+        if ($result) {
+            $result->Close();
+        }
+        return $journalId;
     }
 
     /**
      * Internal function to return ExternalFeed object from a row.
-     * Removed & reference (PHP Objects are passed by handle by default).
-     * @param $row array
+     * @param array $row
      * @return ExternalFeed
      */
     public function _returnExternalFeedFromRow($row) {
-        // [WIZDAM FIX] PluginRegistry::getPlugin() bisa null saat dipanggil via
-        // DAOResultFactory callback di PHP 7.4 — gunakan import() langsung
-        $externalFeedPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
+        $externalFeedPlugin = PluginRegistry::getPlugin('generic', $this->_parentPluginName);
         if ($externalFeedPlugin !== null) {
             $externalFeedPlugin->import('ExternalFeed');
         } else {
-            // Fallback: import langsung via path tanpa bergantung pada registry
             import('plugins.generic.externalFeed.ExternalFeed');
         }
 
         $externalFeed = new ExternalFeed();
-        $externalFeed->setId($row['feed_id']);
-        $externalFeed->setJournalId($row['journal_id']);
-        $externalFeed->setUrl($row['url']);
-        $externalFeed->setSeq($row['seq']);
-        $externalFeed->setDisplayHomepage($row['display_homepage']);
-        $externalFeed->setDisplayBlock($row['display_block']);
-        $externalFeed->setLimitItems($row['limit_items']);
-        $externalFeed->setRecentItems($row['recent_items']);
+        $externalFeed->setId((int) $row['feed_id']);
+        $externalFeed->setJournalId((int) $row['journal_id']);
+        $externalFeed->setUrl((string) $row['url']);
+        $externalFeed->setSeq((float) $row['seq']);
+        $externalFeed->setDisplayHomepage((int) $row['display_homepage']);
+        $externalFeed->setDisplayBlock((int) $row['display_block']);
+        $externalFeed->setLimitItems((int) $row['limit_items']);
+        $externalFeed->setRecentItems((int) $row['recent_items']);
 
         $this->getDataObjectSettings(
             'external_feed_settings',
             'feed_id',
-            $row['feed_id'],
+            (int) $row['feed_id'],
             $externalFeed
         );
 
@@ -126,10 +126,8 @@ class ExternalFeedDAO extends DAO {
 
     /**
      * Insert a new external feed.
-     * SQLi Safe: Uses ? placeholders.
-     * Modern: No & reference for object parameter.
-     * @param $externalFeed ExternalFeed
-     * @return int 
+     * @param ExternalFeed $externalFeed
+     * @return int
      */
     public function insertExternalFeed($externalFeed) {
         $this->update(
@@ -137,51 +135,49 @@ class ExternalFeedDAO extends DAO {
                 (journal_id, url, seq, display_homepage, display_block, limit_items, recent_items)
             VALUES
                 (?, ?, ?, ?, ?, ?, ?)',
-            array(
+            [
                 (int) $externalFeed->getJournalId(),
-                $externalFeed->getUrl(),
+                (string) $externalFeed->getUrl(),
                 (float) $externalFeed->getSeq(),
                 (int) $externalFeed->getDisplayHomepage(),
                 (int) $externalFeed->getDisplayBlock(),
                 (int) $externalFeed->getLimitItems(),
                 (int) $externalFeed->getRecentItems()
-            )
+            ]
         );
         
         $externalFeed->setId($this->getInsertExternalFeedId());
         $this->updateLocaleFields($externalFeed);
-
-        // IMPORTANT: Clear cache to prevent "Zombie Data"
         $this->_flushCache();
 
         return $externalFeed->getId();
     }
 
     /**
-     * Get a list of fields for which localized data is supported
+     * Get a list of fields for which localized data is supported.
      * @return array
      */
     public function getLocaleFieldNames() {
-        return array('title');
+        return ['title'];
     }
 
     /**
      * Update the localized fields for this object.
-     * @param $externalFeed ExternalFeed
+     * @param ExternalFeed $externalFeed
+     * @return void
      */
     public function updateLocaleFields($externalFeed) {
         $this->updateDataObjectSettings(
             'external_feed_settings', 
             $externalFeed, 
-            array('feed_id' => $externalFeed->getId())
+            ['feed_id' => (int) $externalFeed->getId()]
         );
     }
 
     /**
      * Update an existing external feed.
-     * SQLi Safe: Uses ? placeholders.
-     * @param $externalFeed ExternalFeed
-     * @return boolean
+     * @param ExternalFeed $externalFeed
+     * @return bool
      */
     public function updateExternalFeed($externalFeed) {
         $return = $this->update(
@@ -195,82 +191,77 @@ class ExternalFeedDAO extends DAO {
                     limit_items = ?,
                     recent_items = ?
             WHERE feed_id = ?',
-            array(
+            [
                 (int) $externalFeed->getJournalId(),
-                $externalFeed->getUrl(),
+                (string) $externalFeed->getUrl(),
                 (float) $externalFeed->getSeq(),
                 (int) $externalFeed->getDisplayHomepage(),
                 (int) $externalFeed->getDisplayBlock(),
                 (int) $externalFeed->getLimitItems(),
                 (int) $externalFeed->getRecentItems(),
                 (int) $externalFeed->getId()
-            )
+            ]
         );
 
         $this->updateLocaleFields($externalFeed);
-        
-        // IMPORTANT: Clear cache to ensure updates are reflected immediately
         $this->_flushCache();
 
-        return $return;
+        return (bool) $return;
     }
 
     /**
      * Delete external feed.
-     * @param $externalFeed ExternalFeed 
-     * @return boolean
+     * @param ExternalFeed $externalFeed
+     * @return bool
      */
     public function deleteExternalFeed($externalFeed) {
-        return $this->deleteExternalFeedById($externalFeed->getId());
+        return $this->deleteExternalFeedById((int) $externalFeed->getId());
     }
 
     /**
      * Delete external feed by ID.
-     * SQLi Safe: Uses ? placeholders.
-     * @param $feedId int
-     * @return boolean
+     * @param int $feedId
+     * @return bool
      */
     public function deleteExternalFeedById($feedId) {
-        // Delete settings first (Foreign Key Logic)
+        $feedId = (int) $feedId;
         $this->update(
             'DELETE FROM external_feed_settings WHERE feed_id = ?', 
-            (int) $feedId
+            [$feedId]
         );
 
-        // Delete main record
         $ret = $this->update(
             'DELETE FROM external_feeds WHERE feed_id = ?', 
-            (int) $feedId
+            [$feedId]
         );
         
-        // IMPORTANT: Clear cache to remove deleted items from memory
         $this->_flushCache();
 
-        return $ret;
+        return (bool) $ret;
     }
 
     /**
-     * Delete external_feed by journal ID.
-     * @param $journalId int
+     * Delete external feeds by journal ID.
+     * @param int $journalId
+     * @return void
      */
     public function deleteExternalFeedsByJournalId($journalId) {
-        $feeds = $this->getExternalFeedsByJournalId($journalId);
-
+        $feeds = $this->getExternalFeedsByJournalId((int) $journalId);
         while ($feed = $feeds->next()) {
-            $this->deleteExternalFeedById($feed->getId());
+            $this->deleteExternalFeedById((int) $feed->getId());
         }
     }
 
     /**
      * Retrieve external feeds matching a particular journal ID.
-     * @param $journalId int
-     * @param $rangeInfo object DBRangeInfo
-     * @return object DAOResultFactory 
+     * @param int $journalId
+     * @param mixed $rangeInfo
+     * @return DAOResultFactory
      */
     public function getExternalFeedsByJournalId($journalId, $rangeInfo = null) {
         $result = $this->retrieveRange(
             'SELECT * FROM external_feeds WHERE journal_id = ? ORDER BY seq ASC',
-            array((int) $journalId),
+            [(int) $journalId],
             $rangeInfo
         );
 
@@ -279,31 +270,30 @@ class ExternalFeedDAO extends DAO {
 
     /**
      * Sequentially renumber external feeds in their sequence order.
-     * @param $journalId int
+     * @param int $journalId
+     * @return void
      */
     public function resequenceExternalFeeds($journalId) {
         $result = $this->retrieve(
-            'SELECT feed_id FROM external_feeds WHERE journal_id = ? ORDER BY seq',
-            array((int) $journalId)
+            'SELECT feed_id AS feed_id FROM external_feeds WHERE journal_id = ? ORDER BY seq',
+            [(int) $journalId]
         );
 
-        for ($i=1; !$result->EOF; $i++) {
-            list($feedId) = $result->fields;
-            $this->update(
-                'UPDATE external_feeds SET seq = ? WHERE feed_id = ?',
-                array(
-                    (int) $i,
-                    (int) $feedId
-                )
-            );
-
-            $result->moveNext();
+        if ($result) {
+            $i = 1;
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $feedId = (int) $row['feed_id'];
+                $this->update(
+                    'UPDATE external_feeds SET seq = ? WHERE feed_id = ?',
+                    [$i, $feedId]
+                );
+                $result->MoveNext();
+                $i++;
+            }
+            $result->Close();
         }
-
-        $result->Close();
-        unset($result);
         
-        // Cache needs to be refreshed after reordering
         $this->_flushCache();
     }
 
@@ -312,57 +302,63 @@ class ExternalFeedDAO extends DAO {
      * @return int
      */
     public function getInsertExternalFeedId() {
-        return $this->getInsertId('external_feeds', 'feed_id');
+        return (int) $this->getInsertId('external_feeds', 'feed_id');
     }
     
-    // -------------------------------------------------------------------------
-    // CACHE MANAGEMENT HELPERS (Modern & Robust)
-    // -------------------------------------------------------------------------
+    //
+    // Cache Management Helpers
+    //
 
     /**
      * Flush the external feed cache.
-     * This function is crucial for data consistency.
+     * @return void
      */
     public function _flushCache() {
         $cache = $this->_getCache();
-        $cache->flush();
+        if ($cache !== null) {
+            $cache->flush();
+        }
     }
 
     /**
      * Get the external feed cache.
-     * Modernized: Removed & reference return.
-     * @return object FileCache
+     * @return FileCache|null
      */
     public function _getCache() {
-        if (!isset($this->externalFeedCache)) {
+        if (!isset($this->_externalFeedCache)) {
             $cacheManager = CacheManager::getManager();
-            $this->externalFeedCache = $cacheManager->getFileCache(
+            $this->_externalFeedCache = $cacheManager->getFileCache(
                 'externalFeed', 'journalId',
-                array($this, '_cacheMiss')
+                [$this, '_cacheMiss']
             );
         }
-        return $this->externalFeedCache;
+        return $this->_externalFeedCache;
     }
 
     /**
      * Cache miss callback.
-     * Modernized: Removed & reference from parameters.
+     * @param FileCache $cache
+     * @param int $id
+     * @return array
      */
     public function _cacheMiss($cache, $id) {
-        // FIX: Implementasi cache yang benar
         $result = $this->retrieve(
             'SELECT * FROM external_feeds WHERE journal_id = ? ORDER BY seq ASC',
-            array((int) $id)
+            [(int) $id]
         );
     
-        $feeds = array();
-        $factory = new DAOResultFactory($result, $this, '_returnExternalFeedFromRow');
-        while ($feed = $factory->next()) {
-            $feeds[$feed->getId()] = $feed;
+        $feeds = [];
+        if ($result) {
+            $factory = new DAOResultFactory($result, $this, '_returnExternalFeedFromRow');
+            while ($feed = $factory->next()) {
+                $feeds[(int) $feed->getId()] = $feed;
+            }
+            $result->Close();
         }
     
         $cache->setEntireCache($feeds);
-        return null;
+        return $feeds;
     }
+    
 }
 ?>

@@ -1,5 +1,5 @@
 {
-    "name": "mokesao/lumera",
+    "name": "sangia/lumera",
     "description": "Modern Editorial Workflow for Scholarly Publishing with PSR-4/PSR-12 standards",
     "type": "project",
     "license": "MIT",
@@ -18,9 +18,9 @@
         }
     ],
     "config": {
-        "vendor-dir": "lib/wizdam/library",
+        "sort-packages": true,
         "optimize-autoloader": true,
-        "sort-packages": true
+        "vendor-dir": "lib/wizdam/library"
     },
     "require": {
         "midtrans/midtrans-php": "^2.5",
