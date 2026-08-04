@@ -129,7 +129,6 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
      * @param bool $isSubclass
      */
     public function setBreadcrumbs($isSubclass = false) {
-        // [WIZDAM] FIX: Gunakan Application::get()->getRequest() karena signature tidak boleh diubah
         $request = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
         
