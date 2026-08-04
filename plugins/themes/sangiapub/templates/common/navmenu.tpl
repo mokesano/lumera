@@ -126,7 +126,7 @@
                                     <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="editorial-policies" anchor="archiving"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.archiving"}</a></li>
                                         
                                     {if $currentJournal->getLocalizedSetting('history') != ''}
-                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="history"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.history"}</a></li>
+                                    <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="journal-history"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.history"}</a></li>
                                     {/if}
                                         
                                     <li class="c-header-expander__item"><a class="c-header-expander__link" href="{url page="about" op="statistics"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.statistics"}</a></li>
