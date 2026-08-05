@@ -20,71 +20,85 @@ declare(strict_types=1);
 
 import('classes.subscription.form.SubscriptionForm');
 
-class IndividualSubscriptionForm extends SubscriptionForm {
+class IndividualSubscriptionForm extends SubscriptionForm { // Undefined type 'SubscriptionForm'.
 
     /**
-     * Constructor
-     * @param subscriptionId int
+     * Constructor.
+     * @param int|null $subscriptionId
+     * @param int|null $userId
      */
     public function __construct($subscriptionId = null, $userId = null) {
-        parent::__construct('subscription/individualSubscriptionForm.tpl', $subscriptionId, $userId);
+        parent::__construct('subscription/individualSubscriptionForm.tpl', $subscriptionId, $userId); // Undefined type 'SubscriptionForm'.
 
-        $subscriptionId = isset($subscriptionId) ? (int) $subscriptionId : null;
-        $userId = isset($userId) ? (int) $userId : null;
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+        $journalId = $journal !== null ? (int) $journal->getId() : 0;
 
-        $journal = Request::getJournal();
-        $journalId = $journal->getId();
-
-        if (isset($subscriptionId)) {
+        if ($subscriptionId !== null) {
+            /** @var IndividualSubscriptionDAO $subscriptionDao */
             $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO'); 
-            if ($subscriptionDao->subscriptionExists($subscriptionId)) {
-                $this->subscription = $subscriptionDao->getSubscription($subscriptionId);
+            if ($subscriptionDao->subscriptionExists((int) $subscriptionId)) {
+                $this->subscription = $subscriptionDao->getSubscription((int) $subscriptionId); // Undefined property '$subscription'.
             }
         }
 
+        /** @var SubscriptionTypeDAO $subscriptionTypeDao */
         $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
         $subscriptionTypes = $subscriptionTypeDao->getSubscriptionTypesByInstitutional($journalId, false);
-        $this->subscriptionTypes = $subscriptionTypes->toArray();
 
-        $subscriptionTypeCount = count($this->subscriptionTypes);
-        if ($subscriptionTypeCount == 0) {
-            $this->addError('typeId', __('manager.subscriptions.form.typeRequired'));
-            $this->addErrorField('typeId');
+        $this->subscriptionTypes = is_object($subscriptionTypes) && method_exists($subscriptionTypes, 'toArray') // Undefined property '$subscriptionTypes'.
+            ? $subscriptionTypes->toArray() 
+            : (is_array($subscriptionTypes) ? $subscriptionTypes : []);
+
+        if (count($this->subscriptionTypes) === 0) {
+            $this->addError('typeId', __('manager.subscriptions.form.typeRequired')); // Undefined method 'addError'.
+            $this->addErrorField('typeId'); // Undefined method 'addErrorField'.
         }
 
         // Ensure subscription type is valid
         $this->addCheck(new FormValidatorCustom($this, 'typeId', 'required', 'manager.subscriptions.form.typeIdValid', function($typeId) use ($journalId) {
+            /** @var SubscriptionTypeDAO $subscriptionTypeDao */
             $subscriptionTypeDao = DAORegistry::getDAO('SubscriptionTypeDAO');
-            return ($subscriptionTypeDao->subscriptionTypeExistsByTypeId($typeId, $journalId) && $subscriptionTypeDao->getSubscriptionTypeInstitutional($typeId) == 0);
+            $typeIdInt = (int) $typeId;
+            return $subscriptionTypeDao->subscriptionTypeExistsByTypeId($typeIdInt, $journalId) && 
+                   $subscriptionTypeDao->getSubscriptionTypeInstitutional($typeIdInt) === 0;
         }));
 
         // Ensure that user does not already have a subscription for this journal
-        if (!isset($subscriptionId)) {
-            $this->addCheck(new FormValidatorCustom($this, 'userId', 'required', 'manager.subscriptions.form.subscriptionExists', array(DAORegistry::getDAO('IndividualSubscriptionDAO'), 'subscriptionExistsByUserForJournal'), array($journalId), true));
+        if ($subscriptionId === null) {
+            $this->addCheck(new FormValidatorCustom($this, 'userId', 'required', 'manager.subscriptions.form.subscriptionExists', [DAORegistry::getDAO('IndividualSubscriptionDAO'), 'subscriptionExistsByUserForJournal'], [$journalId], true));
         } else {
             $this->addCheck(new FormValidatorCustom($this, 'userId', 'required', 'manager.subscriptions.form.subscriptionExists', function($userId) use ($journalId, $subscriptionId) {
+                /** @var IndividualSubscriptionDAO $subscriptionDao */
                 $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
-                $checkId = $subscriptionDao->getSubscriptionIdByUser($userId, $journalId);
-                return ($checkId == 0 || $checkId == $subscriptionId) ? true : false;
+                $checkId = $subscriptionDao->getSubscriptionIdByUser((int) $userId, $journalId);
+                return $checkId === 0 || $checkId === (int) $subscriptionId;
             }));
         }
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param int|null $subscriptionId
+     * @param int|null $userId
      */
     public function IndividualSubscriptionForm($subscriptionId = null, $userId = null) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::IndividualSubscriptionForm(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($subscriptionId, $userId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Save individual subscription. 
+     * Save individual subscription.
+     * @param mixed $object
+     * @return void
      */
-    public function execute($object = NULL) {
+    public function execute($object = null) {
         $insert = false;
         if (!isset($this->subscription)) {
             import('classes.subscription.IndividualSubscription');
@@ -92,7 +106,9 @@ class IndividualSubscriptionForm extends SubscriptionForm {
             $insert = true;
         }
 
-        parent::execute();
+        parent::execute($object); // Undefined type 'SubscriptionForm'.
+        
+        /** @var IndividualSubscriptionDAO $individualSubscriptionDao */
         $individualSubscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
 
         if ($insert) {
@@ -102,10 +118,13 @@ class IndividualSubscriptionForm extends SubscriptionForm {
         } 
 
         // Send notification email
-        if ($this->_data['notifyEmail'] == 1) {
+        if (isset($this->_data['notifyEmail']) && (int) $this->_data['notifyEmail'] === 1) {
             $mail = $this->_prepareNotificationEmail('SUBSCRIPTION_NOTIFY');
-            $mail->send();
+            if ($mail !== null) {
+                $mail->send();
+            }
         } 
     }
+    
 }
 ?>

@@ -81,6 +81,7 @@ class SubscriptionPolicyForm extends Form {
      * Initialize form data from current subscription policies.
      */
     public function initData() {
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $journal = Request::getJournal();
         $journalId = $journal->getId();
@@ -134,6 +135,7 @@ class SubscriptionPolicyForm extends Form {
      * Save subscription policies. 
      */
     public function execute($object = NULL) {
+        /** @var JournalSettingsDAO $journalSettingsDao */
         $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
         $journal = Request::getJournal();
         $journalId = $journal->getId();
@@ -160,5 +162,6 @@ class SubscriptionPolicyForm extends Form {
         $journalSettingsDao->updateSetting($journalId, 'enableSubscriptionExpiryReminderAfterWeeks', $this->getData('enableSubscriptionExpiryReminderAfterWeeks') == null ? 0 : $this->getData('enableSubscriptionExpiryReminderAfterWeeks'), 'bool');
         $journalSettingsDao->updateSetting($journalId, 'numWeeksAfterSubscriptionExpiryReminder', $this->getData('numWeeksAfterSubscriptionExpiryReminder'), 'int');
     }
+    
 }
 ?>
