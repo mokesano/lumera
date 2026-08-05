@@ -219,14 +219,13 @@ class UserDAO extends PKPUserDAO {
      * @return array
      */
     public function getAuthorUserMatch($firstName, $lastName, $email, $orcid) {
+        if (is_array($orcid))     { $orcid = reset($orcid) ?: null; }
+        if (is_array($firstName)) { $firstName = reset($firstName) ?: null; }
+        if (is_array($lastName))  { $lastName = reset($lastName) ?: null; }
+        if (is_array($email))     { $email = reset($email) ?: null; }
+
         static $cache = [];
-        $cacheKey = md5(
-            (string) ($firstName ?? '') . '|' . 
-            (string) ($lastName ?? '') . '|' . 
-            (string) ($email ?? '') . '|' . 
-            (string) ($orcid ?? '')
-        );
-        
+        $cacheKey = md5(serialize([$firstName, $lastName, $email, $orcid]));
         if (isset($cache[$cacheKey])) {
             return $cache[$cacheKey];
         }
@@ -244,7 +243,7 @@ class UserDAO extends PKPUserDAO {
     
         // 1. Try ORCID
         if (!empty($orcid)) {
-            $cleanOrcid = preg_replace('/(https?:\/\/)?(orcid\.org\/)?/', '', (string) $orcid);
+            $cleanOrcid = preg_replace('/(https?:\/\/)?(orcid\.org\/)?/', '', $orcid);
             $result = $this->retrieve(
                 "SELECT user_id FROM user_settings WHERE setting_name = 'orcid' AND (setting_value = ? OR setting_value LIKE ?)",
                 [$cleanOrcid, '%' . $cleanOrcid . '%']
@@ -260,7 +259,7 @@ class UserDAO extends PKPUserDAO {
     
         // 2. Try Email
         if ($userId === null && !empty($email)) {
-            $user = $this->getUserByEmail((string) $email);
+            $user = $this->getUserByEmail($email);
             if ($user !== null) {
                 $userId = (int) $user->getId();
             }
@@ -270,7 +269,7 @@ class UserDAO extends PKPUserDAO {
         if ($userId === null) {
             $result = $this->retrieve(
                 "SELECT user_id FROM users WHERE first_name = ? AND last_name = ?",
-                [(string) $firstName, (string) $lastName]
+                [$firstName, $lastName]
             );
             if ($result && !$result->EOF) {
                 $row = $result->GetRowAssoc(false);
@@ -288,12 +287,12 @@ class UserDAO extends PKPUserDAO {
             $data['user'] = $this->getById($userId);
     
             $request = Application::get()->getRequest();
-            $baseUrl = (string) $request->getBaseUrl();
+            $baseUrl = $request->getBaseUrl();
             $extensions = ['.jpg', '.jpeg', '.png', '.gif'];
             $profileImageName = 'profileImage-' . $userId;
             $baseDir = Core::getBaseDir();
     
-            // Check public/site/
+            // Check files in public/site/
             foreach ($extensions as $ext) {
                 $filePath = $baseDir . '/public/site/' . $profileImageName . $ext;
                 if (file_exists($filePath)) {
@@ -324,7 +323,7 @@ class UserDAO extends PKPUserDAO {
             // Gravatar Fallback
             if (!$data['hasImage'] && !empty($email)) {
                 $data['hasImage'] = true;
-                $data['imgUrl'] = "https://www.gravatar.com/avatar/" . md5(strtolower(trim((string) $email))) . "?s=150&d=identicon";
+                $data['imgUrl'] = "https://www.gravatar.com/avatar/" . md5(strtolower(trim($email))) . "?s=150&d=identicon";
             }
         }
     
