@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_user
  *
  * @brief Handle requests for user gifts and redemptions.
- * [WIZDAM EDITION] Extracted from UserHandler.
  */
 
 import('pages.user.UserHandler');
@@ -20,38 +19,47 @@ import('pages.user.UserHandler');
 class UserGiftHandler extends UserHandler {
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * Display user gifts page
+     * Display user gifts page.
      * @param array $args
-     * @param object|null $request PKPRequest
+     * @param object|null $request
+     * @return void
      */
     public function gifts($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $this->validate();
 
         $journal = $request->getJournal();
-        if (!$journal) $request->redirect(null, 'user');
+        if ($journal === null) {
+            $request->redirect(null, 'user');
+            return;
+        }
 
-        // Ensure gift payments are enabled
         import('classes.payment.ojs.OJSPaymentManager');
         $paymentManager = new OJSPaymentManager($request);
-        $acceptGiftPayments = $paymentManager->acceptGiftPayments();
-        if (!$acceptGiftPayments) $request->redirect(null, 'user');
+        $acceptGiftPayments = (bool) $paymentManager->acceptGiftPayments();
+        if (!$acceptGiftPayments) {
+            $request->redirect(null, 'user');
+            return;
+        }
 
-        $acceptGiftSubscriptionPayments = $paymentManager->acceptGiftSubscriptionPayments();
-        $journalId = $journal->getId();
+        $acceptGiftSubscriptionPayments = (bool) $paymentManager->acceptGiftSubscriptionPayments();
+        $journalId = (int) $journal->getId();
         $user = $request->getUser();
-        $userId = $user->getId();
+        if ($user === null) {
+            $request->redirect(null, 'login');
+            return;
+        }
+        $userId = (int) $user->getId();
 
-        // Get user's redeemed and unreedemed gift subscriptions
+        /** @var GiftDAO $giftDao */
         $giftDao = DAORegistry::getDAO('GiftDAO');
         $giftSubscriptions = $giftDao->getGiftsByTypeAndRecipient(
             ASSOC_TYPE_JOURNAL,
@@ -63,41 +71,53 @@ class UserGiftHandler extends UserHandler {
         $this->setupTemplate($request, true);
         $templateMgr = TemplateManager::getManager();
 
-        $templateMgr->assign('journalTitle', $journal->getLocalizedTitle());
-        $templateMgr->assign('journalPath', $journal->getPath());
+        $templateMgr->assign('journalTitle', (string) $journal->getLocalizedTitle());
+        $templateMgr->assign('journalPath', (string) $journal->getPath());
         $templateMgr->assign('acceptGiftSubscriptionPayments', $acceptGiftSubscriptionPayments);
         $templateMgr->assign('giftSubscriptions', $giftSubscriptions);
         $templateMgr->display('user/gifts.tpl');
     }
 
     /**
-     * User redeems a gift
+     * User redeems a gift.
      * @param array $args
-     * @param object|null $request PKPRequest
+     * @param object|null $request
+     * @return void
      */
     public function redeemGift($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $this->validate();
 
-        if (empty($args)) $request->redirect(null, 'user');
+        if (empty($args)) {
+            $request->redirect(null, 'user');
+            return;
+        }
 
         $journal = $request->getJournal();
-        if (!$journal) $request->redirect(null, 'user');
+        if ($journal === null) {
+            $request->redirect(null, 'user');
+            return;
+        }
 
-        // Ensure gift payments are enabled
         import('classes.payment.ojs.OJSPaymentManager');
         $paymentManager = new OJSPaymentManager($request);
-        $acceptGiftPayments = $paymentManager->acceptGiftPayments();
-        if (!$acceptGiftPayments) $request->redirect(null, 'user');
+        $acceptGiftPayments = (bool) $paymentManager->acceptGiftPayments();
+        if (!$acceptGiftPayments) {
+            $request->redirect(null, 'user');
+            return;
+        }
 
-        $journalId = $journal->getId();
+        $journalId = (int) $journal->getId();
         $user = $request->getUser();
-        $userId = $user->getId();
-        $giftId = isset($args[0]) ? (int) $args[0] : 0;
+        if ($user === null) {
+            $request->redirect(null, 'login');
+            return;
+        }
+        $userId = (int) $user->getId();
+        $giftId = !empty($args[0]) ? (int) $args[0] : 0;
 
-        // Try to redeem the gift
+        /** @var GiftDAO $giftDao */
         $giftDao = DAORegistry::getDAO('GiftDAO');
         $status = $giftDao->redeemGift(
             ASSOC_TYPE_JOURNAL,
@@ -106,7 +126,6 @@ class UserGiftHandler extends UserHandler {
             $giftId
         );
 
-        // Report redeem status to user
         import('classes.notification.NotificationManager');
         $notificationManager = new NotificationManager();
 
@@ -130,13 +149,14 @@ class UserGiftHandler extends UserHandler {
                 $notificationType = NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_ERROR_SUBSCRIPTION_NON_EXPIRING;
                 break;
             default:
-                $notificationType = NOTIFICATION_TYPE_NO_GIFT_TO_REDEEM;
+                $notificationType = defined('NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_ERROR') 
+                    ? NOTIFICATION_TYPE_GIFT_REDEEM_STATUS_ERROR 
+                    : NOTIFICATION_TYPE_ERROR;
         }
 
-        $user = $request->getUser();
-
-        $notificationManager->createTrivialNotification($user->getId(), $notificationType);
+        $notificationManager->createTrivialNotification($userId, $notificationType);
         $request->redirect(null, 'user', 'gifts');
     }
+
 }
 ?>

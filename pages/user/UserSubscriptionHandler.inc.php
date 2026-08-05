@@ -28,11 +28,10 @@ class UserSubscriptionHandler extends UserHandler {
     /**
      * Display subscriptions page.
      * @param array $args
-     * @param object|null $request PKPRequest
+     * @param Request|null $request
      * @return void
      */
     public function subscriptions($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $this->validate();
@@ -68,7 +67,6 @@ class UserSubscriptionHandler extends UserHandler {
         }
         $userId = (int) $user->getId();
 
-        // Subscriptions contact and additional information
         $subscriptionName = (string) $journal->getSetting('subscriptionName');
         $subscriptionEmail = (string) $journal->getSetting('subscriptionEmail');
         $subscriptionPhone = (string) $journal->getSetting('subscriptionPhone');
@@ -76,7 +74,6 @@ class UserSubscriptionHandler extends UserHandler {
         $subscriptionMailingAddress = (string) $journal->getSetting('subscriptionMailingAddress');
         $subscriptionAdditionalInformation = (string) $journal->getLocalizedSetting('subscriptionAdditionalInformation');
         
-        // Get subscriptions and options for current journal
         $userIndividualSubscription = null;
         $userInstitutionalSubscriptions = null;
 
@@ -112,7 +109,7 @@ class UserSubscriptionHandler extends UserHandler {
         $templateMgr->assign('institutionalSubscriptionTypesExist', $institutionalSubscriptionTypesExist);
         $templateMgr->assign('userIndividualSubscription', $userIndividualSubscription);
         $templateMgr->assign('userInstitutionalSubscriptions', $userInstitutionalSubscriptions);
-        
+
         $templateMgr->display('user/subscriptions.tpl');
     }
 
@@ -123,11 +120,10 @@ class UserSubscriptionHandler extends UserHandler {
     /**
      * Purchase a subscription.
      * @param array $args
-     * @param object|null $request PKPRequest
+     * @param object|null $request
      * @return void
      */
     public function purchaseSubscription($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $this->validate();
@@ -185,13 +181,11 @@ class UserSubscriptionHandler extends UserHandler {
         }
 
         if ($subscriptionId !== null) {
-            // Ensure subscription to be updated is for this user
             if (!$subscriptionDao->subscriptionExistsByUser($subscriptionId, $userId)) {
                 $request->redirect(null, 'user');
                 return;
             }
 
-            // Ensure subscription can be updated
             $subscription = $subscriptionDao->getSubscription($subscriptionId);
             if ($subscription === null) {
                 $request->redirect(null, 'user');
@@ -221,7 +215,6 @@ class UserSubscriptionHandler extends UserHandler {
             if ($isInstitutional) {
                 $subscriptionForm = new UserInstitutionalSubscriptionForm($request, $userId);
             } else {
-                // Ensure user does not already have an individual subscription
                 if ($subscriptionDao->subscriptionExistsByUserForJournal($userId, $journalId)) {
                     $request->redirect(null, 'user');
                     return;
@@ -237,11 +230,10 @@ class UserSubscriptionHandler extends UserHandler {
     /**
      * Pay for a subscription purchase.
      * @param array $args
-     * @param object|null $request PKPRequest
+     * @param object|null $request
      * @return void
      */
     public function payPurchaseSubscription($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $this->validate();
@@ -299,13 +291,11 @@ class UserSubscriptionHandler extends UserHandler {
         }
 
         if ($subscriptionId !== null) {
-            // Ensure subscription to be updated is for this user
             if (!$subscriptionDao->subscriptionExistsByUser($subscriptionId, $userId)) {
                 $request->redirect(null, 'user');
                 return;
             }
 
-            // Ensure subscription can be updated
             $subscription = $subscriptionDao->getSubscription($subscriptionId);
             if ($subscription === null) {
                 $request->redirect(null, 'user');
@@ -335,7 +325,6 @@ class UserSubscriptionHandler extends UserHandler {
             if ($isInstitutional) {
                 $subscriptionForm = new UserInstitutionalSubscriptionForm($request, $userId);
             } else {
-                // Ensure user does not already have an individual subscription
                 if ($subscriptionDao->subscriptionExistsByUserForJournal($userId, $journalId)) {
                     $request->redirect(null, 'user');
                     return;
@@ -346,7 +335,6 @@ class UserSubscriptionHandler extends UserHandler {
 
         $subscriptionForm->readInputData();
 
-        // Check for any special cases before trying to save
         $editData = false;
         $addIpRange = $request->getUserVar('addIpRange');
         if ($addIpRange !== null && (int) $addIpRange > 0) {
@@ -386,11 +374,10 @@ class UserSubscriptionHandler extends UserHandler {
     /**
      * Complete the purchase subscription process.
      * @param array $args
-     * @param object|null $request PKPRequest
+     * @param object|null $request
      * @return void
      */
     public function completePurchaseSubscription($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $this->validate();
@@ -479,19 +466,27 @@ class UserSubscriptionHandler extends UserHandler {
             (float) $subscriptionType->getCost(), 
             (string) $subscriptionType->getCurrencyCodeAlpha()
         );
-        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
 
+        if (method_exists($queuedPayment, 'getInvoiceId') && $queuedPayment->getInvoiceId() > 0) {
+            import('lib.wizdam.classes.security.SecurityHashService');
+            $hashService = new SecurityHashService();
+            $invoiceId = (int) $queuedPayment->getInvoiceId();
+            $hash = $hashService->generateHash('invoice', $invoiceId);
+            $request->redirect(null, 'billing', 'invoice', ["{$hash}-{$invoiceId}"]);
+            return;
+        }
+
+        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
         $paymentManager->displayPaymentForm($queuedPaymentId, $queuedPayment);
     }
 
     /**
      * Pay the "renew subscription" fee.
      * @param array $args
-     * @param object|null $request PKPRequest
+     * @param object|null $request
      * @return void
      */
     public function payRenewSubscription($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $this->validate();
@@ -589,19 +584,27 @@ class UserSubscriptionHandler extends UserHandler {
             (float) $subscriptionType->getCost(), 
             (string) $subscriptionType->getCurrencyCodeAlpha()
         );
-        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
 
+        if (method_exists($queuedPayment, 'getInvoiceId') && $queuedPayment->getInvoiceId() > 0) {
+            import('lib.wizdam.classes.security.SecurityHashService');
+            $hashService = new SecurityHashService();
+            $invoiceId = (int) $queuedPayment->getInvoiceId();
+            $hash = $hashService->generateHash('invoice', $invoiceId);
+            $request->redirect(null, 'billing', 'invoice', ["{$hash}-{$invoiceId}"]);
+            return;
+        }
+
+        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
         $paymentManager->displayPaymentForm($queuedPaymentId, $queuedPayment);
     }
 
     /**
      * Pay for a membership.
      * @param array $args
-     * @param object|null $request PKPRequest
+     * @param object|null $request
      * @return void
      */
     public function payMembership($args, $request = null) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $this->validate();
@@ -629,8 +632,17 @@ class UserSubscriptionHandler extends UserHandler {
             null,  
             $membershipFee
         );
-        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
 
+        if (method_exists($queuedPayment, 'getInvoiceId') && $queuedPayment->getInvoiceId() > 0) {
+            import('lib.wizdam.classes.security.SecurityHashService');
+            $hashService = new SecurityHashService();
+            $invoiceId = (int) $queuedPayment->getInvoiceId();
+            $hash = $hashService->generateHash('invoice', $invoiceId);
+            $request->redirect(null, 'billing', 'invoice', ["{$hash}-{$invoiceId}"]);
+            return;
+        }
+
+        $queuedPaymentId = $paymentManager->queuePayment($queuedPayment);
         $paymentManager->displayPaymentForm($queuedPaymentId, $queuedPayment);
     }
     
