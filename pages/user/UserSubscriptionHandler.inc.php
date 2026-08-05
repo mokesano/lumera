@@ -206,20 +206,20 @@ class UserSubscriptionHandler extends UserHandler {
             }
 
             if ($isInstitutional) {
-                $subscriptionForm = new UserInstitutionalSubscriptionForm($request, $userId, $subscriptionId);
+                $subscriptionForm = new UserInstitutionalSubscriptionForm($request, $userId, $subscriptionId); // Undefined type 'UserInstitutionalSubscriptionForm'.
             } else {
-                $subscriptionForm = new UserIndividualSubscriptionForm($request, $userId, $subscriptionId);
+                $subscriptionForm = new UserIndividualSubscriptionForm($request, $userId, $subscriptionId); // Undefined type 'UserIndividualSubscriptionForm'.
             }
 
         } else {
             if ($isInstitutional) {
-                $subscriptionForm = new UserInstitutionalSubscriptionForm($request, $userId);
+                $subscriptionForm = new UserInstitutionalSubscriptionForm($request, $userId); // Undefined type 'UserInstitutionalSubscriptionForm'.
             } else {
                 if ($subscriptionDao->subscriptionExistsByUserForJournal($userId, $journalId)) {
                     $request->redirect(null, 'user');
                     return;
                 }
-                $subscriptionForm = new UserIndividualSubscriptionForm($request, $userId);
+                $subscriptionForm = new UserIndividualSubscriptionForm($request, $userId); // Undefined type 'UserIndividualSubscriptionForm'.
             }
         }
 
@@ -316,20 +316,20 @@ class UserSubscriptionHandler extends UserHandler {
             }
 
             if ($isInstitutional) {
-                $subscriptionForm = new UserInstitutionalSubscriptionForm($request, $userId, $subscriptionId);
+                $subscriptionForm = new UserInstitutionalSubscriptionForm($request, $userId, $subscriptionId); // Undefined type 'UserInstitutionalSubscriptionForm'.
             } else {
-                $subscriptionForm = new UserIndividualSubscriptionForm($request, $userId, $subscriptionId);
+                $subscriptionForm = new UserIndividualSubscriptionForm($request, $userId, $subscriptionId); // Undefined type 'UserIndividualSubscriptionForm'.
             }
 
         } else {
             if ($isInstitutional) {
-                $subscriptionForm = new UserInstitutionalSubscriptionForm($request, $userId);
+                $subscriptionForm = new UserInstitutionalSubscriptionForm($request, $userId); // Undefined type 'UserInstitutionalSubscriptionForm'.
             } else {
                 if ($subscriptionDao->subscriptionExistsByUserForJournal($userId, $journalId)) {
                     $request->redirect(null, 'user');
                     return;
                 }
-                $subscriptionForm = new UserIndividualSubscriptionForm($request, $userId);
+                $subscriptionForm = new UserIndividualSubscriptionForm($request, $userId); // Undefined type 'UserIndividualSubscriptionForm'.
             }
         }
 
