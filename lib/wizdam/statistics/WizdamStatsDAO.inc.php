@@ -836,6 +836,35 @@ class WizdamStatsDAO extends DAO {
     }
 
     /**
+     * Generate a fingerprint for the site's statistics.
+     * 
+     * [SMART CACHE] Ambil fingerprint MURAH untuk mendeteksi apakah data
+     * agregat situs (views/downloads/authors semua jurnal) kemungkinan
+     * berubah sejak terakhir dihitung -- dipakai WizdamStats::getSiteWideStats()
+     * untuk cache berbasis perubahan data, bukan TTL waktu tetap.
+     *
+     * @return string Fingerprint string.
+     */
+    public function getSiteStatsFingerprint(): string {
+        $maxLoadId = $this->fetchScalar("SELECT MAX(load_id) AS t FROM metrics", [], 't');
+
+        $articleFingerprint = $this->fetchScalar(
+            "SELECT MAX(date_status_modified) AS t FROM articles WHERE status = 3",
+            [], 't'
+        );
+        $articleCount = $this->fetchScalar(
+            "SELECT COUNT(*) AS t FROM articles WHERE status = 3",
+            [], 't'
+        );
+
+        return md5(
+            'loadid_' . ($maxLoadId ?? '0') .
+            '_artmod_' . ($articleFingerprint ?? '') .
+            '_artcount_' . ($articleCount ?? '0')
+        );
+    }
+
+    /**
      * Fetch views, downloads, and unique authors statistics for a single journal (used for Site-Wide aggregation).
      * @param int $journalId Journal ID.
      * @return array Associative array with 'views', 'downloads', and 'authors' keys (integers).

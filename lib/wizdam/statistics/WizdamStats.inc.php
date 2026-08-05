@@ -21,24 +21,17 @@ import('classes.journal.JournalDAO');
 
 class WizdamStats {
 
-    /** Config Stats Per Journal */
-    const STATS_CACHE_DURATION = 604800; // 7 hari
-    /** Config Stats All Sites */
+    /** Path direktori cache Stats All Sites */
     const SITE_CACHE_PATH = 'cache/t_wizdam/stats/site_stats.php';
-    /** Config durasi cache Stats All Sites */ 
-    const SITE_CACHE_DURATION = 7200; // 2 jam
 
     /**
      * Get Statistics
      * @param mixed $journalId
-     * @param bool $forceRefresh
      */
-    public static function getStats($journalId, $forceRefresh = false): array {
+    public static function getStats($journalId): array {
         $journalId = (int)$journalId;
-        if (!$forceRefresh) {
-            $cacheData = self::_getJournalStatsFromCache($journalId);
-            if ($cacheData !== false) return $cacheData;
-        }
+        $cacheData = self::_getJournalStatsFromCache($journalId);
+        if ($cacheData !== false) return $cacheData;
         return self::_calculateAndCacheStats($journalId);
     }
     
@@ -192,7 +185,7 @@ class WizdamStats {
         if (file_exists($cacheFile) && file_exists($hashFile)) {
             $currentHash = self::_getJournalStatsDataHash($journalId);
             $cachedHash = trim((string)@file_get_contents($hashFile));
-            if (($currentHash !== '' && $cachedHash !== '' && hash_equals($cachedHash, $currentHash)) || (@filemtime($cacheFile) > (time() - self::STATS_CACHE_DURATION))) {
+            if ($currentHash !== '' && $cachedHash !== '' && hash_equals($cachedHash, $currentHash)) {
                 try {
                     $c = unserialize((string)@file_get_contents($cacheFile));
                     if (is_array($c)) return $c;
@@ -262,19 +255,34 @@ class WizdamStats {
      * Mengambil statistik agregat (Site-Wide) dari seluruh jurnal yang ada di situs.
      * Metode ini akan menjumlahkan views, downloads, interaksi, dan authors dari semua jurnal.
      *
-     * @param bool $forceRefresh Jika true, mengabaikan cache dan menghitung ulang (default: false).
+     * [SMART CACHE] Cache berbasis fingerprint data (bukan TTL waktu tetap).
+     * Setiap pemanggilan mengecek fingerprint MURAH dulu; kalau sama dengan
+     * yang tersimpan di cache, cache masih valid berapa pun lama waktu
+     * berlalu. Kalau beda (ada data baru masuk), cache langsung dianggap
+     * basi SEKETIKA dan dihitung ulang.
+     *
      * @return array Array asosiatif berisi agregat statistik situs dan daftar statistik per jurnal (journalsStats).
      */
-    public static function getSiteWideStats(bool $forceRefresh = false): array {
+    public static function getSiteWideStats(): array {
         $cacheFile = Core::getBaseDir() . '/' . self::SITE_CACHE_PATH;
-        if (!$forceRefresh && file_exists($cacheFile) && (time() - @filemtime($cacheFile)) < self::SITE_CACHE_DURATION) {
-            try { $c = unserialize((string)@file_get_contents($cacheFile)); if (is_array($c)) return $c; } catch (Exception $e) {}
+        $dao = new WizdamStatsDAO();
+
+        // [SMART CACHE] Fingerprint -- jauh lebih ringan daripada
+        // menghitung ulang agregat penuh lintas semua jurnal.
+        $currentFingerprint = $dao->getSiteStatsFingerprint();
+
+        if (file_exists($cacheFile)) {
+            try {
+                $cached = @unserialize((string) @file_get_contents($cacheFile));
+                if (is_array($cached) && ($cached['_fingerprint'] ?? null) === $currentFingerprint) {
+                    return $cached;
+                }
+            } catch (Exception $e) {}
         }
 
         /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journals = $journalDao->getJournals(true);
-        $dao = new WizdamStatsDAO();
         
         $jStats = []; $vTot = 0; $dTot = 0; $iTot = 0; $aTot = 0;
         try {
@@ -296,7 +304,7 @@ class WizdamStats {
                 }
             }
             usort($jStats, fn($a, $b) => $b['views'] <=> $a['views']);
-            $site = ['journalsStats'=>$jStats, 'allTotalViews'=>$vTot, 'allTotalDownloads'=>$dTot, 'allTotalInteractions'=>$iTot, 'allTotalAuthors'=>$aTot];
+            $site = ['journalsStats'=>$jStats, 'allTotalViews'=>$vTot, 'allTotalDownloads'=>$dTot, 'allTotalInteractions'=>$iTot, 'allTotalAuthors'=>$aTot, '_fingerprint'=>$currentFingerprint];
             $dir = dirname($cacheFile); if (!file_exists($dir)) @mkdir($dir, 0755, true);
             @file_put_contents($cacheFile, serialize($site));
             return $site;

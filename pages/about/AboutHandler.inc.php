@@ -862,12 +862,9 @@ class AboutHandler extends Handler {
 
         // 3. --- MULAI BLOK WizdamStats ---
         import('lib.wizdam.statistics.WizdamStats');
-        $refreshStats = $request->getUserVar('refresh_stats');
-        $forceRefresh = trim((string) $refreshStats) == 'true';
 
         try {
-            // Panggil mesin statistik utama
-            $journalStats = WizdamStats::getStats($journal->getId(), $forceRefresh);
+            $journalStats = WizdamStats::getStats($journal->getId());
             if (is_array($journalStats) && !isset($journalStats['error'])) {
                 // Kirim SEMUA data statistik ke template
                 foreach ($journalStats as $key => $value) {

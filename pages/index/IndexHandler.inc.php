@@ -63,13 +63,10 @@ class IndexHandler extends Handler {
 
         $templateMgr->assign('helpTopicId', 'user.home');
 
-        // [FIX] Initialize forceRefresh to prevent undefined variable error in strict mode
-        $forceRefresh = (bool) $request->getUserVar('refresh');
-
         if ($journal) {
-            $this->journal($journal, $request, $templateMgr, $forceRefresh);
+            $this->journal($journal, $request, $templateMgr);
         } else {
-            $this->publisher($site, $request, $templateMgr, $forceRefresh);
+            $this->publisher($site, $request, $templateMgr);
         }
     }
 
@@ -78,10 +75,9 @@ class IndexHandler extends Handler {
      * @param Journal $journal
      * @param PKPRequest $request
      * @param TemplateManager $templateMgr
-     * @param bool $forceRefresh
      * @return void
      */
-    private function journal($journal, $request, $templateMgr, $forceRefresh) {
+    private function journal($journal, $request, $templateMgr) {
         // Assign header and content for home page
         $templateMgr->assign('displayPageHeaderTitle', $journal->getLocalizedPageHeaderTitle(true));
         $templateMgr->assign('displayPageHeaderLogo', $journal->getLocalizedPageHeaderLogo(true));
@@ -168,7 +164,7 @@ class IndexHandler extends Handler {
         // [LUMERA] STATS JURNAL ---
         $journalId = (int) $journal->getId();
         try {
-            $journalStats = WizdamStats::getStats($journalId, $forceRefresh);
+            $journalStats = WizdamStats::getStats($journalId);
             if (is_array($journalStats) && !isset($journalStats['error'])) {
                 foreach ($journalStats as $key => $value) {
                     $templateMgr->assign((string) $key, $value);
@@ -176,12 +172,12 @@ class IndexHandler extends Handler {
             } else {
                  $templateMgr->assign('statsError', 'Data statistik tidak valid.');
                  if (isset($journalStats['error']) && Config::getVar('debug', 'log_errors')) {
-                     error_log('WizdamStats: getStats() returned an error for JID ' . $journalId . ': ' . $journalStats['error']);
+                     error_log('WizdamStats: getStats() returned an error for JournalID ' . $journalId . ': ' . $journalStats['error']);
                  }
             }
         } catch (Exception $e) { 
             if (Config::getVar('debug', 'log_errors')) {
-                error_log('WizdamStats (Handler): Exception loading WizdamStats for JID ' . $journalId . ': ' . $e->getMessage());
+                error_log('WizdamStats (Handler): Exception loading WizdamStats for JournalID ' . $journalId . ': ' . $e->getMessage());
             }
             $templateMgr->assign('statsError', 'Gagal memuat statistik jurnal.');
         }
@@ -201,16 +197,15 @@ class IndexHandler extends Handler {
      * @param Site $site
      * @param PKPRequest $request
      * @param TemplateManager $templateMgr
-     * @param bool $forceRefresh
      * @return void
      */
-    private function publisher($site, $request, $templateMgr, $forceRefresh) {
+    private function publisher($site, $request, $templateMgr) {
         /** @var JournalDAO $journalDao */
         $journalDao = DAORegistry::getDAO('JournalDAO');
 
         // [LUMERA] STATS 2: ROOT EDITORIAL SYSTEM
         try {
-            $siteStats = WizdamStats::getSiteWideStats($forceRefresh);
+            $siteStats = WizdamStats::getSiteWideStats();
             
             if (Config::getVar('debug', 'log_errors')) {
                 error_log("DEBUG IndexHandler (Site-Wide): Isi \$siteStats['journalsStats'] = " . print_r($siteStats['journalsStats'] ?? [], true)); 
