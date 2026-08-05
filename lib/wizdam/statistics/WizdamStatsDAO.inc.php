@@ -718,6 +718,84 @@ class WizdamStatsDAO extends DAO {
     }
 
     /**
+     * [PERF FIX] Versi batch dari getSiteJournalStats() -- ambil statistik
+     * views/downloads/authors untuk BANYAK jurnal sekaligus dalam 3 query
+     * total (bukan sampai 5 query x N jurnal). Dipakai oleh
+     * WizdamStats::getSiteWideStats() untuk menghindari pola N+1.
+     *
+     * Catatan: versi batch ini tidak menyertakan fallback query
+     * "tanpa filter metric_type" seperti getSiteJournalStats() (yang
+     * dirancang untuk edge-case metric_type tak dikenal per-instalasi,
+     * bukan per-jurnal) -- karena metric_type berlaku instalasi-wide,
+     * bukan per-jurnal, fallback per-jurnal tidak diperlukan di sini.
+     *
+     * @param int[] $journalIds
+     * @return array [$journalId => ['views'=>int, 'downloads'=>int, 'authors'=>int]]
+     */
+    public function getSiteJournalStatsBatch(array $journalIds): array {
+        $journalIds = array_values(array_unique(array_map('intval', $journalIds)));
+        $stats = [];
+        foreach ($journalIds as $id) {
+            $stats[$id] = ['views' => 0, 'downloads' => 0, 'authors' => 0];
+        }
+        if (empty($journalIds)) {
+            return $stats;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($journalIds), '?'));
+
+        $viewsResult = $this->retrieve(
+            "SELECT context_id, SUM(metric) AS t FROM metrics
+             WHERE assoc_type = ? AND context_id IN ($placeholders)
+               AND (metric_type = 'ojs::counter' OR metric_type = 'ojs::legacyDefault' OR metric_type = 'ojs::legacyCounter')
+             GROUP BY context_id",
+            array_merge([ASSOC_TYPE_ARTICLE], $journalIds)
+        );
+        if ($viewsResult) {
+            while (!$viewsResult->EOF) {
+                $row = $viewsResult->GetRowAssoc(false);
+                $stats[(int) $row['context_id']]['views'] = (int) $row['t'];
+                $viewsResult->MoveNext();
+            }
+            $viewsResult->Close();
+        }
+
+        $downloadsResult = $this->retrieve(
+            "SELECT context_id, SUM(metric) AS t FROM metrics
+             WHERE assoc_type = ? AND context_id IN ($placeholders)
+               AND (metric_type = 'ojs::counter::galley' OR metric_type LIKE '%download%')
+             GROUP BY context_id",
+            array_merge([ASSOC_TYPE_GALLEY], $journalIds)
+        );
+        if ($downloadsResult) {
+            while (!$downloadsResult->EOF) {
+                $row = $downloadsResult->GetRowAssoc(false);
+                $stats[(int) $row['context_id']]['downloads'] = (int) $row['t'];
+                $downloadsResult->MoveNext();
+            }
+            $downloadsResult->Close();
+        }
+
+        $authorsResult = $this->retrieve(
+            "SELECT art.journal_id AS jid, COUNT(DISTINCT a.email) AS t
+             FROM authors a JOIN articles art ON a.submission_id = art.article_id
+             WHERE art.journal_id IN ($placeholders) AND art.status = ?
+             GROUP BY art.journal_id",
+            array_merge($journalIds, [STATUS_PUBLISHED])
+        );
+        if ($authorsResult) {
+            while (!$authorsResult->EOF) {
+                $row = $authorsResult->GetRowAssoc(false);
+                $stats[(int) $row['jid']]['authors'] = (int) $row['t'];
+                $authorsResult->MoveNext();
+            }
+            $authorsResult->Close();
+        }
+
+        return $stats;
+    }
+
+    /**
      * Fetch views, downloads, and unique authors statistics for a single journal (used for Site-Wide aggregation).
      * @param int $journalId Journal ID.
      * @return array Associative array with 'views', 'downloads', and 'authors' keys (integers).

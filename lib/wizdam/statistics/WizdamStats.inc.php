@@ -240,7 +240,9 @@ class WizdamStats {
      * @param string $dir Path direktori yang akan diperiksa/dibuat.
      * @return bool True jika direktori ada dan writable, false jika gagal dibuat/tidak writable.
      */
-    private static function _ensureCacheDirExists(string $dir): bool { if (!file_exists($dir)) return mkdir($dir, 0755, true); return is_writable($dir); }
+    private static function _ensureCacheDirExists(string $dir): bool { 
+        if (!file_exists($dir)) return mkdir($dir, 0755, true); return is_writable($dir); 
+    }
 
     /**
      * Membuat hash MD5 dari metrik dasar jurnal untuk mendeteksi perubahan data (Smart Cache invalidation).
@@ -277,9 +279,15 @@ class WizdamStats {
         $jStats = []; $vTot = 0; $dTot = 0; $iTot = 0; $aTot = 0;
         try {
             if ($journals) {
+                $journalList = [];
                 while ($j = $journals->next()) {
-                    $id = (int)$j->getId();
-                    $s = $dao->getSiteJournalStats($id);
+                    $journalList[(int) $j->getId()] = $j;
+                }
+
+                $statsBatch = $dao->getSiteJournalStatsBatch(array_keys($journalList));
+
+                foreach ($journalList as $id => $j) {
+                    $s = $statsBatch[$id] ?? ['views' => 0, 'downloads' => 0, 'authors' => 0];
                     $inter = $s['views'] + $s['downloads'];
                     if ($s['views'] > 0 || $s['downloads'] > 0 || $s['authors'] > 0) {
                         $vTot += $s['views']; $dTot += $s['downloads']; $iTot += $inter; $aTot += $s['authors'];
@@ -294,5 +302,6 @@ class WizdamStats {
             return $site;
         } catch (Exception $e) { return ['error' => $e->getMessage()]; }
     }
+
 }
 ?>
