@@ -103,6 +103,122 @@ class JournalStatsDAO extends DAO {
     }
 
     /**
+     * [PERF FIX] Versi batch dari getJournalCoreStats()+getUniqueAuthorsCount()
+     * gabungan -- ambil views/downloads/authors utk BANYAK jurnal sekaligus
+     * lewat tabel metrics modern, menghindari pola N+1 di
+     * StatsManager::assignWidgetPayload() (level publisher/site).
+     *
+     * Menyertakan fallback batch (tanpa filter metric_type) untuk journal yang
+     * masih 0 setelah filter spesifik -- pelajaran dari bug produksi di
+     * WizdamStatsDAO::getSiteJournalStatsBatch() yang sempat kehilangan
+     * fallback ini dan membuat downloads tampil 0 di semua jurnal.
+     *
+     * Catatan: TIDAK menyertakan fallback ke tabel legacy
+     * (article_view_stats/article_galley_view_stats) -- itu tetap jadi
+     * tanggung jawab pemanggil (lihat StatsManager::assignWidgetPayload())
+     * yang jatuh ke getJournalCoreStats() penuh HANYA untuk journal yang
+     * masih 0 setelah batch modern (dicek per-metrik, bukan "ketiganya nol").
+     *
+     * @param int[] $journalIds
+     * @param array $dbStructure
+     * @return array [$journalId => ['views'=>int,'downloads'=>int,'authors'=>int]]
+     */
+    public function getJournalCoreStatsBatch(array $journalIds, array $dbStructure): array {
+        $journalIds = array_values(array_unique(array_map('intval', $journalIds)));
+        $stats = [];
+        foreach ($journalIds as $id) {
+            $stats[$id] = ['views' => 0, 'downloads' => 0, 'authors' => 0];
+        }
+        if (empty($journalIds) || empty($dbStructure['metricsTableExists'])) {
+            return $stats;
+        }
+
+        $this->_fillCoreStatsBatch(
+            $stats, 'views', ASSOC_TYPE_ARTICLE,
+            "(metric_type = 'ojs::counter::article' OR metric_type LIKE '%view%')"
+        );
+        $this->_fillCoreStatsBatch(
+            $stats, 'downloads', ASSOC_TYPE_GALLEY,
+            "(metric_type = 'ojs::counter::galley' OR metric_type LIKE '%download%')"
+        );
+
+        $placeholders = implode(',', array_fill(0, count($journalIds), '?'));
+        $authorsResult = $this->retrieve(
+            "SELECT art.journal_id AS jid, COUNT(DISTINCT a.author_id) AS t
+             FROM authors a
+             JOIN published_articles pa ON a.submission_id = pa.article_id
+             JOIN articles art ON pa.article_id = art.article_id
+             WHERE art.journal_id IN ($placeholders)
+             GROUP BY art.journal_id",
+            $journalIds
+        );
+        if ($authorsResult) {
+            while (!$authorsResult->EOF) {
+                $row = $authorsResult->GetRowAssoc(false);
+                $stats[(int) $row['jid']]['authors'] = (int) $row['t'];
+                $authorsResult->MoveNext();
+            }
+            $authorsResult->Close();
+        }
+
+        return $stats;
+    }
+
+    /**
+     * [PERF FIX + BUGFIX] Helper batch untuk getJournalCoreStatsBatch(): isi
+     * $stats[...][$field] lewat query batch dengan filter metric_type spesifik,
+     * lalu jalankan SATU query batch fallback lagi (tanpa filter metric_type)
+     * KHUSUS untuk journal yang masih 0 -- meniru pola fallback
+     * getJournalCoreStats() aslinya, tapi tetap batched (bukan per-journal).
+     */
+    private function _fillCoreStatsBatch(array &$stats, string $field, int $assocType, string $metricTypeFilter): void {
+        $journalIds = array_keys($stats);
+        if (empty($journalIds)) return;
+
+        $placeholders = implode(',', array_fill(0, count($journalIds), '?'));
+        $result = $this->retrieve(
+            "SELECT context_id, SUM(metric) AS t FROM metrics
+             WHERE assoc_type = ? AND context_id IN ($placeholders) AND $metricTypeFilter
+             GROUP BY context_id",
+            array_merge([$assocType], $journalIds)
+        );
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $stats[(int) $row['context_id']][$field] = (int) $row['t'];
+                $result->MoveNext();
+            }
+            $result->Close();
+        }
+
+        $needFallback = [];
+        foreach ($journalIds as $id) {
+            if ($stats[$id][$field] === 0) {
+                $needFallback[] = $id;
+            }
+        }
+        if (empty($needFallback)) {
+            return;
+        }
+
+        $fbPlaceholders = implode(',', array_fill(0, count($needFallback), '?'));
+        $fbResult = $this->retrieve(
+            "SELECT context_id, SUM(metric) AS t FROM metrics
+             WHERE assoc_type = ? AND context_id IN ($fbPlaceholders)
+             GROUP BY context_id",
+            array_merge([$assocType], $needFallback)
+        );
+        if ($fbResult) {
+            while (!$fbResult->EOF) {
+                $row = $fbResult->GetRowAssoc(false);
+                $stats[(int) $row['context_id']][$field] = (int) $row['t'];
+                $fbResult->MoveNext();
+            }
+            $fbResult->Close();
+        }
+    }
+
+    /**
      * Get core statistics for a journal, including total views and downloads.
      * @param int $journalId
      * @param array $dbStructure
@@ -328,5 +444,6 @@ class JournalStatsDAO extends DAO {
 
         return $data;
     }
+    
 }
 ?>

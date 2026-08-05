@@ -104,17 +104,30 @@ class StatsManager {
                 $journalsStatsList = [];
 
                 if ($journals) {
+                    $journalList = [];
                     while ($j = $journals->next()) {
-                        $jId = (int) $j->getId();
-                        
-                        // Eksekusi kueri terpercaya
-                        $cStats = $dao->getJournalCoreStats($jId, $dbStructure);
-                        $cAuth = $dao->getUniqueAuthorsCount($jId);
+                        $journalList[(int) $j->getId()] = $j;
+                    }
 
-                        $jViews = (int) $cStats['views'];
-                        $jDownloads = (int) $cStats['downloads'];
-                        $jAuthors = (int) $cAuth;
-                        
+                    $statsBatch = $dao->getJournalCoreStatsBatch(array_keys($journalList), $dbStructure);
+
+                    foreach ($journalList as $jId => $j) {
+                        $jViews = $statsBatch[$jId]['views'];
+                        $jDownloads = $statsBatch[$jId]['downloads'];
+                        $jAuthors = $statsBatch[$jId]['authors'];
+                        if ($jViews === 0 || $jDownloads === 0 || $jAuthors === 0) {
+                            $cStats = $dao->getJournalCoreStats($jId, $dbStructure);
+                            if ($jViews === 0) {
+                                $jViews = (int) $cStats['views'];
+                            }
+                            if ($jDownloads === 0) {
+                                $jDownloads = (int) $cStats['downloads'];
+                            }
+                            if ($jAuthors === 0) {
+                                $jAuthors = (int) $dao->getUniqueAuthorsCount($jId);
+                            }
+                        }
+
                         // [WIZDAM] Kalkulasi Metrik Interaksi
                         $jInteractions = $jViews + $jDownloads;
 
@@ -231,5 +244,6 @@ class StatsManager {
         
         file_put_contents($cacheFile, $cacheContent);
     }
+    
 }
 ?>

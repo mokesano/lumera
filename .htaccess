@@ -16,7 +16,9 @@ ErrorDocument 401 /401.shtml
 ErrorDocument 403 /403.shtml
 # 404 Not Found: File statis tidak ditemukan (Lihat catatan di bawah)
 ErrorDocument 404 /404.shtml
-# 423 Locked: Resource terkunci (Jarang di OJS, tapi bagus jika ada)
+# 410 Gone: File dihapus permanen (Jarang, tapi bagus jika ada)
+ErrorDocument 410 /410.shtml
+# 423 Locked: Resource terkunci (Jarang, tapi bagus jika ada)
 ErrorDocument 423 /423.shtml
 
 # 2. Server Errors (5xx)
