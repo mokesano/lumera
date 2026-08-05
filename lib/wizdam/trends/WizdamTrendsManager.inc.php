@@ -97,14 +97,18 @@ class WizdamTrendsManager {
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         
         $payload = [];
-
+        $journalCache = [];
+        $sectionCache = [];
         foreach ($rawViewsData as $articleId => $data) {
             $article = $articleDao->getArticle((int)$articleId);
             if (!$article) continue;
             
             $journalId = (int)$article->getJournalId();
             
-            $articleJournal = $journalDao->getById($journalId);
+            if (!isset($journalCache[$journalId])) {
+                $journalCache[$journalId] = $journalDao->getById($journalId);
+            }
+            $articleJournal = $journalCache[$journalId];
             $journalPath = $articleJournal ? $articleJournal->getPath() : null;
 
             // 1. Ekstrak Authors
@@ -132,7 +136,11 @@ class WizdamTrendsManager {
             }
 
             // 2. Ekstrak Section / Article Type
-            $section = $sectionDao->getSection($article->getSectionId());
+            $sectionId = $article->getSectionId();
+            if (!isset($sectionCache[$sectionId])) {
+                $sectionCache[$sectionId] = $sectionDao->getSection($sectionId);
+            }
+            $section = $sectionCache[$sectionId];
             $articleType = $section ? (string)$section->getLocalizedTitle() : 'Article';
 
             // 3. Ekstrak Keywords
@@ -153,7 +161,7 @@ class WizdamTrendsManager {
                 'total_views'              => (int)$data['views'],
                 'date_published'           => (string)$data['date_published'],
                 'date_published_formatted' => $data['date_published'] ? date('Y-m-d', strtotime($data['date_published'])) : '',
-                'is_open_access'           => self::_checkWizdamOpenAccessStatus($article, $journalId),
+                'is_open_access'           => self::_checkWizdamOpenAccessStatus($article, $journalId, $articleJournal),
                 'article_type'             => $articleType,
                 'cover_image' => self::_findArticleCoverImage($article, $journalId, $request),
                 'article_url' => $request->url($journalPath, 'article', 'view', $articleId),
@@ -215,7 +223,7 @@ class WizdamTrendsManager {
      * @param int $journalId
      * @return bool
      */
-    private static function _checkWizdamOpenAccessStatus(Article $article, int $journalId): bool {
+    private static function _checkWizdamOpenAccessStatus(Article $article, int $journalId, ?Journal $journal = null): bool {
         // Method 1: Cek dari setting artikel langsung
         if (method_exists($article, 'getAccessStatus') && $article->getAccessStatus() == ARTICLE_ACCESS_OPEN) {
             return true;
@@ -265,9 +273,11 @@ class WizdamTrendsManager {
         }
 
         // Method 5: Cek Default Journal Policy
-        /** @var JournalDAO $journalDao */
-        $journalDao = DAORegistry::getDAO('JournalDAO');
-        $journal = $journalDao->getById($journalId);
+        if (!$journal) {
+            /** @var JournalDAO $journalDao */
+            $journalDao = DAORegistry::getDAO('JournalDAO');
+            $journal = $journalDao->getById($journalId);
+        }
         if ($journal && method_exists($journal, 'getSetting')) {
             $publishingMode = $journal->getSetting('publishingMode');
             if ($publishingMode == 0) { // 0 = Open Access
