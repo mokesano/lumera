@@ -15,7 +15,6 @@ declare(strict_types=1);
  */
 
 import('classes.db.DAO');
-import('classes.article.Article');
 
 if (!defined('ASSOC_TYPE_ARTICLE')) {
     define('ASSOC_TYPE_ARTICLE', 259);
@@ -743,46 +742,27 @@ class WizdamStatsDAO extends DAO {
             return $stats;
         }
 
+        // [BUGFIX] Views & downloads sekarang lewat helper yang menyertakan
+        // fallback batch (tanpa filter metric_type) untuk journal yang masih 0
+        // setelah filter spesifik -- mempertahankan perilaku getSiteJournalStats()
+        // aslinya (baris 809 & 822) yang sempat hilang di versi batch pertama,
+        // menyebabkan downloads tampil 0 saat metric_type di database tidak
+        // persis cocok dengan filter spesifik.
+        $this->_fillMetricStatsBatch(
+            $stats, 'views', ASSOC_TYPE_ARTICLE,
+            "(metric_type = 'ojs::counter' OR metric_type = 'ojs::legacyDefault' OR metric_type = 'ojs::legacyCounter')"
+        );
+        $this->_fillMetricStatsBatch(
+            $stats, 'downloads', ASSOC_TYPE_GALLEY,
+            "(metric_type = 'ojs::counter::galley' OR metric_type LIKE '%download%')"
+        );
+
         $placeholders = implode(',', array_fill(0, count($journalIds), '?'));
-
-        $viewsResult = $this->retrieve(
-            "SELECT context_id, SUM(metric) AS t FROM metrics
-             WHERE assoc_type = ? AND context_id IN ($placeholders)
-               AND (metric_type = 'ojs::counter' OR metric_type = 'ojs::legacyDefault' OR metric_type = 'ojs::legacyCounter')
-             GROUP BY context_id",
-            array_merge([ASSOC_TYPE_ARTICLE], $journalIds)
-        );
-        if ($viewsResult) {
-            while (!$viewsResult->EOF) {
-                $row = $viewsResult->GetRowAssoc(false);
-                $stats[(int) $row['context_id']]['views'] = (int) $row['t'];
-                $viewsResult->MoveNext();
-            }
-            $viewsResult->Close();
-        }
-
-        $downloadsResult = $this->retrieve(
-            "SELECT context_id, SUM(metric) AS t FROM metrics
-             WHERE assoc_type = ? AND context_id IN ($placeholders)
-               AND (metric_type = 'ojs::counter::galley' OR metric_type LIKE '%download%')
-             GROUP BY context_id",
-            array_merge([ASSOC_TYPE_GALLEY], $journalIds)
-        );
-        if ($downloadsResult) {
-            while (!$downloadsResult->EOF) {
-                $row = $downloadsResult->GetRowAssoc(false);
-                $stats[(int) $row['context_id']]['downloads'] = (int) $row['t'];
-                $downloadsResult->MoveNext();
-            }
-            $downloadsResult->Close();
-        }
-
         $authorsResult = $this->retrieve(
             "SELECT art.journal_id AS jid, COUNT(DISTINCT a.email) AS t
              FROM authors a JOIN articles art ON a.submission_id = art.article_id
-             WHERE art.journal_id IN ($placeholders) AND art.status = ?
-             GROUP BY art.journal_id",
-            array_merge($journalIds, [STATUS_PUBLISHED])
+             WHERE art.journal_id IN ($placeholders) AND art.status = 3",
+            $journalIds
         );
         if ($authorsResult) {
             while (!$authorsResult->EOF) {
@@ -794,6 +774,65 @@ class WizdamStatsDAO extends DAO {
         }
 
         return $stats;
+    }
+
+    /**
+     * [PERF FIX + BUGFIX] Helper batch untuk getSiteJournalStatsBatch(): isi
+     * $stats[...][$field] lewat query batch dengan filter metric_type spesifik,
+     * lalu jalankan SATU query batch fallback lagi (tanpa filter metric_type)
+     * KHUSUS untuk journal yang masih 0 -- meniru pola fallback
+     * getSiteJournalStats() aslinya, tapi tetap batched (bukan per-journal).
+     *
+     * @param array $stats Referensi array stats, dimodifikasi langsung.
+     * @param string $field 'views' atau 'downloads'.
+     * @param int $assocType ASSOC_TYPE_ARTICLE atau ASSOC_TYPE_GALLEY.
+     * @param string $metricTypeFilter Klausa SQL filter metric_type (sudah termasuk kurung).
+     */
+    private function _fillMetricStatsBatch(array &$stats, string $field, int $assocType, string $metricTypeFilter): void {
+        $journalIds = array_keys($stats);
+        if (empty($journalIds)) return;
+
+        $placeholders = implode(',', array_fill(0, count($journalIds), '?'));
+        $result = $this->retrieve(
+            "SELECT context_id, SUM(metric) AS t FROM metrics
+             WHERE assoc_type = ? AND context_id IN ($placeholders) AND $metricTypeFilter
+             GROUP BY context_id",
+            array_merge([$assocType], $journalIds)
+        );
+        if ($result) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $stats[(int) $row['context_id']][$field] = (int) $row['t'];
+                $result->MoveNext();
+            }
+            $result->Close();
+        }
+
+        $needFallback = [];
+        foreach ($journalIds as $id) {
+            if ($stats[$id][$field] === 0) {
+                $needFallback[] = $id;
+            }
+        }
+        if (empty($needFallback)) {
+            return;
+        }
+
+        $fbPlaceholders = implode(',', array_fill(0, count($needFallback), '?'));
+        $fbResult = $this->retrieve(
+            "SELECT context_id, SUM(metric) AS t FROM metrics
+             WHERE assoc_type = ? AND context_id IN ($fbPlaceholders)
+             GROUP BY context_id",
+            array_merge([$assocType], $needFallback)
+        );
+        if ($fbResult) {
+            while (!$fbResult->EOF) {
+                $row = $fbResult->GetRowAssoc(false);
+                $stats[(int) $row['context_id']][$field] = (int) $row['t'];
+                $fbResult->MoveNext();
+            }
+            $fbResult->Close();
+        }
     }
 
     /**
