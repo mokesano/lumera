@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 
 import('classes.db.DAO');
+import('classes.article.Article');
 
 if (!defined('ASSOC_TYPE_ARTICLE')) {
     define('ASSOC_TYPE_ARTICLE', 259);
