@@ -595,7 +595,7 @@ class PKPUser extends DataObject {
      */
     public function getBiography($locale) {
         $biography = $this->getData('biography', $locale);
-        return is_array($biography) ? $biography : (string) $biography;
+        return is_array($biography) ? $biography : $biography;
     }
 
     /**
@@ -604,7 +604,7 @@ class PKPUser extends DataObject {
      * @param string $locale
      */
     public function setBiography($biography, $locale) {
-        $this->setData('biography', (string) $biography, $locale);
+        $this->setData('biography', $biography, $locale);
     }
 
     /**
