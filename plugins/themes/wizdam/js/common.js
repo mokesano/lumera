@@ -145,6 +145,8 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener('DOMContentLoaded', () => {
     const details1 = document.querySelector('details.Details-2932877531');
     const details2 = document.querySelector('details.Details-3185356244');
+    const summary1 = details1 ? details1.querySelector('summary') : null;
+    const summary2 = details2 ? details2.querySelector('summary') : null;
 
     function toggleDetails(detailsToOpen, detailsToClose) {
         if (detailsToOpen.hasAttribute('open')) {
@@ -155,15 +157,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    details1.addEventListener('click', (event) => {
-        event.preventDefault();
-        toggleDetails(details1, details2);
-    });
+    // [FIX] Listener moved from the whole <details> to its <summary> only.
+    // Attaching it to <details> caught every click bubbling up from inside
+    // (including the Subscribe/Pay/Learn more buttons in the <article> body)
+    // and cancelled their default action via preventDefault() — that's why
+    // those buttons stopped submitting/navigating. <summary> is also the
+    // only element that natively toggles <details>, so behavior is unchanged.
+    if (summary1) {
+        summary1.addEventListener('click', (event) => {
+            event.preventDefault();
+            toggleDetails(details1, details2);
+        });
+    }
 
-    details2.addEventListener('click', (event) => {
-        event.preventDefault();
-        toggleDetails(details2, details1);
-    });
+    if (summary2) {
+        summary2.addEventListener('click', (event) => {
+            event.preventDefault();
+            toggleDetails(details2, details1);
+        });
+    }
 });
 
 /**

@@ -21,7 +21,9 @@
 
 {include file="common/formErrors.tpl"}
 
-<p class="instruct" style="color: #666; margin-bottom: 20px;">{translate key="admin.doi.settingsDescription"}</p>
+<div class="instruct">
+    <span class="instruct" style="color: #666; margin-bottom: 20px;">{translate key="admin.doi.settingsDescription"}</span>
+</div>
 
 <form method="post" action="{url page="admin" op="save-doi-settings"}">
     <input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
