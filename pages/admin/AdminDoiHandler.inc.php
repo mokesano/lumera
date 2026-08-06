@@ -34,9 +34,22 @@ class AdminDoiHandler extends Handler {
 
     /**
      * Memuat dependensi antarmuka dan Locale
+     * [BUGFIX] parent::setupTemplate() (AdminHandler) menerima parameter
+     * boolean $subclass, BUKAN $request -- sebelumnya $this->setupTemplate()
+     * dipanggil tanpa argumen (jadi $request=null diteruskan ke parent, yang
+     * falsy), sehingga breadcrumb cuma tampil "User" tanpa "Site
+     * Administration" maupun halaman saat ini.
      */
     public function setupTemplate($request = null): void {
-        parent::setupTemplate($request);
+        parent::setupTemplate(true); // true = sertakan "Site Administration" di breadcrumb
+        if (!$request) $request = Application::get()->getRequest();
+
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->append('pageHierarchy', [
+            $request->url(null, 'admin', 'doi-settings'),
+            'admin.doi.settings'
+        ]);
+
         AppLocale::requireComponents(
             [
                 LOCALE_COMPONENT_CORE_COMMON,
