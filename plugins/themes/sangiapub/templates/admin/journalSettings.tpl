@@ -101,6 +101,11 @@
 			</td>
 		</tr>
 		<tr valign="top">
+			<td colspan="2" class="label">
+				<input type="checkbox" name="doiIndependent" id="doiIndependent" value="1"{if $doiIndependent} checked="checked"{/if} /> <label for="doiIndependent">{translate key="admin.journals.doiIndependentInstructions"}</label>
+			</td>
+		</tr>
+		<tr valign="top">
 			<td width="20%" class="label">{translate key="admin.journals.certificateSignatory.label"}</td>
 			<td width="80%" class="value">
 				{if !isset($certificateSignatoryManagerCount) || $certificateSignatoryManagerCount == 0}

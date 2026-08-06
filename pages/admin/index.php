@@ -78,9 +78,17 @@ switch ($op) {
 	case 'save-payment-settings':
 	case 'manualPayments':
 	case 'confirmManualPaymentAction':
-	case 'rejectManualPaymentAction': // [BARU]
+	case 'rejectManualPaymentAction':
 		define('HANDLER_CLASS', 'AdminPaymentHandler'); 
 		import('pages.admin.AdminPaymentHandler');
+		break;
+	//
+	// DOI and API Credential
+	//
+	case 'doi-settings':
+	case 'save-doi-settings':
+		define('HANDLER_CLASS', 'AdminDoiHandler');
+		import('pages.admin.AdminDoiHandler');
 		break;
 	//
 	// Administrative functions

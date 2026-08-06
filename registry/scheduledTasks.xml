@@ -39,4 +39,8 @@
 		<descr>Send automated email to registered readers that have requested to be notified when an issue becomes open access.</descr>
 		<frequency hour="0"/>
 	</task>
+  <task class="lib.wizdam.classes.tasks.CitationRefreshTask">
+		<descr>Refresh citationCount for published articles with a DOI, once per week.</descr>
+		<frequency dayofweek="0" hour="2"/>
+	</task>
 </scheduled_tasks>

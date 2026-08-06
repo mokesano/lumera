@@ -78,8 +78,6 @@ class PaymentSettingsForm extends Form {
             'enabled_midtrans',
             'enabled_xendit',
             'paypal_seller_email',
-            // [BARU] Array paralel -- satu elemen per baris rekening bank
-            // yang diinput admin lewat form repeatable.
             'bank_name',
             'account_number',
             'account_holder',
@@ -90,28 +88,17 @@ class PaymentSettingsForm extends Form {
             'xendit_api_key',
             'xendit_webhook_token'
         ]);
+
+        $this->setData('bank_accounts', $this->_buildBankAccountsFromInput());
     }
 
     /**
-     * Menyimpan pengaturan ke Database (Site Settings)
+     * Merakit array rekening bank terstruktur dari field array paralel hasil
+     * form repeatable (bank_name[], account_number[], dst). Dipakai bersama
+     * oleh readInputData() (redisplay saat error) dan execute() (simpan).
+     * @return array setiap elemen: ['bankName','accountNumber','accountHolder','branch','notes']
      */
-    public function execute($object = null): void {
-        $this->settingsService->updateSetting('active_gateway', $this->getData('active_gateway'), 'string');
-        $this->settingsService->updateSetting('is_production', (bool) $this->getData('is_production'), 'bool');
-
-        $this->settingsService->updateSetting('enabled_manual', (bool) $this->getData('enabled_manual'), 'bool');
-        $this->settingsService->updateSetting('enabled_paypal', (bool) $this->getData('enabled_paypal'), 'bool');
-
-        $enabledGateways = [];
-        if ($this->getData('enabled_midtrans')) $enabledGateways[] = 'midtrans';
-        if ($this->getData('enabled_xendit')) $enabledGateways[] = 'xendit';
-        $this->settingsService->updateSetting('enabled_gateways', json_encode($enabledGateways), 'string');
-
-        $this->settingsService->updateSetting('paypal_seller_email', $this->getData('paypal_seller_email'), 'string');
-
-        // [BARU] Rakit array paralel dari form repeatable menjadi daftar
-        // rekening terstruktur. Baris yang bankName DAN accountNumber-nya
-        // sama-sama kosong dilewati (dianggap baris kosong yang tidak diisi).
+    private function _buildBankAccountsFromInput(): array {
         $bankNames = (array) $this->getData('bank_name');
         $accountNumbers = (array) $this->getData('account_number');
         $accountHolders = (array) $this->getData('account_holder');
@@ -134,6 +121,27 @@ class PaymentSettingsForm extends Form {
                 'notes' => trim((string) ($bankNotes[$i] ?? '')),
             ];
         }
+        return $bankAccounts;
+    }
+
+    /**
+     * Menyimpan pengaturan ke Database (Site Settings)
+     */
+    public function execute($object = null): void {
+        $this->settingsService->updateSetting('active_gateway', $this->getData('active_gateway'), 'string');
+        $this->settingsService->updateSetting('is_production', (bool) $this->getData('is_production'), 'bool');
+
+        $this->settingsService->updateSetting('enabled_manual', (bool) $this->getData('enabled_manual'), 'bool');
+        $this->settingsService->updateSetting('enabled_paypal', (bool) $this->getData('enabled_paypal'), 'bool');
+
+        $enabledGateways = [];
+        if ($this->getData('enabled_midtrans')) $enabledGateways[] = 'midtrans';
+        if ($this->getData('enabled_xendit')) $enabledGateways[] = 'xendit';
+        $this->settingsService->updateSetting('enabled_gateways', json_encode($enabledGateways), 'string');
+
+        $this->settingsService->updateSetting('paypal_seller_email', $this->getData('paypal_seller_email'), 'string');
+
+        $bankAccounts = $this->_buildBankAccountsFromInput();
         $this->settingsService->updateSetting('bank_accounts', json_encode($bankAccounts), 'string');
         
         $this->settingsService->updateSetting('midtrans_server_key', $this->getData('midtrans_server_key'), 'string');

@@ -103,6 +103,16 @@
 	<message key="admin.journals.certificateSignatory.selectInstructions">This journal has more than two Journal Managers. Please select exactly one whose name will appear on issued certificates and LoA.</message>
 	<message key="admin.journals.paymentIndependentInstructions">Mark this journal as an independent Partnership journal</message>
 
+	<!-- DOI & API Credential -->
+	<message key="admin.journals.doiIndependentInstructions">Mark this journal as DOI-independent (not part of the publisher's DOI prefix ownership) -- requires its own DOI credentials instead of the publisher's.</message>
+	<message key="admin.doi.settings">DOI Credential Settings</message>
+	<message key="admin.doi.settingsSaved">DOI credential settings have been saved.</message>
+	<message key="admin.doi.settingsDescription">These credentials are used by journals that are part of the publisher's DOI prefix ownership (i.e. NOT marked as DOI-independent). DOI-independent journals configure their own credentials separately.</message>
+	<message key="admin.doi.crossrefEmail">Crossref Email</message>
+	<message key="admin.doi.crossrefUsername">Crossref Username</message>
+	<message key="admin.doi.crossrefPassword">Crossref Password</message>
+	<message key="admin.doi.optionalSources">Optional Citation Sources</message>
+
 	<!-- Merge Users -->
 	<message key="admin.mergeUsers">Merge Users</message>
 	<message key="admin.mergeUsers.mergeUser">Merge User</message>
