@@ -39,7 +39,6 @@ class MostDownloadHandler extends Handler {
      * @param $args array
      * @param $request PKPRequest
      */
-    // Nama method WAJIB "downloaded" sesuai parameter $op
     public function download(array $args, PKPRequest $request) {
         $this->setupTemplate($request);
         $templateMgr = TemplateManager::getManager($request);
