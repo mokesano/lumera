@@ -646,7 +646,7 @@ class PKPUser extends DataObject {
      */
     public function getGossip($locale) {
         $gossip = $this->getData('gossip', $locale);
-        return $gossip !== null ? (string) $gossip : '';
+        return $gossip !== null ? $gossip : '';
     }
 
     /**
@@ -655,7 +655,7 @@ class PKPUser extends DataObject {
      * @param string $locale
      */
     public function setGossip($gossip, $locale) {
-        $this->setData('gossip', (string) $gossip, $locale);
+        $this->setData('gossip', $gossip, $locale);
     }
 
     /**
