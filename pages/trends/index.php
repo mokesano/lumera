@@ -17,7 +17,6 @@ declare(strict_types=1);
 switch ($op) {
     case 'index':
     case '':
-        // [WIZDAM] - Halaman Hub Utama
         define('HANDLER_CLASS', 'TrendsHandler');
         import('pages.trends.TrendsHandler');
         break;
@@ -28,13 +27,11 @@ switch ($op) {
         break;
         
     case 'download':
-        // Disiapkan untuk AI selanjutnya
         define('HANDLER_CLASS', 'MostDownloadHandler');
         import('pages.trends.MostDownloadHandler');
         break;
         
     case 'cited':
-        // Disiapkan untuk AI selanjutnya
         define('HANDLER_CLASS', 'MostCitedHandler');
         import('pages.trends.MostCitedHandler');
         break;
