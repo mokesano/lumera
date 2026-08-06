@@ -66,7 +66,37 @@ class WizdamTrendsManager {
      * @param PKPRequest $request
      */
     public static function assignMostDownloadedPayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request): void {
+        import('lib.wizdam.trends.MostPopularDAO');
+        $popularDao = new MostPopularDAO();
 
+        if ($journal) {
+            $journalId = (int)$journal->getId();
+            $rawDownloadsData = $popularDao->getMostDownloadedArticles($journalId, 10);
+            $articlesPayload = self::_formatMicroPayload($rawDownloadsData, $request);
+            $templateMgr->assign('isSiteLevel', false);
+        } else {
+            $rawDownloadsData = $popularDao->getSiteLevelTopDownloadedArticles(4);
+            $articlesPayload = self::_formatMicroPayload($rawDownloadsData, $request);
+            $templateMgr->assign('isSiteLevel', true);
+        }
+
+        // [LUMERA] - Urutkan global berdasarkan downloads (disimpan di key total_views,
+        // lihat catatan di MostPopularDAO::getMostDownloadedArticles())
+        usort($articlesPayload, function($a, $b) {
+            return $b['total_views'] <=> $a['total_views'];
+        });
+
+        // [CATATAN] most_downloaded.tpl adalah salinan persis most_popular.tpl
+        // (cuma beda judul teks) -- nama variabel Smarty-nya IDENTIK.
+        $templateMgr->assign([
+            'topArticle'           => array_slice($articlesPayload, 0, 1),
+            'secondTierArticles'   => array_slice($articlesPayload, 1, 4),
+            'thirdTierArticles'    => array_slice($articlesPayload, 5, 4),
+            'totalPopularArticles' => count($articlesPayload),
+            'popularArticlesList'  => $articlesPayload,
+            'lastUpdateDate'       => date('Y-m-d H:i:s'),
+            'cacheInfo'            => ['enabled' => true, 'hit' => false]
+        ]);
     }
 
     /**
