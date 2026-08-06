@@ -19,6 +19,7 @@ import('lib.pkp.classes.db.DAO');
 import('classes.article.Article');
 
 if (!defined('ASSOC_TYPE_ARTICLE')) define('ASSOC_TYPE_ARTICLE', 259);
+if (!defined('ASSOC_TYPE_GALLEY')) define('ASSOC_TYPE_GALLEY', 258);
 
 class TrendsManagerDAO extends DAO {
 
@@ -170,6 +171,88 @@ class TrendsManagerDAO extends DAO {
                 $journalId = (int)$row['journal_id'];
 
                 $topArticleData = $this->getMostDownloadedArticles($journalId, 1);
+
+                if (!empty($topArticleData)) {
+                    $articleId = array_key_first($topArticleData);
+                    $siteLevelArticles[$articleId] = $topArticleData[$articleId];
+                }
+
+                $journalsResult->MoveNext();
+            }
+            $journalsResult->Close();
+        }
+
+        return $siteLevelArticles;
+    }
+
+    /**
+     * Mengambil artikel dengan sitasi terbanyak dalam sebuah jurnal (Journal Level).
+     * Membaca angka yang SUDAH TERSIMPAN di article_settings (setting_name =
+     * 'citationCount') -- diisi oleh scheduled task terpisah (belum dibangun),
+     * BUKAN memanggil API sitasi eksternal secara langsung di sini. Struktur
+     * hasil PERSIS sama dengan getMostPopularArticles() (key 'views') supaya
+     * bisa dipakai ulang langsung oleh TrendsManager::_formatMicroPayload().
+     * @param int $journalId
+     * @param int $limit
+     * @return array [$articleId => ['views' => int totalCitations, 'date_published' => string]]
+     */
+    public function getMostCitedArticles(int $journalId, int $limit = 10): array {
+        $sql = "SELECT a.article_id, CAST(ast.setting_value AS UNSIGNED) as total_citations, pa.date_published
+                FROM article_settings ast
+                JOIN articles a ON ast.article_id = a.article_id
+                JOIN published_articles pa ON a.article_id = pa.article_id
+                JOIN issues i ON pa.issue_id = i.issue_id
+                WHERE ast.setting_name = 'citationCount'
+                AND a.journal_id = ?
+                AND a.status = ?
+                AND i.published = 1
+                AND pa.date_published IS NOT NULL
+                AND CAST(ast.setting_value AS UNSIGNED) > 0
+                ORDER BY total_citations DESC, pa.date_published DESC
+                LIMIT ?";
+
+        $result = $this->retrieve($sql, [$journalId, (int)STATUS_PUBLISHED, $limit * 2]);
+
+        $citationsData = [];
+        if ($result && !$result->EOF) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $citationsData[(int)$row['article_id']] = [
+                    'views' => (int)$row['total_citations'],
+                    'date_published' => (string)$row['date_published']
+                ];
+                $result->MoveNext();
+            }
+            $result->Close();
+        }
+
+        return $citationsData;
+    }
+
+    /**
+     * Mengambil artikel dengan sitasi terbanyak dari top jurnal di sistem (Site Level).
+     * @param int $journalLimit
+     * @return array [$articleId => ['views' => int totalCitations, 'date_published' => string]]
+     */
+    public function getSiteLevelTopCitedArticles(int $journalLimit = 4): array {
+        $sqlJournals = "SELECT a.journal_id, SUM(CAST(ast.setting_value AS UNSIGNED)) as total_journal_citations
+                        FROM article_settings ast
+                        JOIN articles a ON ast.article_id = a.article_id
+                        WHERE ast.setting_name = 'citationCount' AND a.status = ?
+                        GROUP BY a.journal_id
+                        ORDER BY total_journal_citations DESC
+                        LIMIT ?";
+
+        $journalsResult = $this->retrieve($sqlJournals, [(int)STATUS_PUBLISHED, $journalLimit]);
+
+        $siteLevelArticles = [];
+
+        if ($journalsResult && !$journalsResult->EOF) {
+            while (!$journalsResult->EOF) {
+                $row = $journalsResult->GetRowAssoc(false);
+                $journalId = (int)$row['journal_id'];
+
+                $topArticleData = $this->getMostCitedArticles($journalId, 1);
 
                 if (!empty($topArticleData)) {
                     $articleId = array_key_first($topArticleData);

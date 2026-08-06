@@ -1,5 +1,9 @@
 {**
  * @file template/future/trends_hub_standalone.tpl
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2018-2026 Rochmady and Wizdam Team
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * [WIZDAM] - Trends Hub Standalone Page
  * Halaman pusat untuk navigasi metrik: Popular, Download, dan Cited.

@@ -1,7 +1,13 @@
 {**
  * @file template/trends/journalStats_standalone.tpl
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2018-2026 Rochmady and Wizdam Team
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ *
  * [WIZDAM] - Tampilan Statistik Level Jurnal
  *}
+ 
 <div class="wizdam-journal-dashboard">
     <h2>{$currentJournalTitle} Analytics</h2>
     <p class="last-updated"><small>Last updated: {$lastUpdated}</small></p>
