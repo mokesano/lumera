@@ -2,13 +2,13 @@
 declare(strict_types=1);
 
 /**
- * @file lib/wizdam/trends/WizdamTrendsManager.inc.php
+ * @file lib/wizdam/trends/TrendsManager.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Lumera Teams
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
- * @class WizdamTrendsManager
+ * @class TrendsManager
  * @ingroup wizdam_trends
  *
  * @brief Service class untuk mempopulasi data Trends.
@@ -17,7 +17,7 @@ declare(strict_types=1);
  * Termasuk Cover Image, Open Access, Keywords, dan Article Type.
  */
 
-class WizdamTrendsManager {
+class TrendsManager {
 
     /**
      * Assign data Most Popular Artciles to Smarty.
@@ -26,8 +26,8 @@ class WizdamTrendsManager {
      * @param PKPRequest $request
      */
     public static function assignMostPopularPayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request): void {
-        import('lib.wizdam.trends.MostPopularDAO');
-        $popularDao = new MostPopularDAO();
+        import('lib.wizdam.trends.TrendsManagerDAO');
+        $popularDao = new TrendsManagerDAO();
         
         $articlesPayload = [];
         
@@ -66,8 +66,8 @@ class WizdamTrendsManager {
      * @param PKPRequest $request
      */
     public static function assignMostDownloadedPayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request): void {
-        import('lib.wizdam.trends.MostPopularDAO');
-        $popularDao = new MostPopularDAO();
+        import('lib.wizdam.trends.TrendsManagerDAO');
+        $popularDao = new TrendsManagerDAO();
 
         if ($journal) {
             $journalId = (int)$journal->getId();
@@ -81,7 +81,7 @@ class WizdamTrendsManager {
         }
 
         // [LUMERA] - Urutkan global berdasarkan downloads (disimpan di key total_views,
-        // lihat catatan di MostPopularDAO::getMostDownloadedArticles())
+        // lihat catatan di TrendsManagerDAO::getMostDownloadedArticles())
         usort($articlesPayload, function($a, $b) {
             return $b['total_views'] <=> $a['total_views'];
         });

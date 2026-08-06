@@ -186,8 +186,8 @@ class IndexHandler extends Handler {
         $templateMgr->assign('statsJsonPath', $jsonPath);
         
         // [TRENDS] Most Popular ---
-        import('lib.wizdam.trends.WizdamTrendsManager');
-        WizdamTrendsManager::assignMostPopularPayload($templateMgr, $journal, $request);
+        import('lib.wizdam.trends.TrendsManager');
+        TrendsManager::assignMostPopularPayload($templateMgr, $journal, $request);
         
         $templateMgr->display('index/journal.tpl');
     }
@@ -287,8 +287,8 @@ class IndexHandler extends Handler {
         $templateMgr->assign('publisher', (new PublisherProfileService())->getProfile());
         
         // [LUMERA] Most Popular ---
-        import('lib.wizdam.trends.WizdamTrendsManager');
-        WizdamTrendsManager::assignMostPopularPayload($templateMgr, null, $request);
+        import('lib.wizdam.trends.TrendsManager');
+        TrendsManager::assignMostPopularPayload($templateMgr, null, $request);
 
         $templateMgr->assign('alphaList', explode(' ', __('common.alphaList')));
         $templateMgr->setCacheability(CACHEABILITY_PUBLIC);

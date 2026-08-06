@@ -51,8 +51,8 @@ class MostDownloadHandler extends Handler {
         }
 
         // [WIZDAM] Eksekusi WIZDAM Trends Manager
-        import('lib.wizdam.trends.WizdamTrendsManager');
-        WizdamTrendsManager::assignMostDownloadedPayload($templateMgr, $journal, $request);
+        import('lib.wizdam.trends.TrendsManager');
+        TrendsManager::assignMostDownloadedPayload($templateMgr, $journal, $request);
 
         // Path ke template yang menyatukan header/footer WIZDAM dan most_downloaded.tpl
         return $templateMgr->display('trends/most_downloaded.tpl');

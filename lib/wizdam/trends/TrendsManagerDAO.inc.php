@@ -2,13 +2,13 @@
 declare(strict_types=1);
 
 /**
- * @file lib/wizdam/trends/MostPopularDAO.inc.php
+ * @file lib/wizdam/trends/TrendsManagerDAO.inc.php
  * 
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Wizdam Team
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
- * @class MostPopularDAO
+ * @class TrendsManagerDAO
  * @ingroup Statistics
  * 
  * @brief [LUMERA] - Exclusive DAO for Most Popular metrics.
@@ -20,7 +20,7 @@ import('classes.article.Article');
 
 if (!defined('ASSOC_TYPE_ARTICLE')) define('ASSOC_TYPE_ARTICLE', 259);
 
-class MostPopularDAO extends DAO {
+class TrendsManagerDAO extends DAO {
 
     /**
      * Mengambil artikel terpopuler dalam sebuah jurnal (Journal Level)
