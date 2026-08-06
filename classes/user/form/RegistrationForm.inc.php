@@ -126,6 +126,23 @@ class RegistrationForm extends Form {
                 $this->addCheck(new FormValidatorEmail($this, 'email', 'required', 'user.profile.form.emailRequired'));
                 
                 $this->addCheck(new FormValidatorORCID($this, 'orcid', 'optional', 'user.profile.form.orcidInvalid'));
+                // [LUMERA] Cegah ORCID yang sudah diklaim user lain didaftarkan ulang.
+                $this->addCheck(new FormValidatorCustom(
+                    $this, 'orcid', 'optional', 'user.profile.form.orcidInUse',
+                    function ($orcid) {
+                        if (empty($orcid)) return true;
+                        $cleanOrcid = preg_replace('/(https?:\/\/)?(orcid\.org\/)?/', '', $orcid);
+                        /** @var UserDAO $userDao */
+                        $userDao = DAORegistry::getDAO('UserDAO');
+                        $result = $userDao->retrieve(
+                            "SELECT user_id FROM user_settings WHERE setting_name = 'orcid' AND setting_value = ?",
+                            [$cleanOrcid]
+                        );
+                        $isDuplicate = $result && !$result->EOF;
+                        if ($result) $result->Close();
+                        return !$isDuplicate;
+                    }
+                ));
 
                 // Memastikan field Affiliasi (Instansi) wajib diisi
                 $this->addCheck(new FormValidator($this, 'affiliation', 'required', 'user.profile.form.affiliationRequired'));
@@ -249,11 +266,12 @@ class RegistrationForm extends Form {
     public function RegistrationForm() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class " . get_class($this) . " uses deprecated constructor parent::RegistrationForm(). Please refactor to parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**

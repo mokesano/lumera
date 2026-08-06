@@ -47,7 +47,27 @@ class ProfileForm extends Form {
         $this->addCheck(new FormValidator($this, 'lastName', 'required', 'user.profile.form.lastNameRequired'));
         $this->addCheck(new FormValidatorUrl($this, 'userUrl', 'optional', 'user.profile.form.urlInvalid'));
         $this->addCheck(new FormValidatorEmail($this, 'email', 'required', 'user.profile.form.emailRequired'));
+
         $this->addCheck(new FormValidatorORCID($this, 'orcid', 'optional', 'user.profile.form.orcidInvalid'));
+        // [LUMERA] Cegah ORCID yang sudah diklaim user lain diklaim ulang saat.
+        $currentUserId = (int) $user->getId();
+        $this->addCheck(new FormValidatorCustom(
+            $this, 'orcid', 'optional', 'user.profile.form.orcidInUse',
+            function ($orcid) use ($currentUserId) {
+                if (empty($orcid)) return true;
+                $cleanOrcid = preg_replace('/(https?:\/\/)?(orcid\.org\/)?/', '', $orcid);
+                /** @var UserDAO $userDao */
+                $userDao = DAORegistry::getDAO('UserDAO');
+                $result = $userDao->retrieve(
+                    "SELECT user_id FROM user_settings WHERE setting_name = 'orcid' AND setting_value = ? AND user_id != ?",
+                    [$cleanOrcid, $currentUserId]
+                );
+                $isDuplicate = $result && !$result->EOF;
+                if ($result) $result->Close();
+                return !$isDuplicate;
+            }
+        ));
+
         $this->addCheck(new FormValidatorCustom($this, 'email', 'required', 'user.register.form.emailExists', [DAORegistry::getDAO('UserDAO'), 'userExistsByEmail'], [$user->getId(), true], true));
         $this->addCheck(new FormValidatorPost($this));
     }
@@ -57,9 +77,13 @@ class ProfileForm extends Form {
      */
     public function ProfileForm() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
-        $this->__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
