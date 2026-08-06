@@ -35,6 +35,21 @@ class MostPopularHandler extends Handler {
     }
 
     /**
+     * [BUGFIX] Home (dan inisial jurnal) SUDAH otomatis dirender
+     * breadcrumbs.tpl di luar loop $pageHierarchy -- cukup tautkan balik
+     * ke hub Trends (pola yang sama seperti SearchHandler::setupTemplate()).
+     * @param PKPRequest|null $request
+     */
+    public function setupTemplate($request = null) {
+        parent::setupTemplate($request);
+        if (!$request) $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign('pageHierarchy', [
+            [$request->url(null, 'trends'), 'Trends & Metrics', true],
+        ]);
+    }
+
+    /**
      * Display the most popular articles.
      * @param $args array
      * @param $request PKPRequest
