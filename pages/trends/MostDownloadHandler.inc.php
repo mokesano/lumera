@@ -11,9 +11,9 @@ declare(strict_types=1);
  * @class MostDownloadHandler
  * @ingroup pages_trends
  * 
- * @brief Handler for displaying the most downloaded articles.
+ * @brief Handler for displaying the most download articles.
  * 
- * URL Target: /{context}/trends/downloaded ATAU /index/trends/downloaded
+ * URL Target: /{context}/trends/download ATAU /index/trends/download
  */
 
 import('classes.handler.Handler');
