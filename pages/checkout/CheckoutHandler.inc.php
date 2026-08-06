@@ -198,11 +198,6 @@ class CheckoutHandler extends Handler {
         }
 
         $user = $request->getUser();
-        if (!$articleId) {
-            $request->redirect(null, 'index');
-            return;
-        }
-        
         $journal = $request->getJournal(); 
         $journalId = $journal ? (int) $journal->getId() : 0;
         

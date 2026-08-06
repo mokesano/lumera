@@ -228,7 +228,7 @@
                             </div>
                         </label>
                     </div>
-                    <button href="{url op="payPurchaseSubscription" path="institutional"|to_array:$subscriptionType->getId()}" data-section-outline-level="3" class="ButtonLink-2686258585" data-section-layout-level="3"><span data-section-outline-level="3" class="ButtonLabel-2218521826" data-section-layout-level="3">Learn more</span></button>
+                    <button type="button" onclick="window.location.href='{url op="payPurchaseSubscription" path="institutional"|to_array:$subscriptionType->getId()}'" data-section-outline-level="3" class="ButtonLink-2686258585" data-section-layout-level="3"><span data-section-outline-level="3" class="ButtonLabel-2218521826" data-section-layout-level="3">Learn more</span></button>
                     <ul class="usps-list ListInset-3866894855" id="usps" data-section-outline-level="4" data-section-layout-level="2">
                         <li data-section-outline-level="4" class="ListElement-411063136" data-section-layout-level="2">{translate key="subscriptions.institutionalDescription"}</li>
                         {if $subscriptionType->getSubscriptionTypeDescription()}
