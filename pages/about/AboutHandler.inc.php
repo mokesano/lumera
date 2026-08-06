@@ -890,6 +890,11 @@ class AboutHandler extends Handler {
         }
         // --- AKHIR BLOK WizdamStats ---
 
+        /** @var PublishedArticleDAO $publishedArticleDao */
+        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+        $yearRange = $publishedArticleDao->getArticleYearRange($journal->getId());
+        $templateMgr->assign('firstYear', $yearRange[0] ?? '');
+
         $templateMgr->assign('helpTopicId','user.about'); 
         $templateMgr->display('about/statistics.tpl');
     }
