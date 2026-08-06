@@ -28,8 +28,23 @@ class TrendsHandler extends Handler {
      */
     public function authorize($request, $args, $roleAssignments) {
         import('lib.pkp.classes.security.authorization.ContextRequiredPolicy');
-        $this->addPolicy(new ContextRequiredPolicy($request, 'user.authorization.noContext', false));
+        $this->addPolicy(new ContextRequiredPolicy($request, 'user.authorization.noContext'));
         return parent::authorize($request, $args, $roleAssignments);
+    }
+
+    /**
+     * [BUGFIX] Home (dan inisial jurnal, kalau di dalam jurnal) SUDAH
+     * otomatis dirender breadcrumbs.tpl SEBELUM dan DI LUAR loop
+     * $pageHierarchy (lihat blok "1. Link Home" & "2. Link Jurnal" di
+     * template) -- jadi TIDAK PERLU ditambahkan lagi di sini. Halaman ini
+     * adalah hub /trends itu sendiri, jadi cukup array kosong.
+     * @param PKPRequest|null $request
+     */
+    public function setupTemplate($request = null) {
+        parent::setupTemplate($request);
+        if (!$request) $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign('pageHierarchy', []);
     }
 
     /**
@@ -56,5 +71,6 @@ class TrendsHandler extends Handler {
         // Tampilkan template Hub Anda
         return $templateMgr->display('trends/trends.tpl');
     }
+
 }
 ?>
