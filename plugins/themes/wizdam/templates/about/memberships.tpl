@@ -9,8 +9,8 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="about.memberships"}
-{include file="common/header-members.tpl"}
+    {assign var="pageTitle" value="about.memberships"}
+    {include file="common/header-members.tpl"}
 {/strip}
 
 <div class="MainGrid-1563860116">
@@ -81,7 +81,8 @@
 
 <aside role="complementary" data-section-outline-level="2" class="AsideBox-1834393749" data-section-layout-level="2">
     <div data-section-outline-level="2" data-section-layout-level="2">
-        <form data-reflect-state="true" method="post" data-section-outline-level="2" class="SubscribeForm-3185356244" data-section-layout-level="2">
+        <form data-reflect-state="true" method="post" action="{url page="user" op="payMembership"}" data-section-outline-level="2" class="SubscribeForm-3185356244" data-section-layout-level="2">
+            <input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
             <details data-section-outline-level="2" class="Details-2932877531" data-section-layout-level="2" open="">
                 <summary class="subscription-type NoneDetailsMarker-270967514" data-section-outline-level="2" data-section-layout-level="2">
                     <div data-section-outline-level="2" class="SummaryStyle-2218521826" data-section-layout-level="2"><svg width="14px" height="14px" viewBox="0 0 32 32" class="details-marker Marker-1664207171" data-section-outline-level="2" data-section-layout-level="2"><path fill="inherit" fill-rule="evenodd" d="M11.5 28c-0.38 0-0.76-0.142-1.052-0.432-0.59-0.58-0.598-1.528-0.016-2.118l10.166-9.492-10.162-9.404c-0.584-0.588-0.58-1.538 0.008-2.118 0.59-0.588 1.54-0.578 2.122 0.008l10.86 10.104c0.772 0.776 0.774 2.028 0.006 2.808l-10.862 10.196c-0.294 0.298-0.682 0.448-1.070 0.448z" data-section-outline-level="2" data-section-layout-level="2"></path></svg>

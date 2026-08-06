@@ -9,8 +9,8 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="about.subscriptions"}
-{include file="common/header-members.tpl"}
+    {assign var="pageTitle" value="about.subscriptions"}
+    {include file="common/header-members.tpl"}
 {/strip}
 
 <div class="MainGrid-1563860116">
@@ -89,6 +89,7 @@
 <aside role="complementary" data-section-outline-level="2" class="AsideBox-1834393749" data-section-layout-level="2">
     <div data-section-outline-level="2" data-section-layout-level="2">
         <form data-reflect-state="true" method="post" data-section-outline-level="2" class="SubscribeForm-3185356244" data-section-layout-level="2">
+            <input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
             {if !$individualSubscriptionTypes->wasEmpty()}
             <details data-section-outline-level="2" class="Details-2932877531" data-section-layout-level="2" open="">
                 {iterate from=individualSubscriptionTypes item=subscriptionType}
@@ -110,7 +111,7 @@
                             </div>
                         </label>
                     </div>
-                    <button id="subscribe-submit-Journal-subscription" type="submit" data-track="cart-add" data-track-product="0" data-section-outline-level="3" class="ButtonPrimary-171795905" data-section-layout-level="3"><span data-section-outline-level="3" class="ButtonLabel-1664207171" data-section-layout-level="3">{translate key="about.subscribe"}</span>
+                    <button id="subscribe-submit-Journal-subscription" type="submit" onclick="this.form.action='{url op="payPurchaseSubscription" path="individual"|to_array:$subscriptionType->getId()}'" data-track="cart-add" data-track-product="0" data-section-outline-level="3" class="ButtonPrimary-171795905" data-section-layout-level="3"><span data-section-outline-level="3" class="ButtonLabel-1664207171" data-section-layout-level="3">{translate key="about.subscribe"}</span>
                     </button>
                     <input type="hidden" id="input-coupon" name="coupon" value="" data-section-outline-level="3" data-section-layout-level="2">
                     <ul class="usps-list ListInset-3866894855" id="usps" data-section-outline-level="4" data-section-layout-level="2">
@@ -149,8 +150,13 @@
                         </label>
                     </div>
                     {if $currentJournal->getSetting('currency')|escape}
-                    <button id="subscribe-submit-Journal-subscription" type="submit" data-track="cart-add" data-track-product="0" data-section-outline-level="3" class="ButtonPrimary-171795905" data-section-layout-level="3"><span data-section-outline-level="3" class="ButtonLabel-1664207171" data-section-layout-level="3">{translate key="about.subscribe"}</span>
-                    </button>
+                        {assign var="purchaseIssueCartAmount" value=$currentJournal->getSetting('purchaseIssueFee')|default:0}
+                        {assign var="purchaseIssueCartCount" value=$issuePerVolume|default:0}
+                        {if $purchaseIssueCartCount > 0}
+                            {math equation="x * y" x=$purchaseIssueCartAmount y=$purchaseIssueCartCount format="%.2f" assign="purchaseIssueCartAmount"}
+                        {/if}
+                        <button id="subscribe-submit-Journal-subscription" type="submit" onclick="this.form.action='{url page="checkout" op="cart" feeType="PURCHASE_ISSUE" amount=$purchaseIssueCartAmount}'" data-track="cart-add" data-track-product="0" data-section-outline-level="3" class="ButtonPrimary-171795905" data-section-layout-level="3"><span data-section-outline-level="3" class="ButtonLabel-1664207171" data-section-layout-level="3">{translate key="about.subscribe"}</span>
+                        </button>
                     {/if}
                     <input type="hidden" id="input-coupon" name="coupon" value="" data-section-outline-level="3" data-section-layout-level="2">
                     <ul class="usps-list ListInset-3866894855" id="usps" data-section-outline-level="4" data-section-layout-level="2">
@@ -192,7 +198,7 @@
                         </div>
                     </label>
                 </div>
-                <a href="#" data-section-outline-level="3" class="ButtonLink-2686258585" data-section-layout-level="3"><span data-section-outline-level="3" class="ButtonLabel-2218521826" data-section-layout-level="3">Learn more</span></a>
+                <a href="{url op="payPurchaseSubscription" path="institutional"|to_array:$subscriptionType->getId()}" data-section-outline-level="3" class="ButtonLink-2686258585" data-section-layout-level="3"><span data-section-outline-level="3" class="ButtonLabel-2218521826" data-section-layout-level="3">Learn more</span></a>
                 <ul class="usps-list ListInset-3866894855" id="usps" data-section-outline-level="4" data-section-layout-level="2">
                     <li data-section-outline-level="4" class="ListElement-411063136" data-section-layout-level="2">{translate key="subscriptions.institutionalDescription"}</li>
                     {if $subscriptionType->getSubscriptionTypeDescription()}
@@ -273,4 +279,3 @@
 </section>
 
 {include file="common/footer.tpl"}
-

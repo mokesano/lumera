@@ -21,7 +21,7 @@
 				</tr>
 			</tbody>
 		</table>
-		<a href="{url page="donations"}" class="button-base-3126136790">
+		<a href="{url page="checkout" op="cart" feeType="PUBLICATION" amount=$currentJournal->getSetting('publicationFee')}" class="button-base-3126136790">
 			<span class="button-label-2057065834">Pay {if $currentJournal->getLocalizedSetting('publicationFeeName')}{$currentJournal->getLocalizedSetting('publicationFeeName')|escape}{else}Article Publication{/if}</span><svg width="32" height="32" viewBox="0 0 32 32" class="button-icon-4260326089"><path fill="inherit" fill-rule="evenodd" d="M11.5 28c-0.38 0-0.76-0.142-1.052-0.432-0.59-0.58-0.598-1.528-0.016-2.118l10.166-9.492-10.162-9.404c-0.584-0.588-0.58-1.538 0.008-2.118 0.59-0.588 1.54-0.578 2.122 0.008l10.86 10.104c0.772 0.776 0.774 2.028 0.006 2.808l-10.862 10.196c-0.294 0.298-0.682 0.448-1.070 0.448z"></path></svg>
 		</a>
 		<details class="details-44861495">
@@ -71,7 +71,7 @@
 				</tr>				
 			</tbody>
 		</table>
-		<a href="{url page="donations"}" class="button-base-3126136790">
+		<a href="{url page="checkout" op="cart" feeType="PUBLICATION" amount=$currentJournal->getSetting('publicationFee')}" class="button-base-3126136790">
 			<span class="button-label-2057065834">Pay {if $currentJournal->getLocalizedSetting('publicationFeeName')}{$currentJournal->getLocalizedSetting('publicationFeeName')|escape}{else}Article Publication{/if}</span><svg width="32" height="32" viewBox="0 0 32 32" class="button-icon-4260326089"><path fill="inherit" fill-rule="evenodd" d="M11.5 28c-0.38 0-0.76-0.142-1.052-0.432-0.59-0.58-0.598-1.528-0.016-2.118l10.166-9.492-10.162-9.404c-0.584-0.588-0.58-1.538 0.008-2.118 0.59-0.588 1.54-0.578 2.122 0.008l10.86 10.104c0.772 0.776 0.774 2.028 0.006 2.808l-10.862 10.196c-0.294 0.298-0.682 0.448-1.070 0.448z"></path></svg>
 		</a>
 		<details class="details-44861495">
