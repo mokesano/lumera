@@ -219,11 +219,6 @@ class UserDAO extends PKPUserDAO {
      * @return array
      */
     public function getAuthorUserMatch($firstName, $lastName, $email, $orcid) {
-        if (is_array($orcid))     { $orcid = reset($orcid) ?: null; }
-        if (is_array($firstName)) { $firstName = reset($firstName) ?: null; }
-        if (is_array($lastName))  { $lastName = reset($lastName) ?: null; }
-        if (is_array($email))     { $email = reset($email) ?: null; }
-
         static $cache = [];
         $cacheKey = md5(serialize([$firstName, $lastName, $email, $orcid]));
         if (isset($cache[$cacheKey])) {
@@ -241,12 +236,15 @@ class UserDAO extends PKPUserDAO {
     
         $userId = null;
     
-        // 1. Try ORCID
-        if (!empty($orcid)) {
+        // 1. [DIPERKUAT] ORCID dan nama harus SAMA-SAMA identik ke user yang SAMA.
+        if (!empty($orcid) && !empty($firstName) && !empty($lastName)) {
             $cleanOrcid = preg_replace('/(https?:\/\/)?(orcid\.org\/)?/', '', $orcid);
             $result = $this->retrieve(
-                "SELECT user_id FROM user_settings WHERE setting_name = 'orcid' AND (setting_value = ? OR setting_value LIKE ?)",
-                [$cleanOrcid, '%' . $cleanOrcid . '%']
+                "SELECT u.user_id FROM users u
+                 JOIN user_settings us ON u.user_id = us.user_id AND us.setting_name = 'orcid'
+                 WHERE (us.setting_value = ? OR us.setting_value LIKE ?)
+                   AND u.first_name = ? AND u.last_name = ?",
+                [$cleanOrcid, '%' . $cleanOrcid . '%', $firstName, $lastName]
             );
             if ($result && !$result->EOF) {
                 $row = $result->GetRowAssoc(false);
@@ -257,7 +255,7 @@ class UserDAO extends PKPUserDAO {
             }
         }
     
-        // 2. Try Email
+        // 2. Fallback: Email (identitas login, cukup unik dengan sendirinya)
         if ($userId === null && !empty($email)) {
             $user = $this->getUserByEmail($email);
             if ($user !== null) {
@@ -265,22 +263,7 @@ class UserDAO extends PKPUserDAO {
             }
         }
     
-        // 3. Try Name
-        if ($userId === null) {
-            $result = $this->retrieve(
-                "SELECT user_id FROM users WHERE first_name = ? AND last_name = ?",
-                [$firstName, $lastName]
-            );
-            if ($result && !$result->EOF) {
-                $row = $result->GetRowAssoc(false);
-                $userId = (int) $row['user_id'];
-            }
-            if ($result) {
-                $result->Close();
-            }
-        }
-    
-        // 4. Fetch User Data if Found
+        // 3. Fetch User Data if Found
         if ($userId !== null) {
             $data['found']  = true;
             $data['userId'] = $userId;
