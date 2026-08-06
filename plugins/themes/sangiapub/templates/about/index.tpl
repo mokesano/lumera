@@ -96,7 +96,10 @@
 
     <aside role="complementary" data-section-outline-level="2" class="AsideBox-1834393749" data-section-layout-level="2">
         <div data-section-outline-level="2" data-section-layout-level="2">
-            <form data-reflect-state="true" method="post" data-section-outline-level="2" class="SubscribeForm-3185356244" data-section-layout-level="2">
+            {assign var="totalFeesCartAmount" value=0}
+            {math equation="x + y" x=$currentJournal->getSetting('publicationFee')|string_format:"%.2f" y=$currentJournal->getSetting('submissionFee')|string_format:"%.2f" format="%.2f" assign="totalFeesCartAmount"}
+            <form data-reflect-state="true" method="post" action="{url page="checkout" op="cart" feeType="PUBLICATION" amount=$totalFeesCartAmount}" data-section-outline-level="2" class="SubscribeForm-3185356244" data-section-layout-level="2">
+                <input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
                 {if $currentJournal->getSetting('publicationFeeName')}
                 <details data-section-outline-level="2" class="Details-2932877531" data-section-layout-level="2" open="">
                     <summary class="subscription-type NoneDetailsMarker-270967514" data-section-outline-level="2" data-section-layout-level="2">
@@ -153,7 +156,7 @@
                                 </div>
                             </label>
                         </div>
-                        <a href="#" data-section-outline-level="3" class="ButtonLink-2686258585" data-section-layout-level="3"><span data-section-outline-level="3" class="ButtonLabel-2218521826" data-section-layout-level="3">Learn more</span></a>
+                        <a href="{url page="checkout" op="cart" feeType="FAST_TRACK" amount=$currentJournal->getSetting('fastTrackFee')}" data-section-outline-level="3" class="ButtonLink-2686258585" data-section-layout-level="3"><span data-section-outline-level="3" class="ButtonLabel-2218521826" data-section-layout-level="3">Learn more</span></a>
                         <ul class="usps-list ListInset-3866894855" id="usps" data-section-outline-level="4" data-section-layout-level="2">
                             <li data-section-outline-level="4" class="ListElement-1282713543" data-section-layout-level="2">{$currentJournal->getLocalizedSetting('fastTrackFeeName')|escape} coverage for all cost article publication</li>
                             <li data-section-outline-level="4" class="ListElement-4106162086" data-section-layout-level="2">{$currentJournal->getLocalizedSetting('fastTrackFeeDescription')|strip_tags|nl2br}</li>
