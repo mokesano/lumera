@@ -51,8 +51,8 @@ class MostPopularHandler extends Handler {
         }
 
         // [WIZDAM] Eksekusi WIZDAM Trends Manager
-        import('lib.wizdam.trends.WizdamTrendsManager');
-        WizdamTrendsManager::assignMostPopularPayload($templateMgr, $journal, $request);
+        import('lib.wizdam.trends.TrendsManager');
+        TrendsManager::assignMostPopularPayload($templateMgr, $journal, $request);
 
         // Path ke template yang menyatukan header/footer WIZDAM dan most_popular.tpl
         return $templateMgr->display('trends/most_popular.tpl');

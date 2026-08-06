@@ -51,8 +51,8 @@ class MostCitedHandler extends Handler {
         }
 
         // [WIZDAM] Eksekusi WIZDAM Trends Manager
-        import('lib.wizdam.trends.WizdamTrendsManager');
-        WizdamTrendsManager::assignMostCitedPayload($templateMgr, $journal, $request);
+        import('lib.wizdam.trends.TrendsManager');
+        TrendsManager::assignMostCitedPayload($templateMgr, $journal, $request);
 
         // Path ke template yang menyatukan header/footer WIZDAM dan most_cited.tpl
         return $templateMgr->display('trends/most_cited.tpl');
