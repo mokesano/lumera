@@ -598,6 +598,10 @@
 		<index name="article_settings_article_id">
 			<col>article_id</col>
 		</index>
+		<index name="article_settings_citation_lookup">
+			<col>setting_name</col>
+			<col>article_id</col>
+		</index>
 		<index name="article_settings_pkey">
 			<col>article_id</col>
 			<col>locale</col>
