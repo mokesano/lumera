@@ -137,7 +137,7 @@ class PKPUser extends DataObject {
      * @param string $locale
      */
     public function setSignature($signature, $locale) {
-        $this->setData('signature', (string) $signature, $locale);
+        $this->setData('signature', $signature, $locale);
     }
 
     /**
@@ -283,7 +283,7 @@ class PKPUser extends DataObject {
      * @param string $locale
      */
     public function setAffiliation($affiliation, $locale) {
-        $this->setData('affiliation', (string) $affiliation, $locale);
+        $this->setData('affiliation', $affiliation, $locale);
     }
 
     /**
