@@ -214,6 +214,14 @@
 			<td class="value"><input type="text" name="userUrl" id="userUrl" value="{$userUrl|escape}" size="30" maxlength="255" class="textField" /></td>
 		</tr>
 		<tr valign="top">
+			<td class="label">{fieldLabel name="scopusId" key="user.scopusId"}</td>
+			<td class="value"><input type="text" name="scopusId" id="scopusId" value="{$scopusId|escape}" size="15" maxlength="24" class="textField" /></td>
+		</tr>
+		<tr valign="top">
+			<td class="label">{fieldLabel name="sintaId" key="user.sintaId"}</td>
+			<td class="value"><input type="text" name="sintaId" id="sintaId" value="{$sintaId|escape}" size="15" maxlength="24" class="textField" /></td>
+		</tr>	
+		<tr valign="top">
 			<td class="label">{fieldLabel name="phone" key="user.phone"}</td>
 			<td class="value"><input type="text" name="phone" id="phone" value="{$phone|escape}" size="15" maxlength="24" class="textField" /></td>
 		</tr>
@@ -221,14 +229,6 @@
 			<td class="label">{fieldLabel name="fax" key="user.fax"}</td>
 			<td class="value"><input type="text" name="fax" id="fax" value="{$fax|escape}" size="15" maxlength="24" class="textField" /></td>
 		</tr>
-		<tr valign="top">
-			<td class="label">{fieldLabel name="phone" key="user.scopus"}</td>
-			<td class="value"><input type="text" name="scopus" id="scopus" value="{$scopus|escape}" size="15" maxlength="24" class="textField" /></td>
-		</tr>
-		<tr valign="top">
-			<td class="label">{fieldLabel name="fax" key="user.sinta"}</td>
-			<td class="value"><input type="text" name="sinta" id="sinta" value="{$sinta|escape}" size="15" maxlength="24" class="textField" /></td>
-		</tr>	
 		<tr valign="top">
 			<td class="label">{fieldLabel for="interests" key="user.interests"}</td>
 			<td class="value">
