@@ -87,6 +87,16 @@
 	<message key="admin.journals.certificateSignatory.selectInstructions">Jurnal ini memiliki lebih dari dua Journal Manager. Silakan pilih tepat satu nama yang akan tampil pada sertifikat dan LoA yang diterbitkan.</message>
 	<message key="admin.journals.paymentIndependentInstructions">Tandai jurnal ini sebagai jurnal Partnership independen</message>
 
+	<!-- Kredensial DOI & API -->
+	<message key="admin.journals.doiIndependentInstructions">Tandai jurnal ini sebagai independen dalam hal DOI (bukan bagian dari kepemilikan prefix DOI penerbit) -- jurnal ini perlu kredensial DOI sendiri, bukan milik penerbit.</message>
+	<message key="admin.doi.settings">Pengaturan Kredensial DOI</message>
+	<message key="admin.doi.settingsSaved">Pengaturan kredensial DOI sudah disimpan.</message>
+	<message key="admin.doi.settingsDescription">Kredensial ini dipakai oleh jurnal-jurnal yang menjadi bagian dari kepemilikan prefix DOI penerbit (yaitu yang TIDAK ditandai DOI-independent). Jurnal DOI-independent mengatur kredensialnya sendiri secara terpisah.</message>
+	<message key="admin.doi.crossrefEmail">Email Crossref</message>
+	<message key="admin.doi.crossrefUsername">Username Crossref</message>
+	<message key="admin.doi.crossrefPassword">Password Crossref</message>
+	<message key="admin.doi.optionalSources">Sumber Sitasi Opsional</message>
+
 	<!-- Merge Users -->
 	<message key="admin.mergeUsers">Gabungkan Para Pengguna</message>
 	<message key="admin.mergeUsers.mergeUser">Gabungkan Para Pengguna</message>

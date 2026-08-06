@@ -22,13 +22,10 @@
     <h3>{translate key="admin.siteManagement"}</h3>
     <ul>
     	<li><a href="{url op="settings"}">{translate key="admin.siteSettings"}</a></li>
-    	
-    	{* ### AWAL MODIFIKASI (TAMBAHKAN BARIS INI) ### *}
         <li><a href="{url op="aboutSite"}">{translate key="admin.aboutSiteSettings"}</a></li>
-        {* ### AKHIR MODIFIKASI ### *}
-        
     	<li><a href="{url op="journals"}">{translate key="admin.hostedJournals"}</a></li>
     	<li><a href="{url op="payment-settings"}">{translate key="admin.paymentSettings"}</a></li>
+		<li><a href="{url op="doi-settings"}">{translate key="admin.doi.settings"}</a></li>
     	<li><a href="{url op="languages"}">{translate key="common.languages"}</a></li>
     	<li><a href="{url op="auth"}">{translate key="admin.authSources"}</a></li>
     	<li><a href="{url op="categories"}">{translate key="admin.categories"}</a></li>

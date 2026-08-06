@@ -113,6 +113,7 @@ class JournalSiteSettingsForm extends Form {
                     'enabled' => $journal->getEnabled(),
                     'showOnHomepage' => $journal->getSetting('showOnHomepage') !== null ? $journal->getSetting('showOnHomepage') : 1,
                     'paymentIndependent' => $journal->getSetting('paymentIndependent') ?: 0,
+                    'doiIndependent' => $journal->getSetting('doiIndependent') ?: 0,
                     'certificateSignatoryUserId' => (int) $journal->getSetting('certificateSignatoryUserId'),
                 ];
             } else {
@@ -125,6 +126,7 @@ class JournalSiteSettingsForm extends Form {
                 'enabled' => 1,
                 'showOnHomepage' => 1,
                 'paymentIndependent' => 0,
+                'doiIndependent' => 0,
                 'certificateSignatoryUserId' => 0,
             ];
         }
@@ -134,10 +136,11 @@ class JournalSiteSettingsForm extends Form {
      * Assign form data to user-submitted data.
      */
     public function readInputData() {
-        $this->readUserVars(['title', 'description', 'journalPath', 'enabled', 'showOnHomepage', 'paymentIndependent', 'certificateSignatoryUserId']);
+        $this->readUserVars(['title', 'description', 'journalPath', 'enabled', 'showOnHomepage', 'paymentIndependent', 'doiIndependent', 'certificateSignatoryUserId']);
         $this->setData('enabled', (int)$this->getData('enabled'));
         $this->setData('showOnHomepage', (int)$this->getData('showOnHomepage'));
         $this->setData('paymentIndependent', (int)$this->getData('paymentIndependent'));
+        $this->setData('doiIndependent', (int)$this->getData('doiIndependent'));
         $this->setData('certificateSignatoryUserId', (int)$this->getData('certificateSignatoryUserId'));
 
         if (isset($this->journalId)) {
@@ -250,6 +253,7 @@ class JournalSiteSettingsForm extends Form {
         $journal->updateSetting('description', $this->getData('description'), 'string', true);
         $journal->updateSetting('showOnHomepage', $this->getData('showOnHomepage') ? 1 : 0, 'int');
         $journal->updateSetting('paymentIndependent', $this->getData('paymentIndependent') ? 1 : 0, 'int');
+        $journal->updateSetting('doiIndependent', $this->getData('doiIndependent') ? 1 : 0, 'int');
 
         // [BARU] Simpan HANYA kalau pilihannya valid -- mencegah user_id sampah
         // tersimpan (mis. dari manipulasi form) untuk jurnal yang sebenarnya
