@@ -11,8 +11,8 @@ declare(strict_types=1);
  * @class DoiSettingsForm
  *
  * @brief Form untuk mengatur kredensial DOI (Crossref, dst) di level Admin
- * Publisher/Site -- dipakai jurnal yang TIDAK ditandai doiIndependent
- * (bagian dari ownership prefix DOI penerbit). Jurnal yang doiIndependent
+ * Publisher/Site -- dipakai jurnal yang TIDAK ditandai publisherPartnerships
+ * (bagian dari ownership prefix DOI penerbit). Jurnal Partnership
  * mengatur kredensialnya sendiri secara terpisah (level jurnal, lihat
  * DoiCredentialService::resolveForJournal()).
  */

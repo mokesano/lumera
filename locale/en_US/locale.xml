@@ -908,6 +908,10 @@
 	<message key="about.statistics">Statistics</message>
 	<message key="about.journalContact">Journal Contact</message>
 	<message key="about.aboutTheJournal">About the Journal</message>
+	<message key="about.aboutThePublisher">About the Publisher</message>
+	<message key="about.publisherContact">Publisher Contact</message>
+	<message key="about.aboutSite">About the Site</message>
+	<message key="about.siteMap">Site Map</message>
 	<message key="about.journalPolicies">Editorial Policies</message>
 	<message key="about.publicationEthics">Publication Ethics</message>
 	<message key="about.history">Journal History</message>

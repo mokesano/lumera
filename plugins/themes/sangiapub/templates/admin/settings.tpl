@@ -53,7 +53,7 @@
 					{if $pageHeaderTitleType[$formLocale] && $pageHeaderTitleImage[$formLocale]}
 						{translate key="common.fileName"}: {$pageHeaderTitleImage[$formLocale].originalFilename|escape} {$pageHeaderTitleImage[$formLocale].dateUploaded|date_format:$datetimeFormatShort} <input type="submit" name="deletePageHeaderTitleImage" value="{translate key="common.delete"}" class="button" />
 						<br />
-						<img src="{$publicFilesDir}/{$pageHeaderTitleImage[$formLocale].uploadName|escape:"url"}" width="{$pageHeaderTitleImage[$formLocale].width|escape}" height="{$pageHeaderTitleImage[$formLocale].height|escape}" style="border: 0; width: 100%; height: auto;" alt="{translate key="admin.settings.homeHeaderImage.altText"}" />
+						<img src="{$publicFilesDir}/{$pageHeaderTitleImage[$formLocale].uploadName|escape:"url"}?v={$pageHeaderTitleImage[$formLocale].dateUploaded|md5}" width="{$pageHeaderTitleImage[$formLocale].width|escape}" height="{$pageHeaderTitleImage[$formLocale].height|escape}" style="border: 0; width: 100%; height: auto;" alt="{translate key="admin.settings.homeHeaderImage.altText"}" />
 					{/if}
 				</td>
 			</tr>

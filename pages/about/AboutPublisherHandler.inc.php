@@ -58,6 +58,75 @@ class AboutPublisherHandler extends Handler {
     }
 
     /**
+     * Display about index page (Site/Publisher root).
+     * HANYA UNTUK KONTEKS SITE/PUBLISHER. Versi Jurnal ada di
+     * AboutJournalHandler::index().
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function index($args = [], $request = null) {
+        $this->validate();
+        $this->setupTemplate();
+
+        if (!$request) $request = Application::get()->getRequest();
+
+        $templateMgr = TemplateManager::getManager();
+        $site = $request->getSite();
+        $about = $site->getLocalizedAbout();
+        $templateMgr->assign('about', $about);
+
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $journals = $journalDao->getJournals(true);
+        $templateMgr->assign('journals', $journals);
+
+        $templateMgr->display('about/site.tpl');
+    }
+
+    /**
+     * Display contact page (Site/Publisher).
+     * HANYA UNTUK KONTEKS SITE/PUBLISHER. Versi Jurnal ada di
+     * AboutJournalHandler::contact().
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function contact($args = [], $request = null) {
+        $this->validate();
+        $this->setupTemplate(true);
+
+        if (!$request) $request = Application::get()->getRequest();
+
+        $templateMgr = TemplateManager::getManager($request);
+        $site = $request->getSite();
+
+        $templateMgr->assign([
+            'sitePrincipalContactName'  => $site->getLocalizedData('contactName'),
+            'sitePrincipalContactEmail' => $site->getLocalizedData('contactEmail'),
+            'siteMailingAddress'        => $site->getLocalizedData('contactMailingAddress'),
+        ]);
+
+        $templateMgr->display('about/publisherContact.tpl');
+    }
+
+    /**
+     * Menangkap URL lama 'aboutThisPublishingSystem' dalam konteks
+     * Site/Publisher dan mengalihkannya (301) ke halaman utama situs.
+     * HANYA UNTUK KONTEKS SITE/PUBLISHER. Versi Jurnal ada di
+     * AboutJournalHandler::aboutThisPublishingSystem().
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function aboutThisPublishingSystem($args, $request = null) {
+        $this->validate();
+
+        if (!$request) $request = Application::get()->getRequest();
+
+        $baseUrl = $request->getBaseUrl();
+        header("Location: $baseUrl", true, 301);
+        exit();
+    }
+
+    /**
      * Menampilkan halaman statis Penerbit (Misi).
      * Rute: /about/mission
      * @param array $args
@@ -108,7 +177,7 @@ class AboutPublisherHandler extends Handler {
      * [FIX] Sebelumnya memakai key 'about.mission'/'about.leaderships'/
      * 'about.awards' yang TIDAK terdaftar di locale mana pun (tampil
      * ##key## mentah), dan 'about.history' yang SUDAH dipakai untuk History
-     * level Jurnal (lihat AboutHandler::history()) -- menimbulkan judul
+     * level Jurnal (lihat AboutJournalHandler::history()) -- menimbulkan judul
      * halaman yang salah/tertukar. Diganti ke prefix about.publisher, yang
      * khusus dan sudah didefinisikan di locale.xml (en_US dan id_ID).
      * @param PKPRequest $request

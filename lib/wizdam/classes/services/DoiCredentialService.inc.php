@@ -10,17 +10,30 @@ declare(strict_types=1);
  *
  * @class DoiCredentialService
  *
- * @brief Manajer Kredensial DOI (Crossref/OpenAlex/Semantic Scholar/dst).
- * Hierarki: Admin UI (DB: site_settings ATAU journal_settings) > config.inc.php.
- * Scope ganda: Publisher (default, site_settings) atau Jurnal Independent
- * (journal_settings, HANYA jika journal->getSetting('doiIndependent') true).
+ * @brief Manajer Kredensial DOI.
  *
- * DOI adalah prefix milik penerbit -- jurnal yang bukan bagian dari
- * ownership penerbit (doiIndependent=true) TIDAK BOLEH memakai kredensial
- * DOI penerbit, dan wajib punya kredensial sendiri. Konsep ini sejalan
- * dengan paymentIndependent (lihat PaymentSettingsService), tapi sengaja
- * dipisah sebagai flag tersendiri karena status "independent" untuk
- * pembayaran dan untuk DOI bisa berbeda per jurnal.
+ * Scope ganda ditentukan SATU flag tunggal: journal->getSetting('publisherPartnerships')
+ * -- sama persis dipakai PaymentSettingsService/PaymentAuthorityResolver,
+ * sehingga payment, DOI, dan publisher (JournalSetupStep1Form) semuanya
+ * ikut satu status jurnal yang sama, tidak ada lagi flag terpisah per fitur.
+ *
+ * ATURAN RESOLUSI:
+ * 1. Kredensial Crossref (username/password/email) -- SUMBER DATANYA BEDA
+ *    per scope:
+ *    - Scope Publisher (Ownership, publisherPartnerships=false): setting
+ *      kustom (site_settings, wizdam_doi_*) -- diisi lewat halaman admin
+ *      DOI Settings.
+ *    - Scope Jurnal Partnership (publisherPartnerships=true): DIBACA
+ *      LANGSUNG dari plugin bawaan OJS yang SUDAH ADA -- CrossRefExportPlugin
+ *      (endpoint jurnal: /manager/plugin/importexport/CrossRefExportPlugin/
+ *      settings) -- BUKAN disimpan ulang dengan mekanisme sendiri.
+ *    resolveForJournal(): jurnal Partnership COBA kredensial SENDIRI dulu;
+ *    kalau belum diisi, FALLBACK ke kredensial Ownership/Publisher.
+ *
+ * 2. Sumber kutipan LAIN (OpenAlex, Semantic Scholar, Dimensions) --
+ *    SELALU dari scope Publisher/Ownership, TIDAK PEDULI jurnal apapun
+ *    yang meminta (termasuk jurnal Partnership) -- jurnal Partnership
+ *    TIDAK punya pengaturan sendiri untuk sumber-sumber ini.
  */
 
 class DoiCredentialService {
@@ -31,49 +44,51 @@ class DoiCredentialService {
     /** @var null|object $journalSettingsDao */
     private ?object $journalSettingsDao = null;
 
-    /** @var int|null Jika di-set, baca/tulis dari journal_settings (scope jurnal independent). Null = scope Publisher (default). */
+    /** @var int|null Jika di-set, scope Jurnal Partnership. Null = scope Publisher/Ownership (default). */
     private ?int $journalScopeId = null;
+
+    /** @var object|null Instance CrossRefExportPlugin, dipakai HANYA untuk scope jurnal. */
+    private ?object $crossrefPlugin = null;
 
     /**
      * Constructor
-     * @param int|null $journalScopeId ID jurnal untuk scope independent, null untuk scope Publisher (default)
+     * @param int|null $journalScopeId ID jurnal untuk scope Partnership, null untuk scope Publisher/Ownership (default)
      */
     public function __construct(?int $journalScopeId = null) {
         $this->siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO');
         $this->journalScopeId = $journalScopeId;
         if ($journalScopeId !== null) {
             $this->journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
+            $this->crossrefPlugin = PluginRegistry::getPlugin('importexport', 'CrossRefExportPlugin');
         }
     }
 
     /**
-     * Factory: pilih scope otomatis berdasarkan status jurnal.
-     * - Jurnal independent (doiIndependent=true): SELALU scope jurnal itu sendiri
-     *   (DOI publisher tidak boleh dipakai jurnal yang bukan bagian ownership-nya).
-     * - Jurnal bagian ownership publisher (doiIndependent=false, default): scope
-     *   Publisher (site-level) -- TAPI kalau site-level belum pernah diisi sama
-     *   sekali, jatuh ke kredensial jurnal itu sendiri supaya jurnal yang sudah
-     *   berjalan dengan kredensial lamanya tidak tiba-tiba putus.
+     * Factory untuk kredensial CROSSREF: pilih scope otomatis.
+     * - Jurnal Partnership (publisherPartnerships=true): coba kredensial
+     *   SENDIRI dulu (dari CrossRefExportPlugin miliknya) -- kalau belum
+     *   diisi, FALLBACK ke kredensial Ownership/Publisher.
+     * - Jurnal Ownership (publisherPartnerships=false, default): SELALU
+     *   scope Publisher, tanpa fallback ke jurnal manapun.
      * @param object|null $journal
      * @return self
      */
     public static function resolveForJournal($journal): self {
-        if ($journal && (bool) $journal->getSetting('doiIndependent')) {
-            return new self((int) $journal->getId());
+        if ($journal && (bool) $journal->getSetting('publisherPartnerships')) {
+            $journalService = new self((int) $journal->getId());
+            if ($journalService->isConfigured()) {
+                return $journalService;
+            }
+            return new self(); // fallback ke Ownership/Publisher
         }
-
-        $siteService = new self();
-        if ($siteService->isConfigured()) {
-            return $siteService;
-        }
-        if ($journal) {
-            return new self((int) $journal->getId());
-        }
-        return $siteService;
+        return new self();
     }
 
     /**
-     * Mengambil pengaturan dengan hierarki: DB (scope terkait) -> Config -> Default
+     * Mengambil pengaturan generik dengan hierarki: DB (scope terkait) -> Config -> Default.
+     * [CATATAN] HANYA dipakai untuk field yang TIDAK ada di CrossRefExportPlugin
+     * (dan HANYA relevan untuk scope Publisher -- lihat catatan kelas soal
+     * OpenAlex/Semantic Scholar/Dimensions yang selalu scope Publisher).
      * @param string $key
      * @param mixed $default
      * @return mixed
@@ -96,48 +111,80 @@ class DoiCredentialService {
     }
 
     /**
-     * Menyimpan pengaturan ke scope yang aktif (Site atau Journal)
+     * Menyimpan pengaturan generik ke scope Publisher (site-level) SELALU --
+     * field non-Crossref (semantic_scholar_api_key, dimensions_api_key)
+     * memang cuma ada di level Publisher, tidak pernah per-jurnal.
      * @param string $key
      * @param mixed $value
      * @param string $type
      */
     public function updateSetting(string $key, mixed $value, string $type = 'string'): void {
         $settingKey = 'wizdam_doi_' . $key;
-        if ($this->journalScopeId !== null) {
-            $this->journalSettingsDao->updateSetting($this->journalScopeId, $settingKey, $value, $type);
-        } else {
-            $this->siteSettingsDao->updateSetting($settingKey, $value, $type);
-        }
+        $this->siteSettingsDao->updateSetting($settingKey, $value, $type);
     }
 
     //
-    // GETTER SPESIFIK (Helpers)
+    // GETTER KREDENSIAL CROSSREF
+    // Scope Publisher -> setting kustom (wizdam_doi_*).
+    // Scope Jurnal    -> baca LANGSUNG dari CrossRefExportPlugin (sudah ada).
     //
 
     public function getCrossrefEmail(): string {
+        if ($this->journalScopeId !== null) {
+            return $this->_getCrossrefPluginSetting('depositorEmail');
+        }
         return trim((string) $this->getSetting('crossref_email', ''));
     }
 
     public function getCrossrefUsername(): string {
+        if ($this->journalScopeId !== null) {
+            return $this->_getCrossrefPluginSetting('username');
+        }
         return trim((string) $this->getSetting('crossref_username', ''));
     }
 
     public function getCrossrefPassword(): string {
+        if ($this->journalScopeId !== null) {
+            return $this->_getCrossrefPluginSetting('password');
+        }
         return trim((string) $this->getSetting('crossref_password', ''));
     }
 
+    private function _getCrossrefPluginSetting(string $settingName): string {
+        if (!$this->crossrefPlugin) return '';
+        $value = $this->crossrefPlugin->getSetting($this->journalScopeId, $settingName);
+        return trim((string) ($value ?? ''));
+    }
+
+    //
+    // GETTER SUMBER LAIN (OpenAlex tidak butuh kredensial; Semantic
+    // Scholar & Dimensions -- API key opsional). SELALU scope Publisher,
+    // TIDAK PEDULI journalScopeId instance ini -- jurnal Partnership TIDAK
+    // punya pengaturan sendiri untuk sumber-sumber ini (lihat catatan kelas).
+    //
+
     public function getSemanticScholarApiKey(): string {
-        return trim((string) $this->getSetting('semantic_scholar_api_key', ''));
+        return trim((string) $this->_getPublisherOnlySetting('semantic_scholar_api_key'));
     }
 
     public function getDimensionsApiKey(): string {
-        return trim((string) $this->getSetting('dimensions_api_key', ''));
+        return trim((string) $this->_getPublisherOnlySetting('dimensions_api_key'));
+    }
+
+    private function _getPublisherOnlySetting(string $key): string {
+        $settingKey = 'wizdam_doi_' . $key;
+        $value = $this->siteSettingsDao->getSetting($settingKey);
+        if ($value !== null && $value !== '') return (string) $value;
+
+        $configValue = Config::getVar('wizdam_doi', $key);
+        return $configValue !== null ? (string) $configValue : '';
     }
 
     /**
-     * Kredensial minimal (username+password Crossref) sudah diisi atau belum.
-     * Dipakai resolveForJournal() untuk memutuskan apakah scope Publisher
-     * sudah "siap pakai" atau masih perlu fallback ke scope jurnal.
+     * Kredensial minimal (username+password Crossref) sudah diisi atau belum
+     * PADA SCOPE INSTANCE INI (bukan scope lain). Dipakai resolveForJournal()
+     * untuk memutuskan apakah kredensial jurnal Partnership sendiri sudah
+     * "siap pakai" atau masih perlu fallback ke Ownership/Publisher.
      */
     public function isConfigured(): bool {
         return $this->getCrossrefUsername() !== '' && $this->getCrossrefPassword() !== '';

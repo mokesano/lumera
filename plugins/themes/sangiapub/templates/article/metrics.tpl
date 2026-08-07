@@ -1,7 +1,11 @@
 {**
  * templates/article/metrics.tpl
- * Custom metrics page for article statistics in OJS 2.4.8.5
- * Compatible with PHP 7.4+
+ *
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera
+ * Distributed under the GNU GPL v3.
+ *
+ * Custom metrics page for article metrics.
  *}
 
 {strip}
@@ -48,11 +52,18 @@
                             <p>Citation counts are provided by Dimensions and depend on their data availability. Counts will update daily, once available.</p>
                         </div>
                         <div class="app-article-metrics-box__side">
-                            <p class="app-article-metrics-count">0<span class="app-article-metrics-count_text">Citations</span></p>
+                            <p class="app-article-metrics-count">{$citationCount|default:0}<span class="app-article-metrics-count_text">Citations</span></p>
                         </div>
                     </div>
                 </section>
             </div>
+
+            {* [WIZDAM] Daftar LENGKAP semua kutipan -- elemen SAMA persis
+               dengan panel 7-kutipan-terbaru di halaman artikel (heading.tpl),
+               cuma $citingArticles yang dikirim ArticleMetricsHandler TIDAK
+               dibatasi 7 seperti di halaman artikel. *}
+            {include file="article/citedby_doi.tpl"}
+
             <section class="app-article-metrics-container u-mb-24">
                 <div class="app-article-metrics-box">
                     <div class="app-article-metrics-box__main">
@@ -60,20 +71,20 @@
                         <div class="c-article-metrics__section" data-test="metrics-mentions">
                             <div class="c-article-metrics__body">
                                 <div class="c-article-metrics__section--left">
-                    <ul class="u-list-reset">
-                        <li>
-                            <div class="c-card-metrics">
-                                <div class="c-card-metrics__main">
-                                    <h3 class="c-card-metrics__heading">
-                                        <a href="https://quantum-server-materials.blogspot.com/2025/10/composite-metal-foams-endure-over-1.html" data-track="click" data-track-action="view news article" data-track-label="link" data-track-category="metrics">🔥 Composite Metal Foams Endure Over 1 Million Cycles at 400 °C and 600 °C — A Game Changer for Extreme Environments</a>
-                                    </h3>
-                                    <div>
-                                        <div class="c-card-metrics__authors">Quantum Server Materials</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
+                                    <ul class="u-list-reset">
+                                        <li>
+                                            <div class="c-card-metrics">
+                                                <div class="c-card-metrics__main">
+                                                    <h3 class="c-card-metrics__heading">
+                                                        <a href="https://quantum-server-materials.blogspot.com/2025/10/composite-metal-foams-endure-over-1.html" data-track="click" data-track-action="view news article" data-track-label="link" data-track-category="metrics">🔥 Composite Metal Foams Endure Over 1 Million Cycles at 400 °C and 600 °C — A Game Changer for Extreme Environments</a>
+                                                    </h3>
+                                                    <div>
+                                                        <div class="c-card-metrics__authors">Quantum Server Materials</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -102,24 +113,24 @@
                                     <img alt="Altmetric score 114" src="https://badges.altmetric.com/?size=180&amp;score=114&amp;types=mbtttttu" style="width:120px;height:120px;">
                                 </div>
                                 <div class="c-article-metrics__legend">
-                    <ul class="u-list-reset" data-altmetric-key="" data-test="metrics-counts">
-                        <li class="u-list-reset">
-                            <span class="c-article-metrics__altmetric-key c-article-metrics__altmetric-key--twitter"></span>
-                            <span>29 tweeters</span>
-                        </li>
-                        <li class="u-list-reset">
-                            <span class="c-article-metrics__altmetric-key c-article-metrics__altmetric-key--blogs"></span>
-                            <span>2 blogs</span>
-                        </li>
-                        <li class="u-list-reset">
-                            <span class="c-article-metrics__altmetric-key c-article-metrics__altmetric-key--news"></span>
-                            <span>12 news outlets</span>
-                        </li>
-                        <li class="u-list-reset">
-                            <span class="c-article-metrics__altmetric-key c-article-metrics__altmetric-key--mendeley"></span>
-                            <span>2 Mendeley</span>
-                        </li>
-                    </ul>
+                                    <ul class="u-list-reset" data-altmetric-key="" data-test="metrics-counts">
+                                        <li class="u-list-reset">
+                                            <span class="c-article-metrics__altmetric-key c-article-metrics__altmetric-key--twitter"></span>
+                                            <span>29 tweeters</span>
+                                        </li>
+                                        <li class="u-list-reset">
+                                            <span class="c-article-metrics__altmetric-key c-article-metrics__altmetric-key--blogs"></span>
+                                            <span>2 blogs</span>
+                                        </li>
+                                        <li class="u-list-reset">
+                                            <span class="c-article-metrics__altmetric-key c-article-metrics__altmetric-key--news"></span>
+                                            <span>12 news outlets</span>
+                                        </li>
+                                        <li class="u-list-reset">
+                                            <span class="c-article-metrics__altmetric-key c-article-metrics__altmetric-key--mendeley"></span>
+                                            <span>2 Mendeley</span>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -143,56 +154,56 @@
                         <div class="c-article-metrics__section" data-test="metrics-mentions">
                             <div class="c-article-metrics__body">
                                 <div class="c-article-metrics__section--left">
-                    <ul class="u-list-reset">
-                        <li>
-                            <div class="c-card-metrics">
-                                <div class="c-card-metrics__main">
-                                    <h3 class="c-card-metrics__heading">
-                                        <a href="http://ct.moreover.com/?a=57875082082&amp;p=1pl&amp;v=1&amp;x=OBmb2A1OzstnqIMHK6_LKA" data-track="click" data-track-action="view news article" data-track-label="link" data-track-category="metrics">Some Like It Hot: Composite Metal Foam Proves Resilient Against High Stresses at High Temperatures</a>
-                                    </h3>
-                                    <div>
-                                        <div class="c-card-metrics__authors">AlphaGalileo</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="c-card-metrics">
-                                <div class="c-card-metrics__main">
-                                    <h3 class="c-card-metrics__heading">
-                                        <a href="https://tiisys.com/blog/2025/10/08/post-177312/" data-track="click" data-track-action="view news article" data-track-label="link" data-track-category="metrics">高温・高応力下でも耐性のある金属フォーム材料（Composite Metal Foam Proves Resilient Against High Stresses at High Temperatures）</a>
-                                    </h3>
-                                    <div>
-                                        <div class="c-card-metrics__authors">Tii技術情報</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="c-card-metrics">
-                                <div class="c-card-metrics__main">
-                                    <h3 class="c-card-metrics__heading">
-                                        <a href="http://ct.moreover.com/?a=57899530386&amp;p=1pl&amp;v=1&amp;x=tZNmIz7Rvb4u5gJUznMnZg" data-track="click" data-track-action="view news article" data-track-label="link" data-track-category="metrics">У США винайшли практично незнищенну металеву піну для ядерних реакторів та інших екстремальних умов</a>
-                                    </h3>
-                                    <div>
-                                        <div class="c-card-metrics__authors">Business Information Network Ukraine</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="c-card-metrics">
-                                <div class="c-card-metrics__main">
-                                    <h3 class="c-card-metrics__heading">
-                                        <a href="https://quantum-server-materials.blogspot.com/2025/10/composite-metal-foams-endure-over-1.html" data-track="click" data-track-action="view news article" data-track-label="link" data-track-category="metrics">🔥 Composite Metal Foams Endure Over 1 Million Cycles at 400 °C and 600 °C — A Game Changer for Extreme Environments</a>
-                                    </h3>
-                                    <div>
-                                        <div class="c-card-metrics__authors">Quantum Server Materials</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
+                                    <ul class="u-list-reset">
+                                        <li>
+                                            <div class="c-card-metrics">
+                                                <div class="c-card-metrics__main">
+                                                    <h3 class="c-card-metrics__heading">
+                                                        <a href="http://ct.moreover.com/?a=57875082082&amp;p=1pl&amp;v=1&amp;x=OBmb2A1OzstnqIMHK6_LKA" data-track="click" data-track-action="view news article" data-track-label="link" data-track-category="metrics">Some Like It Hot: Composite Metal Foam Proves Resilient Against High Stresses at High Temperatures</a>
+                                                    </h3>
+                                                    <div>
+                                                        <div class="c-card-metrics__authors">AlphaGalileo</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="c-card-metrics">
+                                                <div class="c-card-metrics__main">
+                                                    <h3 class="c-card-metrics__heading">
+                                                        <a href="https://tiisys.com/blog/2025/10/08/post-177312/" data-track="click" data-track-action="view news article" data-track-label="link" data-track-category="metrics">高温・高応力下でも耐性のある金属フォーム材料（Composite Metal Foam Proves Resilient Against High Stresses at High Temperatures）</a>
+                                                    </h3>
+                                                    <div>
+                                                        <div class="c-card-metrics__authors">Tii技術情報</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="c-card-metrics">
+                                                <div class="c-card-metrics__main">
+                                                    <h3 class="c-card-metrics__heading">
+                                                        <a href="http://ct.moreover.com/?a=57899530386&amp;p=1pl&amp;v=1&amp;x=tZNmIz7Rvb4u5gJUznMnZg" data-track="click" data-track-action="view news article" data-track-label="link" data-track-category="metrics">У США винайшли практично незнищенну металеву піну для ядерних реакторів та інших екстремальних умов</a>
+                                                    </h3>
+                                                    <div>
+                                                        <div class="c-card-metrics__authors">Business Information Network Ukraine</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="c-card-metrics">
+                                                <div class="c-card-metrics__main">
+                                                    <h3 class="c-card-metrics__heading">
+                                                        <a href="https://quantum-server-materials.blogspot.com/2025/10/composite-metal-foams-endure-over-1.html" data-track="click" data-track-action="view news article" data-track-label="link" data-track-category="metrics">🔥 Composite Metal Foams Endure Over 1 Million Cycles at 400 °C and 600 °C — A Game Changer for Extreme Environments</a>
+                                                    </h3>
+                                                    <div>
+                                                        <div class="c-card-metrics__authors">Quantum Server Materials</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>

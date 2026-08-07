@@ -32,29 +32,33 @@ class Site extends DataObject {
      * [SHIM] Legacy Constructor.
      */
     public function Site() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Return associative array of all locales supported by the site.
-     * These locales are used to provide a language toggle on the main site pages.
      * @return array
      */
     public function getSupportedLocaleNames() {
         $supportedLocales = Registry::get('siteSupportedLocales', true, null);
 
         if ($supportedLocales === null) {
-            $supportedLocales = array();
+            $supportedLocales = [];
             $localeNames = AppLocale::getAllLocales();
-
             $locales = $this->getSupportedLocales();
-            foreach ($locales as $localeKey) {
-                if (isset($localeNames[$localeKey])) {
-                    $supportedLocales[$localeKey] = $localeNames[$localeKey];
+
+            if (is_array($locales) && is_array($localeNames)) {
+                foreach ($locales as $localeKey) {
+                    if (isset($localeNames[$localeKey])) {
+                        $supportedLocales[$localeKey] = $localeNames[$localeKey];
+                    }
                 }
             }
 
@@ -65,14 +69,10 @@ class Site extends DataObject {
         return $supportedLocales;
     }
 
-    //
-    // Get/set methods
-    //
-
     /**
      * Get site title.
-     * @param $locale string Locale code to return, if desired.
-     * @return string
+     * @param string|null $locale
+     * @return mixed
      */
     public function getTitle($locale = null) {
         return $this->getSetting('title', $locale);
@@ -80,7 +80,7 @@ class Site extends DataObject {
 
     /**
      * Get localized site title.
-     * @return string
+     * @return mixed
      */
     public function getLocalizedTitle() {
         return $this->getLocalizedSetting('title');
@@ -88,48 +88,51 @@ class Site extends DataObject {
 
     /**
      * [DEPRECATED] Legacy Get Site Title Shim.
-     * Use getLocalizedTitle()
-     * @return string
+     * @return mixed
      */
     public function getSiteTitle() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedTitle();
     }
 
     /**
-     * Get "localized" site page title (if applicable).
-     * @return string
+     * Get localized site page title (if applicable).
+     * @return mixed
      */
     public function getLocalizedPageHeaderTitle() {
         $typeArray = $this->getSetting('pageHeaderTitleType');
         $imageArray = $this->getSetting('pageHeaderTitleImage');
         $titleArray = $this->getSetting('title');
 
-        $title = null;
-
-        foreach (array(AppLocale::getLocale(), AppLocale::getPrimaryLocale()) as $locale) {
-            if (isset($typeArray[$locale]) && $typeArray[$locale]) {
-                if (isset($imageArray[$locale])) $title = $imageArray[$locale];
+        foreach ([AppLocale::getLocale(), AppLocale::getPrimaryLocale()] as $locale) {
+            if (is_array($typeArray) && isset($typeArray[$locale]) && $typeArray[$locale]) {
+                if (is_array($imageArray) && isset($imageArray[$locale])) {
+                    return $imageArray[$locale];
+                }
             }
-            if (empty($title) && isset($titleArray[$locale])) $title = $titleArray[$locale];
-            if (!empty($title)) return $title;
+            if (is_array($titleArray) && isset($titleArray[$locale]) && !empty($titleArray[$locale])) {
+                return $titleArray[$locale];
+            }
         }
         return null;
     }
 
     /**
      * [DEPRECATED] Legacy Get Site Page Header Title Shim.
-     * Use getLocalizedPageHeaderTitle()
-     * @return string
+     * @return mixed
      */
     public function getSitePageHeaderTitle() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedPageHeaderTitle();
     }
 
     /**
      * Get localized site logo type.
-     * @return boolean
+     * @return mixed
      */
     public function getLocalizedPageHeaderTitleType() {
         return $this->getLocalizedData('pageHeaderTitleType');
@@ -137,17 +140,18 @@ class Site extends DataObject {
 
     /**
      * [DEPRECATED] Legacy Get Site Page Header Title Type Shim.
-     * Use getLocalizedPageHeaderTitleType()
-     * @return boolean
+     * @return mixed
      */
     public function getSitePageHeaderTitleType() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedPageHeaderTitleType();
     }
 
     /**
      * Get original site stylesheet filename.
-     * @return string
+     * @return mixed
      */
     public function getOriginalStyleFilename() {
         return $this->getData('originalStyleFilename');
@@ -155,15 +159,16 @@ class Site extends DataObject {
 
     /**
      * Set original site stylesheet filename.
-     * @param string $originalStyleFilename string
+     * @param mixed $originalStyleFilename
+     * @return void
      */
     public function setOriginalStyleFilename($originalStyleFilename) {
-        return $this->setData('originalStyleFilename', $originalStyleFilename);
+        $this->setData('originalStyleFilename', $originalStyleFilename);
     }
 
     /**
      * Get localized site intro.
-     * @return string
+     * @return mixed
      */
     public function getLocalizedIntro() {
         return $this->getLocalizedSetting('intro');
@@ -171,33 +176,36 @@ class Site extends DataObject {
 
     /**
      * [DEPRECATED] Legacy Get Site Intro Shim.
-     * Use getLocalizedIntro()
-     * @return string
+     * @return mixed
      */
     public function getSiteIntro() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedIntro();
     }
 
     /**
-     * Get redirect
+     * Get redirect.
      * @return int
      */
     public function getRedirect() {
-        return $this->getData('redirect');
+        $redirect = $this->getData('redirect');
+        return $redirect !== null ? (int) $redirect : 0;
     }
 
     /**
-     * Set redirect
-     * @param int $redirect int
+     * Set redirect.
+     * @param mixed $redirect
+     * @return void
      */
     public function setRedirect($redirect) {
-        return $this->setData('redirect', (int) $redirect);
+        $this->setData('redirect', $redirect !== null ? (int) $redirect : 0);
     }
 
     /**
      * Get localized site about statement.
-     * @return string
+     * @return mixed
      */
     public function getLocalizedAbout() {
         return $this->getLocalizedSetting('about');
@@ -205,17 +213,18 @@ class Site extends DataObject {
 
     /**
      * [DEPRECATED] Legacy Get Site About Shim.
-     * Use getLocalizedAbout()
-     * @return string
+     * @return mixed
      */
     public function getSiteAbout() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedAbout();
     }
 
     /**
      * Get localized site contact name.
-     * @return string
+     * @return mixed
      */
     public function getLocalizedContactName() {
         return $this->getLocalizedSetting('contactName');
@@ -223,17 +232,18 @@ class Site extends DataObject {
 
     /**
      * [DEPRECATED] Legacy Get Site Contact Name Shim.
-     * Use getLocalizedContactName()
-     * @return string
+     * @return mixed
      */
     public function getSiteContactName() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedContactName();
     }
 
     /**
      * Get localized site contact email.
-     * @return string
+     * @return mixed
      */
     public function getLocalizedContactEmail() {
         return $this->getLocalizedSetting('contactEmail');
@@ -241,11 +251,12 @@ class Site extends DataObject {
 
     /**
      * [DEPRECATED] Legacy Get Site Contact Email Shim.
-     * Use getLocalizedContactEmail()
-     * @return string
+     * @return mixed
      */
     public function getSiteContactEmail() {
-        if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error('Deprecated function.', E_USER_DEPRECATED);
+        }
         return $this->getLocalizedContactEmail();
     }
 
@@ -254,20 +265,22 @@ class Site extends DataObject {
      * @return int
      */
     public function getMinPasswordLength() {
-        return $this->getData('minPasswordLength');
+        $length = $this->getData('minPasswordLength');
+        return $length !== null ? (int) $length : 0;
     }
 
     /**
      * Set minimum password length.
-     * @param int $minPasswordLength int
+     * @param mixed $minPasswordLength
+     * @return void
      */
     public function setMinPasswordLength($minPasswordLength) {
-        return $this->setData('minPasswordLength', $minPasswordLength);
+        $this->setData('minPasswordLength', $minPasswordLength !== null ? (int) $minPasswordLength : 0);
     }
 
     /**
      * Get primary locale.
-     * @return string
+     * @return mixed
      */
     public function getPrimaryLocale() {
         return $this->getData('primaryLocale');
@@ -275,10 +288,11 @@ class Site extends DataObject {
 
     /**
      * Set primary locale.
-     * @param string $primaryLocale string
+     * @param mixed $primaryLocale
+     * @return void
      */
     public function setPrimaryLocale($primaryLocale) {
-        return $this->setData('primaryLocale', $primaryLocale);
+        $this->setData('primaryLocale', $primaryLocale);
     }
 
     /**
@@ -287,15 +301,16 @@ class Site extends DataObject {
      */
     public function getInstalledLocales() {
         $locales = $this->getData('installedLocales');
-        return isset($locales) ? $locales : array();
+        return is_array($locales) ? $locales : [];
     }
 
     /**
      * Set installed locales.
-     * @param array $installedLocales array
+     * @param array $installedLocales
+     * @return void
      */
     public function setInstalledLocales($installedLocales) {
-        return $this->setData('installedLocales', $installedLocales);
+        $this->setData('installedLocales', is_array($installedLocales) ? $installedLocales : []);
     }
 
     /**
@@ -304,15 +319,16 @@ class Site extends DataObject {
      */
     public function getSupportedLocales() {
         $locales = $this->getData('supportedLocales');
-        return isset($locales) ? $locales : array();
+        return is_array($locales) ? $locales : [];
     }
 
     /**
      * Set array of all supported locales (for static text).
-     * @param array $supportedLocales array
+     * @param array $supportedLocales
+     * @return void
      */
     public function setSupportedLocales($supportedLocales) {
-        return $this->setData('supportedLocales', $supportedLocales);
+        $this->setData('supportedLocales', is_array($supportedLocales) ? $supportedLocales : []);
     }
 
     /**
@@ -320,13 +336,13 @@ class Site extends DataObject {
      * @return string
      */
     public function getSiteStyleFilename() {
-        return 'wizdamstyle.css';
+        return 'lumerapublisher.css';
     }
 
     /**
      * Retrieve a site setting value.
-     * @param string $name string
-     * @param $locale string
+     * @param string $name
+     * @param string|null $locale
      * @return mixed
      */
     public function getSetting($name, $locale = null) {
@@ -337,13 +353,12 @@ class Site extends DataObject {
 
     /**
      * Get a localized setting using the current locale.
-     * @param string $name string Setting name
+     * @param string $name
      * @return mixed
      */
     public function getLocalizedSetting($name) {
         $returner = $this->getSetting($name, AppLocale::getLocale());
         if ($returner === null) {
-            unset($returner);
             $returner = $this->getSetting($name, AppLocale::getPrimaryLocale());
         }
         return $returner;
@@ -351,15 +366,16 @@ class Site extends DataObject {
 
     /**
      * Update a site setting value.
-     * @param string $name string
-     * @param mixed $value mixed
-     * @param $type string optional
-     * @param $isLocalized boolean optional
+     * @param string $name
+     * @param mixed $value
+     * @param string|null $type
+     * @param bool $isLocalized
+     * @return void
      */
     public function updateSetting($name, $value, $type = null, $isLocalized = false) {
         /** @var SiteSettingsDAO $siteSettingsDao */
         $siteSettingsDao = DAORegistry::getDAO('SiteSettingsDAO');
-        return $siteSettingsDao->updateSetting($name, $value, $type, $isLocalized);
+        $siteSettingsDao->updateSetting($name, $value, $type, $isLocalized);
     }
     
 }

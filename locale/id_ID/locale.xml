@@ -767,6 +767,10 @@
 	<message key="about.statistics">Statistik</message>
 	<message key="about.journalContact">Kontak Jurnal</message>
 	<message key="about.aboutTheJournal">Tentang Kami</message>
+	<message key="about.aboutThePublisher">Tentang Penerbit</message>
+	<message key="about.publisherContact">Kontak Penerbit</message>
+	<message key="about.aboutSite">Tentang Situs</message>
+	<message key="about.siteMap">Peta Situs</message>
 	<message key="about.history">Visi dan Tujuan Jurnal</message>
 
 	<!-- About The Publisher (halaman statis level situs, PublisherAboutHandler) -->

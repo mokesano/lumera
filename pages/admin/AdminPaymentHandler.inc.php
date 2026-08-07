@@ -14,10 +14,10 @@ declare(strict_types=1);
  * dan konfirmasi pembayaran manual.
  */
 
-import('classes.handler.Handler');
+import('pages.admin.AdminHandler');
 import('lib.wizdam.classes.services.InvoiceService');
 
-class AdminPaymentHandler extends Handler {
+class AdminPaymentHandler extends AdminHandler {
 
     /**
      * Constructor
@@ -32,10 +32,10 @@ class AdminPaymentHandler extends Handler {
     }
 
     /**
-     * Memuat dependensi antarmuka dan Locale
+     * Memuat dependensi antarmuka dan Locale.
      */
     public function setupTemplate($request = null): void {
-        parent::setupTemplate($request);
+        parent::setupTemplate(true);
         // Pastikan komponen bahasa dimuat (sesuaikan LOCALE_COMPONENT) 
         // Jika Wizdam Frontedge memiliki custom dictionary)
         AppLocale::requireComponents(
@@ -120,9 +120,13 @@ class AdminPaymentHandler extends Handler {
 
         import('lib.pkp.classes.validation.ValidatorCSRF');
         $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign('pageHierarchy', array_merge(
+            $templateMgr->getTemplateVars('pageHierarchy') ?: [],
+            [[$request->url(null, 'admin', 'payment-settings'), 'payment.gatewaySettings']]
+        ));
         $templateMgr->assign([
             'pendingInvoices' => $pendingInvoices,
-            'pageTitle' => 'Manual Payment Confirmations',
+            'pageTitle' => 'admin.manualPayments.pageTitle',
         ]);
         $templateMgr->display('admin/manualPayments.tpl');
     }

@@ -30,16 +30,18 @@ class VersionDAO extends DAO {
      * [SHIM] Backward Compatibility
      */
     public function VersionDAO() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to use parent::__construct().", 
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Retrieve the current version.
-     * 
      * @param string|null $productType
      * @param string|null $product
      * @param bool $isPlugin
@@ -91,7 +93,6 @@ class VersionDAO extends DAO {
 
     /**
      * Retrieve the complete version history.
-     * 
      * @param string|null $productType
      * @param string|null $product
      * @return array Versions
@@ -120,7 +121,6 @@ class VersionDAO extends DAO {
 
     /**
      * Internal function to return a Version object from a row.
-     * 
      * @param array $row
      * @return Version
      */
@@ -146,7 +146,6 @@ class VersionDAO extends DAO {
 
     /**
      * Insert a new version.
-     * 
      * @param Version $version
      * @param bool $isPlugin
      * @return bool
@@ -221,7 +220,6 @@ class VersionDAO extends DAO {
 
     /**
      * Retrieve all currently enabled products.
-     * 
      * @param array $context the application context (e.g., ['journal' => 1])
      * @return array
      */
@@ -265,8 +263,7 @@ class VersionDAO extends DAO {
     }
 
     /**
-     * Disable a product by setting its 'current' column to 0
-     * 
+     * Disable a product by setting its 'current' column to 0.
      * @param string $productType
      * @param string $product
      * @return bool

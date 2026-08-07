@@ -13,6 +13,7 @@ declare(strict_types=1);
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @ingroup pages_article
+ * 
  * @brief Handle requests for article functions. 
  *
  */

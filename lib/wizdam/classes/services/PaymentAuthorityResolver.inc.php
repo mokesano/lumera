@@ -13,8 +13,8 @@ declare(strict_types=1);
  * @brief Menentukan SIAPA yang berwenang mengkonfirmasi Transfer Bank
  * untuk sebuah jurnal -- "siapa yang atur kredensial pembayaran, dialah
  * yang berwenang konfirmasi":
- * - Jurnal biasa (paymentIndependent=false): HANYA Admin Publisher.
- * - Jurnal Partnership (paymentIndependent=true): Journal Manager jurnal itu.
+ * - Jurnal Ownership (publisherPartnerships=false): HANYA Admin Publisher.
+ * - Jurnal Partnership (publisherPartnerships=true): Journal Manager jurnal itu.
  */
 
 class PaymentAuthorityResolver {
@@ -47,7 +47,7 @@ class PaymentAuthorityResolver {
      * @return bool true kalau jurnal ini mengelola konfirmasi transfernya sendiri (Partnership)
      */
     public function isPartnerManaged($journal): bool {
-        return (bool) ($journal && $journal->getSetting('paymentIndependent'));
+        return (bool) ($journal && $journal->getSetting('publisherPartnerships'));
     }
 
 }

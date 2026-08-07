@@ -649,8 +649,8 @@ class AboutJournalHandler extends Handler {
 
     /**
      * Display journal history.
-     * @deprecated Rute op='history' TIDAK LAGI mengarah ke sini -- direbut
-     * PublisherAboutHandler (lihat pages/about/index.php) untuk halaman
+     * @deprecated Rute op='history' TIDAK mengarah ke sini -- direbut
+     * AboutPublisherHandler (lihat pages/about/index.php) untuk halaman
      * History level Penerbit. Method ini dipertahankan sebagai logika inti;
      * dipanggil lewat alias journalHistory() di bawah, yang benar-benar
      * routable lewat op='journal-history'.

@@ -12,7 +12,9 @@ declare(strict_types=1);
  * @ingroup admin_form
  *
  * @brief Form for site administrator to edit basic journal settings.
- * Diperkaya: toggle Partnership Journal (paymentIndependent) dan pemilihan
+ * Diperkaya: toggle Publisher Partnerships (publisherPartnerships -- satu
+ * flag tunggal yang menentukan pengaturan payment, DOI, dan Publisher
+ * dikelola sendiri oleh jurnal atau terpusat oleh penerbit) dan pemilihan
  * Journal Manager penanda tangan Sertifikat/LoA (certificateSignatoryUserId)
  * -- keduanya WAJIB diatur Site Admin, bukan Journal Manager sendiri.
  */
@@ -112,8 +114,7 @@ class JournalSiteSettingsForm extends Form {
                     'journalPath' => $journal->getPath(),
                     'enabled' => $journal->getEnabled(),
                     'showOnHomepage' => $journal->getSetting('showOnHomepage') !== null ? $journal->getSetting('showOnHomepage') : 1,
-                    'paymentIndependent' => $journal->getSetting('paymentIndependent') ?: 0,
-                    'doiIndependent' => $journal->getSetting('doiIndependent') ?: 0,
+                    'publisherPartnerships' => $journal->getSetting('publisherPartnerships') ?: 0,
                     'certificateSignatoryUserId' => (int) $journal->getSetting('certificateSignatoryUserId'),
                 ];
             } else {
@@ -125,8 +126,7 @@ class JournalSiteSettingsForm extends Form {
             $this->_data = [
                 'enabled' => 1,
                 'showOnHomepage' => 1,
-                'paymentIndependent' => 0,
-                'doiIndependent' => 0,
+                'publisherPartnerships' => 0,
                 'certificateSignatoryUserId' => 0,
             ];
         }
@@ -136,11 +136,10 @@ class JournalSiteSettingsForm extends Form {
      * Assign form data to user-submitted data.
      */
     public function readInputData() {
-        $this->readUserVars(['title', 'description', 'journalPath', 'enabled', 'showOnHomepage', 'paymentIndependent', 'doiIndependent', 'certificateSignatoryUserId']);
+        $this->readUserVars(['title', 'description', 'journalPath', 'enabled', 'showOnHomepage', 'publisherPartnerships', 'certificateSignatoryUserId']);
         $this->setData('enabled', (int)$this->getData('enabled'));
         $this->setData('showOnHomepage', (int)$this->getData('showOnHomepage'));
-        $this->setData('paymentIndependent', (int)$this->getData('paymentIndependent'));
-        $this->setData('doiIndependent', (int)$this->getData('doiIndependent'));
+        $this->setData('publisherPartnerships', (int)$this->getData('publisherPartnerships'));
         $this->setData('certificateSignatoryUserId', (int)$this->getData('certificateSignatoryUserId'));
 
         if (isset($this->journalId)) {
@@ -252,8 +251,7 @@ class JournalSiteSettingsForm extends Form {
         $journal->updateSetting('title', $this->getData('title'), 'string', true);
         $journal->updateSetting('description', $this->getData('description'), 'string', true);
         $journal->updateSetting('showOnHomepage', $this->getData('showOnHomepage') ? 1 : 0, 'int');
-        $journal->updateSetting('paymentIndependent', $this->getData('paymentIndependent') ? 1 : 0, 'int');
-        $journal->updateSetting('doiIndependent', $this->getData('doiIndependent') ? 1 : 0, 'int');
+        $journal->updateSetting('publisherPartnerships', $this->getData('publisherPartnerships') ? 1 : 0, 'int');
 
         // [BARU] Simpan HANYA kalau pilihannya valid -- mencegah user_id sampah
         // tersimpan (mis. dari manipulasi form) untuk jurnal yang sebenarnya

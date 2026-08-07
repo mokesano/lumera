@@ -949,14 +949,20 @@
    // Deteksi DOI element menggunakan vanilla JS
    const detectDoiElement = () => {
        if (doiProcessed) return;
-       
+
+       // [DIPERBAIKI] Panel "Cited by" sekarang sudah dirender LANGSUNG oleh
+       // backend (CitationFetcherService lewat citedby_doi.tpl) -- tidak
+       // perlu lagi fetch AJAX ke /api/citedby untuk mengisi tampilan awal.
+       // Kode di bawah TETAP dijalankan supaya elemen DOI terdeteksi & event
+       // listener tombol "Refresh" (loadCitingArticles(doi, true), lihat di
+       // atas) tetap berfungsi untuk refresh manual sesuai permintaan.
        const doiElement = document.querySelector('.anchor.doi');
        if (doiElement) {
            const href = doiElement.getAttribute('href');
            if (href && href.includes('https://doi.org/')) {
                const doi = href.split('https://doi.org/')[1];
                if (doi) {
-                   loadCitingArticles(doi);
+                   doiProcessed = true; // tandai sudah "diproses" -- panel sudah terisi dari server
                }
            }
        }

@@ -83,11 +83,14 @@
 	   (atau gambar default jika tidak ada cover page yang diupload)
 	   ================================================================ *}
 	{if $coverPagePath}
-	<div id="issueCoverImage" class="u-hide"><a href="{$currentUrl}"><img class="lazyload cover__image" {if $coverPageAltText != ''} title="Cover issue {$coverPageAltText|escape}"{else} title="Cover issue {translate key="issue.coverPage.altText"}"{/if} {if $coverPageAltText != ''} alt="{$coverPageAltText|escape}" {else} alt="{translate key="issue.coverPage.altText"}"{/if}{if $width} width="{$width|escape}"{/if}{if $height} height="{$height|escape}"{/if} {if $coverPagePath} src="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}"{/if} width="100%" /></a>
-	</div>
+		<div id="issueCoverImage" class="u-hide"><a href="{$currentUrl}"><img class="lazyload cover__image" {if $coverPageAltText != ''} title="Cover issue {$coverPageAltText|escape}"{else} title="Cover issue {translate key="issue.coverPage.altText"}"{/if} {if $coverPageAltText != ''} alt="{$coverPageAltText|escape}" {else} alt="{translate key="issue.coverPage.altText"}"{/if}{if $width} width="{$width|escape}"{/if}{if $height} height="{$height|escape}"{/if} {if $coverPagePath} src="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}"{/if} width="100%" /></a>
+		</div>
 	{else}
-	<div id="issueCoverImage" class="u-hide"><a href="{$currentUrl}"><img class="lazyload journal-cover__image cover-lazy img-default" title="Cover issue default" src="{$publicFilesDir}/{$homepageImage.uploadName|escape}/homepageImage_en_US.jpg" alt="Cover issue default" style="margin-top: 0" width="100%" />
-	</div>
+		{assign var="defaultCoverImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
+		{if $defaultCoverImage && is_array($defaultCoverImage)}
+			<div id="issueCoverImage" class="u-hide"><a href="{$currentUrl}"><img class="lazyload journal-cover__image cover-lazy img-default" title="Cover issue default" src="{$publicFilesDir}/{$defaultCoverImage.uploadName|escape:"url"}?v={$defaultCoverImage.dateUploaded|md5}" alt="Cover issue default" style="margin-top: 0" width="100%" />
+			</div>
+		{/if}
 	{/if}
 
 {elseif $issue}

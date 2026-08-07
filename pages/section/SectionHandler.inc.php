@@ -163,7 +163,7 @@ class SectionHandler extends Handler {
      * @param PKPRequest $request
      */
     private function _showSectionAbout($section, $journal, $request): void {
-        $this->setupSectionTemplate($section);
+        $this->setupSectionTemplate($section, 'section.aboutTheSection');
         $templateMgr = TemplateManager::getManager();
 
         $templateMgr->assign('section',             $section);
@@ -190,7 +190,7 @@ class SectionHandler extends Handler {
      * @param PKPRequest $request
      */
     private function _showSectionArticles($section, $journal, $request): void {
-        $this->setupSectionTemplate($section);
+        $this->setupSectionTemplate($section, 'section.sectionArticle');
 
         $rangeInfo    = $this->getRangeInfo('sectionArticles');
         $allFiltered  = $this->_getSectionArticles($section, $journal);
@@ -356,14 +356,29 @@ class SectionHandler extends Handler {
 
     /**
      * Setup breadcrumbs dan page title untuk semua halaman section.
+     * [BUGFIX] Sebelumnya method ini SELALU memasukkan link ke halaman
+     * section itu sendiri ke $pageHierarchy, DAN selalu meng-assign
+     * pageTitle = judul section yang sama -- termasuk saat dipanggil dari
+     * _showSectionIndex() (halaman section itu sendiri). Hasilnya breadcrumb
+     * "Home > [Judul Section] > [Judul Section]", dengan crumb tengah
+     * berupa link yang mengarah ke dirinya sendiri (self-referencing loop).
+     * Untuk halaman about/articles (anak dari index section), link ke
+     * section memang benar sebagai crumb leluhur -- tapi pageTitle-nya
+     * harus BEDA dari judul section (bukan duplikat).
      * @param object $section
+     * @param string $currentPageTitle Locale key atau teks untuk crumb
+     *   halaman saat ini. Default null = section index (section itu
+     *   sendiri adalah halaman saat ini, jadi TIDAK masuk ke pageHierarchy).
      */
-    private function setupSectionTemplate($section): void {
+    private function setupSectionTemplate($section, $currentPageTitle = null): void {
         parent::setupTemplate();
         $templateMgr = TemplateManager::getManager();
 
         $pageHierarchy = [];
-        if ($section) {
+        // Section index itu sendiri adalah halaman saat ini -- section
+        // TIDAK dimasukkan sebagai leluhurnya sendiri. Untuk sub-halaman
+        // (about/articles), section index adalah leluhur yang sah.
+        if ($section && $currentPageTitle !== null) {
             $pageHierarchy[] = [
                 Request::url(null, 'section', $section->getSectionUrlTitle()),
                 $section->getLocalizedTitle(),
@@ -372,7 +387,10 @@ class SectionHandler extends Handler {
         }
 
         $templateMgr->assign('pageHierarchy', $pageHierarchy);
-        $templateMgr->assign('pageTitle',     $section ? $section->getLocalizedTitle() : 'common.section');
+        $templateMgr->assign(
+            'pageTitle',
+            $currentPageTitle ?? ($section ? $section->getLocalizedTitle() : 'common.section')
+        );
     }
     
 }
