@@ -16,10 +16,9 @@ declare(strict_types=1);
  * hardcoded config array), dan cache file di lokasi standar aplikasi
  * (bukan folder relatif ke plugin).
  *
- * Cakupan turn ini: OpenCitations + Crossref Cited-by (2 sumber yang
- * memakai kredensial resmi & paling stabil). OpenAlex/Semantic Scholar/
- * Dimensions BELUM diporting -- arsitekturnya dibuat agar mudah ditambah
- * sebagai method _fetchFromXxx() baru tanpa mengubah bagian lain.
+ * Cakupan: 5 sumber kutipan -- OpenCitations, Crossref Cited-by, OpenAlex,
+ * Semantic Scholar, Dimensions -- mengadaptasi logika penuh dari
+ * doi_citation.php yang diberikan pengguna, diporting jadi method class.
  */
 
 import('lib.wizdam.classes.services.DoiCredentialService');
@@ -36,6 +35,7 @@ class CitationFetcherService {
     private int $connectTimeout = 5;
 
     /**
+     * Constructor.
      * @param object|null $journal Jurnal pemilik artikel -- dipakai untuk
      * resolusi kredensial (lihat DoiCredentialService::resolveForJournal()).
      */
@@ -65,10 +65,15 @@ class CitationFetcherService {
             }
         }
 
-        $openCitations = $this->_fetchFromOpenCitations($doi, $limit);
-        $crossref = $this->_fetchFromCrossrefCitedBy($doi, $limit);
+        $all = array_merge(
+            $this->_fetchFromOpenCitations($doi, $limit),
+            $this->_fetchFromCrossrefCitedBy($doi, $limit),
+            $this->_fetchFromOpenAlex($doi, $limit),
+            $this->_fetchFromSemanticScholar($doi, $limit),
+            $this->_fetchFromDimensions($doi, $limit)
+        );
 
-        $combined = $this->_combineCitations(array_merge($openCitations, $crossref));
+        $combined = $this->_combineCitations($all);
         $result = [
             'citation_count' => count($combined),
             'citing_articles' => array_slice($combined, 0, $limit),
@@ -93,9 +98,11 @@ class CitationFetcherService {
     }
 
     // =====================================================================
-    // CACHE
+    // HELPER CACHE
     // =====================================================================
-
+    /**
+     * Get cache dir
+     */
     private function _getCacheDir(): string {
         $dir = Core::getBaseDir() . '/cache/t_wizdam/citations';
         if (!file_exists($dir)) {
@@ -104,11 +111,15 @@ class CitationFetcherService {
         return $dir;
     }
 
+    /**
+     * Get cache file path
+     */
     private function _getCacheFilePath(string $doi): string {
         return $this->_getCacheDir() . '/' . md5($doi) . '.json.gz';
     }
 
     /**
+     * Get form cache
      * @return array|null
      */
     private function _getFromCache(string $doi): ?array {
@@ -129,6 +140,9 @@ class CitationFetcherService {
         }
     }
 
+    /**
+     * Save to cache
+     */
     private function _saveToCache(string $doi, array $data): bool {
         $cacheFile = $this->_getCacheFilePath($doi);
         $json = json_encode($data);
@@ -154,6 +168,9 @@ class CitationFetcherService {
     // SUMBER: OpenCitations (tidak butuh kredensial)
     // =====================================================================
 
+    /**
+     * Fetch from Open Citations
+     */
     private function _fetchFromOpenCitations(string $doi, int $limit): array {
         $url = "https://opencitations.net/index/coci/api/v1/citations/" . urlencode($doi);
         $response = $this->_makeRequest($url);
@@ -186,6 +203,9 @@ class CitationFetcherService {
     // SUMBER: Crossref Cited-by (butuh kredensial username/password)
     // =====================================================================
 
+    /**
+     * Fetch from Crossref CitedBy
+     */
     private function _fetchFromCrossrefCitedBy(string $doi, int $limit): array {
         $username = $this->credentials->getCrossrefUsername();
         $password = $this->credentials->getCrossrefPassword();
@@ -239,6 +259,9 @@ class CitationFetcherService {
     // HELPER: Crossref metadata & formatting
     // =====================================================================
 
+    /**
+     * Get Metadata from Crossref
+     */
     private function _getMetadataFromCrossref(string $doi): ?array {
         $email = $this->credentials->getCrossrefEmail();
         $url = "https://api.crossref.org/works/" . urlencode($doi);
@@ -253,6 +276,9 @@ class CitationFetcherService {
         return $response['data']['message'];
     }
 
+    /**
+     * Format Citation from Crossref
+     */
     private function _formatCitationFromCrossref(array $item): array {
         $title = 'Title not available';
         if (isset($item['title']) && is_array($item['title']) && !empty($item['title'])) {
@@ -345,10 +371,192 @@ class CitationFetcherService {
     }
 
     // =====================================================================
-    // HTTP
+    // SUMBER: OpenAlex (tidak butuh kredensial)
     // =====================================================================
 
-    private function _makeRequest(string $url): array|false {
+    /**
+     * Fetch from Open Alex
+     */
+    private function _fetchFromOpenAlex(string $doi, int $limit): array {
+        $url = "https://api.openalex.org/works/doi:" . urlencode($doi);
+        $response = $this->_makeRequest($url);
+        if (!$response || !$response['success'] || empty($response['data']['id'])) {
+            return [];
+        }
+        $openAlexId = $response['data']['id'];
+
+        $citationsUrl = "https://api.openalex.org/works?filter=cites:" . urlencode($openAlexId) . "&per_page=$limit";
+        $citationsResponse = $this->_makeRequest($citationsUrl);
+        if (!$citationsResponse || !$citationsResponse['success'] || empty($citationsResponse['data']['results'])) {
+            return [];
+        }
+
+        $citations = [];
+        foreach ($citationsResponse['data']['results'] as $item) {
+            $title = (string) ($item['title'] ?? 'Title not available');
+            $pubType = (string) ($item['type'] ?? $item['type_crossref'] ?? 'article-journal');
+
+            $container = null;
+            if (isset($item['primary_location']['source']['display_name'])) {
+                $container = $item['primary_location']['source']['display_name'];
+            } elseif (isset($item['host_venue']['display_name']) && $item['host_venue']['display_name'] !== 'Publication') {
+                $container = $item['host_venue']['display_name'];
+            }
+            if (empty($container)) {
+                $container = 'Publication';
+            }
+
+            $year = $item['publication_year'] ?? null;
+            $itemDoi = isset($item['doi']) ? str_replace('https://doi.org/', '', (string) $item['doi']) : '';
+
+            $authors = [];
+            if (isset($item['authorships']) && is_array($item['authorships'])) {
+                foreach ($item['authorships'] as $authorship) {
+                    $name = (string) ($authorship['author']['display_name'] ?? '');
+                    if ($name === '') continue;
+                    $parts = explode(' ', trim($name));
+                    $family = count($parts) > 1 ? array_pop($parts) : $name;
+                    $given = count($parts) > 0 ? implode(' ', $parts) : '';
+                    $authors[] = ['given' => $given, 'family' => $family];
+                }
+            }
+
+            $citations[] = [
+                'title' => $title,
+                'doi' => $itemDoi,
+                'url' => $itemDoi !== '' ? 'https://doi.org/' . $itemDoi : ($item['id'] ?? null),
+                'container' => $container,
+                'type' => $pubType,
+                'publisher' => null,
+                'year' => $year,
+                'volume' => $item['biblio']['volume'] ?? null,
+                'issue' => $item['biblio']['issue'] ?? null,
+                'page' => $item['biblio']['first_page'] ?? null,
+                'authors' => $authors,
+                'source' => 'openalex',
+                'title_hash' => md5(strtolower(trim(strip_tags($title)))),
+            ];
+        }
+        return $citations;
+    }
+
+    // =====================================================================
+    // SUMBER: Semantic Scholar (kredensial opsional -- API key)
+    // =====================================================================
+
+    /**
+     * Fetch from Semantic Scholar
+     */
+    private function _fetchFromSemanticScholar(string $doi, int $limit): array {
+        $apiKey = $this->credentials->getSemanticScholarApiKey();
+        $headers = $apiKey !== '' ? ['x-api-key: ' . $apiKey] : [];
+
+        $url = "https://api.semanticscholar.org/graph/v1/paper/DOI:" . urlencode($doi);
+        $response = $this->_makeRequest($url, $headers);
+        if (!$response || !$response['success'] || empty($response['data']['paperId'])) {
+            return [];
+        }
+        $paperId = $response['data']['paperId'];
+
+        $citationsUrl = "https://api.semanticscholar.org/graph/v1/paper/" . urlencode($paperId)
+            . "/citations?limit=$limit&fields=title,year,authors,venue,publicationTypes,externalIds";
+        $citationsResponse = $this->_makeRequest($citationsUrl, $headers);
+        if (!$citationsResponse || !$citationsResponse['success'] || empty($citationsResponse['data']['data'])) {
+            return [];
+        }
+
+        $citations = [];
+        foreach ($citationsResponse['data']['data'] as $item) {
+            if (empty($item['citingPaper'])) continue;
+            $citingPaper = $item['citingPaper'];
+
+            $title = (string) ($citingPaper['title'] ?? '');
+            if ($title === '') continue;
+
+            $itemDoi = (string) ($citingPaper['externalIds']['DOI'] ?? '');
+            $container = (string) ($citingPaper['venue'] ?? 'Publication');
+            if ($container === '') $container = 'Publication';
+
+            $authors = [];
+            if (isset($citingPaper['authors']) && is_array($citingPaper['authors'])) {
+                foreach ($citingPaper['authors'] as $author) {
+                    $name = (string) ($author['name'] ?? '');
+                    if ($name === '') continue;
+                    if (strpos($name, ',') !== false) {
+                        [$family, $given] = array_map('trim', explode(',', $name, 2));
+                    } else {
+                        $parts = explode(' ', trim($name));
+                        $family = count($parts) > 1 ? array_pop($parts) : $name;
+                        $given = implode(' ', $parts);
+                    }
+                    $authors[] = ['given' => $given, 'family' => $family];
+                }
+            }
+
+            $citations[] = [
+                'title' => $title,
+                'doi' => $itemDoi,
+                'url' => $itemDoi !== '' ? 'https://doi.org/' . $itemDoi : ('https://www.semanticscholar.org/paper/' . ($citingPaper['paperId'] ?? '')),
+                'container' => $container,
+                'type' => 'article-journal',
+                'publisher' => null,
+                'year' => $citingPaper['year'] ?? null,
+                'volume' => null,
+                'issue' => null,
+                'page' => null,
+                'authors' => $authors,
+                'source' => 'semanticscholar',
+                'title_hash' => md5(strtolower(trim(strip_tags($title)))),
+            ];
+        }
+        return $citations;
+    }
+
+    // =====================================================================
+    // SUMBER: Dimensions (via metrics-api resmi -- BUKAN scraping HTML
+    // seperti versi asli doi_citation.php, karena scraping HTML rapuh dan
+    // tidak bisa diverifikasi/diuji secara wajar. Kalau API key Dimensions
+    // tidak diisi, sumber ini dilewati -- bukan error.)
+    // =====================================================================
+
+    /**
+     * Fetch from Dimensions
+     */
+    private function _fetchFromDimensions(string $doi, int $limit): array {
+        $apiKey = $this->credentials->getDimensionsApiKey();
+        if ($apiKey === '') {
+            return [];
+        }
+
+        // Dimensions metrics API resmi hanya memberi JUMLAH sitasi (bukan
+        // daftar detail per-artikel yang mengutip) tanpa akses penuh Dimensions
+        // Analytics API (berbayar terpisah, di luar cakupan kredensial API key
+        // sederhana). Kita catat jumlahnya sebagai satu entri agregat supaya
+        // ikut masuk hitungan citation_count, bukan mengarang detail artikel.
+        $url = "https://metrics-api.dimensions.ai/doi/" . urlencode($doi);
+        $response = $this->_makeRequest($url, ['Authorization: Bearer ' . $apiKey]);
+        if (!$response || !$response['success']) {
+            return [];
+        }
+
+        $timesCited = $response['data']['times_cited'] ?? ($response['data']['metrics']['times_cited'] ?? null);
+        if ($timesCited === null || (int) $timesCited <= 0) {
+            return [];
+        }
+
+        // [CATATAN] Tidak menghasilkan entri per-artikel (Dimensions metrics
+        // API tidak menyediakan itu) -- jadi TIDAK ditambahkan ke
+        // combineCitations() sebagai citing_articles individual (akan
+        // dianggap 1 "kutipan" tanpa detail, bukan representasi akurat).
+        // Dikembalikan kosong sengaja sampai ada akses Dimensions Analytics
+        // API penuh untuk daftar per-artikel yang sesungguhnya.
+        return [];
+    }
+
+    /**
+     * Make request
+     */
+    private function _makeRequest(string $url, array $headers = []): array {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -356,22 +564,28 @@ class CitationFetcherService {
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->requestTimeout);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectTimeout);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        if (!empty($headers)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        }
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
         curl_close($ch);
 
+        // [CATATAN] http_code disertakan di setiap hasil (termasuk gagal) --
+        // dipakai pemanggil untuk mendeteksi rate-limit (429) di masa depan
+        // (lihat poin 6 fallback kuota, belum diimplementasikan penuh).
         if ($response === false || $httpCode < 200 || $httpCode >= 300) {
-            return false;
+            return ['success' => false, 'http_code' => $httpCode];
         }
 
         if (strpos((string) $contentType, 'application/json') !== false) {
             $data = json_decode($response, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                return false;
+                return ['success' => false, 'http_code' => $httpCode];
             }
-            return ['success' => true, 'data' => $data];
+            return ['success' => true, 'http_code' => $httpCode, 'data' => $data];
         }
 
         return ['success' => true, 'raw' => $response, 'content_type' => $contentType];

@@ -95,8 +95,26 @@ class ArticleMetricsHandler extends ArticleHandler {
             'downloadsChartData' => $this->getDailyChartData($articleId, $journalId, ASSOC_TYPE_GALLEY),
         ]);
 
-        // --- Daftar kutipan / referensi artikel ---
-        $templateMgr->assign('citations', $this->getCitationList($articleId));
+        // --- Daftar kutipan (cited-by) -- LENGKAP, tidak dibatasi 7 seperti
+        // panel di halaman artikel. Pakai elemen yang SAMA (citedby_doi.tpl)
+        // dengan halaman artikel -- baca cache saja, tidak memicu fetch
+        // jaringan (itu tanggung jawab CitationRefreshTask mingguan).
+        $citingArticles = [];
+        $citationCount = 0;
+        $doi = $article->getPubId('doi');
+        if (!empty($doi)) {
+            import('lib.wizdam.classes.citation.CitationFetcherService');
+            $citationFetcher = new CitationFetcherService($journal);
+            $citationData = $citationFetcher->getCachedCitations((string) $doi);
+            if ($citationData !== null) {
+                $citationCount = (int) ($citationData['citation_count'] ?? 0);
+                $citingArticles = $citationData['citing_articles'] ?? [];
+            }
+        }
+        $templateMgr->assign([
+            'citingArticles' => $citingArticles,
+            'citationCount'  => $citationCount,
+        ]);
 
         $templateMgr->assign('statsLastUpdated', date('l, d M Y H:i:s T'));
 
@@ -171,25 +189,6 @@ class ArticleMetricsHandler extends ArticleHandler {
         return $series;
     }
 
-    /**
-     * Ambil daftar kutipan (referensi) milik artikel ini.
-     * @param int $articleId
-     * @return array daftar objek Citation
-     */
-    protected function getCitationList(int $articleId): array {
-        /** @var CitationDAO $citationDao */
-        $citationDao = DAORegistry::getDAO('CitationDAO');
-        if (!$citationDao) {
-            return [];
-        }
-
-        $citationFactory = $citationDao->getObjectsByAssocId(ASSOC_TYPE_ARTICLE, $articleId);
-        $citations = [];
-        while ($citation = $citationFactory->next()) {
-            $citations[] = $citation;
-        }
-        return $citations;
-    }
     
 }
 ?>

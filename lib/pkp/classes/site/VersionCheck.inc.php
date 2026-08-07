@@ -24,7 +24,6 @@ class VersionCheck {
 
     /**
      * Return information about the latest available version.
-     * 
      * @return array|false
      */
     public static function getLatestVersion() {
@@ -57,7 +56,6 @@ class VersionCheck {
 
     /**
      * Return the currently installed database version.
-     * 
      * @return Version|null
      */
     public static function getCurrentDBVersion(): ?Version {
@@ -70,7 +68,6 @@ class VersionCheck {
 
     /**
      * Return the current code version.
-     * 
      * @return Version|false
      */
     public static function getCurrentCodeVersion() {
@@ -83,7 +80,6 @@ class VersionCheck {
 
     /**
      * Parse information from a version XML file.
-     * 
      * @param string $url
      * @return array|false
      */
@@ -134,7 +130,6 @@ class VersionCheck {
 
     /**
      * Find the applicable patch for the current code version (if available).
-     * 
      * @param array|false $versionInfo as returned by parseVersionXML()
      * @param Version|null $codeVersion as returned by getCurrentCodeVersion()
      * @return string|null
@@ -157,7 +152,6 @@ class VersionCheck {
      * contains valid data. Returns a Version object if everything
      * is ok, otherwise null. If $returnErrorMsg is true, returns the
      * error message.
-     *
      * @param string $versionFile
      * @param bool $returnErrorMsg
      * @return Version|string|null
@@ -223,7 +217,6 @@ class VersionCheck {
     /**
      * Checks the application's version against the latest version 
      * on the PKP servers.
-     * 
      * @return string|false Returns the latest version string or false if no newer version
      */
     public static function checkIfNewVersionExists() {
@@ -247,7 +240,6 @@ class VersionCheck {
      * Mendapatkan status versi dengan fallback backend yang robust.
      * Metode ini menjamin template selalu menerima array yang terstruktur, 
      * terlepas dari apakah pengecekan remote berhasil atau gagal.
-     * 
      * @return array{
      *   status: 'up_to_date'|'update_available'|'check_failed',
      *   current_version: string,

@@ -38,7 +38,7 @@ class JournalStatsHandler extends Handler {
     public function authorize($request, $args, $roleAssignments) {
         import('classes.security.authorization.ContextRequiredPolicy');
         // Parameter ke-3 adalah false untuk mengizinkan akses tanpa konteks jurnal
-        $this->addPolicy(new ContextRequiredPolicy($request, 'user.authorization.noContext', false));
+        $this->addPolicy(new ContextRequiredPolicy($request, 'user.authorization.noContext'));
         return parent::authorize($request, $args, $roleAssignments);
     }
 
@@ -60,7 +60,7 @@ class JournalStatsHandler extends Handler {
         }
 
         // Setup dasar halaman
-        $this->setupTemplate($request);
+        $this->setupTemplate($request, $journal);
 
         StatsManager::assignWidgetPayload($templateMgr, $journal, $forceRefresh);
         if ($journal) {
@@ -73,21 +73,19 @@ class JournalStatsHandler extends Handler {
     }
 
     /**
-     * Helper untuk memuat template header/footer standar OJS
+     * Helper untuk memuat template header/footer.
      * @param Request $request
+     * @param Journal|null $journal
      */
-    public function setupTemplate($request = null) {
+    public function setupTemplate($request = null, $journal = null) {
         parent::setupTemplate($request);
         $templateMgr = TemplateManager::getManager($request);
-        
-        $pageHierarchy = [
-            [
-                $request->url(null, 'index'),
-                'navigation.home'
-            ]
-        ];
-        $templateMgr->assign('pageHierarchy', $pageHierarchy);
-        $templateMgr->assign('pageTitle', 'navigation.statistics');
+
+        $templateMgr->assign('pageHierarchy', []);
+        $templateMgr->assign(
+            'pageTitle',
+            $journal ? 'manager.statistics.statistics' : 'about.statistics'
+        );
     }
 
 }

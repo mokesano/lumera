@@ -86,7 +86,8 @@
 		</tr>
 		<tr valign="top">
 			<td colspan="2" class="label">
-				<input type="checkbox" name="enabled" id="enabled" value="1"{if $enabled} checked="checked"{/if} /> <label for="enabled">{translate key="admin.journals.enableJournalInstructions"}</label>
+				<input type="checkbox" name="enabled" id="enabled" value="1"{if $enabled} checked="checked"{/if} />
+				<label for="enabled">{translate key="admin.journals.enableJournalInstructions"}</label>
 			</td>
 		</tr>
 		<tr valign="top">
@@ -97,12 +98,9 @@
 		</tr>
 		<tr valign="top">
 			<td colspan="2" class="label">
-				<input type="checkbox" name="paymentIndependent" id="paymentIndependent" value="1"{if $paymentIndependent} checked="checked"{/if} /> <label for="paymentIndependent">{translate key="admin.journals.paymentIndependentInstructions"}</label>
-			</td>
-		</tr>
-		<tr valign="top">
-			<td colspan="2" class="label">
-				<input type="checkbox" name="doiIndependent" id="doiIndependent" value="1"{if $doiIndependent} checked="checked"{/if} /> <label for="doiIndependent">{translate key="admin.journals.doiIndependentInstructions"}</label>
+				<input type="checkbox" name="publisherPartnerships" id="publisherPartnerships" value="1"{if $publisherPartnerships} checked="checked"{/if} />
+				<label for="publisherPartnerships">{translate key="admin.journals.publisherPartnerships"}</label>
+				<span class="instruct">{translate key="admin.journals.publisherPartnershipsInstructions"}</span>
 			</td>
 		</tr>
 		<tr valign="top">

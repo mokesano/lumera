@@ -184,7 +184,14 @@
 			</tr>
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="publisherInstitution" key="manager.setup.institution"}</td>
-				<td width="80%" class="value"><input type="text" name="publisherInstitution" id="publisherInstitution" value="{$publisherInstitution|escape}" size="40" maxlength="90" class="textField" /></td>
+				<td width="80%" class="value">
+					{if $isOwnershipJournal}
+					<input type="text" value="{$publisherInstitution|escape}" size="40" maxlength="90" class="textField" readonly="readonly" disabled="disabled" />
+					<span class="instruct">{translate key="manager.setup.publisherOwnershipLocked"}</span>
+					{else}
+					<input type="text" name="publisherInstitution" id="publisherInstitution" value="{$publisherInstitution|escape}" size="40" maxlength="90" class="textField" />
+					{/if}
+				</td>
 			</tr>
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="publisherUrl" key="common.url"}</td>

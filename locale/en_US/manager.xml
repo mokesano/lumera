@@ -449,6 +449,7 @@
 	<message key="manager.setup.publicIdentifier">Identification of Journal Content</message>
 	<message key="manager.setup.publisher">Publisher</message>
 	<message key="manager.setup.publisherNoteDescription">This text will appear below the "Publisher" heading and above the publisher name/url under "Journal Sponsorship" on the "About" page.</message>
+	<message key="manager.setup.publisherOwnershipLocked">This journal is part of the publisher's ownership -- publisher details are managed centrally on the Publisher settings page (Site Admin) and cannot be edited here.</message>
 	<message key="manager.setup.publisherDescription">The name of the organization publishing the journal will appear in About the Journal.</message>
 	<message key="manager.setup.referenceLinking">Reference Linking</message>
 	<message key="manager.setup.refLinkInstructions.description">Layout Instructions for Reference Linking</message>

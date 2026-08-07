@@ -75,7 +75,13 @@ class ArticleHandler extends Handler {
         $articleIdInput = $args[0] ?? 0;
         $op = $args[1] ?? null;
         if ($op === 'metrics') {
-            return $this->metrics($args, $request);
+            // [BUGFIX-KONSOLIDASI] Sebelumnya memanggil $this->metrics() milik
+            // ArticleHandler sendiri -- method itu DUPLIKAT dari
+            // ArticleMetricsHandler::metrics() yang jadi rute resmi (lihat
+            // pages/article/index.php, case 'metrics'). Redirect ke rute
+            // resmi supaya cuma ADA SATU logika metrics, bukan dua yang
+            // gampang tidak sinkron.
+            return $request->redirect(null, 'article', 'metrics', $articleIdInput);
         }
         
         $router = $request->getRouter();
@@ -312,7 +318,29 @@ class ArticleHandler extends Handler {
         
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
         $templateMgr->assign('pubIdPlugins', $pubIdPlugins ?: []);
-        
+
+        // [WIZDAM] Panel "Cited by N articles" -- data dikirim LANGSUNG dari
+        // backend (bukan lewat AJAX ke /api/citedby lagi, lihat
+        // citedby_doi.tpl). Dibatasi 7 kutipan terbaru untuk halaman artikel;
+        // baca cache saja (TIDAK memicu fetch jaringan -- itu tanggung jawab
+        // CitationRefreshTask mingguan), supaya render halaman tetap cepat.
+        $articleDoi = $article->getPubId('doi');
+        $citingArticles = [];
+        $citationCount = 0;
+        if (!empty($articleDoi)) {
+            import('lib.wizdam.classes.citation.CitationFetcherService');
+            $citationFetcher = new CitationFetcherService($journal);
+            $citationData = $citationFetcher->getCachedCitations((string) $articleDoi);
+            if ($citationData !== null) {
+                $citationCount = (int) ($citationData['citation_count'] ?? 0);
+                $citingArticles = array_slice($citationData['citing_articles'] ?? [], 0, 7);
+            }
+        }
+        $templateMgr->assign([
+            'citingArticles' => $citingArticles,
+            'citationCount'  => $citationCount,
+        ]);
+
         $templateMgr->display('article/article.tpl');
     }
 
@@ -704,106 +732,6 @@ class ArticleHandler extends Handler {
             $templateMgr = TemplateManager::getManager($request);
             $templateMgr->assign('ccLicenseBadge', Application::getCCLicenseBadge($this->article->getLicenseURL()));
         }
-    }
-    
-    /**
-     * Menampilkan halaman metrik untuk artikel tertentu.
-     * @param array $args
-     * @param PKPRequest $request
-     */
-    public function metrics($args = [], $request = null) {
-        if ($request === null) {
-            $request = Application::get()->getRequest();
-        }
-        
-        $articleId = isset($args[0]) ? $args[0] : 0;
-        $journal = $request->getJournal();
-        $user = $request->getUser();
-        $currentJournalId = (int) $journal->getId();
-        
-        /** @var PublishedArticleDAO $publishedArticleDao */
-        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-        if (!$publishedArticleDao) {
-            $request->redirect(null, 'index');
-            return;
-        }
-
-        $article = $publishedArticleDao->getPublishedArticleByPubId('publisher-id', $articleId, $currentJournalId);
-
-        if (!$article) {
-            $article = $publishedArticleDao->getPublishedArticleByArticleId((int) $articleId, $currentJournalId, true);
-        }
-
-        // [WIZDAM] FIX: Gunakan redirect, bukan header() manual
-        if (!$article) {
-            $request->redirect(null, 'index');
-            return;
-        }
-
-        $isEditor = Validation::isEditor($currentJournalId);
-        if ($article->getStatus() != STATUS_PUBLISHED) {
-            $isAuthor = $user && $user->getId() == $article->getUserId();
-            if (!$user || (!$isAuthor && !$isEditor)) {
-                $request->redirect(null, 'index');
-                return;
-            }
-        }
-
-        $templateMgr = TemplateManager::getManager($request);
-        $templateMgr->assign('article', $article);
-
-        // Abstract Views
-        $views = method_exists($article, 'getViews') ? (int) $article->getViews() : 0;
-
-        // Galley (Download) Views
-        $downloads = 0;
-        /** @var ArticleGalleyDAO $galleyDao */
-        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO'); 
-        if ($galleyDao) {
-            $galleys = $galleyDao->getGalleysByArticle($article->getId());
-            foreach ($galleys as $galley) {
-                if (method_exists($galley, 'getViews')) {
-                    $downloads += (int) $galley->getViews();
-                }
-            }
-        }
-
-        $doi = $article->getPubId('doi');
-        
-        // [WIZDAM] Micro-payloads
-        $templateMgr->assign([
-            'views'     => $views,
-            'downloads' => $downloads,
-            'doi'       => $doi
-        ]);
-
-        $this->setupTemplate($request);
-
-        /** @var IssueDAO $issueDao */
-        $issueDao = DAORegistry::getDAO('IssueDAO');
-        $issue = $issueDao ? $issueDao->getIssueByArticleId($article->getId()) : null;
-        if ($issue && $issue->getJournalId() == $currentJournalId) {
-            $templateMgr->assign('issue', $issue);
-        } else {
-            $templateMgr->assign('issue', null);
-        }
-        
-        // Last Updated
-        $lastUpdatedString = 'N/A';
-        $filesDir = Config::getVar('files', 'files_dir');
-        $archiveDir = $filesDir . '/usageStats/archive/';
-
-        if (is_dir($archiveDir)) {
-            $dirMtime = filemtime($archiveDir);
-            $lastUpdatedString = $dirMtime
-                ? date('l, d M Y H:i:s T', $dirMtime)
-                : 'Stats processing is pending';
-        } else {
-            $lastUpdatedString = 'N/A (Stats archive path not found)';
-        }
-        $templateMgr->assign('statsLastUpdated', $lastUpdatedString);
-
-        $templateMgr->display('article/metrics.tpl');
     }
 
 }

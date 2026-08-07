@@ -10,6 +10,7 @@ declare(strict_types=1);
  * 
  * @class SitemapTrait
  * @ingroup pages_about
+ * 
  * @brief Trait for generating sitemap data for publisher/site level pages.
  * 
  */

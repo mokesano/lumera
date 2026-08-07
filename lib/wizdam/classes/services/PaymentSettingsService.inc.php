@@ -13,7 +13,7 @@ declare(strict_types=1);
  * @brief Manajer Konfigurasi Payment Gateway.
  * Hierarki: Admin UI (DB: site_settings ATAU journal_settings) > config.inc.php.
  * Scope ganda: Publisher (default, site_settings) atau Partner Journal
- * (journal_settings, HANYA jika journal->getSetting('paymentIndependent') true).
+ * (journal_settings, HANYA jika journal->getSetting('publisherPartnerships') true).
  */
 
 class PaymentSettingsService {
@@ -41,13 +41,13 @@ class PaymentSettingsService {
 
     /**
      * Factory: pilih scope otomatis berdasarkan status jurnal.
-     * Jurnal biasa (bagian penerbit) -> scope Publisher.
-     * Jurnal partnership (paymentIndependent=true) -> scope Partner (jurnal itu sendiri).
+     * Jurnal Ownership (bagian penerbit) -> scope Publisher.
+     * Jurnal Partnership (publisherPartnerships=true) -> scope Partner (jurnal itu sendiri).
      * @param object|null $journal
      * @return self
      */
     public static function resolveForJournal($journal): self {
-        if ($journal && (bool) $journal->getSetting('paymentIndependent')) {
+        if ($journal && (bool) $journal->getSetting('publisherPartnerships')) {
             return new self((int) $journal->getId());
         }
         return new self();
@@ -127,6 +127,7 @@ class PaymentSettingsService {
     }
 
     /**
+     * DEPRECATED: Kode baru dibikin sehari tapi sudah ada yang deprecated. ANEH!!
      * @deprecated Dipertahankan untuk backward-compatibility fallback
      * getEnabledGateways(). Gunakan getEnabledGateways() untuk kode baru.
      */

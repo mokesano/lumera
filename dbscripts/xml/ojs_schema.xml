@@ -1478,10 +1478,10 @@
     </table>
 
 	<!--
-	  *
-	  * TABLE Checkout Sessions
-	  *
-	  -->
+      *
+      * TABLE Checkout Sessions
+      *
+      -->
     <table name="checkout_sessions">
         <field name="session_id" type="I8">
             <KEY/>
@@ -1503,7 +1503,6 @@
         </field>
         <field name="currency_code" type="C2" size="10">
             <NOTNULL/>
-            <DEFAULT VALUE="USD"/>
         </field>
         <field name="payload" type="X" />
         <field name="date_created" type="T">
@@ -1512,9 +1511,12 @@
         <field name="date_modified" type="T">
             <NOTNULL/>
         </field>
-        <descr>Sesi checkout 3-tahap (Cart -&gt; Billing -&gt; Payment), terpisah total dari queued_payments milik OJS.</descr>
+        <descr>Sesi checkout 3-tahap (Cart -&gt; Billing -&gt; Payment), terpisah total dari queued_payments legacy.</descr>
         <index name="checkout_sessions_user_id">
             <col>user_id</col>
+        </index>
+        <index name="checkout_sessions_journal_id">
+            <col>journal_id</col>
         </index>
     </table>
 
