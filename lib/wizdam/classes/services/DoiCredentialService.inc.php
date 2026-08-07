@@ -18,22 +18,27 @@ declare(strict_types=1);
  * ikut satu status jurnal yang sama, tidak ada lagi flag terpisah per fitur.
  *
  * ATURAN RESOLUSI:
- * 1. Kredensial Crossref (username/password/email) -- SUMBER DATANYA BEDA
- *    per scope:
- *    - Scope Publisher (Ownership, publisherPartnerships=false): setting
- *      kustom (site_settings, wizdam_doi_*) -- diisi lewat halaman admin
- *      DOI Settings.
- *    - Scope Jurnal Partnership (publisherPartnerships=true): DIBACA
- *      LANGSUNG dari plugin bawaan OJS yang SUDAH ADA -- CrossRefExportPlugin
- *      (endpoint jurnal: /manager/plugin/importexport/CrossRefExportPlugin/
- *      settings) -- BUKAN disimpan ulang dengan mekanisme sendiri.
- *    resolveForJournal(): jurnal Partnership COBA kredensial SENDIRI dulu;
- *    kalau belum diisi, FALLBACK ke kredensial Ownership/Publisher.
+ * 1. Kredensial Crossref (username/password/email/depositorName) --
+ *    SUMBER KEBENARAN-nya di scope Publisher (site_settings, wizdam_doi_*,
+ *    diisi lewat halaman admin DOI Settings). TAPI kredensial itu SELALU
+ *    DISALIN (sync) ke plugin_settings TIAP jurnal Ownership juga --
+ *    lihat syncToJournal()/syncToAllOwnershipJournals() -- supaya baris
+ *    plugin_settings milik jurnal itu TIDAK PERNAH kosong, dan kode
+ *    manapun yang membaca kredensial dengan cara ASLI OJS
+ *    ($plugin->getSetting($journalId, 'username')) otomatis benar TANPA
+ *    perlu tahu soal DoiCredentialService sama sekali.
+ *
+ *    resolveForJournal() (baca lewat class ini) TETAP dipertahankan
+ *    sebagai jaring pengaman KEDUA (defense in depth) -- Jurnal
+ *    Partnership COBA kredensial SENDIRI dulu, fallback ke Publisher
+ *    kalau belum diisi.
  *
  * 2. Sumber kutipan LAIN (OpenAlex, Semantic Scholar, Dimensions) --
  *    SELALU dari scope Publisher/Ownership, TIDAK PEDULI jurnal apapun
  *    yang meminta (termasuk jurnal Partnership) -- jurnal Partnership
- *    TIDAK punya pengaturan sendiri untuk sumber-sumber ini.
+ *    TIDAK punya pengaturan sendiri untuk sumber-sumber ini. Sumber ini
+ *    TIDAK di-sync ke plugin_settings jurnal (tidak relevan buat plugin
+ *    CrossRefExportPlugin, cuma dipakai CitationFetcherService).
  */
 
 class DoiCredentialService {
@@ -195,6 +200,60 @@ class DoiCredentialService {
      */
     public function isConfigured(): bool {
         return $this->getCrossrefUsername() !== '' && $this->getCrossrefPassword() !== '';
+    }
+
+    //
+    // SYNC: dorong kredensial Publisher ke plugin_settings TIAP jurnal
+    // Ownership secara langsung -- supaya baris plugin_settings jurnal itu
+    // BETULAN TIDAK PERNAH KOSONG, dan SEMUA kode (termasuk yang belum
+    // pernah ditemukan/ditambal, plugin pihak ketiga, atau kode yang
+    // ditambahkan nanti) otomatis benar tanpa perlu tahu soal
+    // DoiCredentialService sama sekali. resolveForJournal() TETAP
+    // dipertahankan sebagai jaring pengaman kedua (defense in depth) --
+    // bukan digantikan oleh sync ini.
+    //
+
+    /**
+     * Salin kredensial Crossref dari scope Publisher SAAT INI ke
+     * plugin_settings milik satu jurnal tertentu (lewat CrossRefExportPlugin
+     * miliknya sendiri -- BUKAN lewat penyimpanan wizdam_doi_* kustom).
+     * @param int $journalId
+     */
+    public function syncToJournal(int $journalId): void {
+        $plugin = PluginRegistry::getPlugin('importexport', 'CrossRefExportPlugin');
+        if (!$plugin) return;
+
+        // Sengaja instance BARU scope Publisher (bukan $this) -- supaya
+        // method ini selalu menyalin dari sumber kebenaran Publisher,
+        // terlepas dari scope instance yang memanggilnya.
+        $publisherCredentials = new self();
+
+        $plugin->updateSetting($journalId, 'username', $publisherCredentials->getCrossrefUsername(), 'string');
+        $plugin->updateSetting($journalId, 'password', $publisherCredentials->getCrossrefPassword(), 'string');
+        $plugin->updateSetting($journalId, 'depositorName', $publisherCredentials->getCrossrefDepositorName(), 'string');
+        $plugin->updateSetting($journalId, 'depositorEmail', $publisherCredentials->getCrossrefEmail(), 'string');
+    }
+
+    /**
+     * Sinkronkan kredensial Publisher ke SEMUA jurnal Ownership
+     * (publisherPartnerships=false) sekaligus. Dipanggil setiap kali
+     * kredensial Publisher disimpan/diperbarui (lihat DoiSettingsForm),
+     * supaya perubahan langsung tersebar ke seluruh jurnal Ownership --
+     * bukan cuma baru "kelihatan benar" kalau dibaca lewat
+     * DoiCredentialService.
+     */
+    public static function syncToAllOwnershipJournals(): void {
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $journals = $journalDao->getJournals(true);
+        if (!$journals) return;
+
+        $syncer = new self();
+        while ($journal = $journals->next()) {
+            if (!$journal->getSetting('publisherPartnerships')) {
+                $syncer->syncToJournal((int) $journal->getId());
+            }
+        }
     }
 
 }
