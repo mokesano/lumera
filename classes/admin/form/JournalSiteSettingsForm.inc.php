@@ -253,6 +253,15 @@ class JournalSiteSettingsForm extends Form {
         $journal->updateSetting('showOnHomepage', $this->getData('showOnHomepage') ? 1 : 0, 'int');
         $journal->updateSetting('publisherPartnerships', $this->getData('publisherPartnerships') ? 1 : 0, 'int');
 
+        // [WIZDAM] Kalau jurnal ini baru saja ditandai Ownership (checkbox
+        // TIDAK dicentang), langsung sinkronkan kredensial Crossref Publisher
+        // ke plugin_settings jurnal ini SEKARANG -- tidak perlu menunggu
+        // sampai Publisher kebetulan menyimpan ulang DOI Settings-nya.
+        if (!$this->getData('publisherPartnerships')) {
+            import('lib.wizdam.classes.services.DoiCredentialService');
+            DoiCredentialService::syncToAllOwnershipJournals();
+        }
+
         // [BARU] Simpan HANYA kalau pilihannya valid -- mencegah user_id sampah
         // tersimpan (mis. dari manipulasi form) untuk jurnal yang sebenarnya
         // tidak butuh pemilihan ini (<=2 manager).

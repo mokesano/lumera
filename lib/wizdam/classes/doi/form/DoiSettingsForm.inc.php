@@ -75,6 +75,11 @@ class DoiSettingsForm extends Form {
         $this->credentialService->updateSetting('crossref_password', $this->getData('crossref_password'), 'string');
         $this->credentialService->updateSetting('semantic_scholar_api_key', $this->getData('semantic_scholar_api_key'), 'string');
         $this->credentialService->updateSetting('dimensions_api_key', $this->getData('dimensions_api_key'), 'string');
+
+        // [WIZDAM] Sebar LANGSUNG ke plugin_settings tiap jurnal Ownership --
+        // supaya baris kredensial jurnal itu tidak pernah kosong (lihat
+        // DoiCredentialService::syncToAllOwnershipJournals()).
+        DoiCredentialService::syncToAllOwnershipJournals();
     }
 
 }
