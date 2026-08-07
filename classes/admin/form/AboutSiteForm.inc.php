@@ -20,6 +20,9 @@ import('lib.pkp.classes.form.Form');
 
 class AboutSiteForm extends Form {
 
+    /**
+     * Constructor.
+     */
     public function __construct() {
         parent::__construct('admin/aboutSite.tpl');
         $this->addCheck(new FormValidatorPost($this));
@@ -36,14 +39,18 @@ class AboutSiteForm extends Form {
         ));
     }
 
+    /**
+     * [SHIM] Backward Compatibility.
+     */
     public function AboutSiteForm() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor. Please refactor to __construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -91,6 +98,9 @@ class AboutSiteForm extends Form {
         ]);
     }
 
+    /**
+     * Validate action
+     */
     public function validate($callHooks = true) {
         return parent::validate($callHooks);
     }
@@ -162,6 +172,17 @@ class AboutSiteForm extends Form {
 
         // [BARU]
         $siteSettingsDao->updateSetting('publisherName', $this->getData('publisherName'), 'string', false);
+
+        // BAU BUSUK LOGIC
+        // [WIZDAM] publisherName di sini adalah SUMBER KEBENARAN untuk
+        // publisherInstitution seluruh jurnal Ownership (lihat
+        // JournalSetupStep1Form). Setiap kali Publisher ganti nama, sebar
+        // LANGSUNG ke journal_settings tiap jurnal Ownership -- supaya XML
+        // export (Crossref/mEDRA/DataCite/dst) yang membaca
+        // $journal->getSetting('publisherInstitution') selalu dapat nama
+        // terbaru, tanpa menunggu tiap journal manager kebetulan membuka
+        // & menyimpan ulang Setup > Step 1 miliknya masing-masing.
+        $this->_syncPublisherInstitutionToOwnershipJournals($this->getData('publisherName'));
         $siteSettingsDao->updateSetting('publisherMotto', $this->getData('publisherMotto'), null, true);
         $siteSettingsDao->updateSetting('publisherTagline', $this->getData('publisherTagline'), null, true);
         $siteSettingsDao->updateSetting('publisherLegalEntity', $this->getData('publisherLegalEntity'), 'string', false);
@@ -219,6 +240,24 @@ class AboutSiteForm extends Form {
         ]);
         
         parent::display($request, $template);
+    }
+
+    /**
+     * Sebar nama Publisher terbaru ke journal_settings.publisherInstitution
+     * SEMUA jurnal Ownership (publisherPartnerships=false) sekaligus.
+     * @param string $publisherName
+     */
+    private function _syncPublisherInstitutionToOwnershipJournals(string $publisherName): void {
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $journals = $journalDao->getJournals(true);
+        if (!$journals) return;
+
+        while ($journal = $journals->next()) {
+            if (!$journal->getSetting('publisherPartnerships')) {
+                $journal->updateSetting('publisherInstitution', $publisherName, 'string');
+            }
+        }
     }
 
 }
