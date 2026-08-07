@@ -85,7 +85,7 @@
 	<message key="admin.journals.certificateSignatory.noManagers">Jurnal ini belum memiliki Journal Manager yang ditetapkan.</message>
 	<message key="admin.journals.certificateSignatory.autoInfoIntro">Journal Manager berikut akan otomatis tampil sebagai penanda tangan pada sertifikat dan LoA yang diterbitkan:</message>
 	<message key="admin.journals.certificateSignatory.selectInstructions">Jurnal ini memiliki lebih dari dua Journal Manager. Silakan pilih tepat satu nama yang akan tampil pada sertifikat dan LoA yang diterbitkan.</message>
-	<message key="admin.journals.paymentIndependent">Tandai jurnal sebagai jurnal Publisher Partnership.</message>
+	<message key="admin.journals.publisherPartnerships">Tandai jurnal sebagai jurnal Publisher Partnership.</message>
 	<message key="admin.journals.publisherPartnershipsInstructions">Jurnal sebagai jurnal Publisher Partnership -- pengaturan payment, DOI, dan detail penerbit akan dikelola sendiri oleh jurnal ini, bukan terpusat oleh penerbit.</message>
 
 	<!-- Kredensial DOI & API -->
