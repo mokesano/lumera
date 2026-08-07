@@ -64,11 +64,12 @@ class JournalSiteSettingsForm extends Form {
     public function JournalSiteSettingsForm($journalId = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        $this->__construct($journalId);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -257,9 +258,19 @@ class JournalSiteSettingsForm extends Form {
         // TIDAK dicentang), langsung sinkronkan kredensial Crossref Publisher
         // ke plugin_settings jurnal ini SEKARANG -- tidak perlu menunggu
         // sampai Publisher kebetulan menyimpan ulang DOI Settings-nya.
+        // Sama untuk publisherInstitution -- tulis LANGSUNG ke
+        // journal_settings jurnal ini (field NATIVE yang sudah dibaca semua
+        // XML export -- Crossref/mEDRA/DataCite/PubMed/Erudit/DOAJ -- lewat
+        // $journal->getSetting('publisherInstitution')), supaya tidak
+        // menunggu journal manager kebetulan membuka & menyimpan ulang
+        // Setup > Step 1 miliknya sendiri.
         if (!$this->getData('publisherPartnerships')) {
             import('lib.wizdam.classes.services.DoiCredentialService');
             DoiCredentialService::syncToAllOwnershipJournals();
+
+            import('lib.wizdam.classes.services.PublisherProfileService');
+            $publisherProfile = (new PublisherProfileService())->getProfile();
+            $journal->updateSetting('publisherInstitution', $publisherProfile['name'], 'string');
         }
 
         // [BARU] Simpan HANYA kalau pilihannya valid -- mencegah user_id sampah
