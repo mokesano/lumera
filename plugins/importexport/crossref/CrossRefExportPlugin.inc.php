@@ -415,8 +415,15 @@ class CrossRefExportPlugin extends DOIExportPlugin {
         curl_setopt($curlCh, CURLOPT_HEADER, 1);
         curl_setopt($curlCh, CURLOPT_BINARYTRANSFER, true);
 
-        $crossrefUsername = (string) $this->getSetting((int) $journal->getId(), 'username');
-        $crossrefPassword = (string) $this->getSetting((int) $journal->getId(), 'password');
+        // [WIZDAM] Resolusi kredensial lewat DoiCredentialService, BUKAN
+        // langsung $this->getSetting() -- supaya jurnal Ownership
+        // (publisherPartnerships=false) ikut memakai kredensial Publisher
+        // terpusat (halaman DOI Settings site admin), bukan cuma jurnal
+        // Partnership yang tetap pakai kredensial sendiri seperti biasa.
+        import('lib.wizdam.classes.services.DoiCredentialService');
+        $doiCredentials = DoiCredentialService::resolveForJournal($journal);
+        $crossrefUsername = $doiCredentials->getCrossrefUsername();
+        $crossrefPassword = $doiCredentials->getCrossrefPassword();
 
         curl_setopt($curlCh, CURLOPT_URL, CROSSREF_API_URL);
         curl_setopt($curlCh, CURLOPT_USERPWD, "$crossrefUsername:$crossrefPassword");
@@ -492,8 +499,11 @@ class CrossRefExportPlugin extends DOIExportPlugin {
         }
         curl_setopt($curlCh, CURLOPT_RETURNTRANSFER, true);
 
-        $crossrefUsername = (string) $this->getSetting((int) $journal->getId(), 'username');
-        $crossrefPassword = (string) $this->getSetting((int) $journal->getId(), 'password');
+        // [WIZDAM] Sama seperti di atas -- resolusi lewat DoiCredentialService.
+        import('lib.wizdam.classes.services.DoiCredentialService');
+        $doiCredentials = DoiCredentialService::resolveForJournal($journal);
+        $crossrefUsername = $doiCredentials->getCrossrefUsername();
+        $crossrefPassword = $doiCredentials->getCrossrefPassword();
         curl_setopt($curlCh, CURLOPT_USERPWD, "$crossrefUsername:$crossrefPassword");
 
         $doi = urlencode((string) $article->getPubId('doi'));

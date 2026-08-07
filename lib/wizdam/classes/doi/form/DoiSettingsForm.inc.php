@@ -42,6 +42,7 @@ class DoiSettingsForm extends Form {
      */
     public function initData(): void {
         $this->_data = [
+            'crossref_depositor_name' => $this->credentialService->getCrossrefDepositorName(),
             'crossref_email' => $this->credentialService->getCrossrefEmail(),
             'crossref_username' => $this->credentialService->getCrossrefUsername(),
             'crossref_password' => $this->credentialService->getCrossrefPassword(),
@@ -55,6 +56,7 @@ class DoiSettingsForm extends Form {
      */
     public function readInputData(): void {
         $this->readUserVars([
+            'crossref_depositor_name',
             'crossref_email',
             'crossref_username',
             'crossref_password',
@@ -67,6 +69,7 @@ class DoiSettingsForm extends Form {
      * Menyimpan pengaturan ke Database (Site Settings)
      */
     public function execute($object = null): void {
+        $this->credentialService->updateSetting('crossref_depositor_name', $this->getData('crossref_depositor_name'), 'string');
         $this->credentialService->updateSetting('crossref_email', $this->getData('crossref_email'), 'string');
         $this->credentialService->updateSetting('crossref_username', $this->getData('crossref_username'), 'string');
         $this->credentialService->updateSetting('crossref_password', $this->getData('crossref_password'), 'string');

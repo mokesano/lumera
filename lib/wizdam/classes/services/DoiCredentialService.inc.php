@@ -129,6 +129,13 @@ class DoiCredentialService {
     // Scope Jurnal    -> baca LANGSUNG dari CrossRefExportPlugin (sudah ada).
     //
 
+    public function getCrossrefDepositorName(): string {
+        if ($this->journalScopeId !== null) {
+            return $this->_getCrossrefPluginSetting('depositorName');
+        }
+        return trim((string) $this->getSetting('crossref_depositor_name', ''));
+    }
+
     public function getCrossrefEmail(): string {
         if ($this->journalScopeId !== null) {
             return $this->_getCrossrefPluginSetting('depositorEmail');

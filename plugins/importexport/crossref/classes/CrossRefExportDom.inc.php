@@ -182,13 +182,22 @@ class CrossRefExportDom extends DOIExportDom {
         $journalId = (int) $journal->getId();
         $plugin = $this->_plugin;
 
-        /* Depositor defaults to the Journal's technical Contact */
-        $depositorName = (string) $plugin->getSetting($journalId, 'depositorName');
+        // [WIZDAM] Resolusi lewat DoiCredentialService dulu -- jurnal
+        // Ownership (publisherPartnerships=false) memakai nama/email
+        // depositor Publisher terpusat (halaman DOI Settings site admin).
+        // Jurnal Partnership tetap memakai setting plugin miliknya sendiri
+        // (DoiCredentialService::resolveForJournal() sudah menanganinya).
+        // Fallback ke kontak dukungan jurnal DIPERTAHANKAN sebagai jaring
+        // pengaman terakhir kalau kredensial Publisher pun belum diisi.
+        import('lib.wizdam.classes.services.DoiCredentialService');
+        $doiCredentials = DoiCredentialService::resolveForJournal($journal);
+
+        $depositorName = $doiCredentials->getCrossrefDepositorName();
         if ($depositorName === '') {
             $depositorName = (string) $journal->getSetting('supportName');
         }
-        
-        $depositorEmail = (string) $plugin->getSetting($journalId, 'depositorEmail');
+
+        $depositorEmail = $doiCredentials->getCrossrefEmail();
         if ($depositorEmail === '') {
             $depositorEmail = (string) $journal->getSetting('supportEmail');
         }
