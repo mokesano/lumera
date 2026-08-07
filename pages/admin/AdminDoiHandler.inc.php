@@ -75,7 +75,7 @@ class AdminDoiHandler extends Handler {
         $settingsForm->initData();
 
         $templateMgr = TemplateManager::getManager($request);
-        $templateMgr->assign('pageTitle', 'Wizdam DOI Credential Settings');
+        $templateMgr->assign('pageTitle', 'admin.doi.settings');
 
         $settingsForm->display();
     }
