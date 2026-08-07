@@ -113,7 +113,7 @@ RewriteEngine On
  # API CITATION COUNT BY DOI
  # Endpoint: /api/citedby
  # Fungsi: Mengambil jumlah sitasi artikel berdasarkan DOI
- RewriteRule ^api/citedby$ plugins/themes/sangiapub/php/citations/doi_citation.php [L,QSA]
+ # RewriteRule ^api/citedby$ plugins/themes/sangiapub/php/citations/doi_citation.php [L,QSA]
  
  # API SCOPUS EDITOR VERIFICATION
  # Endpoint: /api/scopus_editor
