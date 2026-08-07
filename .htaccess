@@ -103,7 +103,7 @@ RewriteEngine On
  # Endpoint: /api/sinta
  # Fungsi: Mengambil data impact factor dari database Sinta
  # [L,QSA] = Last rule + Query String Append
- RewriteRule ^api/sinta$ plugins/themes/sangiapub/php/sinta_impact/SintaProxyHandler.php [L,QSA]
+ # RewriteRule ^api/sinta$ plugins/themes/sangiapub/php/sinta_impact/SintaProxyHandler.php [L,QSA]
  
  # API SINTA SCORE VERSION 2 (IMPROVED)
  # Endpoint: /api/sinta_v2  
