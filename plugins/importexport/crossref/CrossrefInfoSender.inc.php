@@ -119,7 +119,18 @@ class CrossrefInfoSender extends ScheduledTask {
                 }
             }
 
-            if (!empty($toBeDepositedIds) && $plugin->getSetting((int) $journal->getId(), 'automaticRegistration')) {
+            // [WIZDAM] Sama seperti _getJournals() -- jurnal Partnership
+            // pakai automaticRegistration miliknya sendiri (tidak berubah).
+            // Jurnal Ownership: kalau sudah lolos filter _getJournals() lewat
+            // kredensial Publisher, jangan tertahan lagi di sini oleh
+            // automaticRegistration jurnal sendiri yang memang kosong.
+            $autoRegistrationActive = $plugin->getSetting((int) $journal->getId(), 'automaticRegistration');
+            if (!$autoRegistrationActive && !$journal->getSetting('publisherPartnerships')) {
+                import('lib.wizdam.classes.services.DoiCredentialService');
+                $autoRegistrationActive = DoiCredentialService::resolveForJournal($journal)->isConfigured();
+            }
+
+            if (!empty($toBeDepositedIds) && $autoRegistrationActive) {
                 $exportSpec = [DOI_EXPORT_ARTICLES => $toBeDepositedIds];
                 $result = $plugin->registerObjects($request, $exportSpec, $journal);
                 
@@ -159,11 +170,28 @@ class CrossrefInfoSender extends ScheduledTask {
         $journals = [];
         while ($journal = $journalFactory->next()) {
             $journalId = (int) $journal->getId();
-            
-            if (!$plugin->getSetting($journalId, 'username') || 
-                !$plugin->getSetting($journalId, 'password') || 
-                !$plugin->getSetting($journalId, 'automaticRegistration')) {
-                continue;
+
+            $hasOwnCredentials = $plugin->getSetting($journalId, 'username')
+                && $plugin->getSetting($journalId, 'password')
+                && $plugin->getSetting($journalId, 'automaticRegistration');
+
+            if (!$hasOwnCredentials) {
+                // [WIZDAM] Kredensial milik jurnal sendiri belum lengkap --
+                // kalau jurnal ini Partnership, perilaku lama TETAP berlaku
+                // (lewati, tidak berubah). Kalau jurnal ini Ownership
+                // (publisherPartnerships=false), jangan langsung dilewati --
+                // cek dulu apakah Publisher sudah menyediakan kredensial
+                // Crossref terpusat. Ownership tidak punya toggle
+                // automaticRegistration terpisah per jurnal, jadi kredensial
+                // Publisher terisi = niat otomatis dianggap aktif.
+                if ($journal->getSetting('publisherPartnerships')) {
+                    continue;
+                }
+                import('lib.wizdam.classes.services.DoiCredentialService');
+                $doiCredentials = DoiCredentialService::resolveForJournal($journal);
+                if (!$doiCredentials->isConfigured()) {
+                    continue;
+                }
             }
 
             $doiPrefix = null;

@@ -177,7 +177,20 @@ class DOIExportPlugin extends ImportExportPlugin {
                 $templateMgr->assign('testMode', $this->isTestMode($request) ? ['testMode' => 1] : []);
                 $templateMgr->assign('filter', $request->getUserVar('filter'));
                 $username = $this->getSetting($journal->getId(), 'username');
-                $templateMgr->assign('hasCredentials', !empty($username));
+                $hasCredentials = !empty($username);
+                if (!$hasCredentials && $this instanceof CrossRefExportPlugin) {
+                    // [WIZDAM] Khusus Crossref -- kalau kredensial jurnal
+                    // sendiri kosong, cek juga DoiCredentialService (jurnal
+                    // Ownership memakai kredensial Publisher terpusat).
+                    // SENGAJA dibatasi instanceof CrossRefExportPlugin --
+                    // DOIExportPlugin ini class dasar bersama mEDRA & DataCite
+                    // yang TIDAK relevan dengan DoiCredentialService (itu
+                    // khusus Crossref), jadi perilaku keduanya tidak berubah.
+                    import('lib.wizdam.classes.services.DoiCredentialService');
+                    $doiCredentials = DoiCredentialService::resolveForJournal($journal);
+                    $hasCredentials = $doiCredentials->isConfigured();
+                }
+                $templateMgr->assign('hasCredentials', $hasCredentials);
 
                 switch ($op) {
                     case 'issues':
