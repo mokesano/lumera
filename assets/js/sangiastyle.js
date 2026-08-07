@@ -916,6 +916,8 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener('DOMContentLoaded', () => {
     const details1 = document.querySelector('details.Details-2932877531');
     const details2 = document.querySelector('details.Details-3185356244');
+    const summary1 = details1 ? details1.querySelector('summary') : null;
+    const summary2 = details2 ? details2.querySelector('summary') : null;
 
     function toggleDetails(detailsToOpen, detailsToClose) {
         if (detailsToOpen.hasAttribute('open')) {
@@ -927,30 +929,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Perbaikan: Cek eksistensi variabel sebelum mengakses atributnya
-    
     if (details1 && details1.hasAttribute('open')) {
-        // Jika details1 terbuka, tutup details2 (hanya jika details2 ada)
-        if (details2) {
-            details2.removeAttribute('open');
-        }
+        if (details2) { details2.removeAttribute('open'); }
     } else if (details2 && details2.hasAttribute('open')) {
-        // Jika details2 terbuka, tutup details1 (hanya jika details1 ada)
-        if (details1) {
-            details1.removeAttribute('open');
-        }
+        if (details1) { details1.removeAttribute('open'); }
     }
 
-    // Perbaikan: Cek dulu apakah details1 ada sebelum diproses
-    if (details1) {
-        details1.addEventListener('click', (event) => {
+    // [FIX] Listener dipindah dari <details> ke <summary> di dalamnya.
+    if (summary1) {
+        summary1.addEventListener('click', (event) => {
             event.preventDefault();
             toggleDetails(details1, details2);
         });
     }
 
-    // Perbaikan: Cek dulu apakah details2 ada
-    if (details2) {
-        details2.addEventListener('click', (event) => {
+    if (summary2) {
+        summary2.addEventListener('click', (event) => {
             event.preventDefault();
             toggleDetails(details2, details1);
         });
