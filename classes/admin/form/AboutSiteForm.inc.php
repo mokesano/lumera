@@ -27,12 +27,11 @@ class AboutSiteForm extends Form {
         parent::__construct('admin/aboutSite.tpl');
         $this->addCheck(new FormValidatorPost($this));
 
-        // [BARU] Validasi ringan untuk warna brand -- harus format hex valid
-        // kalau diisi, supaya tidak menyimpan sampah yang bikin CSS rusak.
         $this->addCheck(new FormValidatorCustom(
             $this, 'publisherColorPrimary', 'optional', 'admin.siteSettings.error.invalidColor',
             function ($color) { return empty($color) || preg_match('/^#[0-9A-Fa-f]{6}$/', $color); }
         ));
+        
         $this->addCheck(new FormValidatorCustom(
             $this, 'publisherColorSecondary', 'optional', 'admin.siteSettings.error.invalidColor',
             function ($color) { return empty($color) || preg_match('/^#[0-9A-Fa-f]{6}$/', $color); }
@@ -173,15 +172,6 @@ class AboutSiteForm extends Form {
         // [BARU]
         $siteSettingsDao->updateSetting('publisherName', $this->getData('publisherName'), 'string', false);
 
-        // BAU BUSUK LOGIC
-        // [WIZDAM] publisherName di sini adalah SUMBER KEBENARAN untuk
-        // publisherInstitution seluruh jurnal Ownership (lihat
-        // JournalSetupStep1Form). Setiap kali Publisher ganti nama, sebar
-        // LANGSUNG ke journal_settings tiap jurnal Ownership -- supaya XML
-        // export (Crossref/mEDRA/DataCite/dst) yang membaca
-        // $journal->getSetting('publisherInstitution') selalu dapat nama
-        // terbaru, tanpa menunggu tiap journal manager kebetulan membuka
-        // & menyimpan ulang Setup > Step 1 miliknya masing-masing.
         $this->_syncPublisherInstitutionToOwnershipJournals($this->getData('publisherName'));
         $siteSettingsDao->updateSetting('publisherMotto', $this->getData('publisherMotto'), null, true);
         $siteSettingsDao->updateSetting('publisherTagline', $this->getData('publisherTagline'), null, true);
