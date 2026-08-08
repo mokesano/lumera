@@ -42,7 +42,12 @@
 				<td width="20%" class="label">{fieldLabel name="doiPrefix" required="true" key="plugins.pubIds.doi.manager.settings.doiPrefix"}</td>
 				<td width="80%" class="value">
 					<span class="instruct">{translate key="plugins.pubIds.doi.manager.settings.doiPrefixDescription"}</span>
+					{if $isOwnershipJournal}
+					<input type="text" value="{$doiPrefix|escape}" size="8" maxlength="8" id="doiPrefix" class="textField" readonly="readonly" />
+					<span class="instruct">{translate key="plugins.pubIds.doi.manager.settings.doiPrefixOwnershipLocked"}</span>
+					{else}
 					<input type="text" name="doiPrefix" value="{$doiPrefix|escape}" size="8" maxlength="8" id="doiPrefix" class="textField" />
+					{/if}
 				</td>
 			</tr>
 			<tr><td colspan="2">&nbsp;</td></tr>

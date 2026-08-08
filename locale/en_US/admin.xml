@@ -108,6 +108,9 @@
 	<message key="admin.doi.settings">DOI Credential Settings</message>
 	<message key="admin.doi.settingsSaved">DOI credential settings have been saved.</message>
 	<message key="admin.doi.settingsDescription">These credentials are used by journals that are part of the publisher's DOI prefix ownership (i.e. NOT marked as DOI-independent). DOI-independent journals configure their own credentials separately.</message>
+	<message key="admin.doi.doiPrefix">DOI Prefix</message>
+	<message key="admin.doi.doiPrefixDescription">The DOI Prefix is assigned by registration agencies (e.g. Crossref) and is in the format 10.xxxx (e.g. 10.1234), applied to every journal under the publisher's ownership.</message>
+	<message key="admin.doi.doiPrefixPattern">A valid DOI Prefix in the format 10.xxxx is required.</message>
 	<message key="admin.doi.crossrefDepositorName">Crossref Depositor Name</message>
 	<message key="admin.doi.crossrefEmail">Crossref Depositor Email</message>
 	<message key="admin.doi.crossrefUsername">Crossref Username</message>
@@ -115,6 +118,7 @@
 	<message key="admin.doi.crossrefDepositorNameRequired">Crossref depositor name is required.</message>
 	<message key="admin.doi.crossrefEmailRequired">A valid Crossref depositor email is required.</message>
 	<message key="admin.doi.crossrefRegistrationIntro">These settings can be configured to automatically register Digital Object Identifiers (DOIs) with Crossref for every journal under the publisher's ownership. You will need a username and password (available from Crossref) in order to do so. If you do not have your own username and password you can still export into the Crossref XML format, but you cannot register DOIs with Crossref automatically.</message>
+	<message key="admin.doi.crossrefAutomaticRegistration">Register DOIs automatically</message>
 	<message key="admin.doi.crossrefAutomaticRegistrationDescription">Application will deposit article DOIs automatically to Crossref as articles are published, for every journal under the publisher's ownership. Please note that this may take a short amount of time after publication to process.</message>
 	<message key="admin.doi.optionalSources">Optional Citation Sources</message>
 
