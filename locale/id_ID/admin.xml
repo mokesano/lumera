@@ -92,9 +92,11 @@
 	<message key="admin.doi.settings">Pengaturan Kredensial DOI</message>
 	<message key="admin.doi.settingsSaved">Pengaturan kredensial DOI sudah disimpan.</message>
 	<message key="admin.doi.settingsDescription">Kredensial ini dipakai oleh jurnal-jurnal yang menjadi bagian dari kepemilikan prefix DOI penerbit (yaitu yang TIDAK ditandai DOI-independent). Jurnal DOI-independent mengatur kredensialnya sendiri secara terpisah.</message>
-	<message key="admin.doi.crossrefEmail">Email Crossref</message>
+	<message key="admin.doi.crossrefDepositorName">Nama Depositor Crossref</message>
+	<message key="admin.doi.crossrefEmail">Email Depositor Crossref</message>
 	<message key="admin.doi.crossrefUsername">Username Crossref</message>
 	<message key="admin.doi.crossrefPassword">Password Crossref</message>
+	<message key="admin.doi.crossrefAutomaticRegistrationDescription">Aplikasi akan mengirim DOI artikel secara otomatis ke Crossref saat artikel diterbitkan, untuk setiap jurnal di bawah kepemilikan penerbit. Proses ini mungkin butuh waktu singkat setelah publikasi.</message>
 	<message key="admin.doi.optionalSources">Sumber Sitasi Opsional</message>
 
 	<!-- Merge Users -->

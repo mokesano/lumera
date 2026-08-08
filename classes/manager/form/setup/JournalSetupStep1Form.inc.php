@@ -112,17 +112,14 @@ class JournalSetupStep1Form extends JournalSetupForm {
      * @param object|null $object
      */
     public function execute($object = null) {
-        // [WIZDAM] Jurnal Ownership (publisherPartnerships=false, bagian dari
-        // penerbit) TIDAK boleh punya data Publisher sendiri -- selalu
-        // di-sync dari PublisherProfileService (halaman Publisher level site
-        // admin). Dipaksa di sini (bukan cuma disembunyikan di form) supaya
-        // tidak bisa "dilewati" dengan mengirim POST manual.
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
         if ($journal && !$journal->getSetting('publisherPartnerships')) {
             import('lib.wizdam.classes.services.PublisherProfileService');
             $publisherProfile = (new PublisherProfileService())->getProfile();
             $this->setData('publisherInstitution', $publisherProfile['name']);
+            $this->setData('publisherNote', []);
+            $this->setData('publisherUrl', '');
         }
 
         foreach (['sponsors', 'contributors'] as $element) {
@@ -169,16 +166,6 @@ class JournalSetupStep1Form extends JournalSetupForm {
         if ($site->getSetting('categoriesEnabled') && !empty($categories)) {
             $templateMgr->assign('categoriesEnabled', true);
             $templateMgr->assign('allCategories', $categories);
-        }
-
-        // [WIZDAM] Publisher untuk jurnal Ownership: field input disembunyikan.
-        $journal = $request->getJournal();
-        $isOwnershipJournal = $journal && !$journal->getSetting('publisherPartnerships');
-        $templateMgr->assign('isOwnershipJournal', $isOwnershipJournal);
-        if ($isOwnershipJournal) {
-            import('lib.wizdam.classes.services.PublisherProfileService');
-            $publisherProfile = (new PublisherProfileService())->getProfile();
-            $this->_data['publisherInstitution'] = $publisherProfile['name'];
         }
 
         if (!isset($this->_data['history']) || !is_array($this->_data['history'])) {

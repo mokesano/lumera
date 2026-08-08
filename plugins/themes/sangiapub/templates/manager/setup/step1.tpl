@@ -173,7 +173,12 @@
 
 	<div id="setupPublisher" class="block">
 		<h3>1.5 {translate key="manager.setup.publisher"}</h3>
-		<p>{translate key="manager.setup.publisherDescription"}</p>
+		{if $currentJournal->getSetting('publisherPartnerships')}
+			<p>{translate key="manager.setup.publisherDescription"}</p>
+		{else}
+			<p>{translate key="manager.setup.publisherDescriptionOwnerships"}</p>
+		{/if}
+		{if $currentJournal->getSetting('publisherPartnerships')}
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="publisherNote" key="manager.setup.note"}</td>
@@ -185,12 +190,7 @@
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="publisherInstitution" key="manager.setup.institution"}</td>
 				<td width="80%" class="value">
-					{if $isOwnershipJournal}
-					<input type="text" value="{$publisherInstitution|escape}" size="40" maxlength="90" class="textField" readonly="readonly" disabled="disabled" />
-					<span class="instruct">{translate key="manager.setup.publisherOwnershipLocked"}</span>
-					{else}
 					<input type="text" name="publisherInstitution" id="publisherInstitution" value="{$publisherInstitution|escape}" size="40" maxlength="90" class="textField" />
-					{/if}
 				</td>
 			</tr>
 			<tr valign="top">
@@ -198,6 +198,7 @@
 				<td width="80%" class="value"><input type="text" name="publisherUrl" id="publisherUrl" value="{$publisherUrl|escape}" size="40" maxlength="255" class="textField" /></td>
 			</tr>
 		</table>
+		{/if}
 	</div>
 
 	<div class="separator"></div>
@@ -323,7 +324,10 @@
 
 	<div class="separator"></div>
 
-	<p><input type="submit" value="{translate key="common.saveAndContinue"}" class="button defaultButton" /> <input type="button" value="{translate key="common.cancel"}" class="button" onclick="document.location.href='{url op="setup" escape=false}'" /></p>
+	<p>
+		<input type="submit" value="{translate key="common.saveAndContinue"}" class="button defaultButton" />
+		<input type="button" value="{translate key="common.cancel"}" class="button" onclick="document.location.href='{url op="setup" escape=false}'" />
+	</p>
 
 	<p><span class="formRequired">{translate key="common.requiredField"}</span></p>
 

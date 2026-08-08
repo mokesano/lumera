@@ -46,6 +46,7 @@ class DoiSettingsForm extends Form {
             'crossref_email' => $this->credentialService->getCrossrefEmail(),
             'crossref_username' => $this->credentialService->getCrossrefUsername(),
             'crossref_password' => $this->credentialService->getCrossrefPassword(),
+            'crossref_automatic_registration' => $this->credentialService->getAutomaticRegistration(),
             'semantic_scholar_api_key' => $this->credentialService->getSemanticScholarApiKey(),
             'dimensions_api_key' => $this->credentialService->getDimensionsApiKey(),
         ];
@@ -60,9 +61,11 @@ class DoiSettingsForm extends Form {
             'crossref_email',
             'crossref_username',
             'crossref_password',
+            'crossref_automatic_registration',
             'semantic_scholar_api_key',
             'dimensions_api_key',
         ]);
+        $this->setData('crossref_automatic_registration', (int) (bool) $this->getData('crossref_automatic_registration'));
     }
 
     /**
@@ -73,6 +76,7 @@ class DoiSettingsForm extends Form {
         $this->credentialService->updateSetting('crossref_email', $this->getData('crossref_email'), 'string');
         $this->credentialService->updateSetting('crossref_username', $this->getData('crossref_username'), 'string');
         $this->credentialService->updateSetting('crossref_password', $this->getData('crossref_password'), 'string');
+        $this->credentialService->updateSetting('crossref_automatic_registration', $this->getData('crossref_automatic_registration') ? 1 : 0, 'bool');
         $this->credentialService->updateSetting('semantic_scholar_api_key', $this->getData('semantic_scholar_api_key'), 'string');
         $this->credentialService->updateSetting('dimensions_api_key', $this->getData('dimensions_api_key'), 'string');
 

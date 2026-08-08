@@ -8,12 +8,14 @@
  * DataCite plugin settings
  *}
 {strip}
-{assign var="pageTitle" value="plugins.importexport.common.settings"}
-{include file="common/header.tpl"}
+	{assign var="pageTitle" value="plugins.importexport.common.settings"}
+	{include file="common/header-parts/header-manager.tpl"}
 {/strip}
+
 <div id="crossrefSettings">
 	{include file="common/formErrors.tpl"}
 	<p>{translate key="plugins.importexport.crossref.registrationIntro"}</p>
+
 	<h3>{translate key="plugins.importexport.crossref.requirements"}</h3>
 	<br />
 
@@ -22,26 +24,27 @@
 	{url|assign:"doiUrl" page="manager" op="plugin" path="pubIds"}
 
 	{if !empty($configurationErrors) || !$currentJournal->getSetting('publisherInstitution')|escape}
-	<ul>
-		{foreach from=$configurationErrors item=configurationError}
-			{if $configurationError == $smarty.const.DOI_EXPORT_CONFIGERROR_DOIPREFIX}
-				<li>{translate key="plugins.importexport.crossref.error.DOIsNotAvailable" doiUrl=$doiUrl}</li>
-			{elseif $configurationError == $smarty.const.DOI_EXPORT_CONFIGERROR_SETTINGS}
-				<li>{translate key="plugins.importexport.crossref.error.pluginNotConfigured" settingsUrl=$settingsUrl}</li>
+		<ul>
+			{foreach from=$configurationErrors item=configurationError}
+				{if $configurationError == $smarty.const.DOI_EXPORT_CONFIGERROR_DOIPREFIX}
+					<li>{translate key="plugins.importexport.crossref.error.DOIsNotAvailable" doiUrl=$doiUrl}</li>
+				{elseif $configurationError == $smarty.const.DOI_EXPORT_CONFIGERROR_SETTINGS}
+					<li>{translate key="plugins.importexport.crossref.error.pluginNotConfigured" settingsUrl=$settingsUrl}</li>
+				{/if}
+			{/foreach}
+			{if !$currentJournal->getSetting('publisherInstitution')|escape}
+				<li>{translate key="plugins.importexport.crossref.error.publisherNotConfigured" publisherUrl=$publisherUrl}</li>
 			{/if}
-		{/foreach}
-		{if !$currentJournal->getSetting('publisherInstitution')|escape}
-			<li>{translate key="plugins.importexport.crossref.error.publisherNotConfigured" publisherUrl=$publisherUrl}</li>
-		{/if}
 
-	</ul>
+		</ul>
 	{else}
-		{translate key="plugins.importexport.crossref.requirements.satisfied"}
+		<p>{translate key="plugins.importexport.crossref.requirements.satisfied"}</p>
 	{/if}
 
 	<h3>{translate key="plugins.importexport.common.settings"}</h3>
 	<br />
 	<form method="post" action="{plugin_url path="settings"}">
+		<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td colspan="2">

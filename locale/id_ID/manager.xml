@@ -441,6 +441,7 @@
 	<message key="manager.setup.publisherNoteDescription">Teks ini akan ditampilkan di bawah judul "Penerbit" dan di atas nama dan url penerbit di bawah "Sponsor Jurnal" di halaman "Tentang Kami".</message>
 	<message key="manager.setup.publisherOwnershipLocked">Jurnal ini bagian dari kepemilikan penerbit -- detail penerbit dikelola terpusat di halaman pengaturan Publisher (Site Admin) dan tidak bisa diubah di sini.</message>
 	<message key="manager.setup.publisherDescription">Nama organisasi yang menerbitkan jurnal akan ditampilkan di Tentang Kami.</message>
+	<message key="manager.setup.publisherDescriptionOwnerships">Jurnal ini bagian dari kepemilikan penerbit -- nama penerbit yang ditampilkan di Tentang Kami dikelola terpusat di halaman pengaturan Publisher (Site Admin) dan tidak bisa diatur sendiri di sini.</message>
 	<message key="manager.setup.referenceLinking">Tautan Referensi</message> 
 	<message key="manager.setup.refLinkInstructions.description">Instruksi Layout untuk Tautan Referensi</message> 
 	<message key="manager.setup.registerJournalForIndexing">Mendaftarkan Jurnal untuk Pengindeksan (Metadata Harvesting)</message>

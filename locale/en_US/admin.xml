@@ -108,9 +108,11 @@
 	<message key="admin.doi.settings">DOI Credential Settings</message>
 	<message key="admin.doi.settingsSaved">DOI credential settings have been saved.</message>
 	<message key="admin.doi.settingsDescription">These credentials are used by journals that are part of the publisher's DOI prefix ownership (i.e. NOT marked as DOI-independent). DOI-independent journals configure their own credentials separately.</message>
-	<message key="admin.doi.crossrefEmail">Crossref Email</message>
+	<message key="admin.doi.crossrefDepositorName">Crossref Depositor Name</message>
+	<message key="admin.doi.crossrefEmail">Crossref Depositor Email</message>
 	<message key="admin.doi.crossrefUsername">Crossref Username</message>
 	<message key="admin.doi.crossrefPassword">Crossref Password</message>
+	<message key="admin.doi.crossrefAutomaticRegistrationDescription">Application will deposit article DOIs automatically to Crossref as articles are published, for every journal under the publisher's ownership. Please note that this may take a short amount of time after publication to process.</message>
 	<message key="admin.doi.optionalSources">Optional Citation Sources</message>
 
 	<!-- Merge Users -->
