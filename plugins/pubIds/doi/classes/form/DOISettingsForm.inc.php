@@ -184,13 +184,6 @@ class DOISettingsForm extends Form {
     public function readInputData() {
         $this->readUserVars(array_keys($this->_getFormFields()));
 
-        // [WIZDAM] Jurnal Ownership: doiPrefix dikelola Publisher (halaman
-        // DOI Settings site admin), BUKAN dihilangkan dari form ini --
-        // field TETAP tampil (readonly, lihat settingsForm.tpl), tapi
-        // nilainya dipaksa ke nilai Publisher DI SINI (sebelum validate()
-        // berjalan) supaya: (a) POST manual tidak bisa mengubahnya, dan
-        // (b) validasi regex jalan terhadap nilai Publisher yang memang
-        // sudah valid, bukan nilai submit yang bisa saja dimanipulasi.
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
 
@@ -242,10 +235,6 @@ class DOISettingsForm extends Form {
      * @copydoc Form::display()
      */
     public function display($request = null, $template = null) {
-        // [WIZDAM] Kirim status Ownership ke settingsForm.tpl supaya field
-        // doiPrefix dirender readonly (TETAP TAMPIL, tidak dihilangkan)
-        // untuk jurnal Ownership -- beda dari pola kredensial Crossref
-        // sebelumnya yang menghilangkan field sama sekali.
         if (!$request) $request = Application::get()->getRequest();
         $journal = $request->getJournal();
 
