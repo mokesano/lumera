@@ -19,25 +19,28 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 class BrowsePlugin extends GenericPlugin {
     
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function BrowsePlugin() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::BrowsePlugin(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Called as a plugin is registered to the registry
+     * Called as a plugin is registered to the registry.
      * @param string $category
      * @param string $path
      * @return bool
@@ -45,10 +48,8 @@ class BrowsePlugin extends GenericPlugin {
     public function register(string $category, string $path): bool {
         if (parent::register($category, $path)) {
             if ($this->getEnabled()) {
-                // Add new navigation items in the navigation block plugin
-                HookRegistry::register('Plugins::Blocks::Navigation::BrowseBy', array($this, 'addNavigationItem'));
-                // Handler for browse plugin pages
-                HookRegistry::register('LoadHandler', array($this, 'setupBrowseHandler'));
+                HookRegistry::register('Plugins::Blocks::Navigation::BrowseBy', [$this, 'addNavigationItem']);
+                HookRegistry::register('LoadHandler', [$this, 'setupBrowseHandler']);
             }
             return true;
         }
@@ -73,6 +74,7 @@ class BrowsePlugin extends GenericPlugin {
 
     /**
      * Get the template path for this plugin.
+     * @return string
      */
     public function getTemplatePath(): string {
         return parent::getTemplatePath() . 'templates/';
@@ -80,6 +82,7 @@ class BrowsePlugin extends GenericPlugin {
 
     /**
      * Get the handler path for this plugin.
+     * @return string
      */
     public function getHandlerPath(): string {
         return $this->getPluginPath() . '/pages/';
@@ -89,19 +92,25 @@ class BrowsePlugin extends GenericPlugin {
      * Add additional navigation items.
      * @param string $hookName
      * @param array $params
+     * @return bool
      */
     public function addNavigationItem($hookName, $params) {
         $smarty = $params[1];
-        $output =& $params[2]; // [NOTE]: $output Pass by reference.
+        $output =& $params[2];
 
         $journal = $smarty->get_template_vars('currentJournal');
+        if ($journal === null) {
+            return false;
+        }
 
         $templateMgr = TemplateManager::getManager();
-        if ($this->getSetting($journal->getId(), 'enableBrowseBySections')) {
-            $output .= '<li id="linkBrowseBySections"><a href="' . $templateMgr->smartyUrl(array('page' => 'browseSearch', 'op'=>'sections'), $smarty) . '">' . $templateMgr->smartyTranslate(array('key'=>'plugins.generic.browse.search.sections'), $smarty) . '</a></li>';
+        $journalId = (int) $journal->getId();
+
+        if ($this->getSetting($journalId, 'enableBrowseBySections')) {
+            $output .= '<li id="linkBrowseBySections"><a href="' . $templateMgr->smartyUrl(['page' => 'browseSearch', 'op' => 'sections'], $smarty) . '">' . $templateMgr->smartyTranslate(['key' => 'plugins.generic.browse.search.sections'], $smarty) . '</a></li>';
         }
-        if ($this->getSetting($journal->getId(), 'enableBrowseByIdentifyTypes')) {
-            $output .= '<li id="linkBrowseByIdentifyTypes"><a href="' . $templateMgr->smartyUrl(array('page' => 'browseSearch', 'op'=>'identifyTypes'), $smarty).'">' . $templateMgr->smartyTranslate(array('key'=>'plugins.generic.browse.search.identifyTypes'), $smarty) . '</a></li>';
+        if ($this->getSetting($journalId, 'enableBrowseByIdentifyTypes')) {
+            $output .= '<li id="linkBrowseByIdentifyTypes"><a href="' . $templateMgr->smartyUrl(['page' => 'browseSearch', 'op' => 'identifyTypes'], $smarty) . '">' . $templateMgr->smartyTranslate(['key' => 'plugins.generic.browse.search.identifyTypes'], $smarty) . '</a></li>';
         }
         return false;
     }
@@ -110,24 +119,28 @@ class BrowsePlugin extends GenericPlugin {
      * Enable editor pixel tags management.
      * @param string $hookName
      * @param array $params
+     * @return void
      */
     public function setupBrowseHandler($hookName, $params) {
         $page = $params[0];
 
-        if ($page == 'browseSearch') {
+        if ($page === 'browseSearch') {
             $op = $params[1];
 
-            if ($op) {
-                $editorPages = array(
+            if ($op !== null && $op !== '') {
+                $editorPages = [
                     'sections',
                     'identifyTypes'
-                );
+                ];
 
-                if (in_array($op, $editorPages)) {
-                    define('HANDLER_CLASS', 'BrowseHandler');
-                    define('BROWSE_PLUGIN_NAME', $this->getName());
+                if (in_array($op, $editorPages, true)) {
+                    if (!defined('HANDLER_CLASS')) {
+                        define('HANDLER_CLASS', 'BrowseHandler');
+                    }
+                    if (!defined('BROWSE_PLUGIN_NAME')) {
+                        define('BROWSE_PLUGIN_NAME', $this->getName());
+                    }
                     AppLocale::requireComponents(LOCALE_COMPONENT_APPLICATION_COMMON);
-                    // [NOTE]: $handlerFile harus by reference untuk mengubah path handler yang akan dimuat sistem.
                     $handlerFile =& $params[2]; 
                     $handlerFile = $this->getHandlerPath() . 'BrowseHandler.inc.php';
                 }
@@ -137,24 +150,31 @@ class BrowsePlugin extends GenericPlugin {
 
     /**
      * Set the breadcrumbs, given the plugin's tree of items to append.
-     * @param $isSubclass bool
+     * @param bool $isSubclass
+     * @return void
      */
     public function setBreadcrumbs($isSubclass = false) {
+        $request = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager();
-        $pageCrumbs = array(
-            array(
-                Request::url(null, 'user'),
+        $router = $request->getRouter();
+        
+        $pageCrumbs = [
+            [
+                $router->url($request, null, 'user'),
                 'navigation.user'
-            ),
-            array(
-                Request::url(null, 'manager'),
+            ],
+            [
+                $router->url($request, null, 'manager'),
                 'user.role.manager'
-            )
-        );
-        if ($isSubclass) $pageCrumbs[] = array(
-            Request::url(null, 'manager', 'plugins'),
-            'manager.plugins'
-        );
+            ]
+        ];
+        
+        if ($isSubclass) {
+            $pageCrumbs[] = [
+                $router->url($request, null, 'manager', 'plugins'),
+                'manager.plugins'
+            ];
+        }
 
         $templateMgr->assign('pageHierarchy', $pageCrumbs);
     }
@@ -162,55 +182,63 @@ class BrowsePlugin extends GenericPlugin {
     /**
      * Display verbs for the management interface.
      * @param array $verbs
-     * @param PKPRequest $request
+     * @param object|null $request
+     * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $verbs = parent::getManagementVerbs($verbs, $request);
         if ($this->getEnabled($request)) {
-            $verbs[] = array('settings', __('plugins.generic.browse.manager.settings'));
+            $verbs[] = ['settings', __('plugins.generic.browse.manager.settings')];
         }
         return $verbs;
     }
 
     /**
-     * Execute a management verb on this plugin
+     * Execute a management verb on this plugin.
      * @param string $verb
      * @param array $args
      * @param string|null $message
      * @param array|null $messageParams
-     * @param PKPRequest $request
-     * @return boolean
+     * @param object|null $request
+     * @return bool
      */
     public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
-        if (!parent::manage($verb, $args, $message, $messageParams, $request)) return false;
+        if (!parent::manage($verb, $args, $message, $messageParams, $request)) {
+            return false;
+        }
+
+        $request = $request ?? Application::get()->getRequest();
 
         switch ($verb) {
             case 'settings':
                 $templateMgr = TemplateManager::getManager();
-                $templateMgr->register_function('plugin_url', array($this, 'smartyPluginUrl'));
-                $journal = Request::getJournal();
+                $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
+                $journal = $request->getJournal();
+                
+                if ($journal === null) {
+                    return false;
+                }
 
                 $this->import('classes.form.BrowseSettingsForm');
-                $form = new BrowseSettingsForm($this, $journal->getId());
+                $form = new BrowseSettingsForm($this, (int) $journal->getId());
 
-                if (Request::getUserVar('save')) {
+                if ($request->getUserVar('save')) {
                     $form->readInputData();
                     if ($form->validate()) {
                         $form->execute();
                         $request->redirect(null, 'manager', 'plugins', $this->getCategory());
                         return false;
                     } else {
-                        $this->setBreadCrumbs(true);
+                        $this->setBreadcrumbs(true);
                         $form->display();
                     }
                 } else {
-                    $this->setBreadCrumbs(true);
+                    $this->setBreadcrumbs(true);
                     $form->initData();
                     $form->display();
                 }
                 return true;
             default:
-                // Unknown management verb
                 assert(false);
                 return false;
         }

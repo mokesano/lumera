@@ -79,8 +79,7 @@ class DataverseHandler extends Handler {
         }
 
         $templateMgr = TemplateManager::getManager($request);
-        
-        // [WIZDAM REST API FIX] Mengarahkan pengambilan Terms of Use ke API Client yang baru
+
         if ((bool) $dataversePlugin->getSetting($journal->getId(), 'fetchTermsOfUse')) {
             $dataversePlugin->import('classes.api.DataverseApiClient');
             $apiClient = new DataverseApiClient($dataversePlugin);
@@ -107,5 +106,6 @@ class DataverseHandler extends Handler {
         
         $templateMgr->display($dataversePlugin->getTemplatePath() . '/termsOfUse.tpl');
     }
+    
 }
 ?>

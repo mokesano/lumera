@@ -52,6 +52,8 @@ class FormHookDelegator {
      */
     public function metadataFormExecute(string $hookName, array $args): bool {
         $form = $args[0];
+
+        /** @var DataverseStudyDAO $dataverseStudyDao */
         $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDao->getStudyBySubmissionId((int) $form->article->getId());
         if (isset($study)) {
@@ -96,6 +98,7 @@ class FormHookDelegator {
         $output = &$args[2];
         $articleId = $templateMgr->get_template_vars('articleId');
         
+        /** @var DataverseStudyDAO $dvStudyDao */
         $dvStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dvStudyDao->getStudyBySubmissionId((int) $articleId);
 
@@ -151,7 +154,9 @@ class FormHookDelegator {
      */
     public function suppFileFormInitData(string $hookName, array $args): bool {
         $form = $args[0];
-        $journal = Registry::get('request')->getJournal();      
+        $journal = Registry::get('request')->getJournal();
+
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $form->article ?? $articleDao->getArticle($form->articleId, $journal->getId());
         
@@ -160,6 +165,7 @@ class FormHookDelegator {
         
         $publishData = 'none';
         if (isset($form->suppFile) && $form->suppFile->getId()) {
+            /** @var DataverseFileDAO $dvFileDao */
             $dvFileDao = DAORegistry::getDAO('DataverseFileDAO');
             $dvFile = $dvFileDao->getDataverseFileBySuppFileId($form->suppFile->getId(), $article->getId());
             if (!is_null($dvFile)) { $publishData = 'dataverse'; }
@@ -185,7 +191,9 @@ class FormHookDelegator {
      */
     public function authorSubmitSuppFileFormExecute(string $hookName, array $args): bool {
         $form = $args[0];
-        $journal = Registry::get('request')->getJournal();      
+        $journal = Registry::get('request')->getJournal();
+        
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $articleDao->getArticle($form->articleId, $journal->getId());
         
@@ -195,6 +203,7 @@ class FormHookDelegator {
         
         if (!isset($form->suppFile) || !$form->suppFile->getId()) return false;
         
+        /** @var DataverseFileDAO $dvFileDao */
         $dvFileDao = DAORegistry::getDAO('DataverseFileDAO');
         $dvFile = $dvFileDao->getDataverseFileBySuppFileId($form->suppFile->getId(), $form->articleId);            
 
@@ -221,6 +230,8 @@ class FormHookDelegator {
      */
     public function suppFileFormExecute(string $hookName, array $args): bool {   
         $form = $args[0];
+
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $form->article;
         $journal = Registry::get('request')->getJournal();
@@ -235,13 +246,15 @@ class FormHookDelegator {
         
         switch ($form->getData('publishData')) {
             case 'none':
-                if ($form->suppFile->getId()) { 
+                if ($form->suppFile->getId()) {
+                    /** @var DataverseFileDAO $dvFileDao */
                     $dvFileDao = DAORegistry::getDAO('DataverseFileDAO');       
                     $dvFile = $dvFileDao->getDataverseFileBySuppFileId($form->suppFile->getId(), $article->getId());
                     if (isset($dvFile)) {
                         $fileDeleted = $this->studyService->deleteFile($dvFile, $journal->getId());
                         if ($fileDeleted) $dvFileDao->deleteDataverseFile($dvFile);
                         
+                        /** @var DataverseStudyDAO $dvStudyDao */
                         $dvStudyDao = DAORegistry::getDAO('DataverseStudyDAO');             
                         $study = $dvStudyDao->getStudyBySubmissionId($article->getId());
                         if (isset($study)) $this->studyService->replaceStudyMetadata($article, $study, $journal);
@@ -252,6 +265,7 @@ class FormHookDelegator {
                 break;
 
             case 'dataverse':
+                /** @var DataverseStudyDAO $dvStudyDao */
                 $dvStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
                 $study = $dvStudyDao->getStudyBySubmissionId($article->getId());    
                 if (!$study) $study = $this->studyService->createStudy($article, $journal);
@@ -260,6 +274,7 @@ class FormHookDelegator {
                     return false;
                 }
                 if (!$form->suppFile->getId()) {
+                    /** @var SuppFileDAO $suppFileDao */
                     $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
                     $form->setSuppFileData($form->suppFile);
                     $suppFileDao->insertSuppFile($form->suppFile);
@@ -282,11 +297,13 @@ class FormHookDelegator {
                             $form->suppFile->setFileId($fileId);                    
                         }
                     }
+                    /** @var SuppFileDAO $suppFileDao */
                     $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
                     $form->suppFile = $suppFileDao->getSuppFile($form->suppFileId, $article->getId());
                     $form->setSuppFileData($form->suppFile);
                     $suppFileDao->updateSuppFile($form->suppFile);
                     
+                    /** @var DataverseFileDAO $dvFileDao */
                     $dvFileDao = DAORegistry::getDAO('DataverseFileDAO');                           
                     $dvFile = $dvFileDao->getDataverseFileBySuppFileId($form->suppFileId, $article->getId());
                     if (isset($dvFile)) {
@@ -315,6 +332,8 @@ class FormHookDelegator {
         $params = $args[1];
         $fileId = (int) $params[1];      
         $articleId = (int) $params[2];
+
+        /** @var SuppFileDAO $suppFileDao */
         $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
         return $suppFileDao->suppFileExistsByFileId($articleId, $fileId);
     }
@@ -330,6 +349,7 @@ class FormHookDelegator {
         $suppFileId = is_array($params) ? (int) $params[0] : (int) $params;
         $submissionId = is_array($params) ? (int) $params[1] : 0;
         
+        /** @var DataverseFileDAO $dvFileDao */
         $dvFileDao = DAORegistry::getDAO('DataverseFileDAO');
         $dvFile = $dvFileDao->getDataverseFileBySuppFileId($suppFileId, $submissionId);
         if (isset($dvFile)) {
@@ -337,9 +357,11 @@ class FormHookDelegator {
             $fileDeleted = $this->studyService->deleteFile($dvFile, $journal->getId());
             if ($fileDeleted) $dvFileDao->deleteDataverseFile($dvFile);
 
+            /** @var DataverseStudyDAO $dvStudyDao */
             $dvStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
             $study = $dvStudyDao->getStudyBySubmissionId($dvFile->getSubmissionId());
             if (isset($study)) {
+                /** @var ArticleDAO $articleDao */
                 $articleDao = DAORegistry::getDAO('ArticleDAO');
                 $article = $articleDao->getArticle($study->getSubmissionId(), $journal->getId());
                 if ($article) $this->studyService->replaceStudyMetadata($article, $study, $journal);
@@ -370,6 +392,7 @@ class FormHookDelegator {
         $journal = Registry::get('request')->getJournal();
         if (!$this->plugin->getSetting($journal->getId(), 'requireData')) return true;
         
+        /** @var DataverseFileDAO $dvFileDao */
         $dvFileDao = DAORegistry::getDAO('DataverseFileDAO');
         $dvFiles = $dvFileDao->getDataverseFilesBySubmissionId($form->articleId);
         return count($dvFiles) > 0;
@@ -383,12 +406,14 @@ class FormHookDelegator {
         $step = $args[0];
         $article = $args[1];
         if ($step == 5) {
+            /** @var DataverseFileDAO $dvFileDao */
             $dvFileDao = DAORegistry::getDAO('DataverseFileDAO');
             $dvFiles = $dvFileDao->getDataverseFilesBySubmissionId($article->getId());
             if ($dvFiles) { 
                 $journal = Registry::get('request')->getJournal();
                 $study = $this->studyService->createStudy($article, $journal);
                 if ($study) {
+                    /** @var SuppFileDAO $suppFileDao */
                     $suppFileDao = DAORegistry::getDAO('SuppFileDAO');                      
                     $suppFiles = [];                  
                     foreach ($dvFiles as $dvFile) {
@@ -417,6 +442,7 @@ class FormHookDelegator {
             return false;
         }
 
+        /** @var DataverseStudyDAO $dataverseStudyDao */
         $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
         
@@ -445,10 +471,12 @@ class FormHookDelegator {
         $status = (int) $params[6];
         
         if ($status == STATUS_PUBLISHED) {
+            /** @var DataverseStudyDAO $dvStudyDao */
             $dvStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
             $study = $dvStudyDao->getStudyBySubmissionId($articleId);
             if (isset($study)) {
-                $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');          
+                /** @var PublishedArticleDAO $publishedArticleDao */
+                $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');         
                 $article = $publishedArticleDao->getPublishedArticleByArticleId($articleId);
                 if ($article && $article->getStatus() != STATUS_PUBLISHED) {
                     $journal = Registry::get('request')->getJournal();
@@ -469,7 +497,8 @@ class FormHookDelegator {
      * if the setting is enabled.
      */
     public function handleUnsuitableSubmission(string $hookName, array $args): bool {
-        $submission = $args[0];     
+        $submission = $args[0];
+        /** @var DataverseStudyDAO $dataverseStudyDao */
         $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
         if (isset($study)) {
@@ -479,5 +508,6 @@ class FormHookDelegator {
         }
         return false;       
     }
+
 }
 ?>

@@ -28,7 +28,9 @@ class DataverseAuthForm extends Form {
     public $_journalId;
 
     /**
-     * Constructor
+     * Constructor.
+     * @param DataversePlugin $plugin
+     * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
         $this->_plugin = $plugin;
@@ -157,5 +159,6 @@ class DataverseAuthForm extends Form {
         
         return false;
     }
+    
 }
 ?>

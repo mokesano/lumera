@@ -29,14 +29,17 @@ class DRIVERDAO extends OAIDAO {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function DRIVERDAO() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::DRIVERDAO(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -53,22 +56,19 @@ class DRIVERDAO extends OAIDAO {
 
     /**
      * Return set of OAI records or identifiers matching specified parameters.
-     * @param $setIds array Objects ids that specify an OAI set, in this case only journal ID.
-     * @param $from int timestamp
-     * @param $until int timestamp
-     * @param $offset int
-     * @param $limit int
-     * @param $total int Output parameter for total count
-     * @param $funcName string Function name to call for row processing (_returnRecordFromRow or _returnIdentifierFromRow)
+     * @param mixed $setIds array
+     * @param int $from int timestamp
+     * @param int $until int timestamp
+     * @param int $offset int
+     * @param int $limit int
+     * @param int $total int Output parameter for total count
+     * @param mixed $funcName string Function name to call for row processing (_returnRecordFromRow or _returnIdentifierFromRow)
      * @return array OAIRecord
      */
     public function getDRIVERRecordsOrIdentifiers($setIds, $from, $until, $offset, $limit, &$total, $funcName) {
-        $records = array();
+        $records = [];
 
-        // [FIXED] Manual SQL Construction because _getRecordsRecordSet was removed in Parent Refactor
         $params = $this->getOrderedRecordParams(null, $setIds, null);
-        
-        // Note: 'mutex' table usage here assumes specific OJS fork implementation as per original code.
         $sql = $this->getRecordSelectStatement() . ' FROM mutex m ' .
                $this->getRecordJoinClause(null, $setIds, null) . ' ' .
                $this->getAccessibleRecordWhereClause() . ' ' .
@@ -81,7 +81,6 @@ class DRIVERDAO extends OAIDAO {
         $result->Move($offset);
         for ($count = 0; $count < $limit && !$result->EOF; $count++) {
             $row = $result->GetRowAssoc(false);
-            // Dynamic call to _returnRecordFromRow or _returnIdentifierFromRow
             $record = $this->$funcName($row);
             
             // Filter for DRIVER set
@@ -98,5 +97,6 @@ class DRIVERDAO extends OAIDAO {
 
         return $records;
     }
+
 }
 ?>

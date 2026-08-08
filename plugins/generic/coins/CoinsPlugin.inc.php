@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @class CoinsPlugin
  * @ingroup plugins_generic_coins
  *
- * @brief COinS plugin class
+ * @brief COinS plugin class for embedding metadata in HTML.
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
@@ -19,30 +19,35 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 class CoinsPlugin extends GenericPlugin {
     
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * Called as a plugin is registered to the registry
-     * @param $category String Name of category plugin was registered to
-     * @return boolean True iff plugin initialized successfully; if false,
-     * the plugin will not be registered.
+     * Called as a plugin is registered to the registry.
+     * @param string $category
+     * @param string $path
+     * @return bool
      */
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
-        if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
-        if ($success && $this->getEnabled()) {
-            HookRegistry::register('Templates::Article::Footer::PageFooter', array($this, 'insertFooter'));
-            HookRegistry::register('Templates::Issue::Issue::Article', array($this, 'insertFooter'));
+        
+        if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) {
+            return true;
         }
+        
+        if ($success && $this->getEnabled()) {
+            HookRegistry::register('Templates::Article::Footer::PageFooter', [$this, 'insertFooter']);
+            HookRegistry::register('Templates::Issue::Issue::Article', [$this, 'insertFooter']);
+        }
+        
         return $success;
     }
 
     /**
-     * Get display name
+     * Get display name.
      * @return string
      */
     public function getDisplayName(): string {
@@ -50,7 +55,7 @@ class CoinsPlugin extends GenericPlugin {
     }
 
     /**
-     * Get description
+     * Get description.
      * @return string
      */
     public function getDescription(): string {
@@ -58,84 +63,107 @@ class CoinsPlugin extends GenericPlugin {
     }
 
     /**
-     * Get the name of the settings file to be installed site-wide when
-     * OJS is installed.
-     * @return string
+     * Get the name of the settings file to be installed site-wide.
+     * @return string|null
      */
     public function getInstallSitePluginSettingsFile(): ?string {
         return $this->getPluginPath() . '/settings.xml';
     }
 
     /**
-     * Insert COinS tag.
+     * Insert COinS tag into the page footer.
+     * @param string $hookName
+     * @param array $params
+     * @return bool
      */
     public function insertFooter($hookName, $params) {
-        if ($this->getEnabled()) {
-            $smarty = $params[1];
-            // [CRITICAL FIX] Menggunakan reference (&) agar modifikasi string berdampak ke output template
-            $output =& $params[2]; 
-            $templateMgr = TemplateManager::getManager();
-
-            $article = $templateMgr->get_template_vars('article');
-            $journal = $templateMgr->get_template_vars('currentJournal');
-            $issue = $templateMgr->get_template_vars('issue');
-
-            // [PHP 8 FIX] Null Safety Check
-            // Mencegah "Call to a member function on null"
-            if (!is_object($article) || !is_object($journal) || !is_object($issue)) {
-                return false;
-            }
-
-            $authors = $article->getAuthors();
-            // [PHP 8 FIX] Pastikan authors tidak kosong/null
-            if (empty($authors) || !is_array($authors)) {
-                return false;
-            }
-            
-            $firstAuthor = $authors[0];
-
-            $vars = array(
-                array('ctx_ver', 'Z39.88-2004'),
-                array('rft_id', Request::url(null, 'article', 'view', $article->getId())),
-                array('rft_val_fmt', 'info:ofi/fmt:kev:mtx:journal'),
-                array('rft.genre', 'article'),
-                array('rft.title', $journal->getLocalizedTitle()),
-                array('rft.jtitle', $journal->getLocalizedTitle()),
-                array('rft.atitle', $article->getLocalizedTitle()),
-                array('rft.artnum', $article->getBestArticleId()),
-                array('rft.stitle', $journal->getLocalizedSetting('abbreviation')),
-                array('rft.volume', $issue->getVolume()),
-                array('rft.issue', $issue->getNumber()),
-                array('rft.aulast', $firstAuthor->getLastName()),
-                array('rft.aufirst', $firstAuthor->getFirstName()),
-                array('rft.auinit', $firstAuthor->getMiddleName())
-            );
-
-            $datePublished = $article->getDatePublished();
-            if (!$datePublished) $datePublished = $issue->getDatePublished();
-            if ($datePublished) {
-                $vars[] = array('rft.date', date('Y-m-d', strtotime($datePublished)));
-            }
-
-            foreach ($authors as $author) {
-                $vars[] = array('rft.au', $author->getFullName());
-            }
-
-            if ($doi = $article->getPubId('doi')) $vars[] = array('rft_id', 'info:doi/' . $doi);
-            if ($article->getPages()) $vars[] = array('rft.pages', $article->getPages());
-            if ($journal->getSetting('printIssn')) $vars[] = array('rft.issn', $journal->getSetting('printIssn'));
-            if ($journal->getSetting('onlineIssn')) $vars[] = array('rft.eissn', $journal->getSetting('onlineIssn'));
-
-            $title = '';
-            foreach ($vars as $entries) {
-                list($name, $value) = $entries;
-                $title .= $name . '=' . urlencode((string)$value) . '&'; // Cast value to string for safety
-            }
-            $title = htmlentities(substr($title, 0, -1));
-
-            $output .= "<span class=\"Z3988\" title=\"$title\"></span>\n";
+        if (!$this->getEnabled()) {
+            return false;
         }
+
+        // Standard PKP hook signature: [$hookName, $templateMgr, &$output]
+        $templateMgr = $params[1] ?? TemplateManager::getManager();
+        $output =& $params[2]; 
+
+        $article = $templateMgr->get_template_vars('article');
+        $journal = $templateMgr->get_template_vars('currentJournal');
+        $issue = $templateMgr->get_template_vars('issue');
+
+        // [LUMERA FIX] Strict null-safety check to prevent "Call to a member function on null"
+        if (!$article || !$journal || !$issue) {
+            return false;
+        }
+
+        $authors = $article->getAuthors();
+        if (!is_array($authors) || empty($authors)) {
+            return false;
+        }
+        
+        $firstAuthor = $authors[0];
+        $request = Application::get()->getRequest();
+
+        $vars = [
+            ['ctx_ver', 'Z39.88-2004'],
+            ['rft_id', $request->getRouter()->url($request, null, 'article', 'view', [(int) $article->getId()])],
+            ['rft_val_fmt', 'info:ofi/fmt:kev:mtx:journal'],
+            ['rft.genre', 'article'],
+            ['rft.title', (string) $journal->getLocalizedTitle()],
+            ['rft.jtitle', (string) $journal->getLocalizedTitle()],
+            ['rft.atitle', (string) $article->getLocalizedTitle()],
+            ['rft.artnum', (string) $article->getBestArticleId()],
+            ['rft.stitle', (string) $journal->getLocalizedSetting('abbreviation')],
+            ['rft.volume', (string) $issue->getVolume()],
+            ['rft.issue', (string) $issue->getNumber()],
+            ['rft.aulast', (string) $firstAuthor->getLastName()],
+            ['rft.aufirst', (string) $firstAuthor->getFirstName()],
+            ['rft.auinit', (string) $firstAuthor->getMiddleName()]
+        ];
+
+        $datePublished = $article->getDatePublished() ?: $issue->getDatePublished();
+        if ($datePublished) {
+            $timestamp = strtotime((string) $datePublished);
+            if ($timestamp !== false) {
+                $vars[] = ['rft.date', date('Y-m-d', $timestamp)];
+            }
+        }
+
+        foreach ($authors as $author) {
+            $vars[] = ['rft.au', (string) $author->getFullName()];
+        }
+
+        $doi = $article->getPubId('doi');
+        if (!empty($doi)) {
+            $vars[] = ['rft_id', 'info:doi/' . (string) $doi];
+        }
+        
+        $pages = $article->getPages();
+        if (!empty($pages)) {
+            $vars[] = ['rft.pages', (string) $pages];
+        }
+        
+        $printIssn = $journal->getSetting('printIssn');
+        if (!empty($printIssn)) {
+            $vars[] = ['rft.issn', (string) $printIssn];
+        }
+        
+        $onlineIssn = $journal->getSetting('onlineIssn');
+        if (!empty($onlineIssn)) {
+            $vars[] = ['rft.eissn', (string) $onlineIssn];
+        }
+
+        $titleParts = [];
+        foreach ($vars as $entries) {
+            $name = (string) $entries[0];
+            $value = (string) $entries[1];
+            $titleParts[] = $name . '=' . urlencode($value);
+        }
+        
+        // [LUMERA FIX] Use implode and explicit ENT_QUOTES for safer HTML entity encoding
+        $titleString = htmlentities(implode('&', $titleParts), ENT_QUOTES, 'UTF-8');
+        $output .= "<span class=\"Z3988\" title=\"$titleString\"></span>\n";
+        
         return false;
     }
+    
 }
 ?>
