@@ -35,6 +35,10 @@ class DoiSettingsForm extends Form {
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidator($this, 'crossref_depositor_name', 'required', 'admin.doi.crossrefDepositorNameRequired'));
         $this->addCheck(new FormValidatorEmail($this, 'crossref_email', 'required', 'admin.doi.crossrefEmailRequired'));
+        // [WIZDAM] DOI Prefix -- validasi persis sama seperti legacy
+        // DOISettingsForm milik DOIPubIdPlugin (level jurnal), supaya
+        // format yang diterima konsisten di kedua tempat.
+        $this->addCheck(new FormValidatorRegExp($this, 'doi_prefix', 'required', 'admin.doi.doiPrefixPattern', '/^10\.[0-9]{4,7}$/'));
     }
 
     /**
@@ -42,6 +46,7 @@ class DoiSettingsForm extends Form {
      */
     public function initData(): void {
         $this->_data = [
+            'doi_prefix' => $this->credentialService->getDoiPrefix(),
             'crossref_depositor_name' => $this->credentialService->getCrossrefDepositorName(),
             'crossref_email' => $this->credentialService->getCrossrefEmail(),
             'crossref_username' => $this->credentialService->getCrossrefUsername(),
@@ -57,6 +62,7 @@ class DoiSettingsForm extends Form {
      */
     public function readInputData(): void {
         $this->readUserVars([
+            'doi_prefix',
             'crossref_depositor_name',
             'crossref_email',
             'crossref_username',
@@ -72,6 +78,7 @@ class DoiSettingsForm extends Form {
      * Menyimpan pengaturan ke Database (Site Settings)
      */
     public function execute($object = null): void {
+        $this->credentialService->updateSetting('doi_prefix', $this->getData('doi_prefix'), 'string');
         $this->credentialService->updateSetting('crossref_depositor_name', $this->getData('crossref_depositor_name'), 'string');
         $this->credentialService->updateSetting('crossref_email', $this->getData('crossref_email'), 'string');
         $this->credentialService->updateSetting('crossref_username', $this->getData('crossref_username'), 'string');

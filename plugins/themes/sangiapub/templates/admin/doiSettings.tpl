@@ -32,6 +32,13 @@
         <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">Crossref</h3>
         <table class="data" width="100%">
             <tr valign="top">
+                <td width="25%" class="label"><label for="doi_prefix">{translate key="admin.doi.doiPrefix"} <span class="formRequired">*</span></label></td>
+                <td width="75%" class="value">
+                    <span class="instruct">{translate key="admin.doi.doiPrefixDescription"}</span>
+                    <input type="text" name="doi_prefix" id="doi_prefix" value="{$doi_prefix|escape}" size="8" maxlength="8" class="textField" />
+                </td>
+            </tr>
+            <tr valign="top">
                 <td width="25%" class="label"><label for="crossref_depositor_name">{translate key="admin.doi.crossrefDepositorName"} <span class="formRequired">*</span></label></td>
                 <td width="75%" class="value">
                     <input type="text" name="crossref_depositor_name" id="crossref_depositor_name" value="{$crossref_depositor_name|escape}" size="60" maxlength="255" class="textField" />
@@ -63,7 +70,7 @@
                 </td>
             </tr>
             <tr valign="top">
-                <td class="label">{fieldLabel name="crossref_automatic_registration" key="plugins.importexport.crossref.settings.form.automaticRegistration"}</td>
+                <td class="label">{fieldLabel name="crossref_automatic_registration" key="admin.doi.crossrefAutomaticRegistration"}</td>
                 <td class="value">
                     <input type="checkbox" name="crossref_automatic_registration" id="crossref_automatic_registration" value="1"{if $crossref_automatic_registration} checked="checked"{/if} />&nbsp;{translate key="admin.doi.crossrefAutomaticRegistrationDescription"}
                 </td>

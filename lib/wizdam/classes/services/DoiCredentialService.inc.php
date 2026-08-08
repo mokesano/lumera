@@ -138,6 +138,21 @@ class DoiCredentialService {
     /**
      * Get Crossref depositor name
      */
+    /**
+     * [WIZDAM] DOI Prefix -- SELALU scope Publisher (mirip Semantic
+     * Scholar/Dimensions), TIDAK PEDULI journalScopeId instance ini.
+     * Untuk jurnal Partnership, doiPrefix TETAP dikelola JM sendiri lewat
+     * halaman pengaturan plugin DOIPubIdPlugin native -- getter ini HANYA
+     * dipakai untuk sumber kebenaran Publisher yang disebar lewat
+     * syncToJournal(), bukan untuk membaca nilai efektif suatu jurnal.
+     */
+    public function getDoiPrefix(): string {
+        return trim((string) $this->_getPublisherOnlySetting('doi_prefix'));
+    }
+
+    /**
+     * Get Crossref depositor name
+     */
     public function getCrossrefDepositorName(): string {
         if ($this->journalScopeId !== null) {
             return $this->_getCrossrefPluginSetting('depositorName');
@@ -271,6 +286,18 @@ class DoiCredentialService {
         $plugin->updateSetting($journalId, 'depositorName', $publisherCredentials->getCrossrefDepositorName(), 'string');
         $plugin->updateSetting($journalId, 'depositorEmail', $publisherCredentials->getCrossrefEmail(), 'string');
         $plugin->updateSetting($journalId, 'automaticRegistration', $publisherCredentials->getAutomaticRegistration() ? 1 : 0, 'bool');
+
+        // [WIZDAM] DOI Prefix -- plugin BERBEDA (DOIPubIdPlugin, bukan
+        // CrossRefExportPlugin) -- ini plugin "pubid" yang mengatur
+        // pembentukan DOI artikel/issue/galley, bukan plugin deposit/
+        // registrasi ke Crossref. Disalin terpisah supaya legacy input
+        // JM (settingsForm.tpl milik DOIPubIdPlugin) otomatis benar tanpa
+        // perlu tahu apapun soal DoiCredentialService, sama seperti pola
+        // sync Crossref di atas.
+        $doiPubIdPlugin = PluginRegistry::getPlugin('pubIds', 'DOIPubIdPlugin');
+        if ($doiPubIdPlugin) {
+            $doiPubIdPlugin->updateSetting($journalId, 'doiPrefix', $publisherCredentials->getDoiPrefix(), 'string');
+        }
     }
 
     /**
