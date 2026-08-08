@@ -25,8 +25,6 @@ import('pages.about.SitemapTrait');
 
 class AboutJournalHandler extends Handler {
 
-    use SitemapTrait;
-
     /**
      * Constructor
      */

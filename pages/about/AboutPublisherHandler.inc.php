@@ -25,8 +25,6 @@ import('pages.about.SitemapTrait');
 
 class AboutPublisherHandler extends Handler {
 
-    use SitemapTrait;
-
     /**
      * Constructor
      */
