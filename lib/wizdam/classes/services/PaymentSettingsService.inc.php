@@ -47,7 +47,8 @@ class PaymentSettingsService {
      * @return self
      */
     public static function resolveForJournal($journal): self {
-        if ($journal && (bool) $journal->getSetting('publisherPartnerships')) {
+        import('lib.wizdam.classes.services.JournalOwnershipService');
+        if ($journal && JournalOwnershipService::isPartnership($journal)) {
             return new self((int) $journal->getId());
         }
         return new self();

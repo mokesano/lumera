@@ -114,7 +114,8 @@ class JournalSetupStep1Form extends JournalSetupForm {
     public function execute($object = null) {
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
-        if ($journal && !$journal->getSetting('publisherPartnerships')) {
+        import('lib.wizdam.classes.services.JournalOwnershipService');
+        if ($journal && JournalOwnershipService::isOwnership($journal)) {
             import('lib.wizdam.classes.services.PublisherProfileService');
             $publisherProfile = (new PublisherProfileService())->getProfile();
             $this->setData('publisherInstitution', $publisherProfile['name']);
@@ -171,6 +172,9 @@ class JournalSetupStep1Form extends JournalSetupForm {
         if (!isset($this->_data['history']) || !is_array($this->_data['history'])) {
             $this->_data['history'] = [];
         }
+
+        import('lib.wizdam.classes.services.JournalOwnershipService');
+        $templateMgr->assign('isPartnershipJournal', JournalOwnershipService::isPartnership($request->getJournal()));
 
         parent::display($request, $template);
     }

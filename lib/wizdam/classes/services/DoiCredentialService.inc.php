@@ -79,7 +79,8 @@ class DoiCredentialService {
      * @return self
      */
     public static function resolveForJournal($journal): self {
-        if ($journal && (bool) $journal->getSetting('publisherPartnerships')) {
+        import('lib.wizdam.classes.services.JournalOwnershipService');
+        if ($journal && JournalOwnershipService::isPartnership($journal)) {
             $journalService = new self((int) $journal->getId());
             if ($journalService->isConfigured()) {
                 return $journalService;
@@ -287,8 +288,9 @@ class DoiCredentialService {
         if (!$journals) return;
 
         $syncer = new self();
+        import('lib.wizdam.classes.services.JournalOwnershipService');
         while ($journal = $journals->next()) {
-            if (!$journal->getSetting('publisherPartnerships')) {
+            if (JournalOwnershipService::isOwnership($journal)) {
                 $syncer->syncToJournal((int) $journal->getId());
             }
         }

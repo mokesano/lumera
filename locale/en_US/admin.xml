@@ -112,6 +112,9 @@
 	<message key="admin.doi.crossrefEmail">Crossref Depositor Email</message>
 	<message key="admin.doi.crossrefUsername">Crossref Username</message>
 	<message key="admin.doi.crossrefPassword">Crossref Password</message>
+	<message key="admin.doi.crossrefDepositorNameRequired">Crossref depositor name is required.</message>
+	<message key="admin.doi.crossrefEmailRequired">A valid Crossref depositor email is required.</message>
+	<message key="admin.doi.crossrefRegistrationIntro">These settings can be configured to automatically register Digital Object Identifiers (DOIs) with Crossref for every journal under the publisher's ownership. You will need a username and password (available from Crossref) in order to do so. If you do not have your own username and password you can still export into the Crossref XML format, but you cannot register DOIs with Crossref automatically.</message>
 	<message key="admin.doi.crossrefAutomaticRegistrationDescription">Application will deposit article DOIs automatically to Crossref as articles are published, for every journal under the publisher's ownership. Please note that this may take a short amount of time after publication to process.</message>
 	<message key="admin.doi.optionalSources">Optional Citation Sources</message>
 

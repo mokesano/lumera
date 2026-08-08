@@ -115,7 +115,7 @@ class JournalSiteSettingsForm extends Form {
                     'journalPath' => $journal->getPath(),
                     'enabled' => $journal->getEnabled(),
                     'showOnHomepage' => $journal->getSetting('showOnHomepage') !== null ? $journal->getSetting('showOnHomepage') : 1,
-                    'publisherPartnerships' => $journal->getSetting('publisherPartnerships') ?: 0,
+                    'publisherPartnerships' => $journal->getSetting('publisherPartnerships') !== null ? $journal->getSetting('publisherPartnerships') : 1,
                     'certificateSignatoryUserId' => (int) $journal->getSetting('certificateSignatoryUserId'),
                 ];
             } else {
@@ -127,7 +127,7 @@ class JournalSiteSettingsForm extends Form {
             $this->_data = [
                 'enabled' => 1,
                 'showOnHomepage' => 1,
-                'publisherPartnerships' => 0,
+                'publisherPartnerships' => 1,
                 'certificateSignatoryUserId' => 0,
             ];
         }

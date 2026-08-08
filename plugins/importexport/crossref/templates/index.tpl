@@ -31,7 +31,7 @@
     {/if}
 </div>
 
-{if $currentJournal->getSetting('publisherPartnerships')}
+{if $isPartnershipJournal}
 <div id="crossref" class="settings-doi-crossref">
     <h3 class="u-h2">{translate key="plugins.importexport.common.settings"}</h3>
     <p>{translate key="plugins.importexport.crossref.settings.description" settingsUrl=$settingsUrl}</p>

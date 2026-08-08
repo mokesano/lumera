@@ -47,7 +47,8 @@ class PaymentAuthorityResolver {
      * @return bool true kalau jurnal ini mengelola konfirmasi transfernya sendiri (Partnership)
      */
     public function isPartnerManaged($journal): bool {
-        return (bool) ($journal && $journal->getSetting('publisherPartnerships'));
+        import('lib.wizdam.classes.services.JournalOwnershipService');
+        return $journal && JournalOwnershipService::isPartnership($journal);
     }
 
 }
