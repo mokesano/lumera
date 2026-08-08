@@ -18,17 +18,15 @@
 
 	<div class="separator"></div>
 
-	<br />
-
 	<form method="post" action="{plugin_url path="settings"}">
-		<input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
+		<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 		{include file="common/formErrors.tpl"}
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="doiObjects" required="true" key="plugins.pubIds.doi.manager.settings.doiObjects"}</td>
 				<td width="80%" class="value">
-					<span class="instruct">{translate key="plugins.pubIds.doi.manager.settings.explainDois"}</span><br /><br />
-					<span class="instruct">{translate key="plugins.pubIds.doi.manager.settings.explainCrossRefDois"}</span><br /><br />
+					<span class="instruct">{translate key="plugins.pubIds.doi.manager.settings.explainDois"}</span>
+					<span class="instruct">{translate key="plugins.pubIds.doi.manager.settings.explainCrossRefDois"}</span>
 					<input type="checkbox" name="enableIssueDoi" id="enableIssueDoi" value="1"{if $enableIssueDoi} checked="checked"{/if} />
 					{fieldLabel name="enableIssueDoi" key="plugins.pubIds.doi.manager.settings.enableIssueDoi"}<br />
 					<input type="checkbox" name="enableArticleDoi" id="enableArticleDoi" value="1"{if $enableArticleDoi} checked="checked"{/if} />
@@ -43,8 +41,7 @@
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="doiPrefix" required="true" key="plugins.pubIds.doi.manager.settings.doiPrefix"}</td>
 				<td width="80%" class="value">
-					<span class="instruct">{translate key="plugins.pubIds.doi.manager.settings.doiPrefixDescription"}</span><br />
-					<br />
+					<span class="instruct">{translate key="plugins.pubIds.doi.manager.settings.doiPrefixDescription"}</span>
 					<input type="text" name="doiPrefix" value="{$doiPrefix|escape}" size="8" maxlength="8" id="doiPrefix" class="textField" />
 				</td>
 			</tr>
@@ -52,8 +49,7 @@
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="doiSuffix" key="plugins.pubIds.doi.manager.settings.doiSuffix"}</td>
 				<td width="80%" class="value">
-					<span class="instruct">{translate key="plugins.pubIds.doi.manager.settings.doiSuffixDescription"}</span><br />
-					<br />
+					<span class="instruct">{translate key="plugins.pubIds.doi.manager.settings.doiSuffixDescription"}</span>
 					<table width="100%" class="data">
 						<tr>
 							<td width="5%" class="label" align="right" valign="top">
@@ -131,8 +127,11 @@
 
 		<br />
 
-		<input type="submit" name="save" class="button defaultButton" value="{translate key="common.save"}"/>
-		<input type="button" class="button" value="{translate key="common.cancel"}" onclick="history.go(-1)"/>
+		<p>
+			<input type="submit" name="save" class="button defaultButton" value="{translate key="common.save"}" />
+			<input type="button" class="button" value="{translate key="common.cancel"}" onclick="history.go(-1)" />
+		</p>
+		
 	</form>
 
 	<p><span class="formRequired">{translate key="common.requiredField"}</span></p>
