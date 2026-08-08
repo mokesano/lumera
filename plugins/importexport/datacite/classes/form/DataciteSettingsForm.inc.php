@@ -25,7 +25,7 @@ class DataciteSettingsForm extends DOIExportSettingsForm {
     //
     /**
      * Constructor
-     * @param DOIExportPlugin $plugin
+     * @param DataciteDoiExportPlugin $plugin
      * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
@@ -52,7 +52,7 @@ class DataciteSettingsForm extends DOIExportSettingsForm {
 
     /**
      * [SHIM] Backward Compatibility
-     * @param DOIExportPlugin $plugin
+     * @param DataciteDoiExportPlugin $plugin
      * @param int $journalId
      */
     public function DataciteSettingsForm($plugin, $journalId) {

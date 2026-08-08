@@ -2,16 +2,16 @@
 declare(strict_types=1);
 
 /**
- * @file plugins/importexport/crossref/classes/DOIExportPlugin.inc.php
+ * @file plugins/importexport/crossref/classes/CrossrefDoiExportPlugin.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @class DOIExportPlugin
+ * @class CrossrefDoiExportPlugin
  * @ingroup plugins_importexport_crossref_classes
  *
- * @brief Base class for DOI export/registration plugins.
+ * @brief Base class for the Crossref DOI export/registration plugin.
  */
 
 import('classes.plugins.ImportExportPlugin');
@@ -37,7 +37,7 @@ define('DOI_EXPORT_CONFIGERROR_SETTINGS', 0x02);
 // The name of the setting used to save the registered DOI.
 define('DOI_EXPORT_REGDOI', 'registeredDoi');
 
-class DOIExportPlugin extends ImportExportPlugin {
+class CrossrefDoiExportPlugin extends ImportExportPlugin {
 
     //
     // Protected Properties
@@ -75,7 +75,7 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * [SHIM] Backward Compatibility
      */
-    public function DOIExportPlugin() {
+    public function CrossrefDoiExportPlugin() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
@@ -179,13 +179,6 @@ class DOIExportPlugin extends ImportExportPlugin {
                 $username = $this->getSetting($journal->getId(), 'username');
                 $hasCredentials = !empty($username);
                 if (!$hasCredentials && $this instanceof CrossRefExportPlugin) {
-                    // [WIZDAM] Khusus Crossref -- kalau kredensial jurnal
-                    // sendiri kosong, cek juga DoiCredentialService (jurnal
-                    // Ownership memakai kredensial Publisher terpusat).
-                    // SENGAJA dibatasi instanceof CrossRefExportPlugin --
-                    // DOIExportPlugin ini class dasar bersama mEDRA & DataCite
-                    // yang TIDAK relevan dengan DoiCredentialService (itu
-                    // khusus Crossref), jadi perilaku keduanya tidak berubah.
                     import('lib.wizdam.classes.services.DoiCredentialService');
                     $doiCredentials = DoiCredentialService::resolveForJournal($journal);
                     $hasCredentials = $doiCredentials->isConfigured();

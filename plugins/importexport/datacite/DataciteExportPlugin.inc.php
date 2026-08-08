@@ -14,8 +14,8 @@ declare(strict_types=1);
  * @brief DataCite export/registration plugin.
  */
 
-if (!class_exists('DOIExportPlugin')) {
-    import('plugins.importexport.datacite.classes.DOIExportPlugin');
+if (!class_exists('DataciteDoiExportPlugin')) {
+    import('plugins.importexport.datacite.classes.DataciteDoiExportPlugin');
 }
 
 // DataCite API
@@ -25,7 +25,7 @@ define('DATACITE_API_URL', 'https://mds.datacite.org/');
 // Test DOI prefix
 define('DATACITE_API_TESTPREFIX', '10.5072');
 
-class DataciteExportPlugin extends DOIExportPlugin {
+class DataciteExportPlugin extends DataciteDoiExportPlugin {
 
     /**
      * Constructor

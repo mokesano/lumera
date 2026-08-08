@@ -61,7 +61,7 @@ class DataciteExportDom extends DOIExportDom {
     /**
      * DataciteExportDom constructor.
      * @param PKPRequest $request
-     * @param DOIExportPlugin $plugin
+     * @param DataciteDoiExportPlugin $plugin
      * @param Journal $journal
      * @param PubObjectCache $objectCache
      */
@@ -72,7 +72,7 @@ class DataciteExportDom extends DOIExportDom {
     /**
      * [SHIM] Backward-compatibility constructor.
      * @param PKPRequest $request
-     * @param DOIExportPlugin $plugin
+     * @param DataciteDoiExportPlugin $plugin
      * @param Journal $journal
      * @param PubObjectCache $objectCache
      */

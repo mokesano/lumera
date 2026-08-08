@@ -2,16 +2,16 @@
 declare(strict_types=1);
 
 /**
- * @file plugins/importexport/.../classes/DOIExportPlugin.inc.php
+ * @file plugins/importexport/datacite/classes/DataciteDoiExportPlugin.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @class DOIExportPlugin
- * @ingroup plugins_importexport_..._classes
+ * @class DataciteDoiExportPlugin
+ * @ingroup plugins_importexport_datacite_classes
  *
- * @brief Base class for DOI export/registration plugins.
+ * @brief Base class for the DataCite DOI export/registration plugin.
  */
 
 import('classes.plugins.ImportExportPlugin');
@@ -37,7 +37,7 @@ define('DOI_EXPORT_CONFIGERROR_SETTINGS', 0x02);
 // The name of the setting used to save the registered DOI.
 define('DOI_EXPORT_REGDOI', 'registeredDoi');
 
-class DOIExportPlugin extends ImportExportPlugin {
+class DataciteDoiExportPlugin extends ImportExportPlugin {
 
 	//
 	// Protected Properties
@@ -76,7 +76,7 @@ class DOIExportPlugin extends ImportExportPlugin {
 	 * [SHIM]: Backward compatibility
 	 * @deprecated Use __construct() instead
 	 */
-	public function DOIExportPlugin() {
+	public function DataciteDoiExportPlugin() {
 		if (Config::getVar('debug', 'deprecation_warnings')) {
 			trigger_error(
 				"DEPRECATED: Class '" . get_class($this) . "' uses deprecated constructor. Please refactor to use 'new " . get_class($this) . "()'.",

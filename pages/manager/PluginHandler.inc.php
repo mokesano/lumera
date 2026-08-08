@@ -116,7 +116,7 @@ class PluginHandler extends ManagerHandler {
         $message = '';          
         $messageParams = [];
         
-        if (!$pluginObject->manage($verb, $args, $message, $messageParams, $request)) {
+        if (!$pluginObject->manage((string) $verb, $args, $message, $messageParams, $request)) {
             HookRegistry::dispatch('PluginHandler::plugin', [$verb, $args, &$message, &$messageParams, $pluginObject]);
             
             if ($message) {

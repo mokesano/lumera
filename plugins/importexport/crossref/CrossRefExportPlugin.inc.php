@@ -14,8 +14,8 @@ declare(strict_types=1);
  * @brief CrossRef export/registration plugin.
  */
 
-if (!class_exists('DOIExportPlugin')) {
-    import('plugins.importexport.crossref.classes.DOIExportPlugin');
+if (!class_exists('CrossrefDoiExportPlugin')) {
+    import('plugins.importexport.crossref.classes.CrossrefDoiExportPlugin');
 }
 
 define('CROSSREF_STATUS_SUBMITTED', 'submitted');
@@ -39,7 +39,7 @@ define('CROSSREF_WORKS_API', 'http://api.crossref.org/works/');
 // The name of the settings used to save the registered DOI and the URL with the deposit status.
 define('CROSSREF_DEPOSIT_STATUS', 'depositStatus');
 
-class CrossRefExportPlugin extends DOIExportPlugin {
+class CrossRefExportPlugin extends CrossrefDoiExportPlugin {
 
     /**
      * Constructor
@@ -101,7 +101,7 @@ class CrossRefExportPlugin extends DOIExportPlugin {
      * @return bool
      */
     public function register(string $category, string $path, $mainContextId = null): bool {
-        $success = parent::register($category, $path, $mainContextId);
+        $success = parent::register($category, $path);
         if (!Config::getVar('general', 'installed')) {
             return false;
         }
@@ -159,7 +159,7 @@ class CrossRefExportPlugin extends DOIExportPlugin {
         if ($request->getUserVar('checkStatus')) {
             $articleIds = (array) $request->getUserVar('articleId');
             $errors = [];
-            $articles = $this->_getObjectsFromIds(DOI_EXPORT_ARTICLES, $articleIds, (int) $journal->getId(), $errors);
+            $articles = $this->_getObjectsFromIds(DOI_EXPORT_ARTICLES, $articleIds, (int) $journal->getId(), $errors); // Undefined method '_getObjectsFromIds'.
             
             foreach ($articles as $article) {
                 $this->updateDepositStatus($request, $journal, $article);
@@ -263,7 +263,7 @@ class CrossRefExportPlugin extends DOIExportPlugin {
         $errors = [];
         foreach ($allArticles as $article) {
             if ($this->canBeExported($article, $errors)) {
-                $preparedArticle = $this->_prepareArticleData($article, $journal);
+                $preparedArticle = $this->_prepareArticleData($article, $journal); // Undefined method '_prepareArticleData'.
                 if (is_array($preparedArticle)) {
                     $articleData[] = $preparedArticle;
                     $articles[] = $article;
@@ -415,11 +415,6 @@ class CrossRefExportPlugin extends DOIExportPlugin {
         curl_setopt($curlCh, CURLOPT_HEADER, 1);
         curl_setopt($curlCh, CURLOPT_BINARYTRANSFER, true);
 
-        // [WIZDAM] Resolusi kredensial lewat DoiCredentialService, BUKAN
-        // langsung $this->getSetting() -- supaya jurnal Ownership
-        // (publisherPartnerships=false) ikut memakai kredensial Publisher
-        // terpusat (halaman DOI Settings site admin), bukan cuma jurnal
-        // Partnership yang tetap pakai kredensial sendiri seperti biasa.
         import('lib.wizdam.classes.services.DoiCredentialService');
         $doiCredentials = DoiCredentialService::resolveForJournal($journal);
         $crossrefUsername = $doiCredentials->getCrossrefUsername();
@@ -499,7 +494,6 @@ class CrossRefExportPlugin extends DOIExportPlugin {
         }
         curl_setopt($curlCh, CURLOPT_RETURNTRANSFER, true);
 
-        // [WIZDAM] Sama seperti di atas -- resolusi lewat DoiCredentialService.
         import('lib.wizdam.classes.services.DoiCredentialService');
         $doiCredentials = DoiCredentialService::resolveForJournal($journal);
         $crossrefUsername = $doiCredentials->getCrossrefUsername();

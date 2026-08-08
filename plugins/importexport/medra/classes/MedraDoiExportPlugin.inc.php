@@ -2,16 +2,16 @@
 declare(strict_types=1);
 
 /**
- * @file plugins/importexport/common/classes/DOIExportPlugin.inc.php
+ * @file plugins/importexport/medra/classes/MedraDoiExportPlugin.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @class DOIExportPlugin
+ * @class MedraDoiExportPlugin
  * @ingroup plugins_importexport_classes
  *
- * @brief Base class for DOI export/registration plugins.
+ * @brief Base class for the mEDRA DOI export/registration plugin.
  */
 
 import('classes.plugins.ImportExportPlugin');
@@ -37,7 +37,7 @@ define('DOI_EXPORT_CONFIGERROR_SETTINGS', 0x02);
 // The name of the setting used to save the registered DOI.
 define('DOI_EXPORT_REGDOI', 'registeredDoi');
 
-class DOIExportPlugin extends ImportExportPlugin {
+class MedraDoiExportPlugin extends ImportExportPlugin {
 
     //
     // Protected Properties
@@ -61,7 +61,7 @@ class DOIExportPlugin extends ImportExportPlugin {
     /**
      * [SHIM] Backward Compatibility for legacy calls
      */
-    public function DOIExportPlugin() {
+    public function MedraDoiExportPlugin() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().", 
@@ -214,8 +214,10 @@ class DOIExportPlugin extends ImportExportPlugin {
                 $this->process($request, $journal);
                 break;
 
+            case 'settings':
             default:
-                throw new \RuntimeException('Invalid command.');
+                $request->redirect(null, 'manager', 'importexport', array('plugin', $this->getName()));
+                return;
         }
     }
 

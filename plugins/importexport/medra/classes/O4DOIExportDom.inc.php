@@ -107,13 +107,10 @@ class O4DOIExportDom extends DOIExportDom {
     /** @var int|string One of the O4DOI_* schema constants */
     protected $_exportIssuesAs;
 
-    //
-    // Constructor
-    //
     /**
-     * Constructor
+     * Constructor.
      * @param PKPRequest $request
-     * @param DOIExportPlugin $plugin
+     * @param MedraDoiExportPlugin $plugin
      * @param int $schema
      * @param Journal $journal
      * @param PubObjectCache $objectCache
@@ -127,11 +124,14 @@ class O4DOIExportDom extends DOIExportDom {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function O4DOIExportDom() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Deprecated constructor called in " . self::class, E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
         call_user_func_array([$this, '__construct'], $args);

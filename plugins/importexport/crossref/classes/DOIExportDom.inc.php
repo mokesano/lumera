@@ -83,7 +83,7 @@ class DOIExportDom {
         return ($request->getUserVar('testMode') === '1');
     }
 
-    /** @var DOIExportPlugin */
+    /** @var CrossrefDoiExportPlugin */
     protected $_plugin;
 
     /**
@@ -125,7 +125,7 @@ class DOIExportDom {
     /**
      * Constructor
      * @param PKPRequest $request
-     * @param DOIExportPlugin $plugin
+     * @param CrossrefDoiExportPlugin $plugin
      * @param Journal $journal
      * @param PubObjectCache $objectCache
      */
@@ -140,7 +140,7 @@ class DOIExportDom {
     /**
      * [SHIM] Backward Compatibility
      * @param PKPRequest $request
-     * @param DOIExportPlugin $plugin
+     * @param CrossrefDoiExportPlugin $plugin
      * @param Journal $journal
      * @param PubObjectCache $objectCache
      */
