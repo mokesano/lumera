@@ -16,26 +16,35 @@ declare(strict_types=1);
 
 import('classes.plugins.ImportExportPlugin');
 
-// Export types.
-define('DOI_EXPORT_ISSUES', 0x01);
-define('DOI_EXPORT_ARTICLES', 0x02);
-define('DOI_EXPORT_GALLEYS', 0x03);
-define('DOI_EXPORT_SUPPFILES', 0x04);
+// [WIZDAM BUGFIX] Nama konstanta ini SAMA PERSIS dipakai plugin mEDRA &
+// DataCite juga -- karena PluginRegistry::loadCategory('importexport')
+// memuat SEMUA plugin dalam satu request, define() tanpa guard akan
+// memicu PHP Warning "Constant already defined" berulang kali. Dibungkus
+// if (!defined(...)) supaya cuma yang PERTAMA kali berhasil, sisanya
+// dilewati dengan aman (nilainya identik di ketiga plugin, jadi tidak
+// mengubah perilaku apapun -- cuma menghilangkan warning-nya).
+if (!defined('DOI_EXPORT_ISSUES')) {
+    // Export types.
+    define('DOI_EXPORT_ISSUES', 0x01);
+    define('DOI_EXPORT_ARTICLES', 0x02);
+    define('DOI_EXPORT_GALLEYS', 0x03);
+    define('DOI_EXPORT_SUPPFILES', 0x04);
 
-// Current registration state.
-define('DOI_OBJECT_NEEDS_UPDATE', 0x01);
-define('DOI_OBJECT_REGISTERED', 0x02);
+    // Current registration state.
+    define('DOI_OBJECT_NEEDS_UPDATE', 0x01);
+    define('DOI_OBJECT_REGISTERED', 0x02);
 
-// Export file types.
-define('DOI_EXPORT_FILE_XML', 0x01);
-define('DOI_EXPORT_FILE_TAR', 0x02);
+    // Export file types.
+    define('DOI_EXPORT_FILE_XML', 0x01);
+    define('DOI_EXPORT_FILE_TAR', 0x02);
 
-// Configuration errors.
-define('DOI_EXPORT_CONFIGERROR_DOIPREFIX', 0x01);
-define('DOI_EXPORT_CONFIGERROR_SETTINGS', 0x02);
+    // Configuration errors.
+    define('DOI_EXPORT_CONFIGERROR_DOIPREFIX', 0x01);
+    define('DOI_EXPORT_CONFIGERROR_SETTINGS', 0x02);
 
-// The name of the setting used to save the registered DOI.
-define('DOI_EXPORT_REGDOI', 'registeredDoi');
+    // The name of the setting used to save the registered DOI.
+    define('DOI_EXPORT_REGDOI', 'registeredDoi');
+}
 
 class CrossrefDoiExportPlugin extends ImportExportPlugin {
 
@@ -209,7 +218,16 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
                 break;
 
             default:
-                throw new \UnexpectedValueException('Invalid command.');
+                // [WIZDAM BUGFIX] Sebelumnya throw \UnexpectedValueException
+                // yang TIDAK DITANGKAP di manapun -- menyebabkan fatal error
+                // yang menghentikan seluruh halaman untuk $op apapun yang
+                // tidak dikenali switch ini (termasuk kemungkinan verb yang
+                // seharusnya lewat manage(), bukan display()). Redirect ke
+                // halaman utama plugin jauh lebih aman untuk pengguna
+                // daripada crash total -- request yang salah arah cukup
+                // dikembalikan, bukan menghentikan aplikasi.
+                $request->redirect(null, 'manager', 'importexport', ['plugin', $this->getName()]);
+                return;
         }
     }
 
@@ -1210,7 +1228,11 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param Journal $journal
      * @return array|null
      */
-    private function _prepareArticleDataByArticleId(int $articleId, $journal): ?array {
+    // [WIZDAM BUGFIX] Sebelumnya "private" -- CrossRefExportPlugin (subclass)
+    // memanggil method ini LANGSUNG via $this->..., yang TIDAK VALID untuk
+    // method private (cuma bisa diakses dari DALAM class yang sama, BUKAN
+    // dari subclass). Harus protected supaya bisa diwarisi & dipanggil.
+    protected function _prepareArticleDataByArticleId(int $articleId, $journal): ?array {
         $cache = $this->getCache();
 
         if (!$cache->isCached('articles', $articleId)) {
@@ -1234,7 +1256,9 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param Journal $journal
      * @return Issue|null
      */
-    private function _prepareArticleData($article, $journal): ?array {
+    // [WIZDAM BUGFIX] Sebelumnya "private" -- dipanggil langsung dari
+    // CrossRefExportPlugin (subclass), harus protected.
+    protected function _prepareArticleData($article, $journal): ?array {
         $cache = $this->getCache();
         $cache->add($article, null);
 
@@ -1343,7 +1367,9 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param array $errors
      * @return array|bool
      */
-    private function _getObjectsFromIds(int $exportType, $objectIds, int $journalId, &$errors) {
+    // [WIZDAM BUGFIX] Sebelumnya "private" -- dipanggil langsung dari
+    // CrossRefExportPlugin (subclass), harus protected.
+    protected function _getObjectsFromIds(int $exportType, $objectIds, int $journalId, &$errors) {
         if (empty($objectIds)) {
             return false;
         }

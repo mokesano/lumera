@@ -16,26 +16,30 @@ declare(strict_types=1);
 
 import('classes.plugins.ImportExportPlugin');
 
-// Export types.
-define('DOI_EXPORT_ISSUES', 0x01);
-define('DOI_EXPORT_ARTICLES', 0x02);
-define('DOI_EXPORT_GALLEYS', 0x03);
-define('DOI_EXPORT_SUPPFILES', 0x04);
+// [WIZDAM BUGFIX] Guard defined() -- lihat penjelasan lengkap di
+// CrossrefDoiExportPlugin.inc.php (konstanta sama dipakai 3 plugin).
+if (!defined('DOI_EXPORT_ISSUES')) {
+    // Export types.
+    define('DOI_EXPORT_ISSUES', 0x01);
+    define('DOI_EXPORT_ARTICLES', 0x02);
+    define('DOI_EXPORT_GALLEYS', 0x03);
+    define('DOI_EXPORT_SUPPFILES', 0x04);
 
-// Current registration state.
-define('DOI_OBJECT_NEEDS_UPDATE', 0x01);
-define('DOI_OBJECT_REGISTERED', 0x02);
+    // Current registration state.
+    define('DOI_OBJECT_NEEDS_UPDATE', 0x01);
+    define('DOI_OBJECT_REGISTERED', 0x02);
 
-// Export file types.
-define('DOI_EXPORT_FILE_XML', 0x01);
-define('DOI_EXPORT_FILE_TAR', 0x02);
+    // Export file types.
+    define('DOI_EXPORT_FILE_XML', 0x01);
+    define('DOI_EXPORT_FILE_TAR', 0x02);
 
-// Configuration errors.
-define('DOI_EXPORT_CONFIGERROR_DOIPREFIX', 0x01);
-define('DOI_EXPORT_CONFIGERROR_SETTINGS', 0x02);
+    // Configuration errors.
+    define('DOI_EXPORT_CONFIGERROR_DOIPREFIX', 0x01);
+    define('DOI_EXPORT_CONFIGERROR_SETTINGS', 0x02);
 
-// The name of the setting used to save the registered DOI.
-define('DOI_EXPORT_REGDOI', 'registeredDoi');
+    // The name of the setting used to save the registered DOI.
+    define('DOI_EXPORT_REGDOI', 'registeredDoi');
+}
 
 class MedraDoiExportPlugin extends ImportExportPlugin {
 
