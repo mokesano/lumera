@@ -64,7 +64,7 @@ switch($op) {
 		break;
 
 	// Contact & Impact
-	case 'contacts':
+	case 'contact':
 	case 'impact':
 	case 'annual-report':
 	// Publishing Model
