@@ -41,7 +41,9 @@ class JournalSetupForm extends Form {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param int $step the step number
+     * @param array $settings 
      */
     public function JournalSetupForm($step, $settings) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -109,5 +111,6 @@ class JournalSetupForm extends Form {
             }
         }
     }
+    
 }
 ?>

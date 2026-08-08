@@ -94,5 +94,24 @@ class JournalSetupStep4Form extends JournalSetupForm {
             'announcementsIntroduction'
         ];
     }
+
+    /**
+     * Display the form.
+     * @param PKPRequest|null $request
+     * @param string|null $template
+     */
+    public function display($request = null, $template = null) {
+        $request = $request ?? Application::get()->getRequest();
+
+        // [PERBAIKAN] Pastikan SELURUH field terlokalisasi terdefinisi sebagai array jika nilainya null/kosong
+        foreach ($this->getLocaleFieldNames() as $localeField) {
+            if (!isset($this->_data[$localeField]) || !is_array($this->_data[$localeField])) {
+                $this->_data[$localeField] = [];
+            }
+        }
+
+        parent::display($request, $template);
+    }
+    
 }
 ?>
