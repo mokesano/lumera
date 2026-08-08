@@ -12,11 +12,6 @@ declare(strict_types=1);
  * @ingroup admin_form
  *
  * @brief Form for site administrator to edit basic journal settings.
- * Diperkaya: toggle Publisher Partnerships (publisherPartnerships -- satu
- * flag tunggal yang menentukan pengaturan payment, DOI, dan Publisher
- * dikelola sendiri oleh jurnal atau terpusat oleh penerbit) dan pemilihan
- * Journal Manager penanda tangan Sertifikat/LoA (certificateSignatoryUserId)
- * -- keduanya WAJIB diatur Site Admin, bukan Journal Manager sendiri.
  */
 
 import('lib.pkp.classes.db.DBDataXMLParser');
@@ -85,9 +80,6 @@ class JournalSiteSettingsForm extends Form {
         $templateMgr->assign('journalId', $this->journalId);
         $templateMgr->assign('helpTopicId', 'site.siteManagement');
 
-        // [BARU] Daftar Journal Manager jurnal ini, untuk pemilihan penanda
-        // tangan Sertifikat/LoA. HANYA relevan untuk jurnal yang sudah ada --
-        // jurnal baru belum punya Journal Manager sama sekali di titik ini.
         if (isset($this->journalId)) {
             $resolver = new JournalManagerResolver();
             $candidates = $resolver->getCandidates($this->journalId);
@@ -256,16 +248,6 @@ class JournalSiteSettingsForm extends Form {
         $journal->updateSetting('showOnHomepage', $this->getData('showOnHomepage') ? 1 : 0, 'int');
         $journal->updateSetting('publisherPartnerships', $this->getData('publisherPartnerships') ? 1 : 0, 'int');
 
-        // [WIZDAM] Kalau jurnal ini baru saja ditandai Ownership (checkbox
-        // TIDAK dicentang), langsung sinkronkan kredensial Crossref Publisher
-        // ke plugin_settings jurnal ini SEKARANG -- tidak perlu menunggu
-        // sampai Publisher kebetulan menyimpan ulang DOI Settings-nya.
-        // Sama untuk publisherInstitution -- tulis LANGSUNG ke
-        // journal_settings jurnal ini (field NATIVE yang sudah dibaca semua
-        // XML export -- Crossref/mEDRA/DataCite/PubMed/Erudit/DOAJ -- lewat
-        // $journal->getSetting('publisherInstitution')), supaya tidak
-        // menunggu journal manager kebetulan membuka & menyimpan ulang
-        // Setup > Step 1 miliknya sendiri.
         if (!$this->getData('publisherPartnerships')) {
             import('lib.wizdam.classes.services.DoiCredentialService');
             DoiCredentialService::syncToAllOwnershipJournals();
@@ -275,9 +257,6 @@ class JournalSiteSettingsForm extends Form {
             $journal->updateSetting('publisherInstitution', $publisherProfile['name'], 'string');
         }
 
-        // [BARU] Simpan HANYA kalau pilihannya valid -- mencegah user_id sampah
-        // tersimpan (mis. dari manipulasi form) untuk jurnal yang sebenarnya
-        // tidak butuh pemilihan ini (<=2 manager).
         $selectedSignatory = (int) $this->getData('certificateSignatoryUserId');
         if ($selectedSignatory > 0 && $journal->getId() != null) {
             $resolver = new JournalManagerResolver();
