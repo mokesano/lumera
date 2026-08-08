@@ -8,8 +8,8 @@
  * DataCite plug-in home page.
  *}
 {strip}
-{assign var="pageTitle" value="plugins.importexport.crossref.displayName"}
-{include file="common/header-parts/header-manager.tpl"}
+    {assign var="pageTitle" value="plugins.importexport.crossref.displayName"}
+    {include file="common/header-parts/header-manager.tpl"}
 {/strip}
 
 <div id="crossref" class="crossref-article">
@@ -31,12 +31,11 @@
     {/if}
 </div>
 
+{if $currentJournal->getSetting('publisherPartnerships')}
 <div id="crossref" class="settings-doi-crossref">
     <h3 class="u-h2">{translate key="plugins.importexport.common.settings"}</h3>
-    <br />
-    <p>
-        {translate key="plugins.importexport.crossref.settings.description" settingsUrl=$settingsUrl}
-    </p>
+    <p>{translate key="plugins.importexport.crossref.settings.description" settingsUrl=$settingsUrl}</p>
 </div>
+{/if}
 
 {include file="common/footer-parts/footer-user.tpl"}

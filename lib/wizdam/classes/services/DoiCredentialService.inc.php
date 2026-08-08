@@ -134,6 +134,9 @@ class DoiCredentialService {
     // Scope Jurnal    -> baca LANGSUNG dari CrossRefExportPlugin (sudah ada).
     //
 
+    /**
+     * Get Crossref depositor name
+     */
     public function getCrossrefDepositorName(): string {
         if ($this->journalScopeId !== null) {
             return $this->_getCrossrefPluginSetting('depositorName');
@@ -141,6 +144,22 @@ class DoiCredentialService {
         return trim((string) $this->getSetting('crossref_depositor_name', ''));
     }
 
+    /**
+     * [WIZDAM] Cermin persis dari CrossRefSettingsForm::automaticRegistration
+     * legacy -- untuk jurnal Ownership, satu-satunya tempat mengatur ini
+     * sekarang halaman DOI Settings Publisher (halaman settings plugin
+     * native sudah dikunci total, lihat DOIExportPlugin::manage()).
+     */
+    public function getAutomaticRegistration(): bool {
+        if ($this->journalScopeId !== null) {
+            return (bool) $this->_getCrossrefPluginSetting('automaticRegistration');
+        }
+        return (bool) $this->getSetting('crossref_automatic_registration', false);
+    }
+
+    /**
+     * Get Crosssref email
+     */
     public function getCrossrefEmail(): string {
         if ($this->journalScopeId !== null) {
             return $this->_getCrossrefPluginSetting('depositorEmail');
@@ -148,6 +167,9 @@ class DoiCredentialService {
         return trim((string) $this->getSetting('crossref_email', ''));
     }
 
+    /**
+     * Get Crossref username
+     */
     public function getCrossrefUsername(): string {
         if ($this->journalScopeId !== null) {
             return $this->_getCrossrefPluginSetting('username');
@@ -155,6 +177,9 @@ class DoiCredentialService {
         return trim((string) $this->getSetting('crossref_username', ''));
     }
 
+    /**
+     * Get Crossref password
+     */
     public function getCrossrefPassword(): string {
         if ($this->journalScopeId !== null) {
             return $this->_getCrossrefPluginSetting('password');
@@ -162,6 +187,9 @@ class DoiCredentialService {
         return trim((string) $this->getSetting('crossref_password', ''));
     }
 
+    /**
+     * HELPER: Get Crossref plugin settings
+     */
     private function _getCrossrefPluginSetting(string $settingName): string {
         if (!$this->crossrefPlugin) return '';
         $value = $this->crossrefPlugin->getSetting($this->journalScopeId, $settingName);
@@ -175,14 +203,23 @@ class DoiCredentialService {
     // punya pengaturan sendiri untuk sumber-sumber ini (lihat catatan kelas).
     //
 
+    /**
+     * Get Semantic Scholar API key
+     */
     public function getSemanticScholarApiKey(): string {
         return trim((string) $this->_getPublisherOnlySetting('semantic_scholar_api_key'));
     }
 
+    /**
+     * Get Dimensions API key
+     */
     public function getDimensionsApiKey(): string {
         return trim((string) $this->_getPublisherOnlySetting('dimensions_api_key'));
     }
 
+    /**
+     * HELPER: Get publisher only settings
+     */
     private function _getPublisherOnlySetting(string $key): string {
         $settingKey = 'wizdam_doi_' . $key;
         $value = $this->siteSettingsDao->getSetting($settingKey);
@@ -232,6 +269,7 @@ class DoiCredentialService {
         $plugin->updateSetting($journalId, 'password', $publisherCredentials->getCrossrefPassword(), 'string');
         $plugin->updateSetting($journalId, 'depositorName', $publisherCredentials->getCrossrefDepositorName(), 'string');
         $plugin->updateSetting($journalId, 'depositorEmail', $publisherCredentials->getCrossrefEmail(), 'string');
+        $plugin->updateSetting($journalId, 'automaticRegistration', $publisherCredentials->getAutomaticRegistration() ? 1 : 0, 'bool');
     }
 
     /**
