@@ -15,7 +15,7 @@ declare(strict_types=1);
  */
 
 import('classes.handler.Handler');
-import("lib.pkp.classes.core.VirtualArrayIterator");
+import('lib.pkp.classes.core.VirtualArrayIterator');
 
 class BrowseHandler extends Handler {
 
@@ -33,6 +33,7 @@ class BrowseHandler extends Handler {
             return;
         }
 
+        /** @var GenericPlugin $browsePlugin */
         $browsePlugin = PluginRegistry::getPlugin('generic', BROWSE_PLUGIN_NAME);
         if (!$browsePlugin) {
             $request->redirect(null, 'index');
@@ -45,6 +46,7 @@ class BrowseHandler extends Handler {
             if (isset($args[0]) && $args[0] === 'view') {
                 $sectionId = (int) $request->getUserVar('sectionId');
 
+                /** @var SectionDAO $sectionDao */
                 $sectionDao = DAORegistry::getDAO('SectionDAO');
                 $section = $sectionDao->getSection($sectionId);
                 if (!$section) {
@@ -52,10 +54,11 @@ class BrowseHandler extends Handler {
                     return;
                 }
 
+                /** @var PublishedArticleDAO $publishedArticleDao */
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-                $publishedArticleIds = (array) ($publishedArticleDao->getPublishedArticleIdsBySection($sectionId) ?? []);
+                $publishedArticleIdsRaw = $publishedArticleDao->getPublishedArticleIdsBySection($sectionId);
+                $publishedArticleIds = is_array($publishedArticleIdsRaw) ? $publishedArticleIdsRaw : [];
 
-                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
@@ -72,18 +75,20 @@ class BrowseHandler extends Handler {
                 $templateMgr->display($browsePlugin->getTemplatePath() . 'searchDetails.tpl');
             } else {
                 $excludedSections = $browsePlugin->getSetting($journal->getId(), 'excludedSections');
+                $excludedSectionsArray = is_array($excludedSections) ? $excludedSections : [];
+                
+                /** @var SectionDAO $sectionDao */
                 $sectionDao = DAORegistry::getDAO('SectionDAO');
                 $sectionsIterator = $sectionDao->getJournalSections($journal->getId());
                 $sections = [];
                 
                 while ($sectionsIterator && ($section = $sectionsIterator->next())) {
-                    if (!in_array($section->getId(), (array)$excludedSections, true)) { 
+                    if (!in_array($section->getId(), $excludedSectionsArray, true)) { 
                         $sections[$section->getLocalizedTitle()] = $section->getId();
                     }
                 }
                 ksort($sections);
 
-                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
@@ -116,6 +121,7 @@ class BrowseHandler extends Handler {
             return;
         }
 
+        /** @var GenericPlugin $browsePlugin */
         $browsePlugin = PluginRegistry::getPlugin('generic', BROWSE_PLUGIN_NAME);
         if (!$browsePlugin) {
             $request->redirect(null, 'index');
@@ -128,6 +134,7 @@ class BrowseHandler extends Handler {
             if (isset($args[0]) && $args[0] === 'view') {
                 $identifyType = trim((string) ($request->getUserVar('identifyType') ?? ''));
                 
+                /** @var SectionDAO $sectionDao */
                 $sectionDao = DAORegistry::getDAO('SectionDAO');
                 $sectionsIterator = $sectionDao->getJournalSections($journal->getId());
                 $sections = [];
@@ -138,14 +145,15 @@ class BrowseHandler extends Handler {
                     }
                 }
                 
+                /** @var PublishedArticleDAO $publishedArticleDao */
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                 $publishedArticleIds = [];
                 foreach ($sections as $section) {
-                    $publishedArticleIdsBySection = (array) ($publishedArticleDao->getPublishedArticleIdsBySection($section->getId()) ?? []);
+                    $publishedArticleIdsRaw = $publishedArticleDao->getPublishedArticleIdsBySection($section->getId());
+                    $publishedArticleIdsBySection = is_array($publishedArticleIdsRaw) ? $publishedArticleIdsRaw : [];
                     $publishedArticleIds = array_merge($publishedArticleIds, $publishedArticleIdsBySection);
                 }
 
-                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
@@ -161,19 +169,21 @@ class BrowseHandler extends Handler {
                 $templateMgr->display($browsePlugin->getTemplatePath() . 'searchDetails.tpl');
             } else {
                 $excludedIdentifyTypes = $browsePlugin->getSetting($journal->getId(), 'excludedIdentifyTypes');
+                $excludedIdentifyTypesArray = is_array($excludedIdentifyTypes) ? $excludedIdentifyTypes : [];
+                
+                /** @var SectionDAO $sectionDao */
                 $sectionDao = DAORegistry::getDAO('SectionDAO');
                 $sectionsIterator = $sectionDao->getJournalSections($journal->getId());
                 $sectionidentifyTypes = [];
                 
                 while ($sectionsIterator && ($section = $sectionsIterator->next())) {
                     $type = $section->getLocalizedIdentifyType();
-                    if ($type && !in_array($section->getId(), (array)$excludedIdentifyTypes, true) && !in_array($type, $sectionidentifyTypes, true)) {
+                    if ($type && !in_array($section->getId(), $excludedIdentifyTypesArray, true) && !in_array($type, $sectionidentifyTypes, true)) {
                         $sectionidentifyTypes[] = $type;
                     }
                 }
                 sort($sectionidentifyTypes);
 
-                // [FIX]: Signature APP legacy
                 $rangeInfo = Handler::getRangeInfo('search');
                 $page = (int) ($rangeInfo?->getPage() ?? 1);
                 $count = ($rangeInfo && $rangeInfo->getCount() > 0) ? (int) $rangeInfo->getCount() : 25;
@@ -197,23 +207,29 @@ class BrowseHandler extends Handler {
      * @param PKPRequest $request
      * @param array $args
      * @param array $roleAssignments
-     * @return boolean
+     * @return bool
      */
     public function authorize($request, $args, $roleAssignments) {
         $journal = $request->getRouter()?->getContext($request);
-        if (!isset($journal)) return false;
+        if (!$journal) {
+            return false;
+        }
         
+        /** @var GenericPlugin $browsePlugin */
         $browsePlugin = PluginRegistry::getPlugin('generic', BROWSE_PLUGIN_NAME);
-        if (!isset($browsePlugin) || !$browsePlugin->getEnabled()) return false;
+        if (!$browsePlugin || !$browsePlugin->getEnabled()) {
+            return false;
+        }
         
         return parent::authorize($request, $args, $roleAssignments);
     }
 
     /**
      * Setup common template variables.
-     * @param PKPRequest $request
-     * @param boolean $subclass
+     * @param PKPRequest|null $request
+     * @param bool $subclass
      * @param string $op
+     * @return void
      */
     public function setupTemplate($request = null, $subclass = false, $op = 'index') {
         $templateMgr = TemplateManager::getManager();
@@ -235,5 +251,6 @@ class BrowseHandler extends Handler {
             }
         }
     }
+    
 }
 ?>

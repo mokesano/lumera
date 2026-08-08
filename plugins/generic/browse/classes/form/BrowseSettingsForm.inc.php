@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class BrowseSettingsForm
  * @ingroup plugins_generic_browse
  *
- * @brief Form for journal managers to setup browse plugin
- * [WIZDAM EDITION] Modernized. PHP 8 Safe.
+ * @brief Form for journal managers to setup browse plugin.
  */
 
 import('lib.pkp.classes.form.Form');
@@ -20,115 +19,128 @@ import('lib.pkp.classes.form.Form');
 class BrowseSettingsForm extends Form {
 
     /** @var int */
-    public $journalId;
+    protected $_journalId;
 
     /** @var object */
-    public $plugin;
+    protected $_plugin;
 
     /**
-     * Constructor
-     * @param $plugin object
-     * @param $journalId int
+     * Constructor.
+     * @param object $plugin
+     * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
-        $this->journalId = $journalId;
-        $this->plugin = $plugin;
+        $this->_journalId = (int) $journalId;
+        $this->_plugin = $plugin;
         
-        // [MODERNISASI] Parent Construct
         parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
         
         $this->addCheck(new FormValidatorPost($this));
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param object $plugin
+     * @param int $journalId
      */
     public function BrowseSettingsForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::BrowseSettingsForm(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($plugin, $journalId);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
     
     /**
      * Initialize form data.
+     * @return void
      */
     public function initData() {
-        $journalId = $this->journalId;
-        $plugin = $this->plugin;
+        $journalId = $this->_journalId;
+        $plugin = $this->_plugin;
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO'); 
         $sectionsResultFactory = $sectionDao->getJournalSections($journalId);
-        $sections = array();
-        $identifyTypes = array();
+        $sections = [];
+        $identifyTypes = [];
         
-        while ($section = $sectionsResultFactory->next()) {
-            // consider all section titles
-            $sections[$section->getId()] = $section->getLocalizedTitle();
-            
-            // several sections could have the same identify type => don't duplicate
-            // and leave out the empty identify types
-            $identifyType = $section->getLocalizedIdentifyType();
-            if (!in_array($identifyType, $identifyTypes) && $identifyType != '') {
-                // Key array menggunakan ID section, tapi value adalah Type-nya
-                $identifyTypes[$section->getId()] = $identifyType;
+        if ($sectionsResultFactory) {
+            while ($section = $sectionsResultFactory->next()) {
+                $sections[(int) $section->getId()] = (string) $section->getLocalizedTitle();
+                $identifyType = (string) $section->getLocalizedIdentifyType();
+
+                if ($identifyType !== '' && !in_array($identifyType, $identifyTypes, true)) {
+                    $identifyTypes[(int) $section->getId()] = $identifyType;
+                }
             }
-            unset($section);
         }
                 
         asort($identifyTypes);
         
-        $this->_data = array(
-            'enableBrowseBySections' => $plugin->getSetting($journalId, 'enableBrowseBySections'),
-            'enableBrowseByIdentifyTypes' => $plugin->getSetting($journalId, 'enableBrowseByIdentifyTypes'),
-            'excludedSections' => $plugin->getSetting($journalId, 'excludedSections'),
-            'excludedIdentifyTypes' => $plugin->getSetting($journalId, 'excludedIdentifyTypes'),
+        $excludedSections = $plugin->getSetting($journalId, 'excludedSections');
+        $excludedIdentifyTypes = $plugin->getSetting($journalId, 'excludedIdentifyTypes');
+
+        $this->_data = [
+            'enableBrowseBySections' => (bool) $plugin->getSetting($journalId, 'enableBrowseBySections'),
+            'enableBrowseByIdentifyTypes' => (bool) $plugin->getSetting($journalId, 'enableBrowseByIdentifyTypes'),
+            'excludedSections' => is_array($excludedSections) ? $excludedSections : [],
+            'excludedIdentifyTypes' => is_array($excludedIdentifyTypes) ? $excludedIdentifyTypes : [],
             'sections' => $sections,
             'identifyTypes' => $identifyTypes
-        );
+        ];
     }
 
     /**
      * Assign form data to user-submitted data.
+     * @return void
      */
     public function readInputData() {
-        $this->readUserVars(array('enableBrowseBySections', 'enableBrowseByIdentifyTypes', 'excludedSections', 'excludedIdentifyTypes'));
+        $this->readUserVars([
+            'enableBrowseBySections', 
+            'enableBrowseByIdentifyTypes', 
+            'excludedSections', 
+            'excludedIdentifyTypes'
+        ]);
     }
 
     /**
      * Save settings.
+     * @param mixed $object
+     * @return void
      */
     public function execute($object = null) {
-        $plugin = $this->plugin;
-        $journalId = $this->journalId;
+        $plugin = $this->_plugin;
+        $journalId = $this->_journalId;
         
-        $plugin->updateSetting($journalId, 'enableBrowseBySections', $this->getData('enableBrowseBySections'), 'bool');
-        $plugin->updateSetting($journalId, 'enableBrowseByIdentifyTypes', $this->getData('enableBrowseByIdentifyTypes'), 'bool');
-        
-        // [MODERNISASI] Pastikan array valid
+        $plugin->updateSetting($journalId, 'enableBrowseBySections', (bool) $this->getData('enableBrowseBySections'), 'bool');
+        $plugin->updateSetting($journalId, 'enableBrowseByIdentifyTypes', (bool) $this->getData('enableBrowseByIdentifyTypes'), 'bool');
+
         $excludedSections = $this->getData('excludedSections');
-        $plugin->updateSetting($journalId, 'excludedSections', is_array($excludedSections) ? $excludedSections : array(), 'object');
+        $plugin->updateSetting($journalId, 'excludedSections', is_array($excludedSections) ? $excludedSections : [], 'object');
+
+        $excludedIdentifyTypesData = $this->getData('excludedIdentifyTypes');
+        $excludedIdentifyTypesArray = is_array($excludedIdentifyTypesData) ? $excludedIdentifyTypesData : [];
         
-        // [FIX] Cast ke array untuk mencegah error in_array jika null
-        $excludedIdentifyTypesData = (array) $this->getData('excludedIdentifyTypes');
-        
-        $excludedIdentifyTypes = array();
+        $excludedIdentifyTypes = [];
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO'); 
         $sectionsResultFactory = $sectionDao->getJournalSections($journalId);
         
-        // consider all sections for exclusion with an excluded identify type 
-        while ($section = $sectionsResultFactory->next()) {
-            $identifyType = $section->getLocalizedIdentifyType();
-            if ($identifyType != '' && in_array($identifyType, $excludedIdentifyTypesData)) {
-                $excludedIdentifyTypes[] = $section->getId();
+        if ($sectionsResultFactory) {
+            while ($section = $sectionsResultFactory->next()) {
+                $identifyType = (string) $section->getLocalizedIdentifyType();
+                if ($identifyType !== '' && in_array($identifyType, $excludedIdentifyTypesArray, true)) {
+                    $excludedIdentifyTypes[] = (int) $section->getId();
+                }
             }
         }
         
         $plugin->updateSetting($journalId, 'excludedIdentifyTypes', $excludedIdentifyTypes, 'object');
     }
-}
 
+}
 ?>

@@ -263,7 +263,7 @@ class DataversePlugin extends GenericPlugin {
      * Smarty plugin to generate URLs for this plugin's management pages.
      * This allows Smarty templates to use {plugin_url path="..." id="..."} to create links to the plugin's pages.
      * @param array $params
-     * @param Smarty $smarty
+     * @param mixed $smarty
      * @return string
      */
     public function smartyPluginUrl(array $params, $smarty): string {

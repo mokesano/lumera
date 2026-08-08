@@ -27,8 +27,8 @@ class DataverseSelectForm extends Form {
 
     /**
      * Constructor
-     * @param $plugin DataversePlugin
-     * @param $journalId int
+     * @param DataversePlugin $plugin
+     * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
         $this->_plugin = $plugin;
@@ -42,16 +42,19 @@ class DataverseSelectForm extends Form {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param DataversePlugin $plugin
+     * @param int $journalId
      */
     public function DataverseSelectForm($plugin, $journalId) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor. Please refactor to use __construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($plugin, $journalId);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -118,6 +121,8 @@ class DataverseSelectForm extends Form {
      * Helper untuk mengambil konten dataverse
      * [WIZDAM ARCHITECTURE] Ini seharusnya ada di DataverseApiClient, 
      * tapi kita taruh di sini sebagai shim jika ApiClient belum diupdate.
+     * @param mixed $apiClient
+     * @param mixed $alias
      */
     private function _fetchDataverseContents($apiClient, $alias) {
         // Kita gunakan Reflection atau ubah manual visibility executeRequest di ApiClient menjadi public.
@@ -141,5 +146,6 @@ class DataverseSelectForm extends Form {
         // Simpan sebagai dvUri (Dataverse URI/Alias tujuan deposit)
         $this->_plugin->updateSetting($this->_journalId, 'dvUri', (string) $selectedDataverse, 'string');
     }
+
 }
 ?>

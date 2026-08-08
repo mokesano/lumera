@@ -19,123 +19,126 @@ import('lib.pkp.classes.form.Form');
 class CustomBlockEditForm extends Form {
 
     /** @var CustomBlockPlugin */
-    public $plugin;
+    protected $_plugin;
 
     /** @var int */
-    public $journalId;
+    protected $_journalId;
 
     /**
-     * Constructor
+     * Constructor.
      * @param CustomBlockPlugin $plugin
      * @param int $journalId
      */
     public function __construct($plugin, $journalId) {
         parent::__construct($plugin->getTemplatePath() . 'editCustomBlockForm.tpl');
-        $this->journalId = $journalId;
-        $this->plugin = $plugin;
+        $this->_journalId = (int) $journalId;
+        $this->_plugin = $plugin;
         
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidator($this, 'blockContent', 'required', 'plugins.generic.customBlock.contentRequired'));
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      * @param CustomBlockPlugin $plugin
      * @param int $journalId
      */
     public function CustomBlockEditForm($plugin, $journalId) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::CustomBlockEditForm(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($plugin, $journalId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Initialize form data from the database.
+     * @return void
      */
     public function initData() {
-        $managerPlugin = $this->plugin->getManagerPlugin();
-        $journal = Request::getJournal();
+        $managerPlugin = $this->_plugin->getManagerPlugin();
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+        $journalId = $journal !== null ? (int) $journal->getId() : $this->_journalId;
         
-        $blocks = $managerPlugin->getSetting($journal->getId(), 'blocks');
-        $blockContent = $managerPlugin->getSetting($journal->getId(), 'blockContent');
+        $blocks = $managerPlugin->getSetting($journalId, 'blocks');
+        $blockContent = $managerPlugin->getSetting($journalId, 'blockContent');
         
-        $index = array_search($this->plugin->getName(), $blocks ?? []);
+        $index = array_search($this->_plugin->getName(), is_array($blocks) ? $blocks : [], true);
         
-        // Pastikan selalu array berlokale, bukan string
         $content = [];
-        if ($index !== false && isset($blockContent[$index])) {
+        if ($index !== false && is_array($blockContent) && isset($blockContent[$index])) {
             $contentData = $blockContent[$index];
             if (is_array($contentData)) {
-                $content = $contentData; // Sudah format ['en_US' => '...']
+                $content = $contentData;
             } else {
-                // Legacy: data lama tersimpan sebagai string
                 $locale = AppLocale::getLocale();
-                $content = [$locale => $contentData];
+                $content = [$locale => (string) $contentData];
             }
         }
         
-        $this->setData('blockContent', $content); // ← Harus array
+        $this->setData('blockContent', $content);
     }
 
     /**
      * Display the form.
-     * Sets up the Action URL with proper encoding for spaces.
+     * @param object|null $request
+     * @param string|null $template
+     * @return void
      */
-    public function display($request = NULL, $template = NULL) {
-        $templateMgr = TemplateManager::getManager();
-        $this->addTinyMCE();
+    public function display($request = null, $template = null) {
+        $request = $request ?? Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
+        
+        $this->addTinyMCE($request);
     
-        // FIX 1: Register plugin_url agar dikenali Smarty
-        $templateMgr->register_function(
-            'plugin_url', 
-            array($this->plugin, 'smartyPluginUrl')
-        );
+        $templateMgr->register_function('plugin_url', [$this->_plugin, 'smartyPluginUrl']);
     
-        // FIX 2: Assign formLocale dan formLocales
         $locale = AppLocale::getLocale();
-        $journal = Request::getJournal();
-        $supportedLocales = $journal 
-            ? $journal->getSupportedLocaleNames() 
-            : array($locale => AppLocale::getLocaleName($locale));
+        $journal = $request->getJournal();
+        $supportedLocales = $journal !== null ? $journal->getSupportedLocaleNames() : [$locale => AppLocale::getLocale()];
     
         $templateMgr->assign('formLocale', $locale);
         $templateMgr->assign('formLocales', $supportedLocales);
-    
-        // Set page title dan breadcrumbs
-        $templateMgr->assign(
-            'pageTitleTranslated', 
-            __('plugins.generic.customBlock.editContent', 
-                array('name' => $this->plugin->getDisplayName())
-            )
-        );
-        $pageCrumbs = array(
-            array(Request::url(null, 'user'), 'navigation.user'),
-            array(Request::url(null, 'manager'), 'user.role.manager'),
-            array(Request::url(null, 'manager', 'plugins'), 'manager.plugins')
-        );
+        $templateMgr->assign('pageTitleTranslated', __('plugins.generic.customBlock.editContent', ['name' => $this->_plugin->getDisplayName()]));
+        
+        $router = $request->getRouter();
+        $pageCrumbs = [
+            [$router->url($request, null, 'user'), 'navigation.user'],
+            [$router->url($request, null, 'manager'), 'user.role.manager'],
+            [$router->url($request, null, 'manager', 'plugins'), 'manager.plugins']
+        ];
         $templateMgr->assign('pageHierarchy', $pageCrumbs);
     
-        // FIX 3: Teruskan parameter ke parent
         parent::display($request, $template);
     }
 
     /**
      * Add TinyMCE scripts to the header.
+     * @param object|null $request
+     * @return void
      */
-    public function addTinyMCE() {
-        $journalId = $this->journalId;
-        $templateMgr = TemplateManager::getManager();
+    public function addTinyMCE($request = null) {
+        $request = $request ?? Application::get()->getRequest();
+        $journal = $request->getJournal();
+        $journalId = $journal !== null ? (int) $journal->getId() : $this->_journalId;
+        
+        $templateMgr = TemplateManager::getManager($request);
         $additionalHeadData = $templateMgr->get_template_vars('additionalHeadData');
+        
+        // [LUMERA FIX] Ensure $additionalHeadData is a string to prevent "Expected type 'string'. Found 'array'" warning
+        $headDataString = is_string($additionalHeadData) 
+            ? $additionalHeadData 
+            : (is_array($additionalHeadData) ? implode("\n", $additionalHeadData) : '');
         
         import('classes.file.PublicFileManager');
         $publicFileManager = new PublicFileManager();
         
-        $baseUrl = Request::getBaseUrl();
+        $baseUrl = $request->getBaseUrl();
         $filesPath = $publicFileManager->getJournalFilesPath($journalId);
-        
-        // Ensure constant exists or fallback
         $tinyMcePath = defined('TINYMCE_JS_PATH') ? TINYMCE_JS_PATH : 'lib/pkp/lib/tinymce/jscripts/tiny_mce';
 
         $tinyMCE_script = '
@@ -157,14 +160,15 @@ class CustomBlockEditForm extends Form {
             });
         </script>';
         
-        $templateMgr->assign('additionalHeadData', $additionalHeadData."\n".$tinyMCE_script);
+        $templateMgr->assign('additionalHeadData', $headDataString . "\n" . $tinyMCE_script);
     }
 
     /**
      * Read input data.
+     * @return void
      */
     public function readInputData() {
-        $this->readUserVars(array('blockContent'));
+        $this->readUserVars(['blockContent']);
     }
     
     /**
@@ -172,35 +176,40 @@ class CustomBlockEditForm extends Form {
      * @return array
      */
     public function getLocaleFieldNames() {
-        return array('blockContent');
+        return ['blockContent'];
     }
 
     /**
      * Save the form data.
+     * @return void
      */
     public function save() {
-        $plugin = $this->plugin;
+        $plugin = $this->_plugin;
         $managerPlugin = $plugin->getManagerPlugin();
-        $journalId = $this->journalId;
+        $journalId = $this->_journalId;
 
         $blocks = $managerPlugin->getSetting($journalId, 'blocks');
         $contents = $managerPlugin->getSetting($journalId, 'blockContent');
 
-        if (!is_array($blocks)) return;
-        if (!is_array($contents)) $contents = array();
+        if (!is_array($blocks)) {
+            return;
+        }
+        if (!is_array($contents)) {
+            $contents = [];
+        }
         
-        $index = array_search($plugin->getName(), $blocks);
+        $index = array_search($plugin->getName(), $blocks, true);
         
-        // Defensive check for decoded name
         if ($index === false) {
-            $index = array_search(urldecode($plugin->getName()), $blocks);
+            $index = array_search(urldecode($plugin->getName()), $blocks, true);
         }
 
         if ($index !== false) {
             $contents[$index] = $this->getData('blockContent');
-            ksort($contents); // Maintain array integrity
+            ksort($contents);
             $managerPlugin->updateSetting($journalId, 'blockContent', $contents);        
         }
     }
+
 }
 ?>

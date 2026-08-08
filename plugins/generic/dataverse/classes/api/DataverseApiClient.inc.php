@@ -20,7 +20,7 @@ class DataverseApiClient {
 
     /**
      * Constructor
-     * @param $plugin DataversePlugin
+     * @param DataversePlugin $plugin
      */
     public function __construct($plugin) {
         $this->_plugin = $plugin;
@@ -229,5 +229,6 @@ class DataverseApiClient {
         }
         return '';
     }
+    
 }
 ?>
