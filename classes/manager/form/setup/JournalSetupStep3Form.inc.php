@@ -165,26 +165,15 @@ class JournalSetupStep3Form extends JournalSetupForm {
 
         $templateMgr->assign('ccLicenseOptions', Application::getCCLicenseOptions());
 
-        // Memastikan field multi-bahasa tidak bernilai null sebelum dilempar ke template
-        $localizedFields = [
-            'metaSubjectClassTitle',
-            'metaSubjectClassUrl',
-            'metaSubjectExamples',
-            'metaCoverageGeoExamples',
-            'metaCoverageChronExamples',
-            'metaCoverageResearchSampleExamples',
-            'metaTypeExamples'
-        ];
-
-        foreach ($localizedFields as $field) {
-            if (!isset($this->_data[$field]) || !is_array($this->_data[$field])) {
-                $this->_data[$field] = [];
+        foreach ($this->getLocaleFieldNames() as $localeField) {
+            if (!isset($this->_data[$localeField]) || !is_array($this->_data[$localeField])) {
+                $this->_data[$localeField] = [];
             }
         }
-        // ----------------------------------
 
         $template = null;
         parent::display($request, $template);
     }
+
 }
 ?>

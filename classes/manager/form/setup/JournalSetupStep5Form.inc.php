@@ -144,6 +144,13 @@ class JournalSetupStep5Form extends JournalSetupForm {
         ]);
 
         $templateMgr->setCacheability(CACHEABILITY_MUST_REVALIDATE);
+
+        foreach ($this->getLocaleFieldNames() as $localeField) {
+            if (!isset($this->_data[$localeField]) || !is_array($this->_data[$localeField])) {
+                $this->_data[$localeField] = [];
+            }
+        }
+
         parent::display($request, $template);
     }
 
@@ -185,7 +192,6 @@ class JournalSetupStep5Form extends JournalSetupForm {
                 }
                 $newImage = empty($value[$locale]);
 
-                // [WIZDAM FIX] getUploadedFileName expects the input name ($settingName), not $locale
                 $value[$locale] = [
                     'name' => (string) $fileManager->getUploadedFileName($settingName),
                     'uploadName' => $uploadName,
@@ -307,9 +313,7 @@ class JournalSetupStep5Form extends JournalSetupForm {
         if (is_array($plugins)) {
             foreach ($plugins as $plugin) {
                 $plugin->setEnabled(!in_array($plugin->getName(), $blockData['blockUnselected'], true));
-                
-                // [WIZDAM FIX] Use plugin name for array_search instead of array key, 
-                // as $blockData contains plugin names, not array indices.
+
                 if (in_array($plugin->getName(), $blockData['blockSelectLeft'], true)) {
                     $plugin->setBlockContext(BLOCK_CONTEXT_LEFT_SIDEBAR);
                     $plugin->setSeq(array_search($plugin->getName(), $blockData['blockSelectLeft'], true));

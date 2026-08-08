@@ -169,8 +169,10 @@ class JournalSetupStep1Form extends JournalSetupForm {
             $templateMgr->assign('allCategories', $categories);
         }
 
-        if (!isset($this->_data['history']) || !is_array($this->_data['history'])) {
-            $this->_data['history'] = [];
+        foreach ($this->getLocaleFieldNames() as $localeField) {
+            if (!isset($this->_data[$localeField]) || !is_array($this->_data[$localeField])) {
+                $this->_data[$localeField] = [];
+            }
         }
 
         import('lib.wizdam.classes.services.JournalOwnershipService');

@@ -94,7 +94,14 @@ class JournalSetupStep2Form extends JournalSetupForm {
             $templateMgr->assign('scheduledTasksEnabled', true);
         }
 
+        foreach ($this->getLocaleFieldNames() as $localeField) {
+            if (!isset($this->_data[$localeField]) || !is_array($this->_data[$localeField])) {
+                $this->_data[$localeField] = [];
+            }
+        }
+
         parent::display($request, $template);
     }
+    
 }
 ?>
