@@ -31,10 +31,10 @@ class DoiSettingsForm extends Form {
     public function __construct() {
         parent::__construct('admin/doiSettings.tpl');
 
-        // Scope Publisher (site-level) -- halaman ini KHUSUS untuk kredensial
-        // milik penerbit, bukan kredensial jurnal independent.
         $this->credentialService = new DoiCredentialService();
         $this->addCheck(new FormValidatorPost($this));
+        $this->addCheck(new FormValidator($this, 'crossref_depositor_name', 'required', 'admin.doi.crossrefDepositorNameRequired'));
+        $this->addCheck(new FormValidatorEmail($this, 'crossref_email', 'required', 'admin.doi.crossrefEmailRequired'));
     }
 
     /**
@@ -80,9 +80,6 @@ class DoiSettingsForm extends Form {
         $this->credentialService->updateSetting('semantic_scholar_api_key', $this->getData('semantic_scholar_api_key'), 'string');
         $this->credentialService->updateSetting('dimensions_api_key', $this->getData('dimensions_api_key'), 'string');
 
-        // [WIZDAM] Sebar LANGSUNG ke plugin_settings tiap jurnal Ownership --
-        // supaya baris kredensial jurnal itu tidak pernah kosong (lihat
-        // DoiCredentialService::syncToAllOwnershipJournals()).
         DoiCredentialService::syncToAllOwnershipJournals();
     }
 

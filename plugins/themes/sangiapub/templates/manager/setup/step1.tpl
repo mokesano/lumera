@@ -173,12 +173,12 @@
 
 	<div id="setupPublisher" class="block">
 		<h3>1.5 {translate key="manager.setup.publisher"}</h3>
-		{if $currentJournal->getSetting('publisherPartnerships')}
+		{if $isPartnershipJournal}
 			<p>{translate key="manager.setup.publisherDescription"}</p>
 		{else}
 			<p>{translate key="manager.setup.publisherDescriptionOwnerships"}</p>
 		{/if}
-		{if $currentJournal->getSetting('publisherPartnerships')}
+		{if $isPartnershipJournal}
 		<table width="100%" class="data">
 			<tr valign="top">
 				<td width="20%" class="label">{fieldLabel name="publisherNote" key="manager.setup.note"}</td>

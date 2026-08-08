@@ -254,7 +254,8 @@ class AboutSiteForm extends Form {
         if (!$journals) return;
 
         while ($journal = $journals->next()) {
-            if (!$journal->getSetting('publisherPartnerships')) {
+            import('lib.wizdam.classes.services.JournalOwnershipService');
+            if (JournalOwnershipService::isOwnership($journal)) {
                 $journal->updateSetting('publisherInstitution', $publisherName, 'string');
             }
         }

@@ -422,18 +422,12 @@ class DOIExportPlugin extends ImportExportPlugin {
             return false;
         }
 
-        // [WIZDAM] KHUSUS Crossref -- jurnal Ownership (publisherPartnerships=
-        // true berarti Partnership, false berarti Ownership) TIDAK PUNYA
-        // akses ke halaman settings ini SAMA SEKALI -- kredensial dikelola
-        // terpusat di halaman DOI Settings level Publisher (site admin).
-        // Redirect balik ke halaman index plugin SEBELUM form settings
-        // diinstansiasi/ditampilkan/diproses -- baik lewat klik menu (link
-        // disembunyikan di index.tpl) MAUPUN lewat akses URL langsung/paksa.
-        // instanceof dipakai supaya mEDRA & DataCite (sama-sama pewaris
-        // DOIExportPlugin ini) TIDAK terpengaruh sama sekali.
-        if ($this instanceof CrossRefExportPlugin && !$journal->getSetting('publisherPartnerships')) {
-            $request->redirect(null, 'manager', 'importexport', ['plugin', $this->getName()]);
-            return true;
+        if ($this instanceof CrossRefExportPlugin) {
+            import('lib.wizdam.classes.services.JournalOwnershipService');
+            if (JournalOwnershipService::isOwnership($journal)) {
+                $request->redirect(null, 'manager', 'importexport', ['plugin', $this->getName()]);
+                return true;
+            }
         }
 
         $configurationErrors = [];
@@ -1039,6 +1033,12 @@ class DOIExportPlugin extends ImportExportPlugin {
 
         $templateMgr->assign('configurationErrors', $configurationErrors);
         $templateMgr->assign('journal', $journal);
+
+        if ($this instanceof CrossRefExportPlugin) {
+            import('lib.wizdam.classes.services.JournalOwnershipService');
+            $templateMgr->assign('isPartnershipJournal', JournalOwnershipService::isPartnership($journal));
+        }
+
         $templateMgr->display($this->getTemplatePath() . 'index.tpl');
     }
 

@@ -96,6 +96,9 @@
 	<message key="admin.doi.crossrefEmail">Email Depositor Crossref</message>
 	<message key="admin.doi.crossrefUsername">Username Crossref</message>
 	<message key="admin.doi.crossrefPassword">Password Crossref</message>
+	<message key="admin.doi.crossrefDepositorNameRequired">Nama depositor Crossref wajib diisi.</message>
+	<message key="admin.doi.crossrefEmailRequired">Email depositor Crossref yang valid wajib diisi.</message>
+	<message key="admin.doi.crossrefRegistrationIntro">Pengaturan ini bisa dikonfigurasi untuk mendaftarkan Digital Object Identifier (DOI) secara otomatis ke Crossref untuk setiap jurnal di bawah kepemilikan penerbit. Anda memerlukan username dan password (didapat dari Crossref) untuk melakukannya. Kalau belum punya username dan password sendiri, Anda tetap bisa ekspor ke format XML Crossref, tapi tidak bisa mendaftarkan DOI secara otomatis.</message>
 	<message key="admin.doi.crossrefAutomaticRegistrationDescription">Aplikasi akan mengirim DOI artikel secara otomatis ke Crossref saat artikel diterbitkan, untuk setiap jurnal di bawah kepemilikan penerbit. Proses ini mungkin butuh waktu singkat setelah publikasi.</message>
 	<message key="admin.doi.optionalSources">Sumber Sitasi Opsional</message>
 
