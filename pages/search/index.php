@@ -20,12 +20,21 @@ declare(strict_types=1);
 switch ($op) {
     case 'index':
     case 'search':
-    case 'authors':
-    case 'titles':
-    case 'categories':
-    case 'category':
         define('HANDLER_CLASS', 'SearchHandler');
         import('pages.search.SearchHandler');
+        break;
+    case 'authors':
+        define('HANDLER_CLASS', 'AuthorSearchHandler');
+        import('pages.search.AuthorSearchHandler');
+        break;
+    case 'titles':
+        define('HANDLER_CLASS', 'TitleSearchHandler');
+        import('pages.search.TitleSearchHandler');
+        break;
+    case 'categories':
+    case 'category':
+        define('HANDLER_CLASS', 'CategorySearchHandler');
+        import('pages.search.CategorySearchHandler');
         break;
 }
 
