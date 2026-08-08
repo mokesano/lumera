@@ -144,11 +144,6 @@ class LoAHandler extends Handler {
         } else {
             // Render HTML
             $templateMgr = TemplateManager::getManager($request);
-            
-            // [FIX] Rute sebelumnya salah: page="billing" op="loa" TIDAK ADA
-            // di dispatcher manapun. Halaman ini live di page="document"
-            // op="loa" (LoAHandler sendiri) -- diperbaiki supaya tombol
-            // Download PDF di halaman HTML benar-benar mengarah ke rute yang hidup.
             $pdfDownloadUrl = $request->url(null, 'document', 'loa', ["pdf-{$providedHash}-{$submissionId}"]);
 
             $templateMgr->assign([
@@ -156,12 +151,11 @@ class LoAHandler extends Handler {
                 'qrCodeImage' => $qrCodeBase64,
                 'submissionId' => $submissionId,
                 'pdfDownloadUrl' => $pdfDownloadUrl,
-                // [BARU] Identitas resmi Penerbit -- untuk letterhead logo/warna.
                 'publisher' => (new PublisherProfileService())->getProfile(),
                 'pageTitle' => 'document.loa.pageTitle',
                 'pageHierarchy' => [
-                    [$request->url(null, 'user'), 'navigation.user'],
-                    [$request->url(null, 'billing', 'index'), 'billing.globalBilling']
+                    [$request->url(null, 'document', 'index'), 'document.index.pageTitle'],
+                    [$request->url(null, 'document', 'loaIndex'), 'billing.loa.indexTitle']
                 ]
             ]);
 
