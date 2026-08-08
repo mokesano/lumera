@@ -30,7 +30,7 @@ class CrossRefExportDom extends DOIExportDom {
     /**
      * Constructor
      * @param PKPRequest $request
-     * @param DOIExportPlugin $plugin
+     * @param CrossrefDoiExportPlugin $plugin
      * @param Journal $journal
      * @param PubObjectCache $objectCache
      */
@@ -41,7 +41,7 @@ class CrossRefExportDom extends DOIExportDom {
     /**
      * [SHIM] Backward Compatibility
      * @param PKPRequest $request
-     * @param DOIExportPlugin $plugin
+     * @param CrossrefDoiExportPlugin $plugin
      * @param Journal $journal
      * @param PubObjectCache $objectCache
      */

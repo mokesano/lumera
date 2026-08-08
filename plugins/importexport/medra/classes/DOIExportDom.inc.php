@@ -2,14 +2,14 @@
 declare(strict_types=1);
 
 /**
- * @file plugins/importexport/.../classes/DOIExportDom.inc.php
+ * @file plugins/importexport/medra/classes/DOIExportDom.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @class DOIExportDom
- * @ingroup plugins_importexport_..._classes
+ * @ingroup plugins_importexport_medra_classes
  *
  * @brief Onix for DOI (O4DOI) XML export format implementation.
  */
@@ -41,7 +41,7 @@ class DOIExportDom {
     /** @var PKPRequest */
     protected $_request;
 
-    /** @var DOIExportPlugin */
+    /** @var MedraDoiExportPlugin */
     protected $_plugin;
 
     /** @var Journal */
@@ -51,9 +51,9 @@ class DOIExportDom {
     protected $_cache;
 
     /**
-     * Constructor
+     * Constructor.
      * @param PKPRequest $request
-     * @param DOIExportPlugin $plugin
+     * @param MedraDoiExportPlugin $plugin
      * @param Journal $journal
      * @param PubObjectCache $objectCache
      */
@@ -66,7 +66,7 @@ class DOIExportDom {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function DOIExportDom() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
