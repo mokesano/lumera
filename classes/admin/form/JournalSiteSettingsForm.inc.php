@@ -110,8 +110,8 @@ class JournalSiteSettingsForm extends Form {
             $journal = $journalDao->getById($this->journalId);
             if ($journal != null) {
                 $this->_data = [
-                    'title' => $journal->getSetting('title', null), // Localized
-                    'description' => $journal->getSetting('description', null), // Localized
+                    'title' => $journal->getSetting('title', null) ?? [],
+                    'description' => $journal->getSetting('description', null) ?? [],
                     'journalPath' => $journal->getPath(),
                     'enabled' => $journal->getEnabled(),
                     'showOnHomepage' => $journal->getSetting('showOnHomepage') !== null ? $journal->getSetting('showOnHomepage') : 1,
@@ -125,6 +125,8 @@ class JournalSiteSettingsForm extends Form {
         
         if (!isset($this->journalId)) {
             $this->_data = [
+                'title' => [],
+                'description' => [],
                 'enabled' => 1,
                 'showOnHomepage' => 1,
                 'publisherPartnerships' => 1,
