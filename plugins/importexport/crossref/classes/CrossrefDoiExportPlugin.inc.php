@@ -1146,7 +1146,7 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param Journal $journal
      * @return array
      */
-    private function _getUnregisteredIssues($journal): array {
+    protected function _getUnregisteredIssues($journal): array {
         /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $issues = $issueDao->getIssuesBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, $journal->getId());
@@ -1187,7 +1187,7 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param Journal $journal
      * @return array
      */
-    private function _getUnregisteredGalleys($journal): array {
+    protected function _getUnregisteredGalleys($journal): array {
         /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galleys = $galleyDao->getGalleysBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, null, $journal->getId());
