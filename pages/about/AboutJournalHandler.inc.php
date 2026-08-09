@@ -50,6 +50,7 @@ class AboutJournalHandler extends AboutHandler {
         $journalSettings = $journalSettingsDao->getJournalSettings($journal->getId());
 
         $templateMgr->assign('journalSettings', $journalSettings);
+        $templateMgr->assign('pageTitle', 'about.contactEditorialOffice');
         $templateMgr->assign([
             'sitePrincipalContactName'  => $site->getLocalizedData('contactName'),
             'sitePrincipalContactEmail' => $site->getLocalizedData('contactEmail'),

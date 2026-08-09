@@ -154,10 +154,19 @@ class AboutHandler extends Handler {
      * pageHierarchy/breadcrumb dan logic masing-masing benar-benar sesuai
      * konteksnya (lihat AboutPublisherHandler::setupTemplate() yang pakai
      * locale key 'about.aboutThePublisher', beda dari 'about.aboutTheJournal'
-     * milik jurnal). Method ini TETAP di AboutHandler karena op 'contact'
-     * di routing (pages/about/index.php) masih mengarah ke sini -- bukan
-     * dipecah routing-nya, cukup didelegasikan ke class yang tepat di sini.
-     * 
+     * milik jurnal).
+     *
+     * [WIZDAM SHIM] Jembatan backward-compatible -- op 'contact' TETAP
+     * berfungsi untuk KEDUA konteks (jurnal maupun publisher/site),
+     * supaya link lama di berbagai template ({url page="about"
+     * op="contact"}) TIDAK PERLU diubah satu per satu. Untuk konteks
+     * jurnal, di-delegasikan ke AboutJournalHandler::
+     * contactEditorialOffice() (nama method sudah berganti, method ini
+     * yang menjembatani). Migrasi ke op 'contact-editorial-office' yang
+     * eksplisit (routing langsung ke AboutJournalHandler, tanpa lewat
+     * shim ini) bisa dilakukan bertahap per template, tidak mendesak --
+     * SHIM ini menjamin keduanya tetap benar sampai migrasi selesai.
+     *
      * @param array $args
      * @param PKPRequest|null $request
      */
@@ -168,7 +177,7 @@ class AboutHandler extends Handler {
         if ($journal) {
             import('pages.about.AboutJournalHandler');
             $handler = new AboutJournalHandler();
-            return $handler->contact($args, $request);
+            return $handler->contactEditorialOffice($args, $request);
         }
 
         import('pages.about.AboutPublisherHandler');
@@ -220,10 +229,6 @@ class AboutHandler extends Handler {
     public function _getPublicStatisticsNames() {
         import ('pages.manager.ManagerHandler');
         import ('pages.manager.StatisticsHandler');
-        // Note: _getPublicStatisticsNames is protected in StatisticsHandler refactor.
-        // If strict mode prevents access, this needs adaptation. 
-        // For now assuming we can access or reflect it, or simply duplicate the list.
-        // Duplicating list for safety in strict context:
         return [
             'statNumPublishedIssues',
             'statItemsPublished',

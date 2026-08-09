@@ -909,7 +909,9 @@
 	<message key="about.journalContact">Journal Contact</message>
 	<message key="about.aboutTheJournal">About the Journal</message>
 	<message key="about.aboutThePublisher">About the Publisher</message>
-	<message key="about.publisherContact">Publisher Contact</message>
+	<message key="about.contact">Contact</message>
+	<message key="about.contactEditorialOffice">Contact</message>
+	<message key="about.publisherContact">Contact</message>
 	<message key="about.aboutSite">About the Site</message>
 	<message key="about.siteMap">Site Map</message>
 	<message key="about.journalPolicies">Editorial Policies</message>

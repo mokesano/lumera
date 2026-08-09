@@ -57,6 +57,7 @@ class AboutPublisherHandler extends AboutHandler {
         $templateMgr = TemplateManager::getManager($request);
         $site = $request->getSite();
 
+        $templateMgr->assign('pageTitle', 'about.contact');
         $templateMgr->assign([
             'sitePrincipalContactName'  => $site->getLocalizedData('contactName'),
             'sitePrincipalContactEmail' => $site->getLocalizedData('contactEmail'),
