@@ -194,7 +194,28 @@ class SintaScoreService {
         return $data;
     }
 
-    private function _fetchWithRetry(string $url, int $maxAttempts = 3, int $timeout = 30): string {
+    private function _fetchWithRetry(string $url, int $maxAttempts = 2, int $timeout = 12): string {
+        // [BUGFIX ROBUSTNESS] Sebelumnya maxAttempts=3, timeout=30, dengan
+        // sleep($attempt*2) eskalasi antar percobaan -- diwarisi APA ADANYA
+        // dari skrip lama yang dirancang untuk SATU fetch on-demand (AJAX).
+        // Untuk SintaScoreTask yang mengiterasi BANYAK jurnal dalam SATU
+        // eksekusi (dan berjalan lewat plugin acron, tunduk pada batas
+        // timeout web server/PHP-FPM di hosting shared -- lihat catatan di
+        // SintaScoreTask.inc.php), skenario terburuk SATU URL gagal total
+        // sebelumnya bisa menghabiskan ~96 detik -- untuk SATU jurnal saja,
+        // padahal tiap jurnal butuh hingga 2 URL (search + profile).
+        // Diperketat jadi maxAttempts=2, timeout=12, sleep tetap 1 detik
+        // (bukan eskalasi) -- skenario terburuk per URL sekarang ~25 detik.
+        //
+        // CATATAN JUJUR: pengecekan anggaran waktu di SintaScoreTask cuma
+        // dievaluasi DI ANTARA jurnal, bukan di tengah satu fetch yang
+        // sedang berjalan -- kalau SATU jurnal kebetulan mengalami
+        // worst-case penuh (~50 detik untuk 2 URL), itu TETAP bisa
+        // melampaui anggaran task secara keseluruhan untuk eksekusi
+        // MINGGU itu saja. Ini bukan kegagalan, cuma batas wajar dari PHP
+        // murni (tidak bisa menyela curl_exec() yang sedang berjalan) --
+        // jurnal itu akan dicoba lagi otomatis minggu berikutnya (urutan
+        // diacak, jadi tidak systematically selalu jurnal yang sama).
         $statusCode = 0;
         $error = '';
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
@@ -221,7 +242,7 @@ class SintaScoreService {
                 return $response;
             }
             if ($attempt < $maxAttempts) {
-                sleep($attempt * 2);
+                sleep(1);
             }
         }
         throw new Exception("Gagal mengakses $url setelah $maxAttempts percobaan. Status: $statusCode, Error: $error");
