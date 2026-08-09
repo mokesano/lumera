@@ -188,7 +188,6 @@ class ArticleMetricsHandler extends ArticleHandler {
         }
         return $series;
     }
-
     
 }
 ?>
