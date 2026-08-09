@@ -15,21 +15,6 @@ declare(strict_types=1);
  * (index, contact, sitemap), AND serve as the shared base class
  * (constructor, setupTemplate()) for AboutJournalHandler dan
  * AboutPublisherHandler.
- *
- * [WIZDAM] Sebelumnya class ini (1125 baris) menyimpan SEMUA method --
- * termasuk salinan mati dari method yang sudah punya rumah aktif di
- * AboutJournalHandler dan AboutPublisherHandler -- tidak pernah
- * tereksekusi karena routing (pages/about/index.php) mengarah langsung
- * ke class yang tepat untuk ops itu. Dipangkas jadi HANYA method yang
- * genuinely dipakai bersama.
- *
- * [WIZDAM BUGFIX] Percobaan pemangkasan SEBELUMNYA pakai batas baris yang
- * salah hitung (asumsi "baris method berikutnya minus satu" tanpa
- * verifikasi kurung kurawal aktual) -- meninggalkan fragmen docblock
- * menggantung tanpa method di akhir file (docblock milik history() dan
- * mission() ikut terpotong terbawa, tanpa deklarasi method-nya). Batas
- * sekarang diverifikasi presisi lewat penghitungan kurung kurawal
- * otomatis, bukan tebakan.
  */
 
 import('classes.handler.Handler');
@@ -44,7 +29,7 @@ class AboutHandler extends Handler {
     }
 
     /**
-     * [DEPRECATED] Backward compatibility.
+     * [SHIM] Backward compatibility.
      * Use __construct() instead.
      * @deprecated
      */
