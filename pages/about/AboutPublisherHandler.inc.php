@@ -121,10 +121,9 @@ class AboutPublisherHandler extends AboutHandler {
     /**
      * Menampilkan halaman statis Penerbit (Sejarah).
      * Rute: /about/history
-     * @param array $args
      * @param PKPRequest $request
      */
-    public function history($args, $request = null) { // Method 'AboutPublisherHandler::history()' is not compatible with method 'AboutHandler::history()'.
+    public function history($request = null) {
         if (!$request) $request = Application::get()->getRequest();
         $this->_renderPublisherPage($request, 'about.publisher.history', 'publisherHistory');
     }
@@ -146,7 +145,7 @@ class AboutPublisherHandler extends AboutHandler {
      * @param array $args
      * @param PKPRequest $request
      */
-    public function award($args, $request = null) {
+    public function awards($args, $request = null) {
         if (!$request) $request = Application::get()->getRequest();
         $this->_renderPublisherPage($request, 'about.publisher.award', 'publisherAwards');
     }
