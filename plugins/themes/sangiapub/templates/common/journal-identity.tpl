@@ -1,6 +1,6 @@
-<div class="sangia-header bolmHa"><!-- editing -->
-
 {if $currentJournal}
+<div class="sangia-header bolmHa">
+
 <div class="journal-header" style="transform: translateZ(0px);" role="banner">
     <section {if $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}class="lazyload sc-1oj9st5-1 kSjVSRM" style="background-image: url('{$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}');"{else}class="lazyload sc-1oj9st5-1 fQjVRM" style="background-image: rgb(85, 187, 221);"{/if}>
         <div {if $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}class="sc-thb58v-10 spg-1oj9st5"{else}class="sc-thb58v-10 xEmXg"{/if}>
@@ -40,14 +40,14 @@
                         </div>
                     </div>
                     <div class="sc-thb58v-7 keEZHq">
-                        <!-- Mendapatkan ISSN cetak dan online dari Smarty -->
+                        <!-- ISSN cetak dan online jurnal -->
                         <input type="hidden" id="printIssn" value="{$currentJournal->getSetting('printIssn')}">
                         <input type="hidden" id="eIssn" value="{$currentJournal->getSetting('onlineIssn')}">
-                        {if $alternatePageHeader}
-                        <div class="tooltip__Wrapper-sc-1lc2ea0-0 sc-thb58v-8 cxpGrv iiSeIx js-sinta-score metric">
+                        {if $sintaScore}
+                        <div class="tooltip__Wrapper-sc-1lc2ea0-0 sc-thb58v-8 cxpGrv iiSeIx metric">
                             <button class="button-link button-link button-link-secondary u-text-left" type="button" aria-label="SintaScore: Sinta Impact Value" aria-expanded="false" aria-haspopup="false">
                                 <span class="button-link-text">
-                                    <span style="color: rgb(0, 0, 0);" class="text-l u-display-block">{$alternatePageHeader}</span>
+                                    <span style="color: rgb(0, 0, 0);" class="text-l u-display-block">{$sintaScore}</span>
                                     <span style="color: rgb(0, 0, 0);" class="text-xs __info" aria-title="Sinta: Science and Technology Index by Kemdikbud & Ristek Indonesia">SintaScore</span>
                                 </span>
                             </button>
@@ -55,16 +55,18 @@
                             </div>
                         </div>
                         {/if}
-                        <div class="tooltip__Wrapper-sc-1lc2ea0-0 sc-thb58v-8 cxpGrv iiSeIx sc-thb58v-9 jrMqZ js-sinta-grade metric u-js-hide">
+                        {if $sintaGrade}
+                        <div class="tooltip__Wrapper-sc-1lc2ea0-0 sc-thb58v-8 cxpGrv iiSeIx sc-thb58v-9 jrMqZ metric" aria-title="Sinta Impact {$sintaScore} | National Grade Accredited {$sintaGrade}">
                             <button class="button-link button-link button-link-secondary u-text-left" type="button" aria-label="National Grade Accredited" aria-expanded="false" aria-haspopup="false">
                                 <span class="button-link-text">
-                                    <span style="color: rgb(0, 0, 0);" class="text-l u-display-block">Grade</span>
+                                    <span style="color: rgb(0, 0, 0);" class="text-l u-display-block"><span class="grade">Sinta</span> {$sintaGrade}</span>
                                     <span style="color: rgb(0, 0, 0);" class="text-xs __info" aria-title="Score from Sinta: Science and Technology Index by Kemdikbud & Ristek Indonesia">SintaGrade</span>
                                 </span>
                             </button>
                             <div id="popover-content-metric-popover-DaysPerReview" class="popover-content popover-align-right heading_inline u-js-hide" style="width: 350px; opacity: 1; transform: translateY(0px); transition: opacity 0.25s, transform 0.25s;" role="region"><div class="popover-content-inner popover-close-button-hidden"><div class="popover-children">The number Grade is National Level Accreditation Rating by ARJUNA: Akreditasi Jurnal National. Accreditation ranking results are displayed by SINTA: Science and Technology Index by Kemdikti Saintek, Republic of Indonesia as the only journal ranking agency in Indonesia.</div></div>
                             </div>
                         </div>
+                        {/if}
                     </div>
                 </div>
                 <div class="sc-thb58v-1 iChZEk">
@@ -107,5 +109,6 @@
         </div>
     </section>
 </div>
-</div><!-- editing -->
+
+</div>
 {/if}
