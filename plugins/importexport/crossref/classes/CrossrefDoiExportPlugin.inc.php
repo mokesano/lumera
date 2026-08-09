@@ -1167,7 +1167,7 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param Journal $journal
      * @return array
      */
-    private function _getUnregisteredArticles($journal): array {
+    protected function _getUnregisteredArticles($journal): array {
         /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $articles = $publishedArticleDao->getBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, $journal->getId());
