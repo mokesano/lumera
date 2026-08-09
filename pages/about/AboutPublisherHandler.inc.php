@@ -18,19 +18,19 @@ declare(strict_types=1);
  * konteks site/publisher (index, contact, sitemap, mission, history,
  * leadership, award) ditangani di sini -- AboutJournalHandler tidak lagi
  * punya kode untuk konteks ini sama sekali.
+ *
+ * [WIZDAM] extends AboutHandler (bukan Handler langsung) -- mewarisi
+ * constructor dari sana (identik). setupTemplate() TETAP di-override di
+ * sini (bukan diwarisi) karena breadcrumb-nya genuinely beda ('about.
+ * aboutThePublisher', bukan 'about.aboutTheJournal') dan tidak butuh
+ * logic membership jurnal. import('pages.about.SitemapTrait')
+ * SEBELUMNYA ada di sini tapi filenya sudah dihapus -- dead code yang
+ * bisa fatal error, sudah dihapus.
  */
 
-import('classes.handler.Handler');
-import('pages.about.SitemapTrait');
+import('pages.about.AboutHandler');
 
-class AboutPublisherHandler extends Handler {
-
-    /**
-     * Constructor
-     */
-    public function __construct() {
-        parent::__construct();
-    }
+class AboutPublisherHandler extends AboutHandler {
 
     /**
      * Memuat dependensi antarmuka dan Locale
@@ -62,32 +62,6 @@ class AboutPublisherHandler extends Handler {
      * @param array $args
      * @param PKPRequest $request
      */
-    public function index($args = [], $request = null) {
-        $this->validate();
-        $this->setupTemplate();
-
-        if (!$request) $request = Application::get()->getRequest();
-
-        $templateMgr = TemplateManager::getManager();
-        $site = $request->getSite();
-        $about = $site->getLocalizedAbout();
-        $templateMgr->assign('about', $about);
-
-        /** @var JournalDAO $journalDao */
-        $journalDao = DAORegistry::getDAO('JournalDAO');
-        $journals = $journalDao->getJournals(true);
-        $templateMgr->assign('journals', $journals);
-
-        $templateMgr->display('about/site.tpl');
-    }
-
-    /**
-     * Display contact page (Site/Publisher).
-     * HANYA UNTUK KONTEKS SITE/PUBLISHER. Versi Jurnal ada di
-     * AboutJournalHandler::contact().
-     * @param array $args
-     * @param PKPRequest $request
-     */
     public function contact($args = [], $request = null) {
         $this->validate();
         $this->setupTemplate(true);
@@ -103,7 +77,16 @@ class AboutPublisherHandler extends Handler {
             'siteMailingAddress'        => $site->getLocalizedData('contactMailingAddress'),
         ]);
 
-        $templateMgr->display('about/publisherContact.tpl');
+        // [WIZDAM BUGFIX] Sebelumnya display('about/publisherContact.tpl')
+        // -- file itu TIDAK PERNAH ADA di manapun (dicek seluruh
+        // codebase, semua tema cuma punya about/contact.tpl). Kalau
+        // method ini benar-benar dipanggil, Smarty fatal "template not
+        // found". Dipakai about/contact.tpl yang sama dengan
+        // AboutJournalHandler::contact() dan versi lama AboutHandler --
+        // template ini sudah menangani kasus $journalSettings kosong
+        // dengan baik (blok jurnal-spesifik otomatis tidak render kalau
+        // datanya tidak diisi, tidak butuh flag isSiteLevel).
+        $templateMgr->display('about/contact.tpl');
     }
 
     /**
@@ -141,7 +124,7 @@ class AboutPublisherHandler extends Handler {
      * @param array $args
      * @param PKPRequest $request
      */
-    public function history($args, $request = null) {
+    public function history($args, $request = null) { // Method 'AboutPublisherHandler::history()' is not compatible with method 'AboutHandler::history()'.
         if (!$request) $request = Application::get()->getRequest();
         $this->_renderPublisherPage($request, 'about.publisher.history', 'publisherHistory');
     }

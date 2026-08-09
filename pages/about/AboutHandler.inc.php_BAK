@@ -2,44 +2,150 @@
 declare(strict_types=1);
 
 /**
- * @file pages/about/AboutJournalHandler.inc.php
+ * @file pages/about/AboutHandler.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @class AboutJournalHandler
- * @ingroup pages_about
+ * @class AboutHandler
+ * @ingroup pages_editor
  *
- * @brief Handler KHUSUS level Jurnal -- terpisah total dari
- * AboutPublisherHandler (konteks Site/Penerbit). Hasil split dari
- * AboutHandler lama yang sebelumnya menangani kedua konteks sekaligus
- * lewat percabangan `if ($journal) {...} else {...}`, menyebabkan
- * breadcrumb, page title, dan template ikut tertukar antar konteks.
- * Tidak ada satupun method di sini yang boleh menambahkan cabang untuk
- * konteks site/publisher lagi -- taruh di AboutPublisherHandler.
- *
- * [WIZDAM] extends AboutHandler (bukan Handler langsung) -- mewarisi
- * constructor & setupTemplate() dari sana (identik, tidak perlu
- * diduplikasi di sini). import('pages.about.SitemapTrait') SEBELUMNYA
- * ada di sini tapi filenya sudah dihapus (isinya sudah pindah ke
- * AboutHandler::sitemap()) -- baris itu jadi dead code yang bisa fatal
- * error (import() jatuh ke require_once path relatif kalau file tidak
- * ketemu), sudah dihapus.
+ * @brief Handle requests for editor functions.
  */
 
-import('pages.about.AboutHandler');
+import('classes.handler.Handler');
 
-class AboutJournalHandler extends AboutHandler {
-
+class AboutHandler extends Handler {
+    
     /**
      * Constructor
      */
-    public function contact($args = [], $request = null) {
-        $this->addCheck(new HandlerValidatorJournal($this));
-        $this->validate();
-        $this->setupTemplate(true);
+    public function __construct() {
+        parent::__construct();
+    }
 
+    /**
+     * [DEPRECATED] Backward compatibility.
+     * Use __construct() instead.
+     * @deprecated
+     */
+    public function AboutHandler() {
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::AboutHandler(). Please refactor to use parent::__construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
+    }
+
+    /**
+     * Display about index page.
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function index($args = [], $request = null) {
+        $this->validate();
+        $this->setupTemplate();
+
+        // [WIZDAM] Singleton Fallback
+        if (!$request) $request = Application::get()->getRequest();
+
+        $templateMgr = TemplateManager::getManager();
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $journalPath = $request->getRequestedJournalPath();
+
+        if ($journalPath != 'index' && $journalDao->journalExistsByPath($journalPath)) {
+            $journal = $request->getJournal();
+            /** @var JournalSettingsDAO $journalSettingsDao */
+            $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
+            $templateMgr->assign('journalSettings', $journalSettingsDao->getJournalSettings($journal->getId()));
+
+            $customAboutItems = $journalSettingsDao->getSetting($journal->getId(), 'customAboutItems');
+            if (isset($customAboutItems[AppLocale::getLocale()])) {
+                $templateMgr->assign('customAboutItems', $customAboutItems[AppLocale::getLocale()]);
+            } elseif (isset($customAboutItems[AppLocale::getPrimaryLocale()])) {
+                $templateMgr->assign('customAboutItems', $customAboutItems[AppLocale::getPrimaryLocale()]);
+            }
+
+            foreach ($this->_getPublicStatisticsNames() as $name) {
+                if ($journal->getSetting($name)) {
+                    $templateMgr->assign('publicStatisticsEnabled', true);
+                    break;
+                } 
+            }
+            
+            // Hide membership if the payment method is not configured
+            import('classes.payment.ojs.OJSPaymentManager');
+            $paymentManager = new OJSPaymentManager($request);
+            $templateMgr->assign('paymentConfigured', $paymentManager->isConfigured());
+
+            if ($journal->getSetting('boardEnabled')) {
+                /** @var GroupDAO $groupDao */
+                $groupDao = DAORegistry::getDAO('GroupDAO');
+                $groups = $groupDao->getGroups(ASSOC_TYPE_JOURNAL, $journal->getId(), GROUP_CONTEXT_PEOPLE);
+                $templateMgr->assign('peopleGroups', $groups);
+            }
+
+            $templateMgr->assign('helpTopicId', 'user.about');
+            $templateMgr->display('about/index.tpl');
+        } else {
+            $site = $request->getSite();
+            $about = $site->getLocalizedAbout();
+
+            $templateMgr->assign('about', $about);
+            $journals = $journalDao->getJournals(true);
+            $templateMgr->assign('journals', $journals);
+
+            $templateMgr->display('about/site.tpl');
+        }
+    }
+
+    /**
+     * Setup common template variables.
+     * @param bool $subclass
+     */
+    public function setupTemplate($subclass = false) {
+        parent::setupTemplate();
+        $templateMgr = TemplateManager::getManager();
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+        
+        AppLocale::requireComponents(LOCALE_COMPONENT_APP_MANAGER, LOCALE_COMPONENT_CORE_MANAGER);
+
+        if (!$journal || !$journal->getSetting('restrictSiteAccess')) {
+            $templateMgr->setCacheability(CACHEABILITY_PUBLIC);
+        }
+        
+        if ($subclass) {
+            $templateMgr->assign('pageHierarchy', [[$request->url(null, 'about'), 'about.aboutTheJournal']]);
+        }
+        
+        // [WIZDAM] CORE INJECTION: Global Navigation Data
+        // Memastikan data dropdown menu "Membership" (context = 2) 
+        // otomatis tersedia (di-assign) di seluruh halaman About.
+        // ==========================================================
+        if ($journal) {
+            $journalId = (int) $journal->getId();
+            /** @var GroupDAO $groupDao */
+            $groupDao = DAORegistry::getDAO('GroupDAO');
+            
+            $templateMgr->assign(array(
+                'hasDisplayMembership' => $groupDao->hasDisplayMembershipGroups($journalId),
+                'displayMembershipGroups' => $groupDao->getDisplayMembershipGroupsData($journalId)
+            ));
+        }
+    }
+
+    /**
+     * Display contact page.
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function contact($args = [], $request = null) {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
@@ -47,19 +153,38 @@ class AboutJournalHandler extends AboutHandler {
         $templateMgr = TemplateManager::getManager($request);
         $site = $request->getSite();
 
-        // Ambil data spesifik Jurnal
-        /** @var JournalSettingsDAO $journalSettingsDao */
-        $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
-        $journalSettings = $journalSettingsDao->getJournalSettings($journal->getId());
+        // CABANG LOGIKA: JURNAL vs SITE (PUBLISHER)
+        if ($journal) {
+            // --- A. LEVEL JURNAL ---
+            // Aktifkan satpam jurnal dan validasi
+            $this->addCheck(new HandlerValidatorJournal($this));
+            $this->validate();
+            $this->setupTemplate(true);
 
-        $templateMgr->assign('journalSettings', $journalSettings);
+            // Ambil data spesifik Jurnal
+            /** @var JournalSettingsDAO $journalSettingsDao */
+            $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
+            $journalSettings = $journalSettingsDao->getJournalSettings($journal->getId());
+            
+            $templateMgr->assign([
+                'journalSettings' => $journalSettings,
+                'isSiteLevel'     => false // Penanda untuk Smarty .tpl
+            ]);
+            
+        } else {
+            // --- B. LEVEL SITE / PUBLISHER ROOT ---
+            // Lewati HandlerValidatorJournal karena kita tidak butuh jurnal di sini
+            $this->validate();
+            $this->setupTemplate(true);
+            
+            $templateMgr->assign('isSiteLevel', true); // Penanda untuk Smarty .tpl
+        }
 
-        // [WIZDAM] Principal Contact Site tetap ditampilkan sebagai info
-        // tambahan di bawah kontak jurnal (bukan pengganti) -- lihat
-        // about/contact.tpl bagian #principalContact.
+        // [WIZDAM] Injeksi data Global Site (Principal Contact) langsung dari Micro-Payload SiteDAO
         $templateMgr->assign([
             'sitePrincipalContactName'  => $site->getLocalizedData('contactName'),
             'sitePrincipalContactEmail' => $site->getLocalizedData('contactEmail'),
+            'siteMailingAddress'        => $site->getLocalizedData('contactMailingAddress')
         ]);
 
         $templateMgr->display('about/contact.tpl');
@@ -69,24 +194,28 @@ class AboutJournalHandler extends AboutHandler {
      * Display editorialTeam page.
      */
     public function editorialTeam() {
-        $this->addCheck(new HandlerValidatorJournal($this));
-        $this->validate();
-        $this->setupTemplate(true);
-
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
         // [WIZDAM] Ambil template manager dengan request instance
         $templateMgr = TemplateManager::getManager($request);
 
-        // [WIZDAM] 6. PHP 8 Strictness: Explicit Type Casting
-        $journalId = (int) $journal->getId();
+        // [WIZDAM] 2. Context-Aware Controller (Logika Percabangan Konteks)
+        if ($journal) {
+            $this->addCheck(new HandlerValidatorJournal($this));
+            $this->validate();
+            $this->setupTemplate(true);
 
-        /** @var CountryDAO $countryDao */
-        $countryDao = DAORegistry::getDAO('CountryDAO');
-        $countries = $countryDao->getCountries();
-        $templateMgr->assign('countries', $countries);
+            $templateMgr->assign('isSiteLevel', false);
+            
+            // [WIZDAM] 6. PHP 8 Strictness: Explicit Type Casting
+            $journalId = (int) $journal->getId();
 
-        if ($journal->getSetting('boardEnabled') != true) {
+            /** @var CountryDAO $countryDao */
+            $countryDao = DAORegistry::getDAO('CountryDAO');
+            $countries = $countryDao->getCountries();
+            $templateMgr->assign('countries', $countries);
+
+            if ($journal->getSetting('boardEnabled') != true) {
                 // Don't use the Editorial Team feature. 
                 // Generate Editorial Team information using Role info.
                 /** @var RoleDAO $roleDao */
@@ -178,6 +307,52 @@ class AboutJournalHandler extends AboutHandler {
                     'teamInfo' => $teamInfo
                 ]);
                 $templateMgr->display('about/editorialTeamBoard.tpl');
+            }
+
+        } else {
+            // [WIZDAM] 2. Logika Publisher Root (Level Site)
+            // Bypass validasi jurnal untuk menampilkan Publisher Board
+            $this->validate();
+            $this->setupTemplate(true);
+            
+            $templateMgr->assign('isSiteLevel', true);
+            
+            // Inisialisasi DAO yang dibutuhkan
+            /** @var RoleDAO $roleDao */
+            $roleDao = DAORegistry::getDAO('RoleDAO');
+            /** @var SiteDAO $siteDao */
+            $siteDao = DAORegistry::getDAO('SiteDAO');
+            
+            $site = $siteDao->getSite();
+            
+            // App menggunakan ID 0 untuk entitas level Site (sering disebut CONTEXT_ID_NONE)
+            $siteContextId = 0; 
+
+            // Ambil semua pengguna yang memiliki Role "Site Administrator" (ID: 1)
+            // Di ScholarWizdam, kita proyeksikan mereka sebagai "Publisher Board / Steering Committee"
+            $siteAdminsIterator = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN, $siteContextId);
+            
+            // [WIZDAM] 6. PHP 8 Strictness: Pastikan iterator valid sebelum di-cast ke array
+            $publisherBoard = [];
+            if ($siteAdminsIterator) {
+                $publisherBoard = $siteAdminsIterator->toArray();
+            }
+
+            // Ambil informasi tambahan dari Site Settings (jika Anda membuat custom setting)
+            // Cast sebagai (string) agar view tidak menerima null
+            $publisherTeamDescription = (string) $site->getLocalizedSetting('aboutField') ?: 'Welcome to our Publisher Editorial Board.';
+            $siteTitle = (string) $site->getLocalizedTitle();
+
+            // [WIZDAM] 3. Strict MVC & Micro-Payloads
+            // Lempar data ke view dalam satu gerbong array
+            $templateMgr->assign([
+                'publisherBoard'           => $publisherBoard,
+                'publisherTeamDescription' => $publisherTeamDescription,
+                'siteTitle'                => $siteTitle
+            ]);
+            
+            // Load template khusus Site Level
+            $templateMgr->display('about/leadership.tpl');
         }
     }
 
@@ -535,16 +710,48 @@ class AboutJournalHandler extends AboutHandler {
         $templateMgr->display('about/journalSponsorship.tpl');
     }
 
-    // [WIZDAM] sitemap() sekarang datang dari SitemapTrait (lihat `use
-    // SitemapTrait;` di awal class) -- dibagikan dengan
-    // AboutPublisherHandler karena op=sitemap memang harus bisa diakses
-    // dari kedua konteks (jurnal & site/publisher) dengan data yang sama
-    // persis, jadi tidak masuk akal ditulis dua kali.
+    /**
+     * Display siteMap page.
+     */
+    public function sitemap() {
+        $this->validate();
+        $this->setupTemplate(true);
+
+        $templateMgr = TemplateManager::getManager();
+        /** @var JournalDAO $journalDao */
+        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $user = Application::get()->getRequest()->getUser();
+        /** @var RoleDAO $roleDao */
+        $roleDao = DAORegistry::getDAO('RoleDAO');
+
+        if ($user) {
+            $rolesByJournal = [];
+            $journals = $journalDao->getJournals(true);
+            // Fetch the user's roles for each journal
+            foreach ($journals->toArray() as $journal) {
+                $roles = $roleDao->getRolesByUserId($user->getId(), $journal->getId());
+                if (!empty($roles)) {
+                    $rolesByJournal[$journal->getId()] = $roles;
+                }
+            }
+        }
+
+        $journals = $journalDao->getJournals(true);
+        $templateMgr->assign('journals', $journals->toArray());
+        if (isset($rolesByJournal)) {
+            $templateMgr->assign('rolesByJournal', $rolesByJournal);
+        }
+        if ($user) {
+            $templateMgr->assign('isSiteAdmin', $roleDao->getRole(0, $user->getId(), ROLE_ID_SITE_ADMIN));
+        }
+
+        $templateMgr->display('about/sitemap.tpl');
+    }
 
     /**
      * Display journal history.
-     * @deprecated Rute op='history' TIDAK mengarah ke sini -- direbut
-     * AboutPublisherHandler (lihat pages/about/index.php) untuk halaman
+     * @deprecated Rute op='history' TIDAK LAGI mengarah ke sini -- direbut
+     * PublisherAboutHandler (lihat pages/about/index.php) untuk halaman
      * History level Penerbit. Method ini dipertahankan sebagai logika inti;
      * dipanggil lewat alias journalHistory() di bawah, yang benar-benar
      * routable lewat op='journal-history'.
@@ -578,21 +785,30 @@ class AboutJournalHandler extends AboutHandler {
 
     /**
      * Menangkap URL lama 'aboutThisPublishingSystem' dan mengalihkannya 
-     * (redirect) ke halaman 'insight' baru dengan 301 (Moved Permanently).
-     * HANYA UNTUK KONTEKS JURNAL. Versi Site/Publisher ada di
-     * AboutPublisherHandler::aboutThisPublishingSystem().
+     * (redirect) ke lokasi yang baru dengan 301 (Moved Permanently) untuk SEO.
      * @param array $args
      * @param PKPRequest $request
      */
     public function aboutThisPublishingSystem($args, $request = null) {
-        $this->addCheck(new HandlerValidatorJournal($this));
         $this->validate();
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
+        
+        $journal = $request->getJournal();
 
-        $targetUrl = $request->url(null, null, 'insights');
-        header("Location: $targetUrl", true, 301);
-        exit();
+        if ($journal) {
+            // == KONTEKS JURNAL ==
+            // Alihkan (301) ke halaman 'insight' baru
+            $targetUrl = $request->url(null, null, 'insights'); 
+            header("Location: $targetUrl", true, 301);
+            exit();
+
+        } else {
+            // == KONTEKS SITUS ==
+            $baseUrl = $request->getBaseUrl();
+            header("Location: $baseUrl", true, 301);
+            exit();
+        }
     }
     
     /**
@@ -674,11 +890,6 @@ class AboutJournalHandler extends AboutHandler {
         }
         // --- AKHIR BLOK WizdamStats ---
 
-        // [WIZDAM FIX] "Since ... until 2024" -- firstYear tidak pernah
-        // dikirim ke template. Sumber yang benar: PublishedArticleDAO::
-        // getArticleYearRange(), berbasis date_published (bukan
-        // date_submitted), sudah dipakai & terbukti benar di
-        // SearchHandler untuk dropdown tahun pencarian.
         /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $yearRange = $publishedArticleDao->getArticleYearRange($journal->getId());
@@ -717,6 +928,102 @@ class AboutJournalHandler extends AboutHandler {
         ];
     }
     
+    //
+    // About Sites/Publisher Context
+    //
+    /**
+     * Menampilkan halaman statis penerbit (Misi).
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function mission($args, $request = null) {
+        // [WIZDAM] Singleton Fallback
+        if (!$request) $request = Application::get()->getRequest();
+
+        if ($request->getJournal()) { 
+            $request->redirect(null, 'about'); 
+            return; 
+        }
+        $this->setupTemplate(true);
+        $templateMgr = TemplateManager::getManager();
+        $site = $request->getSite();
+        
+        $templateMgr->assign('pageTitleKey', 'about.mission');
+        $templateMgr->assign('pageContent', $site->getLocalizedSetting('publisherMission'));
+        
+        $templateMgr->display('about/publisherPage.tpl');
+    }
+
+    /**
+     * Menampilkan halaman statis penerbit (Sejarah).
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function publisherHistory($args, $request = null) {
+        // [WIZDAM] Singleton Fallback
+        if (!$request) $request = Application::get()->getRequest();
+
+        if ($request->getJournal()) { 
+            $request->redirect(null, 'about'); 
+            return; 
+        }
+        $this->setupTemplate(true);
+        $templateMgr = TemplateManager::getManager();
+        $site = $request->getSite();
+        
+        $templateMgr->assign('pageTitleKey', 'about.history');
+        $templateMgr->assign('pageContent', $site->getLocalizedSetting('publisherHistory'));
+        
+        $templateMgr->display('about/publisherPage.tpl');
+    }
+
+    /**
+     * Menampilkan halaman statis penerbit (Kepemimpinan).
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function leaderships($args, $request = null) {
+        // [WIZDAM] Singleton Fallback
+        if (!$request) $request = Application::get()->getRequest();
+
+        if ($request->getJournal()) { 
+            $request->redirect(null, 'about'); 
+            return; 
+        }
+        $this->setupTemplate(true);
+        $templateMgr = TemplateManager::getManager();
+        $site = $request->getSite();
+        
+        $templateMgr->assign('pageTitleKey', 'about.leaderships');
+        $templateMgr->assign('pageContent', $site->getLocalizedSetting('publisherLeaderships'));
+        
+        $templateMgr->display('about/publisherPage.tpl');
+    }
+
+    /**
+     * Menampilkan halaman statis penerbit (Penghargaan).
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function award($args, $request = null) {
+        // [WIZDAM] Singleton Fallback
+        if (!$request) $request = Application::get()->getRequest();
+
+        if ($request->getJournal()) { 
+            $request->redirect(null, 'about'); 
+            return; 
+        }
+        $this->setupTemplate(true);
+        $templateMgr = TemplateManager::getManager();
+        $site = $request->getSite();
+        
+        $templateMgr->assign('pageTitleKey', 'about.awards');
+        $templateMgr->assign('pageContent', $site->getLocalizedSetting('publisherAwards'));
+        
+        $templateMgr->display('about/publisherPage.tpl');
+    }
+    
+
     //
     // Helpers
     //
