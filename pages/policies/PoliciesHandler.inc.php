@@ -168,6 +168,7 @@ class PoliciesHandler extends Handler {
         } else {
             $content = $journal->getLocalizedSetting('openAccessPolicy');
             if (empty($content)) {
+                /** @var SiteDAO $siteDao */
                 $siteDao = DAORegistry::getDAO('SiteDAO');
                 $site = $siteDao->getSite();
                 $content = $site->getSetting('publisherOpenAccess');
@@ -262,91 +263,27 @@ class PoliciesHandler extends Handler {
         $this->setupTemplate();
 
         $journal = $request->getJournal();
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
-        $sectionEditorsDao = DAORegistry::getDAO('SectionEditorsDAO');
-        $countryDao = DAORegistry::getDAO('CountryDAO');
-        $userDao = DAORegistry::getDAO('UserDAO');
         
         $templateMgr = TemplateManager::getManager();
-
-        $primaryLocale = $journal->getPrimaryLocale();
-        if (empty($primaryLocale)) {
-            $primaryLocale = AppLocale::getLocale();
-        }
 
         $sectionsIterator = $sectionDao->getJournalSections($journal->getId());
         $sections = $sectionsIterator->toArray();
         
         $templateMgr->assign('sections', $sections);
 
-        $sectionEditorEntriesBySection = [];
-        
-        // [OPTIMASI N+1] Array untuk menyimpan cache user yang sudah di-query
-        $userCache = []; 
-
-        foreach ($sections as $section) {
-            $sectionEditorEntriesArray = $sectionEditorsDao->getEditorsBySectionId($journal->getId(), $section->getId());
-            $richEditorData = []; 
-
-            foreach ($sectionEditorEntriesArray as $entryArray) {
-                if (!isset($entryArray['user']) || !is_object($entryArray['user'])) continue;
-                
-                $sectionEditorObject = $entryArray['user'];
-                $userId = $sectionEditorObject->getId();
-                
-                // Panggil dari cache jika ada, jika tidak, baru query DB
-                if (!isset($userCache[$userId])) {
-                    $userCache[$userId] = $userDao->getById($userId);
-                }
-                $user = $userCache[$userId];
-                
-                if (!$user) continue; 
-
-                // 1. Tarik & Pecah Afiliasi
-                $rawAffiliation = (string) $user->getAffiliation($primaryLocale);
-                if (empty($rawAffiliation)) {
-                    $rawAffiliation = (string) $user->getLocalizedAffiliation();
-                }
-                $affiliationsArray = array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $rawAffiliation)));
-
-                // 2. Tarik Data Interests dengan aman
-                $interests = '';
-                if (method_exists($user, 'getInterestString')) {
-                    $interests = $user->getInterestString();
-                } elseif (method_exists($user, 'getInterestsString')) {
-                    $interests = $user->getInterestsString();
-                } else {
-                    $interests = (string) $user->getData('interests');
-                }
-                
-                if (empty(trim($interests))) {
-                    $interestDao = DAORegistry::getDAO('InterestDAO');
-                    if ($interestDao && method_exists($interestDao, 'getInterestsString')) {
-                        $interests = $interestDao->getInterestsString($userId);
-                    }
-                }
-
-                // 3. Tarik Negara
-                $countryCode = $user->getCountry();
-                $countryName = '';
-                if (!empty($countryCode)) {
-                    $countryName = $countryDao->getCountry($countryCode, $primaryLocale);
-                    if (empty($countryName)) {
-                        $countryName = $countryDao->getCountry($countryCode, 'en_US');
-                    }
-                }
-
-                // 4. Masukkan ke Array
-                $richEditorData[] = [
-                    'user'          => $sectionEditorObject,
-                    'affiliations'  => $affiliationsArray,
-                    'interests'     => $interests,
-                    'countryString' => $countryName
-                ];
-            }
-            $sectionEditorEntriesBySection[$section->getId()] = $richEditorData;
-        }
-
+        // [WIZDAM N+1 FIX] Sebelumnya di sini ada foreach per section yang
+        // masing-masing panggil getEditorsBySectionId() (N query per
+        // section), lalu $userCache parsial untuk getById() (menghindari
+        // re-fetch user yang SAMA, tapi afiliasi/interests/negara tetap
+        // dihitung ulang tiap kemunculan section, dan getById() sendiri
+        // di baliknya masih 2 query per user unik: users + user_settings).
+        // Lihat SectionEditorService untuk detail lengkap perbaikannya --
+        // logic sekarang sama persis dengan AboutJournalHandler::
+        // editorialPolicies(), tidak lagi terduplikasi di dua tempat.
+        import('lib.wizdam.classes.services.SectionEditorService');
+        $sectionEditorEntriesBySection = SectionEditorService::getSectionEditorEntriesGroupedBySection($journal);
         $templateMgr->assign('sectionEditorEntriesBySection', $sectionEditorEntriesBySection);
         $templateMgr->assign('pageTitle', 'about.sectionPolicies');
 
@@ -377,6 +314,7 @@ class PoliciesHandler extends Handler {
         $content = $journal->getLocalizedSetting($settingName);
         
         if (empty($content)) {
+            /** @var SiteDAO $siteDao */
             $siteDao = DAORegistry::getDAO('SiteDAO');
             $site = $siteDao->getSite();
             
@@ -542,5 +480,6 @@ class PoliciesHandler extends Handler {
 
         $templateMgr->assign('helpTopicId', 'pages.policies');
     }
+
 }
 ?>

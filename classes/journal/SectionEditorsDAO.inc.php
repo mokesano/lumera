@@ -65,6 +65,94 @@ class SectionEditorsDAO extends DAO {
     }
 
     /**
+     * Muat user_settings untuk BANYAK user sekaligus dalam SATU query --
+     * dipakai untuk melengkapi objek User dasar (dari
+     * getEditorsGroupedByJournalId(), yang TIDAK menyertakan user_settings)
+     * dengan data seperti affiliation/interests, tanpa perlu query
+     * getById() terpisah per user (yang masing-masing punya query
+     * users + query user_settings sendiri -- N+1 berlapis).
+     *
+     * [WIZDAM N+1 FIX] Meniru persis DAO::getDataObjectSettings() (baris
+     * demi baris: setData per baris hasil), cuma untuk BANYAK user_id
+     * sekaligus lewat klausa IN(), bukan satu per satu.
+     * @param User[] $usersById [$userId => User] -- objek User DASAR
+     * (dari _returnUserFromRow(), belum ada settings-nya) yang akan
+     * dilengkapi LANGSUNG (pass by reference lewat array, PHP object
+     * selalu passed by handle).
+     */
+    public function enrichUsersWithSettings(array $usersById): void {
+        if (empty($usersById)) {
+            return;
+        }
+
+        $userIds = array_keys($usersById);
+        $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+
+        $result = $this->retrieve(
+            "SELECT * FROM user_settings WHERE user_id IN ($placeholders)",
+            $userIds
+        );
+
+        while (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $userId = (int) $row['user_id'];
+            if (isset($usersById[$userId])) {
+                $usersById[$userId]->setData(
+                    $row['setting_name'],
+                    $this->convertFromDB($row['setting_value'], $row['setting_type']),
+                    empty($row['locale']) ? null : $row['locale']
+                );
+            }
+            $result->MoveNext();
+        }
+        $result->Close();
+        unset($result);
+    }
+
+    /**
+     * Retrieve section editors for ALL sections of a journal in ONE query,
+     * grouped by section_id.
+     *
+     * [WIZDAM N+1 FIX] Sebelumnya AboutJournalHandler/PoliciesHandler
+     * memanggil getEditorsBySectionId() di dalam foreach per section --
+     * satu query terpisah untuk SETIAP section. Method ini menggantikan
+     * pola itu dengan SATU query untuk seluruh jurnal sekaligus, hasilnya
+     * dikelompokkan per section_id di PHP.
+     * @param int $journalId
+     * @return array<int, array> [$sectionId => [['user' => User, 'canReview' => bool, 'canEdit' => bool], ...]]
+     */
+    public function getEditorsGroupedByJournalId(int $journalId): array {
+        $grouped = [];
+
+        /** @var UserDAO $userDao */
+        $userDao = DAORegistry::getDAO('UserDAO');
+
+        $result = $this->retrieve(
+            'SELECT u.*, e.section_id AS section_id, e.can_review AS can_review, e.can_edit AS can_edit
+             FROM users u
+             JOIN section_editors e ON (u.user_id = e.user_id)
+             WHERE e.journal_id = ?
+             ORDER BY e.section_id, u.last_name, u.first_name',
+            [(int) $journalId]
+        );
+
+        while (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $sectionId = (int) $row['section_id'];
+            $grouped[$sectionId][] = [
+                'user' => $userDao->_returnUserFromRow($row),
+                'canReview' => $row['can_review'],
+                'canEdit' => $row['can_edit'],
+            ];
+            $result->MoveNext();
+        }
+        $result->Close();
+        unset($result);
+
+        return $grouped;
+    }
+
+    /**
      * Retrieve a list of all section editors assigned to the specified section.
      * @param int $journalId
      * @param int $sectionId
@@ -73,6 +161,7 @@ class SectionEditorsDAO extends DAO {
     public function getEditorsBySectionId($journalId, $sectionId) {
         $users = array();
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         // Modernized SQL: Explicit JOIN
@@ -110,6 +199,7 @@ class SectionEditorsDAO extends DAO {
     public function getEditorsNotInSection($journalId, $sectionId) {
         $users = array();
 
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
 
         $result = $this->retrieve(
@@ -212,6 +302,6 @@ class SectionEditorsDAO extends DAO {
 
         return $returner;
     }
+    
 }
-
 ?>

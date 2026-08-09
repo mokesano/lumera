@@ -23,7 +23,7 @@ class PaymentManager {
 
     /**
      * Constructor
-     * @param $request PKPRequest
+     * @param PKPRequest $request
      */
     public function __construct($request) {
         $this->request = $request;
@@ -31,25 +31,29 @@ class PaymentManager {
 
     /**
      * [SHIM] Backward Compatibility
-     * @param $request PKPRequest
+     * @param PKPRequest $request
      */
     public function PaymentManager($request) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::PaymentManager(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($request);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Queue a payment for receipt.
-     * @param $queuedPayment QueuedPayment
+     * @param QueuedPayment $queuedPayment
      * @param $expiryDate date optional
      * @return mixed Queued payment ID for new payment, or false if fails
      */
     public function queuePayment($queuedPayment, $expiryDate = null) {
         if (!$this->isConfigured()) return false;
 
+        /** @var QueuedPaymentDAO $queuedPaymentDao */
         $queuedPaymentDao = DAORegistry::getDAO('QueuedPaymentDAO');
         $queuedPaymentId = $queuedPaymentDao->insertQueuedPayment($queuedPayment, $expiryDate);
 
@@ -73,19 +77,19 @@ class PaymentManager {
      * @return bool
      */
     public function isConfigured() {
-        $paymentPlugin = $this->getPaymentPlugin(null);
+        $paymentPlugin = $this->getPaymentPlugin();
         if ($paymentPlugin !== null) return $paymentPlugin->isConfigured(PKPApplication::getRequest());
         return false;
     }
 
     /**
      * Call the payment plugin's display method
-     * @param $queuedPaymentId int
-     * @param $queuedPayment QueuedPayment
-     * @return boolean
+     * @param int $queuedPaymentId
+     * @param QueuedPayment $queuedPayment
+     * @return bool
      */
     public function displayPaymentForm($queuedPaymentId, $queuedPayment) {
-        $paymentPlugin = $this->getPaymentPlugin($queuedPayment);
+        $paymentPlugin = $this->getPaymentPlugin();
         if ($paymentPlugin !== null && $paymentPlugin->isConfigured()) {
             return $paymentPlugin->displayPaymentForm($queuedPaymentId, $queuedPayment, $this->request);
         }
@@ -104,10 +108,11 @@ class PaymentManager {
 
     /**
      * Fetch a queued payment
-     * @param $queuedPaymentId int
+     * @param int $queuedPaymentId
      * @return QueuedPayment
      */
     public function getQueuedPayment($queuedPaymentId) {
+        /** @var QueuedPaymentDAO $queuedPaymentDao */
         $queuedPaymentDao = DAORegistry::getDAO('QueuedPaymentDAO');
         $queuedPayment = $queuedPaymentDao->getQueuedPayment($queuedPaymentId);
         return $queuedPayment;
@@ -122,5 +127,6 @@ class PaymentManager {
         // must be implemented by sub-classes
         assert(false);
     }
+    
 }
 ?>

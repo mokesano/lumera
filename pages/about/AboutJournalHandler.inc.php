@@ -32,7 +32,7 @@ class AboutJournalHandler extends AboutHandler {
      * @param array $args
      * @param PKPRequest $request
      */
-    public function contact($args = [], $request = null) {
+    public function contactEditorialOffice($args = [], $request = null) {
         $this->addCheck(new HandlerValidatorJournal($this));
         $this->validate();
         $this->setupTemplate(true);
@@ -320,68 +320,23 @@ class AboutJournalHandler extends AboutHandler {
 
         /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
-        /** @var SectionEditorsDAO $sectionEditorsDao */
-        $sectionEditorsDao = DAORegistry::getDAO('SectionEditorsDAO');
         $journal = $request->getJournal();
-        
-        // --- MODIFIKASI 1: Siapkan DAOs dan Locale ---
-        /** @var CountryDAO $countryDao */
-        $countryDao = DAORegistry::getDAO('CountryDAO');
-        /** @var UserDAO $userDao */
-        $userDao = DAORegistry::getDAO('UserDAO');
-        $primaryLocale = $journal->getPrimaryLocale();
-        if (empty($primaryLocale)) {
-                $primaryLocale = AppLocale::getLocale();
-        }
-        // --- AKHIR MODIFIKASI 1 ---
 
         $templateMgr = TemplateManager::getManager();
         $sections = $sectionDao->getJournalSections($journal->getId());
         $sections = $sections->toArray();
-        $templateMgr->assign('sections', $sections); 
+        $templateMgr->assign('sections', $sections);
 
-        // --- MODIFIKASI UTAMA: Mengirim data yang persis diharapkan TPL ---
-        $sectionEditorEntriesBySection = [];
-        foreach ($sections as $section) {
-            // Ini mengembalikan array dari array: [ 0 => ['user' => (object)], 1 => ['user' => (object)] ]
-            $sectionEditorEntriesArray = $sectionEditorsDao->getEditorsBySectionId($journal->getId(), $section->getId());
-            
-            $richEditorData = []; // Array baru untuk data kaya
-
-            // Loop melalui setiap $entryArray (yaitu: ['user' => (object)])
-            foreach ($sectionEditorEntriesArray as $entryArray) {
-                
-                if (!isset($entryArray['user']) || !is_object($entryArray['user'])) continue;
-                $sectionEditorObject = $entryArray['user']; // Objek SectionEditor Asli
-                $userId = $sectionEditorObject->getId();
-                $user = $userDao->getById($userId);
-                
-                if (!$user) continue;
-
-                $affiliationData = $user->getAffiliation($primaryLocale);
-                if (is_array($affiliationData)) {
-                    $affiliationData = implode("\n", $affiliationData);
-                }
-
-                // Ambil Nama Negara (sebagai String)
-                $countryCode = $user->getCountry();
-                $countryName = '';
-                if (!empty($countryCode)) {
-                    $countryName = $countryDao->getCountry($countryCode, $primaryLocale);
-                    if (empty($countryName)) $countryName = $countryDao->getCountry($countryCode, 'en_US');
-                }
-
-                // Masukkan data dengan NAMA KUNCI (KEY) YANG DIHARAPKAN OLEH .TPL
-                $richEditorData[] = [
-                    'user' => $sectionEditorObject, // Ini adalah $sectionEditorEntry.user
-                    'affiliationString' => $affiliationData, // Ini akan menjadi $editorAffiliation
-                    'countryString' => $countryName       // Ini akan menjadi $editorCountry
-                ];
-            }
-            $sectionEditorEntriesBySection[$section->getId()] = $richEditorData;
-        }
+        // [WIZDAM N+1 FIX] Sebelumnya di sini ada foreach per section yang
+        // masing-masing panggil getEditorsBySectionId() (N query per
+        // section) lalu getById() TANPA CACHE untuk SETIAP editor (N+1
+        // berlapis, tanpa dedupe editor yang merangkap >1 section). Lihat
+        // SectionEditorService untuk detail lengkap perbaikannya -- logic
+        // sekarang sama persis dengan yang dipakai PoliciesHandler::
+        // sectionPolicies(), tidak lagi terduplikasi di dua tempat.
+        import('lib.wizdam.classes.services.SectionEditorService');
+        $sectionEditorEntriesBySection = SectionEditorService::getSectionEditorEntriesGroupedBySection($journal);
         $templateMgr->assign('sectionEditorEntriesBySection', $sectionEditorEntriesBySection);
-        // --- AKHIR MODIFIKASI UTAMA ---
 
         import('classes.payment.ojs.OJSPaymentManager');
         $paymentManager = new OJSPaymentManager($request);
