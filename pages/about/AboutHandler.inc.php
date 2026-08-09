@@ -18,20 +18,18 @@ declare(strict_types=1);
  *
  * [WIZDAM] Sebelumnya class ini (1125 baris) menyimpan SEMUA method --
  * termasuk salinan mati dari method yang sudah punya rumah aktif di
- * AboutJournalHandler (editorialTeam, subscriptions, statistics, dst) dan
- * AboutPublisherHandler (mission, history, leadership, award, dst) --
- * tidak pernah tereksekusi karena routing (pages/about/index.php) mengarah
- * langsung ke class yang tepat untuk ops itu. Dipangkas jadi HANYA method
- * yang genuinely dipakai bersama:
- * - index(), sitemap(): op-nya di routing selalu ke AboutHandler.
- * - setupTemplate(): diwarisi AboutJournalHandler apa adanya; di-override
- *   AboutPublisherHandler (breadcrumb & logic beda, lihat file itu).
- * - contact(): op-nya juga ke AboutHandler, TAPI method ini sekarang
- *   delegator tipis -- AboutJournalHandler::contact() dan
- *   AboutPublisherHandler::contact() masing-masing implementasi dedicated
- *   sendiri (halaman kontak jurnal vs publisher genuinely beda konten),
- *   dipilih di sini berdasarkan konteks jurnal saat runtime.
- * - _getPublicStatisticsNames(): dipakai index().
+ * AboutJournalHandler dan AboutPublisherHandler -- tidak pernah
+ * tereksekusi karena routing (pages/about/index.php) mengarah langsung
+ * ke class yang tepat untuk ops itu. Dipangkas jadi HANYA method yang
+ * genuinely dipakai bersama.
+ *
+ * [WIZDAM BUGFIX] Percobaan pemangkasan SEBELUMNYA pakai batas baris yang
+ * salah hitung (asumsi "baris method berikutnya minus satu" tanpa
+ * verifikasi kurung kurawal aktual) -- meninggalkan fragmen docblock
+ * menggantung tanpa method di akhir file (docblock milik history() dan
+ * mission() ikut terpotong terbawa, tanpa deklarasi method-nya). Batas
+ * sekarang diverifikasi presisi lewat penghitungan kurung kurawal
+ * otomatis, bukan tebakan.
  */
 
 import('classes.handler.Handler');
@@ -162,11 +160,6 @@ class AboutHandler extends Handler {
 
     /**
      * Display contact page.
-     * @param array $args
-     * @param PKPRequest $request
-     */
-    /**
-     * Display contact page.
      * 
      * [WIZDAM] Sebelumnya method ini punya percabangan if/else internal
      * (jurnal vs site) dan menampilkan SATU template yang sama untuk
@@ -198,6 +191,9 @@ class AboutHandler extends Handler {
         return $handler->contact($args, $request);
     }
 
+    /**
+     * About sitemap.
+     */
     public function sitemap() {
         $this->validate();
         $this->setupTemplate(true);
@@ -234,12 +230,7 @@ class AboutHandler extends Handler {
     }
 
     /**
-     * Display journal history.
-     * @deprecated Rute op='history' TIDAK LAGI mengarah ke sini -- direbut
-     * PublisherAboutHandler (lihat pages/about/index.php) untuk halaman
-     * History level Penerbit. Method ini dipertahankan sebagai logika inti;
-     * dipanggil lewat alias journalHistory() di bawah, yang benar-benar
-     * routable lewat op='journal-history'.
+     * HELPER: Get public statistics names.
      */
     public function _getPublicStatisticsNames() {
         import ('pages.manager.ManagerHandler');
@@ -263,15 +254,6 @@ class AboutHandler extends Handler {
             'statSubscriptions',
         ];
     }
-    
-    //
-    // About Sites/Publisher Context
-    //
-    /**
-     * Menampilkan halaman statis penerbit (Misi).
-     * @param array $args
-     * @param PKPRequest $request
-     */
-    
+
 }
 ?>

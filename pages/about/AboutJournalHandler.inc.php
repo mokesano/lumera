@@ -33,7 +33,11 @@ import('pages.about.AboutHandler');
 class AboutJournalHandler extends AboutHandler {
 
     /**
-     * Constructor
+     * Display contact page (Journal).
+     * HANYA UNTUK KONTEKS JURNAL. Versi Site/Publisher ada di
+     * AboutPublisherHandler::contact().
+     * @param array $args
+     * @param PKPRequest $request
      */
     public function contact($args = [], $request = null) {
         $this->addCheck(new HandlerValidatorJournal($this));
