@@ -11,79 +11,92 @@ declare(strict_types=1);
  * @class ArticleHeroDAO
  * @ingroup wizdam_hero
  *
- * @brief [WIZDAM] Exclusive DAO untuk kandidat artikel Hero/Featured
- * homepage jurnal. Query mentah tetap dipakai (kebutuhan agregasi views+
- * downloads per-artikel, tidak tersedia langsung di DAO bawaan OJS), tapi
- * dibungkus rapi sebagai DAO -- pola sama persis dengan TrendsManagerDAO --
- * bukan lagi fungsi lepas dengan `$articleDao->retrieve()` dari luar DAO.
- *
- * [WIZDAM] Migrasi dari plugins/themes/{theme}/php/hero_futured/
- * article_hero.php (raw PHP di-include lewat {php} block Smarty) ke class
- * terintegrasi aplikasi, mengikuti pola integrasi yang sama dengan
- * TrendsManager/TrendsManagerDAO dan DoiCredentialService sebelumnya.
+ * @brief DAO for featured/hero article candidates on the journal homepage.
  */
 
 import('lib.pkp.classes.db.DAO');
 import('classes.article.Article');
 
-if (!defined('ASSOC_TYPE_ARTICLE')) define('ASSOC_TYPE_ARTICLE', 259);
-if (!defined('ASSOC_TYPE_GALLEY')) define('ASSOC_TYPE_GALLEY', 258);
+if (!defined('ASSOC_TYPE_ARTICLE')) {
+    define('ASSOC_TYPE_ARTICLE', 259);
+}
+if (!defined('ASSOC_TYPE_GALLEY')) {
+    define('ASSOC_TYPE_GALLEY', 258);
+}
 
 class ArticleHeroDAO extends DAO {
 
     /**
-     * Cek apakah tabel metrics + kolom tanggalnya tersedia -- dipakai untuk
-     * menentukan apakah query bisa menyertakan agregasi views/downloads.
-     * @return array{exists: bool, dateColumn: string}
+     * Check if metrics table and date column are available.
+     * @return array{exists: bool, dateColumn: string, columns: array}
      */
     private function _getMetricsAvailability(): array {
         $exists = false;
         try {
             $checkResult = $this->retrieve("SHOW TABLES LIKE 'metrics'");
             $exists = $checkResult && $checkResult->RecordCount() > 0;
-            if ($checkResult) $checkResult->Close();
+            if ($checkResult) {
+                $checkResult->Close();
+            }
         } catch (Exception $e) {
             $exists = false;
         }
 
         $dateColumn = '';
+        $availableColumns = [];
         if ($exists) {
-            $availableColumns = [];
             try {
                 $columnsResult = $this->retrieve("SHOW COLUMNS FROM metrics");
-                while ($columnsResult && !$columnsResult->EOF) {
-                    $availableColumns[] = $columnsResult->fields[0]; // Expected type 'array|string|ArrayAccess'. Found 'bool'.
-                    $columnsResult->MoveNext();
+                if ($columnsResult) {
+                    while (!$columnsResult->EOF) {
+                        $row = $columnsResult->GetRowAssoc(false);
+                        if (isset($row['Field'])) {
+                            $availableColumns[] = strtolower((string) $row['Field']);
+                        }
+                        $columnsResult->MoveNext();
+                    }
+                    $columnsResult->Close();
                 }
-                if ($columnsResult) $columnsResult->Close();
             } catch (Exception $e) {
                 $availableColumns = [];
             }
+            
             foreach (['day', 'load_time', 'entry_time', 'date'] as $candidate) {
-                if (in_array($candidate, $availableColumns, true)) {
+                if (in_array(strtolower($candidate), $availableColumns, true)) {
                     $dateColumn = $candidate;
                     break;
                 }
             }
         }
 
-        return ['exists' => $exists, 'dateColumn' => $dateColumn, 'columns' => $availableColumns ?? []];
+        return [
+            'exists' => $exists, 
+            'dateColumn' => $dateColumn, 
+            'columns' => $availableColumns
+        ];
     }
 
     /**
-     * Kolom metrics untuk filter jurnal berbeda antar versi skema OJS --
-     * 'context_id' di versi lebih baru, 'journal_id' di versi lama.
+     * Get metrics context field name based on schema version.
      * @param array $availableColumns
      * @return string
      */
     private function _getMetricsContextField(array $availableColumns): string {
-        return in_array('context_id', $availableColumns, true) ? 'context_id' : 'journal_id';
+        $lowerColumns = array_map('strtolower', $availableColumns);
+
+        if (in_array('context_id', $lowerColumns, true)) {
+            return 'context_id';
+        }
+
+        if (in_array('journal_id', $lowerColumns, true)) {
+            return 'journal_id';
+        }
+
+        return 'context_id';
     }
 
     /**
-     * Hash ringan dari data artikel yang bisa berubah (untuk smart-cache
-     * detection di ArticleHeroService) -- id, tanggal terbit, tanggal
-     * modifikasi status, dan waktu update metrics terakhir.
+     * Generate a lightweight hash of article data for smart-cache detection.
      * @param int $journalId
      * @return string
      */
@@ -133,10 +146,10 @@ class ArticleHeroDAO extends DAO {
             while (!$result->EOF) {
                 $row = $result->GetRowAssoc(false);
                 $hashData[] = [
-                    'id' => $row['article_id'],
-                    'published' => $row['date_published'],
-                    'modified' => $row['date_status_modified'],
-                    'last_metric_update' => $row['last_metric_update'] ?? '1970-01-01',
+                    'id' => (int) $row['article_id'],
+                    'published' => (string) $row['date_published'],
+                    'modified' => (string) $row['date_status_modified'],
+                    'last_metric_update' => (string) ($row['last_metric_update'] ?? '1970-01-01'),
                 ];
                 $result->MoveNext();
             }
@@ -147,8 +160,7 @@ class ArticleHeroDAO extends DAO {
     }
 
     /**
-     * Ambil kandidat artikel dari VOLUME TERAKHIR jurnal (sudah termasuk
-     * issue terakhir di dalamnya), lengkap dengan agregasi views+downloads.
+     * Get candidate articles from the latest volume.
      * @param int $journalId
      * @return array
      */
@@ -161,8 +173,7 @@ class ArticleHeroDAO extends DAO {
     }
 
     /**
-     * Ambil kandidat artikel dari 2 volume terakhir jurnal (dipakai kalau
-     * volume terakhir saja kurang dari 5 artikel).
+     * Get candidate articles from the latest 2 volumes.
      * @param int $journalId
      * @return array
      */
@@ -175,11 +186,8 @@ class ArticleHeroDAO extends DAO {
         return $this->_getArticlesByVolumeFilter($journalId, "i.volume IN ($placeholders)", $latestVolumes, 20);
     }
 
-    //
-    // HELPERS
-    //
     /**
-     * Get latest volume
+     * Get latest volume.
      * @param int $journalId
      * @return int|string|null
      */
@@ -202,7 +210,7 @@ class ArticleHeroDAO extends DAO {
     }
 
     /**
-     * Get latest volumes
+     * Get latest volumes.
      * @param int $journalId
      * @param int $limit
      * @return array
@@ -229,17 +237,16 @@ class ArticleHeroDAO extends DAO {
     }
 
     /**
-     * Query bersama untuk ambil artikel + agregasi views/downloads,
-     * dengan filter volume yang fleksibel (satu volume atau beberapa).
+     * Fetch articles with views/downloads aggregation and flexible volume filter.
      * @param int $journalId
-     * @param string $volumeWhereClause Klausa WHERE untuk volume, mis. "i.volume = ?"
-     * @param array $volumeParams Parameter untuk klausa volume
+     * @param string $volumeWhereClause
+     * @param array $volumeParams
      * @param int|null $limit
      * @return array
      */
     private function _getArticlesByVolumeFilter(int $journalId, string $volumeWhereClause, array $volumeParams, ?int $limit = null): array {
         $metrics = $this->_getMetricsAvailability();
-        $limitClause = $limit ? "LIMIT $limit" : '';
+        $limitClause = $limit !== null ? "LIMIT " . (int) $limit : '';
 
         if ($metrics['exists']) {
             $contextField = $this->_getMetricsContextField($metrics['columns']);
@@ -310,10 +317,10 @@ class ArticleHeroDAO extends DAO {
                 $row = $result->GetRowAssoc(false);
                 $articles[] = [
                     'article_id' => (int) $row['article_id'],
-                    'date_published' => $row['date_published'],
+                    'date_published' => (string) $row['date_published'],
                     'issue_id' => (int) $row['issue_id'],
-                    'volume' => $row['volume'],
-                    'number' => $row['number'],
+                    'volume' => (string) $row['volume'],
+                    'number' => (string) $row['number'],
                     'total_views' => (int) $row['total_views'],
                     'total_downloads' => (int) $row['total_downloads'],
                 ];
