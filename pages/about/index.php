@@ -30,7 +30,7 @@ switch($op) {
 		import('pages.about.AboutHandler');
 		break;
 
-	case 'contact-editorial-office':
+	case 'contact-editorial-office': // INI dibuatkan SHIM GOBLOK!
 	// Editorial & Policies
 	case 'editorial-team':
 	case 'displayMembership':
@@ -59,12 +59,12 @@ switch($op) {
 	case 'history':
 	case 'leadership':
 	case 'awards':
+	case 'contact': // Kontak Publisher HARUS MANDIRI
 		define('HANDLER_CLASS', 'AboutPublisherHandler');
 		import('pages.about.AboutPublisherHandler');
 		break;
 
-	// Contact & Impact
-	case 'contact':
+	// Impact & Report
 	case 'impact':
 	case 'annual-report':
 	// Publishing Model
