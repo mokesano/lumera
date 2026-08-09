@@ -187,8 +187,18 @@ class IndexHandler extends Handler {
         
         // [TRENDS] Most Popular ---
         import('lib.wizdam.trends.TrendsManager');
-        TrendsManager::assignMostPopularPayload($templateMgr, $journal, $request);
-        
+        TrendsManager::assignMostPopularPayload($templateMgr, $journal, $request, $issue);
+
+        // [TRENDS] Most Downloaded (widget homepage, common/featured/mostDownloads.tpl) ---
+        // Data + keputusan tampil/tidaknya grid "app-reviews-row" (jumlah artikel > 5)
+        // sepenuhnya dihitung di backend, lihat TrendsManager::assignMostDownloadedHomepagePayload().
+        TrendsManager::assignMostDownloadedHomepagePayload($templateMgr, $journal, $request, $issue);
+
+        // [TRENDS] Most Cited (widget homepage, common/featured/mostCitedArticles.tpl) ---
+        // Data + keputusan tampil/tidaknya grid "app-reviews-row" (jumlah artikel > 5)
+        // sepenuhnya dihitung di backend, lihat TrendsManager::assignMostCitedHomepagePayload().
+        TrendsManager::assignMostCitedHomepagePayload($templateMgr, $journal, $request, $issue);
+
         $templateMgr->display('index/journal.tpl');
     }
 

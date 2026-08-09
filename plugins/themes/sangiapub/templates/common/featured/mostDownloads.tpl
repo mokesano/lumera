@@ -4,29 +4,16 @@
  * Copyright (c) 2018-2025 Rochmady and Wizdam Team
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * Most Downloads Articles - FIXED
+ * Most Downloads Articles
+ *
+ * Data ($topDownloadedArticle, $secondTierDownloadedArticles,
+ * $thirdTierDownloadedArticles, $lastUpdateDate) dan keputusan tampil/
+ * tidaknya grid "app-reviews-row" ($showMostDownloadsGrid) sepenuhnya
+ * di-assign dari backend oleh IndexHandler -> TrendsManager::assignMostDownloadedHomepagePayload()
+ * (pola yang sama dengan TrendsHandler/MostDownloadHandler untuk halaman /trends/download).
+ * Template tidak lagi menghitung articleCount sendiri.
  *
  *}
-{* Include most downloaded PHP langsung di template *}
-{php}
-foreach ((array)$this->template_dir as $dir) {
-    if (preg_match('/plugins\/themes\/([^\/]+)/', $dir, $matches) && 
-        file_exists($mostDownloadedFile = 'plugins/themes/' . $matches[1] . '/php/most_download/most_downloaded.php')) {
-        include_once($mostDownloadedFile);
-        break;
-    }
-}
-{/php}
-
-{* Hitung artikel di bagian atas template *}
-{assign var="articleCount" value=0}
-{if $publishedArticles}
-    {foreach from=$publishedArticles item=section}
-        {if $section.articles}
-            {math equation="x + y" x=$articleCount y=$section.articles|@count assign="articleCount"}
-        {/if}
-    {/foreach}
-{/if}
 
 <section id="latest-downloaded" class="live-area u-mt-48 u-mb-32" data-track-component="latest downloaded grid">
     <div class="row raw">
@@ -42,7 +29,7 @@ foreach ((array)$this->template_dir as $dir) {
         </div>
     </div>        
     <div class="u-container" id="contents">        
-        <ul class="u-list-reset{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && $articleCount >= 5} app-reviews-row{/if}">
+        <ul class="u-list-reset{if $showMostDownloadsGrid} app-reviews-row{/if}">
             <li class="app-reviews-row__main">
                 <ul class="app-reviews-row__grid">
                     {* Top Downloaded Article (Klaster Pertama) - FIXED *}
@@ -71,7 +58,7 @@ foreach ((array)$this->template_dir as $dir) {
                                                     <div>
                                                         {if $article.authors && count($article.authors) > 0}<ul data-test="author-list" class="app-author-list app-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span> {/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></span></li>{/foreach}</ul>{/if}
                                                     </div>
-                                                    <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">Open Access</span></span>{/if}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %B %Y"}</time><span class="c-meta__item rank">🏆 {$article.total_downloads|number_format} times</span>
+                                                    <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">Open Access</span></span>{/if}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %B %Y"}</time><span class="c-meta__item rank">🏆 {$article.total_views|number_format} times</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -107,7 +94,7 @@ foreach ((array)$this->template_dir as $dir) {
                                             <div>
                                             {if $article.authors && count($article.authors) > 0}<ul data-test="author-list" class="app-author-list app-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person">{if $author.full_name}<span class="u-hide" itemprop="full-name">{$author.full_name}</span>{/if}{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span>{/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></li>{/foreach}</ul>{/if}
                                             </div>
-                                            <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access">{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && $articleCount >= 6}<span class="u-color-open-access">OA</span>{else}<span class="u-color-open-access">Open Access</span>{/if}</span>{/if}{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && $articleCount >= 6}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>{else}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %B %Y"}</time>{/if}
+                                            <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access">{if $showMostDownloadsGrid}<span class="u-color-open-access">OA</span>{else}<span class="u-color-open-access">Open Access</span>{/if}</span>{/if}{if $showMostDownloadsGrid}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>{else}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %B %Y"}</time>{/if}
                                         </div>
                                     </article>
                                 </div>
