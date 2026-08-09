@@ -41,6 +41,10 @@
 	</task>
   <task class="lib.wizdam.classes.tasks.CitationRefreshTask">
 		<descr>Refresh citationCount for published articles with a DOI, once per week.</descr>
+		<frequency dayofweek="0" hour="1"/>
+	</task>
+  <task class="lib.wizdam.classes.tasks.SintaScoreTask">
+		<descr>Refresh SINTA score &amp; grade for all journals with an ISSN, once per week.</descr>
 		<frequency dayofweek="0" hour="2"/>
 	</task>
 </scheduled_tasks>
