@@ -25,12 +25,12 @@ switch($op) {
 	//
 	// Publisher/Journal Context
 	case 'index':
-	case 'contact':
 	case 'sitemap':
 		define('HANDLER_CLASS', 'AboutHandler');
 		import('pages.about.AboutHandler');
 		break;
 
+	case 'contact-editorial-office':
 	// Editorial & Policies
 	case 'editorial-team':
 	case 'displayMembership':
