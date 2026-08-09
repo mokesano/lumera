@@ -50,9 +50,9 @@ class GenericPlugin extends LazyLoadPlugin {
     
         // Tambahkan enable/disable di sini
         if ($this->getEnabled($request)) {
-            $verbs[] = array('disable', __('manager.plugins.disable'));
+            $verbs[] = ['disable', __('manager.plugins.disable')];
         } else {
-            $verbs[] = array('enable', __('manager.plugins.enable'));
+            $verbs[] = ['enable', __('manager.plugins.enable')];
         }
     
         // Teruskan $verbs dan $request ke parent dengan benar
