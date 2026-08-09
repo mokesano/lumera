@@ -18,14 +18,6 @@ declare(strict_types=1);
  * konteks site/publisher (index, contact, sitemap, mission, history,
  * leadership, award) ditangani di sini -- AboutJournalHandler tidak lagi
  * punya kode untuk konteks ini sama sekali.
- *
- * [WIZDAM] extends AboutHandler (bukan Handler langsung) -- mewarisi
- * constructor dari sana (identik). setupTemplate() TETAP di-override di
- * sini (bukan diwarisi) karena breadcrumb-nya genuinely beda ('about.
- * aboutThePublisher', bukan 'about.aboutTheJournal') dan tidak butuh
- * logic membership jurnal. import('pages.about.SitemapTrait')
- * SEBELUMNYA ada di sini tapi filenya sudah dihapus -- dead code yang
- * bisa fatal error, sudah dihapus.
  */
 
 import('pages.about.AboutHandler');
@@ -45,12 +37,6 @@ class AboutPublisherHandler extends AboutHandler {
         $templateMgr->setCacheability(CACHEABILITY_PUBLIC);
 
         if ($subclass) {
-            // [WIZDAM FIX] Sebelumnya di-copy-paste dari AboutHandler dan
-            // masih hard-code 'about.aboutTheJournal' -- breadcrumb "About
-            // the Journal" muncul di semua halaman Site/Publisher
-            // (mission, history, leadership, award, contact, dst),
-            // padahal class ini dibuat khusus supaya TIDAK tercampur
-            // dengan konteks jurnal.
             $templateMgr->assign('pageHierarchy', [[$request->url(null, 'about'), 'about.aboutThePublisher']]);
         }
     }
@@ -77,15 +63,6 @@ class AboutPublisherHandler extends AboutHandler {
             'siteMailingAddress'        => $site->getLocalizedData('contactMailingAddress'),
         ]);
 
-        // [WIZDAM BUGFIX] Sebelumnya display('about/publisherContact.tpl')
-        // -- file itu TIDAK PERNAH ADA di manapun (dicek seluruh
-        // codebase, semua tema cuma punya about/contact.tpl). Kalau
-        // method ini benar-benar dipanggil, Smarty fatal "template not
-        // found". Dipakai about/contact.tpl yang sama dengan
-        // AboutJournalHandler::contact() dan versi lama AboutHandler --
-        // template ini sudah menangani kasus $journalSettings kosong
-        // dengan baik (blok jurnal-spesifik otomatis tidak render kalau
-        // datanya tidak diisi, tidak butuh flag isSiteLevel).
         $templateMgr->display('about/contact.tpl');
     }
 
@@ -123,7 +100,7 @@ class AboutPublisherHandler extends AboutHandler {
      * Rute: /about/history
      * @param PKPRequest $request
      */
-    public function history($request = null) {
+    public function history($args, $request = null) {
         if (!$request) $request = Application::get()->getRequest();
         $this->_renderPublisherPage($request, 'about.publisher.history', 'publisherHistory');
     }

@@ -19,13 +19,6 @@ declare(strict_types=1);
  * Tidak ada satupun method di sini yang boleh menambahkan cabang untuk
  * konteks site/publisher lagi -- taruh di AboutPublisherHandler.
  *
- * [WIZDAM] extends AboutHandler (bukan Handler langsung) -- mewarisi
- * constructor & setupTemplate() dari sana (identik, tidak perlu
- * diduplikasi di sini). import('pages.about.SitemapTrait') SEBELUMNYA
- * ada di sini tapi filenya sudah dihapus (isinya sudah pindah ke
- * AboutHandler::sitemap()) -- baris itu jadi dead code yang bisa fatal
- * error (import() jatuh ke require_once path relatif kalau file tidak
- * ketemu), sudah dihapus.
  */
 
 import('pages.about.AboutHandler');
@@ -57,10 +50,6 @@ class AboutJournalHandler extends AboutHandler {
         $journalSettings = $journalSettingsDao->getJournalSettings($journal->getId());
 
         $templateMgr->assign('journalSettings', $journalSettings);
-
-        // [WIZDAM] Principal Contact Site tetap ditampilkan sebagai info
-        // tambahan di bawah kontak jurnal (bukan pengganti) -- lihat
-        // about/contact.tpl bagian #principalContact.
         $templateMgr->assign([
             'sitePrincipalContactName'  => $site->getLocalizedData('contactName'),
             'sitePrincipalContactEmail' => $site->getLocalizedData('contactEmail'),
@@ -196,6 +185,7 @@ class AboutJournalHandler extends AboutHandler {
 
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
+        
         $templateMgr = TemplateManager::getManager();
         $groupId = (int) array_shift($args);
         /** @var GroupDAO $groupDao */
@@ -539,14 +529,8 @@ class AboutJournalHandler extends AboutHandler {
         $templateMgr->display('about/journalSponsorship.tpl');
     }
 
-    // [WIZDAM] sitemap() sekarang datang dari SitemapTrait (lihat `use
-    // SitemapTrait;` di awal class) -- dibagikan dengan
-    // AboutPublisherHandler karena op=sitemap memang harus bisa diakses
-    // dari kedua konteks (jurnal & site/publisher) dengan data yang sama
-    // persis, jadi tidak masuk akal ditulis dua kali.
-
     /**
-     * Display journal history.
+     * [SHIM] Display journal history.
      * @deprecated Rute op='history' TIDAK mengarah ke sini -- direbut
      * AboutPublisherHandler (lihat pages/about/index.php) untuk halaman
      * History level Penerbit. Method ini dipertahankan sebagai logika inti;
@@ -581,7 +565,7 @@ class AboutJournalHandler extends AboutHandler {
     }
 
     /**
-     * Menangkap URL lama 'aboutThisPublishingSystem' dan mengalihkannya 
+     * [SHIM] @deprecated Menangkap URL lama 'aboutThisPublishingSystem' dan mengalihkannya 
      * (redirect) ke halaman 'insight' baru dengan 301 (Moved Permanently).
      * HANYA UNTUK KONTEKS JURNAL. Versi Site/Publisher ada di
      * AboutPublisherHandler::aboutThisPublishingSystem().
@@ -678,18 +662,13 @@ class AboutJournalHandler extends AboutHandler {
         }
         // --- AKHIR BLOK WizdamStats ---
 
-        // [WIZDAM FIX] "Since ... until 2024" -- firstYear tidak pernah
-        // dikirim ke template. Sumber yang benar: PublishedArticleDAO::
-        // getArticleYearRange(), berbasis date_published (bukan
-        // date_submitted), sudah dipakai & terbukti benar di
-        // SearchHandler untuk dropdown tahun pencarian.
         /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $yearRange = $publishedArticleDao->getArticleYearRange($journal->getId());
         $templateMgr->assign('firstYear', $yearRange[0] ?? '');
         $templateMgr->assign('lastPublicationYear', $yearRange[1] ?? '');
+        $templateMgr->assign('helpTopicId','user.about');
 
-        $templateMgr->assign('helpTopicId','user.about'); 
         $templateMgr->display('about/statistics.tpl');
     }
 
@@ -782,7 +761,7 @@ class AboutJournalHandler extends AboutHandler {
         $roleDao = DAORegistry::getDAO('RoleDAO');
         $roles = $roleDao->getRolesByUserId($userId, $journalId);
         
-        $userRoles = array();
+        $userRoles = [];
         foreach ($roles as $role) {
             $userRoles[] = $role->getRoleId();
         }
@@ -791,7 +770,7 @@ class AboutJournalHandler extends AboutHandler {
             return __('user.role.editorInChief'); 
         }
         
-        $roleLocales = array(
+        $roleLocales = [
             ROLE_ID_EDITOR => 'user.role.editor',
             ROLE_ID_SECTION_EDITOR => 'user.role.sectionEditor',
             ROLE_ID_LAYOUT_EDITOR => 'user.role.layoutEditor',
@@ -799,9 +778,15 @@ class AboutJournalHandler extends AboutHandler {
             ROLE_ID_PROOFREADER => 'user.role.proofreader',
             ROLE_ID_AUTHOR => 'user.role.author',
             ROLE_ID_REVIEWER => 'user.role.reviewer'
-        );
+        ];
         
-        $editorialPriority = array(ROLE_ID_EDITOR, ROLE_ID_SECTION_EDITOR, ROLE_ID_LAYOUT_EDITOR, ROLE_ID_COPYEDITOR, ROLE_ID_PROOFREADER);
+        $editorialPriority = [
+            ROLE_ID_EDITOR, 
+            ROLE_ID_SECTION_EDITOR, 
+            ROLE_ID_LAYOUT_EDITOR, 
+            ROLE_ID_COPYEDITOR, 
+            ROLE_ID_PROOFREADER
+        ];
         
         foreach ($editorialPriority as $roleId) {
             if (in_array($roleId, $userRoles) && isset($roleLocales[$roleId])) {
