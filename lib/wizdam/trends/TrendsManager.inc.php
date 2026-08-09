@@ -364,9 +364,9 @@ class TrendsManager {
                 'total_views'              => (int)$data['views'],
                 'date_published'           => (string)$data['date_published'],
                 'date_published_formatted' => $data['date_published'] ? date('Y-m-d', strtotime($data['date_published'])) : '',
-                'is_open_access'           => self::_checkWizdamOpenAccessStatus($article, $journalId, $articleJournal),
+                'is_open_access'           => self::checkWizdamOpenAccessStatus($article, $journalId, $articleJournal),
                 'article_type'             => $articleType,
-                'cover_image' => self::_findArticleCoverImage($article, $journalId, $request),
+                'cover_image' => self::findArticleCoverImage($article, $journalId, $request),
                 'article_url' => $request->url($journalPath, 'article', 'view', $articleId),
                 'keywords'                 => $keywords,
                 'doi'                      => method_exists($article, 'getPubId') ? (string)$article->getPubId('doi') : ''
@@ -381,12 +381,18 @@ class TrendsManager {
     //
 
     /**
+     * [WIZDAM] Public (sebelumnya private) -- dipakai ulang oleh
+     * ArticleHeroService supaya logika pencarian cover image artikel
+     * TIDAK perlu ditulis ulang dengan raw SQL. Satu-satunya sumber
+     * kebenaran untuk "cari cover image artikel" di seluruh aplikasi.
+     */
+    /**
      * Find Article Cover Image with Multi-Locale Support.
      * @param int $journalId
      * @param mixed $article
      * @return array
      */
-    private static function _findArticleCoverImage($article, int $journalId, PKPRequest $request): array {
+    public static function findArticleCoverImage($article, int $journalId, PKPRequest $request): array {
         import('classes.file.PublicFileManager');
         $publicFileManager = new PublicFileManager();
         $journalFilesPath = $publicFileManager->getJournalFilesPath($journalId);
@@ -422,11 +428,15 @@ class TrendsManager {
     /**
      * Check if an article is Open Access without using raw SQL (MVC Compliant).
      * This method checks multiple sources to determine the Open Access status of an article.
+     *
+     * [WIZDAM] Public (sebelumnya private) -- dipakai ulang oleh
+     * ArticleHeroService, satu-satunya sumber kebenaran status open access
+     * di seluruh aplikasi (5-method detection lewat DAO, bukan raw SQL).
      * @param Article $article
      * @param int $journalId
      * @return bool
      */
-    private static function _checkWizdamOpenAccessStatus(Article $article, int $journalId, ?Journal $journal = null): bool {
+    public static function checkWizdamOpenAccessStatus(Article $article, int $journalId, ?Journal $journal = null): bool {
         // Method 1: Cek dari setting artikel langsung
         if (method_exists($article, 'getAccessStatus') && $article->getAccessStatus() == ARTICLE_ACCESS_OPEN) {
             return true;

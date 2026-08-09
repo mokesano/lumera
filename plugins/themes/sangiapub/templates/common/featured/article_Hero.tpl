@@ -1,22 +1,21 @@
 {**
  * templates/common/feature/article_Hero.tpl
- *
- * Copyright (c) 2018-2025 Rochmady and Wizdam Team
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * 
+ * Copyright (c) 2018-2026 Sangia Publishing House
+ * Copyright (c) 2018-2026 Rochmady and Wizdam Team
+ * Distributed under the GNU GPL v3.
  *
  * Articles Hero and Featured
  *
+ * [WIZDAM] Sebelumnya template ini memuat {php}...{/php} block yang
+ * mencari & meng-include langsung file PHP prosedural dari folder tema
+ * aktif (plugins/themes/{theme}/php/hero_futured/article_hero.php),
+ * berjalan dalam konteks object Smarty. Sekarang data heroArticle/
+ * latestArticles/dst sudah di-assign langsung oleh
+ * IndexHandler::journal() lewat ArticleHeroService -- lihat
+ * lib/wizdam/hero/ArticleHeroService.inc.php. Template ini murni
+ * presentasi, tidak ada logika PHP tersisa di sini.
  *}
-{* Include article hero PHP dengan proxy yang sudah diperbaiki *}
-{php}
-foreach ((array)$this->template_dir as $dir) {
-    if (preg_match('/plugins\/themes\/([^\/]+)/', $dir, $matches) && 
-        file_exists($articleHeroFile = 'plugins/themes/' . $matches[1] . '/php/hero_futured/article_hero.php')) {
-        include_once($articleHeroFile);
-        break;
-    }
-}
-{/php}
 
 {* Hero Article (Main Featured) *}
 {if $heroArticle && count($heroArticle) > 0}

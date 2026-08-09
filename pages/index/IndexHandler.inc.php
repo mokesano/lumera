@@ -184,20 +184,14 @@ class IndexHandler extends Handler {
         $basePath = $request->getBasePath();
         $jsonPath = $basePath . '/public/wizdam_cache/stats/journal_' . $journalId . '_stats.json.gz';
         $templateMgr->assign('statsJsonPath', $jsonPath);
-        
-        // [TRENDS] Most Popular ---
+
+        // Terlalu banyak assign, seharusnya disatukan dari 3 menjadi 1 assign
         import('lib.wizdam.trends.TrendsManager');
         TrendsManager::assignMostPopularPayload($templateMgr, $journal, $request, $issue);
-
-        // [TRENDS] Most Downloaded (widget homepage, common/featured/mostDownloads.tpl) ---
-        // Data + keputusan tampil/tidaknya grid "app-reviews-row" (jumlah artikel > 5)
-        // sepenuhnya dihitung di backend, lihat TrendsManager::assignMostDownloadedHomepagePayload().
         TrendsManager::assignMostDownloadedHomepagePayload($templateMgr, $journal, $request, $issue);
-
-        // [TRENDS] Most Cited (widget homepage, common/featured/mostCitedArticles.tpl) ---
-        // Data + keputusan tampil/tidaknya grid "app-reviews-row" (jumlah artikel > 5)
-        // sepenuhnya dihitung di backend, lihat TrendsManager::assignMostCitedHomepagePayload().
         TrendsManager::assignMostCitedHomepagePayload($templateMgr, $journal, $request, $issue);
+        import('lib.wizdam.hero.ArticleHeroService');
+        ArticleHeroService::assignArticleHeroPayload($templateMgr, $journal, $request);
 
         $templateMgr->display('index/journal.tpl');
     }
