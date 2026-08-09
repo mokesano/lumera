@@ -1,5 +1,5 @@
 {if $currentJournal}
-<div class="sangia-header bolmHa">
+<section class="sangia-header sangia-sinta_score_grade bolmHa">
 
 <div class="journal-header" style="transform: translateZ(0px);" role="banner">
     <section {if $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}class="lazyload sc-1oj9st5-1 kSjVSRM" style="background-image: url('{$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}');"{else}class="lazyload sc-1oj9st5-1 fQjVRM" style="background-image: rgb(85, 187, 221);"{/if}>
@@ -110,5 +110,5 @@
     </section>
 </div>
 
-</div>
+</section>
 {/if}
