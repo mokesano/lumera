@@ -15,23 +15,24 @@ declare(strict_types=1);
  */
 
 import('pages.reviewer.ReviewerHandler');
+import('classes.submission.reviewer.ReviewerAction');
 
 class SubmissionReviewHandler extends ReviewerHandler {
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function SubmissionReviewHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -42,7 +43,7 @@ class SubmissionReviewHandler extends ReviewerHandler {
     /**
      * Display the submission review page.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function submission($args, $request) {
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
@@ -53,11 +54,14 @@ class SubmissionReviewHandler extends ReviewerHandler {
         $user = $this->user;
         $submission = $this->submission;
 
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
         $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
+        
+        /** @var ReviewFormResponseDAO $reviewFormResponseDao */
         $reviewFormResponseDao = DAORegistry::getDAO('ReviewFormResponseDAO');
 
-        $confirmedStatus = ($submission->getDateConfirmed() == null) ? 0 : 1;
+        $confirmedStatus = $submission->getDateConfirmed() === null ? 0 : 1;
 
         $this->setupTemplate(true, $reviewAssignment->getSubmissionId(), $reviewId);
         $templateMgr = TemplateManager::getManager();
@@ -81,51 +85,45 @@ class SubmissionReviewHandler extends ReviewerHandler {
 
     /**
      * Confirm whether the review has been accepted or not.
-     * @param array $args optional
-     * @param object $request PKPRequest
+     * @param array $args
+     * @param object|null $request
      */
     public function confirmReview($args, $request) {
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
-        $reviewId = (int) trim((string) $request->getUserVar('reviewId'));
-
-        // [FIX] Ambil raw value dulu untuk pengecekan logic
+        $reviewId = (int) $request->getUserVar('reviewId');
         $rawDeclineReview = $request->getUserVar('declineReview');
+        $decline = !empty($rawDeclineReview) ? 1 : 0;
 
-        // Logika: Jika user klik 'Will do the review', parameter declineReview biasanya null.
-        // Jika klik 'Unable to do review', param ini bernilai 1.
-        $decline = (!empty($rawDeclineReview)) ? 1 : 0;
-
-        $reviewerSubmissionDao = DAORegistry::getDAO('ReviewerSubmissionDAO');
         $this->validate($request, $reviewId);
         $reviewerSubmission = $this->submission;
-
         $this->setupTemplate();
 
         if (!$reviewerSubmission->getCancelled()) {
-            $sendFlag = ($request->getUserVar('send') !== null);
+            $sendFlag = $request->getUserVar('send') !== null;
 
             $reviewerAction = new ReviewerAction();
             if ($reviewerAction->confirmReview($reviewerSubmission, $decline, $sendFlag, $request)) {
-                $request->redirect(null, null, 'submission', $reviewId);
+                $request->redirect(null, null, 'submission', [$reviewId]);
             }
         } else {
-            $request->redirect(null, null, 'submission', $reviewId);
+            $request->redirect(null, null, 'submission', [$reviewId]);
         }
     }
 
     /**
      * Save the competing interests statement, if allowed.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function saveCompetingInterests($args, $request) {
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
-        $reviewId = (int) trim((string) $request->getUserVar('reviewId'));
+        $reviewId = (int) $request->getUserVar('reviewId');
         $this->validate($request, $reviewId);
         $reviewerSubmission = $this->submission;
 
         if ($reviewerSubmission->getDateConfirmed() && !$reviewerSubmission->getDeclined() && !$reviewerSubmission->getCancelled() && !$reviewerSubmission->getRecommendation()) {
+            /** @var ReviewerSubmissionDAO $reviewerSubmissionDao */
             $reviewerSubmissionDao = DAORegistry::getDAO('ReviewerSubmissionDAO');
             $competingInterests = trim((string) $request->getUserVar('competingInterests'));
             $reviewerSubmission->setCompetingInterests($competingInterests);
@@ -137,35 +135,34 @@ class SubmissionReviewHandler extends ReviewerHandler {
     /**
      * Record the reviewer recommendation.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function recordRecommendation($args, $request) {
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
-        $reviewId = (int) trim((string) $request->getUserVar('reviewId'));
-        $recommendation = (int) trim((string) $request->getUserVar('recommendation'));
+        $reviewId = (int) $request->getUserVar('reviewId');
+        $recommendation = (int) $request->getUserVar('recommendation');
 
         $this->validate($request, $reviewId);
         $reviewerSubmission = $this->submission;
         $this->setupTemplate(true);
 
         if (!$reviewerSubmission->getCancelled()) {
-            $sendFlag = ($request->getUserVar('send') !== null);
+            $sendFlag = $request->getUserVar('send') !== null;
             $reviewerAction = new ReviewerAction();
             if ($reviewerAction->recordRecommendation($reviewerSubmission, $recommendation, $sendFlag, $request)) {
-                $request->redirect(null, null, 'submission', $reviewId);
+                $request->redirect(null, null, 'submission', [$reviewId]);
             }
         } else {
-            $request->redirect(null, null, 'submission', $reviewId);
+            $request->redirect(null, null, 'submission', [$reviewId]);
         }
     }
 
     /**
-     * View the submission metadata
+     * View the submission metadata.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function viewMetadata($args, $request) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $reviewId = (int) array_shift($args);
@@ -184,14 +181,12 @@ class SubmissionReviewHandler extends ReviewerHandler {
     /**
      * Upload the reviewer's annotated version of an article.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function uploadReviewerVersion($args, $request) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
-        // [SECURITY FIX] Amankan 'reviewId' dengan trim() dan (int)
-        $reviewId = (int) trim((string) $request->getUserVar('reviewId'));
+        $reviewId = (int) $request->getUserVar('reviewId');
 
         $this->validate($request, $reviewId);
         $this->setupTemplate(true);
@@ -201,22 +196,20 @@ class SubmissionReviewHandler extends ReviewerHandler {
             $reviewerAction->uploadReviewerVersion($reviewId, $this->submission, $request);
         }
 
-        $request->redirect(null, null, 'submission', $reviewId);
+        $request->redirect(null, null, 'submission', [$reviewId]);
     }
 
     /**
      * Delete one of the reviewer's annotated versions of an article.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function deleteReviewerVersion($args, $request) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $reviewId = (int) array_shift($args);
         $fileId = (int) array_shift($args);
-        $revision = (int) array_shift($args);
-        if (!$revision) $revision = null;
+        $revision = !empty($args[0]) ? (int) array_shift($args) : null;
 
         $this->validate($request, $reviewId);
         $reviewerSubmission = $this->submission;
@@ -225,48 +218,37 @@ class SubmissionReviewHandler extends ReviewerHandler {
             $reviewerAction = new ReviewerAction();
             $reviewerAction->deleteReviewerVersion($reviewId, $fileId, $revision);
         }
-        $request->redirect(null, null, 'submission', $reviewId);
+        $request->redirect(null, null, 'submission', [$reviewId]);
     }
-
-    //
-    // Misc
-    //
 
     /**
      * Download a file.
-     * @param array $args ($articleId, $fileId, [$revision])
-     * @param object $request PKPRequest
+     * @param array $args
+     * @param object|null $request
      */
     public function downloadFile($args, $request) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $reviewId = (int) array_shift($args);
         $articleId = (int) array_shift($args);
         $fileId = (int) array_shift($args);
-        $revision = (int) array_shift($args);
-        if (!$revision) $revision = null;
+        $revision = !empty($args[0]) ? (int) array_shift($args) : null;
 
         $this->validate($request, $reviewId);
         $reviewerSubmission = $this->submission;
 
         $reviewerAction = new ReviewerAction();
         if (!$reviewerAction->downloadReviewerFile($reviewId, $reviewerSubmission, $fileId, $revision)) {
-            $request->redirect(null, null, 'submission', $reviewId);
+            $request->redirect(null, null, 'submission', [$reviewId]);
         }
     }
-
-    //
-    // Review Form
-    //
 
     /**
      * Edit or preview review form response.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function editReviewFormResponse($args, $request) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $reviewId = (int) array_shift($args);
@@ -275,22 +257,23 @@ class SubmissionReviewHandler extends ReviewerHandler {
         $reviewerSubmission = $this->submission;
         $this->setupTemplate(true, $reviewerSubmission->getId(), $reviewId);
 
+        /** @var ReviewAssignmentDAO $reviewAssignmentDao */
         $reviewAssignmentDao = DAORegistry::getDAO('ReviewAssignmentDAO');
         $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
         $reviewFormId = $reviewAssignment->getReviewFormId();
-        if ($reviewFormId != null) {
+        
+        if ($reviewFormId !== null) {
             $reviewerAction = new ReviewerAction();
             $reviewerAction->editReviewFormResponse($reviewId, $reviewFormId);
         }
     }
 
     /**
-     * Save review form response
+     * Save review form response.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function saveReviewFormResponse($args, $request) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $reviewId = (int) array_shift($args);
@@ -301,8 +284,9 @@ class SubmissionReviewHandler extends ReviewerHandler {
 
         $reviewerAction = new ReviewerAction();
         if ($reviewerAction->saveReviewFormResponse($reviewId, $reviewFormId, $request)) {
-            $request->redirect(null, null, 'submission', $reviewId);
+            $request->redirect(null, null, 'submission', [$reviewId]);
         }
     }
+    
 }
 ?>

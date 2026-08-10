@@ -576,8 +576,6 @@ class OJSPaymentManager extends PaymentManager {
             }
         }
         
-        // [FIX] Kalau payment ini tertaut ke invoice WIZDAM, tandai invoice ASLI itu sebagai lunas -- 
-        // JANGAN buat entri terpisah di completed_payments lagi.
         if (method_exists($queuedPayment, 'getInvoiceId') && $queuedPayment->getInvoiceId() > 0) {
             import('lib.wizdam.classes.services.InvoiceService');
             $invoiceService = new InvoiceService();
@@ -614,18 +612,14 @@ class OJSPaymentManager extends PaymentManager {
                     '[WIZDAM] markAsPaid() GAGAL untuk invoice #%d (queued_payment #%d) -- notifikasi sudah dikirim ke pengguna dan Journal Manager jurnal #%d.',
                     $queuedPayment->getInvoiceId(), (int) $queuedPayment->getId(), (int) $queuedPayment->getJournalId()
                 ));
-
-                /** @var OJSCompletedPaymentDAO $completedPaymentDao */
-                $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
-                $completedPayment = $this->createCompletedPayment($queuedPayment, $payMethodPluginName);
-                $completedPaymentDao->insertCompletedPayment($completedPayment);
             }
-        } else {
-            /** @var OJSCompletedPaymentDAO $completedPaymentDao */
-            $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
-            $completedPayment = $this->createCompletedPayment($queuedPayment, $payMethodPluginName);
-            $completedPaymentDao->insertCompletedPayment($completedPayment);
         }
+
+        // [WIZDAM BUGFIX] Selalu disisipkan -- lihat catatan di atas.
+        /** @var OJSCompletedPaymentDAO $completedPaymentDao */
+        $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
+        $completedPayment = $this->createCompletedPayment($queuedPayment, $payMethodPluginName);
+        $completedPaymentDao->insertCompletedPayment($completedPayment);
 
         /** @var QueuedPaymentDAO $queuedPaymentDao */
         $queuedPaymentDao = DAORegistry::getDAO('QueuedPaymentDAO');
