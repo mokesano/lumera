@@ -129,7 +129,7 @@ class SubmissionCommentsHandler extends ReviewerHandler {
         if (method_exists($reviewerAction, 'saveComment')) {
             $reviewerAction->saveComment($article, $this->comment, $emailComment, $request);
         } else {
-            error_log("WIZDAM WARNING: ReviewerAction::saveComment missing.");
+            error_log("WARNING: ReviewerAction::saveComment missing.");
         }
 
         /** @var ArticleCommentDAO $articleCommentDao */

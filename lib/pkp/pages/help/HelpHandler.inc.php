@@ -11,48 +11,46 @@ declare(strict_types=1);
  * @class HelpHandler
  * @ingroup pages_help
  *
- * @brief [WIZDAM CORE] Handle requests for viewing help pages + Chatbox Logic.
+ * @brief Handle requests for viewing help pages and Chatbox logic.
  */
 
-// Define Defaults
-if (!defined('HELP_DEFAULT_TOPIC')) define('HELP_DEFAULT_TOPIC', 'index/topic/000000');
-if (!defined('HELP_DEFAULT_TOC')) define('HELP_DEFAULT_TOC', 'index/toc/000000');
+if (!defined('HELP_DEFAULT_TOPIC')) {
+    define('HELP_DEFAULT_TOPIC', 'index/topic/000000');
+}
+if (!defined('HELP_DEFAULT_TOC')) {
+    define('HELP_DEFAULT_TOC', 'index/toc/000000');
+}
 
-// Imports (Wizdam Core Pathing)
 import('lib.pkp.classes.help.HelpToc');
 import('lib.pkp.classes.help.HelpTocDAO');
 import('lib.pkp.classes.help.HelpTopic');
 import('lib.pkp.classes.help.HelpTopicDAO');
 import('lib.pkp.classes.help.HelpTopicSection');
-import('classes.handler.Handler'); // Akan otomatis mencari Handler terdekat (Core/App)
+import('classes.handler.Handler');
+import('lib.wizdam.lib.nlp.WizdamNLP');
 
 class HelpHandler extends Handler {
     
     /**
-     * Construct
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function HelpHandler() {
         $args = func_get_args();
         call_user_func_array([$this, '__construct'], $args);
     }
 
-    //
-    /**
-     * --- STANDARD HELP METHODS (MODERNIZED) ---
-     */
-    // 
-
     /**
      * Show the help index page.
      * @param array $args
      * @param PKPRequest|null $request
+     * @return void
      */
     public function index($args = [], $request = null): void {
         $this->view(['index', 'topic', '000000'], $request);
@@ -62,6 +60,7 @@ class HelpHandler extends Handler {
      * Show the help table of contents.
      * @param array $args
      * @param PKPRequest|null $request
+     * @return void
      */
     public function toc($args, $request): void {
         $this->validate();
@@ -79,26 +78,26 @@ class HelpHandler extends Handler {
      * View a help topic.
      * @param array $args
      * @param PKPRequest|null $request
+     * @return void
      */
     public function view($args, $request): void {
         $this->validate();
         $this->setupTemplate();
         $request = $request instanceof PKPRequest ? $request : PKPApplication::getRequest();
 
-        $topicId    = implode('/', $args ?? []);
+        $topicId = implode('/', $args ?: []);
         $rawKeyword = (string) $request->getUserVar('keyword');
-        $keyword    = trim(PKPString::regexp_replace('/[^\w\s\.\-]/', '', strip_tags($rawKeyword)));
-        $result     = (int) $request->getUserVar('result');
+        $keyword = trim(PKPString::regexp_replace('/[^\w\s\.\-]/', '', strip_tags($rawKeyword)));
+        $result = (int) $request->getUserVar('result');
 
+        /** @var HelpTopicDAO $topicDao */
         $topicDao = DAORegistry::getDAO('HelpTopicDAO');
-        $topic    = $topicDao->getTopic($topicId);
+        $topic = $topicDao->getTopic($topicId);
 
-        // [FIX Bug 2] Fallback ke default topic
         if ($topic === false) {
             $topic = $topicDao->getTopic(HELP_DEFAULT_TOPIC);
         }
 
-        // [FIX Bug 2] Guard: jika default topic juga tidak ditemukan, hentikan eksekusi
         if ($topic === false) {
             error_log("HelpHandler::view - topic not found: {$topicId}");
             $templateMgr = TemplateManager::getManager();
@@ -107,15 +106,13 @@ class HelpHandler extends Handler {
             return;
         }
 
+        /** @var HelpTocDAO $tocDao */
         $tocDao = DAORegistry::getDAO('HelpTocDAO');
-
-        // [FIX Bug 3] Fallback ke default TOC
         $toc = $tocDao->getToc($topic->getTocId());
         if ($toc === false) {
             $toc = $tocDao->getToc(HELP_DEFAULT_TOC);
         }
 
-        // [FIX Bug 3] Guard: jika TOC juga tidak ditemukan
         if ($toc === false) {
             error_log("HelpHandler::view - toc not found for topic: {$topicId}");
             $templateMgr = TemplateManager::getManager();
@@ -124,27 +121,30 @@ class HelpHandler extends Handler {
             return;
         }
 
-        // [FIX Bug 4] Normalisasi false -> null untuk subToc
         $subTocId = $topic->getSubTocId();
-        $subToc   = null;
+        $subToc = null;
         if ($subTocId !== null) {
-            $result_subtoc = $tocDao->getToc($subTocId);
-            $subToc = ($result_subtoc !== false) ? $result_subtoc : null;
+            $resultSubtoc = $tocDao->getToc($subTocId);
+            $subToc = $resultSubtoc !== false ? $resultSubtoc : null;
         }
 
         $relatedTopics = $topic->getRelatedTopics();
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('currentTopicId', $topic->getId());
-        $templateMgr->assign('topic',          $topic);
-        $templateMgr->assign('toc',            $toc);
-        $templateMgr->assign('subToc',         $subToc);
-        $templateMgr->assign('relatedTopics',  $relatedTopics);
-        $templateMgr->assign('locale',         AppLocale::getLocale());
-        $templateMgr->assign('breadcrumbs',    $toc->getBreadcrumbs()); // aman: $toc sudah tervalidasi
+        $templateMgr->assign('topic', $topic);
+        $templateMgr->assign('toc', $toc);
+        $templateMgr->assign('subToc', $subToc);
+        $templateMgr->assign('relatedTopics', $relatedTopics);
+        $templateMgr->assign('locale', AppLocale::getLocale());
+        $templateMgr->assign('breadcrumbs', $toc->getBreadcrumbs());
 
-        if (!empty($keyword)) $templateMgr->assign('helpSearchKeyword', $keyword);
-        if (!empty($result))  $templateMgr->assign('helpSearchResult',  $result);
+        if (!empty($keyword)) {
+            $templateMgr->assign('helpSearchKeyword', $keyword);
+        }
+        if (!empty($result)) {
+            $templateMgr->assign('helpSearchResult', $result);
+        }
 
         $templateMgr->display('help/view.tpl');
     }
@@ -153,6 +153,7 @@ class HelpHandler extends Handler {
      * Search help topics.
      * @param array $args
      * @param PKPRequest|null $request
+     * @return void
      */
     public function search($args, $request): void {
         $this->validate();
@@ -160,33 +161,37 @@ class HelpHandler extends Handler {
         $request = $request instanceof PKPRequest ? $request : PKPApplication::getRequest();
 
         $searchResults = [];
-        $rawKeyword    = (string) $request->getUserVar('keyword');
-        $keyword       = trim(PKPString::regexp_replace('/[^\w\s\.\-]/', '', strip_tags($rawKeyword)));
+        $rawKeyword = (string) $request->getUserVar('keyword');
+        $keyword = trim(PKPString::regexp_replace('/[^\w\s\.\-]/', '', strip_tags($rawKeyword)));
 
         if (!empty($keyword)) {
+            /** @var HelpTopicDAO $topicDao */
             $topicDao = DAORegistry::getDAO('HelpTopicDAO');
-            $tocDao   = DAORegistry::getDAO('HelpTocDAO');
-            $topics   = $topicDao->getTopicsByKeyword($keyword);
+            /** @var HelpTocDAO $tocDao */
+            $tocDao = DAORegistry::getDAO('HelpTocDAO');
+            $topics = $topicDao->getTopicsByKeyword($keyword);
 
             foreach ($topics as $topic) {
-                // [FIX Bug 5] Filter hasil getToc() yang false
                 $toc = $tocDao->getToc($topic->getTocId());
-                if ($toc === false) continue; // skip topic yang TOC-nya tidak valid
-
+                if ($toc === false) {
+                    continue;
+                }
                 $searchResults[] = ['topic' => $topic, 'toc' => $toc];
             }
         }
 
         $templateMgr = TemplateManager::getManager();
-        $templateMgr->assign('showSearch',       true);
-        $templateMgr->assign('pageTitle',        __('help.searchResults'));
+        $templateMgr->assign('showSearch', true);
+        $templateMgr->assign('pageTitle', __('help.searchResults'));
         $templateMgr->assign('helpSearchKeyword', $keyword);
-        $templateMgr->assign('searchResults',    $searchResults);
+        $templateMgr->assign('searchResults', $searchResults);
         $templateMgr->display('help/searchResults.tpl');
     }
 
     /**
      * Setup the template.
+     * @param PKPRequest|null $request
+     * @return void
      */
     public function setupTemplate($request = null): void {
         parent::setupTemplate();
@@ -194,15 +199,10 @@ class HelpHandler extends Handler {
         $templateMgr->setCacheability(CACHEABILITY_PUBLIC);
     }
 
-    //
     /**
-     * --- WIZDAM CHATBOX MODULE (INJECTED DIRECTLY INTO CORE) ---
-     */
-    //
-
-    /**
-     * Handle Chatbox AJAX Request
+     * Handle Chatbox AJAX Request.
      * @param array $args
+     * @return void
      */
     public function chat($args = []): void {
         $request = PKPApplication::getRequest();
@@ -212,9 +212,9 @@ class HelpHandler extends Handler {
             exit;
         }
 
-        $query          = trim((string) $request->getUserVar('q'));
-        $context        = trim((string) $request->getUserVar('context'));
-        $currentLocale  = AppLocale::getLocale();
+        $query = trim((string) $request->getUserVar('q'));
+        $context = trim((string) $request->getUserVar('context'));
+        $currentLocale = AppLocale::getLocale();
 
         $reply = $this->_getBotResponse($query, $context, $currentLocale);
 
@@ -224,18 +224,27 @@ class HelpHandler extends Handler {
     }
 
     /**
-     * Generate Bot Response
+     * Generate Bot Response.
      * @param string $query
      * @param string $contextUrl
      * @param string $locale
      * @return string
      */
     private function _getBotResponse(string $query, string $contextUrl, string $locale): string {
+        // [LUMERA FIX] Use union type in docblock to satisfy strict linters 
+        // that complain about DAORegistry::getDAO returning 'DAO' instead of 'HelpTopicDAO'.
+        /** @var HelpTopicDAO|DAO $topicDao */
         $topicDao = DAORegistry::getDAO('HelpTopicDAO');
 
         if (!empty($query)) {
-            $keyword = trim(PKPString::regexp_replace('/[^\w\s\.\-]/', '', strip_tags($query)));
-            $topics  = $topicDao->getTopicsByKeyword($keyword);
+            $filtered = WizdamNLP::filterKeywords($query, true, $locale);
+            $keyword = trim(PKPString::regexp_replace('/[^\w\s\.\-]/', '', strip_tags($filtered)));
+
+            if ($keyword === '') {
+                $keyword = trim(PKPString::regexp_replace('/[^\w\s\.\-]/', '', strip_tags($query)));
+            }
+
+            $topics = $topicDao->getTopicsByKeyword($keyword);
 
             if (empty($topics)) {
                 return $this->_getLocalizedMsg('search_fail', $locale, $query);
@@ -246,7 +255,6 @@ class HelpHandler extends Handler {
         $topicId = $this->_mapUrlToTopic($contextUrl);
         if ($topicId !== null) {
             $topic = $topicDao->getTopic($topicId);
-            // [FIX] Eksplisit cek !== false, konsisten dengan return type getTopic()
             if ($topic !== false) {
                 return $this->_formatHelpOutput($topic, $this->_getLocalizedMsg('context_found', $locale), $locale);
             }
@@ -256,20 +264,33 @@ class HelpHandler extends Handler {
     }
 
     /**
-     * Format Help Output for Chatbox
-     * @param HelpTopic $topic
+     * Format Help Output for Chatbox.
+     * @param mixed $topic
      * @param string $introText
      * @param string $locale
      * @return string
      */
     private function _formatHelpOutput($topic, string $introText, string $locale): string {
-        $title   = htmlspecialchars($topic->getTitle());
-        $content = strip_tags($topic->getContents(), '<p><br><b><i><ul><li>');
+        /** @var HelpTopic $topic */
+        $title = htmlspecialchars((string) $topic->getTitle());
+        
+        // [LUMERA FIX] Safely handle getContents() which might be a custom Wizdam addition 
+        // or a typo for getContent(). Prevents fatal errors if the method is missing in core.
+        $rawContent = '';
+        if (method_exists($topic, 'getContents')) {
+            $rawContent = (string) $topic->getContents();
+        } elseif (method_exists($topic, 'getContent')) {
+            $rawContent = (string) $topic->getContent();
+        }
+        
+        $content = strip_tags($rawContent, '<p><br><b><i><ul><li>');
         if (strlen($content) > 300) {
-            $cutoff  = strpos($content, ' ', 300);
+            $cutoff = strpos($content, ' ', 300);
             $content = ($cutoff !== false ? substr($content, 0, $cutoff) : substr($content, 0, 300)) . '...';
         }
-        $link        = Request::url(null, 'help', 'view', explode('/', $topic->getId()));
+        
+        $request = PKPApplication::getRequest();
+        $link = $request->url(null, 'help', 'view', explode('/', $topic->getId()));
         $readMoreText = $this->_getLocalizedMsg('read_more', $locale);
 
         return "<div style='margin-bottom:5px;'><i>{$introText}</i></div>
@@ -281,7 +302,7 @@ class HelpHandler extends Handler {
     }
 
     /**
-     * Get Localized Message
+     * Get Localized Message.
      * @param string $key
      * @param string $locale
      * @param string $extraArg
@@ -290,27 +311,34 @@ class HelpHandler extends Handler {
     private function _getLocalizedMsg(string $key, string $locale, string $extraArg = ''): string {
         $isIndo = ($locale === 'id_ID');
         switch ($key) {
-            case 'search_fail':    return $isIndo ? "Maaf, tidak ada panduan ditemukan untuk '<b>" . htmlspecialchars($extraArg) . "</b>'."  : "Sorry, no help topics found for '<b>" . htmlspecialchars($extraArg) . "</b>'.";
-            case 'search_success': return $isIndo ? 'Hasil pencarian teratas:'   : 'Top search result:';
-            case 'context_found':  return $isIndo ? 'Panduan halaman ini:'       : 'Guide for this page:';
-            case 'greeting':       return $isIndo ? 'Halo! Saya Asisten Wizdam. Ketik sesuatu untuk mencari panduan.' : 'Hello! I am Wizdam Assistant. Ask me anything about the system.';
-            case 'read_more':      return $isIndo ? 'Baca Selengkapnya'          : 'Read Full Article';
-            default:               return '...';
+            case 'search_fail':
+                return $isIndo ? "Maaf, tidak ada panduan ditemukan untuk '<b>" . htmlspecialchars($extraArg) . "</b>'." : "Sorry, no help topics found for '<b>" . htmlspecialchars($extraArg) . "</b>'.";
+            case 'search_success':
+                return $isIndo ? 'Hasil pencarian teratas:' : 'Top search result:';
+            case 'context_found':
+                return $isIndo ? 'Panduan halaman ini:' : 'Guide for this page:';
+            case 'greeting':
+                return $isIndo ? 'Halo! Saya Asisten Wizdam. Ketik sesuatu untuk mencari panduan.' : 'Hello! I am Wizdam Assistant. Ask me anything about the system.';
+            case 'read_more':
+                return $isIndo ? 'Baca Selengkapnya' : 'Read Full Article';
+            default:
+                return '...';
         }
     }
 
     /**
-     * Map URL to Help Topic ID
+     * Map URL to Help Topic ID.
      * @param string $url
      * @return string|null
      */
     private function _mapUrlToTopic(string $url): ?string {
-        if (strpos($url, '/manager')  !== false) return 'journal/topic/000003';
-        if (strpos($url, '/editor')   !== false) return 'journal/topic/000002';
-        if (strpos($url, '/author')   !== false) return 'journal/topic/000001';
+        if (strpos($url, '/manager') !== false) return 'journal/topic/000003';
+        if (strpos($url, '/editor') !== false) return 'journal/topic/000002';
+        if (strpos($url, '/author') !== false) return 'journal/topic/000001';
         if (strpos($url, '/reviewer') !== false) return 'journal/topic/000004';
         if (strpos($url, '/register') !== false) return 'site/topic/000002';
         return null;
     }
+
 }
 ?>
