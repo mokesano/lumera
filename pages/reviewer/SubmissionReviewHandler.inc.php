@@ -60,8 +60,7 @@ class SubmissionReviewHandler extends ReviewerHandler {
         
         /** @var ReviewFormResponseDAO $reviewFormResponseDao */
         $reviewFormResponseDao = DAORegistry::getDAO('ReviewFormResponseDAO');
-
-        $confirmedStatus = $submission->getDateConfirmed() === null ? 0 : 1;
+        $confirmedStatus = empty($submission->getDateConfirmed()) ? 0 : 1;
 
         $this->setupTemplate(true, $reviewAssignment->getSubmissionId(), $reviewId);
         $templateMgr = TemplateManager::getManager();
@@ -262,7 +261,7 @@ class SubmissionReviewHandler extends ReviewerHandler {
         $reviewAssignment = $reviewAssignmentDao->getById($reviewId);
         $reviewFormId = $reviewAssignment->getReviewFormId();
         
-        if ($reviewFormId !== null) {
+        if ($reviewFormId) {
             $reviewerAction = new ReviewerAction();
             $reviewerAction->editReviewFormResponse($reviewId, $reviewFormId);
         }

@@ -235,10 +235,10 @@ class ReviewerHandler extends Handler {
             $newKey = trim((string) $realRequest->getUserVar('key'));
 
             $reviewerSubmission = $reviewerSubmissionDao->getReviewerSubmission($reviewId);
-            if (!$reviewerSubmission || $journal === null || $reviewerSubmission->getJournalId() !== $journal->getId()) {
+            if (!$reviewerSubmission || $journal === null || (int) $reviewerSubmission->getJournalId() !== (int) $journal->getId()) {
                 $isValid = false;
             } elseif ($user !== null && empty($newKey)) {
-                if ($reviewerSubmission->getReviewerId() !== $user->getId()) {
+                if ((int) $reviewerSubmission->getReviewerId() !== (int) $user->getId()) {
                     $isValid = false;
                 }
             } else {

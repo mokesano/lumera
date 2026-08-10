@@ -176,7 +176,7 @@ class SubmissionCommentsHandler extends ReviewerHandler {
             $request = Application::get()->getRequest();
         }
 
-        parent::validate(true, $request);
+        parent::validate($request, $reviewId);
 
         if ($commentId !== null) {
             $check = new HandlerValidatorSubmissionComment($this, $commentId, $this->user);
