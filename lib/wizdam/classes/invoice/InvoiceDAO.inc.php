@@ -166,6 +166,62 @@ class InvoiceDAO extends DAO {
     }
 
     /**
+     * [WIZDAM] Cari invoice LUNAS untuk satu jenis fee artikel tertentu --
+     * SATU-SATUNYA sumber kebenaran status "sudah dibayar" untuk author
+     * fees (submission/fast-track/publication), menggantikan
+     * OJSCompletedPaymentDAO::getSubmissionCompletedPayment() dkk yang
+     * TIDAK TAHU apa-apa soal sistem invoice.
+     *
+     * Cek DUA sumber (invoice ASLI dulu, baru completed_payments legacy
+     * yang BELUM tertaut invoice manapun -- match persis pola dedup yang
+     * sudah dipakai getBySubmissionId(), supaya tidak pernah menganggap
+     * satu pembayaran sebagai "dua invoice" seperti sebelumnya):
+     * 1. Tabel invoices -- fee_type cocok DAN status = PAID.
+     * 2. Tabel completed_payments -- HANYA baris yang belum ada invoice
+     *    tertaut (legacy_source_id IS NULL di semua invoice), difilter
+     *    payment_type numerik OJS (bukan fee_type string, karena baris
+     *    legacy tidak menyimpan fee_type per-jenis).
+     *
+     * @param int $journalId
+     * @param int $submissionId
+     * @param string $feeType Salah satu konstanta Invoice::FEE_TYPE_*
+     * @param int|null $legacyPaymentType Konstanta PAYMENT_TYPE_* OJS
+     * (PAYMENT_TYPE_SUBMISSION/FASTTRACK/PUBLICATION) yang berpadanan,
+     * untuk mencari di completed_payments legacy. Null = lewati pengecekan legacy.
+     * @return Invoice|null
+     */
+    public function getPaidInvoiceForArticleFee(int $journalId, int $submissionId, string $feeType, ?int $legacyPaymentType = null): ?Invoice {
+        $result = $this->retrieve(
+            'SELECT * FROM invoices WHERE submission_id = ? AND fee_type = ? AND status = ? ORDER BY date_paid DESC',
+            [(int) $submissionId, $feeType, Invoice::STATUS_PAID]
+        );
+        if ($result && !$result->EOF) {
+            $invoice = $this->_fromRow($result->GetRowAssoc(false));
+            $result->Close();
+            return $invoice;
+        }
+        if ($result) $result->Close();
+
+        if ($legacyPaymentType === null) {
+            return null;
+        }
+
+        $legacyResult = $this->retrieve(
+            "SELECT cp.* FROM completed_payments cp
+             LEFT JOIN invoices i ON i.legacy_source_table = 'completed_payments' AND i.legacy_source_id = cp.completed_payment_id
+             WHERE cp.assoc_id = ? AND cp.journal_id = ? AND cp.payment_type = ? AND i.invoice_id IS NULL
+             ORDER BY cp.timestamp DESC",
+            [(int) $submissionId, (int) $journalId, (int) $legacyPaymentType]
+        );
+        $returner = null;
+        if ($legacyResult && !$legacyResult->EOF) {
+            $returner = $this->_fromLegacyRow($legacyResult->GetRowAssoc(false));
+        }
+        if ($legacyResult) $legacyResult->Close();
+        return $returner;
+    }
+
+    /**
      * Insert a new Invoice into the database. Returns the new invoice ID.
      * @param Invoice $invoice
      * @return int
