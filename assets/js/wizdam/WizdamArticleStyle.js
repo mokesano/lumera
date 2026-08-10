@@ -2267,7 +2267,7 @@ $(document).ready(function() {
             const titleStart = content.indexOf('. ', yearIndex) + 2;
             let titleEnd = content.indexOf('. ', titleStart);
             if (titleEnd === -1) titleEnd = content.length;
-            return content.substring(titleStart, titleEnd).trim().replace(/<[^>]*>/g, '');
+            return content.substring(titleStart, titleEnd).trim().replace(/[<>]/g, '');
         }
         return '';
     };
