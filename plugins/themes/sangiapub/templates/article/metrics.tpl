@@ -16,14 +16,12 @@
     <div class="u-display-flex u-justify-content-space-between">
         <nav class="c-metrics-identifiers" aria-label="metrics-identifiers" data-test="metrics-identifiers">
             <p class="c-article-identifiers__label">Metrics</p>
-            <p class="c-article-metrics__updated">Last updated: {$statsLastUpdated}</p>
+            <p class="c-article-metrics__updated">Last updated: {if $statsLastUpdated}{$statsLastUpdated}{else}N/A{/if}</p>
         </nav>
         <ul class="app-article-metrics-stat">
-            <li class="app-article-metrics-stat__item">{$article->getViews()|number_format:0}<span class="app-article-metrics-stat__subitem">Views</span></li>
-            {if $galley && $galley->isPdfGalley()}
-                <li class="app-article-metrics-stat__item">{$galley->getViews()|number_format:0}<span class="app-article-metrics-stat__subitem">Downloads</span></li>
-            {/if}
-            <li class="app-article-metrics-stat__item">0<span class="app-article-metrics-stat__subitem">Citations</span></li>
+            <li class="app-article-metrics-stat__item">{$totalViews|default:0|number_format:0}<span class="app-article-metrics-stat__subitem">Views</span></li>
+            <li class="app-article-metrics-stat__item">{$totalDownloads|default:0|number_format:0}<span class="app-article-metrics-stat__subitem">Downloads</span></li>
+            <li class="app-article-metrics-stat__item">{$citationCount|default:0}<span class="app-article-metrics-stat__subitem">Citations</span></li>
             <li class="app-article-metrics-stat__item">516<span class="app-article-metrics-stat__subitem">Altmetric</span></li>
             <li class="app-article-metrics-stat__item">79<span class="app-article-metrics-stat__subitem">Mentions</span></li>
         </ul>
@@ -43,7 +41,7 @@
                             <p>We update counts daily.</p>
                         </div>
                         <div class="app-article-metrics-box__side">
-                            <p class="app-article-metrics-count">{math equation="x + y" x=$views y=$downloads}<span class="app-article-metrics-count_text">Accesses</span></p>
+                            <p class="app-article-metrics-count">{math equation="x + y" x=$totalViews y=$totalDownloads}<span class="app-article-metrics-count_text">Accesses</span></p>
                         </div>
                     </div>
                 </section>
@@ -60,44 +58,50 @@
                 </section>
             </div>
 
-            {* [WIZDAM] Daftar LENGKAP semua kutipan -- elemen SAMA persis
-               dengan panel 7-kutipan-terbaru di halaman artikel (heading.tpl),
-               cuma $citingArticles yang dikirim ArticleMetricsHandler TIDAK
-               dibatasi 7 seperti di halaman artikel. *}
-            {include file="article/citedby_doi.tpl"}
-
+            {if $citingArticles && $citingArticles|@count > 0}
             <section class="app-article-metrics-container u-mb-24">
                 <div class="app-article-metrics-box">
                     <div class="app-article-metrics-box__main">
-                        <h2 class="u-mb-16 u-mt-0 c-article-metrics-heading"><span class="app-article-metrics-box__icon-container"><svg class="app-article-metrics-box-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m9.452 1.293 5.92 5.92 2.92-2.92a1 1 0 0 1 1.415 1.414l-2.92 2.92 5.92 5.92a1 1 0 0 1 0 1.415 10.371 10.371 0 0 1-10.378 2.584l.652 3.258A1 1 0 0 1 12 23H2a1 1 0 0 1-.874-1.486l4.789-8.62C4.194 9.074 4.9 4.43 8.038 1.292a1 1 0 0 1 1.414 0Zm-2.355 13.59L3.699 21h7.081l-.689-3.442a10.392 10.392 0 0 1-2.775-2.396l-.22-.28Zm1.69-11.427-.07.09a8.374 8.374 0 0 0 11.737 11.737l.089-.071L8.787 3.456Z"></path></svg></span>Citedby</h2>
-                        <div class="c-article-metrics__section" data-test="metrics-mentions">
+                        <h2 class="u-mb-16 u-mt-0 c-article-metrics-heading"><span class="app-article-metrics-box__icon-container"><svg class="app-article-metrics-box-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m9.452 1.293 5.92 5.92 2.92-2.92a1 1 0 0 1 1.415 1.414l-2.92 2.92 5.92 5.92a1 1 0 0 1 0 1.415 10.371 10.371 0 0 1-10.378 2.584l.652 3.258A1 1 0 0 1 12 23H2a1 1 0 0 1-.874-1.486l4.789-8.62C4.194 9.074 4.9 4.43 8.038 1.292a1 1 0 0 1 1.414 0Zm-2.355 13.59L3.699 21h7.081l-.689-3.442a10.392 10.392 0 0 1-2.775-2.396l-.22-.28Zm1.69-11.427-.07.09a8.374 8.374 0 0 0 11.737 11.737l.089-.071L8.787 3.456Z"></path></svg></span>Citedby <span class="citedby">{$citationCount|default:0}</span></h2>
+                        <div class="c-article-metrics__section" data-test="metrics-citedby">
                             <div class="c-article-metrics__body">
                                 <div class="c-article-metrics__section--left">
                                     <ul class="u-list-reset">
+                                        {foreach from=$citingArticles item=citation}
                                         <li>
                                             <div class="c-card-metrics">
                                                 <div class="c-card-metrics__main">
                                                     <h3 class="c-card-metrics__heading">
-                                                        <a href="https://quantum-server-materials.blogspot.com/2025/10/composite-metal-foams-endure-over-1.html" data-track="click" data-track-action="view news article" data-track-label="link" data-track-category="metrics">🔥 Composite Metal Foams Endure Over 1 Million Cycles at 400 °C and 600 °C — A Game Changer for Extreme Environments</a>
+                                                        {if $citation.url}
+                                                        <a href="{$citation.url|escape}" target="_blank" rel="nofollow noopener" data-track="click" data-track-action="view citing article" data-track-label="link" data-track-category="metrics">{$citation.title|escape}</a>
+                                                        {else}
+                                                        <span>{$citation.title|escape}</span>
+                                                        {/if}
                                                     </h3>
                                                     <div>
-                                                        <div class="c-card-metrics__authors">Quantum Server Materials</div>
+                                                        {if $citation.authors && $citation.authors|@count > 0}
+                                                        <div class="c-card-metrics__authors">{foreach from=$citation.authors item=author name=citeAuthorLoop}{$author.given|escape} {$author.family|escape}{if !$smarty.foreach.citeAuthorLoop.last}, {/if}{/foreach}</div>
+                                                        {/if}
+                                                        {if $citation.container || $citation.year}
+                                                        <div class="c-card-metrics__authors">{if $citation.container}{$citation.container|escape}{/if}{if $citation.container && $citation.year}, {/if}{if $citation.year}{$citation.year|escape}{/if}</div>
+                                                        {/if}
                                                     </div>
                                                 </div>
                                             </div>
                                         </li>
+                                        {/foreach}
                                     </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="app-article-metrics-box__side app-article-metrics-box__side-top">
-                        <p>This list highlights individual mainstream news articles and blogs that cite the article.</p>
-                        <p>Not all news and blogs link to articles in a way that Altmetric can pick up, so they are not representative of all media.</p>
-                        <p>Altmetric are responsible for the curation of this list and provide updates hourly.</p>
+                        <p>This list highlights scholarly articles that cite this article, tracked via DOI.</p>
+                        <p>Citation data is refreshed weekly. New citations may take some time to appear.</p>
                     </div>
                 </div>
             </section>
+            {/if}
                 
             {if $doi}
             <section class="app-article-metrics-container u-mb-24" data-test="altmetric-score">
@@ -148,8 +152,8 @@
                 </div>
             </section>
             {/if}
-            
-            <section class="app-article-metrics-container u-mb-24">
+
+            <section class="app-article-metrics-container u-mb-24 u-hide">
                 <div class="app-article-metrics-box">
                     <div class="app-article-metrics-box__main">
                         <h2 class="u-mb-16 u-mt-0 c-article-metrics-heading"><span class="app-article-metrics-box__icon-container"><svg class="app-article-metrics-box-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m9.452 1.293 5.92 5.92 2.92-2.92a1 1 0 0 1 1.415 1.414l-2.92 2.92 5.92 5.92a1 1 0 0 1 0 1.415 10.371 10.371 0 0 1-10.378 2.584l.652 3.258A1 1 0 0 1 12 23H2a1 1 0 0 1-.874-1.486l4.789-8.62C4.194 9.074 4.9 4.43 8.038 1.292a1 1 0 0 1 1.414 0Zm-2.355 13.59L3.699 21h7.081l-.689-3.442a10.392 10.392 0 0 1-2.775-2.396l-.22-.28Zm1.69-11.427-.07.09a8.374 8.374 0 0 0 11.737 11.737l.089-.071L8.787 3.456Z"></path></svg></span>Mentions</h2>
