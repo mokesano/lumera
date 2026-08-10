@@ -12,9 +12,8 @@ declare(strict_types=1);
  * @ingroup pages_about
  *
  * @brief Handle ops shared BETWEEN journal and publisher/site context
- * (index, contact, sitemap), AND serve as the shared base class
- * (constructor, setupTemplate()) for AboutJournalHandler dan
- * AboutPublisherHandler.
+ * (index, sitemap), AND serve as the shared base class (constructor,
+ * setupTemplate()) for AboutJournalHandler dan AboutPublisherHandler.
  */
 
 import('classes.handler.Handler');
@@ -126,63 +125,17 @@ class AboutHandler extends Handler {
         if ($subclass) {
             $templateMgr->assign('pageHierarchy', [[$request->url(null, 'about'), 'about.aboutTheJournal']]);
         }
-        
-        // [WIZDAM] CORE INJECTION: Global Navigation Data
-        // Memastikan data dropdown menu "Membership" (context = 2) 
-        // otomatis tersedia (di-assign) di seluruh halaman About.
-        // ==========================================================
+
         if ($journal) {
             $journalId = (int) $journal->getId();
             /** @var GroupDAO $groupDao */
             $groupDao = DAORegistry::getDAO('GroupDAO');
             
-            $templateMgr->assign(array(
+            $templateMgr->assign([
                 'hasDisplayMembership' => $groupDao->hasDisplayMembershipGroups($journalId),
                 'displayMembershipGroups' => $groupDao->getDisplayMembershipGroupsData($journalId)
-            ));
+            ]);
         }
-    }
-
-    /**
-     * Display contact page.
-     * 
-     * [WIZDAM] Sebelumnya method ini punya percabangan if/else internal
-     * (jurnal vs site) dan menampilkan SATU template yang sama untuk
-     * keduanya. Sekarang jadi delegator tipis -- AboutJournalHandler dan
-     * AboutPublisherHandler masing-masing punya method contact() SENDIRI
-     * (halaman kontak dedicated per konteks, bukan lagi digabung), supaya
-     * pageHierarchy/breadcrumb dan logic masing-masing benar-benar sesuai
-     * konteksnya (lihat AboutPublisherHandler::setupTemplate() yang pakai
-     * locale key 'about.aboutThePublisher', beda dari 'about.aboutTheJournal'
-     * milik jurnal).
-     *
-     * [WIZDAM SHIM] Jembatan backward-compatible -- op 'contact' TETAP
-     * berfungsi untuk KEDUA konteks (jurnal maupun publisher/site),
-     * supaya link lama di berbagai template ({url page="about"
-     * op="contact"}) TIDAK PERLU diubah satu per satu. Untuk konteks
-     * jurnal, di-delegasikan ke AboutJournalHandler::
-     * contactEditorialOffice() (nama method sudah berganti, method ini
-     * yang menjembatani). Migrasi ke op 'contact-editorial-office' yang
-     * eksplisit (routing langsung ke AboutJournalHandler, tanpa lewat
-     * shim ini) bisa dilakukan bertahap per template, tidak mendesak --
-     * SHIM ini menjamin keduanya tetap benar sampai migrasi selesai.
-     *
-     * @param array $args
-     * @param PKPRequest|null $request
-     */
-    public function contact($args = [], $request = null) {
-        $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
-        $journal = $request->getJournal();
-
-        if ($journal) {
-            import('pages.about.AboutJournalHandler');
-            $handler = new AboutJournalHandler();
-            return $handler->contactEditorialOffice($args, $request);
-        }
-
-        import('pages.about.AboutPublisherHandler');
-        $handler = new AboutPublisherHandler();
-        return $handler->contact($args, $request);
     }
 
     /**
@@ -229,6 +182,7 @@ class AboutHandler extends Handler {
     public function _getPublicStatisticsNames() {
         import ('pages.manager.ManagerHandler');
         import ('pages.manager.StatisticsHandler');
+
         return [
             'statNumPublishedIssues',
             'statItemsPublished',

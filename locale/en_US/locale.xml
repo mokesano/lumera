@@ -906,11 +906,11 @@
 	<!-- About The Journal -->
 	<message key="about.aboutJournal">About</message>
 	<message key="about.statistics">Statistics</message>
-	<message key="about.journalContact">Journal Contact</message>
+	<message key="about.journalContact">Contact</message>
+	<message key="about.contactEditorialOffice">Contact</message>
 	<message key="about.aboutTheJournal">About the Journal</message>
 	<message key="about.aboutThePublisher">About the Publisher</message>
 	<message key="about.contact">Contact</message>
-	<message key="about.contactEditorialOffice">Contact</message>
 	<message key="about.publisherContact">Contact</message>
 	<message key="about.aboutSite">About the Site</message>
 	<message key="about.siteMap">Site Map</message>
@@ -922,7 +922,7 @@
 	<message key="about.publisher.mission">Our Mission</message>
 	<message key="about.publisher.history">Our History</message>
 	<message key="about.publisher.leadership">Leadership</message>
-	<message key="about.publisher.award">Awards &amp; Recognition</message>
+	<message key="about.publisher.award">Awards</message>
 	<message key="about.publisher.noContent">Content for this page has not been added yet. Please check back later.</message>
 	<message key="about.editorialTeam">Editorial Team</message>
 	<message key="about.editorProfiles">Editor Profiles</message>
