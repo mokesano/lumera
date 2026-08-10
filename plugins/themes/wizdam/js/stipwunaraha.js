@@ -6570,7 +6570,7 @@ var Style = SuperFactory(customMerge, true)(function (styleObject) {
             }).join(''),
             (style.context || []).map(function (context) {
                 return context.query + ' {' + (context.styles.children || []).map(function (child) {
-                    return child.selector.replace(/&/, style.selector) + ' {' + CSSObjectToString(child.styles) + '}';
+                    return child.selector.replace(/&/g, style.selector) + ' {' + CSSObjectToString(child.styles) + '}';
                 }).join('') + '}';
             }).join('')
         ].join('');
