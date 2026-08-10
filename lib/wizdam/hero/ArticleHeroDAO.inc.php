@@ -332,5 +332,24 @@ class ArticleHeroDAO extends DAO {
         return $articles;
     }
 
+    /**
+     * Get cover page alt text for a given article.
+     * @param int $articleId
+     * @return string
+     */
+    public function getArticleCoverPageAltText(int $articleId): string {
+        $result = $this->retrieve(
+            'SELECT setting_value FROM article_settings WHERE article_id = ? AND setting_name = ? LIMIT 1',
+            [$articleId, 'coverPageAltText']
+        );
+        $altText = '';
+        if ($result && !$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $altText = isset($row['setting_value']) ? (string) $row['setting_value'] : '';
+            $result->Close();
+        }
+        return $altText;
+    }
+
 }
 ?>
