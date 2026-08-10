@@ -130,17 +130,24 @@ class SubmissionEditHandler extends SectionEditorHandler {
         $paymentManager = new OJSPaymentManager($request);
         if ($paymentManager->submissionEnabled() || $paymentManager->fastTrackEnabled() || $paymentManager->publicationEnabled()) {
             $templateMgr->assign('authorFees', true);
-            /** @var OJSCompletedPaymentDAO $completedPaymentDao */
-            $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
+            import('lib.wizdam.classes.invoice.Invoice');
+            /** @var InvoiceDAO $invoiceDao */
+            $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
 
             if ($paymentManager->submissionEnabled()) {
-                $templateMgr->assign('submissionPayment', $completedPaymentDao->getSubmissionCompletedPayment($journal->getId(), $articleId));
+                $templateMgr->assign('submissionPayment', $invoiceDao->getPaidInvoiceForArticleFee(
+                    (int) $journal->getId(), $articleId, Invoice::FEE_TYPE_SUBMISSION, PAYMENT_TYPE_SUBMISSION
+                ));
             }
             if ($paymentManager->fastTrackEnabled()) {
-                $templateMgr->assign('fastTrackPayment', $completedPaymentDao->getFastTrackCompletedPayment($journal->getId(), $articleId));
+                $templateMgr->assign('fastTrackPayment', $invoiceDao->getPaidInvoiceForArticleFee(
+                    (int) $journal->getId(), $articleId, Invoice::FEE_TYPE_FAST_TRACK, PAYMENT_TYPE_FASTTRACK
+                ));
             }
             if ($paymentManager->publicationEnabled()) {
-                $templateMgr->assign('publicationPayment', $completedPaymentDao->getPublicationCompletedPayment($journal->getId(), $articleId));
+                $templateMgr->assign('publicationPayment', $invoiceDao->getPaidInvoiceForArticleFee(
+                    (int) $journal->getId(), $articleId, Invoice::FEE_TYPE_PUBLICATION, PAYMENT_TYPE_PUBLICATION
+                ));
             }
         }
 

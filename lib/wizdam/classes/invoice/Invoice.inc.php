@@ -122,6 +122,34 @@ class Invoice extends DataObject {
         return (bool) $this->getData('isLegacy');
     }
 
+    /**
+     * [WIZDAM] Tanggal invoice ditandai lunas.
+     * @return string|null
+     */
+    public function getDatePaid(): ?string {
+        return $this->getData('datePaid');
+    }
+
+    /**
+     * [WIZDAM] Alias getDatePaid() -- KOMPATIBILITAS dengan
+     * OJSCompletedPayment::getTimestamp(), supaya template yang sebelumnya
+     * memanggil $payment->getTimestamp() (authorFees.tpl dkk) tetap
+     * berfungsi TANPA PERLU DIUBAH saat objeknya diganti dari
+     * OJSCompletedPayment menjadi Invoice.
+     * @return string|null
+     */
+    public function getTimestamp(): ?string {
+        return $this->getDatePaid();
+    }
+
+    /**
+     * [WIZDAM] ID submission/artikel terkait invoice ini.
+     * @return int
+     */
+    public function getSubmissionId(): int {
+        return (int) $this->getData('submissionId');
+    }
+
     // --- SETTERS ---
     /**
      * Menetapkan tipe biaya

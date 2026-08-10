@@ -163,19 +163,31 @@ class TrackSubmissionHandler extends AuthorHandler {
         $paymentManager = new OJSPaymentManager($request);
         if ( $paymentManager->submissionEnabled() || $paymentManager->fastTrackEnabled() || $paymentManager->publicationEnabled()) {
             $templateMgr->assign('authorFees', true);
-            /** @var OJSCompletedPaymentDAO $completedPaymentDao */
-            $completedPaymentDao = DAORegistry::getDAO('OJSCompletedPaymentDAO');
+            // [WIZDAM BUGFIX] Sebelumnya OJSCompletedPaymentDAO -- lihat
+            // catatan lengkap di SubmissionEditHandler::submission() untuk
+            // penjelasan akar masalah. Diganti InvoiceDAO::
+            // getPaidInvoiceForArticleFee() -- satu sumber kebenaran yang
+            // konsisten dengan halaman editor.
+            import('lib.wizdam.classes.invoice.Invoice');
+            /** @var InvoiceDAO $invoiceDao */
+            $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
 
             if ($paymentManager->submissionEnabled()) {
-                $templateMgr->assign('submissionPayment', $completedPaymentDao->getSubmissionCompletedPayment ($journal->getId(), $articleId));
+                $templateMgr->assign('submissionPayment', $invoiceDao->getPaidInvoiceForArticleFee(
+                    $journal->getId(), $articleId, Invoice::FEE_TYPE_SUBMISSION, PAYMENT_TYPE_SUBMISSION
+                ));
             }
 
             if ($paymentManager->fastTrackEnabled()) {
-                $templateMgr->assign('fastTrackPayment', $completedPaymentDao->getFastTrackCompletedPayment ($journal->getId(), $articleId));
+                $templateMgr->assign('fastTrackPayment', $invoiceDao->getPaidInvoiceForArticleFee(
+                    $journal->getId(), $articleId, Invoice::FEE_TYPE_FAST_TRACK, PAYMENT_TYPE_FASTTRACK
+                ));
             }
 
             if ($paymentManager->publicationEnabled()) {
-                $templateMgr->assign('publicationPayment', $completedPaymentDao->getPublicationCompletedPayment ($journal->getId(), $articleId));
+                $templateMgr->assign('publicationPayment', $invoiceDao->getPaidInvoiceForArticleFee(
+                    $journal->getId(), $articleId, Invoice::FEE_TYPE_PUBLICATION, PAYMENT_TYPE_PUBLICATION
+                ));
             }
         }
 

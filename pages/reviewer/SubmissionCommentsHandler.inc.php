@@ -12,31 +12,30 @@ declare(strict_types=1);
  * @ingroup pages_reviewer
  *
  * @brief Handle requests for submission comments.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.reviewer.SubmissionReviewHandler');
+import('classes.security.validation.HandlerValidatorSubmissionComment');
 
 class SubmissionCommentsHandler extends ReviewerHandler {
     
-    /** @var object|null comment associated with the request */
+    /** @var object|null */
     public $comment = null;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function SubmissionCommentsHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -47,112 +46,97 @@ class SubmissionCommentsHandler extends ReviewerHandler {
     /**
      * View peer review comments.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function viewPeerReviewComments($args, $request) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
-
+        
         $articleId = (int) array_shift($args);
         $reviewId = (int) array_shift($args);
 
         $this->validate($request, $reviewId);
         $this->setupTemplate(true);
-        ReviewerAction::viewPeerReviewComments($this->user, $this->submission, $reviewId);
+        
+        $reviewerAction = new ReviewerAction();
+        $reviewerAction->viewPeerReviewComments($this->user, $this->submission, $reviewId);
     }
 
     /**
      * Post peer review comments.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function postPeerReviewComment($args, $request) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
-        // [SECURITY FIX] Amankan 'articleId' dengan trim() dan (int)
-        $articleId = (int) trim((string) $request->getUserVar('articleId'));
-        $reviewId = (int) trim((string) $request->getUserVar('reviewId'));
-
-        // If the user pressed the "Save and email" button, then email the comment.
-        // [SECURITY FIX] Amankan 'saveAndEmail' sebagai flag boolean dengan (int) trim()
-        $saveAndEmailInput = (int) trim((string) $request->getUserVar('saveAndEmail'));
-        $emailComment = $saveAndEmailInput != 0;
+        $articleId = (int) $request->getUserVar('articleId');
+        $reviewId = (int) $request->getUserVar('reviewId');
+        $emailComment = (bool) $request->getUserVar('saveAndEmail');
 
         $this->validate($request, $reviewId);
         $this->setupTemplate(true);
 
-        if (ReviewerAction::postPeerReviewComment($this->user, $this->submission, $reviewId, $emailComment, $request)) {
-            ReviewerAction::viewPeerReviewComments($this->user, $this->submission, $reviewId);
+        $reviewerAction = new ReviewerAction();
+        if ($reviewerAction->postPeerReviewComment($this->user, $this->submission, $reviewId, $emailComment, $request)) {
+            $reviewerAction->viewPeerReviewComments($this->user, $this->submission, $reviewId);
         }
     }
 
     /**
      * Edit comment.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function editComment($args, $request) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $articleId = (int) array_shift($args);
-        $commentId = isset($args[0]) ? (int) array_shift($args) : null;
-        if (!$commentId) $commentId = null;
-
-        // [SECURITY FIX] Amankan 'reviewId' dengan trim() dan (int)
-        $reviewId = (int) trim((string) $request->getUserVar('reviewId'));
+        $commentId = !empty($args[0]) ? (int) array_shift($args) : null;
+        $reviewId = (int) $request->getUserVar('reviewId');
 
         $this->validate($request, $reviewId, $commentId);
         $this->setupTemplate(true);
 
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $articleDao->getArticle($articleId);
 
-        ReviewerAction::editComment($article, $this->comment);
+        $reviewerAction = new ReviewerAction();
+        $reviewerAction->editComment($article, $this->comment);
     }
 
     /**
      * Save comment.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function saveComment($args, $request) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
-        // [SECURITY FIX] Amankan 'articleId' dengan trim() dan (int)
-        $articleId = (int) trim((string) $request->getUserVar('articleId'));
-        $commentId = (int) trim((string) $request->getUserVar('commentId'));
-        $reviewId = (int) trim((string) $request->getUserVar('reviewId'));
+        $articleId = (int) $request->getUserVar('articleId');
+        $commentId = (int) $request->getUserVar('commentId');
+        $reviewId = (int) $request->getUserVar('reviewId');
+        $emailComment = (bool) $request->getUserVar('saveAndEmail');
 
         $this->validate($request, $reviewId, $commentId);
         $this->setupTemplate(true);
 
-        // If the user pressed the "Save and email" button, then email the comment.
-        // [SECURITY FIX] Amankan 'saveAndEmail' sebagai flag boolean dengan (int) trim()
-        $saveAndEmailInput = (int) trim((string) $request->getUserVar('saveAndEmail'));
-        $emailComment = $saveAndEmailInput != 0;
-
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
         $article = $articleDao->getArticle($articleId);
 
-        // [WIZDAM] Ensure ReviewerAction::saveComment exists or is handled. 
-        // Assuming existence based on legacy call structure, though strictly not in first file provided.
-        // If not exists, strict typing in Action might fail, but logic flows here.
-        if (method_exists('ReviewerAction', 'saveComment')) {
-            ReviewerAction::saveComment($article, $this->comment, $emailComment, $request);
+        $reviewerAction = new ReviewerAction();
+        if (method_exists($reviewerAction, 'saveComment')) {
+            $reviewerAction->saveComment($article, $this->comment, $emailComment, $request);
         } else {
-             // Fallback/Warning if method missing in Action class
-             error_log("WIZDAM WARNING: ReviewerAction::saveComment missing.");
+            error_log("WARNING: ReviewerAction::saveComment missing.");
         }
 
-        // Refresh the comment
+        /** @var ArticleCommentDAO $articleCommentDao */
         $articleCommentDao = DAORegistry::getDAO('ArticleCommentDAO');
         $comment = $articleCommentDao->getArticleCommentById($commentId);
 
-        // Redirect back to initial comments page
-        if ($comment && $comment->getCommentType() == COMMENT_TYPE_PEER_REVIEW) {
+        if ($comment && $comment->getCommentType() === COMMENT_TYPE_PEER_REVIEW) {
             $request->redirect(null, null, 'viewPeerReviewComments', [$articleId, $comment->getAssocId()]);
         }
     }
@@ -160,61 +144,47 @@ class SubmissionCommentsHandler extends ReviewerHandler {
     /**
      * Delete comment.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function deleteComment($args, $request) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $articleId = (int) array_shift($args);
         $commentId = (int) array_shift($args);
-        
-        // [SECURITY FIX] Amankan 'reviewId' dengan trim() dan (int)
-        $reviewId = (int) trim((string) $request->getUserVar('reviewId'));
+        $reviewId = (int) $request->getUserVar('reviewId');
 
         $this->validate($request, $reviewId, $commentId);
-        $this->setupTemplate(true); // Argument 1 only for setupTemplate in ReviewerHandler
+        $this->setupTemplate(true);
 
-        ReviewerAction::deleteComment($commentId, $this->user);
+        $reviewerAction = new ReviewerAction();
+        $reviewerAction->deleteComment($commentId, $this->user);
 
-        // Redirect back to initial comments page
-        if ($this->comment && $this->comment->getCommentType() == COMMENT_TYPE_PEER_REVIEW) {
+        if ($this->comment && $this->comment->getCommentType() === COMMENT_TYPE_PEER_REVIEW) {
             $request->redirect(null, null, 'viewPeerReviewComments', [$articleId, $this->comment->getAssocId()]);
         }
     }
 
     /**
      * Handle validation of incoming requests.
-     * [WIZDAM] Inheritance Strategy:
-     * Parent (ReviewerHandler) uses validate($requiredContexts, $request).
-     * We extend signature with optional $commentId to allow stricter logic while keeping compatibility.
-     * @param object|mixed $request PKPRequest or context
+     * @param object|mixed $request
      * @param int|mixed $reviewId
-     * @param int|null $commentId optional
+     * @param int|null $commentId
+     * @return void
      */
     public function validate($request = null, $reviewId = null, $commentId = null) {
-        // [WIZDAM] SECURITY HARDENING
-        // Ensure $request is populated before passing to parent.
-        // This guarantees that ReviewerHandler's "Case A" logic (is_object + is_numeric)
-        // is triggered correctly, ensuring Access Key validation runs.
         if (!($request instanceof PKPRequest)) {
             $request = Application::get()->getRequest();
         }
 
-        // Call Parent: ReviewerHandler::validate($request_object, $reviewId_int)
-        // Now safe because $request is guaranteed to be an Object.
         parent::validate($request, $reviewId);
 
         if ($commentId !== null) {
-            // Bug #8863: Can't call normal addCheck b/c of one-click reviewer
-            // access bypassing normal validation tools (no Request::getUser)
             $check = new HandlerValidatorSubmissionComment($this, $commentId, $this->user);
-            
-            // [WIZDAM] Redundancy: Ensure redirection works even if properties missing
             if (!$check->isValid()) {
                 $request->redirect(null, null, 'index');
             }
         }
     }
+
 }
 ?>
