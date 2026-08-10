@@ -19,11 +19,9 @@
             <p class="c-article-metrics__updated">Last updated: {$statsLastUpdated}</p>
         </nav>
         <ul class="app-article-metrics-stat">
-            <li class="app-article-metrics-stat__item">{$article->getViews()|number_format:0}<span class="app-article-metrics-stat__subitem">Views</span></li>
-            {if $galley && $galley->isPdfGalley()}
-                <li class="app-article-metrics-stat__item">{$galley->getViews()|number_format:0}<span class="app-article-metrics-stat__subitem">Downloads</span></li>
-            {/if}
-            <li class="app-article-metrics-stat__item">0<span class="app-article-metrics-stat__subitem">Citations</span></li>
+            <li class="app-article-metrics-stat__item">{$totalViews|default:0|number_format:0}<span class="app-article-metrics-stat__subitem">Views</span></li>
+            <li class="app-article-metrics-stat__item">{$totalDownloads|default:0|number_format:0}<span class="app-article-metrics-stat__subitem">Downloads</span></li>
+            <li class="app-article-metrics-stat__item">{$citationCount|default:0}<span class="app-article-metrics-stat__subitem">Citations</span></li>
             <li class="app-article-metrics-stat__item">516<span class="app-article-metrics-stat__subitem">Altmetric</span></li>
             <li class="app-article-metrics-stat__item">79<span class="app-article-metrics-stat__subitem">Mentions</span></li>
         </ul>
@@ -43,7 +41,7 @@
                             <p>We update counts daily.</p>
                         </div>
                         <div class="app-article-metrics-box__side">
-                            <p class="app-article-metrics-count">{math equation="x + y" x=$views y=$downloads}<span class="app-article-metrics-count_text">Accesses</span></p>
+                            <p class="app-article-metrics-count">{math equation="x + y" x=$totalViews y=$totalDownloads}<span class="app-article-metrics-count_text">Accesses</span></p>
                         </div>
                     </div>
                 </section>
