@@ -58,6 +58,7 @@
                 </section>
             </div>
 
+            {if $citingArticles && $citingArticles|@count > 0}
             <section class="app-article-metrics-container u-mb-24">
                 <div class="app-article-metrics-box">
                     <div class="app-article-metrics-box__main">
@@ -65,7 +66,6 @@
                         <div class="c-article-metrics__section" data-test="metrics-citedby">
                             <div class="c-article-metrics__body">
                                 <div class="c-article-metrics__section--left">
-                                    {if $citingArticles && $citingArticles|@count > 0}
                                     <ul class="u-list-reset">
                                         {foreach from=$citingArticles item=citation}
                                         <li>
@@ -91,9 +91,6 @@
                                         </li>
                                         {/foreach}
                                     </ul>
-                                    {else}
-                                    <p class="no-citations">No citing articles found yet.</p>
-                                    {/if}
                                 </div>
                             </div>
                         </div>
@@ -104,6 +101,7 @@
                     </div>
                 </div>
             </section>
+            {/if}
                 
             {if $doi}
             <section class="app-article-metrics-container u-mb-24" data-test="altmetric-score">
@@ -155,7 +153,7 @@
             </section>
             {/if}
 
-            <section class="app-article-metrics-container u-mb-24">
+            <section class="app-article-metrics-container u-mb-24 u-hide">
                 <div class="app-article-metrics-box">
                     <div class="app-article-metrics-box__main">
                         <h2 class="u-mb-16 u-mt-0 c-article-metrics-heading"><span class="app-article-metrics-box__icon-container"><svg class="app-article-metrics-box-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m9.452 1.293 5.92 5.92 2.92-2.92a1 1 0 0 1 1.415 1.414l-2.92 2.92 5.92 5.92a1 1 0 0 1 0 1.415 10.371 10.371 0 0 1-10.378 2.584l.652 3.258A1 1 0 0 1 12 23H2a1 1 0 0 1-.874-1.486l4.789-8.62C4.194 9.074 4.9 4.43 8.038 1.292a1 1 0 0 1 1.414 0Zm-2.355 13.59L3.699 21h7.081l-.689-3.442a10.392 10.392 0 0 1-2.775-2.396l-.22-.28Zm1.69-11.427-.07.09a8.374 8.374 0 0 0 11.737 11.737l.089-.071L8.787 3.456Z"></path></svg></span>Mentions</h2>
