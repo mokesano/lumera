@@ -21,7 +21,7 @@
         <ul class="app-article-metrics-stat">
             <li class="app-article-metrics-stat__item">{$article->getViews()|number_format:0}<span class="app-article-metrics-stat__subitem">Views</span></li>
             {if $galley && $galley->isPdfGalley()}
-                <li class="app-article-metrics-stat__item">{$galley->getViews($isPdfGalley)}<span class="app-article-metrics-stat__subitem">Downloads</span></li>
+                <li class="app-article-metrics-stat__item">{$galley->getViews()|number_format:0}<span class="app-article-metrics-stat__subitem">Downloads</span></li>
             {/if}
             <li class="app-article-metrics-stat__item">0<span class="app-article-metrics-stat__subitem">Citations</span></li>
             <li class="app-article-metrics-stat__item">516<span class="app-article-metrics-stat__subitem">Altmetric</span></li>
