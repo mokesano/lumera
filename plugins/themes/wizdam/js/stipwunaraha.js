@@ -6566,7 +6566,7 @@ var Style = SuperFactory(customMerge, true)(function (styleObject) {
         return [
             style.selector + ' {\n    /* ' + style.name + ' */\n    ' + CSSObjectToString(style.styles) + '\n}\n',
             (style.children || []).map(function (child) {
-                return child.selector.replace(/&/, style.selector) + ' {' + CSSObjectToString(child.styles) + '}';
+                return child.selector.replace(/&/g, style.selector) + ' {' + CSSObjectToString(child.styles) + '}';
             }).join(''),
             (style.context || []).map(function (context) {
                 return context.query + ' {' + (context.styles.children || []).map(function (child) {
