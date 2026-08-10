@@ -959,10 +959,17 @@
        const doiElement = document.querySelector('.anchor.doi');
        if (doiElement) {
            const href = doiElement.getAttribute('href');
-           if (href && href.includes('https://doi.org/')) {
-               const doi = href.split('https://doi.org/')[1];
-               if (doi) {
-                   doiProcessed = true; // tandai sudah "diproses" -- panel sudah terisi dari server
+           if (href) {
+               try {
+                   const parsedUrl = new URL(href, window.location.origin);
+                   if (parsedUrl.protocol === 'https:' && parsedUrl.hostname === 'doi.org') {
+                       const doi = parsedUrl.pathname.replace(/^\/+/, '');
+                       if (doi) {
+                           doiProcessed = true; // tandai sudah "diproses" -- panel sudah terisi dari server
+                       }
+                   }
+               } catch (e) {
+                   // Abaikan URL yang tidak valid
                }
            }
        }
