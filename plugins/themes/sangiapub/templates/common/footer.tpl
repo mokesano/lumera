@@ -18,26 +18,13 @@
     <footer class="composite-layer" role="contentinfo">
         {if $currentJournal}
             {if $homepageImage && !$setupStep}
-                {foreach name=sections from=$publishedArticles item=section key=sectionId}
-                    {if $smarty.foreach.sections.iteration == 1}
-                        {assign var="reversedArticles" value=$section.articles}
-                        {foreach name=articles from=$reversedArticles item=article key=articles}
-                            {if $smarty.foreach.articles.iteration == 1}
-                                {if $article->getLocalizedFileName() && $article->getLocalizedShowCoverPage() && !$article->getHideCoverPageToc($locale)}
-                            		{assign var=showCoverPage value=true}
-                            	{else}
-                            		{assign var=showCoverPage value=false}
-                            	{/if}
-                        	{/if}
-                        {/foreach}
-                    {/if}
-                {/foreach}
                 {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
                 {call_hook name="Templates::Article::Article::ArticleCoverImage"}
-                {if $showCoverPage}
+
+                {if $heroArticle && $heroArticle[0].cover_image.alt_text}
                     <div class="u-mt-16 u-mb-16">
                         <div class="u-container">
-                            <p class="c-meta u-ma-0">Top headline image: {$article->getLocalizedCoverPageAltText()|escape:'html'|regex_replace:'/&lt;(\/?i)&gt;/':'<$1>' nofilter}</p>
+                            <p class="c-meta u-ma-0">Top headline image: {$heroArticle[0].cover_image.alt_text|escape:'html' nofilter}</p>
                         </div>
                     </div>
                 {elseif $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && !$issue->getHideCoverPageArchives($locale)}
