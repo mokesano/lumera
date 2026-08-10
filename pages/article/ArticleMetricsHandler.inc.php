@@ -116,7 +116,14 @@ class ArticleMetricsHandler extends ArticleHandler {
             'citationCount'  => $citationCount,
         ]);
 
-        $templateMgr->assign('statsLastUpdated', date('l, d M Y H:i:s T'));
+        import('lib.pkp.classes.scheduledTask.ScheduledTaskDAO');
+        /** @var ScheduledTaskDAO $scheduledTaskDao */
+        $scheduledTaskDao = DAORegistry::getDAO('ScheduledTaskDAO');
+        $lastRunTimestamp = $scheduledTaskDao->getLastRunTime('plugins.generic.usageStats.UsageStatsLoader');
+        $statsLastUpdated = $lastRunTimestamp > 0
+            ? date('l, d M Y H:i:s T', $lastRunTimestamp)
+            : null; // Belum pernah jalan sama sekali -- jangan pura-pura ada tanggal.
+        $templateMgr->assign('statsLastUpdated', $statsLastUpdated);
 
         $templateMgr->display('article/metrics.tpl');
     }
@@ -125,24 +132,6 @@ class ArticleMetricsHandler extends ArticleHandler {
      * Total abstract views & galley downloads sepanjang waktu untuk 1 artikel.
      * Memakai Application::getMetrics() -- API resmi, sama seperti yang
      * dipakai Journal::getMetrics() dan Application::getPrimaryMetricByAssoc().
-     *
-     * [WIZDAM BUGFIX] Sebelumnya filter memakai STATISTICS_DIMENSION_
-     * SUBMISSION_ID untuk KEDUA jenis metrik (views ARTIKEL maupun
-     * downloads GALLEY) -- ini SALAH untuk galley. Bandingkan dengan
-     * Application::getPrimaryMetricByAssoc() (dipakai
-     * PublishedArticle::getViews()/ArticleGalley::getViews(), sumber
-     * angka yang tampil di halaman artikel sendiri lewat heading.tpl):
-     * dimension yang benar adalah STATISTICS_DIMENSION_ASSOC_ID, BUKAN
-     * SUBMISSION_ID. Untuk assoc_type ARTICLE, assoc_id KEBETULAN sama
-     * dengan article_id (jadi views artikel sebelumnya masih terlihat
-     * benar) -- tapi untuk assoc_type GALLEY, assoc_id adalah ID GALLEY
-     * itu sendiri (BUKAN article_id), sehingga filter submission_id yang
-     * lama tidak pernah cocok dengan data downloads yang sebenarnya.
-     * Satu artikel bisa punya BEBERAPA galley (PDF, HTML, dst) -- semua
-     * galley_id dikumpulkan dulu, lalu di-filter sekaligus lewat array
-     * (getMetrics() mendukung ini, menghasilkan klausa SQL IN (...)),
-     * supaya total downloads benar-benar menjumlahkan SEMUA galley
-     * artikel, bukan cuma satu atau tidak ada sama sekali.
      * @param int $articleId
      * @param int $journalId
      * @return array [totalViews, totalDownloads]
