@@ -344,6 +344,20 @@ class ArticleHeroService {
 
         $doi = method_exists($article, 'getPubId') ? $article->getPubId('doi') : '';
 
+        $coverImage = TrendsManager::findArticleCoverImage($article, $journalId, $request);
+        if (!is_array($coverImage)) {
+            $coverImage = [];
+        }
+
+        /** @var ArticleHeroDAO $articleHeroDao */
+        $articleHeroDao = DAORegistry::getDAO('ArticleHeroDAO');
+        $altText = $articleHeroDao->getArticleCoverPageAltText((int) $row['article_id']);
+        if ($altText === '' && method_exists($article, 'getLocalizedCoverPageAltText')) {
+            $altText = (string) $article->getLocalizedCoverPageAltText();
+        }
+        
+        $coverImage['alt_text'] = $altText;
+
         return [
             'article_id' => $row['article_id'],
             'title' => $article->getLocalizedTitle(),
@@ -355,7 +369,7 @@ class ArticleHeroService {
             'date_published_formatted' => $row['date_published'] ? date('Y-m-d', strtotime((string) $row['date_published'])) : '',
             'is_open_access' => TrendsManager::checkWizdamOpenAccessStatus($article, $journalId, $journal),
             'article_type' => $articleType,
-            'cover_image' => TrendsManager::findArticleCoverImage($article, $journalId, $request),
+            'cover_image' => $coverImage,
             'article_url' => $request->url(null, 'article', 'view', $row['article_id']),
             'keywords' => $keywords,
             'doi' => $doi,
