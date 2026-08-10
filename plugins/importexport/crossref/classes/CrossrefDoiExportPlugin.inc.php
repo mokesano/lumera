@@ -16,13 +16,6 @@ declare(strict_types=1);
 
 import('classes.plugins.ImportExportPlugin');
 
-// [WIZDAM BUGFIX] Nama konstanta ini SAMA PERSIS dipakai plugin mEDRA &
-// DataCite juga -- karena PluginRegistry::loadCategory('importexport')
-// memuat SEMUA plugin dalam satu request, define() tanpa guard akan
-// memicu PHP Warning "Constant already defined" berulang kali. Dibungkus
-// if (!defined(...)) supaya cuma yang PERTAMA kali berhasil, sisanya
-// dilewati dengan aman (nilainya identik di ketiga plugin, jadi tidak
-// mengubah perilaku apapun -- cuma menghilangkan warning-nya).
 if (!defined('DOI_EXPORT_ISSUES')) {
     // Export types.
     define('DOI_EXPORT_ISSUES', 0x01);
@@ -218,14 +211,6 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
                 break;
 
             default:
-                // [WIZDAM BUGFIX] Sebelumnya throw \UnexpectedValueException
-                // yang TIDAK DITANGKAP di manapun -- menyebabkan fatal error
-                // yang menghentikan seluruh halaman untuk $op apapun yang
-                // tidak dikenali switch ini (termasuk kemungkinan verb yang
-                // seharusnya lewat manage(), bukan display()). Redirect ke
-                // halaman utama plugin jauh lebih aman untuk pengguna
-                // daripada crash total -- request yang salah arah cukup
-                // dikembalikan, bukan menghentikan aplikasi.
                 $request->redirect(null, 'manager', 'importexport', ['plugin', $this->getName()]);
                 return;
         }
@@ -1146,7 +1131,7 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param Journal $journal
      * @return array
      */
-    protected function _getUnregisteredIssues($journal): array {
+    public function _getUnregisteredIssues($journal): array {
         /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $issues = $issueDao->getIssuesBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, $journal->getId());
@@ -1167,7 +1152,7 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param Journal $journal
      * @return array
      */
-    protected function _getUnregisteredArticles($journal): array {
+    public function _getUnregisteredArticles($journal): array {
         /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $articles = $publishedArticleDao->getBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, $journal->getId());
@@ -1187,7 +1172,7 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param Journal $journal
      * @return array
      */
-    protected function _getUnregisteredGalleys($journal): array {
+    public function _getUnregisteredGalleys($journal): array {
         /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galleys = $galleyDao->getGalleysBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, null, $journal->getId());
@@ -1228,10 +1213,6 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param Journal $journal
      * @return array|null
      */
-    // [WIZDAM BUGFIX] Sebelumnya "private" -- CrossRefExportPlugin (subclass)
-    // memanggil method ini LANGSUNG via $this->..., yang TIDAK VALID untuk
-    // method private (cuma bisa diakses dari DALAM class yang sama, BUKAN
-    // dari subclass). Harus protected supaya bisa diwarisi & dipanggil.
     protected function _prepareArticleDataByArticleId(int $articleId, $journal): ?array {
         $cache = $this->getCache();
 
@@ -1256,8 +1237,6 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param Journal $journal
      * @return Issue|null
      */
-    // [WIZDAM BUGFIX] Sebelumnya "private" -- dipanggil langsung dari
-    // CrossRefExportPlugin (subclass), harus protected.
     protected function _prepareArticleData($article, $journal): ?array {
         $cache = $this->getCache();
         $cache->add($article, null);
@@ -1367,9 +1346,7 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
      * @param array $errors
      * @return array|bool
      */
-    // [WIZDAM BUGFIX] Sebelumnya "private" -- dipanggil langsung dari
-    // CrossRefExportPlugin (subclass), harus protected.
-    protected function _getObjectsFromIds(int $exportType, $objectIds, int $journalId, &$errors) {
+    public function _getObjectsFromIds(int $exportType, $objectIds, int $journalId, &$errors) {
         if (empty($objectIds)) {
             return false;
         }
