@@ -80,7 +80,23 @@ class ReviewerAction extends Action {
             // Must explicitly set sender because we may be here on an access
             // key, in which case the user is not technically logged in
             $email->setFrom((string) $reviewer->getEmail(), (string) $reviewer->getFullName());
-            
+
+            if ($send && $email->hasErrors()) {
+                import('classes.notification.NotificationManager');
+                $notificationManager = new NotificationManager();
+                if (method_exists($notificationManager, 'createTrivialNotification')) {
+                    $notificationManager->createTrivialNotification(
+                        (int) $reviewer->getId(),
+                        NOTIFICATION_TYPE_ERROR,
+                        ['contents' => __('reviewer.article.confirmationEmailFailed')]
+                    );
+                }
+                error_log(sprintf(
+                    'ReviewerAction::confirmReview - confirmation email for reviewId=%d had no valid recipient/errors; reviewer left unconfirmed.',
+                    $reviewId
+                ));
+            }
+
             if (!$email->isEnabled() || ($send && !$email->hasErrors())) {
                 HookRegistry::dispatch('ReviewerAction::confirmReview', [&$reviewerSubmission, &$email, $decline]);
                 
