@@ -284,7 +284,7 @@
 							<td class="value" width="70%">
 								<a href="{url op="downloadFile" path=$reviewId|to_array:$articleId:$reviewerFile->getFileId():$reviewerFile->getRevision()}" class="file">{$reviewerFile->getFileName()|escape}</a>
 								{$reviewerFile->getDateModified()|date_format:$dateFormatShort}
-								{if ($submission->getRecommendation() === null || $submission->getRecommendation() === '') && (!$submission->getCancelled())}
+								{if !$submission->getRecommendation() && (!$submission->getCancelled())}
 									<a class="action" href="{url op="deleteReviewerVersion" path=$reviewId|to_array:$reviewerFile->getFileId():$reviewerFile->getRevision()}">{translate key="common.delete"}</a>
 								{/if}
 							</td>
@@ -300,7 +300,7 @@
 						</tr>
 					{/foreach}
 				</table>
-				{if $submission->getRecommendation() === null || $submission->getRecommendation() === ''}
+				{if !$submission->getRecommendation()}
 					<form method="post" action="{url op="uploadReviewerVersion"}" enctype="multipart/form-data">
 						<input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
 						<input type="hidden" name="reviewId" value="{$reviewId|escape}" />
@@ -327,7 +327,7 @@
 					<tr valign="top">
 						<td class="label" width="30%">{translate key="submission.recommendation"}</td>
 						<td class="value" width="70%">
-							{if $submission->getRecommendation() !== null && $submission->getRecommendation() !== ''}
+							{if $submission->getRecommendation()}
 								{assign var="recommendation" value=$submission->getRecommendation()}
 								<strong>{translate key=$reviewerRecommendationOptions.$recommendation}</strong>&nbsp;&nbsp;
 								{$submission->getDateCompleted()|date_format:$dateFormatShort}
