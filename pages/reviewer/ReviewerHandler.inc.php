@@ -19,14 +19,14 @@ import('classes.handler.Handler');
 
 class ReviewerHandler extends Handler {
     
-    /** @var object|null user associated with the request */
+    /** @var object|null */
     public $user = null;
 
-    /** @var object|null submission associated with the request */
+    /** @var object|null */
     public $submission = null;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
@@ -34,12 +34,12 @@ class ReviewerHandler extends Handler {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function ReviewerHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -50,10 +50,9 @@ class ReviewerHandler extends Handler {
     /**
      * Display reviewer index page.
      * @param array $args
-     * @param object $request PKPRequest
+     * @param object|null $request
      */
     public function index($args = [], $request = null) {
-        // [WIZDAM] Strict Type Guard
         $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
 
         $this->validate($request);
@@ -61,49 +60,49 @@ class ReviewerHandler extends Handler {
 
         $journal = $request->getJournal();
         $user = $request->getUser();
+
+        if ($journal === null || $user === null) {
+            $request->redirect(null, 'index');
+            return;
+        }
+
+        /** @var ReviewerSubmissionDAO $reviewerSubmissionDao */
         $reviewerSubmissionDao = DAORegistry::getDAO('ReviewerSubmissionDAO');
         $rangeInfo = $this->getRangeInfo('submissions');
 
-        $page = isset($args[0]) ? $args[0] : '';
-        switch($page) {
-            case 'completed':
-                $active = false;
-                break;
-            default:
-                $page = 'active';
-                $active = true;
+        $page = isset($args[0]) ? (string) $args[0] : '';
+        $active = ($page !== 'completed');
+        if (!$active) {
+            $page = 'completed';
+        } else {
+            $page = 'active';
         }
 
         $sort = trim((string) $request->getUserVar('sort'));
-        $allowedSorts = ['id', 'title', 'status', 'dateAssigned', 'decision']; // Whitelist columns
-        if (!in_array($sort, $allowedSorts)) {
-            $sort = 'title'; // Safe default
+        $allowedSorts = ['id', 'title', 'status', 'dateAssigned', 'decision'];
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'title';
         }
         
         $sortDirection = trim(strtoupper((string) $request->getUserVar('sortDirection')));
         if ($sortDirection !== 'DESC') {
-            $sortDirection = 'ASC'; // Safe default
+            $sortDirection = 'ASC';
         }
 
-        if ($sort == 'decision') {
+        if ($sort === 'decision') {
             $submissions = $reviewerSubmissionDao->getReviewerSubmissionsByReviewerId($user->getId(), $journal->getId(), $active, $rangeInfo);
-
-            // Sort all submissions by status, which is too complex to do in the DB
             $submissionsArray = $submissions->toArray();
             
-            // [WIZDAM] PHP 8 Compatibility: Replaced deprecated create_function with anonymous function
             usort($submissionsArray, function($s1, $s2) {
-                // Ensure values are strings for strcmp, handling potential nulls
                 $d1 = (string) $s1->getMostRecentDecision();
                 $d2 = (string) $s2->getMostRecentDecision();
                 return strcmp($d1, $d2);
             });
 
-            if($sortDirection == 'DESC') {
+            if ($sortDirection === 'DESC') {
                 $submissionsArray = array_reverse($submissionsArray);
             }
 
-            // Convert submission array back to an ItemIterator class
             import('lib.pkp.classes.core.ArrayItemIterator');
             $submissions = ArrayItemIterator::fromRangeInfo($submissionsArray, $rangeInfo);
         } else {
@@ -111,7 +110,6 @@ class ReviewerHandler extends Handler {
         }
 
         $templateMgr = TemplateManager::getManager();
-        $templateMgr->assign('reviewerRecommendationOptions', ReviewAssignment::getReviewerRecommendationOptions());
         $templateMgr->assign('pageToDisplay', $page);
         $templateMgr->assign('submissions', $submissions);
 
@@ -128,13 +126,12 @@ class ReviewerHandler extends Handler {
     }
 
     /**
-     * Used by subclasses to validate access keys when they are allowed.
-     * [WIZDAM] Made static to allow static calls from validation logic without warnings in PHP 8
+     * Validate access keys when allowed.
      * @param object $request
-     * @param int $userId The user this key refers to
-     * @param int $reviewId The ID of the review this key refers to
-     * @param string|null $newKey The new key name
-     * @return object|null Valid user object if the key was valid; otherwise NULL.
+     * @param int $userId
+     * @param int $reviewId
+     * @param string|null $newKey
+     * @return object|null
      */
     public static function validateAccessKey($request, $userId, $reviewId, $newKey = null) {
         $journal = $request->getJournal();
@@ -150,29 +147,22 @@ class ReviewerHandler extends Handler {
         $accessKeyManager = new AccessKeyManager();
 
         $session = $request->getSession();
-        // Check to see if a new access key is being used.
         if (!empty($newKey)) {
             if (Validation::isLoggedIn()) {
                 Validation::logout();
             }
-            $keyHash = $accessKeyManager->generateKeyHash($newKey);
+            $keyHash = $accessKeyManager->generateKeyHash((string) $newKey);
             $session->setSessionVar(REVIEWER_ACCESS_KEY_SESSION_VAR, $keyHash);
         } else {
             $keyHash = $session->getSessionVar(REVIEWER_ACCESS_KEY_SESSION_VAR);
         }
 
-        // Now that we've gotten the key hash (if one exists), validate it.
-        $accessKey = $accessKeyManager->validateKey(
-            'ReviewerContext',
-            $userId,
-            $keyHash,
-            $reviewId
-        );
+        $accessKey = $accessKeyManager->validateKey('ReviewerContext', $userId, $keyHash, $reviewId);
 
         if ($accessKey) {
+            /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
-            $user = $userDao->getUser($accessKey->getUserId(), false);
-            return $user;
+            return $userDao->getUser($accessKey->getUserId(), false);
         }
 
         return null;
@@ -180,9 +170,10 @@ class ReviewerHandler extends Handler {
 
     /**
      * Setup common template variables.
-     * @param boolean $subclass set to true if caller is below this handler in the hierarchy
+     * @param bool $subclass
      * @param int $articleId
      * @param int $reviewId
+     * @return void
      */
     public function setupTemplate($subclass = false, $articleId = 0, $reviewId = 0) {
         parent::setupTemplate();
@@ -190,61 +181,52 @@ class ReviewerHandler extends Handler {
             LOCALE_COMPONENT_CORE_SUBMISSION, 
             LOCALE_COMPONENT_APP_EDITOR
         );
+        
         $templateMgr = TemplateManager::getManager();
-        $pageHierarchy = $subclass 
-            ? [[Request::url(null, 'user'), 'navigation.user'], [Request::url(null, 'reviewer'), 'user.role.reviewer']]
-            : [[Request::url(null, 'user'), 'navigation.user'], [Request::url(null, 'reviewer'), 'user.role.reviewer']];
+        $request = Application::get()->getRequest();
+        $router = $request->getRouter();
+        
+        $pageHierarchy = [
+            [$router->url($request, null, 'user'), 'navigation.user'], 
+            [$router->url($request, null, 'reviewer'), 'user.role.reviewer']
+        ];
 
         if ($articleId && $reviewId) {
-            $pageHierarchy[] = [Request::url(null, 'reviewer', 'submission', $reviewId), "#$articleId", true];
+            $pageHierarchy[] = [$router->url($request, null, 'reviewer', 'submission', [$reviewId]), "#$articleId", true];
         }
         $templateMgr->assign('pageHierarchy', $pageHierarchy);
     }
 
-    //
-    // Validation
-    //
-
     /**
      * Validate that the user is an assigned reviewer for the article.
-     * Redirects to reviewer index page if validation fails.
-     * [WIZDAM] Transition Mode: Loose signature to handle legacy parameter swapping
-     * @param mixed $requiredContexts (Could be Request object, or null)
-     * @param mixed $request (Could be Request object, or reviewId (int), or null)
+     * @param mixed $requiredContexts
+     * @param mixed $request
+     * @return void|bool
      */
     public function validate($requiredContexts = null, $request = null) {
         $reviewId = null;
         $realRequest = null;
 
-        // Case A: Call from 'child' (SubmissionReviewHandler) - Legacy quirk
-        // Parameter mismatch: validate($request, $reviewId)
         if (is_object($requiredContexts) && is_numeric($request)) {
             $realRequest = $requiredContexts;
             $reviewId = (int) $request;
-        } 
-        // Case B: Standard call (from 'index' or 'parent')
-        // validate($request) or validate(null, $request)
-        else if (is_object($requiredContexts) && $request === null) {
+        } elseif (is_object($requiredContexts) && $request === null) {
             $realRequest = $requiredContexts;
-        } else if (is_object($request)) {
+        } elseif (is_object($request)) {
             $realRequest = $request;
         }
 
-        // [WIZDAM] Final Fallback for Request
         if ($realRequest === null) {
-             $realRequest = Application::get()->getRequest();
-             // If we still can't determine context, assume generic validation
-             if ($reviewId === null) {
-                 $this->addCheck(new HandlerValidatorRoles($this, true, null, null, [ROLE_ID_REVIEWER]));
-                 parent::validate();
-                 return;
-             }
+            $realRequest = Application::get()->getRequest();
+            if ($reviewId === null) {
+                $this->addCheck(new HandlerValidatorRoles($this, true, null, null, [ROLE_ID_REVIEWER]));
+                parent::validate();
+                return;
+            }
         }
 
-        // --- Safe Validation ---
-
-        // Case A continues: We have a specific reviewId
         if ($reviewId !== null) {
+            /** @var ReviewerSubmissionDAO $reviewerSubmissionDao */
             $reviewerSubmissionDao = DAORegistry::getDAO('ReviewerSubmissionDAO');
             $journal = $realRequest->getJournal();
             $user = $realRequest->getUser();
@@ -253,17 +235,17 @@ class ReviewerHandler extends Handler {
             $newKey = trim((string) $realRequest->getUserVar('key'));
 
             $reviewerSubmission = $reviewerSubmissionDao->getReviewerSubmission($reviewId);
-
-            if (!$reviewerSubmission || $reviewerSubmission->getJournalId() != $journal->getId()) {
+            if (!$reviewerSubmission || $journal === null || (int) $reviewerSubmission->getJournalId() !== (int) $journal->getId()) {
                 $isValid = false;
-            } elseif ($user && empty($newKey)) {
-                if ($reviewerSubmission->getReviewerId() != $user->getId()) {
+            } elseif ($user !== null && empty($newKey)) {
+                if ((int) $reviewerSubmission->getReviewerId() !== (int) $user->getId()) {
                     $isValid = false;
                 }
             } else {
-                // [WIZDAM] Static call to local static method
                 $user = self::validateAccessKey($realRequest, $reviewerSubmission->getReviewerId(), $reviewId, $newKey);
-                if (!$user) $isValid = false;
+                if (!$user) {
+                    $isValid = false;
+                }
             }
 
             if (!$isValid) {
@@ -275,9 +257,9 @@ class ReviewerHandler extends Handler {
             return true;
         }
 
-        // Case B continues: No reviewId (Role checks only)
         $this->addCheck(new HandlerValidatorRoles($this, true, null, null, [ROLE_ID_REVIEWER]));
         parent::validate($realRequest);
     }
+
 }
 ?>
