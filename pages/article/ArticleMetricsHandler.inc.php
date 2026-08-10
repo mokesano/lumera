@@ -125,6 +125,24 @@ class ArticleMetricsHandler extends ArticleHandler {
      * Total abstract views & galley downloads sepanjang waktu untuk 1 artikel.
      * Memakai Application::getMetrics() -- API resmi, sama seperti yang
      * dipakai Journal::getMetrics() dan Application::getPrimaryMetricByAssoc().
+     *
+     * [WIZDAM BUGFIX] Sebelumnya filter memakai STATISTICS_DIMENSION_
+     * SUBMISSION_ID untuk KEDUA jenis metrik (views ARTIKEL maupun
+     * downloads GALLEY) -- ini SALAH untuk galley. Bandingkan dengan
+     * Application::getPrimaryMetricByAssoc() (dipakai
+     * PublishedArticle::getViews()/ArticleGalley::getViews(), sumber
+     * angka yang tampil di halaman artikel sendiri lewat heading.tpl):
+     * dimension yang benar adalah STATISTICS_DIMENSION_ASSOC_ID, BUKAN
+     * SUBMISSION_ID. Untuk assoc_type ARTICLE, assoc_id KEBETULAN sama
+     * dengan article_id (jadi views artikel sebelumnya masih terlihat
+     * benar) -- tapi untuk assoc_type GALLEY, assoc_id adalah ID GALLEY
+     * itu sendiri (BUKAN article_id), sehingga filter submission_id yang
+     * lama tidak pernah cocok dengan data downloads yang sebenarnya.
+     * Satu artikel bisa punya BEBERAPA galley (PDF, HTML, dst) -- semua
+     * galley_id dikumpulkan dulu, lalu di-filter sekaligus lewat array
+     * (getMetrics() mendukung ini, menghasilkan klausa SQL IN (...)),
+     * supaya total downloads benar-benar menjumlahkan SEMUA galley
+     * artikel, bukan cuma satu atau tidak ada sama sekali.
      * @param int $articleId
      * @param int $journalId
      * @return array [totalViews, totalDownloads]
@@ -133,25 +151,59 @@ class ArticleMetricsHandler extends ArticleHandler {
         $application = Application::get();
 
         $baseFilter = [
-            STATISTICS_DIMENSION_CONTEXT_ID    => $journalId,
-            STATISTICS_DIMENSION_SUBMISSION_ID => $articleId,
+            STATISTICS_DIMENSION_CONTEXT_ID => $journalId,
         ];
 
-        $viewsFilter = $baseFilter + [STATISTICS_DIMENSION_ASSOC_TYPE => ASSOC_TYPE_ARTICLE];
+        $viewsFilter = $baseFilter + [
+            STATISTICS_DIMENSION_ASSOC_ID   => $articleId,
+            STATISTICS_DIMENSION_ASSOC_TYPE => ASSOC_TYPE_ARTICLE,
+        ];
         $viewsData = $application->getMetrics(OJS_METRIC_TYPE_COUNTER, [], $viewsFilter);
         $totalViews = (is_array($viewsData) && isset($viewsData[0][STATISTICS_METRIC]))
             ? (int) $viewsData[0][STATISTICS_METRIC] : 0;
 
-        $downloadsFilter = $baseFilter + [STATISTICS_DIMENSION_ASSOC_TYPE => ASSOC_TYPE_GALLEY];
-        $downloadsData = $application->getMetrics(OJS_METRIC_TYPE_COUNTER, [], $downloadsFilter);
-        $totalDownloads = (is_array($downloadsData) && isset($downloadsData[0][STATISTICS_METRIC]))
-            ? (int) $downloadsData[0][STATISTICS_METRIC] : 0;
+        $galleyIds = $this->_getGalleyIdsForArticle($articleId);
+        $totalDownloads = 0;
+        if (!empty($galleyIds)) {
+            $downloadsFilter = $baseFilter + [
+                STATISTICS_DIMENSION_ASSOC_ID   => $galleyIds,
+                STATISTICS_DIMENSION_ASSOC_TYPE => ASSOC_TYPE_GALLEY,
+            ];
+            $downloadsData = $application->getMetrics(OJS_METRIC_TYPE_COUNTER, [], $downloadsFilter);
+            $totalDownloads = (is_array($downloadsData) && isset($downloadsData[0][STATISTICS_METRIC]))
+                ? (int) $downloadsData[0][STATISTICS_METRIC] : 0;
+        }
 
         return [$totalViews, $totalDownloads];
     }
 
     /**
+     * Ambil semua ID galley milik sebuah artikel -- dipakai untuk filter
+     * ASSOC_ID metrik downloads (satu artikel bisa punya banyak galley).
+     * @param int $articleId
+     * @return int[]
+     */
+    protected function _getGalleyIdsForArticle(int $articleId): array {
+        /** @var ArticleGalleyDAO $galleyDao */
+        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+        $galleys = $galleyDao->getGalleysByArticle($articleId);
+
+        $ids = [];
+        if (is_array($galleys)) {
+            foreach ($galleys as $galley) {
+                $ids[] = (int) $galley->getId();
+            }
+        }
+        return $ids;
+    }
+
+    /**
      * Deret waktu harian (untuk grafik) dalam N hari terakhir.
+     *
+     * [WIZDAM BUGFIX] Sama seperti getMetricsSummary() -- dimension yang
+     * benar adalah ASSOC_ID (bukan SUBMISSION_ID), dan untuk galley
+     * (downloads) perlu filter ASSOC_ID berupa array SEMUA galley
+     * artikel, bukan article_id itu sendiri.
      * @param int $articleId
      * @param int $journalId
      * @param int $assocType ASSOC_TYPE_ARTICLE (views) atau ASSOC_TYPE_GALLEY (downloads)
@@ -160,10 +212,18 @@ class ArticleMetricsHandler extends ArticleHandler {
     protected function getDailyChartData(int $articleId, int $journalId, int $assocType): array {
         $application = Application::get();
 
+        $assocIdFilterValue = ($assocType === ASSOC_TYPE_GALLEY)
+            ? $this->_getGalleyIdsForArticle($articleId)
+            : $articleId;
+
+        if ($assocType === ASSOC_TYPE_GALLEY && empty($assocIdFilterValue)) {
+            return [];
+        }
+
         $filters = [
-            STATISTICS_DIMENSION_CONTEXT_ID    => $journalId,
-            STATISTICS_DIMENSION_SUBMISSION_ID => $articleId,
-            STATISTICS_DIMENSION_ASSOC_TYPE    => $assocType,
+            STATISTICS_DIMENSION_CONTEXT_ID => $journalId,
+            STATISTICS_DIMENSION_ASSOC_ID   => $assocIdFilterValue,
+            STATISTICS_DIMENSION_ASSOC_TYPE => $assocType,
             STATISTICS_DIMENSION_DAY => [
                 'from' => date('Ymd', strtotime('-' . self::CHART_RANGE_DAYS . ' days')),
                 'to'   => date('Ymd'),

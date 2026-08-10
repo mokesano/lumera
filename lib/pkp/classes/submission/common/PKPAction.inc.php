@@ -32,11 +32,12 @@ class PKPAction {
     public function PKPAction() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                'Class ' . get_class($this) . ' uses deprecated constructor parent::PKPAction(). Please refactor to parent::__construct().', 
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -68,6 +69,9 @@ class PKPAction {
             $citationEditorConfigurationError = 'submission.citations.editor.pleaseSetup';
         }
 
+        /** @var CitationDAO $citationDao */
+        $citationDao = DAORegistry::getDAO('CitationDAO');
+
         if (!$citationEditorConfigurationError && $context) {
             /** @var FilterDAO $filterDao */
             $filterDao = DAORegistry::getDAO('FilterDAO');
@@ -96,8 +100,6 @@ class PKPAction {
         }
         $templateMgr->assign('introductionHide', $introductionHide);
 
-        /** @var CitationDAO $citationDao */
-        $citationDao = DAORegistry::getDAO('CitationDAO');
         $citations = $citationDao->getObjectsByAssocId(ASSOC_TYPE_ARTICLE, $submission->getId());
         $citationCount = $citations ? $citations->getCount() : 0;
         if ($citationCount > 0) {

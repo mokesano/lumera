@@ -765,11 +765,11 @@
 	
 	<!-- About The Journal -->
 	<message key="about.statistics">Statistik</message>
-	<message key="about.journalContact">Kontak Jurnal</message>
+	<message key="about.journalContact">Kontak</message>
+	<message key="about.contactEditorialOffice">Kontak</message>
 	<message key="about.aboutTheJournal">Tentang Kami</message>
 	<message key="about.aboutThePublisher">Tentang Penerbit</message>
 	<message key="about.contact">Kontak</message>
-	<message key="about.contactEditorialOffice">Kontak</message>
 	<message key="about.publisherContact">Kontak</message>
 	<message key="about.aboutSite">Tentang Situs</message>
 	<message key="about.siteMap">Peta Situs</message>

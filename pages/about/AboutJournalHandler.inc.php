@@ -60,6 +60,21 @@ class AboutJournalHandler extends AboutHandler {
     }
 
     /**
+     * [SHIM] @deprecated Menangkap URL lama 'contact' untuk konteks jurnal.
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function contact($args = [], $request = null) {
+        $this->addCheck(new HandlerValidatorJournal($this));
+        $this->validate();
+        if (!$request) $request = Application::get()->getRequest();
+ 
+        $targetUrl = $request->url(null, null, 'contact-editorial-office');
+        header("Location: $targetUrl", true, 301);
+        exit();
+    }
+
+    /**
      * Display editorialTeam page.
      */
     public function editorialTeam() {

@@ -149,12 +149,11 @@ class AboutPublisherHandler extends AboutHandler {
         $templateMgr = TemplateManager::getManager($request);
         $site = $request->getSite();
 
+        // [BARU] Identitas resmi Penerbit
         import('lib.wizdam.classes.services.PublisherProfileService');
-
+        $templateMgr->assign('publisher', (new PublisherProfileService())->getProfile());
         $templateMgr->assign('pageTitleKey', $pageTitleKey);
         $templateMgr->assign('pageContent', $site->getLocalizedSetting($settingName));
-        // [BARU] Identitas resmi Penerbit -- konsisten dengan Invoice/LoA/Sertifikat.
-        $templateMgr->assign('publisher', (new PublisherProfileService())->getProfile());
 
         $templateMgr->display('about/publisherPage.tpl');
     }
