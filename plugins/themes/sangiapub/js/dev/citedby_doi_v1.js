@@ -116,12 +116,19 @@
        if (list) list.classList.remove('citation-blur');
    };
    
+   // Decode entity HTML secara aman ke teks biasa (tanpa interpretasi sebagai HTML aktif)
+   const decodeHtmlEntities = (value) => {
+       const textarea = document.createElement('textarea');
+       textarea.innerHTML = value;
+       return textarea.value;
+   };
+   
    // Fix HTML dalam judul
    const fixHtmlTitles = () => {
        document.querySelectorAll('.anchor-text span').forEach(span => {
            const text = span.textContent;
            if (text && text.includes('<') && text.includes('>')) {
-               span.innerHTML = text;
+               span.textContent = decodeHtmlEntities(text);
            }
        });
    };
