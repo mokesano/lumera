@@ -561,15 +561,26 @@ function displayArticleHighlights() {
     // Buat HTML untuk highlight
     let html = '';
     
+    highlightsElement.textContent = '';
     for (let highlight of highlights) {
-      html += `
-        <li class="react-xocs-list-item">
-          <span class="list-label">• </span>
-          <span class="u-ml-16"><p>${highlight}</p></span>
-        </li>`;
+      const listItem = document.createElement('li');
+      listItem.className = 'react-xocs-list-item';
+
+      const labelSpan = document.createElement('span');
+      labelSpan.className = 'list-label';
+      labelSpan.textContent = '• ';
+      
+      const contentSpan = document.createElement('span');
+      contentSpan.className = 'u-ml-16';
+      
+      const paragraph = document.createElement('p');
+      paragraph.textContent = highlight;
+      
+      contentSpan.appendChild(paragraph);
+      listItem.appendChild(labelSpan);
+      listItem.appendChild(contentSpan);
+      highlightsElement.appendChild(listItem);
     }
-    
-    highlightsElement.innerHTML = html;
     
     // Tampilkan elemen highlight jika sebelumnya tersembunyi
     const highlightSection = document.getElementById('ab810') || 
