@@ -907,12 +907,14 @@ class SectionEditorSubmissionDAO extends DAO {
     /**
      * Internal function to return a Reviewer User object from a row.
      * @param array $row
-     * @return User
+     * @return User|null
      */
     public function _returnReviewerUserFromRow($row) {
         $user = $this->userDao->getById($row['user_id']);
-        $user->review_id = $row['review_id']; // Undefined property '$review_id'.
-        $user->declined = $row['declined']; // Undefined property '$declined'.
+        if ($user) {
+            $user->setData('review_id', $row['review_id']);
+            $user->setData('declined', $row['declined']);
+        }
 
         HookRegistry::dispatch('SectionEditorSubmissionDAO::_returnReviewerUserFromRow', [&$user, &$row]);
 
