@@ -10,8 +10,7 @@ declare(strict_types=1);
  * @class DuraCloudComponent
  * @ingroup duracloud_classes
  *
- * @brief DuraCloud API client implementation base class
- * [WIZDAM EDITION] Refactored for PHP 8.0+ (Strict Types, Visibility, Reference Cleanup)
+ * @brief DuraCloud API client implementation base class.
  */
 
 class DuraCloudComponent {
@@ -23,7 +22,7 @@ class DuraCloudComponent {
     protected $componentName;
 
     /**
-     * Constructor
+     * Constructor.
      * @param DuraCloudConnection $dcc
      * @param string $componentName
      */
@@ -33,12 +32,14 @@ class DuraCloudComponent {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param DuraCloudConnection $dcc
+     * @param string $componentName
      */
     public function DuraCloudComponent($dcc, $componentName) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -61,6 +62,6 @@ class DuraCloudComponent {
     public function getPrefix() {
         return $this->componentName . '/';
     }
-}
 
+}
 ?>

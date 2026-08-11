@@ -23,7 +23,7 @@ class DuraCloudLoginForm extends Form {
 
     /**
      * Constructor.
-     * @param object $plugin DuraCloudImportExportPlugin
+     * @param DuraCloudImportExportPlugin $plugin
      */
     public function __construct($plugin) {
         parent::__construct($plugin->getTemplatePath() . 'index.tpl');
@@ -37,7 +37,8 @@ class DuraCloudLoginForm extends Form {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param DuraCloudImportExportPlugin $plugin
      */
     public function DuraCloudLoginForm($plugin) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -47,7 +48,7 @@ class DuraCloudLoginForm extends Form {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -125,6 +126,6 @@ class DuraCloudLoginForm extends Form {
             (string) $this->getData('duracloudPassword')
         );
     }
+    
 }
-
 ?>

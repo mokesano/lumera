@@ -10,8 +10,7 @@ declare(strict_types=1);
  * @class DuraCloudContent
  * @ingroup duracloud_classes
  *
- * @brief DuraCloud API content
- * [WIZDAM EDITION] Refactored for PHP 8.0+ (Strict Types, Reference Cleanup, Safety Checks)
+ * @brief DuraCloud API content.
  */
 
 class DuraCloudContent {
@@ -23,7 +22,7 @@ class DuraCloudContent {
     protected $fp;
 
     /**
-     * Constructor
+     * Constructor.
      * @param object $contentDescriptor
      */
     public function __construct($contentDescriptor) {
@@ -31,12 +30,13 @@ class DuraCloudContent {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param object $contentDescriptor
      */
     public function DuraCloudContent($contentDescriptor) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -76,6 +76,6 @@ class DuraCloudContent {
             fclose($this->fp);
         }
     }
-}
 
+}
 ?>

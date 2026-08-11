@@ -14,8 +14,7 @@ declare(strict_types=1);
  * @class DuraCloudConnection
  * @ingroup duracloud_classes
  *
- * @brief DuraCloud Connection class
- * [WIZDAM EDITION] Refactored for PHP 8.0+ (Strict Types, Visibility, Reference Cleanup)
+ * @brief DuraCloud Connection class.
  */
 
 class DuraCloudConnection {
@@ -42,7 +41,7 @@ class DuraCloudConnection {
     protected $fp;
 
     /**
-     * Construct a new DuraCloudConnection.
+     * Constructor.
      * @param string $baseUrl Base URL to DuraCloud, i.e. https://pkp.duracloud.org
      * @param string $username Username
      * @param string $password Password
@@ -54,12 +53,15 @@ class DuraCloudConnection {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $baseUrl Base URL to DuraCloud, i.e. https://pkp.duracloud.org
+     * @param string $username Username
+     * @param string $password Password
      */
     public function DuraCloudConnection($baseUrl, $username, $password) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -100,8 +102,7 @@ class DuraCloudConnection {
         $this->fp = $fp;
         $this->headers = '';
         $this->inHeader = true;
-        
-        // Remove reference & from $this in array callback for PHP 8 compatibility
+
         curl_setopt($ch, CURLOPT_WRITEFUNCTION, [$this, '_addData']);
         
         $result = curl_exec($ch);
@@ -346,6 +347,6 @@ class DuraCloudConnection {
         }
         return strlen($data);
     }
-}
 
+}
 ?>

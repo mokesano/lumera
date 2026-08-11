@@ -10,14 +10,13 @@ declare(strict_types=1);
  * @class DuraCloudFileContent
  * @ingroup duracloud_classes
  *
- * @brief DuraCloud API content model for files
- * [WIZDAM EDITION] Refactored for PHP 8.0+ (Strict Types, Visibility, Standardized SHIM)
+ * @brief DuraCloud API content model for files.
  */
 
 class DuraCloudFileContent extends DuraCloudContent {
     
     /**
-     * Constructor
+     * Constructor.
      * @param object $contentDescriptor
      */
     public function __construct($contentDescriptor) {
@@ -25,12 +24,13 @@ class DuraCloudFileContent extends DuraCloudContent {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param object $contentDescriptor
      */
     public function DuraCloudFileContent($contentDescriptor) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -64,6 +64,6 @@ class DuraCloudFileContent extends DuraCloudContent {
         
         return (int) $i;
     }
+    
 }
-
 ?>

@@ -10,8 +10,7 @@ declare(strict_types=1);
  * @class DuraCloudStreamContent
  * @ingroup duracloud_classes
  *
- * @brief DuraCloud API content model for streams
- * [WIZDAM EDITION] Refactored for PHP 7.x/8.x (Property Type Hint Removed for Safety)
+ * @brief DuraCloud API content model for streams.
  */
 
 class DuraCloudStreamContent extends DuraCloudContent {
@@ -20,7 +19,7 @@ class DuraCloudStreamContent extends DuraCloudContent {
     protected $size = 0;
 
     /**
-     * Constructor
+     * Constructor.
      * @param object $contentDescriptor
      */
     public function __construct($contentDescriptor) {
@@ -28,12 +27,13 @@ class DuraCloudStreamContent extends DuraCloudContent {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param object $contentDescriptor
      */
     public function DuraCloudStreamContent($contentDescriptor) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -56,6 +56,6 @@ class DuraCloudStreamContent extends DuraCloudContent {
     public function getSize() {
         return $this->size;
     }
-}
 
+}
 ?>

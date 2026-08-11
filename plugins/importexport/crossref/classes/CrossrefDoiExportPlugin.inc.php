@@ -1290,7 +1290,7 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
                 $objectIds = [$objectIds];
             }
 
-            $objects = $this->_getObjectsFromIds($exportType, $objectIds, $journal->getId(), $errors);
+            $objects = $this->_getObjectsFromIds($exportType, $objectIds, (int) $journal->getId(), $errors);
             if (empty($objects)) {
                 $this->cleanTmpfiles($exportPath, array_keys($exportFiles));
                 return false;
