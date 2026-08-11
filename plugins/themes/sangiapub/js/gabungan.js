@@ -310,17 +310,16 @@ $(document).ready(function() {
                     try {
                         var parsedUrl = new URL(originalHref, window.location.origin);
                         var protocol = parsedUrl.protocol.toLowerCase();
+                        
                         if (protocol === 'http:' || protocol === 'https:') {
-                            safeHref = originalHref;
+                            safeHref = parsedUrl.href;
                         }
                     } catch (e) {
-                        if (originalHref.charAt(0) === '/') {
-                            safeHref = originalHref;
-                        }
+                        safeHref = '#';
                     }
                 }
 
-                link.attr('href', safeHref);
+                link.prop('href', safeHref);
                 link.removeAttr('data-href');
             });
         }
