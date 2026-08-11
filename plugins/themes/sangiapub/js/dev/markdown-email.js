@@ -35,10 +35,24 @@ $(document).ready(function() {
         
         // Function convert markdown simple
         function convertToHtml(text) {
-            return text
+            var escaped = String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
+            return escaped
                 .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(_, label, url) {
+                    var trimmedUrl = $.trim(url);
+                    if (!/^(https?:|mailto:)/i.test(trimmedUrl)) {
+                        return label;
+                    }
+                    var safeUrl = trimmedUrl.replace(/"/g, '&quot;');
+                    return '<a href="' + safeUrl + '">' + label + '</a>';
+                })
                 .replace(/\n/g, '<br>');
         }
         
