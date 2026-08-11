@@ -22,7 +22,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Retrieve an article file by ID.
-     * 
      * @param int $fileId
      * @param int|null $revision optional, if omitted latest revision is used
      * @param int|null $articleId optional
@@ -71,7 +70,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Retrieve all revisions of an article file.
-     * 
      * @param int $fileId
      * @param int|null $round
      * @return array ArticleFiles
@@ -110,7 +108,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Retrieve revisions of an article file in a range.
-     * 
      * @param int $fileId
      * @param int $start
      * @param int|null $end
@@ -150,7 +147,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Retrieve the current revision number for a file.
-     * 
      * @param int $fileId
      * @return int|null
      */
@@ -181,7 +177,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Retrieve all article files for an article.
-     * 
      * @param int $articleId
      * @return array ArticleFiles
      */
@@ -208,7 +203,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Retrieve all article files for a file stage and assoc ID.
-     * 
      * @param int $assocId
      * @param int $fileStage
      * @return array ArticleFiles
@@ -238,7 +232,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Internal function to return an ArticleFile object from a row.
-     * 
      * @param array $row
      * @return ArticleFile
      */
@@ -271,7 +264,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Insert a new ArticleFile.
-     * 
      * @param ArticleFile $articleFile
      * @return int
      */
@@ -331,7 +323,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Update an existing article file.
-     * 
      * @param ArticleFile $articleFile
      * @return int
      */
@@ -396,7 +387,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Delete an article file.
-     * 
      * @param ArticleFile $articleFile
      * @return bool
      */
@@ -406,7 +396,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Delete an article file by ID.
-     * 
      * @param int $fileId
      * @param int|null $revision
      * @return bool
@@ -425,7 +414,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Delete all article files for an article.
-     * 
      * @param int $articleId
      * @return bool
      */
@@ -438,7 +426,6 @@ class ArticleFileDAO extends PKPFileDAO {
 
     /**
      * Get the ID of the last inserted article file.
-     * 
      * @return int
      */
     public function getInsertArticleFileId() {
