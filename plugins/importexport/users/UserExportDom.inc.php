@@ -39,7 +39,7 @@ class UserExportDom {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
         return true;
     }
 
