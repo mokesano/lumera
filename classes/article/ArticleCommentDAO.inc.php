@@ -20,8 +20,7 @@ import('classes.article.ArticleComment');
 class ArticleCommentDAO extends DAO {
     
     /**
-     * Retrieve ArticleComments by article id
-     * 
+     * Retrieve ArticleComments by article id.
      * @param int $articleId
      * @param int|null $commentType
      * @param int|null $assocId
@@ -59,8 +58,7 @@ class ArticleCommentDAO extends DAO {
     }
 
     /**
-     * Retrieve ArticleComments by user id
-     * 
+     * Retrieve ArticleComments by user id.
      * @param int $userId
      * @return array ArticleComment objects
      */
@@ -84,8 +82,7 @@ class ArticleCommentDAO extends DAO {
     }
 
     /**
-     * Retrieve most recent ArticleComment
-     * 
+     * Retrieve most recent ArticleComment.
      * @param int $articleId
      * @param int|null $commentType
      * @param int|null $assocId
@@ -123,8 +120,7 @@ class ArticleCommentDAO extends DAO {
     }
 
     /**
-     * Retrieve Article Comment by comment id
-     * 
+     * Retrieve Article Comment by comment id.
      * @param int $commentId
      * @return ArticleComment|null
      */
@@ -146,8 +142,7 @@ class ArticleCommentDAO extends DAO {
     }
 
     /**
-     * Creates and returns an article comment object from a row
-     * 
+     * Creates and returns an article comment object from a row.
      * @param array $row
      * @return ArticleComment
      */
@@ -171,8 +166,7 @@ class ArticleCommentDAO extends DAO {
     }
 
     /**
-     * Inserts a new article comment into article_comments table
-     * 
+     * Inserts a new article comment into article_comments table.
      * @param ArticleComment $articleComment
      * @return int Article Comment Id
      */
@@ -203,7 +197,6 @@ class ArticleCommentDAO extends DAO {
 
     /**
      * Get the ID of the last inserted article comment.
-     * 
      * @return int
      */
     public function getInsertArticleCommentId() {
@@ -211,8 +204,7 @@ class ArticleCommentDAO extends DAO {
     }
 
     /**
-     * Removes an article comment from article_comments table
-     * 
+     * Removes an article comment from article_comments table.
      * @param ArticleComment $articleComment
      * @return bool
      */
@@ -221,8 +213,7 @@ class ArticleCommentDAO extends DAO {
     }
 
     /**
-     * Removes an article note by id
-     * 
+     * Removes an article note by id.
      * @param int $commentId
      * @return bool
      */
@@ -235,7 +226,6 @@ class ArticleCommentDAO extends DAO {
 
     /**
      * Delete all comments for an article.
-     * 
      * @param int $articleId
      * @return bool
      */
@@ -247,8 +237,7 @@ class ArticleCommentDAO extends DAO {
     }
 
     /**
-     * Updates an article comment
-     * 
+     * Updates an article comment.
      * @param ArticleComment $articleComment
      * @return bool
      */
