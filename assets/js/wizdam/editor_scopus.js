@@ -132,7 +132,7 @@
     
     function getParameterByName(name, defaultValue = null) {
         const url = window.location.href;
-        name = name.replace(/[\[\]]/g, '\\$&');
+        name = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
             results = regex.exec(url);
         if (!results) return defaultValue;
