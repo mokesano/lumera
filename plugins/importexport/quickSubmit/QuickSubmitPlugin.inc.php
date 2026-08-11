@@ -36,7 +36,7 @@ class QuickSubmitPlugin extends ImportExportPlugin {
             );
         }
         $args = func_get_args();
-        call_user_func_array(array($this, '__construct'), $args);
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -84,7 +84,11 @@ class QuickSubmitPlugin extends ImportExportPlugin {
     public function display($args, $request): void {
         $templateMgr = TemplateManager::getManager();
         $templateMgr->register_function('plugin_url', [$this, 'smartyPluginUrl']);
-        AppLocale::requireComponents(LOCALE_COMPONENT_APP_AUTHOR, LOCALE_COMPONENT_APP_EDITOR, LOCALE_COMPONENT_CORE_SUBMISSION);
+        AppLocale::requireComponents(
+            LOCALE_COMPONENT_APP_AUTHOR, 
+            LOCALE_COMPONENT_APP_EDITOR, 
+            LOCALE_COMPONENT_CORE_SUBMISSION
+        );
         $this->setBreadcrumbs();
 
         if (array_shift($args) == 'saveSubmit') {

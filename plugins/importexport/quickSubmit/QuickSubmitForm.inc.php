@@ -372,7 +372,7 @@ class QuickSubmitForm extends Form {
                 $author->setData('orcid', $authorData['orcid'] ?? '');
                 $author->setUrl($authorData['url'] ?? '');
                 if (array_key_exists('competingInterests', $authorData)) {
-                    $author->setCompetingInterests($authorData['competingInterests'], null);
+                    $author->setData('competingInterests', $authorData['competingInterests'], null);
                 }
                 $author->setBiography($authorData['biography'] ?? '', null);
                 $author->setPrimaryContact(((int) $this->getData('primaryContact')) === $i ? 1 : 0);
