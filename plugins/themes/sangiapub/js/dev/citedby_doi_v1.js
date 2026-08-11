@@ -116,11 +116,27 @@
        if (list) list.classList.remove('citation-blur');
    };
    
-   // Decode entity HTML ke teks biasa tanpa menulis data tainted ke innerHTML
+   // Decode entity HTML ke teks biasa tanpa mem-parse ulang sebagai HTML
    const decodeHtmlEntities = (value) => {
-       const parser = new DOMParser();
-       const doc = parser.parseFromString(String(value ?? ''), 'text/html');
-       return doc.documentElement.textContent || '';
+       const input = String(value ?? '');
+       const namedEntities = {amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00A0'};
+
+       return input.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (match, entity) => {
+           if (!entity) return match;
+
+           // Numeric entities: decimal (&#123;) or hex (&#x7B;)
+           if (entity[0] === '#') {
+               const isHex = entity[1] === 'x' || entity[1] === 'X';
+               const codePoint = parseInt(entity.slice(isHex ? 2 : 1), isHex ? 16 : 10);
+               return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+           }
+
+           // Named entities
+           const normalized = entity.toLowerCase();
+           return Object.prototype.hasOwnProperty.call(namedEntities, normalized)
+               ? namedEntities[normalized]
+               : match;
+       });
    };
 
    // Fix HTML dalam judul
