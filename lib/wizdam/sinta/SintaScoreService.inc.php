@@ -37,6 +37,7 @@ declare(strict_types=1);
 
 class SintaScoreService {
 
+    /** Sinta url base */
     private const SINTA_BASE_URL = 'https://sinta.kemdiktisaintek.go.id';
 
     /**
@@ -69,10 +70,16 @@ class SintaScoreService {
     // ISSN helpers
     //
 
+    /**
+     * Normalize ISSN
+     */
     private function _normalizeIssn(string $issn): string {
         return preg_replace('/[^0-9X]/', '', strtoupper(trim($issn)));
     }
 
+    /**
+     * Format ISSN with dash
+     */
     private function _formatIssnWithDash(string $normalizedIssn): string {
         if (strlen($normalizedIssn) === 8) {
             return substr($normalizedIssn, 0, 4) . '-' . substr($normalizedIssn, 4, 4);
@@ -85,6 +92,9 @@ class SintaScoreService {
     // dengan findJournalInfo() di skrip lama, cuma dipindah jadi method.
     //
 
+    /**
+     * Scrape journal Sinta portal
+     */
     private function _scrapeSinta(string $issn): array {
         $searchUrl = self::SINTA_BASE_URL . '/journals?q=' . urlencode($issn);
         $searchHtml = $this->_fetchWithRetry($searchUrl);
@@ -194,6 +204,9 @@ class SintaScoreService {
         return $data;
     }
 
+    /**
+     * Fetch scrape with retry
+     */
     private function _fetchWithRetry(string $url, int $maxAttempts = 2, int $timeout = 12): string {
         // [BUGFIX ROBUSTNESS] Sebelumnya maxAttempts=3, timeout=30, dengan
         // sleep($attempt*2) eskalasi antar percobaan -- diwarisi APA ADANYA
