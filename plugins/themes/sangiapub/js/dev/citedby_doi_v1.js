@@ -116,13 +116,13 @@
        if (list) list.classList.remove('citation-blur');
    };
    
-   // Decode entity HTML secara aman ke teks biasa (tanpa interpretasi sebagai HTML aktif)
+   // Decode entity HTML ke teks biasa tanpa menulis data tainted ke innerHTML
    const decodeHtmlEntities = (value) => {
-       const textarea = document.createElement('textarea');
-       textarea.innerHTML = value;
-       return textarea.value;
+       const parser = new DOMParser();
+       const doc = parser.parseFromString(String(value ?? ''), 'text/html');
+       return doc.documentElement.textContent || '';
    };
-   
+
    // Fix HTML dalam judul
    const fixHtmlTitles = () => {
        document.querySelectorAll('.anchor-text span').forEach(span => {
