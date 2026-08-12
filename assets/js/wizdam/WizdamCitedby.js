@@ -946,21 +946,31 @@
            });
    };
    
-   // Deteksi DOI element menggunakan vanilla JS
-   const detectDoiElement = () => {
-       if (doiProcessed) return;
+    // Deteksi DOI element menggunakan vanilla JS
+    const detectDoiElement = () => {
+        if (doiProcessed) return;
        
-       const doiElement = document.querySelector('.anchor.doi');
-       if (doiElement) {
-           const href = doiElement.getAttribute('href');
-           if (href && href.includes('https://doi.org/')) {
-               const doi = href.split('https://doi.org/')[1];
-               if (doi) {
-                   loadCitingArticles(doi);
-               }
-           }
-       }
-   };
+        const doiElement = document.querySelector('.anchor.doi');
+        if (doiElement) {
+            const href = doiElement.getAttribute('href');
+            if (!href) return;
+            
+                try {
+                const parsedUrl = new URL(href, window.location.origin);
+                const isAllowedHost = parsedUrl.hostname === 'doi.org' || parsedUrl.hostname === 'www.doi.org';
+                const isHttps = parsedUrl.protocol === 'https:';
+
+                if (isHttps && isAllowedHost) {
+                    const doi = parsedUrl.pathname.replace(/^\/+/, '');
+                    if (doi) {
+                        loadCitingArticles(doi);
+                    }
+                }
+            } catch (error) {
+               // Abaikan URL yang tidak valid
+            }
+        }
+    };
    
    // Initialize dengan penundaan minimal
    const init = () => {
