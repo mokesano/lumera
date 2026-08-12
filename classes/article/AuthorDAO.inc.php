@@ -141,10 +141,12 @@ class AuthorDAO extends PKPAuthorDAO {
                 CASE WHEN asl.setting_value = \'\' THEN NULL ELSE asl.locale END AS locale,
                 CASE WHEN aspl.setting_value = \'\' THEN NULL ELSE SUBSTRING(aspl.setting_value FROM 1 FOR 255) END AS affiliation_pl,
                 CASE WHEN aspl.setting_value = \'\' THEN NULL ELSE aspl.locale END AS primary_locale,
-                CASE WHEN aa.country = \'\' THEN NULL ELSE aa.country END AS country
+                CASE WHEN aa.country = \'\' THEN NULL ELSE aa.country END AS country,
+                CASE WHEN ao.setting_value = \'\' THEN NULL ELSE ao.setting_value END AS orcid
             FROM authors aa
                 LEFT JOIN author_settings aspl ON (aa.author_id = aspl.author_id AND aspl.setting_name = ? AND aspl.locale = ?)
                 LEFT JOIN author_settings asl ON (aa.author_id = asl.author_id AND asl.setting_name = ? AND asl.locale = ?)
+                LEFT JOIN author_settings ao ON (aa.author_id = ao.author_id AND ao.setting_name = \'orcid\')
                 ' . ($disallowRepeatedEmail ? " LEFT JOIN authors aa2 ON (aa.email=aa2.email AND aa.author_id < aa2.author_id) " : '') . '
                 JOIN articles a ON (a.article_id = aa.submission_id AND a.status = ' . STATUS_PUBLISHED . ')
                 JOIN published_articles pa ON (pa.article_id = a.article_id)

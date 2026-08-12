@@ -219,6 +219,9 @@ class PKPAuthorDAO extends DAO {
         if (isset($row['affiliation_pl'])) {
             $author->setAffiliation((string) $row['affiliation_pl'], $primaryLocale);
         }
+        if (isset($row['orcid'])) {
+            $author->setData('orcid', (string) $row['orcid']);
+        }
 
         $tempAuthor = $author;
         $tempRow = $row;

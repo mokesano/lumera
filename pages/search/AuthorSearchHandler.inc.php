@@ -203,7 +203,8 @@ class AuthorSearchHandler extends SearchHandler {
             $authorsFactory = $authorDao ? $authorDao->getAuthorsAlphabetizedByJournal(
                 $journal ? $journal->getId() : null,
                 $searchInitial,
-                $rangeInfo
+                $rangeInfo,
+                true
             ) : null;
             
             $authors = $authorsFactory ? $authorsFactory->toArray() : [];
