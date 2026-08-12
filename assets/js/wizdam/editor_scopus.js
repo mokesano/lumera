@@ -144,8 +144,18 @@
         element.innerHTML = config.loadingTemplate;
     }
 
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function showError(element, message) {
-        element.innerHTML = config.errorTemplate.replace('{{message}}', message);
+        const safeMessage = escapeHtml(message);
+        element.innerHTML = config.errorTemplate.replace('{{message}}', safeMessage);
     }
 
     function showNoData(element) {
