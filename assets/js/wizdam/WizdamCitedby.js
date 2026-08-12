@@ -135,7 +135,7 @@
        document.querySelectorAll('.anchor-text span').forEach(span => {
            const text = span.textContent;
            if (text && text.includes('<') && text.includes('>')) {
-               span.innerHTML = text;
+               span.textContent = text;
            }
        });
    };
