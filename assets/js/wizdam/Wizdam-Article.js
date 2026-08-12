@@ -971,7 +971,7 @@ $(document).ready(function() {
 
     const disableActiveLinks = element => $(element).find('a').each(function() {
         const text = $(this).text();
-        $(this).replaceWith(text);
+        $(this).replaceWith(document.createTextNode(text));
     });
 
     const processVisibleReferences = () => {
