@@ -830,10 +830,19 @@
        const doiElement = document.querySelector('.anchor.doi');
        if (doiElement) {
            const href = doiElement.getAttribute('href');
-           if (href && href.includes('https://doi.org/')) {
-               const doi = href.split('https://doi.org/')[1];
-               if (doi) {
-                   loadCitingArticles(doi);
+           if (href) {
+               try {
+                    const parsedUrl = new URL(href, window.location.origin);
+                    const host = parsedUrl.hostname.toLowerCase();
+                    const isAllowedHost = host === 'doi.org' || host === 'www.doi.org';
+                   if (parsedUrl.protocol === 'https:' && isAllowedHost) {
+                       const doi = parsedUrl.pathname.replace(/^\/+/, '');
+                       if (doi) {
+                           loadCitingArticles(doi);
+                       }
+                   }
+               } catch (e) {
+                   // Abaikan URL yang tidak valid
                }
            }
        }
