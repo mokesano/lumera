@@ -1520,8 +1520,20 @@ $(document).ready(function() {
         if (footer.length) {
             footer.find('a[data-href]').each(function() {
                 var link = $(this);
-                // Mengembalikan href asli dari data-href
-                link.attr('href', link.attr('data-href'));
+                var rawHref = link.attr('data-href');
+                var safeHref = '#';
+                
+                // Mengembalikan href asli dari data-href hanya jika aman
+                try {
+                    var parsedUrl = new URL(rawHref, window.location.href);
+                    if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+                        safeHref = parsedUrl.href;
+                    }
+                } catch (e) {
+                    safeHref = '#';
+                }
+
+                link.attr('href', safeHref);
                 link.removeAttr('data-href');
             });
         }
