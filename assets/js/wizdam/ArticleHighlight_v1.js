@@ -582,8 +582,6 @@ function displayArticleHighlights() {
       highlightsElement.appendChild(li);
     }
     
-    highlightsElement.innerHTML = html;
-    
     // Tampilkan elemen highlight jika sebelumnya tersembunyi
     const highlightSection = document.getElementById('ab810') || 
                            containerElement.closest('.highlights-section');
