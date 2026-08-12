@@ -333,6 +333,114 @@ class ArticleHeroDAO extends DAO {
     }
 
     /**
+     * Get the single most recently published article in the journal,
+     * regardless of volume. Used for the 27-day grace period check in
+     * the fallback ArticleHero mode.
+     * @param int $journalId
+     * @return array|null
+     */
+    public function getLatestPublishedArticleAnyVolume(int $journalId): ?array {
+        $rows = $this->_getArticlesByVolumeFilter($journalId, '1 = 1', [], 1);
+        return $rows[0] ?? null;
+    }
+
+    /**
+     * Get candidate articles from ALL published volumes (no volume
+     * restriction). Used by the fallback ArticleHero mode when the
+     * current volume has no viable candidate.
+     * @param int $journalId
+     * @return array
+     */
+    public function getAllVolumesArticles(int $journalId): array {
+        return $this->_getArticlesByVolumeFilter($journalId, '1 = 1', [], 200);
+    }
+
+    /**
+     * Get candidate articles whose combined views + downloads are
+     * aggregated only from metrics recorded within the last $days days,
+     * ordered ascending (least engagement) or descending (most
+     * engagement). Used by the fallback ArticleHero mode (opsi 4-7).
+     * Returns [] if the metrics table or its date column is unavailable,
+     * so the caller can continue down the fallback chain.
+     * @param int $journalId
+     * @param int $days
+     * @param string $direction 'ASC' or 'DESC'
+     * @return array
+     */
+    public function getArticlesByEngagementWindow(int $journalId, int $days, string $direction = 'ASC'): array {
+        $direction = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
+
+        $metrics = $this->_getMetricsAvailability();
+        if (!$metrics['exists'] || $metrics['dateColumn'] === '') {
+            return [];
+        }
+
+        $dateColumn = $metrics['dateColumn'];
+        $contextField = $this->_getMetricsContextField($metrics['columns']);
+        $sinceDate = date('Y-m-d', strtotime("-{$days} days"));
+
+        $sql = "SELECT
+                    a.article_id,
+                    pa.date_published,
+                    i.issue_id,
+                    i.volume,
+                    i.number,
+                    COALESCE(views.total_views, 0) as total_views,
+                    COALESCE(downloads.total_downloads, 0) as total_downloads
+                FROM articles a
+                JOIN published_articles pa ON a.article_id = pa.article_id
+                JOIN issues i ON pa.issue_id = i.issue_id
+                LEFT JOIN (
+                    SELECT assoc_id, SUM(metric) as total_views
+                    FROM metrics m
+                    WHERE m.$contextField = ? AND m.assoc_type = ? AND m.$dateColumn >= ?
+                    GROUP BY assoc_id
+                ) views ON a.article_id = views.assoc_id
+                LEFT JOIN (
+                    SELECT ag.article_id, SUM(m.metric) as total_downloads
+                    FROM metrics m
+                    JOIN article_galleys ag ON m.assoc_id = ag.galley_id
+                    WHERE m.$contextField = ? AND m.assoc_type = ? AND m.$dateColumn >= ?
+                    GROUP BY ag.article_id
+                ) downloads ON a.article_id = downloads.article_id
+                WHERE a.journal_id = ?
+                    AND a.status = ?
+                    AND i.published = 1
+                    AND pa.date_published IS NOT NULL
+                ORDER BY (COALESCE(views.total_views, 0) + COALESCE(downloads.total_downloads, 0)) $direction,
+                         a.article_id DESC
+                LIMIT 20";
+
+        $params = [
+            $journalId, (int) ASSOC_TYPE_ARTICLE, $sinceDate,
+            $journalId, (int) ASSOC_TYPE_GALLEY, $sinceDate,
+            $journalId, (int) STATUS_PUBLISHED,
+        ];
+
+        $result = $this->retrieve($sql, $params);
+
+        $articles = [];
+        if ($result && !$result->EOF) {
+            while (!$result->EOF) {
+                $row = $result->GetRowAssoc(false);
+                $articles[] = [
+                    'article_id' => (int) $row['article_id'],
+                    'date_published' => (string) $row['date_published'],
+                    'issue_id' => (int) $row['issue_id'],
+                    'volume' => (string) $row['volume'],
+                    'number' => (string) $row['number'],
+                    'total_views' => (int) $row['total_views'],
+                    'total_downloads' => (int) $row['total_downloads'],
+                ];
+                $result->MoveNext();
+            }
+            $result->Close();
+        }
+
+        return $articles;
+    }
+
+    /**
      * Get cover page alt text for a given article.
      * @param int $articleId
      * @return string
