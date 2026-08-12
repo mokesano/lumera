@@ -197,10 +197,20 @@ $(document).ready(function() {
                 }
             });
 
+            const isDoiHostUrl = (rawUrl) => {
+                try {
+                    const normalizedUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+                    const hostname = new URL(normalizedUrl).hostname.toLowerCase();
+                    return hostname === 'doi.org' || hostname.endsWith('.doi.org');
+                } catch (e) {
+                    return false;
+                }
+            };
+
             const httpMatches = content.match(/https?:\/\/[^\s]+|www\.[^\s]+/g);
             if (httpMatches) {
                 httpMatches.forEach(httpUrl => {
-                    if (!httpUrl.includes('doi.org')) addLinkWithLoading(referenceLinks, httpUrl, 'View Source', '<svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg>');
+                    if (!isDoiHostUrl(httpUrl)) addLinkWithLoading(referenceLinks, httpUrl, 'View Source', '<svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg>');
                 });
             }
 
