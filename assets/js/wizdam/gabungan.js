@@ -298,7 +298,7 @@ $(document).ready(function() {
                     try {
                         var parsedUrl = new URL(rawHref, window.location.origin);
                         if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
-                            safeHref = rawHref;
+                            safeHref = parsedUrl.href;
                         }
                     } catch (e) {
                         safeHref = '#';
