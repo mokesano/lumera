@@ -290,8 +290,22 @@ $(document).ready(function() {
         if (footer.length) {
             footer.find('a[data-href]').each(function() {
                 var link = $(this);
-                // Mengembalikan href asli dari data-href
-                link.attr('href', link.attr('data-href'));
+                // Mengembalikan href asli dari data-href (hanya protokol aman)
+                var rawHref = link.attr('data-href');
+                var safeHref = '#';
+
+                if (rawHref) {
+                    try {
+                        var parsedUrl = new URL(rawHref, window.location.origin);
+                        if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+                            safeHref = rawHref;
+                        }
+                    } catch (e) {
+                        safeHref = '#';
+                    }
+                }
+
+                link.attr('href', safeHref);
                 link.removeAttr('data-href');
             });
         }
