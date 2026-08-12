@@ -246,6 +246,28 @@
 			</table>
 		</div>
 
+		<div id="articleHero">
+			<h4>{translate key="manager.setup.articleHero"}</h4>
+			<p>{translate key="manager.setup.articleHeroDescription"}</p>
+
+			<table width="100%" class="data">
+				<tr valign="top">
+					<td width="5%" class="label"><input type="radio" name="articleHeroMode" id="articleHeroModeFallback" value="1" {if $articleHeroMode == 1} checked="checked"{/if} /></td>
+					<td width="95%" class="value">
+						<label for="articleHeroModeFallback">{translate key="manager.setup.articleHeroMode.fallback"}</label>
+						<br /><span class="instruct">{translate key="manager.setup.articleHeroMode.fallback.description"}</span>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td width="5%" class="label"><input type="radio" name="articleHeroMode" id="articleHeroModeLegacy" value="2" {if $articleHeroMode == 2 || !$articleHeroMode} checked="checked"{/if} /></td>
+					<td width="95%" class="value">
+						<label for="articleHeroModeLegacy">{translate key="manager.setup.articleHeroMode.legacy"}</label>
+						<br /><span class="instruct">{translate key="manager.setup.articleHeroMode.legacy.description"}</span>
+					</td>
+				</tr>
+			</table>
+		</div>
+
 		<div id="additionalContent">
 			<h4>{translate key="manager.setup.additionalContent"}</h4>
 			<p>{translate key="manager.setup.additionalContentDescription"}</p>

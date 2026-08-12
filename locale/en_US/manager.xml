@@ -277,6 +277,12 @@
 	<message key="manager.setup.coverageResearchSampleExamples">(E.g., Age; Gender; Ethnicity; etc.)</message>
 	<message key="manager.setup.coverageResearchSampleProvideExamples">Provide examples of research sample characteristics for this field</message>
 	<message key="manager.setup.currentIssue">Current issue</message>
+	<message key="manager.setup.articleHero">Article Hero</message>
+	<message key="manager.setup.articleHeroDescription">Choose how the featured "hero" article on the journal homepage is selected.</message>
+	<message key="manager.setup.articleHeroMode.legacy">Highest views &amp; downloads (current behavior)</message>
+	<message key="manager.setup.articleHeroMode.legacy.description">The hero article is the one with the highest combined views and downloads, giving your most popular content priority visibility.</message>
+	<message key="manager.setup.articleHeroMode.fallback">Lowest views &amp; downloads, with 27-day grace period (new)</message>
+	<message key="manager.setup.articleHeroMode.fallback.description">A newly published article gets a 27-day spotlight first. After that, the hero becomes the least-viewed article, giving overlooked content a chance to be seen.</message>
 	<message key="manager.setup.customizingTheLook">Step 5. Customizing the Look</message>
 	<message key="manager.setup.customTags">Custom tags</message>
 	<message key="manager.setup.customTagsDescription">Custom HTML header tags to be inserted in the header of every page (e.g., META tags).</message>

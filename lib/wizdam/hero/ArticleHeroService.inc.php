@@ -44,6 +44,14 @@ class ArticleHeroService {
     private const CACHE_TTL_SECONDS = 604800; // 7 hari, sama seperti skrip lama.
     private const FEATURED_LIMIT = 4;
 
+    /** Journal setting 'articleHeroMode' value untuk mode fallback baru (opsi 1-7). */
+    private const MODE_FALLBACK = 1;
+    /** Journal setting 'articleHeroMode' value untuk mode lama (kunjungan+download tertinggi). Default kalau setting belum diisi, supaya perilaku jurnal existing tidak berubah. */
+    private const MODE_LEGACY = 2;
+
+    /** Masa graceful untuk artikel terbaru pada mode fallback (opsi 1). */
+    private const FALLBACK_GRACE_DAYS = 27;
+
     /**
      * Titik masuk utama -- assign data Hero + Featured ke Smarty untuk
      * homepage jurnal. Dipanggil dari IndexHandler::journal(), persis
@@ -57,7 +65,14 @@ class ArticleHeroService {
         $journalId = (int) $journal->getId();
         $dao = new ArticleHeroDAO();
 
-        $currentHash = $dao->getDataHash($journalId);
+        $heroMode = (int) ($journal->getSetting('articleHeroMode') ?: self::MODE_LEGACY);
+        // [FIX] Gabungkan hash data artikel dengan mode yang dipilih JM.
+        // Tanpa ini, getDataHash() cuma mencerminkan perubahan data artikel
+        // (tanggal terbit/metrik) -- ganti mode di Setup Step 5 tidak
+        // mengubah hash sama sekali, sehingga cache lama (hasil mode
+        // sebelumnya) terus dipakai sampai TTL 7 hari habis.
+        $currentHash = md5($dao->getDataHash($journalId) . '|mode=' . $heroMode);
+
         $cached = self::_getFromCache($journalId);
 
         if ($cached !== null && !self::_isCacheStale($cached, $currentHash)) {
@@ -84,16 +99,25 @@ class ArticleHeroService {
      */
     private static function _buildPayload(Journal $journal, ArticleHeroDAO $dao, PKPRequest $request, string $dataHash): array {
         $journalId = (int) $journal->getId();
-        $candidates = $dao->getLatestVolumeArticles($journalId);
+        $heroMode = (int) ($journal->getSetting('articleHeroMode') ?: self::MODE_LEGACY);
 
-        if (count($candidates) < 5) {
-            $candidates = $dao->getMultipleVolumesArticles($journalId);
-        }
-
-        if (count($candidates) < 5) {
-            $selection = self::_selectForNewJournal($candidates);
+        if ($heroMode === self::MODE_FALLBACK) {
+            // [JM SETTING] Mode baru: graceful 27 hari lalu fallback
+            // berjenjang opsi 2-7 berbasis kunjungan TERENDAH. Lihat
+            // _selectForFallbackMode(). Kode legacy di bawah TIDAK disentuh.
+            $selection = self::_selectForFallbackMode($journalId, $dao);
         } else {
-            $selection = self::_selectForMatureJournal($candidates);
+            $candidates = $dao->getLatestVolumeArticles($journalId);
+
+            if (count($candidates) < 5) {
+                $candidates = $dao->getMultipleVolumesArticles($journalId);
+            }
+
+            if (count($candidates) < 5) {
+                $selection = self::_selectForNewJournal($candidates);
+            } else {
+                $selection = self::_selectForMatureJournal($candidates);
+            }
         }
 
         $heroRow = $selection['hero'];
@@ -206,6 +230,158 @@ class ArticleHeroService {
             ],
         ];
     }
+
+    //
+    // [JM SETTING] Mode fallback baru (articleHeroMode = 1) -- opsi 1-7,
+    // dicoba berjenjang 1 -> 7, berhenti begitu satu opsi punya kandidat.
+    // Berbeda arah dengan mode legacy: opsi 2-5 pilih kunjungan TERENDAH,
+    // bukan tertinggi. Mode legacy (_selectForNewJournal/_selectForMatureJournal
+    // di atas) tidak diubah sama sekali.
+    //
+
+    /**
+     * Titik masuk mode fallback. Coba opsi 1 (graceful 27 hari) dulu,
+     * lalu opsi 2-7 berjenjang berdasarkan kunjungan (views+downloads)
+     * terendah/tertinggi pada cakupan volume/waktu yang berbeda-beda.
+     * @param int $journalId
+     * @param ArticleHeroDAO $dao
+     * @return array{hero: array|null, featured: array, selection_logic: array}
+     */
+    private static function _selectForFallbackMode(int $journalId, ArticleHeroDAO $dao): array {
+        // Opsi 1: graceful 27 hari untuk artikel terbaru. Kalau ada artikel
+        // yang lebih baru terbit, graceful otomatis berpindah ke artikel
+        // itu karena query ini selalu ambil artikel TERBARU saat ini.
+        $latest = $dao->getLatestPublishedArticleAnyVolume($journalId);
+        if ($latest !== null) {
+            $publishTime = strtotime((string) $latest['date_published']);
+            if ($publishTime !== false && $publishTime > strtotime('-' . self::FALLBACK_GRACE_DAYS . ' days')) {
+                $pool = $dao->getMultipleVolumesArticles($journalId);
+                return self::_buildFallbackSelection($latest, $pool, 1, 'grace_27_days', 'ASC');
+            }
+        }
+
+        // Opsi 2: kunjungan terendah dari issue/volume terkini.
+        $currentVolume = $dao->getLatestVolumeArticles($journalId);
+        if (!empty($currentVolume)) {
+            return self::_buildFallbackSelection(null, $currentVolume, 2, 'lowest_current_volume', 'ASC');
+        }
+
+        // Opsi 3: kunjungan terendah dari seluruh issue/volume yang ada.
+        $allVolumes = $dao->getAllVolumesArticles($journalId);
+        if (!empty($allVolumes)) {
+            return self::_buildFallbackSelection(null, $allVolumes, 3, 'lowest_all_volumes', 'ASC');
+        }
+
+        // Opsi 4: kunjungan terendah dalam 90 hari terakhir.
+        $window90Low = $dao->getArticlesByEngagementWindow($journalId, 90, 'ASC');
+        if (!empty($window90Low)) {
+            return self::_buildFallbackSelection(null, $window90Low, 4, 'lowest_90_days', 'ASC');
+        }
+
+        // Opsi 5: kunjungan terendah dalam satu tahun terakhir.
+        $window365Low = $dao->getArticlesByEngagementWindow($journalId, 365, 'ASC');
+        if (!empty($window365Low)) {
+            return self::_buildFallbackSelection(null, $window365Low, 5, 'lowest_365_days', 'ASC');
+        }
+
+        // Opsi 6: kunjungan tertinggi dalam 90 hari terakhir.
+        $window90High = $dao->getArticlesByEngagementWindow($journalId, 90, 'DESC');
+        if (!empty($window90High)) {
+            return self::_buildFallbackSelection(null, $window90High, 6, 'highest_90_days', 'DESC');
+        }
+
+        // Opsi 7: kunjungan tertinggi dalam satu tahun terakhir.
+        $window365High = $dao->getArticlesByEngagementWindow($journalId, 365, 'DESC');
+        if (!empty($window365High)) {
+            return self::_buildFallbackSelection(null, $window365High, 7, 'highest_365_days', 'DESC');
+        }
+
+        // Tidak ada kandidat sama sekali di semua opsi (jurnal kosong).
+        return [
+            'hero' => null,
+            'featured' => [],
+            'selection_logic' => [
+                'mode' => 'fallback_empty',
+                'selection_method' => 'none',
+                'option_applied' => 0,
+                'total_candidates' => 0,
+            ],
+        ];
+    }
+
+    /**
+     * Bangun hasil seleksi (hero + featured) untuk satu opsi fallback.
+     * Kalau $forcedHero diisi (opsi 1), hero dipaksa jadi artikel itu dan
+     * featured diambil dari $pool (urut sesuai $direction) minus hero.
+     * Kalau $forcedHero null (opsi 2-7), hero adalah kandidat teratas
+     * hasil sort $pool berdasarkan $direction.
+     * @param array|null $forcedHero
+     * @param array $pool
+     * @param int $optionNumber
+     * @param string $modeLabel
+     * @param string $direction 'ASC' (terendah) atau 'DESC' (tertinggi)
+     * @return array{hero: array|null, featured: array, selection_logic: array}
+     */
+    private static function _buildFallbackSelection(?array $forcedHero, array $pool, int $optionNumber, string $modeLabel, string $direction): array {
+        $sorted = self::_sortByEngagement($pool, $direction);
+
+        if ($forcedHero !== null) {
+            $hero = $forcedHero;
+            $remaining = array_values(array_filter(
+                $sorted,
+                fn($c) => $c['article_id'] !== $hero['article_id']
+            ));
+        } else {
+            $hero = $sorted[0] ?? null;
+            $remaining = array_slice($sorted, 1);
+        }
+
+        $featured = array_slice($remaining, 0, self::FEATURED_LIMIT);
+
+        return [
+            'hero' => $hero,
+            'featured' => $featured,
+            'selection_logic' => [
+                'mode' => 'fallback_' . $modeLabel,
+                'selection_method' => $modeLabel,
+                'option_applied' => $optionNumber,
+                'total_candidates' => count($pool),
+            ],
+        ];
+    }
+
+    /**
+     * Urutkan kandidat berdasarkan total kunjungan (views + downloads)
+     * gabungan, ascending (terendah dulu) atau descending (tertinggi dulu).
+     * @param array $candidates
+     * @param string $direction 'ASC' atau 'DESC'
+     * @return array
+     */
+    private static function _sortByEngagement(array $candidates, string $direction): array {
+        $direction = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
+
+        $withEngagement = [];
+        foreach ($candidates as $candidate) {
+            $candidate['_engagement'] = (int) $candidate['total_views'] + (int) $candidate['total_downloads'];
+            $withEngagement[] = $candidate;
+        }
+
+        usort($withEngagement, function ($a, $b) use ($direction) {
+            if ($a['_engagement'] === $b['_engagement']) {
+                return 0;
+            }
+            return $direction === 'ASC'
+                ? $a['_engagement'] <=> $b['_engagement']
+                : $b['_engagement'] <=> $a['_engagement'];
+        });
+
+        return $withEngagement;
+    }
+
+    //
+    // Mode legacy (articleHeroMode = 2, atau default kalau setting belum
+    // diisi) -- kunjungan+download TERTINGGI. TIDAK DIUBAH.
+    //
 
     /**
      * Pilih featured articles dari sisa kandidat, prioritas grace period
