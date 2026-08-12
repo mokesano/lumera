@@ -100,6 +100,9 @@ class JournalSetupStep5Form extends JournalSetupForm {
         }
 
         $templateMgr = TemplateManager::getManager();
+        
+        import('lib.wizdam.hero.ArticleHeroService');
+        $templateMgr->assign('articleHeroGraceDays', ArticleHeroService::getFallbackGraceDays());
 
         $templateMgr->assign([
             'homeHeaderTitleImage' => $journal->getSetting('homeHeaderTitleImage') ?? [],

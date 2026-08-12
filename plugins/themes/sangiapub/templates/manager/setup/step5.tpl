@@ -254,8 +254,8 @@
 				<tr valign="top">
 					<td width="5%" class="label"><input type="radio" name="articleHeroMode" id="articleHeroModeFallback" value="1" {if $articleHeroMode == 1} checked="checked"{/if} /></td>
 					<td width="95%" class="value">
-						<label for="articleHeroModeFallback">{translate key="manager.setup.articleHeroMode.fallback"}</label>
-						<br /><span class="instruct">{translate key="manager.setup.articleHeroMode.fallback.description"}</span>
+						<label for="articleHeroModeFallback">{translate key="manager.setup.articleHeroMode.fallback" articleHeroGraceDays=$articleHeroGraceDays}</label>
+						<br /><span class="instruct">{translate key="manager.setup.articleHeroMode.fallback.description" articleHeroGraceDays=$articleHeroGraceDays}</span>
 					</td>
 				</tr>
 				<tr valign="top">

@@ -261,10 +261,10 @@
 	<message key="manager.setup.currentIssue">Terbitan Terkini</message>
 	<message key="manager.setup.articleHero">Artikel Unggulan (Hero)</message>
 	<message key="manager.setup.articleHeroDescription">Tentukan bagaimana artikel unggulan ("hero") di beranda jurnal dipilih.</message>
-	<message key="manager.setup.articleHeroMode.legacy">Kunjungan &amp; unduhan tertinggi (perilaku saat ini)</message>
+	<message key="manager.setup.articleHeroMode.legacy">Berbasis Kunjungan &amp; unduhan tertinggi</message>
 	<message key="manager.setup.articleHeroMode.legacy.description">Artikel hero adalah artikel dengan gabungan kunjungan dan unduhan tertinggi, memprioritaskan visibilitas konten paling populer.</message>
-	<message key="manager.setup.articleHeroMode.fallback">Kunjungan &amp; unduhan terendah, dengan masa graceful 27 hari (baru)</message>
-	<message key="manager.setup.articleHeroMode.fallback.description">Artikel yang baru terbit mendapat masa sorotan graceful 27 hari terlebih dahulu. Setelah itu, hero menjadi artikel dengan kunjungan paling sedikit, memberi kesempatan bagi konten yang kurang terlihat.</message>
+	<message key="manager.setup.articleHeroMode.fallback">Berbasis Kunjungan &amp; unduhan terendah, masa graceful {$articleHeroGraceDays} hari</message>
+	<message key="manager.setup.articleHeroMode.fallback.description">Artikel yang baru terbit mendapat masa sorotan graceful {$articleHeroGraceDays} hari terlebih dahulu. Setelah itu, hero menjadi artikel dengan kunjungan paling sedikit, memberi kesempatan bagi konten yang kurang terlihat.</message>
 	<message key="manager.setup.customizingTheLook">Langkah 5. Menyesuaikan Tampilan</message>
 	<message key="manager.setup.customTags">Tag Khusus</message>
 	<message key="manager.setup.customTagsDescription">Tag HTML untuk dimasukkan di header setiap halaman (contoh: META tag).</message>

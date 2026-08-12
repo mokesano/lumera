@@ -42,15 +42,32 @@ import('lib.wizdam.trends.TrendsManager');
 class ArticleHeroService {
 
     private const CACHE_TTL_SECONDS = 604800; // 7 hari, sama seperti skrip lama.
+
     private const FEATURED_LIMIT = 4;
 
     /** Journal setting 'articleHeroMode' value untuk mode fallback baru (opsi 1-7). */
     private const MODE_FALLBACK = 1;
+
     /** Journal setting 'articleHeroMode' value untuk mode lama (kunjungan+download tertinggi). Default kalau setting belum diisi, supaya perilaku jurnal existing tidak berubah. */
     private const MODE_LEGACY = 2;
 
     /** Masa graceful untuk artikel terbaru pada mode fallback (opsi 1). */
-    private const FALLBACK_GRACE_DAYS = 27;
+    private const FALLBACK_GRACE_DAYS = 17;
+
+    /** Masa graceful untuk artikel terbaru pada mode legacy (opsi 2). Sebelumnya literal '-7 days' di _selectForMatureJournal(), nilainya TIDAK diubah -- cuma diberi nama supaya konsisten dengan FALLBACK_GRACE_DAYS. */
+    private const LEGACY_GRACE_DAYS = 7;
+
+    /**
+     * Getter publik untuk masa graceful (dalam hari) mode fallback (opsi 1).
+     * Dipakai oleh JournalSetupStep5Form supaya teks di locale (label +
+     * deskripsi radio button) tidak hardcode angka, melainkan mengambil
+     * langsung dari FALLBACK_GRACE_DAYS di sini -- satu-satunya sumber
+     * kebenaran untuk nilai ini.
+     * @return int
+     */
+    public static function getFallbackGraceDays(): int {
+        return self::FALLBACK_GRACE_DAYS;
+    }
 
     /**
      * Titik masuk utama -- assign data Hero + Featured ke Smarty untuk
@@ -184,7 +201,7 @@ class ArticleHeroService {
      * @return array{hero: array|null, featured: array, selection_logic: array}
      */
     private static function _selectForMatureJournal(array $candidates): array {
-        $oneWeekAgo = strtotime('-7 days');
+        $oneWeekAgo = strtotime('-' . self::LEGACY_GRACE_DAYS . ' days');
         $latest = $candidates[0];
         $isInGracePeriod = strtotime((string) $latest['date_published']) > $oneWeekAgo;
 
