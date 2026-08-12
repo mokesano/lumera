@@ -1370,7 +1370,7 @@ $(document).ready(function() {
                 try {
                     var parsedUrl = new URL(originalHref, window.location.origin);
                     if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
-                        safeHref = originalHref;
+                        safeHref = parsedUrl.href;
                     }
                 } catch (e) {
                     // Biarkan safeHref sebagai fallback aman
