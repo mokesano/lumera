@@ -161,7 +161,7 @@ document.webL10n = (function(window, document, undefined) {
     function evalString(text) {
       if (text.lastIndexOf('\\') < 0)
         return text;
-      return text.replace(/\\\\/g, '\\')
+      return text.replace(/\\n/g, '\n')
                  .replace(/\\n/g, '\n')
                  .replace(/\\r/g, '\r')
                  .replace(/\\t/g, '\t')
@@ -170,7 +170,8 @@ document.webL10n = (function(window, document, undefined) {
                  .replace(/\\{/g, '{')
                  .replace(/\\}/g, '}')
                  .replace(/\\"/g, '"')
-                 .replace(/\\'/g, "'");
+                 .replace(/\\'/g, "'")
+                 .replace(/\\\\/g, '\\');
     }
 
     // parse *.properties text data into an l10n dictionary
