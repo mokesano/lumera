@@ -1,0 +1,63 @@
+# ===================================================================
+# WIZDAM WAF - Proteksi Direktori .well-known
+# Lokasi: /.well-known/.htaccess
+# ===================================================================
+
+# -------------------------------------------------------------------
+# LAPIS 1: Matikan SEMUA kemampuan eksekusi di direktori ini
+# -------------------------------------------------------------------
+
+# Tanpa directory listing, tanpa CGI, tanpa symlink following
+Options -Indexes -ExecCGI -Includes
+
+# Paksa semua berkas dilayani sebagai file statis biasa.
+# PENTING: ini bekerja pada PHP-FPM/LiteSpeed (lsphp) -- berbeda dari
+# 'php_flag engine off' yang HANYA berfungsi di mod_php, sementara
+# cPanel modern (ea-php84 pada server ini) memakai PHP-FPM/LSAPI.
+<IfModule mod_mime.c>
+    RemoveHandler .php .php3 .php4 .php5 .php6 .php7 .php8 .phtml .phps .phar
+    RemoveHandler .cgi .pl .py .sh .asp .aspx .jsp .shtml
+    RemoveType .php .php3 .php4 .php5 .php6 .php7 .php8 .phtml .phps .phar
+</IfModule>
+SetHandler default-handler
+
+
+# -------------------------------------------------------------------
+# LAPIS 2: Tolak SEMUANYA secara default
+# -------------------------------------------------------------------
+# Kunci pendekatan whitelist -- apa pun yang tidak diizinkan secara
+# eksplisit di Lapis 3 akan ditolak, termasuk nama file yang belum
+# pernah dikenal siapa pun. Inilah yang membedakannya dari blacklist.
+Require all denied
+
+
+# -------------------------------------------------------------------
+# LAPIS 3: Izinkan HANYA berkas validasi domain yang sah
+# -------------------------------------------------------------------
+
+# (a) Token ACME HTTP-01 (Let's Encrypt / ZeroSSL / Buypass)
+#     Format: base64url TANPA ekstensi, panjang ~43 karakter.
+#     Batas minimal 16 karakter sengaja dipasang -- probe penyerang
+#     '/.well-known/acme-challenge/file' (4 karakter) otomatis tertolak.
+<FilesMatch "^[A-Za-z0-9_-]{16,128}$">
+    Require all granted
+</FilesMatch>
+
+# (b) Berkas validasi CA berbasis teks
+#     (Sectigo/Comodo, DigiCert, GoDaddy: *.txt -- juga security.txt,
+#     assetlinks.json, apple-app-site-association berbasis json)
+#
+#     Negative lookahead menolak DOUBLE EXTENSION seperti
+#     'shell.php.txt' atau 'a.phtml.txt' -- trik klasik untuk menembus
+#     filter berbasis ekstensi akhir saja.
+<FilesMatch "^(?!.*\.(?:php[0-9]?|phtml|phps|phar|cgi|pl|py|sh|asp|aspx|jsp|htaccess))[A-Za-z0-9._-]+\.(?:txt|json)$">
+    Require all granted
+</FilesMatch>
+
+
+# -------------------------------------------------------------------
+# LAPIS 4: Proteksi eksplisit berkas konfigurasi
+# -------------------------------------------------------------------
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

@@ -29,6 +29,14 @@ ErrorDocument 503 /503.shtml
 # WIZDAM WAF v2.0 - Server-Level Protection
 # ===================================================================
 
+# Blokir eksekusi skrip di direktori upload
+<FilesMatch "\.(?i:php[0-9]?|phtml|phps|phar|cgi|pl|py|sh|asp|aspx|jsp)$">
+    Require all denied
+</FilesMatch>
+<IfModule mod_mime.c>
+    RemoveHandler .php .php3 .php4 .php5 .php7 .php8 .phtml .phar
+</IfModule>
+
 # STEP C: Direct file blocking (Malware & Spy Scripts)
 <FilesMatch "^(zip|shell|c99|r57|wso|b374k|alfa|indoxploit|mini|adminer|info|phpinfo|test|temp)\.php$">
     Require all denied
