@@ -4580,9 +4580,7 @@ var FileSpec = (function FileSpecClosure() {
       if (!this._filename && this.root) {
         var filename = pickPlatformItem(this.root) || 'unnamed';
         this._filename = stringToPDFString(filename).
-          replace(/\\\\/g, '\\').
-          replace(/\\\//g, '/').
-          replace(/\\/g, '/');
+          replace(/\\+|\\\//g, '/');
       }
       return this._filename;
     },
