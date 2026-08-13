@@ -16,7 +16,9 @@ ErrorDocument 401 /401.shtml
 ErrorDocument 403 /403.shtml
 # 404 Not Found: File statis tidak ditemukan (Lihat catatan di bawah)
 ErrorDocument 404 /404.shtml
-# 423 Locked: Resource terkunci (Jarang di OJS, tapi bagus jika ada)
+# 410 Gone: File dihapus permanen (Jarang, tapi bagus jika ada)
+ErrorDocument 410 /410.shtml
+# 423 Locked: Resource terkunci (Jarang, tapi bagus jika ada)
 ErrorDocument 423 /423.shtml
 
 # 2. Server Errors (5xx)
@@ -29,7 +31,7 @@ ErrorDocument 503 /503.shtml
 # WIZDAM WAF v2.0 - Server-Level Protection
 # ===================================================================
 
-# Blokir eksekusi skrip di direktori upload
+# STEP 1. Blokir eksekusi skrip di direktori upload
 <FilesMatch "\.(?i:php[0-9]?|phtml|phps|phar|cgi|pl|py|sh|asp|aspx|jsp)$">
     Require all denied
 </FilesMatch>
@@ -37,18 +39,18 @@ ErrorDocument 503 /503.shtml
     RemoveHandler .php .php3 .php4 .php5 .php7 .php8 .phtml .phar
 </IfModule>
 
-# STEP C: Direct file blocking (Malware & Spy Scripts)
+# STEP 2: Direct file blocking (Malware & Spy Scripts)
 <FilesMatch "^(zip|shell|c99|r57|wso|b374k|alfa|indoxploit|mini|adminer|info|phpinfo|test|temp)\.php$">
     Require all denied
 </FilesMatch>
 
-# STEP D: Protect sensitive & System files
+# STEP 3: Protect sensitive & System files
 # Memblokir akses ke file .wiz, .tpl, .inc, .log, dll.
 <FilesMatch "\.(inc|conf|config|log|sql|bak|old|backup|git|svn|env|ini|sh|tpl|wiz|md|yml)$">
     Require all denied
 </FilesMatch>
 
-# STEP F: Protect Apache Config Files
+# STEP 4: Protect Apache Config Files
 <FilesMatch "^\.ht">
     Require all denied
 </FilesMatch>
