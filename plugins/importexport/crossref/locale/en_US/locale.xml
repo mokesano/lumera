@@ -54,10 +54,13 @@
 	<message key="plugins.importexport.crossref.status.all">All</message>
 	<message key="plugins.importexport.crossref.status.non">Not deposited</message>
 	<message key="plugins.importexport.crossref.status.submitted">Submitted</message>
+	<message key="plugins.importexport.crossref.status.queued">Queued</message>
+	<message key="plugins.importexport.crossref.status.inProcess">Processing</message>
 	<message key="plugins.importexport.crossref.status.completed">Deposited</message>
 	<message key="plugins.importexport.crossref.status.failed">Failed</message>
 	<message key="plugins.importexport.crossref.status.registered">Active</message>
 	<message key="plugins.importexport.crossref.status.markedRegistered">Marked registered</message>
+	<message key="plugins.importexport.crossref.status.unknownRemote">Unrecognized status</message>
 	<message key="plugins.importexport.crossref.statusLegend"><![CDATA[
 		<p>Deposit status:</p>
 		<p>
