@@ -1,10 +1,10 @@
 # ====================================================================
-# KONFIGURASI .HTACCESS UNTUK SANGIA PUBLISHING
+# KONFIGURASI .HTACCESS UNTUK SANGIA PUBLISHING HOUSE APP
 # Tujuan: Mengatur URL rewriting, keamanan, dan konfigurasi PHP
 # ====================================================================
 
 # ====================================================================
-# WIZDAM ERROR HANDLING
+# SANGIA LUMERA ERROR HANDLING
 # ====================================================================
 
 # 1. Client Errors (4xx)
@@ -31,21 +31,22 @@ ErrorDocument 503 /503.shtml
 # WIZDAM WAF v2.0 - Server-Level Protection
 # ===================================================================
 
-# STEP C: Direct file blocking (Malware & Spy Scripts)
+# STEP 1: Direct file blocking (Malware & Spy Scripts)
 <FilesMatch "^(zip|shell|c99|r57|wso|b374k|alfa|indoxploit|mini|adminer|info|phpinfo|test|temp)\.php$">
     Require all denied
 </FilesMatch>
 
-# STEP D: Protect sensitive & System files
+# STEP 2: Protect sensitive & System files
 # Memblokir akses ke file .wiz, .tpl, .inc, .log, dll.
 <FilesMatch "\.(inc|conf|config|log|sql|bak|old|backup|git|svn|env|ini|sh|tpl|wiz|md|yml)$">
     Require all denied
 </FilesMatch>
 
-# STEP F: Protect Apache Config Files
+# STEP 3: Protect Apache Config Files
 <FilesMatch "^\.ht">
     Require all denied
 </FilesMatch>
+
 
 # --------------------------------------------------------------------
 # BAGIAN 1: KONFIGURASI PHP
@@ -55,6 +56,7 @@ ErrorDocument 503 /503.shtml
 # Mengatur timezone server ke Jakarta (WIB)
 # Memastikan semua timestamp menggunakan waktu Indonesia
 php_value date.timezone 'Asia/Jakarta'
+
 
 # --------------------------------------------------------------------
 # BAGIAN 2: KEAMANAN DIREKTORI
@@ -68,6 +70,7 @@ Options -Indexes +FollowSymLinks
 # Menyembunyikan semua file dari directory listing
 # Backup keamanan jika Options -Indexes tidak bekerja
 IndexIgnore *
+
 
 # --------------------------------------------------------------------
 # BAGIAN 3: URL REWRITING - KONFIGURASI UTAMA
@@ -102,6 +105,7 @@ RewriteEngine On
  RewriteCond %{REMOTE_ADDR} !^203\.0\.113\.45$
  RewriteRule ^(diagnostic|health)\.php$ - [F,L]
 
+
  # ========================================================
  # 1. BLOKIR URL HANTU & PERETAS (Taruh di paling atas!)
  # ========================================================
@@ -114,8 +118,9 @@ RewriteEngine On
  RedirectMatch 410 ^/index/sitemap_index\.xml$
  RedirectMatch 410 ^/index/sitemap\.xml$
 
+
  # ----------------------------------------------------------------
- # BAGIAN 5: API ENDPOINTS - CUSTOM APLIKASI
+ # BAGIAN 4: API ENDPOINTS - CUSTOM APLIKASI
  # Mengarahkan URL API ke file PHP handler yang sesuai
  # ----------------------------------------------------------------
  
@@ -177,7 +182,7 @@ RewriteEngine On
  
  
  # ----------------------------------------------------------------
- # BAGIAN 6: KEAMANAN TEMA - PROTEKSI DIREKTORI
+ # BAGIAN 5: KEAMANAN TEMA - PROTEKSI DIREKTORI
  # Mencegah akses langsung ke file tema untuk keamanan
  # ----------------------------------------------------------------
  
@@ -201,8 +206,8 @@ RewriteEngine On
  
  
  # ----------------------------------------------------------------
- # BAGIAN 7: OJS CORE - URL ROUTING
- # Rule utama OJS untuk menangani semua request ke index.php
+ # BAGIAN 6: Lumera CORE - URL ROUTING
+ # Rule utama untuk menangani semua request ke index.php
  # ----------------------------------------------------------------
  
  # Format: RewriteRule ^(path-jurnal)/halaman/OperasiLama$ /path-jurnal/halaman/operasi-baru [R=301,L]
@@ -214,7 +219,7 @@ RewriteEngine On
  RewriteRule ^([a-zA-Z0-9_]+)/about/editorialPolicies$ /$1/about/editorial-policies [R=301,L]
  RewriteRule ^([a-zA-Z0-9_]+)/about/aboutThisPublishingSystem$ /$1/about/insights [R=301,L]
  
- # RULE UTAMA OJS - FRONT CONTROLLER PATTERN
+ # RULE UTAMA - FRONT CONTROLLER PATTERN
  # Kondisi: Request bukan file nyata (!-f) DAN bukan direktori nyata (!-d)
  # Aksi: Kirim semua request ke index.php dengan path sebagai parameter
  # [QSA] = Query String Append (pertahankan parameter URL)
@@ -231,7 +236,7 @@ RewriteEngine On
 </IfModule>
 
 # ----------------------------------------------------------------
-# BAGIAN 7-1: HANDLER IP DENNY KONFIGURASI
+# BAGIAN 7: HANDLER IP DENNY KONFIGURASI
 # Pengaturan IP mencurigakan
 # ----------------------------------------------------------------
 Deny from 216.244.66.250
@@ -242,8 +247,6 @@ Deny from 146.70.9.231
 Deny from 146.70.*.*
 Deny from 103.107.198.231
 Deny from 103.107.*.*
-Deny from 127.0.0.1
-Deny from 127.0.*.*
 Deny from 185.213.83.15
 Deny from 185.213.*.*
 Deny from 23.248.170.199
