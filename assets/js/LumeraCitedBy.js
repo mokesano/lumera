@@ -1,5 +1,5 @@
 /**
- * @file assets/js/LumeraCitedBy.js
+ * @file assets/js/LumeraCitedby.js
  * 
  * Copyright (c) 2017-2026 Sangia Code Lumera 
  * Copyright (c) 2024-2026 Rochmady and Development Team
@@ -15,6 +15,18 @@
  * @version 2.0.0
  */
 (function() {
+    // [LUMERA] Jadwal pemutakhiran terjadwal berikutnya, dikirim SERVER lewat
+    // atribut data pada <section>. Tidak ada pemanggilan jaringan di sini.
+    let nextScheduledUpdate = 0;
+
+    const nextUpdateText = () => {
+        if (nextScheduledUpdate > 0) {
+            return 'Citations are updated on a weekly schedule. Next update: '
+                 + formatTimestamp(nextScheduledUpdate);
+        }
+        return 'Citations are updated on a weekly schedule by the server.';
+    };
+
     // Variabel untuk mengelola refresh
     const REFRESH_COOLDOWN_HOURS = 12; // Minimum 12 jam antara refresh
     let lastDataTimestamp = 0;         // Timestamp dari pembaruan data terakhir
@@ -26,7 +38,9 @@
             style.id = 'citation-minimal-styles';
             style.textContent = `
                 .citation-refresh-overlay {position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.5);display:flex;justify-content:center;align-items:center;z-index:10}
-                .citation-refresh-spinner {width:24px;height:24px;border:2px solid rgba(0,0,0,.1);border-radius:50%;border-top-color:#3498db;animation:spin 1s linear infinite}
+                .citation-refresh-spinner {width:40px;height:40px;background:url('/public/assets/icons/lum-loading.svg') center/contain no-repeat}
+                .lum-cite-pending {opacity:0;transform:translateY(6px)}
+                .lum-cite-reveal {opacity:1;transform:translateY(0);transition:opacity .35s ease,transform .35s ease}
                 .citation-blur {filter:blur(1px)}
                 @keyframes spin {to{transform:rotate(360deg)}}
                 .refresh-icon {margin-left:4px;vertical-align:middle}
@@ -159,7 +173,7 @@
     const refreshButtonTemplate = (sourcesInfo, canRefreshNow) => {
         const tooltipText = !canRefreshNow
             ? `Next refresh available in ${getCooldownTimeRemaining()}`
-            : (sourcesInfo || 'Refresh citations');
+            : (sourcesInfo || nextUpdateText());
 
         const disabledClass = !canRefreshNow ? 'button-disabled' : '';
 
@@ -400,15 +414,10 @@
         // Event handler untuk tombol refresh
         const refreshButton = refreshContainer.querySelector('.refresh-citations-button');
         if (refreshButton) {
-            refreshButton.addEventListener('click', function() {
-                if (canRefresh() && !citingContainer.querySelector('.citation-refresh-overlay')) {
-                    refreshCitations(citingContainer);
-                } else if (!canRefresh()) {
-                    const tooltip = refreshContainer.querySelector('.citation-tooltip');
-                    if (tooltip) {
-                        tooltip.textContent = `Next refresh available in ${getCooldownTimeRemaining()}`;
-                    }
-                }
+            refreshButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tooltip = refreshContainer.querySelector('.citation-tooltip');
+                if (tooltip) tooltip.textContent = nextUpdateText();
             });
         }
 
@@ -433,59 +442,6 @@
             const timerInterval = setInterval(updateRefreshButtonState, 60000);
             window.addEventListener('beforeunload', () => clearInterval(timerInterval));
         }
-    };
-
-    /**
-     * [WIZDAM v4.0] Refresh manual -- SATU-SATUNYA pemakaian AJAX yang
-     * tersisa, dan memang dipicu pengguna (bukan saat halaman dibuka).
-     * Animasi loading, cooldown, dan tooltip sumber tetap seperti semula.
-     */
-    const refreshCitations = (citingContainer) => {
-        const section = document.querySelector('.SidePanel.doi-cited');
-        const doi = section ? section.getAttribute('data-citation-doi') : '';
-        if (!doi) {
-            console.warn('[Wizdam Debug] DOI tidak tersedia pada markup, refresh dibatalkan.');
-            return;
-        }
-
-        showLoading(citingContainer);
-
-        fetch(`/api/citedby?doi=${encodeURIComponent(doi)}&refresh=1`)
-            .then(response => response.json())
-            .then(response => {
-                hideLoading(citingContainer);
-
-                if (response.status !== 'success') {
-                    console.warn('[Wizdam Debug] DOI yang diminta:', doi);
-                    console.error('[Wizdam API]: Citation fetch error:', response.message || 'Unknown error');
-                    return;
-                }
-
-                const data = response.data || {};
-                const citationCount = data.citation_count || 0;
-
-                extractAndSaveTimestamp(response);
-
-                const citedBySpan = document.querySelector('span.citedby');
-                if (citedBySpan) citedBySpan.textContent = citationCount;
-
-                // Tidak ada kutipan -> sembunyikan panel (perilaku asli)
-                if (hideCitationPanelIfEmpty(citationCount)) return;
-
-                renderList(citingContainer, data.citing_articles || []);
-                applyPdfButtonPolicy(citingContainer);
-
-                const formattedDate = data.timestamp
-                    ? formatTimestamp(data.timestamp)
-                    : (response.last_updated ? formatISODate(response.last_updated) : formatTimestamp(Date.now() / 1000));
-
-                buildFooter(citingContainer, data.citation_sources, formattedDate);
-                setTimeout(fixHtmlTitles, 100);
-            })
-            .catch(error => {
-                hideLoading(citingContainer);
-                console.error('[Wizdam API]: Citation fetch error:', error);
-            });
     };
 
     /** Bangun ulang <ul> daftar kutipan setelah refresh. */
@@ -558,6 +514,37 @@
         });
     };
 
+    /**
+     * [LUMERA] Tampilkan kutipan SATU PER SATU setelah seleksi tombol PDF.
+     * Panel dirender server dengan u-js-hide, jadi pengguna tidak pernah
+     * melihat tombol PDF untuk jurnal di luar daftar yang diizinkan.
+     */
+    const revealSequentially = (citingContainer, section) => {
+        const items = Array.from(citingContainer.querySelectorAll('li.lum-cite-pending'));
+        items.forEach(li => {
+            const box = li.querySelector('.buttons');
+            if (!box) return;
+            const link = box.querySelector('a[data-citation-container]');
+            const container = link ? link.getAttribute('data-citation-container') : '';
+            if (!isAllowedJournal(container)) box.remove();
+        });
+        section.classList.remove('u-js-hide');
+        showLoading(citingContainer);
+        let i = 0;
+        const step = () => {
+            if (i >= items.length) {
+                hideLoading(citingContainer);
+                items.slice(3).forEach(li => { li.style.display = 'none'; });
+                return;
+            }
+            const li = items[i++];
+            li.classList.remove('lum-cite-pending');
+            li.classList.add('lum-cite-reveal');
+            setTimeout(step, 90);
+        };
+        setTimeout(step, 150);
+    };
+
     // Inisialisasi: bekerja pada markup yang SUDAH dirender server
     const init = () => {
         addStyles();
@@ -570,6 +557,8 @@
 
         // Ambil metadata awal dari atribut data (pengganti respons AJAX awal)
         const ts = parseInt(section.getAttribute('data-citation-timestamp'), 10) || 0;
+        const nu = parseInt(section.getAttribute('data-citation-next-update'), 10) || 0;
+        nextScheduledUpdate = nu > 0 && nu.toString().length <= 10 ? nu : nu;
         if (ts > 0) lastDataTimestamp = ts.toString().length <= 10 ? ts * 1000 : ts;
 
         let sources = null;
@@ -582,7 +571,7 @@
         const count = citingContainer.querySelectorAll('ul.citedby_crossref li').length;
         if (hideCitationPanelIfEmpty(count)) return;
 
-        applyPdfButtonPolicy(citingContainer);
+        revealSequentially(citingContainer, section);
         buildFooter(citingContainer, sources, ts > 0 ? formatTimestamp(ts) : 'Unknown date');
         setTimeout(fixHtmlTitles, 100);
     };

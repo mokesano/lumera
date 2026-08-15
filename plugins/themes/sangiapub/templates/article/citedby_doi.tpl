@@ -9,9 +9,10 @@
  *}
 
 {if $citingArticles && $citingArticles|@count > 0}
-<section class="SidePanel doi-cited u-margin-s-bottom details-44861495"
+<section class="SidePanel doi-cited u-margin-s-bottom details-44861495 u-js-hide"
          data-citation-doi="{$articleDoi|escape}"
          data-citation-timestamp="{$citationTimestamp|default:0}"
+         data-citation-next-update="{$citationNextUpdate|default:0}"
          data-citation-sources="{$citationSourcesJson|escape}">
     <details class="details-summary-2566262091 u-margin-s-bottom" open="">
         <summary class=" ">
@@ -28,7 +29,7 @@
             <div id="citing-articles">
                 <ul class="citedby_crossref">
                     {foreach from=$citingArticles item=citation name=citeLoop}
-                    <li class="SidePanelItem article-citing">
+                    <li class="SidePanelItem article-citing lum-cite-pending">
                         <div class="sub-heading">
                             <h3 class="related-content-panel-list-entry-outline-padding text-s u-fonts-serif" id="citing-articles-article{$smarty.foreach.citeLoop.iteration}-title">
                                 <a class="anchor u-clamp-2-lines anchor-primary" href="{if $citation.doi}https://doi.org/{$citation.doi|escape}{elseif $citation.url}{$citation.url|escape}{else}#{/if}" target="_blank" rel="nofollow noopener" title="{$citation.title|strip_tags|escape}"><span class="anchor-text-container"><span class="anchor-text"><span>{$citation.title}</span></span></span>

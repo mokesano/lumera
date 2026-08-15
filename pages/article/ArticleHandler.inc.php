@@ -332,6 +332,7 @@ class ArticleHandler extends Handler {
         $templateMgr->assign([
             'articleDoi'     => $articleDoi,
             'citingArticles' => $citingArticles,
+            'citationNextUpdate' => CitationFetcherService::getNextScheduledUpdate(),
             'citationCount'  => $citationCount,
             'citationSourcesJson' => isset($citationSources) ? json_encode($citationSources) : '',
             'citationTimestamp'   => $citationTimestamp ?? 0,

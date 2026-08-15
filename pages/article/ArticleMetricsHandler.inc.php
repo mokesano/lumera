@@ -122,21 +122,34 @@ class ArticleMetricsHandler extends ArticleHandler {
                     'opencitations_count'   => 'OpenCitations',
                     'semanticscholar_count' => 'Semantic Scholar',
                 ];
+                // Dua bentuk disiapkan:
+                //  - $activeSources        : "OpenAlex", "Dimensions"      (nama saja)
+                //  - $activeSourcesDetail  : "OpenAlex (5)", "Dimensions (2)" (dengan angka)
+                // Template memilih salah satu; keduanya sudah berupa STRING siap
+                // cetak, sehingga tidak ada array yang tercetak sebagai "Array".
                 $activeSources = [];
+                $activeSourcesDetail = [];
                 foreach ($sourceLabels as $key => $label) {
-                    if (!empty($rawSources[$key]) && (int) $rawSources[$key] > 0) {
+                    $n = (int) ($rawSources[$key] ?? 0);
+                    if ($n > 0) {
                         $activeSources[] = $label;
+                        $activeSourcesDetail[] = $label . ' (' . $n . ')';
                     }
                 }
-                $citationSourceNames = '';
-                if (count($activeSources) === 1) {
-                    $citationSourceNames = $activeSources[0];
-                } elseif (count($activeSources) === 2) {
-                    $citationSourceNames = $activeSources[0] . ' and ' . $activeSources[1];
-                } elseif (count($activeSources) > 2) {
-                    $last = array_pop($activeSources);
-                    $citationSourceNames = implode(', ', $activeSources) . ', and ' . $last;
-                }
+                // Rangkai jadi kalimat berbahasa Inggris yang benar:
+                // 1 sumber  -> "OpenAlex"
+                // 2 sumber  -> "OpenAlex and Dimensions"        (tanpa koma)
+                // 3+ sumber -> "CrossRef, OpenAlex, and Dimensions" (koma Oxford)
+                $joinList = function(array $items): string {
+                    $n = count($items);
+                    if ($n === 0) return '';
+                    if ($n === 1) return $items[0];
+                    if ($n === 2) return $items[0] . ' and ' . $items[1];
+                    $last = array_pop($items);
+                    return implode(', ', $items) . ', and ' . $last;
+                };
+                $citationSourceNames  = $joinList($activeSources);
+                $citationSourceDetail = $joinList($activeSourcesDetail);
                 $citingArticles = $citationData['citing_articles'] ?? [];
             }
         }
@@ -144,6 +157,7 @@ class ArticleMetricsHandler extends ArticleHandler {
             'citingArticles' => $citingArticles,
             'citationCount'  => $citationCount,
             'citationSourceNames'  => $citationSourceNames ?? '',
+            'citationSourceDetail' => $citationSourceDetail ?? '',
             'citationSourceCounts' => $rawSources ?? [],
         ]);
 
@@ -219,11 +233,6 @@ class ArticleMetricsHandler extends ArticleHandler {
 
     /**
      * Deret waktu harian (untuk grafik) dalam N hari terakhir.
-     *
-     * [WIZDAM BUGFIX] Sama seperti getMetricsSummary() -- dimension yang
-     * benar adalah ASSOC_ID (bukan SUBMISSION_ID), dan untuk galley
-     * (downloads) perlu filter ASSOC_ID berupa array SEMUA galley
-     * artikel, bukan article_id itu sendiri.
      * @param int $articleId
      * @param int $journalId
      * @param int $assocType ASSOC_TYPE_ARTICLE (views) atau ASSOC_TYPE_GALLEY (downloads)

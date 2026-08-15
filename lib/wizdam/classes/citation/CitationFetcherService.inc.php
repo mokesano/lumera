@@ -215,6 +215,21 @@ class CitationFetcherService {
     }
 
     /**
+     * [LUMERA] Perkiraan kapan CitationRefreshTask berjalan lagi -- dibaca
+     * dari last_run tabel scheduled_tasks + frequency mingguan. Dipakai
+     * halaman artikel untuk MENAMPILKAN jadwal pemutakhiran berikutnya.
+     * @return int Unix timestamp, 0 kalau task belum pernah berjalan.
+     */
+    public static function getNextScheduledUpdate(): int {
+        import('lib.pkp.classes.scheduledTask.ScheduledTaskDAO');
+        /** @var ScheduledTaskDAO $dao */
+        $dao = DAORegistry::getDAO('ScheduledTaskDAO');
+        $last = (int) $dao->getLastRunTime('lib.wizdam.classes.tasks.CitationRefreshTask');
+        if ($last <= 0) return 0;
+        return strtotime('+7 days', $last);
+    }
+
+    /**
      * Cache dianggap basi kalau sudah lebih dari 7 hari sejak last_updated.
      * [CATATAN] Ini TTL untuk cache mentah hasil API eksternal (supaya tidak
      * membebani API tiap request) -- BEDA dengan smart-hash detection di
