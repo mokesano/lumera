@@ -508,7 +508,7 @@
             const titleSpan = li.querySelector('.anchor-text span');
             if (titleSpan) titleSpan.innerHTML = article.title || '';
             const anchor = li.querySelector('a.anchor');
-            if (anchor) anchor.setAttribute('title', (article.title || '').replace(/<[^>]*>/g, ''));
+            if (anchor) anchor.setAttribute('title', (article.title || '').replace(/[<>]/g, ''));
 
             list.appendChild(li);
         });
