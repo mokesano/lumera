@@ -108,12 +108,43 @@ class ArticleMetricsHandler extends ArticleHandler {
             $citationData = $citationFetcher->getCachedCitations((string) $doi);
             if ($citationData !== null) {
                 $citationCount = (int) ($citationData['citation_count'] ?? 0);
+
+                // [WIZDAM] Sumber kutipan diteruskan ke template supaya
+                // kalimat "Citation counts are provided by ..." TIDAK perlu
+                // di-hardcode. Hanya sumber yang BENAR-BENAR menyumbang
+                // (count > 0) yang disebut -- hasil kombinasi + deduplikasi
+                // antar-API oleh CitationFetcherService.
+                $rawSources = $citationData['citation_sources'] ?? [];
+                $sourceLabels = [
+                    'crossref_count'        => 'CrossRef',
+                    'openalex_count'        => 'OpenAlex',
+                    'dimensions_count'      => 'Dimensions',
+                    'opencitations_count'   => 'OpenCitations',
+                    'semanticscholar_count' => 'Semantic Scholar',
+                ];
+                $activeSources = [];
+                foreach ($sourceLabels as $key => $label) {
+                    if (!empty($rawSources[$key]) && (int) $rawSources[$key] > 0) {
+                        $activeSources[] = $label;
+                    }
+                }
+                $citationSourceNames = '';
+                if (count($activeSources) === 1) {
+                    $citationSourceNames = $activeSources[0];
+                } elseif (count($activeSources) === 2) {
+                    $citationSourceNames = $activeSources[0] . ' and ' . $activeSources[1];
+                } elseif (count($activeSources) > 2) {
+                    $last = array_pop($activeSources);
+                    $citationSourceNames = implode(', ', $activeSources) . ', and ' . $last;
+                }
                 $citingArticles = $citationData['citing_articles'] ?? [];
             }
         }
         $templateMgr->assign([
             'citingArticles' => $citingArticles,
             'citationCount'  => $citationCount,
+            'citationSourceNames'  => $citationSourceNames ?? '',
+            'citationSourceCounts' => $rawSources ?? [],
         ]);
 
         import('lib.pkp.classes.scheduledTask.ScheduledTaskDAO');

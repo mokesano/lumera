@@ -75,13 +75,9 @@ class ArticleHandler extends Handler {
         $articleIdInput = $args[0] ?? 0;
         $op = $args[1] ?? null;
         if ($op === 'metrics') {
-            // [BUGFIX-KONSOLIDASI] Sebelumnya memanggil $this->metrics() milik
-            // ArticleHandler sendiri -- method itu DUPLIKAT dari
-            // ArticleMetricsHandler::metrics() yang jadi rute resmi (lihat
-            // pages/article/index.php, case 'metrics'). Redirect ke rute
-            // resmi supaya cuma ADA SATU logika metrics, bukan dua yang
-            // gampang tidak sinkron.
-            return $request->redirect(null, 'article', 'metrics', $articleIdInput);
+            import('pages.article.ArticleMetricsHandler');
+            $metricsHandler = new ArticleMetricsHandler();
+            return $metricsHandler->metrics([$articleIdInput], $request);
         }
         
         $router = $request->getRouter();
