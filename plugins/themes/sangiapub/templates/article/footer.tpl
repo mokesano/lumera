@@ -237,7 +237,7 @@
     {/if}
     
     <script type="text/javascript" src="{$baseUrl}/assets/js/lazyload.js" defer></script>
-    <script type="text/javascript" src="{$baseUrl}/assets/js/WizdamCitedby.js" defer></script>
+    <script type="text/javascript" src="{$baseUrl}/assets/js/LumeraCitedBy.js" defer></script>
     <script type="text/javascript" src="{$baseUrl}/assets/js/sangiastyle.js" defer></script>
     <script type="text/javascript" src="{$baseUrl}/assets/js/Wizdam-Article.js" defer></script>
 
