@@ -8,12 +8,13 @@
  * Select issues for export.
  *}
 {strip}
-{assign var="pageTitle" value="plugins.importexport.common.export.selectIssue"}
-{assign var="pageCrumbTitle" value="plugins.importexport.common.export.selectIssue"}
-{include file="common/header-parts/header-manager.tpl"}
+	{assign var="pageTitle" value="plugins.importexport.common.export.selectIssue"}
+	{assign var="pageCrumbTitle" value="plugins.importexport.common.export.selectIssue"}
+	{include file="common/header-parts/header-manager.tpl"}
 {/strip}
 
-<script type="text/javascript">{literal}
+<script type="text/javascript">
+{literal}
 	function toggleChecked() {
 		var elements = document.getElementById('issuesForm').elements;
 		for (var i=0; i < elements.length; i++) {
@@ -22,7 +23,8 @@
 			}
 		}
 	}
-{/literal}</script>
+{/literal}
+</script>
 
 <br />
 
@@ -30,20 +32,22 @@
 	<div><a class="link-button" href="{plugin_url path="articles"}">{translate key="plugins.importexport.crossref.manageArticles"}</a></div>
 	<br />
 	<form action="{plugin_url path="process"}" method="post" id="issuesForm">
+		<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 		<input type="hidden" name="target" value="issue" />
 		<table width="100%" class="listing">
 			<tr>
-				<td colspan="5" class="headseparator">&nbsp;</td>
+				<td colspan="6" class="headseparator">&nbsp;</td>
 			</tr>
 			<tr class="heading" valign="bottom">
 				<td width="5%">&nbsp;</td>
-				<td width="55%">{translate key="issue.issue"}</td>
+				<td width="45%">{translate key="issue.issue"}</td>
 				<td width="15%">{translate key="editor.issues.published"}</td>
-				<td width="15%">{translate key="editor.issues.numArticles"}</td>
+				<td width="10%">{translate key="editor.issues.numArticles"}</td>
+				<td width="15%">{translate key="common.status"}</td>
 				<td width="10%" align="right">{translate key="common.action"}</td>
 			</tr>
 			<tr>
-				<td colspan="5" class="headseparator">&nbsp;</td>
+				<td colspan="6" class="headseparator">&nbsp;</td>
 			</tr>
 
 			{iterate from=issues item=issue}
@@ -60,6 +64,16 @@
 					<td><a href="{url page="issue" op="view" path=$issue->getId()}" class="action">{$issue->getIssueIdentification()|strip_unsafe_html|nl2br}</a></td>
 					<td>{$issue->getDatePublished()|date_format:"$dateFormatShort"|default:"&mdash;"}</td>
 					<td>{$numArticles[$issueId]|escape}</td>
+					<td>
+						{assign var=issueStatus value=$issue->getData($depositStatusSettingName)|default:$smarty.const.CROSSREF_STATUS_NOT_DEPOSITED}
+						{if $issueStatus == $smarty.const.CROSSREF_STATUS_NOT_DEPOSITED}
+							{translate key="plugins.importexport.crossref.status.non"}
+						{elseif $issue->getData($depositStatusUrlSettingName)}
+							<a href="https://api.crossref.org{$issue->getData($depositStatusUrlSettingName)|escape}" target="_blank">{$statusMapping[$issueStatus]|escape}</a>
+						{else}
+							{$statusMapping[$issueStatus]|escape}
+						{/if}
+					</td>
 					<td align="right">
 						{if !$excludes[$issueId]}
 							<nobr>
@@ -73,21 +87,21 @@
 				</tr>
 				{if $issues->eof()}
 				<tr>
-					<td colspan="5" class="{if $issues->eof()}end{/if}separator">&nbsp;</td>
+					<td colspan="6" class="{if $issues->eof()}end{/if}separator">&nbsp;</td>
 				</tr>
 				{/if}
 			{/iterate}
 			{if $issues->wasEmpty()}
 				<tr>
-					<td colspan="5" class="nodata">{translate key="plugins.importexport.common.export.noIssues"}</td>
+					<td colspan="6" class="nodata">{translate key="plugins.importexport.common.export.noIssues"}</td>
 				</tr>
 				<tr>
-					<td colspan="5" class="endseparator">&nbsp;</td>
+					<td colspan="6" class="endseparator">&nbsp;</td>
 				</tr>
 			{else}
 				<tr>
 					<td colspan="2" align="left">{page_info iterator=$issues}</td>
-					<td colspan="3" align="right">{page_links anchor="issues" name="issues" iterator=$issues}</td>
+					<td colspan="4" align="right">{page_links anchor="issues" name="issues" iterator=$issues}</td>
 				</tr>
 			{/if}
 		</table>
@@ -116,6 +130,9 @@
 			</div>
 		{/if}
 	</form>
+	<div class="status-legend doi">
+	    {translate key="plugins.importexport.crossref.statusLegend"}
+	</div>
 </div>
 
 {include file="common/footer-parts/footer-user.tpl"}

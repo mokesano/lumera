@@ -87,7 +87,7 @@
 
 <form id="setupForm" method="post" action="{url op="setup" path="5"}" enctype="multipart/form-data">
 	{include file="common/formErrors.tpl"}
-	<input type="hidden" name="csrfToken" value="{$csrfToken|escape}">
+	<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 
 	{if count($formLocales) > 1}
 	<table width="100%" class="data">

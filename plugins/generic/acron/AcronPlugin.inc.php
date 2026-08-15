@@ -19,41 +19,41 @@ import('lib.pkp.classes.scheduledTask.ScheduledTaskHelper');
 
 class AcronPlugin extends GenericPlugin {
 
-    /** @var string */
-    public $_workingDir;
+    /** @var string|null */
+    protected $_workingDir = null;
 
     /** @var array */
-    public $_tasksToRun;
+    protected $_tasksToRun = [];
     
-    /** @var mixed $_preservedApplication */
+    /** @var mixed */
     protected $_preservedApplication = null;
 
-    /** @var mixed $_preservedRequest */
+    /** @var mixed */
     protected $_preservedRequest = null;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function AcronPlugin() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . ". Please refactor to parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        $this->__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Plugin registration. Registers hooks and load locale data.
-     * @see LazyLoadPlugin::register()
      * @param string $category
      * @param string $path
      * @return bool
@@ -61,14 +61,16 @@ class AcronPlugin extends GenericPlugin {
     public function register(string $category, string $path): bool {
         $success = parent::register($category, $path);
         
-        HookRegistry::register('Installer::postInstall', array($this, 'callbackPostInstall'));
+        HookRegistry::register('Installer::postInstall', [$this, 'callbackPostInstall']);
 
-        if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return $success;
+        if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) {
+            return $success;
+        }
+        
         if ($success) {
             $this->addLocaleData();
-            HookRegistry::register('LoadHandler', array($this, 'callbackLoadHandler'));
-            // Need to reload cron tab on possible enable or disable generic plugin actions.
-            HookRegistry::register('PluginHandler::plugin', array($this, 'callbackManage'));
+            HookRegistry::register('LoadHandler', [$this, 'callbackLoadHandler']);
+            HookRegistry::register('PluginHandler::plugin', [$this, 'callbackManage']);
         }
         return $success;
     }
@@ -122,65 +124,59 @@ class AcronPlugin extends GenericPlugin {
      * Management verbs for enable/disable and reload actions.
      * @see GenericPlugin::getManagementVerbs()
      * @param array $verbs
-     * @param Request|null $request
+     * @param object|null $request
      * @return array
      */
     public function getManagementVerbs(array $verbs = [], $request = null): array {
         $isEnabled = $this->getEnabled($request);
 
-        $verbs = array(); 
-        $verbs[] = array(
+        $verbs = []; 
+        $verbs[] = [
             ($isEnabled ? 'disable' : 'enable'),
             __($isEnabled ? 'manager.plugins.disable' : 'manager.plugins.enable')
-        );
-        $verbs[] = array(
+        ];
+        $verbs[] = [
             'reload', __('plugins.generic.acron.reload')
-        );
+        ];
         return $verbs;
     }
 
     /**
      * Manage plugin actions: enable, disable, reload.
      * @see GenericPlugin::manage()
-     * [LUMERA] Modernized: Used NotificationManager
      * @param string $verb
      * @param array $args
      * @param string|null $message
      * @param array|null $messageParams
-     * @param PKPRequest|null $request
+     * @param object|null $request
      * @return bool
      */
     public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
         switch ($verb) {
             case 'enable':
                 $this->updateSetting(0, 'enabled', true);
-                
-                // [LUMERA] Gunakan NotificationManager
                 import('classes.notification.NotificationManager');
                 $notificationMgr = new NotificationManager();
                 $notificationMgr->createTrivialNotification(
                     $request->getUser()->getId(),
                     NOTIFICATION_TYPE_SUCCESS,
-                    array('contents' => __('plugins.generic.acron.enabled'))
+                    ['contents' => __('plugins.generic.acron.enabled')]
                 );
                 break;
 
             case 'disable':
                 $this->updateSetting(0, 'enabled', false);
-                
-                // [LUMERA] Gunakan NotificationManager
                 import('classes.notification.NotificationManager');
                 $notificationMgr = new NotificationManager();
                 $notificationMgr->createTrivialNotification(
                     $request->getUser()->getId(),
                     NOTIFICATION_TYPE_SUCCESS,
-                    array('contents' => __('plugins.generic.acron.disabled'))
+                    ['contents' => __('plugins.generic.acron.disabled')]
                 );
                 break;
 
             case 'reload':
                 $this->_parseCrontab();
-
                 /** @var ScheduledTaskDAO $taskDao */
                 $taskDao = DAORegistry::getDAO('ScheduledTaskDAO');
                 $repairedCount = $taskDao->repairInvalidLastRunTimes();
@@ -190,7 +186,7 @@ class AcronPlugin extends GenericPlugin {
                 $notificationMgr->createTrivialNotification(
                     $request->getUser()->getId(),
                     NOTIFICATION_TYPE_SUCCESS,
-                    array('contents' => __('plugins.generic.acron.reloaded', array('count' => $repairedCount)))
+                    ['contents' => __('plugins.generic.acron.reloaded', ['count' => $repairedCount])]
                 );
                 break;
         }
@@ -210,22 +206,17 @@ class AcronPlugin extends GenericPlugin {
 
     /**
      * Load handler hook to check for tasks to run.
-     * [WIZDAM] IMPLEMENTED THROTTLING TO PREVENT DB OVERLOAD
      * @param string $hookName
      * @param array $args
      * @return bool
      */
     public function callbackLoadHandler($hookName, $args) {
-        // [LUMERA] Probability Gate, Pastikan tipe data integer untuk mt_rand
-        // Default: 100 (Artinya hanya 1 dari 100 request yang akan memicu cek database)
         $throttleRatio = (int) Config::getVar('general', 'acron_throttle', 100);
 
-        // Generate angka acak 1 sampai 100. Jika bukan 1, batalkan proses.
         if (mt_rand(1, $throttleRatio) !== 1) {
             return false;
         }
 
-        // Jika lolos gate (1% chance), baru jalankan logika berat
         $tasksToRun = $this->_getTasksToRun();
 
         if (!empty($tasksToRun)) {
@@ -234,12 +225,10 @@ class AcronPlugin extends GenericPlugin {
 
             ob_start();
             
-            // Simpan (Strong Reference) objek inti dari Registry 
-            // SEBELUM Garbage Collection PHP 8 menghancurkannya.
             $this->_preservedApplication = Registry::get('application');
             $this->_preservedRequest = Registry::get('request');
             
-            register_shutdown_function(array($this, 'shutdownFunction'));
+            register_shutdown_function([$this, 'shutdownFunction']);
         }
 
         return false;
@@ -252,23 +241,25 @@ class AcronPlugin extends GenericPlugin {
      * @return bool
      */
     public function callbackManage($hookName, $args) {
-        // [FIX] Cegah Undefined array key warning
         $verb = $args[0] ?? '';
-        $plugin = $args[4] ?? null; /** @var LazyLoadPlugin $plugin */
+        $plugin = $args[4] ?? null;
 
-        // Only interested in plugins that can be enabled/disabled.
-        if (!($plugin instanceof LazyLoadPlugin)) return false;
+        if (!($plugin instanceof LazyLoadPlugin)) {
+            return false;
+        }
 
-        // Only interested in enable/disable actions.
-        if ($verb !== 'enable' && $verb !== 'disable') return false;
+        if ($verb !== 'enable' && $verb !== 'disable') {
+            return false;
+        }
 
-        // Check if the plugin wants to add its own scheduled task into the cron tab.
         $hooks = HookRegistry::getHooks();
-        $hookName = 'AcronPlugin::parseCronTab';
-        if (!isset($hooks[$hookName])) return false;
+        $hookNameCheck = 'AcronPlugin::parseCronTab';
+        if (!isset($hooks[$hookNameCheck])) {
+            return false;
+        }
 
-        foreach($hooks[$hookName] as $index => $callback) {
-            if ($callback[0] == $plugin) {
+        foreach ($hooks[$hookNameCheck] as $index => $callback) {
+            if ($callback[0] === $plugin) {
                 $this->_parseCrontab();
                 break;
             }
@@ -279,8 +270,6 @@ class AcronPlugin extends GenericPlugin {
 
     /**
      * Shutdown callback.
-     * Mempertahankan semantik infrastruktur background process, 
-     * mendelegasikan domain logic eksekusi task agar terisolasi.
      */
     public function shutdownFunction() {
         // 1. INFRASTRUKTUR: Bangkitkan kembali Registry (Life-Support)
@@ -308,28 +297,23 @@ class AcronPlugin extends GenericPlugin {
 
     /**
      * Handle graceful HTTP connection closure to allow background processing.
-     * Compatible with both Nginx/PHP-FPM and Apache mod_php.
      */
     protected function _closeHttpConnectionGracefully(): void {
-        // Lepaskan lock session agar user bisa lanjut browsing di tab lain
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
         }
 
-        // Eksekusi absolut untuk PHP-FPM
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
             return;
         }
 
-        // Fallback untuk server Legacy (Apache mod_php)
         if (!headers_sent()) {
             header("Connection: close");
             header("Content-Encoding: none");
             header("Content-Length: " . (string) ob_get_length());
         }
 
-        // Kuras output buffer secara aman
         while (ob_get_level() > 0) {
             ob_end_flush();
         }
@@ -337,7 +321,7 @@ class AcronPlugin extends GenericPlugin {
     }
 
     //
-    // MODULAR HELPER Protected METHODS
+    // MODULAR HELPER Protected
     //
     /**
      * Arrange task execution flow and delegate to single task executor.
@@ -346,7 +330,7 @@ class AcronPlugin extends GenericPlugin {
     protected function _executeScheduledTasks(array $tasksToRun): void {
         /** @var ScheduledTaskDAO $taskDao */
         $taskDao = DAORegistry::getDAO('ScheduledTaskDAO');
-        $currentTasksToRun = $this->_getTasksToRun(); // Refresh state untuk race condition
+        $currentTasksToRun = $this->_getTasksToRun();
         
         foreach ($tasksToRun as $task) {
             $this->_executeSingleTask($task, $currentTasksToRun, $taskDao);
@@ -354,8 +338,7 @@ class AcronPlugin extends GenericPlugin {
     }
 
     /**
-     * Handle the execution of a single task: parsing class,
-     * race condition lock, and execution.
+     * Handle the execution of a single task.
      * @param array $task
      * @param array $currentTasksToRun
      * @param ScheduledTaskDAO $taskDao
@@ -364,46 +347,37 @@ class AcronPlugin extends GenericPlugin {
         $className = $task['className'];
         $pos = strrpos($className, '.');
         $baseClassName = ($pos === false) ? $className : substr($className, $pos + 1);
-        $taskArgs = isset($task['args']) ? $task['args'] : array();
+        $taskArgs = $task['args'] ?? [];
 
-        // [LUMERA]: Pastikan koneksi DB hidup sebelum query DAO dijalankan
-        $this->_ensureDatabaseConnection();
+        DBConnection::ensureConnection();
 
-        // Race condition handling
         $updateResult = 0;
-        if (in_array($task, $currentTasksToRun)) {
+        if (in_array($task, $currentTasksToRun, true)) {
             $updateResult = $taskDao->updateLastRunTime($className, time());
         }
 
-        // Jika berhasil mengambil alih eksekusi (lock), jalankan
         if ($updateResult === false || $updateResult === 1) {
             try {
                 import($className);
                 $taskInstance = new $baseClassName($taskArgs);
                 $taskInstance->execute();
             } catch (Throwable $e) {
-                error_log('Acron: task "' . $className . '" gagal dengan exception: ' . $e->getMessage());
+                error_log('Acron: task "' . $className . '" failed with exception: ' . $e->getMessage());
             }
         }
     }
 
-    //
-    // Private helper methods.
-    //
     /**
      * Parse all scheduled tasks files and save the result object in database.
-     * (Orchestrator: Mengatur alur penemuan file dan penyimpanan)
      */
     public function _parseCrontab() {
-        // 1. Kumpulkan semua file crontab (dari core dan plugins)
-        $taskFilesPath = array();
+        $taskFilesPath = [];
         PluginRegistry::loadAllPlugins();
-        HookRegistry::dispatch('AcronPlugin::parseCronTab', array(&$taskFilesPath));
+        HookRegistry::dispatch('AcronPlugin::parseCronTab', [&$taskFilesPath]);
         $taskFilesPath[] = Config::getVar('general', 'registry_dir') . '/scheduledTasks.xml';
 
-        // 2. Ekstrak data tugas dari setiap file
         $xmlParser = new PKPXMLParser();
-        $tasks = array();
+        $tasks = [];
         
         foreach ($taskFilesPath as $filePath) {
             $parsedTasks = $this->_extractTasksFromXml($filePath, $xmlParser);
@@ -411,28 +385,24 @@ class AcronPlugin extends GenericPlugin {
         }
         $xmlParser->destroy();
 
-        // 3. Simpan hasil kompilasi ke database
         $this->updateSetting(0, 'crontab', $tasks, 'object');
     }
 
-    //
-    // HELPER UNTUK PARSING CRONTAB
-    //
     /**
      * Extract tasks from a specific XML file.
      * @param string $filePath
      * @param PKPXMLParser $xmlParser
-     * @return array Array tugas yang diekstrak, atau array kosong salah parsing
+     * @return array
      */
     protected function _extractTasksFromXml(string $filePath, PKPXMLParser $xmlParser): array {
         $tree = $xmlParser->parse($filePath);
 
         if (!$tree) {
             error_log('Wizdam Acron Error: Error parsing scheduled tasks XML file: ' . $filePath);
-            return array(); 
+            return []; 
         }
 
-        $extractedTasks = array();
+        $extractedTasks = [];
         foreach ($tree->getChildren() as $taskNode) {
             $extractedTasks[] = $this->_buildTaskDataArray($taskNode);
         }
@@ -442,7 +412,6 @@ class AcronPlugin extends GenericPlugin {
 
     /**
      * Build a standardized task data array from an XML node.
-     * Transform a single XML node into a standardized task data array.
      * @param XMLNode $taskNode
      * @return array
      */
@@ -452,12 +421,12 @@ class AcronPlugin extends GenericPlugin {
 
         $minHoursRunPeriod = 24;
         $setDefaultFrequency = true;
-        $frequencyAttributes = array(); 
+        $frequencyAttributes = []; 
 
         if ($frequency) {
             $frequencyAttributes = $frequency->getAttributes();
             if (is_array($frequencyAttributes)) {
-                foreach($frequencyAttributes as $key => $value) {
+                foreach ($frequencyAttributes as $key => $value) {
                     if ($value != 0) {
                         $setDefaultFrequency = false;
                         break;
@@ -466,29 +435,27 @@ class AcronPlugin extends GenericPlugin {
             }
         }
 
-        return array(
+        return [
             'className' => $taskNode->getAttribute('class'),
-            'frequency' => $setDefaultFrequency ? array('hour' => $minHoursRunPeriod) : $frequencyAttributes,
+            'frequency' => $setDefaultFrequency ? ['hour' => $minHoursRunPeriod] : $frequencyAttributes,
             'args' => $args
-        );
+        ];
     }
 
     /**
      * Get all scheduled tasks that needs to be executed.
-     * (Orchestrator: Mengambil daftar master, memfilter yang siap dieksekusi)
      * @return array
      */
     public function _getTasksToRun() {
         if (!$this->getSetting(0, 'enabled')) {
-            return array();
+            return [];
         }
 
         $scheduledTasks = $this->_loadMasterCrontab();
-        $tasksToRun = array();
+        $tasksToRun = [];
 
         if (is_array($scheduledTasks)) {
             foreach ($scheduledTasks as $task) {
-                // Isolasi logika frekuensi yang rumit
                 if ($this->_isTaskReadyToExecute($task)) {
                     $tasksToRun[] = $task;
                 }
@@ -498,28 +465,23 @@ class AcronPlugin extends GenericPlugin {
         return $tasksToRun;
     }
 
-    //
-    // HELPER UNTUK EVALUASI TUGAS
-    //
     /**
-     * Load the master crontab from database, or 
-     * trigger parsing if not available.
+     * Load the master crontab from database, or trigger parsing if not available.
      * @return array
      */
     protected function _loadMasterCrontab(): array {
         $scheduledTasks = $this->getSetting(0, 'crontab');
-        if (is_null($scheduledTasks)) {
+        if ($scheduledTasks === null) {
             $this->_parseCrontab();
             $scheduledTasks = $this->getSetting(0, 'crontab');
         }
         
-        // Pastikan selalu mengembalikan array meskipun database gagal
-        return is_array($scheduledTasks) ? $scheduledTasks : array();
+        return is_array($scheduledTasks) ? $scheduledTasks : [];
     }
 
     /**
      * Evaluate if a task is ready to be executed based on its frequency.
-     * @param $task
+     * @param array $task
      * @return bool
      */
     protected function _isTaskReadyToExecute(array $task): bool {
@@ -532,46 +494,11 @@ class AcronPlugin extends GenericPlugin {
             return false;
         }
 
-        // Rekonstruksi XMLNode (Legacy requirement untuk checkFrequency)
         $frequencyNode = new XMLNode();
         $frequencyNode->setAttribute($key, current($task['frequency']));
         
         return ScheduledTaskHelper::checkFrequency($task['className'], $frequencyNode);
     }
 
-    /**
-     * Memastikan koneksi database aktif sebelum mengeksekusi antrean tugas.
-     * Mencegah "MySQL server has gone away" pada task yang berjalan lama.
-     */
-    protected function _ensureDatabaseConnection(): void {
-        $conn = \Registry::get('dbconn', true, null) ?? \DBConnection::getConn();
-        
-        if ($conn && isset($conn->_connectionID) && $conn->_connectionID instanceof \mysqli) {
-            try {
-                $conn->_connectionID->query("SELECT 1");
-            } catch (\mysqli_sql_exception $e) {
-                if (in_array($e->getCode(), [2006, 2013], true)) {
-                    // Tutup resource lama agar tidak bocor memori
-                    @$conn->_connectionID->close();
-                    
-                    // Bangun ulang koneksi menggunakan kredensial aplikasi
-                    $conn->Connect(
-                        \Config::getVar('database', 'host'),
-                        \Config::getVar('database', 'username'),
-                        \Config::getVar('database', 'password'),
-                        \Config::getVar('database', 'name')
-                    );
-                    
-                    $charSet = \Config::getVar('i18n', 'connection_charset');
-                    if ($charSet) {
-                        $conn->_connectionID->set_charset($charSet);
-                    }
-                } else {
-                    throw $e;
-                }
-            }
-        }
-    }
-    
 }
 ?>

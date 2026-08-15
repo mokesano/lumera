@@ -26,7 +26,7 @@
     {else}
     	<ul>
     		<li><a href="{plugin_url path="articles"}">{translate key="plugins.importexport.crossref.manageArticleDOIs"}</a></li>
-    		<li><a href="{plugin_url path="issues"}">{translate key="plugins.importexport.crossref.manageDOIs"}</a></li>
+    		<li><a href="{plugin_url path="issues"}">{translate key="plugins.importexport.crossref.manageIssuesDOIs"}</a></li>
     	</ul>
     {/if}
 </div>

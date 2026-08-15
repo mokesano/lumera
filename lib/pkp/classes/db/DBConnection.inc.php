@@ -74,10 +74,12 @@ class DBConnection {
      * [SHIM] Backward compatibility.
      */
     public function DBConnection() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
         $args = func_get_args();
         call_user_func_array([$this, '__construct'], $args);
     }
@@ -85,7 +87,6 @@ class DBConnection {
     /**
      * Create new database connection with the connection parameters from
      * the system configuration.
-     * 
      * @return bool
      */
     public function initDefaultDBConnection() {
@@ -105,7 +106,6 @@ class DBConnection {
 
     /**
      * Create new database connection with the specified connection parameters.
-     * 
      * @param string $driver
      * @param string $host
      * @param string $username
@@ -146,7 +146,6 @@ class DBConnection {
 
     /**
      * Initialize database connection object and establish connection to the database.
-     * 
      * @return bool
      */
     public function initConn() {
@@ -166,7 +165,6 @@ class DBConnection {
 
     /**
      * Establish connection to the database.
-     * 
      * @return bool
      */
     public function connect() {
@@ -214,7 +212,6 @@ class DBConnection {
 
     /**
      * Reconnect to the database.
-     * 
      * @param bool $forceNew force a new connection
      * @return bool
      */
@@ -229,7 +226,6 @@ class DBConnection {
 
     /**
      * Return the database connection object.
-     * 
      * @return \ADOConnection|null
      */
     public function getDBConn() {
@@ -247,16 +243,92 @@ class DBConnection {
 
     /**
      * Get number of database queries executed.
-     * 
      * @return int
      */
     public function getNumQueries() {
         return $this->dbconn ? (int) $this->dbconn->numQueries : 0;
     }
 
+    /** @var int[] MySQL error codes that indicate a dead/stale connection worth retrying. */
+    private const TRANSIENT_CONNECTION_ERRORS = [
+        2006, // CR_SERVER_GONE_ERROR ("MySQL server has gone away")
+        2013, // CR_SERVER_LOST ("Lost connection to MySQL server during query")
+        2003, // CR_CONNECTION_ERROR
+    ];
+
+    /**
+     * Proactively verify the current DB connection is alive and reconnect if stale.
+     * Designed for long-running tasks to prevent MySQL wait_timeout drops.
+     * @return bool
+     */
+    public static function ensureConnection(): bool {
+        $instance = self::getInstance();
+        $conn = $instance->getDBConn();
+
+        if (!$conn) {
+            return $instance->reconnect(true);
+        }
+
+        // Lightweight liveness check. Suppress warnings as a dead connection is handled.
+        $ok = @$conn->Execute('SELECT 1');
+        if ($ok !== false) {
+            return true;
+        }
+
+        $errno = (int) $conn->ErrorNo();
+        if ($errno === 0 || in_array($errno, self::TRANSIENT_CONNECTION_ERRORS, true)) {
+            // [LUMERA FIX] Explicit (string) cast on ErrorMsg() to satisfy strict linters 
+            // that flag ADOdb's loosely typed return values in string concatenation.
+            error_log('DBConnection: connection appears stale (errno=' . $errno . ', ' . (string) $conn->ErrorMsg() . '), reconnecting.');
+            return $instance->reconnect(true);
+        }
+
+        // Non-connection-related error from the liveness query. Report as unusable.
+        return false;
+    }
+
+    /**
+     * Run a database operation with automatic reconnect-and-retry on a
+     * transient "gone away" / "lost connection" error.
+     * @param callable $operation
+     * @param int $maxAttempts
+     * @return mixed
+     */
+    public static function executeWithRetry(callable $operation, int $maxAttempts = 2) {
+        $attempt = 0;
+        $result = false;
+
+        while ($attempt < $maxAttempts) {
+            $attempt++;
+            $result = $operation();
+
+            if ($result !== false) {
+                return $result;
+            }
+
+            $conn = self::getConn();
+            $errno = $conn ? (int) $conn->ErrorNo() : 0;
+
+            if (!in_array($errno, self::TRANSIENT_CONNECTION_ERRORS, true)) {
+                // Genuine query/business error, or no connection-level error at all
+                // (e.g. operation() itself returned false for its own reasons) —
+                // not a transient connection issue, so don't retry.
+                return $result;
+            }
+
+            if ($attempt >= $maxAttempts) {
+                break;
+            }
+
+            error_log('DBConnection: transient error ' . $errno . ' on attempt ' . $attempt . '/' . $maxAttempts . ', reconnecting and retrying.');
+            self::getInstance()->reconnect(true);
+        }
+
+        return $result;
+    }
+
     /**
      * Return a reference to a single static instance of the database connection manager.
-     * 
      * @param DBConnection|null $setInstance
      * @return DBConnection
      */
@@ -285,7 +357,6 @@ class DBConnection {
 
     /**
      * Return a reference to a single static instance of the database connection.
-     * 
      * @return \ADOConnection|null
      */
     public static function getConn() {
@@ -295,7 +366,6 @@ class DBConnection {
 
     /**
      * Return the name of the driver used for this connection.
-     * 
      * @return string
      */
     public function getDriver() {
@@ -304,7 +374,6 @@ class DBConnection {
 
     /**
      * Log a SQL query and execution time in the PKPProfiler debug log.
-     * 
      * @param string $sql SQL statement being run
      * @param float $start A float representing the unix microtime the query started
      * @param array $params Parameters for the prepared statement

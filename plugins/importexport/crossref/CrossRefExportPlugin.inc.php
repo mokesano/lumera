@@ -25,6 +25,67 @@ define('CROSSREF_STATUS_REGISTERED', 'found');
 define('CROSSREF_STATUS_MARKEDREGISTERED', 'markedRegistered');
 define('CROSSREF_STATUS_NOT_DEPOSITED', 'notDeposited');
 
+// FIX: status antara yang sebelumnya tidak pernah direpresentasikan di DB/UI.
+// Crossref memproses deposit secara ASINKRON: queued -> in_process -> completed
+// (atau failed). Sebelumnya kode ini hanya mengenal biner "completed" vs "belum",
+// sehingga status riil (masih di antrean/sedang diproses) tidak pernah terlihat
+// di aplikasi, dan artikel yang sebenarnya SUDAH disubmit tapi belum completed
+// terus dianggap "belum diregister" -> berisiko disubmit ulang (double deposit).
+define('CROSSREF_STATUS_QUEUED', 'queued');
+define('CROSSREF_STATUS_IN_PROCESS', 'in_process');
+// Status mentah dari Crossref yang belum dikenali/dipetakan oleh aplikasi ini.
+// Tetap disimpan APA ADANYA (bukan divonis completed/failed) supaya tidak ada
+// informasi yang hilang/salah tafsir saat Crossref menambah status baru di masa depan.
+define('CROSSREF_STATUS_UNKNOWN_REMOTE', 'unknownRemoteStatus');
+
+// FIX: deposit MANUAL — admin men-download XML (tombol "Export") lalu meng-
+// upload sendiri ke portal Crossref di luar aplikasi ini. Sebelumnya alur ini
+// TIDAK PERNAH tercatat di DB sama sekali. Status ini ditulis SEGERA setelah
+// file XML berhasil digenerate (lihat exportObjects()), sebagai penanda "sudah
+// diekspor, menunggu konfirmasi apakah benar-benar diupload ke Crossref".
+// Statusnya SENGAJA dipisah dari CROSSREF_STATUS_SUBMITTED (yang berarti
+// APLIKASI INI sendiri yang mem-POST ke Crossref) karena beda tingkat
+// kepastian: "submitted" = kita tahu pasti terkirim; "exported" = kita cuma
+// tahu filenya dibuat, belum tentu benar-benar diupload oleh admin.
+define('CROSSREF_STATUS_EXPORTED', 'exported');
+
+// Status lokal yang membuat objek DIKECUALIKAN dari daftar "unregistered" /
+// SEMENTARA tidak ditawarkan lagi untuk export/register ulang selama masih
+// dalam masa tunggu (cooldown) -- mencakup deposit OTOMATIS maupun MANUAL,
+// supaya keduanya sama-sama tidak "hilang" dari radar sebelum status finalnya
+// jelas.
+if (!defined('CROSSREF_IN_FLIGHT_STATUSES')) {
+    define('CROSSREF_IN_FLIGHT_STATUSES', [
+        CROSSREF_STATUS_EXPORTED,
+        CROSSREF_STATUS_SUBMITTED,
+        CROSSREF_STATUS_QUEUED,
+        CROSSREF_STATUS_IN_PROCESS,
+    ]);
+}
+
+// FIX: subset dari status di atas yang boleh memicu PENGIRIMAN ULANG OTOMATIS
+// (registerDoi()) ke Crossref setelah cooldown kedaluwarsa. SENGAJA TIDAK
+// menyertakan CROSSREF_STATUS_EXPORTED -- deposit manual adalah keputusan
+// admin sepenuhnya; aplikasi ini TIDAK BOLEH mem-POST ulang secara otomatis
+// atas nama objek yang admin pilih untuk deposit manual. Untuk status EXPORTED
+// yang basi (cooldown lewat, tidak ada histori di Crossref), objek hanya akan
+// muncul lagi di daftar "belum diregister" untuk PERHATIAN admin -- tidak ada
+// aksi otomatis yang dipicu.
+if (!defined('CROSSREF_AUTO_RESUBMIT_STATUSES')) {
+    define('CROSSREF_AUTO_RESUBMIT_STATUSES', [
+        CROSSREF_STATUS_SUBMITTED,
+        CROSSREF_STATUS_QUEUED,
+        CROSSREF_STATUS_IN_PROCESS,
+    ]);
+}
+
+// FIX: berapa lama (detik) artikel yang sudah disubmit tapi belum completed/failed
+// akan DIKECUALIKAN dari seleksi ulang oleh _getUnregisteredArticles(). Bisa
+// dioverride lewat config.inc.php: [crossref] resubmit_cooldown_hours = 6
+if (!defined('CROSSREF_RESUBMIT_COOLDOWN_SECONDS')) {
+    define('CROSSREF_RESUBMIT_COOLDOWN_SECONDS', ((int) (Config::getVar('crossref', 'resubmit_cooldown_hours') ?: 6)) * 3600);
+}
+
 // DataCite API
 define('CROSSREF_API_DEPOSIT_OK', 303);
 define('CROSSREF_API_RESPONSE_OK', 200);
@@ -38,6 +99,10 @@ define('CROSSREF_WORKS_API', 'http://api.crossref.org/works/');
 
 // The name of the settings used to save the registered DOI and the URL with the deposit status.
 define('CROSSREF_DEPOSIT_STATUS', 'depositStatus');
+// FIX: nama setting baru untuk mencatat KAPAN submission terakhir dilakukan
+// secara lokal — dipakai untuk cooldown anti-double-deposit, independen dari
+// apakah Crossref API sudah sempat mengonfirmasi status terbarunya atau belum.
+define('CROSSREF_DEPOSIT_SUBMITTED_AT', 'depositSubmittedAt');
 
 class CrossRefExportPlugin extends CrossrefDoiExportPlugin {
 
@@ -223,12 +288,21 @@ class CrossRefExportPlugin extends CrossrefDoiExportPlugin {
 
         $issueIterator = $issueDao->getPublishedIssues((int) $journal->getId(), Handler::getRangeInfo('issues'));
 
+        // FIX (pemantauan deposit manual + otomatis di panel, issue-level):
+        // sebelumnya variabel-variabel ini TIDAK PERNAH di-assign ke issues.tpl
+        // sama sekali -- template tidak punya cara menampilkan status deposit
+        // issue apapun, meskipun datanya sekarang sudah tercatat (lihat
+        // registerDoi()/exportObjects()/_markObjectsAsExported()). Sekarang
+        // disamakan dengan yang sudah tersedia untuk articles.tpl.
         $templateMgr->assign([
-            'issues'                => $issueIterator,
-            'allExcluded'           => $allExcluded,
-            'excludes'              => $excludes,
-            'numArticles'           => $numArticles,
-            'allArticlesRegistered' => $allArticlesRegistered
+            'issues'                       => $issueIterator,
+            'allExcluded'                  => $allExcluded,
+            'excludes'                     => $excludes,
+            'numArticles'                  => $numArticles,
+            'allArticlesRegistered'        => $allArticlesRegistered,
+            'depositStatusSettingName'     => $this->getDepositStatusSettingName(),
+            'depositStatusUrlSettingName'  => $this->getDepositStatusUrlSettingName(),
+            'statusMapping'                => $this->getStatusMapping(),
         ]);
 
         $templateMgr->display($this->getTemplatePath() . 'issues.tpl');
@@ -454,13 +528,106 @@ class CrossRefExportPlugin extends CrossrefDoiExportPlugin {
             return [['plugins.importexport.crossref.register.error.mdsError', "$status - $response"]];
         }
 
-        foreach ($objects as $article) {
-            if ($article instanceof Article) {
-                $this->updateDepositStatus($request, $journal, $article);
+        // FIX: HTTP POST ke Crossref BERHASIL DITERIMA di sini — tapi Crossref
+        // memproses deposit secara asinkron (queued -> in_process -> completed),
+        // butuh waktu menit sampai jam. Cek status di bawah (updateDepositStatus)
+        // dilakukan detik ini juga, sehingga HAMPIR PASTI belum mencerminkan hasil
+        // akhir. Tanpa penanda lokal ini, objek yang baru disubmit akan tetap
+        // tampak "belum pernah disubmit" di DB sampai status COMPLETED benar-benar
+        // tercatat — sehingga run/klik berikutnya akan menyeleksinya lagi sebagai
+        // kandidat unregistered dan mengirim ulang deposit yang SAMA (double
+        // submission), padahal submission pertama mungkin masih diproses.
+        //
+        // FIX (issue-level): sebelumnya blok ini (dan updateDepositStatus() di
+        // bawah) HANYA berlaku untuk objek `instanceof Article` — deposit ISSUE
+        // yang berhasil di-POST ke Crossref TIDAK PERNAH tercatat statusnya sama
+        // sekali (bukan cuma soal timing seperti artikel, tapi permanen: issue
+        // akan selamanya tampak "belum registered" dan disubmit ulang setiap kali
+        // admin klik "Register"). Sekarang mendukung Article DAN Issue.
+        $depositStatusSettingName = $this->getDepositStatusSettingName();
+        $depositSubmittedAtSettingName = $this->getDepositSubmittedAtSettingName();
+        $submittedAt = time();
+
+        foreach ($objects as $depositedObject) {
+            if ($this->_supportsDepositStatusTracking($depositedObject)) {
+                $depositedObject->setData($depositStatusSettingName, CROSSREF_STATUS_SUBMITTED);
+                $depositedObject->setData($depositSubmittedAtSettingName, $submittedAt);
+                $this->_persistDepositStatusSettings($depositedObject, [
+                    $depositStatusSettingName      => ['value' => CROSSREF_STATUS_SUBMITTED, 'type' => 'string'],
+                    $depositSubmittedAtSettingName => ['value' => $submittedAt, 'type' => 'int'],
+                ]);
+            }
+        }
+
+        foreach ($objects as $depositedObject) {
+            if ($this->_supportsDepositStatusTracking($depositedObject)) {
+                $this->updateDepositStatus($request, $journal, $depositedObject);
             }
         }
         
         return true;
+    }
+
+    /**
+     * FIX: Tipe objek yang saat ini didukung untuk pelacakan status deposit
+     * granular (submitted/queued/in_process/completed/failed). Perluas array ini
+     * kalau dukungan Galley/SuppFile ditambahkan di masa depan — lihat
+     * _persistDepositStatusSettings() yang perlu ditambah case DAO-nya juga.
+     * @param mixed $object
+     * @return bool
+     */
+    protected function _supportsDepositStatusTracking($object): bool {
+        return ($object instanceof Article) || ($object instanceof Issue);
+    }
+
+    /**
+     * FIX: Tulis satu atau lebih setting status deposit untuk objek Article ATAU
+     * Issue, mengikuti mekanisme penyimpanan yang berbeda di tiap DAO:
+     * - ArticleDAO punya updateSetting($id, $name, $value, $type) langsung ke
+     *   tabel article_settings, tidak perlu pre-registrasi field.
+     * - IssueDAO TIDAK punya updateSetting() setara. Setting hanya persisten
+     *   lewat updateIssue($issue), yang memanggil updateLocaleFields() ->
+     *   updateDataObjectSettings() — dan itu HANYA menyimpan field yang
+     *   terdaftar lewat hook getAdditionalFieldNames() (lihat method itu di
+     *   bawah, sudah ditambah field-field deposit status).
+     *
+     * Dibungkus DBConnection::executeWithRetry() untuk konsisten dengan
+     * penanganan koneksi transient di seluruh plugin ini.
+     *
+     * @param Article|Issue $object
+     * @param array<string,array{value:mixed,type:string}> $settings Peta nama setting -> ['value'=>..,'type'=>..]
+     */
+    protected function _persistDepositStatusSettings($object, array $settings): void {
+        if ($object instanceof Article) {
+            /** @var ArticleDAO $articleDao */
+            $articleDao = DAORegistry::getDAO('ArticleDAO');
+            DBConnection::executeWithRetry(function () use ($articleDao, $object, $settings) {
+                $result = true;
+                foreach ($settings as $name => $spec) {
+                    $result = $articleDao->updateSetting((int) $object->getId(), $name, $spec['value'], $spec['type']) ?? $result;
+                }
+                return $result;
+            });
+            return;
+        }
+
+        if ($object instanceof Issue) {
+            /** @var IssueDAO $issueDao */
+            $issueDao = DAORegistry::getDAO('IssueDAO');
+            // FIX: wajib dipanggil SEBELUM updateIssue(), supaya hook
+            // getAdditionalFieldNames() terdaftar dan field-field status deposit
+            // (yang baru ditambahkan di getAdditionalFieldNames()) benar-benar
+            // ikut dipersist oleh updateDataObjectSettings() -- tanpa ini,
+            // penulisan status akan diam-diam tidak tersimpan.
+            $this->registerDaoHook('IssueDAO');
+            DBConnection::executeWithRetry(function () use ($issueDao, $object) {
+                $issueDao->updateIssue($object);
+                return true;
+            });
+            return;
+        }
+
+        error_log('CrossRefExportPlugin: tipe objek tidak didukung untuk penulisan status deposit: ' . get_class($object));
     }
 
     /**
@@ -475,8 +642,12 @@ class CrossRefExportPlugin extends CrossrefDoiExportPlugin {
             $request = Application::get()->getRequest();
         }
 
-        /** @var ArticleDAO $articleDao */
-        $articleDao = DAORegistry::getDAO('ArticleDAO');
+        // FIX (issue-level): sebelumnya method ini hard-code ke ArticleDAO.
+        // Kalau dipanggil dengan objek Issue (yang sebelumnya tidak pernah
+        // terjadi karena registerDoi() memfilter instanceof Article), baris ini
+        // akan salah menulis ke tabel article_settings dengan ID issue. Sekarang
+        // penulisan setting didelegasikan ke _persistDepositStatusSettings() yang
+        // memilih DAO yang benar berdasarkan tipe objek.
         import('lib.pkp.classes.core.JSONManager');
         $jsonManager = new JSONManager();
 
@@ -510,6 +681,14 @@ class CrossRefExportPlugin extends CrossrefDoiExportPlugin {
 
         $response = curl_exec($curlCh);
 
+        // FIX: HTTP request di atas bersifat blocking dan bisa memakan waktu
+        // beberapa detik. Koneksi DB yang dibuka sebelum curl_exec() (mis. untuk
+        // ArticleDAO di atas) bisa jadi sudah idle cukup lama saat kita tiba di
+        // sini. Pastikan/pulihkan koneksi SEBELUM melakukan write pertama, supaya
+        // "MySQL server has gone away" tertangani di sini, bukan meledak sebagai
+        // exception tak tertangani yang membunuh seluruh scheduled task.
+        DBConnection::ensureConnection();
+
         if ($response && curl_getinfo($curlCh, CURLINFO_HTTP_CODE) === CROSSREF_API_RESPONSE_OK) {
             $decodedResponse = $jsonManager->decode($response);
             $pastDeposits = [];
@@ -526,23 +705,41 @@ class CrossRefExportPlugin extends CrossrefDoiExportPlugin {
 
             if (count($pastDeposits) > 0) {
                 $lastDeposit = $pastDeposits[max(array_keys($pastDeposits))];
-                $lastStatus = $lastDeposit['status'];
+                // FIX: normalisasi status mentah Crossref (queued/in_process/
+                // completed/failed/dst.) ke konstanta internal aplikasi. Sebelum
+                // ini, string mentah dari Crossref ditulis apa adanya ke DB tapi
+                // TIDAK dikenali oleh getStatusMapping() (yang cuma memetakan
+                // status internal aplikasi) — sehingga status queued/in_process
+                // secara efektif tidak terlihat/tidak berlabel di UI meskipun
+                // datanya tersimpan. Setelah normalisasi, status apapun yang
+                // dikembalikan Crossref akan selalu punya label yang jelas.
+                $lastStatus = $this->normalizeCrossrefStatus((string) $lastDeposit['status']);
                 $lastBatchId = $lastDeposit['batch-id'];
                 
                 $statusUrlSettingName = $this->getDepositStatusUrlSettingName();
                 $depositStatusSettingName = $this->getDepositStatusSettingName();
                 
                 if ($article->getData($statusUrlSettingName) !== '/deposits/' . $lastBatchId) {
-                    $articleDao->updateSetting((int) $article->getId(), $statusUrlSettingName, '/deposits/' . $lastBatchId, 'string');
+                    // FIX: bungkus write dengan retry otomatis — jaring pengaman
+                    // terakhir jika koneksi mati tepat di antara ensureConnection()
+                    // di atas dan write ini. Sekarang lewat helper generik agar
+                    // benar untuk Article maupun Issue.
+                    $this->_persistDepositStatusSettings($article, [
+                        $statusUrlSettingName => ['value' => '/deposits/' . $lastBatchId, 'type' => 'string'],
+                    ]);
                 }
                 
                 if ($lastStatus === CROSSREF_STATUS_COMPLETED) {
                     curl_setopt($curlCh, CURLOPT_URL, CROSSREF_WORKS_API . $doi);
                     $worksResponse = curl_exec($curlCh);
-                    
+
                     if ($worksResponse && curl_getinfo($curlCh, CURLINFO_HTTP_CODE) === CROSSREF_API_RESPONSE_OK) {
+                        // FIX: curl_exec kedua di atas juga blocking — cek ulang.
+                        DBConnection::ensureConnection();
                         $article->setData($depositStatusSettingName, CROSSREF_STATUS_REGISTERED);
-                        $articleDao->updateSetting((int) $article->getId(), $depositStatusSettingName, CROSSREF_STATUS_REGISTERED, 'string');
+                        $this->_persistDepositStatusSettings($article, [
+                            $depositStatusSettingName => ['value' => CROSSREF_STATUS_REGISTERED, 'type' => 'string'],
+                        ]);
                         $this->markRegistered($request, $article);
                         curl_close($curlCh);
                         return true;
@@ -551,11 +748,16 @@ class CrossRefExportPlugin extends CrossrefDoiExportPlugin {
                 
                 if ($article->getData($depositStatusSettingName) !== $lastStatus) {
                     $article->setData($depositStatusSettingName, $lastStatus);
-                    $articleDao->updateSetting((int) $article->getId(), $depositStatusSettingName, $lastStatus, 'string');
+                    $this->_persistDepositStatusSettings($article, [
+                        $depositStatusSettingName => ['value' => $lastStatus, 'type' => 'string'],
+                    ]);
                 }
                 
                 if ($article->getData($this->getPluginId() . '::' . DOI_EXPORT_REGDOI)) {
-                    $articleDao->updateSetting((int) $article->getId(), $this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, 'string');
+                    $regDoiSettingName = $this->getPluginId() . '::' . DOI_EXPORT_REGDOI;
+                    $this->_persistDepositStatusSettings($article, [
+                        $regDoiSettingName => ['value' => null, 'type' => 'string'],
+                    ]);
                 }
             }
         }
@@ -594,16 +796,78 @@ class CrossRefExportPlugin extends CrossrefDoiExportPlugin {
     }
 
     /**
+     * FIX: Get the name of the setting used to record WHEN a deposit was last
+     * submitted locally. Used for the resubmit-cooldown check in
+     * _getUnregisteredArticles() (see CrossrefDoiExportPlugin) — independent of
+     * whether Crossref's own status API has caught up yet, so a still-processing
+     * deposit is never mistaken for "never submitted" and re-sent.
+     * @return string
+     */
+    public function getDepositSubmittedAtSettingName(): string {
+        return $this->getPluginId() . '::' . CROSSREF_DEPOSIT_SUBMITTED_AT;
+    }
+
+    /**
+     * FIX: Normalize a raw status string returned by Crossref's deposit-history
+     * API (GET .../deposits?filter=doi:...) into one of this plugin's known
+     * status constants. Crossref processes deposits asynchronously
+     * (queued -> in_process -> completed, or failed) and this codebase
+     * previously only recognized "completed" — every other real Crossref state
+     * was invisible to the application. Unknown/future status strings are kept
+     * verbatim (never silently reinterpreted as completed or failed) so nothing
+     * is lost or misrepresented if Crossref's API vocabulary changes.
+     *
+     * @param string $rawStatus Status string as returned by Crossref (e.g. 'queued', 'in_process', 'completed', 'failed').
+     * @return string One of the CROSSREF_STATUS_* constants.
+     */
+    public function normalizeCrossrefStatus(string $rawStatus): string {
+        $normalized = strtolower(trim($rawStatus));
+
+        $knownStatuses = [
+            'queued'      => CROSSREF_STATUS_QUEUED,
+            'pending'     => CROSSREF_STATUS_QUEUED,
+            'in_process'  => CROSSREF_STATUS_IN_PROCESS,
+            'in-process'  => CROSSREF_STATUS_IN_PROCESS,
+            'processing'  => CROSSREF_STATUS_IN_PROCESS,
+            'completed'   => CROSSREF_STATUS_COMPLETED,
+            'success'     => CROSSREF_STATUS_COMPLETED,
+            'failed'      => CROSSREF_STATUS_FAILED,
+            'failure'     => CROSSREF_STATUS_FAILED,
+            'error'       => CROSSREF_STATUS_FAILED,
+        ];
+
+        if (isset($knownStatuses[$normalized])) {
+            return $knownStatuses[$normalized];
+        }
+
+        // FIX: status yang tidak dikenali TIDAK divonis completed/failed secara
+        // serampangan. Dicatat sebagai "unknown remote status" plus log, supaya
+        // admin sadar ada status baru dari Crossref yang belum dipetakan aplikasi
+        // ini, alih-alih diam-diam salah tafsir.
+        error_log('CrossRefExportPlugin: status Crossref tidak dikenali: "' . $rawStatus . '". Disimpan apa adanya sebagai unknownRemoteStatus.');
+        return CROSSREF_STATUS_UNKNOWN_REMOTE;
+    }
+
+    /**
      * Get status mapping for the status display.
      * @return array
      */
     public function getStatusMapping(): array {
         return [
+            // FIX (deposit manual): status untuk objek yang di-export XML lalu
+            // menunggu konfirmasi apakah admin benar-benar mengupload ke Crossref.
+            CROSSREF_STATUS_EXPORTED         => __('plugins.importexport.crossref.status.exported'),
             CROSSREF_STATUS_SUBMITTED        => __('plugins.importexport.crossref.status.submitted'),
+            // FIX: status antara yang sebelumnya tidak pernah ditampilkan.
+            CROSSREF_STATUS_QUEUED           => __('plugins.importexport.crossref.status.queued'),
+            CROSSREF_STATUS_IN_PROCESS       => __('plugins.importexport.crossref.status.inProcess'),
             CROSSREF_STATUS_COMPLETED        => __('plugins.importexport.crossref.status.completed'),
             CROSSREF_STATUS_FAILED           => __('plugins.importexport.crossref.status.failed'),
             CROSSREF_STATUS_REGISTERED       => __('plugins.importexport.crossref.status.registered'),
-            CROSSREF_STATUS_MARKEDREGISTERED => __('plugins.importexport.crossref.status.markedRegistered')
+            CROSSREF_STATUS_MARKEDREGISTERED => __('plugins.importexport.crossref.status.markedRegistered'),
+            // FIX: fallback tampilan untuk status mentah Crossref yang belum
+            // dikenali aplikasi ini — tetap terlihat di UI, tidak hilang.
+            CROSSREF_STATUS_UNKNOWN_REMOTE   => __('plugins.importexport.crossref.status.unknownRemote'),
         ];
     }
 

@@ -22,8 +22,8 @@
             <li class="app-article-metrics-stat__item">{$totalViews|default:0|number_format:0}<span class="app-article-metrics-stat__subitem">Views</span></li>
             <li class="app-article-metrics-stat__item">{$totalDownloads|default:0|number_format:0}<span class="app-article-metrics-stat__subitem">Downloads</span></li>
             <li class="app-article-metrics-stat__item">{$citationCount|default:0}<span class="app-article-metrics-stat__subitem">Citations</span></li>
-            <li class="app-article-metrics-stat__item">516<span class="app-article-metrics-stat__subitem">Altmetric</span></li>
-            <li class="app-article-metrics-stat__item">79<span class="app-article-metrics-stat__subitem">Mentions</span></li>
+            <li class="app-article-metrics-stat__item">N/A<span class="app-article-metrics-stat__subitem">Altmetric</span></li>
+            <li class="app-article-metrics-stat__item">N/A<span class="app-article-metrics-stat__subitem">Mentions</span></li>
         </ul>
     </div>
     <main>
@@ -49,7 +49,7 @@
                     <div class="app-article-metrics-box">
                         <div class="app-article-metrics-box__main">
                             <h2 class="u-mb-16 u-mt-0 c-article-metrics-heading"><span class="app-article-metrics-box__icon-container"><svg class="app-article-metrics-box-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.59 1a1 1 0 0 1 .706.291l5.41 5.385a1 1 0 0 1 .294.709v13.077c0 .674-.269 1.32-.747 1.796a2.549 2.549 0 0 1-1.798.742h-5.843a1 1 0 1 1 0-2h5.843a.549.549 0 0 0 .387-.16.535.535 0 0 0 .158-.378V7.8L15.178 3H5.545a.543.543 0 0 0-.538.451L5 3.538v8.607a1 1 0 0 1-2 0V3.538A2.542 2.542 0 0 1 5.545 1h10.046ZM5.483 14.35c.197.26.17.62-.049.848l-.095.083-.016.011c-.36.24-.628.45-.804.634-.393.409-.59.93-.59 1.562.077-.019.192-.028.345-.028.442 0 .84.158 1.195.474.355.316.532.716.532 1.2 0 .501-.173.9-.518 1.198-.345.298-.767.446-1.266.446-.672 0-1.209-.195-1.612-.585-.403-.39-.604-.976-.604-1.757 0-.744.11-1.39.33-1.938.222-.549.49-1.009.807-1.38a4.28 4.28 0 0 1 .992-.88c.07-.043.148-.087.232-.133a.881.881 0 0 1 1.121.245Zm5 0c.197.26.17.62-.049.848l-.095.083-.016.011c-.36.24-.628.45-.804.634-.393.409-.59.93-.59 1.562.077-.019.192-.028.345-.028.442 0 .84.158 1.195.474.355.316.532.716.532 1.2 0 .501-.173.9-.518 1.198-.345.298-.767.446-1.266.446-.672 0-1.209-.195-1.612-.585-.403-.39-.604-.976-.604-1.757 0-.744.11-1.39.33-1.938.222-.549.49-1.009.807-1.38a4.28 4.28 0 0 1 .992-.88c.07-.043.148-.087.232-.133a.881.881 0 0 1 1.121.245Z"></path></svg></span>Citations</h2>
-                            <p>Citation counts are provided by Dimensions and depend on their data availability. Counts will update daily, once available.</p>
+                            <p>Citation counts are provided by CrossRef, OpenAlex, and Dimensions, and depend on their data availability. Counts will update daily, once available.</p>
                         </div>
                         <div class="app-article-metrics-box__side">
                             <p class="app-article-metrics-count">{$citationCount|default:0}<span class="app-article-metrics-count_text">Citations</span></p>
@@ -73,17 +73,34 @@
                                                 <div class="c-card-metrics__main">
                                                     <h3 class="c-card-metrics__heading">
                                                         {if $citation.url}
-                                                        <a href="{$citation.url|escape}" target="_blank" rel="nofollow noopener" data-track="click" data-track-action="view citing article" data-track-label="link" data-track-category="metrics">{$citation.title|escape}</a>
+                                                        <a href="{$citation.url|escape}" target="_blank" rel="nofollow noopener" data-track="click" data-track-action="view citing article" data-track-label="link" data-track-category="metrics">{$citation.title}</a>
                                                         {else}
-                                                        <span>{$citation.title|escape}</span>
+                                                        <span>{$citation.title}</span>
                                                         {/if}
                                                     </h3>
-                                                    <div>
+                                                    <div class="metadata citation">
                                                         {if $citation.authors && $citation.authors|@count > 0}
-                                                        <div class="c-card-metrics__authors">{foreach from=$citation.authors item=author name=citeAuthorLoop}{$author.given|escape} {$author.family|escape}{if !$smarty.foreach.citeAuthorLoop.last}, {/if}{/foreach}</div>
+                                                            <section class="c-card-metrics__authors author-group">
+                                                                {foreach from=$citation.authors item=author name=citeAuthorLoop}
+                                                                    <span class="author" itemprop="creator" itemscope="name" itemtype="http://schema.org/Person">
+                                                                        <span class="text given-name">{$author.given|escape}</span>
+                                                                        <span class="text family-name">{$author.family|escape}</span>
+                                                                        {if !$smarty.foreach.citeAuthorLoop.last}, {/if}
+                                                                    </span>
+                                                                {/foreach}
+                                                            </section>
                                                         {/if}
-                                                        {if $citation.container || $citation.year}
-                                                        <div class="c-card-metrics__authors">{if $citation.container}{$citation.container|escape}{/if}{if $citation.container && $citation.year}, {/if}{if $citation.year}{$citation.year|escape}{/if}</div>
+                                                        {if $citation.container || $citation.year || $citation.volume || $citation.issue || $citation.page}
+                                                            <section class="c-card-metrics__authors u-mt-8">
+                                                                {if $citation.container}<span class="title-name bold">{$citation.container|escape}</span>{/if}
+                                                                {if $citation.year}
+                                                                    {if $citation.container}, {/if}
+                                                                    <span class="year">{$citation.year|escape}</span>
+                                                                {/if}
+                                                                {if $citation.volume}<span class="volume">, {$citation.volume|escape}</span>{/if}
+                                                                {if $citation.issue}<span class="issue">({$citation.issue|escape})</span>{/if}
+                                                                {if $citation.page}<span class="number pages">: {$citation.page|escape}</span>{/if}
+                                                            </section>
                                                         {/if}
                                                     </div>
                                                 </div>

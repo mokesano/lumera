@@ -319,11 +319,6 @@ class ArticleHandler extends Handler {
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
         $templateMgr->assign('pubIdPlugins', $pubIdPlugins ?: []);
 
-        // [WIZDAM] Panel "Cited by N articles" -- data dikirim LANGSUNG dari
-        // backend (bukan lewat AJAX ke /api/citedby lagi, lihat
-        // citedby_doi.tpl). Dibatasi 7 kutipan terbaru untuk halaman artikel;
-        // baca cache saja (TIDAK memicu fetch jaringan -- itu tanggung jawab
-        // CitationRefreshTask mingguan), supaya render halaman tetap cepat.
         $articleDoi = $article->getPubId('doi');
         $citingArticles = [];
         $citationCount = 0;
@@ -334,11 +329,16 @@ class ArticleHandler extends Handler {
             if ($citationData !== null) {
                 $citationCount = (int) ($citationData['citation_count'] ?? 0);
                 $citingArticles = array_slice($citationData['citing_articles'] ?? [], 0, 7);
+                $citationSources = $citationData['citation_sources'] ?? null;
+                $citationTimestamp = (int) ($citationData['last_updated'] ?? $citationData['timestamp'] ?? 0);
             }
         }
         $templateMgr->assign([
+            'articleDoi'     => $articleDoi,
             'citingArticles' => $citingArticles,
             'citationCount'  => $citationCount,
+            'citationSourcesJson' => isset($citationSources) ? json_encode($citationSources) : '',
+            'citationTimestamp'   => $citationTimestamp ?? 0,
         ]);
 
         $templateMgr->display('article/article.tpl');

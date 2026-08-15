@@ -8,9 +8,9 @@
  * Articles listing page.
  *}
 {strip}
-{assign var="pageTitle" value="plugins.importexport.crossref.manageArticleDOIs"}
-{assign var="pageCrumbTitle" value="plugins.importexport.crossref.manageArticleDOIs"}
-{include file="common/header-parts/header-manager.tpl"}
+	{assign var="pageTitle" value="plugins.importexport.crossref.manageArticleDOIs"}
+	{assign var="pageCrumbTitle" value="plugins.importexport.crossref.manageArticleDOIs"}
+	{include file="common/header-parts/header-manager.tpl"}
 {/strip}
 
 <script type="text/javascript">{literal}
@@ -39,6 +39,7 @@
 	</ul>
 	<br />
 	<form action="{plugin_url path="process"}" method="post" id="articlesForm">
+		<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 		<input type="hidden" name="target" value="article" />
 		<table width="100%" class="listing">
 			<tr>

@@ -119,6 +119,48 @@ class CitationFetcherService {
     }
 
     /**
+     * [WIZDAM] Bersihkan judul kutipan sambil MEMPERTAHANKAN tag HTML dasar
+     * yang lazim dipakai dalam penulisan ilmiah.
+     *
+     * MASALAH: judul dari API sumber sering memuat tag sebagai ENTITY,
+     * mis. "(&lt;i&gt;Litopenaeus vannamei&lt;/i&gt;)". Kalau template
+     * memakai |escape, entity itu di-escape LAGI sehingga pembaca melihat
+     * teks mentah "&lt;i&gt;..." alih-alih nama spesies yang dimiringkan.
+     * Kalau |escape dihapus begitu saja, judul menjadi jalur XSS.
+     *
+     * SOLUSI: entity dikembalikan dulu, lalu SEMUA tag dibuang KECUALI
+     * daftar putih tag ilmiah, lalu SELURUH atribut dihapus dari tag yang
+     * tersisa (mencegah onclick=, href=javascript:, style=, dsb).
+     * Hasilnya aman ditampilkan tanpa |escape di template.
+     *
+     * @param string|null $raw
+     * @return string HTML aman, siap ditampilkan tanpa escape lagi.
+     */
+    public static function sanitizeCitationTitle(?string $raw): string {
+        if ($raw === null || $raw === '') {
+            return '';
+        }
+
+        $decoded = html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $decoded = html_entity_decode($decoded, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $allowedTags = 'i|em|b|strong|sup|sub|u|small';
+        $decoded = preg_replace(
+            '#<(?!/?(?:' . $allowedTags . ')(?:\s[^>]*)?>)#i',
+            '&lt;',
+            $decoded
+        );
+
+        $clean = strip_tags($decoded, '<i><em><b><strong><sup><sub><u><small>');
+        $clean = preg_replace(
+            '#<\s*(/?)\s*(' . $allowedTags . ')(?:\s[^>]*)?>#i',
+            '<$1$2>',
+            $clean
+        );
+
+        return trim($clean);
+    }
+
+    /**
      * Get form cache
      * @return array|null
      */
@@ -130,10 +172,30 @@ class CitationFetcherService {
         try {
             $compressed = file_get_contents($cacheFile);
             if ($compressed === false) return null;
+
             $content = @gzdecode($compressed);
-            if ($content === false) return null;
+            if ($content === false) {
+                $content = @gzuncompress($compressed);
+            }
+            if ($content === false) {
+                $content = $compressed;
+            }
+
             $data = json_decode($content, true);
             if (!is_array($data) || !isset($data['citing_articles'])) return null;
+
+            if (!isset($data['last_updated']) && isset($data['timestamp'])) {
+                $data['last_updated'] = (int) $data['timestamp'];
+            }
+
+            if (!empty($data['citing_articles']) && is_array($data['citing_articles'])) {
+                foreach ($data['citing_articles'] as $i => $item) {
+                    if (isset($item['title'])) {
+                        $data['citing_articles'][$i]['title'] = self::sanitizeCitationTitle((string) $item['title']);
+                    }
+                }
+            }
+
             return $data;
         } catch (Exception $e) {
             return null;
@@ -571,7 +633,7 @@ class CitationFetcherService {
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
-        curl_close($ch);
+        curl_close($ch); // 'curl_close' is deprecated.
 
         // [CATATAN] http_code disertakan di setiap hasil (termasuk gagal) --
         // dipakai pemanggil untuk mendeteksi rate-limit (429) di masa depan

@@ -105,6 +105,8 @@ class ADODB_mysqli extends ADOConnection {
 
 		#if (!empty($this->port)) $argHostname .= ":".$this->port;
         try {
+            // MYSQLI_REPORT_ERROR|MYSQLI_REPORT_STRICT is only needed here so that
+            // a failed CONNECT throws a catchable exception instead of a PHP warning.
             mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
     		$ok = mysqli_real_connect($this->_connectionID,
      				    $argHostname,
@@ -117,6 +119,18 @@ class ADODB_mysqli extends ADOConnection {
         } catch (\Exception $e) {
             $this->_errorMsg = $e->getMessage();
             $ok = false;
+        } finally {
+            // FIX: mysqli_report() is a PROCESS-GLOBAL setting, not per-connection.
+            // Leaving MYSQLI_REPORT_ERROR|MYSQLI_REPORT_STRICT on after connect causes
+            // every later mysqli_query() call anywhere in the request (including deep
+            // inside DAOs, long after a "MySQL server has gone away") to throw an
+            // uncaught mysqli_sql_exception instead of returning false as ADOdb's
+            // entire error-handling contract (_query()/_Execute()/ErrorNo()/ErrorMsg())
+            // expects. That uncaught exception is what was bubbling all the way up to
+            // AcronPlugin's generic catch(Throwable) and silently killing the whole
+            // CrossrefInfoSender task mid-loop. Restore the default OFF mode now that
+            // the connection attempt itself has been resolved.
+            mysqli_report(MYSQLI_REPORT_OFF);
         }
  	     
 		if ($ok) {
@@ -629,24 +643,41 @@ class ADODB_mysqli extends ADOConnection {
 	{
 	global $ADODB_COUNTRECS;
 		
-		if (is_array($sql)) {
-			$stmt = $sql[1];
-			$a = '';
-			foreach($inputarr as $k => $v) {
-				if (is_string($v)) $a .= 's';
-				else if (is_integer($v)) $a .= 'i'; 
-				else $a .= 'd';
-			}
-			
-			$fnarr = array_merge( array($stmt,$a) , $inputarr);
-			$ret = call_user_func_array('mysqli_stmt_bind_param',$fnarr);
+		// FIX: defense-in-depth. ADOdb's entire contract is "return false on error,
+		// caller inspects ErrorNo()/ErrorMsg()". If mysqli_report() is ever left ON
+		// (globally, by this driver's own _connect() or by any other code sharing
+		// this PHP process), a transient error such as 2006 "MySQL server has gone
+		// away" or 2013 "Lost connection during query" throws a mysqli_sql_exception
+		// instead of returning false. Left uncaught, that exception skips every
+		// ADOdb/DAO error handler and is only ever caught by a generic top-level
+		// catch(Throwable) far away (e.g. AcronPlugin::_executeSingleTask()), which
+		// aborts the whole task instead of allowing a controlled reconnect+retry.
+		try {
+			if (is_array($sql)) {
+				$stmt = $sql[1];
+				$a = '';
+				foreach($inputarr as $k => $v) {
+					if (is_string($v)) $a .= 's';
+					else if (is_integer($v)) $a .= 'i';
+					else $a .= 'd';
+				}
 
-			$ret = mysqli_stmt_execute($stmt);
-			return $ret;
-		}
-		if (!$mysql_res =  mysqli_query($this->_connectionID, $sql, ($ADODB_COUNTRECS) ? MYSQLI_STORE_RESULT : MYSQLI_USE_RESULT)) {
-		    if ($this->debug) ADOConnection::outp("Query: " . $sql . " failed. " . $this->ErrorMsg());
-		    return false;
+				$fnarr = array_merge( array($stmt,$a) , $inputarr);
+				$ret = call_user_func_array('mysqli_stmt_bind_param',$fnarr);
+
+				$ret = mysqli_stmt_execute($stmt);
+				return $ret;
+			}
+			if (!$mysql_res =  mysqli_query($this->_connectionID, $sql, ($ADODB_COUNTRECS) ? MYSQLI_STORE_RESULT : MYSQLI_USE_RESULT)) {
+			    if ($this->debug) ADOConnection::outp("Query: " . $sql . " failed. " . $this->ErrorMsg());
+			    return false;
+			}
+		} catch (\mysqli_sql_exception $e) {
+			// Normalize to ADOdb's expected false-return contract. errno/error are
+			// still retrievable afterwards via mysqli_errno()/mysqli_error() on the
+			// (now dead) connection handle, which ErrorNo()/ErrorMsg() already read.
+			if ($this->debug) ADOConnection::outp("Query: " . (is_array($sql) ? $sql[0] : $sql) . " failed. " . $e->getMessage());
+			return false;
 		}
 		
 		return $mysql_res;

@@ -16,9 +16,12 @@
 	<message key="plugins.importexport.crossref.displayName">CrossRef Export/Registration Plugin</message>
 	<message key="plugins.importexport.crossref.requirements">Requirements</message>
 	<message key="plugins.importexport.crossref.requirements.satisfied">All plugin requirements are satisfied.</message>
+	<message key="plugins.importexport.crossref.registrationIntro"><![CDATA[This plugin can be configured to automatically register Digital Object Identifiers (DOIs) with CrossRef. You will need a username and password (available from <a href="http://www.crossref.org" target="_blank">CrossRef</a>) in order to do so. If you do not have your own username and password you can still export into the CrossRef XML format, but you cannot register your DOIs with CrossRef from within Lumera Application.]]></message>
+
 	<message key="plugins.importexport.crossref.error.pluginNotConfigured"><![CDATA[CrossRef plugin not configured! Configure this plugin in the plugin's <a href="{$settingsUrl}">settings page</a>.]]></message>
 	<message key="plugins.importexport.crossref.error.DOIsNotAvailable"><![CDATA[DOI Public Identifier plugin not configured! Enable and configure this plugin from the <a href="{$doiUrl}" target="_blank">DOI Plugin</a> Settings page.]]></message>
 	<message key="plugins.importexport.crossref.error.publisherNotConfigured"><![CDATA[A journal publisher has not been configured! You must add a publisher institution under <a href="{$publisherUrl}" target="_blank">Journal Setup Step 1.5</a>.]]></message>
+
 	<message key="plugins.importexport.crossref.settings.depositorIntro">The following items are required for a successful CrossRef deposit.</message>
 	<message key="plugins.importexport.crossref.settings.form.depositorName">Depositor name</message>
 	<message key="plugins.importexport.crossref.settings.form.depositorEmail">Depositor email</message>
@@ -27,10 +30,7 @@
 	<message key="plugins.importexport.crossref.settings.form.automaticRegistration">Register DOIs automatically</message>
 	<message key="plugins.importexport.crossref.settings.form.automaticRegistration.description"><![CDATA[Application will deposit article DOIs automatically to CrossRef as articles are published. Please note that this may take a short amount of time after publication to process. You can check for all unregistered DOIs in the <a href="{$unregisteredURL}">unregistered articles listing</a>.]]></message>
 
-	<message key="plugins.importexport.crossref.registrationIntro"><![CDATA[This plugin can be configured to automatically register Digital Object Identifiers (DOIs) with CrossRef. You will need a username and password (available from <a href="http://www.crossref.org" target="_blank">CrossRef</a>) in order to do so. If you do not have your own username and password you can still export into the CrossRef XML format, but you cannot register your DOIs with CrossRef from within Lumera Application.]]></message>
-
 	<message key="plugins.importexport.crossref.settings.description"><![CDATA[You can <a href="{$settingsUrl}">configure the CrossRef export/registration plug-in here</a>.]]></message>
-
 	<message key="plugins.importexport.crossref.settings.form.description">Please configure the CrossRef export/registration plug-in:</message>
 	<message key="plugins.importexport.crossref.settings.form.username">Username</message>
 	<message key="plugins.importexport.crossref.settings.form.usernameRequired">Please enter the username you got from CrossRef.</message>
@@ -40,8 +40,10 @@
 
 	<message key="plugins.importexport.crossref.manageDOIs">Manage DOIs</message>
 	<message key="plugins.importexport.crossref.manageIssues">Manage Issues</message>
+	<message key="plugins.importexport.crossref.manageIssuesDOIs">Manage Issue DOIs</message>
 	<message key="plugins.importexport.crossref.manageArticles">Manage Articles</message>
 	<message key="plugins.importexport.crossref.manageArticleDOIs">Manage Article DOIs</message>
+
 	<message key="plugins.importexport.crossref.articles.notDeposited">All published articles have already been registered (or none of them has a DOI assigned).</message>
 	<message key="plugins.importexport.crossref.articles.failed">There are no failed deposits.</message>
 	<message key="plugins.importexport.crossref.articles.submitted">There are no just submitted DOIs.</message>
@@ -53,6 +55,7 @@
 	<message key="plugins.importexport.crossref.checkStatusDescription">Click this button to update the status for the selected object(s).</message>
 	<message key="plugins.importexport.crossref.status.all">All</message>
 	<message key="plugins.importexport.crossref.status.non">Not deposited</message>
+	<message key="plugins.importexport.crossref.status.exported">Exported</message>
 	<message key="plugins.importexport.crossref.status.submitted">Submitted</message>
 	<message key="plugins.importexport.crossref.status.queued">Queued</message>
 	<message key="plugins.importexport.crossref.status.inProcess">Processing</message>
@@ -65,14 +68,18 @@
 		<p>Deposit status:</p>
 		<p>
 		- <span class="bold">Not deposited</span>: no deposit attempt has been made for this DOI.<br />
+		- <span class="bold">Exported</span>: Awaiting manual upload confirmation the XML for this DOI has been downloaded for manual upload to Crossref. Status will update automatically once a deposit is detected at Crossref &mdash; you do not need to mark it manually.<br />
 		- <span class="bold">Submitted</span>: this DOI has been submitted for the deposit.<br />
+		- <span class="bold">Queued</span>: Crossref has received the deposit and it is waiting to be processed.<br />
+		- <span class="bold">Processing</span>: Crossref is currently processing this deposit.<br />
 		- <span class="bold">Deposited</span>: the DOI has been deposited to Crossref, but may not be active yet.<br />
 		- <span class="bold">Active</span>: the DOI has been deposited, and is resolving correctly.<br />
 		- <span class="bold">Failed</span>: the DOI deposit has failed.<br />
-		- <span class="bold">Marked registered</span>: the DOI was manually marked as registered.
+		- <span class="bold">Marked registered</span>: the DOI was manually marked as registered.<br />
+		- <span class="bold">Unrecognized status</span>: Crossref returned a status this application does not yet recognize. The raw status is preserved and will be reviewed rather than discarded.
 		</p>
-		<p>Only the status of the last deposit attempt is displayed.</p>
-		<p>If a deposit has failed, please solve the problem and try to register the DOI again.</p>]]>
+		<p>Status is refreshed automatically on a regular basis, whether the deposit was submitted automatically by this application or uploaded manually to Crossref &mdash; both are tracked and displayed the same way. Only the most recent known status of the last deposit attempt is displayed.</p>
+		<p>If a deposit has failed, please solve the problem and try to register the DOI again. If a deposit stays in a Submitted, Queued, or Processing status for an unusually long time, this application will periodically re-attempt an automatic submission; a deposit exported for manual upload is never resubmitted automatically and remains under your control.</p>]]>
 	</message>
 
 	<message key="plugins.importexport.crossref.notification.failed">A DOI has failed to register. Please go to CrossRef Export/Registration Plugin > Export unregistered articles > Failed.</message>

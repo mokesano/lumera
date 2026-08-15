@@ -637,6 +637,25 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
             return $errors;
         }
 
+        // FIX (deposit manual): sebelumnya exportObjects() (tombol "Export XML")
+        // TIDAK PERNAH menulis apapun ke DB -- setelah admin download XML lalu
+        // upload sendiri ke portal Crossref, aplikasi ini tidak punya cara sama
+        // sekali untuk tahu itu terjadi. Objek akan selamanya tampak "belum
+        // diregister" di panel, terpisah total dari kondisi riil di Crossref.
+        //
+        // Sekarang, begitu file XML berhasil digenerate, objek yang diekspor
+        // ditandai CROSSREF_STATUS_EXPORTED + timestamp -- MEMAKAI HELPER YANG
+        // SAMA PERSIS dengan yang dipakai deposit otomatis (registerDoi()).
+        // Ini membuat status "menunggu konfirmasi" langsung terlihat di panel
+        // yang sama, TANPA admin perlu memilih status secara manual: polling
+        // berkala (lihat CrossrefInfoSender/checkPendingDepositStatuses()) akan
+        // mengecek histori riil DOI ini di Crossref API -- yang mencerminkan
+        // deposit APAPUN sumbernya, baik lewat POST otomatis aplikasi ini
+        // maupun upload manual di portal Crossref -- dan memperbarui status
+        // (queued/in_process/completed/failed) secara otomatis sesuai kondisi
+        // sebenarnya, persis seperti alur deposit otomatis.
+        $this->_markObjectsAsExported($exportSpec, $journal, $errors);
+
         if (count($exportFiles) > 1 && !$this->_checkedForTar) {
             $errors = $this->_checkForTar();
             if (is_array($errors)) {
@@ -708,6 +727,12 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
         $falseResult = false;
 
         foreach ($exportFiles as $exportFile => $objects) {
+            // FIX: setiap registerDoi() melakukan HTTP POST blocking ke Crossref
+            // (bisa lama untuk file besar) diikuti write DB per artikel. Untuk
+            // batch dengan banyak file export, pastikan koneksi masih hidup
+            // sebelum memulai setiap batch, bukan hanya sekali di awal task.
+            DBConnection::ensureConnection();
+
             $result = $this->registerDoi($request, $journal, $objects, $exportFile);
             if ($result !== true) {
                 if (is_array($result)) {
@@ -944,6 +969,25 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
     public function getAdditionalFieldNames($hookName, $args): void {
         if (count($args) >= 2 && is_array($args[1])) {
             $args[1][] = $this->getPluginId() . '::' . DOI_EXPORT_REGDOI;
+
+            // FIX (issue-level status tracking): field-field status deposit
+            // granular (submitted/queued/in_process/completed/failed + URL +
+            // timestamp) sebelumnya hanya pernah ditulis lewat ArticleDAO::
+            // updateSetting(), yang TIDAK memerlukan pre-registrasi field apapun.
+            // Sekarang field yang sama juga ditulis untuk Issue lewat
+            // IssueDAO::updateIssue() -> updateDataObjectSettings(), yang HANYA
+            // menyimpan field yang terdaftar di sini. Tanpa baris ini, penulisan
+            // status deposit issue akan diam-diam diabaikan (tidak error, tapi
+            // tidak pernah benar-benar tersimpan).
+            if (method_exists($this, 'getDepositStatusSettingName')) {
+                $args[1][] = $this->getDepositStatusSettingName();
+            }
+            if (method_exists($this, 'getDepositStatusUrlSettingName')) {
+                $args[1][] = $this->getDepositStatusUrlSettingName();
+            }
+            if (method_exists($this, 'getDepositSubmittedAtSettingName')) {
+                $args[1][] = $this->getDepositSubmittedAtSettingName();
+            }
         }
     }
 
@@ -1128,10 +1172,25 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
 
     /**
      * Retrieve all unregistered issues.
+     *
+     * FIX: parameter $bypassCooldown ditambahkan agar fungsi ini bisa dipakai
+     * untuk DUA kebutuhan berbeda yang sebelumnya tercampur:
+     * 1. Daftar kandidat untuk export/register (UI admin, dan basis kandidat
+     *    resubmit otomatis) -- HARUS menghormati cooldown (default, $bypassCooldown=false),
+     *    supaya objek yang baru saja diekspor/disubmit tidak langsung
+     *    ditawarkan lagi untuk dikirim ulang.
+     * 2. Daftar kandidat untuk REFRESH STATUS SAJA (polling read-only ke
+     *    Crossref, lihat CrossrefInfoSender::_pollIssueDepositStatuses()) --
+     *    TIDAK BOLEH terpengaruh cooldown, karena mengecek status tidak
+     *    berisiko double-submission, dan JUSTRU paling dibutuhkan selama
+     *    objek masih dalam masa tunggu (supaya begitu Crossref selesai
+     *    memproses, statusnya cepat terdeteksi, bukan menunggu cooldown habis).
+     *
      * @param Journal $journal
+     * @param bool $bypassCooldown
      * @return array
      */
-    public function _getUnregisteredIssues($journal): array {
+    public function _getUnregisteredIssues($journal, bool $bypassCooldown = false): array {
         /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
         $issues = $issueDao->getIssuesBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, $journal->getId());
@@ -1139,6 +1198,17 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
         $cache = $this->getCache();
         $issueData = [];
         foreach ($issues as $issue) {
+            // FIX (anti double-deposit, issue-level): sama seperti artikel --
+            // "registeredDoi" hanya di-set saat status Crossref sudah COMPLETED.
+            // Sebelum patch ini, deposit issue bahkan TIDAK PERNAH tercatat sama
+            // sekali (lihat catatan di registerDoi()/updateDepositStatus()),
+            // sehingga setiap klik "Register" akan mengirim ulang issue yang
+            // sama tanpa batas. Sekarang setelah status granular ikut tercatat,
+            // terapkan cooldown yang sama dengan artikel di sini -- KECUALI
+            // pemanggil secara eksplisit meminta bypass (polling status).
+            if (!$bypassCooldown && $this->_isWithinCrossrefResubmitCooldown($issue)) {
+                continue;
+            }
             $cache->add($issue, null);
             if ($issue->getPublished()) {
                 $issueData[] = $issue;
@@ -1149,22 +1219,133 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
 
     /**
      * Retrieve all unregistered articles and their corresponding issues.
+     *
+     * FIX: lihat catatan lengkap di _getUnregisteredIssues() -- parameter
+     * $bypassCooldown yang sama diterapkan di sini, dengan alasan yang identik.
+     *
      * @param Journal $journal
+     * @param bool $bypassCooldown
      * @return array
      */
-    public function _getUnregisteredArticles($journal): array {
+    public function _getUnregisteredArticles($journal, bool $bypassCooldown = false): array {
         /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $articles = $publishedArticleDao->getBySetting($this->getPluginId() . '::' . DOI_EXPORT_REGDOI, null, $journal->getId());
 
         $articleData = [];
         foreach ($articles as $article) {
+            // FIX (anti double-deposit): field "registeredDoi" yang dipakai
+            // getBySetting() di atas HANYA di-set saat status Crossref benar-benar
+            // COMPLETED. Karena Crossref memproses deposit secara asinkron
+            // (queued -> in_process -> completed) dan pengecekan status dilakukan
+            // segera setelah submit (lihat registerDoi()), artikel yang BARU SAJA
+            // disubmit dan masih diproses akan selalu lolos filter ini dan
+            // dianggap "belum diregister" -> disubmit ulang di run cron
+            // berikutnya, padahal submission sebelumnya mungkin masih berjalan.
+            //
+            // Untuk mencegah ini, artikel yang statusnya masih "in-flight"
+            // (submitted/queued/in_process) DAN belum melewati masa tunggu
+            // (cooldown) sejak submission terakhir, dikecualikan dari kandidat
+            // resubmit di sini -- KECUALI pemanggil eksplisit meminta bypass
+            // (polling status, lihat _getUnregisteredIssues()).
+            if (!$bypassCooldown && $this->_isWithinCrossrefResubmitCooldown($article)) {
+                continue;
+            }
+
             $preparedArticle = $this->_prepareArticleData($article, $journal);
             if (is_array($preparedArticle)) {
                 $articleData[] = $preparedArticle;
             }
         }
         return $articleData;
+    }
+
+    /**
+     * FIX: Cek apakah artikel masih dalam masa tunggu (cooldown) sejak submission
+     * terakhir ke Crossref, sehingga belum layak disubmit ulang.
+     *
+     * - Jika status BUKAN salah satu status "in-flight" (submitted/queued/
+     *   in_process) -> boleh diproses (bukan bagian dari masalah ini; misalnya
+     *   belum pernah disubmit sama sekali, atau sudah completed/failed).
+     * - Jika status in-flight TAPI tidak ada timestamp submission tercatat ->
+     *   boleh diproses (fail-safe: lebih baik memberi kesempatan submit
+     *   daripada mengunci artikel selamanya karena data lama/tidak lengkap).
+     * - Jika status in-flight DAN masih dalam window cooldown -> DIKECUALIKAN
+     *   dari resubmit.
+     * - Jika status in-flight DAN cooldown SUDAH lewat (Crossref belum juga
+     *   melaporkan completed/failed setelah waktu yang wajar) -> boleh
+     *   diproses lagi, TAPI dicatat sebagai warning eksplisit, karena ini bisa
+     *   menandakan submission sebelumnya gagal diproses Crossref tanpa
+     *   pernah terlihat di aplikasi (lihat investigasi "Duplicate key
+     *   exception" pada submission log Crossref yang tidak pernah dibaca
+     *   aplikasi ini).
+     *
+     * @param PublishedArticle $article
+     * @return bool
+     */
+    private function _isWithinCrossrefResubmitCooldown($article): bool {
+        if (!method_exists($this, 'getDepositStatusSettingName') || !method_exists($this, 'getDepositSubmittedAtSettingName')) {
+            // Plugin konkret belum mengimplementasikan setting name (lihat
+            // CrossRefExportPlugin) -- tidak ada dasar untuk cooldown, jangan blokir.
+            return false;
+        }
+
+        $status = $article->getData($this->getDepositStatusSettingName());
+        $inFlightStatuses = defined('CROSSREF_IN_FLIGHT_STATUSES') ? CROSSREF_IN_FLIGHT_STATUSES : [];
+        if (!in_array($status, $inFlightStatuses, true)) {
+            return false;
+        }
+
+        $submittedAt = (int) $article->getData($this->getDepositSubmittedAtSettingName());
+        if ($submittedAt <= 0) {
+            return false;
+        }
+
+        $cooldownSeconds = defined('CROSSREF_RESUBMIT_COOLDOWN_SECONDS') ? CROSSREF_RESUBMIT_COOLDOWN_SECONDS : (6 * 3600);
+        $elapsed = time() - $submittedAt;
+
+        if ($elapsed < $cooldownSeconds) {
+            return true;
+        }
+
+        // FIX: cooldown sudah lewat tapi status masih "in-flight" -- ini
+        // anomali yang layak diketahui admin (kemungkinan submission
+        // sebelumnya gagal diproses Crossref secara diam-diam, atau API status
+        // Crossref sedang bermasalah). Dicatat, lalu artikel diizinkan masuk
+        // kandidat resubmit lagi.
+        error_log(sprintf(
+            'CrossrefDoiExportPlugin: artikel #%d masih berstatus "%s" setelah %d detik sejak submit (cooldown %d detik terlampaui). Akan dicoba submit ulang; periksa submission log Crossref untuk kemungkinan kegagalan yang tidak tercatat di aplikasi.',
+            (int) $article->getId(),
+            (string) $status,
+            $elapsed,
+            $cooldownSeconds
+        ));
+
+        return false;
+    }
+
+    /**
+     * FIX: Wrapper publik yang menggabungkan DUA syarat kelayakan submit ulang
+     * OTOMATIS (dipakai CrossrefInfoSender setelah memanggil
+     * _getUnregisteredArticles()/_getUnregisteredIssues() dengan
+     * $bypassCooldown=true untuk keperluan polling status):
+     * 1. Statusnya termasuk CROSSREF_AUTO_RESUBMIT_STATUSES (submitted/queued/
+     *    in_process -- TIDAK termasuk status "exported" dari deposit manual,
+     *    lihat definisi konstanta ini di CrossRefExportPlugin.inc.php).
+     * 2. TIDAK sedang dalam window cooldown (_isWithinCrossrefResubmitCooldown()).
+     *
+     * Dipusatkan di sini (bukan diduplikasi logikanya di CrossrefInfoSender)
+     * supaya definisi "layak disubmit ulang otomatis" konsisten di satu tempat.
+     *
+     * @param mixed $object Article atau Issue
+     * @param string $currentStatus Status yang sedang dicek (biasanya hasil terbaru dari updateDepositStatus())
+     * @return bool
+     */
+    public function isEligibleForAutoResubmit($object, string $currentStatus): bool {
+        if (!defined('CROSSREF_AUTO_RESUBMIT_STATUSES') || !in_array($currentStatus, CROSSREF_AUTO_RESUBMIT_STATUSES, true)) {
+            return false;
+        }
+        return !$this->_isWithinCrossrefResubmitCooldown($object);
     }
 
     /**
@@ -1305,6 +1486,75 @@ class CrossrefDoiExportPlugin extends ImportExportPlugin {
             $exportFiles = array_merge($exportFiles, $newFiles);
         }
         return $exportFiles;
+    }
+
+    /**
+     * FIX (deposit manual, lihat exportObjects()): tandai objek yang baru saja
+     * berhasil diekspor sebagai XML (status CROSSREF_STATUS_EXPORTED), supaya
+     * statusnya terlihat di panel dan ikut dipantau oleh polling status
+     * berkala -- persis seperti objek yang disubmit lewat deposit otomatis.
+     *
+     * Objek yang statusnya SUDAH lebih maju (mis. sudah completed/registered)
+     * TIDAK ditimpa mundur jadi "exported" -- export ulang XML untuk arsip
+     * tidak boleh membuat status yang sudah final terlihat mundur ke belum
+     * pasti.
+     *
+     * @param array $exportSpec Peta [exportType => objectIds] seperti pada exportObjects()
+     * @param Journal $journal
+     * @param array $errors Dilewatkan by-reference ke _getObjectsFromIds(), diabaikan di sini
+     *                      (kegagalan generate file sudah ditangani sebelum method ini dipanggil).
+     */
+    private function _markObjectsAsExported(array $exportSpec, $journal, array &$errors): void {
+        if (!method_exists($this, '_supportsDepositStatusTracking') || !method_exists($this, '_persistDepositStatusSettings')) {
+            // Plugin konkret belum mengimplementasikan pelacakan status granular
+            // (lihat CrossRefExportPlugin) -- tidak ada dasar untuk menulis status.
+            return;
+        }
+        if (!method_exists($this, 'getDepositStatusSettingName') || !method_exists($this, 'getDepositSubmittedAtSettingName')) {
+            return;
+        }
+
+        $depositStatusSettingName = $this->getDepositStatusSettingName();
+        $depositSubmittedAtSettingName = $this->getDepositSubmittedAtSettingName();
+        $exportedAt = time();
+
+        // Status yang dianggap "sudah lebih maju dari sekadar diekspor" --
+        // jangan ditimpa mundur oleh export ulang (mis. admin export ulang XML
+        // untuk arsip padahal objeknya sudah completed/registered sebelumnya).
+        $moreAdvancedStatuses = [
+            CROSSREF_STATUS_COMPLETED,
+            CROSSREF_STATUS_REGISTERED,
+            CROSSREF_STATUS_MARKEDREGISTERED,
+        ];
+
+        foreach ($exportSpec as $exportType => $objectIds) {
+            if (is_scalar($objectIds)) {
+                $objectIds = [$objectIds];
+            }
+            $localErrors = [];
+            $objects = $this->_getObjectsFromIds($exportType, $objectIds, (int) $journal->getId(), $localErrors);
+            if (empty($objects)) {
+                continue;
+            }
+
+            foreach ($objects as $object) {
+                if (!$this->_supportsDepositStatusTracking($object)) {
+                    continue;
+                }
+
+                $currentStatus = $object->getData($depositStatusSettingName);
+                if (in_array($currentStatus, $moreAdvancedStatuses, true)) {
+                    continue;
+                }
+
+                $object->setData($depositStatusSettingName, CROSSREF_STATUS_EXPORTED);
+                $object->setData($depositSubmittedAtSettingName, $exportedAt);
+                $this->_persistDepositStatusSettings($object, [
+                    $depositStatusSettingName      => ['value' => CROSSREF_STATUS_EXPORTED, 'type' => 'string'],
+                    $depositSubmittedAtSettingName => ['value' => $exportedAt, 'type' => 'int'],
+                ]);
+            }
+        }
     }
 
     /**
