@@ -27,6 +27,15 @@
         return 'Citations are updated on a weekly schedule by the server.';
     };
 
+    const escapeHtml = (value) => {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+
     // Variabel untuk mengelola refresh
     const REFRESH_COOLDOWN_HOURS = 12; // Minimum 12 jam antara refresh
     let lastDataTimestamp = 0;         // Timestamp dari pembaruan data terakhir
@@ -174,6 +183,7 @@
         const tooltipText = !canRefreshNow
             ? `Next refresh available in ${getCooldownTimeRemaining()}`
             : (sourcesInfo || nextUpdateText());
+        const safeTooltipText = escapeHtml(tooltipText);
 
         const disabledClass = !canRefreshNow ? 'button-disabled' : '';
 
@@ -190,7 +200,7 @@
                         <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path>
                     </svg>
                 </button>
-                <div class="citation-tooltip">${tooltipText}</div>
+                <div class="citation-tooltip">${safeTooltipText}</div>
             </div>
         `;
     };
@@ -362,7 +372,7 @@
         const infoDiv = document.createElement('div');
         infoDiv.id = 'citing-info';
         infoDiv.className = 'citing-info';
-        infoDiv.innerHTML = `<span class="update-info">Updated: ${formattedDate}</span>`;
+        infoDiv.innerHTML = `<span class="update-info">Updated: ${escapeHtml(formattedDate)}</span>`;
 
         const refreshContainer = document.createElement('div');
         refreshContainer.className = 'refresh-container';
