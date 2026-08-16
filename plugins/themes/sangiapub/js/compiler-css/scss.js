@@ -1,5 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const scssUrls = {$scssUrls|@json_encode};
+  const scriptTag = document.getElementById('scss-settings');
+  let scssUrls = [];
+
+  if (scriptTag && scriptTag.textContent) {
+    try {
+      scssUrls = JSON.parse(scriptTag.textContent);
+    } catch (e) {
+      console.error('Failed to parse SCSS URLs:', e);
+      return;
+    }
+  }
 
   if (!Array.isArray(scssUrls) || scssUrls.length === 0) {
     console.debug('No SCSS files to compile.');
