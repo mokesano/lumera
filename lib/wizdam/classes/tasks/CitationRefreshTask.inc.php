@@ -10,17 +10,20 @@ declare(strict_types=1);
  *
  * @class CitationRefreshTask
  *
- * @brief Scheduled task mingguan: untuk tiap artikel published yang punya
- * DOI, fetch data sitasi terbaru (CitationFetcherService, sudah termasuk
- * cache 7 hari-nya sendiri), lalu update article_settings.citationCount
- * HANYA kalau angkanya berubah -- supaya tidak menulis ke DB tanpa alasan
- * saat tidak ada perubahan sitasi sama sekali.
+ * @brief Scheduled task to refresh citation counts for published articles with DOIs.
  */
 
 import('lib.pkp.classes.scheduledTask.ScheduledTask');
 import('lib.wizdam.classes.citation.CitationFetcherService');
 
 class CitationRefreshTask extends ScheduledTask {
+
+    // [WIZDAM] Anggaran waktu aman untuk SATU eksekusi --
+    private const TIME_BUDGET_SECONDS = 45;
+
+    // Ditetapkan saat executeActions() mulai, dibaca lintas jurnal.
+    /** @var int */
+    private $startTime = 0;
 
     /**
      * Constructor.
@@ -30,6 +33,7 @@ class CitationRefreshTask extends ScheduledTask {
     }
 
     /**
+     * Get the name of the task.
      * @return string
      */
     public function getName() {
@@ -37,6 +41,7 @@ class CitationRefreshTask extends ScheduledTask {
     }
 
     /**
+     * Execute the scheduled task.
      * @return bool
      */
     public function executeActions() {
@@ -47,12 +52,31 @@ class CitationRefreshTask extends ScheduledTask {
         /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
 
-        $journals = $journalDao->getJournals(true);
-        if (!$journals) {
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(0);
+        }
+        $this->startTime = time();
+
+        $journalsFactory = $journalDao->getJournals(true);
+        if (!$journalsFactory) {
             return true;
         }
 
-        while ($journal = $journals->next()) {
+        $journals = [];
+        while ($journal = $journalsFactory->next()) {
+            $journals[] = $journal;
+        }
+        if (empty($journals)) {
+            return true;
+        }
+
+        shuffle($journals);
+
+        foreach ($journals as $journal) {
+            if ((time() - $this->startTime) >= self::TIME_BUDGET_SECONDS) {
+                error_log('CitationRefreshTask: anggaran waktu tercapai, sisa jurnal ditunda ke eksekusi berikutnya.');
+                break;
+            }
             $this->_refreshJournalCitations($journal, $articleDao, $publishedArticleDao);
         }
 
@@ -60,9 +84,11 @@ class CitationRefreshTask extends ScheduledTask {
     }
 
     /**
+     * Refresh citations for a specific journal.
      * @param object $journal
      * @param object $articleDao
      * @param object $publishedArticleDao
+     * @return void
      */
     private function _refreshJournalCitations($journal, $articleDao, $publishedArticleDao): void {
         $fetcher = new CitationFetcherService($journal);
@@ -72,7 +98,18 @@ class CitationRefreshTask extends ScheduledTask {
             return;
         }
 
+        $articleIds = array_values($articleIds);
+        shuffle($articleIds);
+
+        $processed = 0;
         foreach ($articleIds as $articleId) {
+            if ((time() - $this->startTime) >= self::TIME_BUDGET_SECONDS) {
+                error_log(sprintf(
+                    'CitationRefreshTask: anggaran waktu tercapai di jurnal ID %d -- %d artikel diproses, sisanya ditunda.',
+                    (int) $journal->getId(), $processed
+                ));
+                return;
+            }
             $article = $articleDao->getArticle((int) $articleId);
             if (!$article) continue;
 
@@ -82,11 +119,8 @@ class CitationRefreshTask extends ScheduledTask {
             try {
                 $result = $fetcher->getCitations((string) $doi, 50);
                 $freshCount = (int) ($result['citation_count'] ?? 0);
-
-                // [SEDERHANA] Selalu tulis -- cron ini jalan mingguan, bukan
-                // per-request, jadi tidak ada tekanan performa yang berarti
-                // untuk perlu cek "apakah berubah" dulu sebelum menulis.
                 $articleDao->updateSetting((int) $articleId, 'citationCount', $freshCount, 'int');
+                $processed++;
             } catch (Exception $e) {
                 error_log('CitationRefreshTask: gagal ambil sitasi untuk DOI ' . $doi . ' -- ' . $e->getMessage());
                 continue;

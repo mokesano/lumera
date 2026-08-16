@@ -322,11 +322,28 @@ class ArticleHandler extends Handler {
             import('lib.wizdam.classes.citation.CitationFetcherService');
             $citationFetcher = new CitationFetcherService($journal);
             $citationData = $citationFetcher->getCachedCitations((string) $articleDoi);
+
+            if ($citationData === null) {
+                try {
+                    $citationData = $citationFetcher->getCitations((string) $articleDoi);
+                } catch (Exception $e) {
+                    error_log('ArticleHandler cold start kutipan: gagal untuk DOI ' . $articleDoi . ' -- ' . $e->getMessage());
+                    $citationData = null;
+                }
+            }
+
             if ($citationData !== null) {
                 $citationCount = (int) ($citationData['citation_count'] ?? 0);
                 $citingArticles = array_slice($citationData['citing_articles'] ?? [], 0, 7);
                 $citationSources = $citationData['citation_sources'] ?? null;
                 $citationTimestamp = (int) ($citationData['last_updated'] ?? $citationData['timestamp'] ?? 0);
+                $existingCount = (int) $article->getData('citationCount');
+
+                if ($existingCount !== $citationCount) {
+                    /** @var ArticleDAO $articleDaoForCitation */
+                    $articleDaoForCitation = DAORegistry::getDAO('ArticleDAO');
+                    $articleDaoForCitation->updateSetting((int) $article->getId(), 'citationCount', $citationCount, 'int');
+                }
             }
         }
         $templateMgr->assign([
