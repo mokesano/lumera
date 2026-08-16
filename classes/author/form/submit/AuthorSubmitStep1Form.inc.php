@@ -45,11 +45,12 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
     public function AuthorSubmitStep1Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'. Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($article, $journal, $request);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -79,32 +80,27 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
         $paymentManager = new OJSPaymentManager($this->request);
         if ($paymentManager->submissionEnabled() || $paymentManager->fastTrackEnabled() || $paymentManager->publicationEnabled()) {
             $templateMgr->assign('authorFees', true);
-            // [WIZDAM BUGFIX] Sebelumnya OJSCompletedPaymentDAO -- lihat
-            // catatan lengkap di SubmissionEditHandler::submission() untuk
-            // penjelasan akar masalah. Diganti InvoiceDAO::
-            // getPaidInvoiceForArticleFee() -- satu sumber kebenaran yang
-            // konsisten dengan halaman editor.
+
             import('lib.wizdam.classes.invoice.Invoice');
             /** @var InvoiceDAO $invoiceDao */
             $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
             $articleId = $this->articleId;
 
-            if ($paymentManager->submissionEnabled()) {
-                $templateMgr->assign('submissionPayment', $invoiceDao->getPaidInvoiceForArticleFee(
-                    $journal->getId(), $articleId, Invoice::FEE_TYPE_SUBMISSION, PAYMENT_TYPE_SUBMISSION
-                ));
-            }
+            if ($articleId !== null) {
+                if ($paymentManager->submissionEnabled()) {
+                    $templateMgr->assign('submissionPayment', $invoiceDao->getPaidInvoiceForArticleFee(
+                        $journal->getId(), $articleId, Invoice::FEE_TYPE_SUBMISSION, PAYMENT_TYPE_SUBMISSION
+                    ));
+                }
 
-            if ($paymentManager->fastTrackEnabled()) {
-                $templateMgr->assign('fastTrackPayment', $invoiceDao->getPaidInvoiceForArticleFee(
-                    $journal->getId(), $articleId, Invoice::FEE_TYPE_FAST_TRACK, PAYMENT_TYPE_FASTTRACK
-                ));
+                if ($paymentManager->fastTrackEnabled()) {
+                    $templateMgr->assign('fastTrackPayment', $invoiceDao->getPaidInvoiceForArticleFee(
+                        $journal->getId(), $articleId, Invoice::FEE_TYPE_FAST_TRACK, PAYMENT_TYPE_FASTTRACK
+                    ));
+                }
             }
         }
 
-        // Provide available submission languages. (Convert the array
-        // of locale symbolic names xx_XX into an associative array
-        // of symbolic names => readable names.)
         $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
         if (empty($supportedSubmissionLocales)) $supportedSubmissionLocales = [$journal->getPrimaryLocale()];
         $templateMgr->assign(

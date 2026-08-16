@@ -361,6 +361,7 @@ class PKPLoginHandler extends Handler {
             $this->_assignSecurityVariables($templateMgr, 'login');
             $templateMgr->assign('email', $request->getUserVar('email'));
             $templateMgr->assign('error', $errorKey);
+
             return $templateMgr->display('user/lostPassword.tpl');
         }
 
@@ -369,7 +370,19 @@ class PKPLoginHandler extends Handler {
         $userDao = DAORegistry::getDAO('UserDAO');
         $user = $userDao->getUserByEmail($email);
 
+        // [WIZDAM DIAGNOSTIK] Catat SETIAP gerbang yang bisa menghentikan
+        // alur sebelum email terkirim. Sebelumnya tidak ada satupun log di
+        // jalur ini, sehingga "email tidak sampai" mustahil didiagnosis --
+        // tidak diketahui apakah gagal di pencarian user, pembuatan hash,
+        // atau pengiriman SMTP.
+        if ($user === null) {
+            error_log('[WIZDAM] requestResetPassword: email tidak terdaftar -- ' . $email);
+        }
+
         if ($user == null || ($hash = Validation::generatePasswordResetHash($user->getId())) == false) {
+            if ($user !== null) {
+                error_log('[WIZDAM] requestResetPassword: generatePasswordResetHash() GAGAL untuk user ID ' . $user->getId());
+            }
             $templateMgr->assign('error', 'user.login.lostPassword.invalidUser');
             $this->_assignSecurityVariables($templateMgr, 'login');
             $templateMgr->display('user/lostPassword.tpl');
@@ -383,11 +396,43 @@ class PKPLoginHandler extends Handler {
                 'siteTitle' => $site->getLocalizedTitle()
             ]);
             $mail->addRecipient($user->getEmail(), $user->getFullName());
-            $mail->send();
+
+            // [WIZDAM BUGFIX] Nilai balik send() SEBELUMNYA DIABAIKAN.
+            // Mail::send() mengembalikan false secara SENYAP kalau pengiriman
+            // gagal (SMTP salah konfigurasi, kredensial ditolak, mail()
+            // diblokir host, alamat From ditolak server) -- karena
+            // display_errors mati di produksi, tidak ada jejak apa pun.
+            // Akibatnya pengguna SELALU melihat "konfirmasi telah dikirim"
+            // walau tidak ada email yang keluar, dan tidak ada log untuk
+            // ditelusuri. Persis gejala yang dilaporkan.
+            $sent = $mail->send();
+
+            if (!$sent) {
+                error_log(sprintf(
+                    '[WIZDAM] requestResetPassword: PENGIRIMAN GAGAL ke %s (user ID %d). '
+                    . 'Periksa konfigurasi [email] di config.inc.php: smtp=%s, smtp_server=%s, '
+                    . 'dan pastikan alamat From (%s) diizinkan server.',
+                    $user->getEmail(),
+                    $user->getId(),
+                    var_export(Config::getVar('email', 'smtp'), true),
+                    (string) Config::getVar('email', 'smtp_server'),
+                    (string) ($mail->getFrom()['email'] ?? '(kosong)')
+                ));
+
+                // Jangan berbohong ke pengguna: tampilkan kegagalan apa adanya
+                // supaya mereka tahu perlu menghubungi pengelola, bukan
+                // menunggu email yang tidak akan pernah datang.
+                $templateMgr->assign('error', 'email.compose.error');
+                $this->_assignSecurityVariables($templateMgr, 'login');
+                $templateMgr->assign('email', $email);
+                return $templateMgr->display('user/lostPassword.tpl');
+            }
+
             $templateMgr->assign('pageTitle',  'user.login.resetPassword');
             $templateMgr->assign('message', 'user.login.lostPassword.confirmationSent');
             $templateMgr->assign('backLink', $request->url(null, $request->getRequestedPage()));
             $templateMgr->assign('backLinkLabel',  'user.login');
+            
             $templateMgr->display('common/message.tpl');
         }
     }
@@ -452,7 +497,14 @@ class PKPLoginHandler extends Handler {
                 'siteTitle' => $site->getLocalizedTitle()
             ]);
             $mail->addRecipient($user->getEmail(), $user->getFullName());
-            $mail->send();
+            // [WIZDAM BUGFIX] Sama seperti requestResetPassword: kegagalan
+            // pengiriman TIDAK boleh senyap.
+            if (!$mail->send()) {
+                error_log(sprintf(
+                    '[WIZDAM] resetPassword: PENGIRIMAN GAGAL ke %s (user ID %d).',
+                    $user->getEmail(), $user->getId()
+                ));
+            }
             $templateMgr->assign('pageTitle',  'user.login.resetPassword');
             $templateMgr->assign('message', 'user.login.lostPassword.passwordSent');
             $templateMgr->assign('backLink', $request->url(null, $request->getRequestedPage()));

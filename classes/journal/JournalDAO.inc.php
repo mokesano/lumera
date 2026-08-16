@@ -31,14 +31,17 @@ class JournalDAO extends DAO {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function JournalDAO() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::JournalDAO(). Please refactor to parent::__construct().", 
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -98,7 +101,7 @@ class JournalDAO extends DAO {
      */
     public function _returnJournalFromRow($row) {
         $journal = new Journal();
-        $journal->setId($row['journal_id']);
+        $journal->setId((int) $row['journal_id']);
         $journal->setPath($row['path']);
         $journal->setSequence($row['seq']);
         $journal->setEnabled($row['enabled']);
@@ -482,5 +485,6 @@ class JournalDAO extends DAO {
 
         return new DAOResultFactory($result, $this, '_returnJournalFromRow');
     }
+
 }
 ?>
