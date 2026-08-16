@@ -732,22 +732,6 @@ class PeopleHandler extends ManagerHandler {
 
     /**
      * Enable a user's account.
-     *
-     * [WIZDAM] Kalau target user SEBELUMNYA belum tervalidasi (dateValidated
-     * masih null), aksi Enable ini SEKALIGUS mengirim email USER_VALIDATE_CONFIRMED
-     * -- notifikasi "akun Anda telah diaktifkan", setara dengan konfirmasi
-     * yang seharusnya didapat pengguna seandainya mereka sendiri mengklik
-     * link USER_VALIDATE yang dikirim saat registrasi (link mana TIDAK
-     * pernah mengirim email konfirmasi apa pun -- activateUser() di
-     * RegistrationHandler cuma menampilkan pesan di browser, jadi
-     * email ini juga mengisi celah itu).
-     *
-     * Email HANYA dikirim untuk transisi belum-tervalidasi -> tervalidasi.
-     * Kalau user YANG SUDAH tervalidasi sebelumnya sekadar di-nonaktifkan
-     * lalu diaktifkan lagi (mis. akun ditangguhkan sementara), TIDAK ada
-     * email yang dikirim -- itu bukan momen validasi, jadi mengirim email
-     * "akun Anda telah diaktifkan" akan membingungkan.
-     *
      * @param array $args the ID of the user to enable
      */
     public function enableUser($args) {
@@ -775,7 +759,7 @@ class PeopleHandler extends ManagerHandler {
                 $userDao->updateObject($userTarget);
 
                 if ($wasUnvalidated) {
-                    $this->_sendValidationConfirmedEmail($userTarget);
+                    $this->_sendValidationConfirmedEmail($userTarget, $user);
                 }
             }
         }
@@ -786,9 +770,12 @@ class PeopleHandler extends ManagerHandler {
     /**
      * [WIZDAM] Kirim notifikasi "akun Anda telah diaktifkan" ke pengguna
      * yang baru saja divalidasi lewat aksi Enable oleh Journal Manager.
-     * @param User $userTarget
+     * @param User $userTarget Pengguna yang diaktifkan.
+     * @param User $actingUser Journal Manager yang melakukan aksi Enable --
+     * penerima notifikasi kalau pengiriman gagal, supaya mereka tahu
+     * SEKETIKA di halaman yang sama, bukan lewat log server.
      */
-    protected function _sendValidationConfirmedEmail($userTarget) {
+    protected function _sendValidationConfirmedEmail($userTarget, $actingUser = null) {
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
 
@@ -805,11 +792,23 @@ class PeopleHandler extends ManagerHandler {
             'loginUrl'     => $request->url($journal ? $journal->getPath() : null, 'login'),
         ]);
         $mail->addRecipient($userTarget->getEmail(), $userTarget->getFullName());
+
         if (!$mail->send()) {
+            // Log teknis tetap dipertahankan untuk audit developer.
             error_log(sprintf(
                 '[WIZDAM] enableUser: gagal mengirim USER_VALIDATE_CONFIRMED ke %s (user ID %d).',
                 $userTarget->getEmail(), $userTarget->getId()
             ));
+
+            if ($actingUser) {
+                import('classes.notification.NotificationManager');
+                $notificationManager = new NotificationManager();
+                $notificationManager->createTrivialNotification(
+                    (int) $actingUser->getId(),
+                    NOTIFICATION_TYPE_ERROR,
+                    ['contents' => __('notification.email.validateConfirmedFailed', ['userEmail' => $userTarget->getEmail()])]
+                );
+            }
         }
     }
 

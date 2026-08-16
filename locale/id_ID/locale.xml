@@ -657,6 +657,9 @@
 	<!-- Login -->
 	<message key="user.login.registerNewAccount">Bukan Pengguna? Daftar di situs ini</message>
 	<message key="user.login.resetPasswordInstructions"><![CDATA[Untuk alasan keamanan, sistem ini akan mengirimkan kata sandi yang bisa diatur ulang oleh pengguna melalui email.<br /><br />Masukkan alamat email Anda di bawah ini untuk mengatur ulang kata sandi Anda. Konfirmasi akan dikirim ke alamat email.]]></message>
+	<message key="user.login.lostPassword.emailFailed">Kami tidak dapat mengirim email pengaturan ulang kata sandi. Silakan hubungi pengelola jurnal untuk bantuan.</message>
+	<message key="notification.email.passwordResetFailed">Gagal mengirim email pengaturan ulang kata sandi ke {$userEmail}. Periksa konfigurasi SMTP/email.</message>
+	<message key="notification.email.validateConfirmedFailed">Gagal mengirim email konfirmasi aktivasi akun ke {$userEmail}. Periksa konfigurasi SMTP/email.</message>
 		
 	<!-- Registration -->
 	<message key="user.register.repeatPassword">Ulangi Kata Sandi</message>

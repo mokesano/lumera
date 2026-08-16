@@ -793,6 +793,9 @@
 	<!-- Login -->
 	<message key="user.login.registerNewAccount">Not a user? Register with this site</message>
 	<message key="user.login.resetPasswordInstructions"><![CDATA[For security reasons, this system emails a reset password to registered users, rather than recalling the current password.<br /><br />Enter your email address below to reset your password. A confirmation will be sent to this email address.]]></message>
+	<message key="user.login.lostPassword.emailFailed">We were unable to send the password reset email. Please contact the journal manager for assistance.</message>
+	<message key="notification.email.passwordResetFailed">Failed to send a password reset email to {$userEmail}. Please check the SMTP/email configuration.</message>
+	<message key="notification.email.validateConfirmedFailed">Failed to send the account activation confirmation email to {$userEmail}. Please check the SMTP/email configuration.</message>
 	<message key="user.login.implicitAuthLogin">Login via Shibboleth</message>
 
 	<!-- Registration -->

@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @ingroup pages_login
  *
  * @brief Handle login/logout requests.
- * - Integrated Modular Security: Turnstile & reCAPTCHA v2/v3
+ * Integrated Modular Security: Turnstile & reCAPTCHA v2/v3
  */
 
 import('classes.handler.Handler');
@@ -369,12 +369,6 @@ class PKPLoginHandler extends Handler {
         /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $user = $userDao->getUserByEmail($email);
-
-        // [WIZDAM DIAGNOSTIK] Catat SETIAP gerbang yang bisa menghentikan
-        // alur sebelum email terkirim. Sebelumnya tidak ada satupun log di
-        // jalur ini, sehingga "email tidak sampai" mustahil didiagnosis --
-        // tidak diketahui apakah gagal di pencarian user, pembuatan hash,
-        // atau pengiriman SMTP.
         if ($user === null) {
             error_log('[WIZDAM] requestResetPassword: email tidak terdaftar -- ' . $email);
         }
@@ -397,16 +391,7 @@ class PKPLoginHandler extends Handler {
             ]);
             $mail->addRecipient($user->getEmail(), $user->getFullName());
 
-            // [WIZDAM BUGFIX] Nilai balik send() SEBELUMNYA DIABAIKAN.
-            // Mail::send() mengembalikan false secara SENYAP kalau pengiriman
-            // gagal (SMTP salah konfigurasi, kredensial ditolak, mail()
-            // diblokir host, alamat From ditolak server) -- karena
-            // display_errors mati di produksi, tidak ada jejak apa pun.
-            // Akibatnya pengguna SELALU melihat "konfirmasi telah dikirim"
-            // walau tidak ada email yang keluar, dan tidak ada log untuk
-            // ditelusuri. Persis gejala yang dilaporkan.
             $sent = $mail->send();
-
             if (!$sent) {
                 error_log(sprintf(
                     '[WIZDAM] requestResetPassword: PENGIRIMAN GAGAL ke %s (user ID %d). '
@@ -419,10 +404,35 @@ class PKPLoginHandler extends Handler {
                     (string) ($mail->getFrom()['email'] ?? '(kosong)')
                 ));
 
-                // Jangan berbohong ke pengguna: tampilkan kegagalan apa adanya
-                // supaya mereka tahu perlu menghubungi pengelola, bukan
-                // menunggu email yang tidak akan pernah datang.
-                $templateMgr->assign('error', 'email.compose.error');
+                import('classes.notification.NotificationManager');
+                $notificationManager = new NotificationManager();
+
+                $journal = $request->getJournal();
+                if ($journal) {
+                    /** @var RoleDAO $roleDao */
+                    $roleDao = DAORegistry::getDAO('RoleDAO');
+                    $managerUsers = $roleDao->getUsersByRoleId(ROLE_ID_JOURNAL_MANAGER, (int) $journal->getId());
+                    while ($managerUser = $managerUsers->next()) {
+                        $notificationManager->createTrivialNotification(
+                            (int) $managerUser->getId(),
+                            NOTIFICATION_TYPE_ERROR,
+                            ['contents' => __('notification.email.passwordResetFailed', ['userEmail' => $user->getEmail()])]
+                        );
+                    }
+                } else {
+                    /** @var RoleDAO $roleDao */
+                    $roleDao = DAORegistry::getDAO('RoleDAO');
+                    $siteAdmins = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN);
+                    while ($adminUser = $siteAdmins->next()) {
+                        $notificationManager->createTrivialNotification(
+                            (int) $adminUser->getId(),
+                            NOTIFICATION_TYPE_ERROR,
+                            ['contents' => __('notification.email.passwordResetFailed', ['userEmail' => $user->getEmail()])]
+                        );
+                    }
+                }
+
+                $templateMgr->assign('error', 'user.login.lostPassword.emailFailed');
                 $this->_assignSecurityVariables($templateMgr, 'login');
                 $templateMgr->assign('email', $email);
                 return $templateMgr->display('user/lostPassword.tpl');
@@ -449,6 +459,7 @@ class PKPLoginHandler extends Handler {
         if (!$request) $request = Application::get()->getRequest();
 
         $site = $request->getSite();
+        $journal = $request->getJournal();
         $oneStepReset = $site->getSetting('oneStepReset') ? true : false;
 
         $username = isset($args[0]) ? $args[0] : null;
@@ -497,13 +508,29 @@ class PKPLoginHandler extends Handler {
                 'siteTitle' => $site->getLocalizedTitle()
             ]);
             $mail->addRecipient($user->getEmail(), $user->getFullName());
-            // [WIZDAM BUGFIX] Sama seperti requestResetPassword: kegagalan
-            // pengiriman TIDAK boleh senyap.
             if (!$mail->send()) {
                 error_log(sprintf(
-                    '[WIZDAM] resetPassword: PENGIRIMAN GAGAL ke %s (user ID %d).',
+                    '[WIZDAM] resetPassword: PENGIRIMAN GAGAL ke %s (user ID %d). Kata sandi SUDAH diganti -- pengguna berpotensi terkunci.',
                     $user->getEmail(), $user->getId()
                 ));
+
+                import('classes.notification.NotificationManager');
+                $notificationManager = new NotificationManager();
+
+                /** @var RoleDAO $roleDao */
+                $roleDao = DAORegistry::getDAO('RoleDAO');
+                if ($journal) {
+                    $managerUsers = $roleDao->getUsersByRoleId(ROLE_ID_JOURNAL_MANAGER, (int) $journal->getId());
+                } else {
+                    $managerUsers = $roleDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN);
+                }
+                while ($managerUser = $managerUsers->next()) {
+                    $notificationManager->createTrivialNotification(
+                        (int) $managerUser->getId(),
+                        NOTIFICATION_TYPE_ERROR,
+                        ['contents' => __('notification.email.passwordResetFailed', ['userEmail' => $user->getEmail()])]
+                    );
+                }
             }
             $templateMgr->assign('pageTitle',  'user.login.resetPassword');
             $templateMgr->assign('message', 'user.login.lostPassword.passwordSent');
