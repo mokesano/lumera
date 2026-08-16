@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_rtadmin
  *
  * @brief Handle Reading Tools administration requests -- setup section.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.rtadmin.RTAdminHandler');
@@ -34,7 +32,7 @@ class RTVersionHandler extends RTAdminHandler {
     public function RTVersionHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::RTVersionHandler(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -80,6 +78,7 @@ class RTVersionHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
@@ -88,7 +87,6 @@ class RTVersionHandler extends RTAdminHandler {
 
         if ($version) {
             $templateMgr = TemplateManager::getManager();
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('version', $version);
 
             $templateMgr->display('rtadmin/exportXml.tpl', 'application/xml');
@@ -136,6 +134,7 @@ class RTVersionHandler extends RTAdminHandler {
         // If the journal RT was configured, change its state to
         // "disabled" because the RT version it was configured for
         // has now been deleted.
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
         $journalRt = $rtDao->getJournalRTByJournal($journal);
         if ($journalRt) {
@@ -160,13 +159,14 @@ class RTVersionHandler extends RTAdminHandler {
 
         $journal = $request->getJournal();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
         $rangeInfo = $this->getRangeInfo('versions');
 
         $templateMgr = TemplateManager::getManager();
-        // [WIZDAM] Removed assign_by_ref
         $templateMgr->assign('versions', $rtDao->getVersions($journal->getId(), $rangeInfo));
         $templateMgr->assign('helpTopicId', 'journal.managementPages.readingTools.versions');
+
         $templateMgr->display('rtadmin/versions.tpl');
     }
 
@@ -181,6 +181,7 @@ class RTVersionHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
@@ -209,6 +210,7 @@ class RTVersionHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
@@ -230,6 +232,7 @@ class RTVersionHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
@@ -245,5 +248,6 @@ class RTVersionHandler extends RTAdminHandler {
 
         $request->redirect(null, null, 'versions');
     }
+    
 }
 ?>
