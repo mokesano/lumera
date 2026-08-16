@@ -20,23 +20,24 @@ import('classes.article.Article');
 class PublishedArticle extends Article {
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function PublishedArticle() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::PublishedArticle(). Please refactor to parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -137,7 +138,9 @@ class PublishedArticle extends Article {
         if ($cached !== null) return $cached;
 
         $application = PKPApplication::getApplication();
-        return $application->getPrimaryMetricByAssoc(ASSOC_TYPE_ARTICLE, (int) $this->getId());
+        $views = (int) $application->getPrimaryMetricByAssoc(ASSOC_TYPE_ARTICLE, (int) $this->getId());
+        $this->setData('_cachedViews', $views);
+        return $views;
     }
 
     /**
@@ -170,10 +173,7 @@ class PublishedArticle extends Article {
         
         foreach ($authors as $author) {
             $authorId = $author->getId();
-            // Struktur baja: jamin kunci 'uploadName' selalu ada meski nilainya null
             $images[$authorId] = ['uploadName' => null]; 
-            
-            // PERBAIKAN: Gunakan fungsi bawaan OJS yang benar -> getUserByEmail
             $user = $userDao->getUserByEmail($author->getEmail());
             if ($user) {
                 $profileImage = $user->getData('profileImage');
@@ -196,10 +196,7 @@ class PublishedArticle extends Article {
         
         foreach ($authors as $author) {
             $authorId = $author->getId();
-            // Struktur baja: jamin kunci 'gender' selalu ada
-            $map[$authorId] = ['gender' => null]; 
-            
-            // PERBAIKAN: Gunakan fungsi bawaan OJS yang benar -> getUserByEmail
+            $map[$authorId] = ['gender' => null];
             $user = $userDao->getUserByEmail($author->getEmail());
             if ($user) {
                 $map[$authorId]['gender'] = $user->getData('gender');
