@@ -262,6 +262,9 @@ class PKPTemplateManager extends Smarty {
             $this->assign('publisher', (new PublisherProfileService())->getProfile());
 
             if ($journal !== null) {
+                import('lib.wizdam.sinta.SintaScoreService');
+                SintaScoreService::ensureScoreExists($journal);
+
                 $this->assign('sintaScore', $journal->getSetting('sintaScore'));
                 $this->assign('sintaGrade', $journal->getSetting('sintaGrade'));
                 $this->assign('sintaLastUpdate', $journal->getSetting('sintaLastUpdate'));

@@ -13,32 +13,84 @@ declare(strict_types=1);
  *
  * @brief [WIZDAM] Service untuk scraping skor & grade SINTA (Science and
  * Technology Index, Kemdiktisaintek RI) berdasarkan ISSN jurnal.
- *
- * [MIGRASI] Sebelumnya plugins/themes/{theme}/php/sinta_impact/
- * SintaScoreNEW.php -- skrip PHP mandiri diakses lewat AJAX client-side
- * (rewrite .htaccess /api/sinta_v2), dengan cache file sendiri + logic
- * access-count untuk menentukan TTL dinamis (supaya tidak scraping
- * berlebihan akibat banyak request bersamaan).
- *
- * [KOREKSI ARSITEKTUR] Pendekatan AJAX/.htaccess TERNYATA tidak diminta
- * dan tidak dibutuhkan -- AJAX di skrip lama cuma untuk manipulasi DOM
- * menempelkan hasil, padahal semuanya bisa dikerjakan di backend. Sekarang
- * mengikuti pola CrossrefInfoSender/CitationRefreshTask: SintaScoreTask
- * (ScheduledTask, lib/wizdam/classes/tasks/SintaScoreTask.inc.php) berjalan
- * mingguan, memanggil service ini untuk SETIAP jurnal, lalu menulis hasil
- * LANGSUNG ke journal_settings (sintaScore/sintaGrade/dst) -- bukan lagi
- * ke file cache terpisah. Halaman merender nilai itu dengan MEMBACA
- * journal_settings (lewat PKPTemplateManager::initialize(), assign
- * global), bukan fetch on-demand. Karena penulisan cuma terjadi mingguan
- * lewat SATU proses cron (bukan banyak request bersamaan), logic
- * access-count/TTL dinamis di skrip lama jadi TIDAK RELEVAN lagi -- sudah
- * dihapus, class ini sekarang murni scraping saja.
  */
 
 class SintaScoreService {
 
     /** Sinta url base */
     private const SINTA_BASE_URL = 'https://sinta.kemdiktisaintek.go.id';
+
+    /** Jeda minimum antar percobaan cold-start yang GAGAL (detik). */
+    private const COLD_START_RETRY_COOLDOWN = 21600; // 6 jam
+
+    /**
+     * [WIZDAM COLD START] Pastikan jurnal punya skor SINTA.
+     *
+     * PERBAIKAN RANCANGAN: sebelumnya skor HANYA diisi oleh SintaScoreTask
+     * yang berjadwal MINGGUAN (hari Minggu). Akibatnya, begitu kode
+     * dipasang, halaman KOSONG sampai jadwal itu tiba -- bisa 6 hari.
+     * Itu rancangan yang salah. Sekarang: kalau data belum ada, scraping
+     * dilakukan SAAT ITU JUGA pada render pertama, baru setelah itu
+     * pemeliharaannya diserahkan ke jadwal normal.
+     *
+     * Dipanggil dari PKPTemplateManager::initialize(). Kalau setting
+     * sudah terisi, method ini langsung keluar tanpa melakukan apa pun.
+     *
+     * Pengaman agar tidak membebani setiap request:
+     * - Sekali berhasil, tidak pernah scraping lagi (setting sudah ada).
+     * - Kalau GAGAL (SINTA down / ISSN tak ditemukan), waktu percobaan
+     *   dicatat di 'sintaLastAttempt'; percobaan berikutnya baru boleh
+     *   setelah 6 jam -- bukan di setiap kali halaman dibuka.
+     * - Penanda percobaan ditulis SEBELUM scraping, sehingga request
+     *   yang crash/timeout pun tidak memicu percobaan beruntun.
+     *
+     * @param Journal $journal
+     * @return bool true kalau baru saja mengisi data (pemanggil perlu
+     * membaca ulang setting), false kalau tidak melakukan apa pun.
+     */
+    public static function ensureScoreExists($journal): bool {
+        if (!$journal) {
+            return false;
+        }
+        if (!empty($journal->getSetting('sintaScore'))) {
+            return false; // Sudah ada -- jalur normal, tanpa biaya tambahan.
+        }
+
+        $lastAttempt = $journal->getSetting('sintaLastAttempt');
+        if (!empty($lastAttempt) && (time() - (int) $lastAttempt) < self::COLD_START_RETRY_COOLDOWN) {
+            return false; // Baru saja gagal -- jangan coba lagi dulu.
+        }
+
+        $issn = trim((string) $journal->getSetting('onlineIssn'));
+        if ($issn === '') {
+            $issn = trim((string) $journal->getSetting('printIssn'));
+        }
+        if ($issn === '') {
+            return false;
+        }
+
+        $journal->updateSetting('sintaLastAttempt', (string) time(), 'string');
+
+        try {
+            $service = new self();
+            $result = $service->fetchScore($issn);
+        } catch (Exception $e) {
+            error_log('SintaScoreService cold start: gagal untuk jurnal ID ' . $journal->getId() . ' -- ' . $e->getMessage());
+            return false;
+        }
+
+        if (empty($result['success'])) {
+            error_log('SintaScoreService cold start: SINTA tidak menemukan jurnal ID ' . $journal->getId() . ' (ISSN ' . $issn . ')');
+            return false;
+        }
+
+        $journal->updateSetting('sintaScore', $result['impact'] ?? '0.000', 'string');
+        $journal->updateSetting('sintaGrade', $result['grade'] ?? null, 'string');
+        $journal->updateSetting('sintaId', $result['sinta_id'] ?? null, 'string');
+        $journal->updateSetting('sintaUrl', $result['sinta_url'] ?? null, 'string');
+        $journal->updateSetting('sintaLastUpdate', date('Y-m-d H:i:s'), 'string');
+        return true;
+    }
 
     /**
      * Scrape skor & grade SINTA untuk sebuah ISSN. Mencoba tanpa strip
