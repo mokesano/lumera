@@ -31,7 +31,7 @@ class RTContextHandler extends RTAdminHandler {
     public function RTContextHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::RTContextHandler(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
