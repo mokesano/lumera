@@ -116,10 +116,9 @@ class ArticleGalley extends ArticleFile {
         if ($cached !== null) return $cached;
 
         $application = PKPApplication::getApplication();
-        return $application->getPrimaryMetricByAssoc(
-            ASSOC_TYPE_GALLEY, 
-            (int) $this->getId()
-        );
+        $views = (int) $application->getPrimaryMetricByAssoc(ASSOC_TYPE_GALLEY, (int) $this->getId());
+        $this->setData('_cachedViews', $views);
+        return $views;
     }
 
     /**
