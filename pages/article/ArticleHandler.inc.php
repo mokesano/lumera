@@ -315,6 +315,8 @@ class ArticleHandler extends Handler {
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
         $templateMgr->assign('pubIdPlugins', $pubIdPlugins ?: []);
 
+        $this->_preloadViewMetrics($article, $journal);
+
         $articleDoi = $article->getPubId('doi');
         $citingArticles = [];
         $citationCount = 0;
@@ -745,6 +747,69 @@ class ArticleHandler extends Handler {
         if ($this->article) {
             $templateMgr = TemplateManager::getManager($request);
             $templateMgr->assign('ccLicenseBadge', Application::getCCLicenseBadge($this->article->getLicenseURL()));
+        }
+    }
+
+
+    /**
+     * [WIZDAM N+1 FIX] Ambil metrik views artikel + semua galley dalam SATU
+     * query, lalu tanamkan ke objeknya masing-masing.
+     * @param PublishedArticle $article
+     * @param Journal $journal
+     */
+    protected function _preloadViewMetrics($article, $journal): void {
+        if (!$article || !$journal || !method_exists($article, 'setCachedViews')) {
+            return;
+        }
+
+        $galleys = method_exists($article, 'getGalleys') ? $article->getGalleys() : [];
+        $galleyIds = [];
+        if (is_array($galleys)) {
+            foreach ($galleys as $g) {
+                if (is_object($g) && method_exists($g, 'getId')) $galleyIds[] = (int) $g->getId();
+            }
+        }
+
+        $application = Application::get();
+        $journalId = (int) $journal->getId();
+
+        // Satu query: views artikel
+        $articleViews = 0;
+        $rows = $application->getMetrics(OJS_METRIC_TYPE_COUNTER, [], [
+            STATISTICS_DIMENSION_CONTEXT_ID => $journalId,
+            STATISTICS_DIMENSION_ASSOC_ID   => (int) $article->getId(),
+            STATISTICS_DIMENSION_ASSOC_TYPE => ASSOC_TYPE_ARTICLE,
+        ]);
+        if (is_array($rows) && isset($rows[0][STATISTICS_METRIC])) {
+            $articleViews = (int) $rows[0][STATISTICS_METRIC];
+        }
+        $article->setCachedViews($articleViews);
+
+        if (empty($galleyIds)) {
+            return;
+        }
+
+        // Satu query: views SEMUA galley, dipecah per assoc_id
+        $perGalley = [];
+        $rows = $application->getMetrics(
+            OJS_METRIC_TYPE_COUNTER,
+            [STATISTICS_DIMENSION_ASSOC_ID],
+            [
+                STATISTICS_DIMENSION_CONTEXT_ID => $journalId,
+                STATISTICS_DIMENSION_ASSOC_ID   => $galleyIds,
+                STATISTICS_DIMENSION_ASSOC_TYPE => ASSOC_TYPE_GALLEY,
+            ]
+        );
+        if (is_array($rows)) {
+            foreach ($rows as $row) {
+                $id = (int) ($row[STATISTICS_DIMENSION_ASSOC_ID] ?? 0);
+                if ($id > 0) $perGalley[$id] = (int) ($row[STATISTICS_METRIC] ?? 0);
+            }
+        }
+        foreach ($galleys as $g) {
+            if (is_object($g) && method_exists($g, 'setCachedViews')) {
+                $g->setCachedViews($perGalley[(int) $g->getId()] ?? 0);
+            }
         }
     }
 
