@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_rtadmin
  *
  * @brief Handle Reading Tools administration requests -- contexts section.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance
  */
 
 import('pages.rtadmin.RTAdminHandler');
@@ -33,7 +31,7 @@ class RTSearchHandler extends RTAdminHandler {
     public function RTSearchHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::RTSearchHandler(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -54,6 +52,7 @@ class RTSearchHandler extends RTAdminHandler {
 
         $journal = $request->getJournal();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $versionId = isset($args[0]) ? (int)$args[0] : 0;
@@ -87,6 +86,7 @@ class RTSearchHandler extends RTAdminHandler {
 
         $journal = $request->getJournal();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
         $rangeInfo = $this->getRangeInfo('searches');
 
@@ -104,7 +104,6 @@ class RTSearchHandler extends RTAdminHandler {
             $templateMgr->addJavaScript('lib/pkp/js/lib/jquery/plugins/jquery.tablednd.js');
             $templateMgr->addJavaScript('lib/pkp/js/functions/tablednd.js');
 
-            // [WIZDAM] Removed assign_by_ref
             $templateMgr->assign('version', $version);
             $templateMgr->assign('context', $context);
             
@@ -129,6 +128,7 @@ class RTSearchHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
@@ -161,6 +161,7 @@ class RTSearchHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
@@ -189,6 +190,7 @@ class RTSearchHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
@@ -220,6 +222,7 @@ class RTSearchHandler extends RTAdminHandler {
         // [WIZDAM] Singleton Fallback
         if (!$request) $request = Application::get()->getRequest();
 
+        /** @var RTDAO $rtDao */
         $rtDao = DAORegistry::getDAO('RTDAO');
 
         $journal = $request->getJournal();
@@ -227,15 +230,10 @@ class RTSearchHandler extends RTAdminHandler {
         $version = $rtDao->getVersion($versionId, $journal->getId());
         $contextId = isset($args[1]) ? (int)$args[1] : 0;
         $context = $rtDao->getContext($contextId);
-        
-        // [SECURITY FIX] Amankan 'id' (searchId, ID integer) with (int) trim()
-        $searchId = (int) trim((string) $request->getUserVar('id'));
-        
-        $search = $rtDao->getSearch($searchId);
 
+        $searchId = (int) trim((string) $request->getUserVar('id'));
+        $search = $rtDao->getSearch($searchId);
         if (isset($version) && isset($context) && isset($search) && $context->getVersionId() == $version->getVersionId() && $search->getContextId() == $context->getContextId()) {
-            
-            // [SECURITY FIX] Amankan 'dir' (direction, string key) with trim()
             $direction = trim((string) $request->getUserVar('dir')); 
             
             if (!empty($direction)) {
@@ -245,14 +243,11 @@ class RTSearchHandler extends RTAdminHandler {
                 $search->setOrder($search->getOrder() + ($isDown ? 1.5 : -1.5));
             } else {
                 // drag and drop
-                
-                // [SECURITY FIX] Amankan 'prevId' (ID integer) wit (int) trim()
                 $prevId = (int) trim((string) $request->getUserVar('prevId'));
                 
                 if ($prevId == 0) { // $prevId akan 0 jika null/kosong karena (int) casting
                     $prevSeq = 0;
                 } else {
-                    // Gunakan ID yang sudah diamankan
                     $prevSearch = $rtDao->getSearch($prevId);
                     $prevSeq = $prevSearch ? $prevSearch->getOrder() : 0;
                 }
@@ -270,5 +265,6 @@ class RTSearchHandler extends RTAdminHandler {
             $request->redirect(null, null, 'searches', [$versionId, $contextId]);
         }
     }
+
 }
 ?>
