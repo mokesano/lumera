@@ -12,8 +12,6 @@ declare(strict_types=1);
  * @ingroup pages_rtadmin
  *
  * @brief Handle Reading Tools administration requests -- setup section.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance & UI Amputation
  */
 
 import('pages.rtadmin.RTAdminHandler');
@@ -33,7 +31,7 @@ class RTSetupHandler extends RTAdminHandler {
     public function RTSetupHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::RTSetupHandler(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -58,6 +56,7 @@ class RTSetupHandler extends RTAdminHandler {
             $this->setupTemplate(true);
             $templateMgr = TemplateManager::getManager();
 
+            /** @var RTDAO $rtDao */
             $rtDao = DAORegistry::getDAO('RTDAO');
             $rt = $rtDao->getJournalRTByJournal($journal);
 
@@ -68,8 +67,6 @@ class RTSetupHandler extends RTAdminHandler {
             }
 
             $templateMgr->assign('versionOptions', $versionOptions);
-            
-            // [WIZDAM CLEANUP] Hanya melempar variabel yang relevan ke Smarty TPL
             $templateMgr->assign('version', $rt->getVersion());
             $templateMgr->assign('enabled', $rt->getEnabled());
             $templateMgr->assign('abstract', $rt->getAbstract());
@@ -78,7 +75,6 @@ class RTSetupHandler extends RTAdminHandler {
             $templateMgr->assign('supplementaryFiles', $rt->getSupplementaryFiles());
             
             // Variabel usang (printerFriendly, defineTerms, dll) dan fitur Komentar RT DIHAPUS
-
             $templateMgr->assign('helpTopicId', 'journal.managementPages.readingTools.settings');
             $templateMgr->display('rtadmin/settings.tpl');
         } else {
@@ -100,12 +96,12 @@ class RTSetupHandler extends RTAdminHandler {
         $journal = $request->getJournal();
 
         if ($journal) {
+            /** @var RTDAO $rtDao */
             $rtDao = DAORegistry::getDAO('RTDAO');
             $rt = $rtDao->getJournalRTByJournal($journal);
 
-            // [SECURITY FIX] Amankan 'version' (ID integer) with (int) trim()
             $versionInput = (int) trim((string) $request->getUserVar('version'));
-            if ($versionInput == 0) { // Cek jika 0 (karena casting dari '' atau null)
+            if ($versionInput == 0) {
                 $rt->setVersion(null);
             } else {
                 $rt->setVersion($versionInput);
@@ -119,10 +115,10 @@ class RTSetupHandler extends RTAdminHandler {
             $rt->setSupplementaryFiles((bool) trim((string) $request->getUserVar('supplementaryFiles')));
             
             // Fitur usang (printerFriendly, defineTerms, dll) dan fitur Komentar RT DIHAPUS dari penyimpanan
-
             $rtDao->updateJournalRT($rt);
         }
         $request->redirect(null, $request->getRequestedPage());
     }
+
 }
 ?>
