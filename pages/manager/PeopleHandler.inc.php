@@ -19,14 +19,14 @@ import('pages.manager.ManagerHandler');
 class PeopleHandler extends ManagerHandler {
     
     /**
-     * Constructor
+     * Constructor.
      **/
     public function __construct() {
         parent::__construct();
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function PeopleHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -35,7 +35,8 @@ class PeopleHandler extends ManagerHandler {
                 E_USER_DEPRECATED
             );
         }
-        $this->__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -436,6 +437,7 @@ class PeopleHandler extends ManagerHandler {
         $templateMgr->assign('rolePath', $rolePath);
         $templateMgr->assign('roleName', $roleName);
         $templateMgr->assign('journalOptions', $journalTitles);
+
         $templateMgr->display('manager/people/enrollSync.tpl');
     }
 
@@ -513,11 +515,11 @@ class PeopleHandler extends ManagerHandler {
             $templateMgr->assign('errorMsg', 'manager.people.noAdministrativeRights');
             $templateMgr->assign('backLink', Request::url(null, null, 'people', 'all'));
             $templateMgr->assign('backLinkLabel', 'manager.people.allUsers');
+
             return $templateMgr->display('common/error.tpl');
         }
 
         import('classes.manager.form.UserManagementForm');
-
         $templateMgr->assign('roleSettings', $this->retrieveRoleAssignmentPreferences($journal->getId()));
         $templateMgr->assign('currentUrl', Request::url(null, null, 'people', 'all'));
         $userForm = new UserManagementForm($userId);
@@ -564,6 +566,7 @@ class PeopleHandler extends ManagerHandler {
             $templateMgr->assign('errorMsg', 'manager.people.noAdministrativeRights');
             $templateMgr->assign('backLink', Request::url(null, null, 'people', 'all'));
             $templateMgr->assign('backLinkLabel', 'manager.people.allUsers');
+
             return $templateMgr->display('common/error.tpl');
         }
 
@@ -696,28 +699,29 @@ class PeopleHandler extends ManagerHandler {
         $this->validate();
         $this->setupTemplate(true);
 
-        // [SECURITY FIX] Amankan $userId
         $userId = (int) (isset($args[0]) ? trim($args[0]) : trim((string)Request::getUserVar('userId')));
 
         $user = Request::getUser();
         $journal = Request::getJournal();
 
         if ($userId != null && $userId != $user->getId()) {
+
             if (!Validation::canAdminister($journal->getId(), $userId)) {
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign('pageTitle', 'manager.people');
                 $templateMgr->assign('errorMsg', 'manager.people.noAdministrativeRights');
                 $templateMgr->assign('backLink', Request::url(null, null, 'people', 'all'));
                 $templateMgr->assign('backLinkLabel', 'manager.people.allUsers');
+
                 return $templateMgr->display('common/error.tpl');
             }
             /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $userTarget = $userDao->getById($userId);
+
             if ($userTarget) {
                 $userTarget->setDisabled(1);
-                // [SECURITY FIX] Amankan input string 'reason'
-                $reason = htmlspecialchars(trim((string)Request::getUserVar('reason')), ENT_QUOTES, 'UTF-8');
+                $reason = htmlspecialchars(trim((string) Request::getUserVar('reason')), ENT_QUOTES, 'UTF-8');
                 $userTarget->setDisabledReason($reason);
                 $userDao->updateObject($userTarget);
             }
@@ -741,8 +745,15 @@ class PeopleHandler extends ManagerHandler {
             /** @var UserDAO $userDao */
             $userDao = DAORegistry::getDAO('UserDAO');
             $userTarget = $userDao->getById($userId, true);
+
             if ($userTarget) {
                 $userTarget->setDisabled(0);
+
+                if ($userTarget->getDateValidated() === null) {
+                    $userTarget->setDateValidated(Core::getCurrentDate());
+                }
+
+                $userTarget->setDisabledReason('');
                 $userDao->updateObject($userTarget);
             }
         }
@@ -789,15 +800,14 @@ class PeopleHandler extends ManagerHandler {
             $templateMgr->assign('errorMsg', 'manager.people.noAdministrativeRights');
             $templateMgr->assign('backLink', Request::url(null, null, 'people', 'all'));
             $templateMgr->assign('backLinkLabel', 'manager.people.allUsers');
+
             return $templateMgr->display('common/error.tpl');
         }
 
         import('classes.manager.form.UserManagementForm');
-
         $userForm = new UserManagementForm($userId);
 
         $userForm->readInputData();
-
         if ($userForm->validate()) {
             $userForm->execute();
 
@@ -843,8 +853,7 @@ class PeopleHandler extends ManagerHandler {
             $userId = (int) $userId;
             $user = $userDao->getById($userId);
         } else {
-            // Jika username, pastikan aman stringnya (walau getByUsername biasanya safe via parameter binding)
-            $user = $userDao->getByUsername((string)$userId);
+            $user = $userDao->getByUsername((string) $userId);
         }
 
         if ($user == null) {
@@ -852,6 +861,7 @@ class PeopleHandler extends ManagerHandler {
             $templateMgr->assign('errorMsg', 'manager.people.invalidUser');
             $templateMgr->assign('backLink', Request::url(null, null, 'people', 'all'));
             $templateMgr->assign('backLinkLabel', 'manager.people.allUsers');
+
             $templateMgr->display('common/error.tpl');
         } else {
             $site = Request::getSite();
@@ -881,6 +891,7 @@ class PeopleHandler extends ManagerHandler {
             $templateMgr->assign('userInterests', $user->getInterestString());
             $templateMgr->assign('user', $user);
             $templateMgr->assign('localeNames', AppLocale::getAllLocales());
+
             $templateMgr->display('manager/people/userProfile.tpl');
         }
     }
