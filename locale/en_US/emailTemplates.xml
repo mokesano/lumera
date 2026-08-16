@@ -82,6 +82,21 @@ Thank you,
 {$principalContactSignature}</body>
 		<description>This email is sent to a newly registered user to welcome them to the system and provide them with a record of their username and password.</description>
 	</email_text>
+	<email_text key="USER_VALIDATE_CONFIRMED">
+		<subject>Your Account Has Been Activated</subject>
+		<body>{$userFullName}
+
+Your account with {$journalName} has been reviewed and activated by the editorial team. You can now log in and start using your account.
+
+Username: {$username}
+Login: {$loginUrl}
+
+If you did not expect this email or have any questions, please contact us.
+
+Thank you,
+{$principalContactSignature}</body>
+		<description>This email is sent to a user whose account was manually enabled/validated by a Journal Manager, confirming that their account is now active.</description>
+	</email_text>
 	<email_text key="USER_VALIDATE">
 		<subject>Validate Your Account</subject>
 		<body>{$userFullName}

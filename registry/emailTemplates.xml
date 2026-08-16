@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE emails SYSTEM "../lib/pkp/dtd/emailTemplates.dtd">
 <!--
-  * emailTemplates.xml
+  * @file registry/emailTemplates.xml
   *
   * Copyright (c) 2013-2019 Simon Fraser University
   * Copyright (c) 2003-2019 John Willinsky
@@ -17,6 +17,7 @@
 	<email key="PASSWORD_RESET" can_edit="1" can_disable="0"/>
 	<email key="USER_REGISTER" can_edit="1" can_disable="0"/>
 	<email key="USER_VALIDATE" can_edit="1" can_disable="0"/>
+	<email key="USER_VALIDATE_CONFIRMED" can_edit="1" can_disable="0"/>
 	<email key="REVIEWER_REGISTER" can_edit="1" can_disable="0"/>
 	<email key="PUBLISH_NOTIFY" can_edit="1" can_disable="0"/>
 	<email key="LOCKSS_EXISTING_ARCHIVE" can_edit="1" can_disable="0"/>

@@ -9,14 +9,12 @@
  *        - Menampilkan animasi loading (spinner) saat halaman dimuat
  *        - Menyembunyikan panel jika tidak ada kutipan
  *        - Menampilkan tombol "Show more" jika jumlah kutipan > 3
- *        - Tidak melakukan fetch API atau injeksi konten
  * 
  * @author Rochmady and Team
- * @version 2.0.0
+ * @version 2.3.0
  */
 (function() {
-    // [LUMERA] Jadwal pemutakhiran terjadwal berikutnya, dikirim SERVER lewat
-    // atribut data pada <section>. Tidak ada pemanggilan jaringan di sini.
+    // [LUMERA] Jadwal pemutakhiran terjadwal berikutnya.
     let nextScheduledUpdate = 0;
 
     const nextUpdateText = () => {
@@ -24,7 +22,7 @@
             return 'Citations are updated on a weekly schedule. Next update: '
                  + formatTimestamp(nextScheduledUpdate);
         }
-        return 'Citations are updated on a weekly schedule by the server.';
+        return 'Citations are updated on a weekly schedule.';
     };
 
     const escapeHtml = (value) => {
@@ -36,20 +34,33 @@
             .replace(/'/g, '&#39;');
     };
 
-    // Variabel untuk mengelola refresh
-    const REFRESH_COOLDOWN_HOURS = 12; // Minimum 12 jam antara refresh
-    let lastDataTimestamp = 0;         // Timestamp dari pembaruan data terakhir
+    // Variabel
+    let lastDataTimestamp = 0;
+    let hiddenItemsRef = [];
+    let anchorItemRef = null;
+    let toggleButtonRef = null;
+    let citingContainerRef = null;
+    let sectionRef = null;
+    let allItemsRef = []; // Menyimpan semua item untuk keperluan refresh
 
-    // Minimal CSS dengan tooltip modern yang dipastikan berfungsi
+    // Loading spinner
     const addStyles = () => {
         if (!document.getElementById('citation-minimal-styles')) {
             const style = document.createElement('style');
             style.id = 'citation-minimal-styles';
             style.textContent = `
+                #citing-articles { position: relative; }
+
                 .citation-refresh-overlay {position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.5);display:flex;justify-content:center;align-items:center;z-index:10}
-                .citation-refresh-spinner {width:40px;height:40px;background:url('/public/assets/icons/lum-loading.svg') center/contain no-repeat}
-                .lum-cite-pending {opacity:0;transform:translateY(6px)}
-                .lum-cite-reveal {opacity:1;transform:translateY(0);transition:opacity .35s ease,transform .35s ease}
+                .citation-refresh-spinner {
+                    width:32px;
+                    height:32px;
+                    border:3px solid rgba(0,0,0,0.1);
+                    border-radius:50%;
+                    border-top-color:#2f81f7;
+                    animation:spin 0.8s linear infinite;
+                    box-sizing:border-box;
+                }
                 .citation-blur {filter:blur(1px)}
                 @keyframes spin {to{transform:rotate(360deg)}}
                 .refresh-icon {margin-left:4px;vertical-align:middle}
@@ -123,7 +134,6 @@
 
     // Efektif menangani overlay loading
     const showLoading = (container) => {
-        container.style.position = 'relative';
         const list = container.querySelector('ul.citedby_crossref');
         if (list) list.classList.add('citation-blur');
 
@@ -144,52 +154,50 @@
         if (list) list.classList.remove('citation-blur');
     };
 
-    // Fix HTML dalam judul
-    const fixHtmlTitles = () => {
-        document.querySelectorAll('.anchor-text span').forEach(span => {
-            const text = span.textContent;
-            if (text && text.includes('<') && text.includes('>')) {
-                span.innerHTML = text;
+    // Sanitasi HTML
+    const sanitizeHtml = (html) => {
+        if (!html) return '';
+
+        const div = document.createElement('div');
+        div.innerHTML = html;
+
+        const allowedTags = ['b', 'i', 'u', 'strong', 'em', 'sub', 'sup', 'span', 'br'];
+
+        const walk = (node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const tagName = node.tagName.toLowerCase();
+
+                if (!allowedTags.includes(tagName)) {
+                    const parent = node.parentNode;
+                    while (node.firstChild) {
+                        parent.insertBefore(node.firstChild, node);
+                    }
+                    parent.removeChild(node);
+                    return;
+                }
+
+                const attrs = Array.from(node.attributes);
+                attrs.forEach(attr => node.removeAttribute(attr.name));
+
+                const children = Array.from(node.childNodes);
+                children.forEach(child => walk(child));
             }
-        });
+        };
+
+        const children = Array.from(div.childNodes);
+        children.forEach(child => walk(child));
+
+        return div.innerHTML;
     };
 
-    // Fungsi untuk memeriksa apakah refresh diperbolehkan berdasarkan timestamp terakhir
-    const canRefresh = () => {
-        if (lastDataTimestamp === 0) return true; // Belum pernah refresh
-        const now = Date.now();
-        const hoursSinceLastUpdate = (now - lastDataTimestamp) / (1000 * 60 * 60);
-        return hoursSinceLastUpdate >= REFRESH_COOLDOWN_HOURS;
-    };
-
-    // Fungsi untuk mendapatkan waktu tunggu yang tersisa
-    const getCooldownTimeRemaining = () => {
-        if (lastDataTimestamp === 0) return 0;
-        const now = Date.now();
-        const millisSinceLastUpdate = now - lastDataTimestamp;
-        const millisToWait = (REFRESH_COOLDOWN_HOURS * 60 * 60 * 1000) - millisSinceLastUpdate;
-        if (millisToWait <= 0) return 0;
-        const hours = Math.floor(millisToWait / (1000 * 60 * 60));
-        const minutes = Math.floor((millisToWait % (1000 * 60 * 60)) / (1000 * 60));
-        if (hours > 0) {
-            return `${hours}h ${minutes}m`;
-        } else {
-            return `${minutes}m`;
-        }
-    };
-
-    // Template untuk tombol refresh dengan tooltip yang dipastikan berfungsi dan tidak terpotong
-    const refreshButtonTemplate = (sourcesInfo, canRefreshNow) => {
-        const tooltipText = !canRefreshNow
-            ? `Next refresh available in ${getCooldownTimeRemaining()}`
-            : (sourcesInfo || nextUpdateText());
+    // Template untuk tombol refresh dengan tooltip
+    const refreshButtonTemplate = (sourcesInfo) => {
+        const tooltipText = sourcesInfo || nextUpdateText();
         const safeTooltipText = escapeHtml(tooltipText);
-
-        const disabledClass = !canRefreshNow ? 'button-disabled' : '';
 
         return `
             <div class="tooltip-wrap">
-                <button class="anchor button-link refresh-citations-button button-link-secondary ${disabledClass}" type="button" ${!canRefreshNow ? 'disabled' : ''}>
+                <button class="anchor button-link refresh-citations-button button-link-secondary" type="button">
                     <span class="button-link-text-container">
                         <span class="anchor-text button-link-text">Refresh</span>
                     </span>
@@ -212,12 +220,12 @@
             panels.forEach(panel => {
                 panel.classList.add('no-citations-hide');
             });
-            return true; // Panel disembunyikan
+            return true;
         }
-        return false; // Panel tetap ditampilkan
+        return false;
     };
 
-    // Helper untuk membuat tooltip sumber kutipan yang ditampilkan saja
+    // Helper untuk membuat tooltip sumber kutipan
     const formatSourcesInfo = (sources) => {
         if (!sources) return 'Refresh citations';
 
@@ -246,7 +254,7 @@
         return `Sources: ${sourceParts.join(', ')}`;
     };
 
-    // Format timestamp UNIX ke tanggal yang dapat dibaca
+    // Format timestamp UNIX
     const formatTimestamp = (timestamp) => {
         if (!timestamp) return 'Unknown date';
         try {
@@ -262,58 +270,12 @@
             const minutes = date.getMinutes().toString().padStart(2, '0');
             return `${day} ${month} ${year}, ${hours}:${minutes}`;
         } catch (e) {
-            console.error('[Wizdam Log] Error formatting timestamp:', e);
+            console.error('[Lumera] Error formatting timestamp:', e);
             return 'Error date format';
         }
     };
 
-    // Format string tanggal ISO
-    const formatISODate = (dateStr) => {
-        if (!dateStr) return 'Unknown date';
-        try {
-            const date = new Date(dateStr);
-            if (isNaN(date.getTime())) return 'Invalid date';
-
-            const day = date.getDate();
-            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-            const month = months[date.getMonth()];
-            const year = date.getFullYear();
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            return `${day} ${month} ${year}, ${hours}:${minutes}`;
-        } catch (e) {
-            console.error('[Wizdam Log] Error formatting ISO date:', e);
-            return 'Error date format';
-        }
-    };
-
-    // Ekstrak dan simpan timestamp dari respons
-    const extractAndSaveTimestamp = (response) => {
-        try {
-            if (response.data && response.data.timestamp) {
-                if (typeof response.data.timestamp === 'number') {
-                    lastDataTimestamp = response.data.timestamp * 1000;
-                    return lastDataTimestamp;
-                }
-            }
-            if (response.last_updated) {
-                const date = new Date(response.last_updated);
-                if (!isNaN(date.getTime())) {
-                    lastDataTimestamp = date.getTime();
-                    return lastDataTimestamp;
-                }
-            }
-            console.log('[Wizdam Log] No valid timestamp found in API response, using current time');
-            lastDataTimestamp = Date.now();
-            return lastDataTimestamp;
-        } catch (e) {
-            console.error('[Wizdam Log] Error extracting timestamp:', e);
-            lastDataTimestamp = Date.now();
-            return lastDataTimestamp;
-        }
-    };
-
-    // Cek apakah jurnal berada dalam daftar yang diizinkan (tombol PDF)
+    // Daftar yang diizinkan tombol PDF
     const isAllowedJournal = (journalName) => {
         if (!journalName) return false;
 
@@ -337,25 +299,85 @@
     };
 
     /**
-     * [WIZDAM v4.0] Terapkan aturan tombol PDF pada markup yang SUDAH
-     * dirender server. Dulu keputusan ini diambil saat membangun HTML dari
-     * respons AJAX; kini tombolnya sudah ada di DOM, jadi yang dilakukan
-     * adalah MENGHAPUS tombol untuk jurnal di luar daftar yang diizinkan --
-     * perilaku akhirnya sama persis.
+     * [LUMERA] Fungsi refresh murni untuk mereset tampilan daftar kutipan.
+     * Tidak ada panggilan API, hanya manipulasi DOM.
+     * Mengembalikan ke keadaan awal (hanya 3 item pertama terlihat).
      */
-    const applyPdfButtonPolicy = (scope) => {
-        (scope || document).querySelectorAll('.SidePanelItem.article-citing .buttons').forEach(box => {
-            const link = box.querySelector('a[data-citation-container]');
-            const container = link ? link.getAttribute('data-citation-container') : '';
-            if (!isAllowedJournal(container)) box.remove();
-        });
+    const refreshCitations = (container) => {
+        // Cegah multiple refresh bersamaan
+        if (container._isRefreshing) return;
+        container._isRefreshing = true;
+
+        // Tampilkan loading
+        showLoading(container);
+
+        // Simulasi jeda untuk efek loading
+        setTimeout(() => {
+            // 1. Sembunyikan loading
+            hideLoading(container);
+
+            // 2. Reset daftar ke keadaan awal: hanya 3 item pertama yang terlihat
+            const list = container.querySelector('ul.citedby_crossref');
+            if (list) {
+                // Gunakan allItemsRef, bukan querySelectorAll
+                const allItems = allItemsRef;
+
+                // Hapus semua item yang saat ini ada di DOM
+                const currentItems = Array.from(list.querySelectorAll('li'));
+                currentItems.forEach(li => li.remove());
+
+                // Sisipkan kembali hanya 3 item pertama (atau semua jika kurang dari 3)
+                const itemsToShow = allItems.slice(0, 3);
+                itemsToShow.forEach(li => list.appendChild(li));
+
+                // Simpan sisa item sebagai hiddenItemsRef
+                hiddenItemsRef = allItems.slice(3);
+                // Jika ada item tersembunyi, simpan referensi anchor (item ke-3 atau terakhir yang terlihat)
+                if (itemsToShow.length > 0) {
+                    anchorItemRef = itemsToShow[itemsToShow.length - 1];
+                } else {
+                    anchorItemRef = null;
+                }
+            }
+
+            // 3. Reset tombol toggle ke keadaan "Show more" (collapsed)
+            if (toggleButtonRef && toggleButtonRef.parentNode) {
+                const span = toggleButtonRef.querySelector('.button-link-text');
+                if (span) {
+                    const hiddenCount = hiddenItemsRef.length;
+                    const showText = hiddenCount === 1 ? 'Show 1 more article' : `Show ${hiddenCount} more articles`;
+                    span.textContent = showText;
+                }
+                const svg = toggleButtonRef.querySelector('svg');
+                if (svg) svg.classList.remove('u-flip-vertically');
+                // [FIX] Set state internal tombol ke collapsed
+                toggleButtonRef._isExpanded = false;
+            }
+
+            // 4. Perbarui timestamp pada info "Updated: ..."
+            const infoDiv = container.querySelector('#citing-info');
+            if (infoDiv && sectionRef) {
+                const ts = parseInt(sectionRef.getAttribute('data-citation-timestamp'), 10) || 0;
+                const formatted = ts > 0 ? formatTimestamp(ts) : 'Unknown date';
+                const updateSpan = infoDiv.querySelector('.update-info');
+                if (updateSpan) {
+                    updateSpan.textContent = 'Updated: ' + formatted;
+                }
+                // Update tooltip dengan nextUpdateText
+                const tooltip = container.querySelector('.citation-tooltip');
+                if (tooltip) {
+                    tooltip.textContent = nextUpdateText();
+                }
+            }
+
+            // 5. Selesaikan refresh
+            container._isRefreshing = false;
+        }, 600);
     };
 
     /**
-     * [WIZDAM v4.0] Bangun blok "Updated: ..." + tombol Refresh, dan pasang
-     * toggle show/hide. Isi & perilakunya sama dengan versi AJAX, bedanya
-     * data awal diambil dari atribut data pada <section> (hasil render
-     * server), bukan dari respons fetch.
+     * Bangun blok "Updated: ..." + tombol Refresh, dan pasang toggle show/hide.
+     * Menyimpan referensi untuk keperluan refresh.
      */
     const buildFooter = (citingContainer, sources, formattedDate) => {
         const old = citingContainer.querySelector('.citing-info-container');
@@ -364,7 +386,6 @@
         if (oldToggle) oldToggle.remove();
 
         const sourcesInfo = formatSourcesInfo(sources);
-        const refreshAllowed = canRefresh();
 
         const infoContainer = document.createElement('div');
         infoContainer.className = 'citing-info-container u-margin-m-top';
@@ -376,19 +397,34 @@
 
         const refreshContainer = document.createElement('div');
         refreshContainer.className = 'refresh-container';
-        refreshContainer.innerHTML = refreshButtonTemplate(sourcesInfo, refreshAllowed);
+        refreshContainer.innerHTML = refreshButtonTemplate(sourcesInfo);
 
         infoContainer.appendChild(infoDiv);
         infoContainer.appendChild(refreshContainer);
         citingContainer.appendChild(infoContainer);
 
-        // Show/hide logic - selalu tampilkan 3 teratas, sembunyikan sisanya
+        // Toggle show/hide dengan remove/insert
         const list = citingContainer.querySelector('ul.citedby_crossref');
-        const items = list ? Array.from(list.querySelectorAll('li')) : [];
-        if (items.length > 3) {
-            const hiddenCount = items.length - 3;
+        const allItems = list ? Array.from(list.querySelectorAll('li')) : [];
+        // Simpan semua item ke referensi global
+        allItemsRef = allItems;
+
+        // Reset variabel global
+        hiddenItemsRef = [];
+        anchorItemRef = null;
+        toggleButtonRef = null;
+
+        if (allItems.length > 3) {
+            const hiddenCount = allItems.length - 3;
             const showText = hiddenCount === 1 ? `Show ${hiddenCount} more article` : `Show ${hiddenCount} more articles`;
             const hideText = hiddenCount === 1 ? `Hide ${hiddenCount} article` : `Hide ${hiddenCount} more articles`;
+
+            const hiddenItems = allItems.slice(3);
+            const anchorItem = allItems[2];
+
+            // Simpan ke referensi global
+            hiddenItemsRef = hiddenItems;
+            anchorItemRef = anchorItem;
 
             const toggleButton = document.createElement('button');
             toggleButton.className = 'anchor button-link more-citedby-button u-margin-s-top button-link-primary button-link-icon-right';
@@ -402,59 +438,51 @@
                 </svg>
             `;
             citingContainer.appendChild(toggleButton);
+            toggleButtonRef = toggleButton;
 
-            items.slice(3).forEach(li => { li.style.display = 'none'; });
+            // [FIX] State awal collapsed
+            toggleButton._isExpanded = false;
 
-            let isExpanded = false;
-            toggleButton.addEventListener('click', () => {
-                if (!isExpanded) {
-                    items.forEach(li => { li.style.display = ''; });
-                    toggleButton.querySelector('.button-link-text').textContent = hideText;
-                    toggleButton.querySelector('svg').classList.add('u-flip-vertically');
-                    isExpanded = true;
+            // Hapus hiddenItems dari DOM
+            hiddenItems.forEach(li => li.remove());
+
+            // [FIX] Event listener menggunakan state dari tombol itu sendiri
+            toggleButton.addEventListener('click', function() {
+                if (!this._isExpanded) {
+                    // Expand: tampilkan hiddenItems
+                    let insertPoint = anchorItem;
+                    hiddenItems.forEach(li => {
+                        if (insertPoint.nextSibling) {
+                            list.insertBefore(li, insertPoint.nextSibling);
+                        } else {
+                            list.appendChild(li);
+                        }
+                        insertPoint = li;
+                    });
+                    this.querySelector('.button-link-text').textContent = hideText;
+                    this.querySelector('svg').classList.add('u-flip-vertically');
+                    this._isExpanded = true;
                 } else {
-                    items.slice(3).forEach(li => { li.style.display = 'none'; });
-                    toggleButton.querySelector('.button-link-text').textContent = showText;
-                    toggleButton.querySelector('svg').classList.remove('u-flip-vertically');
-                    isExpanded = false;
+                    // Collapse: sembunyikan hiddenItems
+                    hiddenItems.forEach(li => li.remove());
+                    this.querySelector('.button-link-text').textContent = showText;
+                    this.querySelector('svg').classList.remove('u-flip-vertically');
+                    this._isExpanded = false;
                 }
             });
         }
 
-        // Event handler untuk tombol refresh
+        // Event listener untuk tombol refresh
         const refreshButton = refreshContainer.querySelector('.refresh-citations-button');
         if (refreshButton) {
             refreshButton.addEventListener('click', function(e) {
                 e.preventDefault();
-                const tooltip = refreshContainer.querySelector('.citation-tooltip');
-                if (tooltip) tooltip.textContent = nextUpdateText();
+                refreshCitations(citingContainer);
             });
-        }
-
-        // Timer untuk memperbarui tampilan tombol refresh selama cooldown
-        if (!refreshAllowed) {
-            const updateRefreshButtonState = () => {
-                const rc = document.querySelector('.refresh-container');
-                if (!rc) { clearInterval(timerInterval); return; }
-                const button = rc.querySelector('.refresh-citations-button');
-                const tooltip = rc.querySelector('.citation-tooltip');
-                if (canRefresh()) {
-                    if (button && tooltip) {
-                        button.disabled = false;
-                        button.classList.remove('button-disabled');
-                        tooltip.textContent = sourcesInfo || 'Refresh citations';
-                    }
-                    clearInterval(timerInterval);
-                } else if (tooltip) {
-                    tooltip.textContent = `Next refresh available in ${getCooldownTimeRemaining()}`;
-                }
-            };
-            const timerInterval = setInterval(updateRefreshButtonState, 60000);
-            window.addEventListener('beforeunload', () => clearInterval(timerInterval));
         }
     };
 
-    /** Bangun ulang <ul> daftar kutipan setelah refresh. */
+    /** Render ulang daftar kutipan (hanya untuk inisialisasi awal) */
     const renderList = (citingContainer, articles) => {
         const list = citingContainer.querySelector('ul.citedby_crossref');
         if (!list) return;
@@ -514,9 +542,8 @@
                 </div>
                 ${pdfUrl ? `<div class="buttons"><a class="anchor anchor-primary anchor-icon-left anchor-with-icon" href="${pdfUrl}" target="_blank" rel="nofollow noopener" data-citation-container="${article.container || ''}"><svg focusable="false" viewBox="0 0 35 32" height="20" width="20" class="icon icon-pdf-multicolor"><path d="M7 .362h17.875l6.763 6.1V31.64H6.948V16z" stroke="#000" stroke-width=".703" fill="#fff"></path><path d="M.167 2.592H22.39V9.72H.166z" fill="#da0000"></path><path d="M19.462 13.46c.348 4.274-6.59 16.72-8.508 15.792-1.82-.85 1.53-3.317 2.92-4.366-2.864.894-5.394 3.252-3.837 3.93 2.113.895 7.048-9.25 9.41-15.394zM14.32 24.874c4.767-1.526 14.735-2.974 15.152-1.407.824-3.157-13.72-.37-15.153 1.407zm5.28-5.043c2.31 3.237 9.816 7.498 9.788 3.82-.306 2.046-6.66-1.097-8.925-4.164-4.087-5.534-2.39-8.772-1.682-8.732.917.047 1.074 1.307.67 2.442-.173-1.406-.58-2.44-1.224-2.415-1.835.067-1.905 4.46 1.37 9.065z" fill="#f91d0a"></path></svg><span class="anchor-text-container"><span class="anchor-text">View PDF</span></span></a></div>` : ''}
             `;
-            // Judul disisipkan sebagai HTML supaya tag <i>/<sub>/<sup> tetap hidup
             const titleSpan = li.querySelector('.anchor-text span');
-            if (titleSpan) titleSpan.innerHTML = article.title || '';
+            if (titleSpan) titleSpan.innerHTML = sanitizeHtml(article.title || '');
             const anchor = li.querySelector('a.anchor');
             if (anchor) anchor.setAttribute('title', (article.title || '').replace(/[<>]/g, ''));
 
@@ -525,9 +552,7 @@
     };
 
     /**
-     * [LUMERA] Tampilkan kutipan SATU PER SATU setelah seleksi tombol PDF.
-     * Panel dirender server dengan u-js-hide, jadi pengguna tidak pernah
-     * melihat tombol PDF untuk jurnal di luar daftar yang diizinkan.
+     * [LUMERA] Tampilkan kutipan satu per satu.
      */
     const revealSequentially = (citingContainer, section) => {
         const items = Array.from(citingContainer.querySelectorAll('li.lum-cite-pending'));
@@ -544,7 +569,6 @@
         const step = () => {
             if (i >= items.length) {
                 hideLoading(citingContainer);
-                items.slice(3).forEach(li => { li.style.display = 'none'; });
                 return;
             }
             const li = items[i++];
@@ -555,17 +579,20 @@
         setTimeout(step, 150);
     };
 
-    // Inisialisasi: bekerja pada markup yang SUDAH dirender server
+    // Inisialisasi
     const init = () => {
         addStyles();
 
         const section = document.querySelector('.SidePanel.doi-cited');
         const citingContainer = document.getElementById('citing-articles');
 
-        // Panel tidak dirender server (tidak ada kutipan) -- tidak ada yang perlu dikerjakan.
         if (!section || !citingContainer) return;
 
-        // Ambil metadata awal dari atribut data (pengganti respons AJAX awal)
+        // Simpan referensi global
+        citingContainerRef = citingContainer;
+        sectionRef = section;
+
+        // Ambil metadata awal
         const ts = parseInt(section.getAttribute('data-citation-timestamp'), 10) || 0;
         const nu = parseInt(section.getAttribute('data-citation-next-update'), 10) || 0;
         nextScheduledUpdate = nu > 0 && nu.toString().length <= 10 ? nu : nu;
@@ -577,13 +604,11 @@
             try { sources = JSON.parse(rawSources); } catch (e) { sources = null; }
         }
 
-        // Pengaman: kalau ternyata daftar kosong, sembunyikan panel (perilaku asli)
         const count = citingContainer.querySelectorAll('ul.citedby_crossref li').length;
         if (hideCitationPanelIfEmpty(count)) return;
 
         revealSequentially(citingContainer, section);
         buildFooter(citingContainer, sources, ts > 0 ? formatTimestamp(ts) : 'Unknown date');
-        setTimeout(fixHtmlTitles, 100);
     };
 
     if (document.readyState === 'loading') {

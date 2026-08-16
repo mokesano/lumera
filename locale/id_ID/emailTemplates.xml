@@ -84,6 +84,21 @@ Terima kasih,
 {$principalContactSignature}</body>
 		<description>Email ini dikirim untuk pengguna yang baru terdaftar untuk menyambut mereka ke sistem dan menyediakan catatan nama pengguna dan kata sandi mereka.</description>
 	</email_text>
+	<email_text key="USER_VALIDATE_CONFIRMED">
+		<subject>Akun Anda Telah Diaktifkan</subject>
+		<body>{$userFullName}
+
+Akun Anda di {$journalName} telah diperiksa dan diaktifkan oleh tim redaksi. Anda kini dapat masuk dan mulai menggunakan akun Anda.
+
+Nama pengguna: {$username}
+Masuk: {$loginUrl}
+
+Jika Anda tidak menduga akan menerima email ini atau memiliki pertanyaan, silakan hubungi kami.
+
+Terima kasih,
+{$principalContactSignature}</body>
+		<description>Email ini dikirim ke pengguna yang akunnya diaktifkan/divalidasi secara manual oleh Journal Manager, sebagai konfirmasi bahwa akun mereka kini aktif.</description>
+	</email_text>
 	<email_text key="USER_VALIDATE">
 		<subject>Validasikan Akun Anda</subject>
 		<body>{$userFullName}
@@ -958,5 +973,3 @@ Copy-Editor, {$journalName}
 		<description>Email ini memudahkan copyeditor untuk meminta informasi tambahan tentang referensi dari penulis.</description>
 	</email_text>
 </email_texts>
-
-
