@@ -25,11 +25,16 @@ class TrendsManagerDAO extends DAO {
 
     /**
      * Mengambil artikel terpopuler dalam sebuah jurnal (Journal Level)
+     *
+     * FIX: $limit sekarang nullable. null = TANPA BATAS (dipakai halaman
+     * trends penuh, lihat TrendsManager::assignMostPopularPayload());
+     * default tetap 10 untuk kompatibilitas pemanggil lama (widget homepage).
      * @param int $journalId
-     * @param int $limit
+     * @param int|null $limit
      * @return array [$articleId => ['views' => int totalViews, 'date_published' => string]]
      */
-    public function getMostPopularArticles(int $journalId, int $limit = 10): array {
+    public function getMostPopularArticles(int $journalId, ?int $limit = 10): array {
+        $params = [(int)ASSOC_TYPE_ARTICLE, $journalId, (int)STATUS_PUBLISHED];
         $sql = "SELECT a.article_id, SUM(m.metric) as total_views, pa.date_published
                 FROM metrics m
                 JOIN articles a ON m.assoc_id = a.article_id
@@ -42,10 +47,13 @@ class TrendsManagerDAO extends DAO {
                 AND pa.date_published IS NOT NULL
                 GROUP BY a.article_id, pa.date_published
                 HAVING SUM(m.metric) > 0
-                ORDER BY total_views DESC, pa.date_published DESC
-                LIMIT ?";
-                
-        $result = $this->retrieve($sql, [(int)ASSOC_TYPE_ARTICLE, $journalId, (int)STATUS_PUBLISHED, $limit * 2]);
+                ORDER BY total_views DESC, pa.date_published DESC";
+        if ($limit !== null) {
+            $sql .= " LIMIT ?";
+            $params[] = $limit * 2;
+        }
+
+        $result = $this->retrieve($sql, $params);
         
         $viewsData = [];
         if ($result && !$result->EOF) {
@@ -65,19 +73,27 @@ class TrendsManagerDAO extends DAO {
 
     /**
      * Mengambil artikel terpopuler dari top jurnal di sistem (Site Level)
-     * @param int $journalLimit
+     *
+     * FIX: $journalLimit sekarang nullable. null = TANPA BATAS jumlah jurnal
+     * yang dipertimbangkan (dipakai halaman trends penuh level publisher/site);
+     * default tetap 4 untuk kompatibilitas pemanggil lama (widget homepage).
+     * @param int|null $journalLimit
      */
-    public function getSiteLevelTopArticles(int $journalLimit = 4): array {
+    public function getSiteLevelTopArticles(?int $journalLimit = 4): array {
         // 1. Dapatkan Jurnal Terpopuler
+        $paramsJournals = [(int)ASSOC_TYPE_ARTICLE, (int)STATUS_PUBLISHED];
         $sqlJournals = "SELECT a.journal_id, SUM(m.metric) as total_journal_views
                         FROM metrics m
                         JOIN articles a ON m.assoc_id = a.article_id
                         WHERE m.assoc_type = ? AND a.status = ?
                         GROUP BY a.journal_id
-                        ORDER BY total_journal_views DESC
-                        LIMIT ?";
+                        ORDER BY total_journal_views DESC";
+        if ($journalLimit !== null) {
+            $sqlJournals .= " LIMIT ?";
+            $paramsJournals[] = $journalLimit;
+        }
                         
-        $journalsResult = $this->retrieve($sqlJournals, [(int)ASSOC_TYPE_ARTICLE, (int)STATUS_PUBLISHED, $journalLimit]);
+        $journalsResult = $this->retrieve($sqlJournals, $paramsJournals);
         
         $siteLevelArticles = [];
         
@@ -107,11 +123,14 @@ class TrendsManagerDAO extends DAO {
      * Struktur hasil PERSIS sama dengan getMostPopularArticles() (key 'views')
      * supaya bisa dipakai ulang langsung oleh WizdamTrendsManager::_formatMicroPayload()
      * tanpa perubahan apapun -- di sini 'views' berisi ANGKA DOWNLOAD, bukan views asli.
+     *
+     * FIX: $limit sekarang nullable. null = TANPA BATAS (halaman trends penuh).
      * @param int $journalId
-     * @param int $limit
+     * @param int|null $limit
      * @return array [$articleId => ['views' => int totalDownloads, 'date_published' => string]]
      */
-    public function getMostDownloadedArticles(int $journalId, int $limit = 10): array {
+    public function getMostDownloadedArticles(int $journalId, ?int $limit = 10): array {
+        $params = [(int)ASSOC_TYPE_GALLEY, $journalId, (int)STATUS_PUBLISHED];
         $sql = "SELECT ag.article_id, SUM(m.metric) as total_downloads, pa.date_published
                 FROM metrics m
                 JOIN article_galleys ag ON m.assoc_id = ag.galley_id
@@ -125,10 +144,13 @@ class TrendsManagerDAO extends DAO {
                 AND pa.date_published IS NOT NULL
                 GROUP BY ag.article_id, pa.date_published
                 HAVING SUM(m.metric) > 0
-                ORDER BY total_downloads DESC, pa.date_published DESC
-                LIMIT ?";
+                ORDER BY total_downloads DESC, pa.date_published DESC";
+        if ($limit !== null) {
+            $sql .= " LIMIT ?";
+            $params[] = $limit * 2;
+        }
 
-        $result = $this->retrieve($sql, [(int)ASSOC_TYPE_GALLEY, $journalId, (int)STATUS_PUBLISHED, $limit * 2]);
+        $result = $this->retrieve($sql, $params);
 
         $downloadsData = [];
         if ($result && !$result->EOF) {
@@ -148,20 +170,27 @@ class TrendsManagerDAO extends DAO {
 
     /**
      * Mengambil artikel dengan download terbanyak dari top jurnal di sistem (Site Level).
-     * @param int $journalLimit
+     *
+     * FIX: $journalLimit sekarang nullable. null = TANPA BATAS jumlah jurnal
+     * yang dipertimbangkan (halaman trends penuh level publisher/site).
+     * @param int|null $journalLimit
      * @return array [$articleId => ['views' => int totalDownloads, 'date_published' => string]]
      */
-    public function getSiteLevelTopDownloadedArticles(int $journalLimit = 4): array {
+    public function getSiteLevelTopDownloadedArticles(?int $journalLimit = 4): array {
+        $paramsJournals = [(int)ASSOC_TYPE_GALLEY, (int)STATUS_PUBLISHED];
         $sqlJournals = "SELECT ag.article_id, a.journal_id, SUM(m.metric) as total_journal_downloads
                         FROM metrics m
                         JOIN article_galleys ag ON m.assoc_id = ag.galley_id
                         JOIN articles a ON ag.article_id = a.article_id
                         WHERE m.assoc_type = ? AND a.status = ?
                         GROUP BY a.journal_id
-                        ORDER BY total_journal_downloads DESC
-                        LIMIT ?";
+                        ORDER BY total_journal_downloads DESC";
+        if ($journalLimit !== null) {
+            $sqlJournals .= " LIMIT ?";
+            $paramsJournals[] = $journalLimit;
+        }
 
-        $journalsResult = $this->retrieve($sqlJournals, [(int)ASSOC_TYPE_GALLEY, (int)STATUS_PUBLISHED, $journalLimit]);
+        $journalsResult = $this->retrieve($sqlJournals, $paramsJournals);
 
         $siteLevelArticles = [];
 
@@ -192,11 +221,14 @@ class TrendsManagerDAO extends DAO {
      * BUKAN memanggil API sitasi eksternal secara langsung di sini. Struktur
      * hasil PERSIS sama dengan getMostPopularArticles() (key 'views') supaya
      * bisa dipakai ulang langsung oleh TrendsManager::_formatMicroPayload().
+     *
+     * FIX: $limit sekarang nullable. null = TANPA BATAS (halaman trends penuh).
      * @param int $journalId
-     * @param int $limit
+     * @param int|null $limit
      * @return array [$articleId => ['views' => int totalCitations, 'date_published' => string]]
      */
-    public function getMostCitedArticles(int $journalId, int $limit = 10): array {
+    public function getMostCitedArticles(int $journalId, ?int $limit = 10): array {
+        $params = [$journalId, (int)STATUS_PUBLISHED];
         $sql = "SELECT a.article_id, CAST(ast.setting_value AS UNSIGNED) as total_citations, pa.date_published
                 FROM article_settings ast
                 JOIN articles a ON ast.article_id = a.article_id
@@ -208,10 +240,13 @@ class TrendsManagerDAO extends DAO {
                 AND i.published = 1
                 AND pa.date_published IS NOT NULL
                 AND CAST(ast.setting_value AS UNSIGNED) > 0
-                ORDER BY total_citations DESC, pa.date_published DESC
-                LIMIT ?";
+                ORDER BY total_citations DESC, pa.date_published DESC";
+        if ($limit !== null) {
+            $sql .= " LIMIT ?";
+            $params[] = $limit * 2;
+        }
 
-        $result = $this->retrieve($sql, [$journalId, (int)STATUS_PUBLISHED, $limit * 2]);
+        $result = $this->retrieve($sql, $params);
 
         $citationsData = [];
         if ($result && !$result->EOF) {
@@ -231,19 +266,26 @@ class TrendsManagerDAO extends DAO {
 
     /**
      * Mengambil artikel dengan sitasi terbanyak dari top jurnal di sistem (Site Level).
-     * @param int $journalLimit
+     *
+     * FIX: $journalLimit sekarang nullable. null = TANPA BATAS jumlah jurnal
+     * yang dipertimbangkan (halaman trends penuh level publisher/site).
+     * @param int|null $journalLimit
      * @return array [$articleId => ['views' => int totalCitations, 'date_published' => string]]
      */
-    public function getSiteLevelTopCitedArticles(int $journalLimit = 4): array {
+    public function getSiteLevelTopCitedArticles(?int $journalLimit = 4): array {
+        $paramsJournals = [(int)STATUS_PUBLISHED];
         $sqlJournals = "SELECT a.journal_id, SUM(CAST(ast.setting_value AS UNSIGNED)) as total_journal_citations
                         FROM article_settings ast
                         JOIN articles a ON ast.article_id = a.article_id
                         WHERE ast.setting_name = 'citationCount' AND a.status = ?
                         GROUP BY a.journal_id
-                        ORDER BY total_journal_citations DESC
-                        LIMIT ?";
+                        ORDER BY total_journal_citations DESC";
+        if ($journalLimit !== null) {
+            $sqlJournals .= " LIMIT ?";
+            $paramsJournals[] = $journalLimit;
+        }
 
-        $journalsResult = $this->retrieve($sqlJournals, [(int)STATUS_PUBLISHED, $journalLimit]);
+        $journalsResult = $this->retrieve($sqlJournals, $paramsJournals);
 
         $siteLevelArticles = [];
 

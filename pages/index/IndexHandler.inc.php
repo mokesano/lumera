@@ -185,11 +185,11 @@ class IndexHandler extends Handler {
         $jsonPath = $basePath . '/public/wizdam_cache/stats/journal_' . $journalId . '_stats.json.gz';
         $templateMgr->assign('statsJsonPath', $jsonPath);
 
-        // Terlalu banyak assign, seharusnya disatukan dari 3 menjadi 1 assign
         import('lib.wizdam.trends.TrendsManager');
-        TrendsManager::assignMostPopularPayload($templateMgr, $journal, $request, $issue);
+        TrendsManager::assignMostPopularPayload($templateMgr, $journal, $request, $issue, 10);
         TrendsManager::assignMostDownloadedHomepagePayload($templateMgr, $journal, $request, $issue);
         TrendsManager::assignMostCitedHomepagePayload($templateMgr, $journal, $request, $issue);
+        
         import('lib.wizdam.hero.ArticleHeroService');
         ArticleHeroService::assignArticleHeroPayload($templateMgr, $journal, $request);
 
@@ -286,13 +286,12 @@ class IndexHandler extends Handler {
             'sitePrincipalContactEmail' => (string) $site->getLocalizedData('contactEmail')
         ]);
 
-        // [BARU] Identitas resmi Penerbit -- logo, nama, motto, tagline,
-        // warna brand. Menggantikan hardcode "Sangia..." di publisher.tpl.
+        // [BARU] Identitas resmi Penerbit -- logo, nama, motto, tagline
         $templateMgr->assign('publisher', (new PublisherProfileService())->getProfile());
         
         // [LUMERA] Most Popular ---
         import('lib.wizdam.trends.TrendsManager');
-        TrendsManager::assignMostPopularPayload($templateMgr, null, $request);
+        TrendsManager::assignMostPopularPayload($templateMgr, null, $request, null, 4);
 
         $templateMgr->assign('alphaList', explode(' ', __('common.alphaList')));
         $templateMgr->setCacheability(CACHEABILITY_PUBLIC);

@@ -28,12 +28,22 @@ class TrendsManager {
      * MostPopularHandler::popular()), grid class tidak akan pernah aktif
      * karena aturan mengharuskan ada issue berjalan.
      *
+     * FIX: parameter $limit ditambahkan. Fungsi ini dipakai BERSAMA oleh
+     * halaman trends penuh (MostPopularHandler::popular()) DAN widget
+     * homepage (IndexHandler.inc.php) -- dua konteks yang butuh perilaku
+     * limit BERBEDA. Default DIUBAH menjadi null (TANPA BATAS), karena
+     * halaman trends penuh seharusnya menampilkan semua artikel, bukan
+     * dibatasi seperti widget homepage. Pemanggil dari IndexHandler.inc.php
+     * SEKARANG WAJIB mengirim nilai limit eksplisit (10 untuk journal-level,
+     * 4 untuk site-level) supaya perilaku widget homepage TIDAK BERUBAH.
+     *
      * @param TemplateManager $templateMgr
      * @param Journal|null $journal
      * @param PKPRequest $request
      * @param Issue|null $issue Current issue jurnal (opsional)
+     * @param int|null $limit null = tanpa batas (halaman trends penuh); isi angka untuk membatasi (widget homepage)
      */
-    public static function assignMostPopularPayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request, $issue = null): void {
+    public static function assignMostPopularPayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request, $issue = null, ?int $limit = null): void {
         import('lib.wizdam.trends.TrendsManagerDAO');
         $popularDao = new TrendsManagerDAO();
         
@@ -41,11 +51,11 @@ class TrendsManager {
         
         if ($journal) {
             $journalId = (int)$journal->getId();
-            $rawViewsData = $popularDao->getMostPopularArticles($journalId, 10);
+            $rawViewsData = $popularDao->getMostPopularArticles($journalId, $limit);
             $articlesPayload = self::_formatMicroPayload($rawViewsData, $request);
             $templateMgr->assign('isSiteLevel', false);
         } else {
-            $rawViewsData = $popularDao->getSiteLevelTopArticles(4);
+            $rawViewsData = $popularDao->getSiteLevelTopArticles($limit);
             $articlesPayload = self::_formatMicroPayload($rawViewsData, $request);
             $templateMgr->assign('isSiteLevel', true);
         }
@@ -60,6 +70,11 @@ class TrendsManager {
             'topArticle'           => array_slice($articlesPayload, 0, 1),
             'secondTierArticles'   => array_slice($articlesPayload, 1, 4),
             'thirdTierArticles'    => array_slice($articlesPayload, 5, 4),
+            // FIX: sisa artikel di luar podium top-9. Hanya relevan/berefek di
+            // halaman trends penuh (limit=null, lihat most_popular.tpl); untuk
+            // widget homepage variabel ini diassign juga tapi diabaikan karena
+            // template widget tidak merendernya.
+            'remainingArticles'    => array_slice($articlesPayload, 9),
             'totalPopularArticles' => count($articlesPayload),
             'popularArticlesList'  => $articlesPayload,
             'lastUpdateDate'       => date('Y-m-d H:i:s'),
@@ -75,12 +90,17 @@ class TrendsManager {
 
     /**
      * Assign data Most Popular Artciles to Smarty.
+     *
+     * FIX: dipakai HANYA oleh halaman trends penuh (MostDownloadHandler::download()).
+     * Sekarang memanggil _getMostDownloadedArticlesPayload() dengan limit=null
+     * (TANPA BATAS) -- sebelumnya berbagi limit yang sama (10/4) dengan widget
+     * homepage lewat helper privat yang sama.
      * @param TemplateManager $templateMgr
      * @param Journal|null $journal
      * @param PKPRequest $request
      */
     public static function assignMostDownloadedPayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request): void {
-        $articlesPayload = self::_getMostDownloadedArticlesPayload($journal, $request);
+        $articlesPayload = self::_getMostDownloadedArticlesPayload($journal, $request, null);
         $templateMgr->assign('isSiteLevel', !$journal);
 
         // [CATATAN] most_downloaded.tpl adalah salinan persis most_popular.tpl
@@ -89,6 +109,11 @@ class TrendsManager {
             'topArticle'           => array_slice($articlesPayload, 0, 1),
             'secondTierArticles'   => array_slice($articlesPayload, 1, 4),
             'thirdTierArticles'    => array_slice($articlesPayload, 5, 4),
+            // FIX: sisa artikel di luar podium top-9, dirender di bagian daftar
+            // penuh pada template (lihat most_downloaded.tpl) -- inilah yang
+            // membuat "tanpa batas" benar-benar terlihat di halaman, bukan
+            // cuma diambil dari DB lalu diabaikan begitu saja oleh template.
+            'remainingArticles'    => array_slice($articlesPayload, 9),
             'totalPopularArticles' => count($articlesPayload),
             'popularArticlesList'  => $articlesPayload,
             'lastUpdateDate'       => date('Y-m-d H:i:s'),
@@ -110,13 +135,18 @@ class TrendsManager {
      * "app-reviews-row" ke backend (lihat _shouldShowFeaturedGrid()), jadi
      * template tidak perlu lagi menghitung articleCount dengan {math}.
      *
+     * FIX: SENGAJA tetap memakai limit 10 (journal-level) / 4 (site-level) --
+     * widget homepage TIDAK BOLEH ikut jadi tanpa batas, cuma halaman trends
+     * penuh yang berubah (lihat assignMostDownloadedPayload() di atas).
+     *
      * @param TemplateManager $templateMgr
      * @param Journal|null $journal
      * @param PKPRequest $request
      * @param Issue|null $issue Current issue jurnal (null jika belum ada issue)
      */
     public static function assignMostDownloadedHomepagePayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request, $issue = null): void {
-        $articlesPayload = self::_getMostDownloadedArticlesPayload($journal, $request);
+        $limit = $journal ? 10 : 4;
+        $articlesPayload = self::_getMostDownloadedArticlesPayload($journal, $request, $limit);
 
         $templateMgr->assign([
             'topDownloadedArticle'         => array_slice($articlesPayload, 0, 1),
@@ -134,21 +164,23 @@ class TrendsManager {
 
     /**
      * Ambil + format payload Most Downloaded Articles (fetch, format, sort).
-     * Logika bersama untuk assignMostDownloadedPayload() (halaman trends penuh)
-     * dan assignMostDownloadedHomepagePayload() (widget homepage) supaya tidak
-     * duplikasi query/format.
+     * Logika bersama untuk assignMostDownloadedPayload() (halaman trends penuh,
+     * memanggil dengan limit=null) dan assignMostDownloadedHomepagePayload()
+     * (widget homepage, memanggil dengan limit=10/4) supaya tidak duplikasi
+     * query/format.
      * @param Journal|null $journal
      * @param PKPRequest $request
+     * @param int|null $limit null = tanpa batas
      * @return array
      */
-    private static function _getMostDownloadedArticlesPayload(?Journal $journal, PKPRequest $request): array {
+    private static function _getMostDownloadedArticlesPayload(?Journal $journal, PKPRequest $request, ?int $limit = null): array {
         import('lib.wizdam.trends.TrendsManagerDAO');
         $popularDao = new TrendsManagerDAO();
 
         if ($journal) {
-            $rawDownloadsData = $popularDao->getMostDownloadedArticles((int)$journal->getId(), 10);
+            $rawDownloadsData = $popularDao->getMostDownloadedArticles((int) $journal->getId(), $limit);
         } else {
-            $rawDownloadsData = $popularDao->getSiteLevelTopDownloadedArticles(4);
+            $rawDownloadsData = $popularDao->getSiteLevelTopDownloadedArticles($limit);
         }
         $articlesPayload = self::_formatMicroPayload($rawDownloadsData, $request);
 
@@ -194,12 +226,16 @@ class TrendsManager {
     /**
      * Assign data Most Cited Articles to Smarty.
      * Dipakai oleh halaman penuh trends/most_cited.tpl (MostCitedHandler::cited()).
+     *
+     * FIX: sekarang memanggil _getMostCitedArticlesPayload() dengan limit=null
+     * (TANPA BATAS) -- sebelumnya berbagi limit 10/4 yang sama dengan widget
+     * homepage lewat helper privat yang sama.
      * @param TemplateManager $templateMgr
      * @param Journal|null $journal
      * @param PKPRequest $request
      */
     public static function assignMostCitedPayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request): void {
-        $articlesPayload = self::_getMostCitedArticlesPayload($journal, $request);
+        $articlesPayload = self::_getMostCitedArticlesPayload($journal, $request, null);
         $templateMgr->assign('isSiteLevel', !$journal);
 
         // [CATATAN] most_cited.tpl adalah salinan persis most_popular.tpl / most_downloaded.tpl
@@ -208,6 +244,8 @@ class TrendsManager {
             'topArticle'           => array_slice($articlesPayload, 0, 1),
             'secondTierArticles'   => array_slice($articlesPayload, 1, 4),
             'thirdTierArticles'    => array_slice($articlesPayload, 5, 4),
+            // FIX: sisa artikel di luar podium top-9, lihat most_cited.tpl.
+            'remainingArticles'    => array_slice($articlesPayload, 9),
             'totalPopularArticles' => count($articlesPayload),
             'popularArticlesList'  => $articlesPayload,
             'lastUpdateDate'       => date('Y-m-d H:i:s'),
@@ -230,13 +268,17 @@ class TrendsManager {
      * "app-reviews-row" ke backend (lihat _shouldShowFeaturedGrid()), jadi
      * template tidak perlu lagi menghitung articleCount dengan {math}.
      *
+     * FIX: SENGAJA tetap memakai limit 10 (journal-level) / 4 (site-level) --
+     * widget homepage TIDAK BOLEH ikut jadi tanpa batas.
+     *
      * @param TemplateManager $templateMgr
      * @param Journal|null $journal
      * @param PKPRequest $request
      * @param Issue|null $issue Current issue jurnal (null jika belum ada issue)
      */
     public static function assignMostCitedHomepagePayload(TemplateManager $templateMgr, ?Journal $journal, PKPRequest $request, $issue = null): void {
-        $articlesPayload = self::_getMostCitedArticlesPayload($journal, $request);
+        $limit = $journal ? 10 : 4;
+        $articlesPayload = self::_getMostCitedArticlesPayload($journal, $request, $limit);
 
         $templateMgr->assign([
             'topCitedArticle'         => array_slice($articlesPayload, 0, 1),
@@ -255,21 +297,23 @@ class TrendsManager {
 
     /**
      * Ambil + format payload Most Cited Articles (fetch, format, sort).
-     * Logika bersama untuk assignMostCitedPayload() (halaman trends penuh)
-     * dan assignMostCitedHomepagePayload() (widget homepage) supaya tidak
-     * duplikasi query/format.
+     * Logika bersama untuk assignMostCitedPayload() (halaman trends penuh,
+     * memanggil dengan limit=null) dan assignMostCitedHomepagePayload()
+     * (widget homepage, memanggil dengan limit=10/4) supaya tidak duplikasi
+     * query/format.
      * @param Journal|null $journal
      * @param PKPRequest $request
+     * @param int|null $limit null = tanpa batas
      * @return array
      */
-    private static function _getMostCitedArticlesPayload(?Journal $journal, PKPRequest $request): array {
+    private static function _getMostCitedArticlesPayload(?Journal $journal, PKPRequest $request, ?int $limit = null): array {
         import('lib.wizdam.trends.TrendsManagerDAO');
         $citedDao = new TrendsManagerDAO();
 
         if ($journal) {
-            $rawCitationsData = $citedDao->getMostCitedArticles((int)$journal->getId(), 10);
+            $rawCitationsData = $citedDao->getMostCitedArticles((int) $journal->getId(), $limit);
         } else {
-            $rawCitationsData = $citedDao->getSiteLevelTopCitedArticles(4);
+            $rawCitationsData = $citedDao->getSiteLevelTopCitedArticles($limit);
         }
         $articlesPayload = self::_formatMicroPayload($rawCitationsData, $request);
 

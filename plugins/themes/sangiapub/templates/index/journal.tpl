@@ -25,90 +25,6 @@
 
 {include file="common/featured/article_Hero.tpl"}
 
-{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && $articleCount >= 4}
-{**
-	<article>
-		<div data-track-component="hero" class="u-container">
-			<div class="c-hero c-hero--flush-md-max u-mb-0 u-position-relative">
-				<div class="c-hero__image">
-					{if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && !$issue->getHideCoverPageArchives($locale)}
-						<picture><source type="image/webp" srcset="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}?as=webp?as=webp 450w, {$coverPagePath|escape}{$issue->getFileName($locale)|escape}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img src="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}" loading="lazy" class="lazyload" alt=""></picture>
-					{elseif $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}
-						<picture><source type="image/webp" srcset="{$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}?as=webp 450w, {$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img class="lazyload" loading="lazy" src="{$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}" alt="{if $displayPageHeaderTitleAltText != ''}{$displayPageHeaderTitleAltText|escape}{else}{translate key="common.pageHeader.altText"}{/if}"></picture>
-					{elseif $displayHomepageImage && is_array($displayHomepageImage)}
-						<picture><source type="image/webp" srcset="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}?as=webp 450w, {$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img class="lazyload" loading="lazy" src="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" alt=""></picture>
-					{else}
-						<picture><source type="image/webp" srcset="//assets.sangia.org/img/img-default_v2.png?as=webp 450w, //assets.sangia.org/img/img-default_v2.png?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img class="lazyload" loading="lazy" src="//assets.sangia.org/img/img-default_v2.png" alt=""></picture>
-					{/if}
-				</div>
-				<div class="c-hero__copy">
-					<h2 class="c-hero__title">
-						<a class="c-hero__link u-link-faux-block" href="{url page="issue" op="current"}" data-track="click" data-track-action="view announcement" data-track-label="link">Read our {$issue->getDatePublished()|date_format:"%B"} issue</a>
-					</h2>
-					<p class="c-hero__summary"><em>{$currentJournal->getLocalizedTitle()|strip_tags|escape}</em> in {$issue->getDatePublished()|date_format:"%B %Y"} issue {if $issue->getLocalizedTitle($currentJournal)}on the topic of {$issue->getLocalizedTitle($currentJournal)|escape}{/if} now live.{if $issue->getLocalizedDescription()} {$issue->getLocalizedDescription()|strip_tags|escape}{/if}</p>
-				</div>
-			</div>
-		</div>
-	</article>
-	<section id="featured-content" class="u-mb-0" data-track-component="featured content">
-		<h2 class="u-visually-hidden">Featured Content</h2>
-		<div class="u-container">
-			<ul class="app-featured-row">
-				{include file="issue/issues.tpl"}
-				<li class="app-featured-row__item app-featured-row__item--current-issue">
-					<div class="c-card c-card--flush u-full-height">
-						<a class="c-card__image" href="{url page="issue" op="current"}" data-track="click" data-track-action="view current issue" data-track-label="image">
-							{if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && !$issue->getHideCoverPageArchives($locale)}
-								<picture><source srcset="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}?as=webp" type="image/webp"><img class="lazyload" loading="lazy" src="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}" {if $issue->getCoverPageAltText($locale) != ''} title="Cover issue {$issue->getCoverPageAltText($locale)|escape}" {else} title="Cover issue"{/if} {if $issue->getCoverPageAltText($locale) != ''} alt="{$issue->getCoverPageAltText($locale)|escape}"{else} alt="{translate key="issue.coverPage.altText"}"{/if} itemprop="image"></picture>
-							{elseif $displayHomepageImage && is_array($displayHomepageImage)}
-								<picture><source type="image/webp" srcset="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}?as=webp 450w, {$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img class="lazyload" loading="lazy" src="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" alt=""></picture>	  						
-							{else}
-								<picture><source srcset="//assets.sangia.org/img/img-default_v2.png?as=webp 450w, //assets.sangia.org/img/img-default_v2.png?as=webp 735w" type="image/webp" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img class="lazyload" loading="lazy" src="//assets.sangia.org/img/img-default_v2.png" {if $issue->getCoverPageAltText($locale) != ''} title="Cover issue {$issue->getCoverPageAltText($locale)|escape}" {else} title="Cover issue"{/if} {if $issue->getCoverPageAltText($locale) != ''} alt="{$issue->getCoverPageAltText($locale)|escape}"{else} alt="{translate key="issue.coverPage.altText"}"{/if} itemprop="image"></picture>
-							{/if}
-						</a>
-						<div class="c-card__body u-display-flex u-flex-direction-column">
-							<ul class="u-mb-16 u-list-reset u-display-flex">
-								<li class="u-mr-4 u-flex-grow">
-									<a class="u-button u-button--full-width" href="{url page="issue" op="current"}" data-track="click" data-track-action="view current issue" data-track-label="button">Contents</a>
-								</li>
-								<li class="u-ml-4 u-flex-grow">
-									<a class="u-button u-button--primary u-button--full-width" href="{url page="notification" op="subscribeMailList"}" data-track="click" data-track-action="subscribe" data-track-label="button">Subscribe</a>
-								</li>
-							</ul>
-						</div>
-						<div class="c-card__section c-meta"><span class="c-meta__item"><span class="c-meta__type">{translate key="journal.currentIssue"}</span></span><time class="c-meta__item" datetime="{$issue->getDatePublished()|date_format:"$dateFormatShort"}" itemprop="datePublished">{$issue->getDatePublished()|date_format:"%e %B %Y"}</time></div>
-					</div>
-				</li>
-			</ul>
-		</div>
-	</section>
-{else}
-	<article>
-		<div data-track-component="hero" class="u-container">
-			<div class="c-hero c-hero--flush-md-max u-mb-0 u-position-relative">
-				<div class="c-hero__image">
-					{if $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}
-						<picture><source type="image/webp" srcset="{$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}?as=webp 450w, {$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img class="lazyload" loading="lazy" src="{$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}" alt=""></picture>
-					{else}
-						<picture><source type="image/webp" srcset="/assets/static/images/not-available.webp 450w, /assets/static/images/not-available.webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img class="lazyload" loading="lazy" src="/assets/static/images/not-available.webp" alt=""></picture>
-					{/if}
-				</div>
-				<div class="c-hero__copy">
-					<h2 class="c-hero__title">
-						<a class="c-hero__link u-link-faux-block" href="{url page="issue" op="current"}" data-track="click" data-track-action="view announcement" data-track-label="link">Publish with {$currentJournal->getLocalizedTitle()|strip_tags|escape}</a>
-					</h2>
-					{if $metaSearchDescription}
-						<p class="c-hero__summary ellipsis">{$metaSearchDescription|strip_tags|escape}</p>
-					{else}
-						<p class="c-hero__summary ellipsis">{$journalDescription|strip_tags|escape}</p>
-					{/if}
-				</div>
-			</div>
-		</div>
-	</article>
-**}
-{/if}
-
 {include file="common/featured/editor-home.tpl"}
 
 {**
@@ -135,6 +51,7 @@
 	</section>
 		{include file="common/featured/mostDownloads.tpl"}
 		{** include file="common/featured/mostPopularArticles.tpl" **}
+		{** include file="common/featured/mostCitedArticles.tpl" **}
 {/if}
 
 {call_hook name="Templates::Index::journal"}
@@ -236,7 +153,7 @@
 
 {if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE}
 	{include file="common/search.tpl"}
-	<section class="area-wrapper u-mt-16 u-mb-24 u-hide">
+	<section class="area-wrapper u-mt-32 u-mb-48 u-hide">
 		<div class="live-area">
 			<div class="row raw">
 				<div class="position-relative z-index-1">
