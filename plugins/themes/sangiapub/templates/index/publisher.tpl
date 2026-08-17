@@ -16,42 +16,46 @@
     {include file="common/header-parts/header-site.tpl"}
 {/strip}
 
-{* [BARU] Identitas resmi Penerbit -- logo, nama, tagline, motto, sumber
-   dari AboutSite (PublisherProfileService). Menggantikan asumsi hardcode
-   "Sangia" yang sebelumnya tersebar di teks statis halaman ini. 
-<div style="text-align:center; padding:20px 0;">
-    {if $publisher.logoUrl}
-        <img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" style="max-height:90px; margin-bottom:10px;">
-    {/if}
-    <h1>{$publisher.name|escape}</h1>
-    {if $publisher.tagline}<p style="font-style:italic; color:#666;">{$publisher.tagline|escape}</p>{/if}
-    {if $publisher.motto}<p style="font-weight:600; color:{$publisher.colorPrimary|escape};">{$publisher.motto|escape}</p>{/if}
-</div>
-**}
+<div class="cms-container cms-highlight-0">
+    <div class="u-row row">
+        <div class="columns small-12">
+                    
+            {* [BARU] Identitas resmi Penerbit -- logo, nama, tagline, motto, sumber
+            dari AboutSite (PublisherProfileService). Menggantikan asumsi hardcode
+            "Sangia" yang sebelumnya tersebar di teks statis halaman ini. 
+            <div style="text-align:center; padding:20px 0;">
+                {if $publisher.logoUrl}
+                    <img src="{$publisher.logoUrl|escape}" alt="{$publisher.name|escape}" style="max-height:90px; margin-bottom:10px;">
+                {/if}
+                <h1>{$publisher.name|escape}</h1>
+                {if $publisher.tagline}<p style="font-style:italic; color:#666;">{$publisher.tagline|escape}</p>{/if}
+                {if $publisher.motto}<p style="font-weight:600; color:{$publisher.colorPrimary|escape};">{$publisher.motto|escape}</p>{/if}
+            </div>
+            **}
 
-{** Kode Statistik jurnal secara global perlu perbaikan **}
-{** {include file="common/featured/site_stats.tpl"} **}
+            {** Kode Statistik jurnal secara global perlu perbaikan **}
+            {** {include file="common/featured/site_stats.tpl"} **}
 
-{include file="trends/trendsArticlesPublisher.tpl"}
+            {include file="trends/trendsArticlesPublisher.tpl"}
 
-<div id="_sangiaJOUR" class="cms-common cms-article default-table">
-    <p class="taxonomy"></p>
-    <div class="section-header">
-        <h2 id="c14965756">Agriculture and Marine Science</h2>
-        <div class="cms-richtext">
-            <p>You can find more journals on our&nbsp;<a href="#_sangiaJOUR" class="is-external internal">Agriculture and Marine Science</a> pages, and&nbsp;in the <a href="#_sangiaJOUR" class="is-external internal">A-Z index</a> below.</p>
-        </div>
-    </div>
-</div>
+            <div id="_sangiaJOUR" class="cms-common cms-article default-table">
+                <p class="taxonomy"></p>
+                <div class="section-header">
+                    <h2 id="c14965756">Agriculture and Marine Science</h2>
+                    <div class="cms-richtext">
+                        <p>You can find more journals on our&nbsp;<a href="#_sangiaJOUR" class="is-external internal">Agriculture and Marine Science</a> pages, and&nbsp;in the <a href="#_sangiaJOUR" class="is-external internal">A-Z index</a> below.</p>
+                    </div>
+                </div>
+            </div>
 
-{if $useAlphalist}
-<p class="u-hide column">{foreach from=$alphaList item=letter}<a href="{url searchInitial=$letter sort="title"}">{if $letter == $searchInitial}<strong>{$letter|escape}</strong>{else}{$letter|escape}{/if}</a> {/foreach}<a href="{url}">{if $searchInitial==''}<strong>{translate key="common.all"}</strong>{else}{translate key="common.all"}{/if}</a></p>
+            {if $useAlphalist}
+            <p class="u-hide column">{foreach from=$alphaList item=letter}<a href="{url searchInitial=$letter sort="title"}">{if $letter == $searchInitial}<strong>{$letter|escape}</strong>{else}{$letter|escape}{/if}</a> {/foreach}<a href="{url}">{if $searchInitial==''}<strong>{translate key="common.all"}</strong>{else}{translate key="common.all"}{/if}</a></p>
 
-<div class="c-jump">
-    <p class="describe italic u-font-sans">Click the alphabet to chose name of journal(s)</p>
-    <span class="c-jump-navigation">{foreach from=$alphaList item=letter}<a class="c-jump-navigation__link u-margin-bottom-xxs-at-md" href="{url searchInitial=$letter sort="title"}">{if $letter == $searchInitial}<strong>{$letter|escape}</strong>{else}{$letter|escape}{/if}</a> {/foreach}<a class="c-jump-navigation__link u-margin-bottom-xxs-at-md" href="{url}">{if $searchInitial==''}<strong>{translate key="common.all"}</strong>{else}{translate key="common.all"}{/if}</a></span>
-</div>            
-{/if}
+            <div class="c-jump">
+                <p class="describe italic u-font-sans">Click the alphabet to chose name of journal(s)</p>
+                <span class="c-jump-navigation">{foreach from=$alphaList item=letter}<a class="c-jump-navigation__link u-margin-bottom-xxs-at-md" href="{url searchInitial=$letter sort="title"}">{if $letter == $searchInitial}<strong>{$letter|escape}</strong>{else}{$letter|escape}{/if}</a> {/foreach}<a class="c-jump-navigation__link u-margin-bottom-xxs-at-md" href="{url}">{if $searchInitial==''}<strong>{translate key="common.all"}</strong>{else}{translate key="common.all"}{/if}</a></span>
+            </div>            
+            {/if}
 
         </div>
     </div>

@@ -10,15 +10,15 @@
  * Common site header.
  *}
 {strip}
-{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
-{if $pageCrumbTitle}
-	{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-	{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
-{translate|assign:"applicationName" key="common.scholarWizdam"}
-{assign var="applicationName" value="Frontedge"}
-{assign var="VersionFork" value="1.0.0.0"}
+    {if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
+    {if $pageCrumbTitle}
+        {translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+    {elseif !$pageCrumbTitleTranslated}
+        {assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+    {/if}
+    {translate|assign:"applicationName" key="common.scholarWizdam"}
+    {assign var="applicationName" value="Frontedge"}
+    {assign var="VersionFork" value="1.0.0.0"}
 {/strip}
 <head>
 	<title>{$pageTitleTranslated} | Frontedge</title>
@@ -146,6 +146,7 @@
 <div id="homepage" class="content">
 <div class="layout-full-grid">
     <div class="col-main" role="main">
+
 <div class="cms-banner-full cms-highlight-100" {if $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}style="background-color: #ffffff; background-image: url('{$publicFilesDir}/{$displayPageHeaderTitle.uploadName|escape:"url"}');"{else}style="background-color:#555;"{/if}>
     <div class="u-row row">
         <div class="cms-tile-row columns small-12 ">
@@ -154,22 +155,28 @@
                     <div class="cms-banner-text">
                         <div class="cms-banner-text-inner">
                             <h1>
-                                {if $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}
-                                {if $displayPageHeaderTitleAltText != ''}{$displayPageHeaderTitleAltText|escape}{else}{translate key="common.pageHeader.altText"}{/if}
+                                {if $publisher.tagline}
+                                    {$publisher.tagline|escape}
+                                {elseif $displayPageHeaderTitle && is_array($displayPageHeaderTitle)}
+                                    {if $displayPageHeaderTitleAltText != ''}{$displayPageHeaderTitleAltText|escape}{else}{translate key="common.pageHeader.altText"}{/if}
                                 {elseif $displayPageHeaderTitle}
-                                	{$displayPageHeaderTitle}
+                                	{$displayPageHeaderTitle|escape}
                                 {elseif $alternatePageHeader}
-                                	{$alternatePageHeader}
+                                	{$alternatePageHeader|escape}
                                 {elseif $siteTitle}
-                                	{$siteTitle}
+                                	{$siteTitle|escape}
                                 {else}
-                                	{$applicationName}
+                                	{$applicationName|escape}
                                 {/if}
                             </h1>
-                            {if $intro}
-                            <div>
-                                <p>{$intro|nl2br}</p>
-                            </div>
+                            {if $publisher.motto}
+                                <div>
+                                    <p>{$publisher.motto|escape}</p>
+                                </div>
+                            {elseif $intro}
+                                <div>
+                                    <p>{$intro|nl2br|escape}</p>
+                                </div>
                             {/if}
                         </div>
                     </div>
@@ -238,73 +245,68 @@
 </div>
 
 <div class="cms-container cms-highlight-0">
-<div class="u-row row">
-{** {include file="common/breadcrumbs.tpl"} **}
-<div class="columns small-12 ">
-    <div class="cms-columns-row">
-        <div class="row">
-        <div class="columns cms-tile-row-medium small-12 medium-8">
-            <div class="cms-container cms-highlight-0">
-                <div class="cms-common cms-article default-table">
-                    <p class="taxonomy"></p>
-                    <h1 class="u-hide u-js-hide">{$pageTitleTranslated}</h1>
-                    {if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
-                    {if $pageSubtitleTranslated}
-                    <h2>{$pageSubtitleTranslated}</h2>
-                    {/if}
-                    <div class="cms-richtext">
-                    {if !empty($about)}
-                        <p class="intro--paragraph">{$about|nl2br}</p>
-                    {elseif $intro}
-                        <p class="intro--paragraph">{$intro|nl2br}</p>
-                    {/if}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="columns cms-tile-row-medium small-12 medium-4">
-            <div id="id8" class="cms-container cms-highlight-0">
-                <div class="cms-multicolumn-links">
-                    <h2 id="c10065960">More information</h2>
-                    <div class="row">
-                        <div class="columns small-12 medium-12">
-                            <ul>
-                                {if $sitePrincipalContactEmail}
-                                <li><a href="{url journal="index" page="about" op="contact"}" target="_self"><span class="link">Contact Us</span><span></span></a></li>
-                                {/if}
-                                <li><a href="#c15046410"><span class="link">Journals A-Z</span><span></span></a></li>
-                                <li class="u-hide"><a href="javascript(0)"><span class="link">Subscribe</span><span></span></a></li>
-                                <li><a href="javascript(0)"><span class="link">Why publish with us?</span><span></span></a></li>
-                            </ul>
+    <div class="u-row row">
+        {** {include file="common/breadcrumbs.tpl"} **}
+        <div class="columns small-12 ">
+            <div class="cms-columns-row">
+                <div class="row">
+                <div class="columns cms-tile-row-medium small-12 medium-8">
+                    <div class="cms-container cms-highlight-0">
+                        <div class="cms-common cms-article default-table">
+                            <p class="taxonomy"></p>
+                            <h1 class="u-hide u-js-hide">{$pageTitleTranslated|escape}</h1>
+                            {if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
+                            {if $pageSubtitleTranslated}
+                            <h2>{$pageSubtitleTranslated|escape}</h2>
+                            {/if}
+                            <div class="cms-richtext">
+                            {if !empty($about)}
+                                <p class="intro--paragraph">{$about|nl2br}</p>
+                            {elseif $intro}
+                                <p class="intro--paragraph">{$intro|nl2br}</p>
+                            {/if}
+                            </div>
                         </div>
                     </div>
-                            
-                {if $leftSidebarCode || $rightSidebarCode}
-                	<div class="columns  small-12 medium-4 u-hide" style="float: right;">
-                		{if $leftSidebarCode}
-                			<div class="slide" role="complementary">
-                				{include file="common/submit.tpl"}
-                				{$leftSidebarCode}
-                			</div>
-                		{/if}
-                		{if $rightSidebarCode}
-                			<div class="slide" role="complementary">
-                				{include file="common/submit.tpl"}
-                				{$rightSidebarCode}
-                			</div>
-                		{/if}
-                	</div>
-                {/if}                                    
+                </div>
+                <div class="columns cms-tile-row-medium small-12 medium-4">
+                    <div id="id8" class="cms-container cms-highlight-0">
+                        <div class="cms-multicolumn-links">
+                            <h2 id="c10065960">More information</h2>
+                            <div class="row">
+                                <div class="columns small-12 medium-12">
+                                    <ul>
+                                        {if $sitePrincipalContactEmail}
+                                        <li><a href="{url page="about" op="contact"}" target="_self"><span class="link">Contact Us</span><span></span></a></li>
+                                        {/if}
+                                        <li><a href="#c15046410"><span class="link">Journals A-Z</span><span></span></a></li>
+                                        <li class="u-hide"><a href="javascript(0)"><span class="link">Subscribe</span><span></span></a></li>
+                                        <li><a href="javascript(0)"><span class="link">Why publish with us?</span><span></span></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                                    
+                        {if $leftSidebarCode || $rightSidebarCode}
+                            <div class="columns  small-12 medium-4 u-hide" style="float: right;">
+                                {if $leftSidebarCode}
+                                    <div class="slide" role="complementary">
+                                        {include file="common/submit.tpl"}
+                                        {$leftSidebarCode|escape}
+                                    </div>
+                                {/if}
+                                {if $rightSidebarCode}
+                                    <div class="slide" role="complementary">
+                                        {include file="common/submit.tpl"}
+                                        {$rightSidebarCode|escape}
+                                    </div>
+                                {/if}
+                            </div>
+                        {/if}                                    
+                        </div>
+                    </div>
+                </div>        
                 </div>
             </div>
-        </div>        
         </div>
     </div>
 </div>
-</div>
-</div>
-
-<div class="cms-container cms-highlight-0">
-    <div class="u-row row">
-        <div class="columns small-12">
-        
