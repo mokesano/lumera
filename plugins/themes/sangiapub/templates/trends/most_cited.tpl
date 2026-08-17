@@ -61,7 +61,7 @@
                                                     <div>
                                                         <ul data-test="author-list" class="c-author-list c-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span>{/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></span></li>{/foreach}</ul>
                                                     </div>
-                                                    <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type|escape}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">Open Access</span></span>{/if}{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && $articleCount >= 6}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>{else}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %B %Y"}</time>{/if}<span class="c-meta__item rank">{$article.total_views|number_format} views</span>
+                                                    <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type|escape}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">Open Access</span></span>{/if}{if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && $articleCount >= 6}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>{else}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %B %Y"}</time>{/if}<span class="c-meta__item rank">{$article.total_views|number_format} cited</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -160,7 +160,7 @@
                                     <span class="c-meta__item c-meta__item--block-at-lg">
                                         Rank <span class="rank">#{$rank}</span>
                                     </span>
-                                    <span class="c-meta__item">Total {$article.total_views|number_format} views</span>
+                                    <span class="c-meta__item">Total {$article.total_views|number_format} cited</span>
                                 </div>
                             </article>
                         </div>
@@ -215,7 +215,7 @@
                                 <span class="c-meta__item c-meta__item--block-at-lg">
                                     Rank <span class="rank">#{$rank}</span>
                                 </span>
-                                <span class="c-meta__item">Total {$article.total_views|number_format} views</span>
+                                <span class="c-meta__item">Total {$article.total_views|number_format} cited</span>
                             </div>
                         </article>
                     </div>
