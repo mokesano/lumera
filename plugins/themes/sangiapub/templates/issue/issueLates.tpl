@@ -36,7 +36,7 @@
 	
 	{if $hasAccess || ($subscriptionRequired && $showGalleyLinks) || $subscriptionRequired && $showGalleyLinks && $restrictOnly}
 
-<li class="app-article-list-row__item 1">
+<li class="app-article-list-row__item">
 	<div class="u-full-height" data-native-ad-placement="false">
 		<article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
 			<div class="c-card__layout u-full-heights">
@@ -96,7 +96,7 @@
 
 {else}
 
-<li class="app-article-list-row__item 2">
+<li class="app-article-list-row__item">
 	<div class="u-full-height" data-native-ad-placement="false">
 		<article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
 			<div class="c-card__layout u-full-heights">

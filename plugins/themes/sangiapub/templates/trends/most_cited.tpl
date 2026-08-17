@@ -1,5 +1,5 @@
 {**
- * templates/common/feature/most_cited.tpl
+ * templates/trends/most_cited.tpl
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2018-2026 Rochmady and Wizdam Team
@@ -134,13 +134,6 @@
     </div>
 </section>
 
-{* FIX: sebelumnya halaman ini hanya merender podium top-9 (topArticle +
-   secondTierArticles + thirdTierArticles) -- data lain yang diambil dari
-   backend (popularArticlesList) tidak pernah ditampilkan sama sekali,
-   sehingga menghilangkan limit di backend saja tidak akan terlihat efeknya
-   di halaman. Section ini menampilkan SEMUA artikel di luar podium (tanpa
-   batas jumlah), sesuai permintaan: halaman trends penuh tidak dibatasi --
-   yang dibatasi hanya widget yang di-include ke homepage. *}
 {if $remainingArticles}
 <section id="all-cited" class="live-area u-mt-32 u-mb-48" data-track-component="all cited list">
     <div class="row raw">
