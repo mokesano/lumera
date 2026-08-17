@@ -13,11 +13,11 @@
     {include file="common/header-parts/header-overview.tpl"}
 {/strip}
 
-<section id="latest-popular" class="live-area u-mt-32 u-mb-48" data-track-component="latest popular grid" >
+<section id="latest-download" class="live-area u-mt-32" data-track-component="latest download grid" >
     <div class="row raw">
-        <div id="articles-popular" class="c-article-most__popular">
+        <div id="articles-download" class="c-article-most__popular">
             <div class="u-container c-slice-heading">
-                <h2 class="titles u-ma-0">
+                <h2 class="titles u-ma-0 u-js-hide">
                     <span class="title">Most downloaded</span>
                     <a class="c-section-heading__link" data-track="click" data-track-action="view all" data-track-label="button" href="{url page="about" op="statistics"}"><svg class="c-section-heading__icon" aria-hidden="true" focusable="false" height="20" width="20" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.08573416 5.70052374 2.48162731-2.4816273c.39282216-.39282216 1.02197315-.40056173 1.40306523-.01946965.39113012.39113012.3914806 1.02492687-.00014045 1.41654791l-4.17620791 4.17620792c-.39120769.39120768-1.02508144.39160691-1.41671995-.0000316l-4.17639421-4.1763942c-.39122513-.39122514-.39767006-1.01908149-.01657797-1.40017357.39113012-.39113012 1.02337105-.3930364 1.41951348.00310603l2.48183447 2.48183446.99770587 1.01367533z" transform="matrix(0 -1 1 0 2.081146 11.085734)"></path></svg></a>
                 </h2>
@@ -99,40 +99,57 @@
                         {/foreach}
                         {/if}
                     </ul>
-                    {if $thirdTierArticles}
-                    <li>
-                        <ul class="app-reviews-row__side">
-                            {foreach from=$thirdTierArticles item=article name=thirdLoop}
-                            {assign var="rank" value=$smarty.foreach.thirdLoop.iteration+5}
-                            <li class="app-reviews-row__side-item">
-                                <div class="u-full-height">
-                                    <div class="u-full-height" data-native-ad-placement="false">
-                                        <article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
-                                            <div class="c-card__layout u-full-height">
-                                                <div class="c-card__body u-display-flex u-flex-direction-column">
-                                                    <h3 class="c-card__title elipsis" itemprop="name headline">
-                                                        <a href="{$article.article_url}" class="c-card__link u-link-inherit" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$article.title}</a>
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                            <div class="c-card__section c-meta">
-                                                <div><ul data-test="author-list" class="c-author-list c-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span>{/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></span></li>{/foreach}</ul>
-                                                </div>
-                                                <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">OA</span></span>{/if}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
-                                            </div>
-                                        </article>
-                                    </div>
-                                </div>
-                            </li>
-                            {/foreach}
-                        </ul>
-                    </li>
-                    {/if}
                 </li>
             </ul>
         </div>
     </div>
 </section>
+
+{if $thirdTierArticles}
+<section id="third-download" class="live-area" data-track-component="third download grid" >
+    <div class="row raw">
+        <div class="s-container" id="third-download-contents">
+            <ul class="app-article-list-row">
+                {foreach from=$thirdTierArticles item=article name=thirdLoop}
+                {assign var="rank" value=$smarty.foreach.thirdLoop.iteration+5}
+                <li class="app-article-list-row__item">
+                    <div class="u-full-height">
+                        <div class="u-full-height" data-native-ad-placement="false">
+                            <article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
+                                {if $article.cover_image.file_exists}
+                                <div class="c-card__image">
+                                    <picture>
+                                        <source type="image/webp" srcset="{$article.cover_image.file_url}?as=webp 160w,{$article.cover_image.file_url}?as=webp 290w" sizes="(max-width: 640px) 160px,(max-width: 1200px) 290px,290px">
+                                        <img src="{$article.cover_image.file_url}" alt="" itemprop="image">
+                                    </picture>
+                                </div>
+                                {/if}
+                                <div class="c-card__layout u-full-heights">
+                                    <div class="c-card__body u-display-flex u-flex-direction-column">
+                                        <h3 class="c-card__title elipsis" itemprop="name headline">
+                                            <a href="{$article.article_url}" class="c-card__link u-link-inherit" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$article.title}</a>
+                                        </h3>
+                                        {if $article.abstract}
+                                            <div class="c-card__summary u-mb-16 u-hide-sm-max">{$article.abstract}</div>
+                                        {/if}
+                                        <ul data-test="author-list" class="c-author-list c-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span>{/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></span></li>{/foreach}</ul>
+                                    </div>
+                                </div>
+                                <div class="c-card__section c-meta">
+                                    <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type}</span></span>
+                                    {if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">OA</span></span>{/if}
+                                    <time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </li>
+                {/foreach}
+            </ul>
+        </div>
+    </div>
+</section>
+{/if}
 
 {if $remainingArticles}
 <section id="all-downloaded" class="live-area u-mt-32 u-mb-48" data-track-component="all downloaded list">
