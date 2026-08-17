@@ -3,7 +3,7 @@
  * 
  * Copyright (c) 2017-2026 Sangia Code Lumera 
  * Copyright (c) 2024-2026 Rochmady and Development Team
- * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3.
  * 
  * Tampilan formulir untuk AboutSiteForm -- narasi (Mission/History/dst)
  * SEKALIGUS identitas resmi Penerbit yang dipakai ulang oleh Invoice/LoA/
