@@ -135,7 +135,7 @@
                                     </picture>
                                 </div>
                                 {/if}
-                                <div class="c-card__layout u-full-height">
+                                <div class="c-card__layout u-full-heights">
                                     <div class="c-card__body u-display-flex u-flex-direction-column">
                                         <h3 class="c-card__title elipsis" itemprop="name headline">
                                             <a href="{$article.article_url}" class="c-card__link u-link-inherit" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$article.title}</a>
@@ -147,9 +147,19 @@
                                     </div>
                                 </div>
                                 <div class="c-card__section c-meta">
-                                    <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">OA</span></span>{/if}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
-                                    <span class="c-meta__item rank u-display-block">#{$rank}</span>
-                                    <span class="c-meta__item total_views">{$article.total_views|number_format} views</span>
+                                    <span class="c-meta__item c-meta__item--block-at-lg" data-test="article.type">
+                                        <span class="c-meta__type">{$article.article_type}</span>
+                                    </span>
+                                    {if $article.is_open_access}
+                                        <span class="c-meta__item c-meta__item--block-at-lg" itemprop="openAccess" data-test="open-access">
+                                            <span class="u-color-open-access">Open Access</span>
+                                        </span>
+                                    {/if}
+                                    <time class="c-meta__item c-meta__item--block-at-lg" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
+                                    <span class="c-meta__item c-meta__item--block-at-lg">
+                                        Rank <span class="rank">#{$rank}</span>
+                                    </span>
+                                    <span class="c-meta__item total_views">Total {$article.total_views|number_format} views</span>
                                 </div>
                             </article>
                         </div>
@@ -172,7 +182,7 @@
                 <li class="app-article-list-row__item">
                     <div class="u-full-height">
                         <article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
-                            <div class="c-card__layout u-full-height">
+                            <div class="c-card__layout u-full-heights">
                                 {if $article.cover_image.file_exists}
                                 <div class="c-card__image">
                                     <picture>
@@ -191,11 +201,21 @@
                                     <ul data-test="author-list" class="c-author-list c-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span>{/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></span></li>{/foreach}</ul>
                                 </div>
                             </div>
-                            <div class="c-card__section c-meta">
-                                <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type|escape}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">OA</span></span>{/if}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
-                                <span class="c-meta__item rank u-display-block">#{$rank}</span>
-                                <span class="c-meta__item total_views">{$article.total_views|number_format} views</span>
-                            </div>
+                                <div class="c-card__section c-meta">
+                                    <span class="c-meta__item c-meta__item--block-at-lg" data-test="article.type">
+                                        <span class="c-meta__type">{$article.article_type}</span>
+                                    </span>
+                                    {if $article.is_open_access}
+                                        <span class="c-meta__item c-meta__item--block-at-lg" itemprop="openAccess" data-test="open-access">
+                                            <span class="u-color-open-access">Open Access</span>
+                                        </span>
+                                    {/if}
+                                    <time class="c-meta__item c-meta__item--block-at-lg" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
+                                    <span class="c-meta__item c-meta__item--block-at-lg">
+                                        Rank <span class="rank">#{$rank}</span>
+                                    </span>
+                                    <span class="c-meta__item total_views">Total {$article.total_views|number_format} views</span>
+                                </div>
                         </article>
                     </div>
                 </li>
