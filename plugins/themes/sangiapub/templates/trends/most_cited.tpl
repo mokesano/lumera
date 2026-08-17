@@ -117,7 +117,6 @@
 </section>
 
 {if $thirdTierArticles}
-<section>
 <section id="third-cited" class="live-area" data-track-component="third cited grid" >
     <div class="row raw">
         <div class="s-container" id="third-cited-contents">
@@ -174,7 +173,7 @@
 {/if}
 
 {if $remainingArticles}
-<section id="all-cited" class="live-area u-mt-32 u-mb-48" data-track-component="all cited list">
+<section id="all-cited" class="live-area u-mb-48" data-track-component="all cited list">
     <div class="row raw">
         <div class="s-container" id="all-cited-contents">
             <ul class="app-article-list-row">
