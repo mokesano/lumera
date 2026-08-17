@@ -23,6 +23,7 @@
 	<message key="about.people">Penata Laksana</message>
 	<message key="about.policies">Kebijakan</message>
 	<message key="about.siteMap">Peta Situs</message>
+
 	<message key="announcement.announcements">Informasi</message>
 	<message key="announcement.announcementsHome">Informasi</message>
 	<message key="announcement.moreAnnouncements">Lebih banyak informasi...</message>
@@ -30,6 +31,7 @@
 	<message key="announcement.posted">Dikirimkan</message>
 	<message key="announcement.viewLink">Lebih Lanjut...</message>
 	<message key="announcement.view">Lihat Pengumuman</message>
+
 	<message key="common.actingAsUserGroup.userIsNotInTargetUserGroup">Anda tidak ada di grup pengguna ini.</message>
 	<message key="common.action">Aksi</message>
 	<message key="common.activate">Aktivasi</message>
@@ -203,6 +205,7 @@
 	<message key="debug.notes.localeLoad">File bahasa yang dimuat "{$localeFile}" dari XML</message>
 	<message key="debug.notes.missingLocaleKey">Kunci bahasa yang hilang"{$key}".</message>
 	<message key="debug.notes">Catatan:</message>
+
 	<message key="email.addAttachment">Tambah lampiran</message>
 	<message key="email.addBccRecipient">Tambah BCC</message>
 	<message key="email.addCcRecipient">Tambah CC</message>
@@ -226,6 +229,7 @@
 	<message key="email.skip">Abaikan Email</message>
 	<message key="email.subject">Subjek</message>
 	<message key="email.to">Kepada</message>
+
 	<message key="form.errorsOccurred">Kesalahan terjadi memproses form ini</message>
 	<message key="form.formLanguage.description">Pilih bahasa yang diinginkan.</message>
 	<message key="form.formLanguage">Bahasa</message>
@@ -265,6 +269,7 @@
 	<message key="icon.view.alt">Lihat</message>
 	<message key="locale.primary">Locale Utama</message>
 	<message key="locale.supported">Locale Pendukung</message>
+
 	<message key="navigation.about">Tentang Kami</message>
 	<message key="navigation.browse">Telusuri</message>
 	<message key="navigation.browseByTitle">Berdasarkan Judul</message>
@@ -283,6 +288,7 @@
 	<message key="navigation.stepNumber">Langkah{$step}</message>
 	<message key="navigation.userHome"> Beranda Pengguna</message>
 	<message key="navigation.user">Pengguna</message>
+
 	<message key="notification.allow">Izinkan semua tipe notifikasi ini untuk ditampilkan di fees notifikasi saya.</message>
 	<message key="notification.confirmError">Ada kesalahan saat mengkonfirmasi langganan Anda.</message>
 	<message key="notification.confirmSuccess">Anda telah berlangganan dengan sukses.</message>
@@ -311,6 +317,7 @@
 	<message key="notification.unsubscribeDescription">Masukkan alamat email dan kata sandi Anda untuk tidak berlangganan dari notifikasi email. Jika Anda tidak ingat kata sandi Anda, tinggalkan bidang kata sandi kosong dan yang baru akan dikirimkan melalui email pada alamat email yang diberikan.</message>
 	<message key="notification.unsubscribeError">Ada kesalahan saat proses tidak berlangganan. Pastikan alamat email dan kata sandi Anda benar.</message>
 	<message key="notification.unsubscribeSuccess">Anda telah sukses tidak berlangganan.</message>
+
 	<message key="search.abstract">Sari</message>
 	<message key="search.allFields">Semua</message>
 	<message key="search.coverage">Cakupan</message>
@@ -331,7 +338,7 @@
 	<message key="search.searchCategories">Cari Kategori</message>
 	<message key="search.searchResults">Hasil Pencarian</message>
 	<message key="search.subject">Kata Kunci</message>
-	<message key="search.titleIndex">Menelusuri Indeks Judul</message>
+	<message key="search.titleIndex">Indeks Judul Artikel</message>
 	<message key="search.title">Judul</message>
 	<message key="search.typeMethodApproach">Tipe (metode/pendekatan)</message>
 </locale>
