@@ -10,7 +10,7 @@
  *}
 {strip}
     {assign var="pageTitleTranslated" value="Most Downloaded Article"}
-    {include file="common/header-index.tpl"}
+    {include file="common/header-parts/header-overview.tpl"}
 {/strip}
 
 <section id="latest-popular" class="live-area u-mt-32 u-mb-48" data-track-component="latest popular grid" >
