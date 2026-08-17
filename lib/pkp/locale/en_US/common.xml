@@ -414,7 +414,7 @@
 	<message key="search.searchAllCategories">Search for</message>
 	<message key="search.searchCategories">Search categories</message>
 	<message key="search.subject">Keyword(s)</message>
-	<message key="search.titleIndex">Browse Title Index</message>
+	<message key="search.titleIndex">Article Title Index</message>
 	<message key="search.title">Title</message>
 	<message key="search.typeMethodApproach">Type (method/approach)</message>
 		
