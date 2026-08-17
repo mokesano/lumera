@@ -148,7 +148,7 @@
                                     <span class="c-meta__item c-meta__item--block-at-lg">
                                         Rank <span class="rank">#{$rank}</span>
                                     </span>
-                                    <span class="c-meta__item rank">{$article.total_views|number_format} views</span>
+                                    <span class="c-meta__item">Total {$article.total_views|number_format} views</span>
                                 </div>
                             </article>
                         </div>
@@ -200,7 +200,7 @@
                                 <span class="c-meta__item c-meta__item--block-at-lg">
                                     Rank <span class="rank">#{$rank}</span>
                                 </span>
-                                <span class="c-meta__item rank">{$article.total_views|number_format} views</span>
+                                <span class="c-meta__item">Total {$article.total_views|number_format} views</span>
                             </div>
                         </article>
                     </div>
