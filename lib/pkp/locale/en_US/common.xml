@@ -240,7 +240,7 @@
 	<message key="debug.notes.localeLoad">Loaded locale file "{$localeFile}" from XML</message>
 	<message key="debug.notes.missingLocaleKey">Missing locale key "{$key}".</message>
 	<message key="debug.notes">Notes:</message>
-	
+
 	<message key="defaultMetric.title">Default Metric</message>
 	<message key="defaultMetric.availableMetrics">Available Metrics</message>
 	
@@ -417,7 +417,7 @@
 	<message key="search.searchAllCategories">Search for</message>
 	<message key="search.searchCategories">Search categories</message>
 	<message key="search.subject">Keyword(s)</message>
-	<message key="search.titleIndex">Article Title Index</message>
+	<message key="search.titleIndex">All Title</message>
 	<message key="search.title">Title</message>
 	<message key="search.typeMethodApproach">Type (method/approach)</message>
 		
