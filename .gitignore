@@ -41,6 +41,7 @@ php.ini
 config.inc.php
 
 # Directories
+/fonts
 fonts/
 plugins/themes/sangiapub/php/*
 
