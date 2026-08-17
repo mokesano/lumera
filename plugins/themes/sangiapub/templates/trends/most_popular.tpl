@@ -13,7 +13,7 @@
     {include file="common/header-parts/header-overview.tpl"}
 {/strip}
 
-<section id="latest-popular" class="live-area u-mt-32 u-mb-48" data-track-component="latest popular grid" >
+<section id="top-popular" class="live-area u-mt-32" data-track-component="top popular grid" >
     <div class="row raw">
         <div id="articles-popular" class="c-article-most__popular">
             <div class="u-container c-slice-heading">
@@ -117,7 +117,7 @@
 </section>
 
 {if $thirdTierArticles}
-<section>
+<section id="third-popular" class="live-area" data-track-component="third popular grid" >
     <div class="row raw">
         <div class="s-container" id="all-popular-contents">
             <ul class="app-article-list-row">
@@ -148,7 +148,8 @@
                                 </div>
                                 <div class="c-card__section c-meta">
                                     <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">OA</span></span>{/if}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
-                                    <span class="c-meta__item rank u-display-block u-js-hide">#{$rank}</span>
+                                    <span class="c-meta__item rank u-display-block">#{$rank}</span>
+                                    <span class="c-meta__item total_views">{$article.total_views|number_format} views</span>
                                 </div>
                             </article>
                         </div>
@@ -191,8 +192,9 @@
                                 </div>
                             </div>
                             <div class="c-card__section c-meta">
-                                <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type|escape}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">OA</span></span>{/if}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time><span class="c-meta__item rank">{$article.total_views|number_format} views</span>
-                                <span class="c-meta__item rank u-display-block u-js-hide">#{$rank}</span>
+                                <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type|escape}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">OA</span></span>{/if}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
+                                <span class="c-meta__item rank u-display-block">#{$rank}</span>
+                                <span class="c-meta__item total_views">{$article.total_views|number_format} views</span>
                             </div>
                         </article>
                     </div>
