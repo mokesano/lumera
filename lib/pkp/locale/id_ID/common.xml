@@ -338,7 +338,7 @@
 	<message key="search.searchCategories">Cari Kategori</message>
 	<message key="search.searchResults">Hasil Pencarian</message>
 	<message key="search.subject">Kata Kunci</message>
-	<message key="search.titleIndex">Indeks Judul Artikel</message>
+	<message key="search.titleIndex">Semua Judul</message>
 	<message key="search.title">Judul</message>
 	<message key="search.typeMethodApproach">Tipe (metode/pendekatan)</message>
 </locale>
