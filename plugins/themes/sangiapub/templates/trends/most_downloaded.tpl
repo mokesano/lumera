@@ -136,10 +136,18 @@
                                     </div>
                                 </div>
                                 <div class="c-card__section c-meta">
-                                    <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type}</span></span>
-                                    {if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">OA</span></span>{/if}
-                                    <time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
-                                    <span class="c-meta__item rank u-display-block">#{$rank}</span>
+                                    <span class="c-meta__item c-meta__item--block-at-lg" data-test="article.type">
+                                        <span class="c-meta__type">{$article.article_type|escape}</span>
+                                    </span>
+                                    {if $article.is_open_access}
+                                        <span class="c-meta__item c-meta__item--block-at-lg" itemprop="openAccess" data-test="open-access">
+                                            <span class="u-color-open-access">Open Access</span>
+                                        </span>
+                                    {/if}
+                                    <time class="c-meta__item c-meta__item--block-at-lg" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
+                                    <span class="c-meta__item c-meta__item--block-at-lg">
+                                        Rank <span class="rank">#{$rank}</span>
+                                    </span>
                                     <span class="c-meta__item rank">{$article.total_views|number_format} views</span>
                                 </div>
                             </article>
@@ -156,7 +164,7 @@
 {if $remainingArticles}
 <section id="all-downloaded" class="live-area u-mt-32 u-mb-48" data-track-component="all downloaded list">
     <div class="row raw">
-        <div class="u-container" id="all-downloaded-contents">
+        <div class="s-container" id="all-downloaded-contents">
             <ul class="app-article-list-row">
                 {foreach from=$remainingArticles item=article name=remainingLoop}
                 {assign var="rank" value=$smarty.foreach.remainingLoop.iteration+9}
