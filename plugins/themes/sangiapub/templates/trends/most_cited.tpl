@@ -124,7 +124,7 @@
             <ul class="app-article-list-row">
                 {foreach from=$thirdTierArticles item=article name=thirdLoop}
                 {assign var="rank" value=$smarty.foreach.thirdLoop.iteration+5}
-                <li class="app-reviews-row__side-item">
+                <li class="app-article-list-row__item">
                     <div class="u-full-height">
                         <div class="u-full-height" data-native-ad-placement="false">
                             <article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
@@ -177,10 +177,10 @@
 <section id="all-cited" class="live-area u-mt-32 u-mb-48" data-track-component="all cited list">
     <div class="row raw">
         <div class="s-container" id="all-cited-contents">
-            <ul class="u-list-reset c-card-grid">
+            <ul class="app-article-list-row">
                 {foreach from=$remainingArticles item=article name=remainingLoop}
                 {assign var="rank" value=$smarty.foreach.remainingLoop.iteration+9}
-                <li class="c-card-grid__item">
+                <li class="app-article-list-row__item">
                     <div class="u-full-height">
                         <article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
                             <div class="c-card__layout u-full-heights">
