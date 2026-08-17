@@ -859,12 +859,12 @@
 	<message key="user.subscriptions.form.addIpRange">Add</message>
 
 	<!-- Search -->
-	<message key="search.browseAuthorIndex">Browse Author Index</message>
+	<message key="search.browseAuthorIndex">All Author Index</message>
 	<message key="search.searchFor">Search articles for</message>
 	<message key="search.author">Authors</message>
 	<message key="search.withinJournal">Within</message>
 	<message key="search.allJournals">All Journals</message>
-	<message key="search.authorIndex">Browse Author Index</message>
+	<message key="search.authorIndex">All Author</message>
 	<message key="search.authorDetails">Author Details</message>
 	<message key="search.syntaxInstructions"><![CDATA[
 		<h4>Search tips: </h4>
