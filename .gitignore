@@ -39,6 +39,9 @@ cache/HTML/*
 .user.ini
 php.ini
 config.inc.php
+
+# Directories
+fonts/
 plugins/themes/sangiapub/php/*
 
 # Editor/IDE
