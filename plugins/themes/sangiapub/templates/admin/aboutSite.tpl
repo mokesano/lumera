@@ -69,15 +69,15 @@
             <legend class="hidden">{$localeName}</legend>
             <table class="data" width="100%">
                 <tr valign="top">
-                    <td width="20%" class="label">{translate key="admin.siteSettings.publisherMotto"}</td>
-                    <td width="80%" class="value">
-                        <input type="text" name="publisherMotto[{$localeKey|escape}]" id="publisherMotto" value="{$publisherMotto[$localeKey]|escape}" size="60" class="textField" />
-                    </td>
-                </tr>
-                <tr valign="top">
                     <td class="label">{translate key="admin.siteSettings.publisherTagline"}</td>
                     <td class="value">
                         <input type="text" name="publisherTagline[{$localeKey|escape}]" id="publisherTagline" value="{$publisherTagline[$localeKey]|escape}" size="60" class="textField" />
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <td width="20%" class="label">{translate key="admin.siteSettings.publisherMotto"}</td>
+                    <td width="80%" class="value">
+                        <input type="text" name="publisherMotto[{$localeKey|escape}]" id="publisherMotto" value="{$publisherMotto[$localeKey]|escape}" size="60" class="textField" />
                     </td>
                 </tr>
                 <tr valign="top">
