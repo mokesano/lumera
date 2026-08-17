@@ -13,7 +13,7 @@
     {include file="common/header-parts/header-overview.tpl"}
 {/strip}
 
-<section id="latest-cited" class="live-area u-mt-32 u-mb-48" data-track-component="latest cited grid" >
+<section id="latest-cited" class="live-area u-mt-32" data-track-component="latest cited grid" >
     <div class="row raw">
         <div id="articles-cited" class="c-article-most__popular">
             <div class="u-container c-slice-heading">
