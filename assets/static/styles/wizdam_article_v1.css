@@ -120,7 +120,8 @@ html {
   text-size-adjust:100%;
 }
 a {
-  -webkit-text-decoration-skip:objects 
+  -webkit-text-decoration-skip:objects;
+  text-decoration-skip-ink: auto;
 }
 .tables table,
 table {
@@ -136,7 +137,7 @@ table {
 .block-link:hover>span,
 a:hover {
   -webkit-text-decoration-skip:skip;
-  text-decoration-skip-ink:auto 
+  text-decoration-skip-ink:auto;
 }
 .Head,
 .subjectId--value,
@@ -4770,9 +4771,7 @@ body {
   display:table 
 }
 .grid img {
-  width:auto;
   max-width:100%;
-  height:auto;
 }
 [class*=col-] {
   float:left;
@@ -28891,7 +28890,7 @@ details[open] .details-marker-1174223415 {
   padding-right:6px;
   font-weight:700;
   margin:18px auto 0;
-  font-size:14px 
+  font-size:14px; 
 }
 .side-article-impact .btn-sangia:focus,
 .side-article-impact .btn-sangia:hover {
@@ -33024,6 +33023,59 @@ h6.sub-title {
   left:20%;
   left:var(--linkSize)
 }
+.c-header__link {
+  display:inline-block;
+  display:flex;
+  padding:16px 8px;
+  color:inherit;
+  -webkit-text-decoration-color:rgba(0,0,0,0);
+  -moz-text-decoration-color:rgba(0,0,0,0);
+  text-decoration-color:rgba(0,0,0,0);
+  position:relative;
+  word-break:normal;
+  white-space:nowrap
+}
+.c-header__link:visited {
+  color:inherit
+}
+.c-header__link:hover {
+  color:inherit;
+  -webkit-text-decoration-color:inherit;
+  -moz-text-decoration-color:inherit;
+  text-decoration-color:inherit
+}
+.c-header__link:not(.c-header__expander .c-header__link):hover {
+  -webkit-text-decoration-color:rgba(0,0,0,0);
+  -moz-text-decoration-color:rgba(0,0,0,0);
+  text-decoration-color:rgba(0,0,0,0)
+}
+.c-header__link:not(.c-header__expander .c-header__link):hover::after {
+  content:"";
+  background-color:#025e8d;
+  width:100%;
+  height:6px;
+  border-radius:4px;
+  position:absolute;
+  bottom:-4px;
+  left:0
+}
+.eds-c-header__link--static {
+  -webkit-flex:0 0 auto;
+  flex:0 0 auto
+}
+.eds-c-header__link.is-open {
+  color:#025e8d
+}
+.eds-c-header__link.is-open::after {
+  content:"";
+  background-color:#025e8d;
+  width:100%;
+  height:6px;
+  border-radius:4px;
+  position:absolute;
+  bottom:-4px;
+  left:0
+}
 .c-account-nav__anchor.eds-c-header__link::before {
   content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' id='eds-i-user-single-medium'%3E%3Cpath d='M12 1a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm-.406 9.008a8.965 8.965 0 0 1 6.596 2.494A9.161 9.161 0 0 1 21 21.025V22a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-.985c.05-4.825 3.815-8.777 8.594-9.007Zm.39 1.992-.299.006c-3.63.175-6.518 3.127-6.678 6.775L5 21h13.998l-.009-.268a7.157 7.157 0 0 0-1.97-4.573l-.214-.213A6.967 6.967 0 0 0 11.984 14Z'/%3E%3C/svg%3E");
   margin:0 8px 0 0;
@@ -33175,7 +33227,48 @@ h6.sub-title {
 .c-header__link svg {
   transition-duration: 0.2s;
 }
-
+.eds-c-header__link {
+  display:inline-block;
+  display:flex;
+  color:inherit;
+  font-weight:bold;
+  -webkit-text-decoration-color:rgba(0,0,0,0);
+  -moz-text-decoration-color:rgba(0,0,0,0);
+  text-decoration-color:rgba(0,0,0,0);
+  position:relative;
+  word-break:normal;
+  white-space:nowrap
+}
+.eds-c-header__link:visited {
+  color:inherit
+}
+.eds-c-header__link:hover {
+  color:inherit;
+  -webkit-text-decoration-color:inherit;
+  -moz-text-decoration-color:inherit;
+  text-decoration-color:inherit
+}
+.eds-c-header__link:not(.eds-c-header__expander .eds-c-header__link):hover {
+  -webkit-text-decoration-color:rgba(0,0,0,0);
+  -moz-text-decoration-color:rgba(0,0,0,0);
+  text-decoration-color:rgba(0,0,0,0)
+}
+.c-header__link:hover,
+.c-header__link:focus {
+  color:#01324b;
+  text-decoration-thickness:.25rem;
+  text-underline-offset:.25rem
+}
+.c-header__link:hover::after {
+  content:"";
+  background-color:#025e8d;
+  width:100%;
+  height:6px;
+  border-radius:4px;
+  position:absolute;
+  bottom:-4px;
+  left:0
+}
 .c-header__show-text {
   display: none;
   visibility: hidden;
@@ -33656,7 +33749,6 @@ h6.sub-title {
     }
 }
 
-/**  Javascript Enhancements */
 /**  Javascript Enhancements */
 .c-header__link.is-open {
   color: #006699;
