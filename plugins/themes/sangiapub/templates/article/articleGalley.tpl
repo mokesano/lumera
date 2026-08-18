@@ -131,7 +131,6 @@
 
     <link rel="stylesheet preload" href="{$baseUrl}/assets/static/styles/font.css" type="text/css" as="style" />
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" />
-    <link rel="preload" href="{$baseUrl}/assets/static/styles/wizdam_article_v1.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <link rel="stylesheet" href="{$baseUrl}/styles/articleView.css" type="text/css" />
 
 	{foreach from=$stylesheets item=cssUrl}
@@ -142,7 +141,7 @@
 </head>
 <body class="article-view">
 	<div id="pdfDownloadLinkContainer" class="header_view">
-		<a class="return" href="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)}"><span class="pkp_screen_reader">Return to Article Details</span></a>
+		<a class="return" href="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)}"><span class="screen_reader">Return to Article Details</span></a>
 		<a class="title" href="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)}">{$article->getLocalizedTitle()|strip_unsafe_html}</a>
 		<a class="action pdf download" id="pdfDownloadLink" target="_parent" href="{url op="download" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}"><span class="label">{translate key="article.pdf.download"}</span></a>
 	</div>
