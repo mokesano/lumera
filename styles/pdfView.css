@@ -26,11 +26,12 @@ html {
 body {
   font-family: Nexus Sans,NexusSans,Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
   min-height: 100%;
-  overflow-y: hidden;
+  overflow: hidden;
   margin: 0;
 }
 
-body:before {
+body::before,
+body::after {
   position:absolute;
   overflow: hidden;
   content:'full';
