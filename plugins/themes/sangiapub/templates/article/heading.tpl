@@ -869,7 +869,7 @@
         			    </summary>
                         <div class="special-issue u-margin-s-top metrics-details u-font-sans">
                             {if $currentJournal}<a rel="noreferrer noopener" class="anchor part-of-issue-title file special-issue" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><span class="anchor-text u-font-sans-sang title-issue">{$issue->getLocalizedTitle($currentJournal)|escape}</span></a>{/if}
-                            {if $issue->getLocalizedDescription()}<span class="part-of-issue-editors">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br|truncate:200:""}</span>{/if}
+                            {if $issue->getLocalizedDescription()}<div class="part-of-issue-editors">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br|truncate:200:""}</div>{/if}
                             {if $issue->getLocalizedCoverPageDescription()}<div class="part-of-issue-editors text-gray-light"><span>{$issue->getLocalizedCoverPageDescription()|strip_unsafe_html|nl2br}</span></div>{/if}
                         </div>
                         <a class="external anchor metrics-details" rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><button class="button-alternative ViewFullIssue button-alternative-primary" type="button" id="download-full-issue"><svg focusable="false" viewBox="0 0 54 128" width="30" height="30" class="icon icon-navigate-right"><path d="m1 99l38-38-38-38 7-7 45 45-45 45z" fill="#ffffff"></path></svg><span class="button-alternative-text anchor-text u-font-sans">View special issue</span></button></a>
