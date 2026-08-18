@@ -18,7 +18,7 @@
 }
 
 html {
-  overflow-y:scroll;
+  overflow:hidden;
   font:62.5% sans-serif; 
   height: 100%;
 }
@@ -30,8 +30,7 @@ body {
   margin: 0;
 }
 
-body::before,
-body::after {
+body::before {
   position:absolute;
   overflow: hidden;
   content:'full';
