@@ -83,7 +83,7 @@ a.pdf {
     font-family: Nexus Sans,NexusSans,Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
 }
 
-.black_overlay{
+.black_overlay {
 	display: none;
 	position: absolute;
 	top: 0%;
@@ -101,7 +101,6 @@ a.pdf {
     z-index: 7;
     position: relative;
     background: #2f2f2f;
-    font-family: NexusSerif,Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
 }
 
 .header_view a {
@@ -111,14 +110,13 @@ a.pdf {
 
 .header_view .return {
     position: absolute;
-    top: 0;
-    left: 0;
     width: 30px;
     height: 26px;
     line-height: 26px;
     background-color: #fff;
-    color: #474747;
+    background-color: #ee6911;
     color: #025e8d;
+    color: #fff;
     text-align: center;
 }
 
@@ -148,15 +146,18 @@ a.pdf {
 }
 
 .header_view .title {
+    font-family: NexusSerif,Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
     display: inline-block;
     padding-left: 40px;
     max-width: 100%;
     overflow-x: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 13px;
+    font-size: 14px;
+    font-weight:700;
     color: #fff;
     text-align: start;
+    vertical-align: middle;
 }
 
 .header_view .title:hover,
@@ -164,7 +165,7 @@ a.pdf {
     color: #d5d5d5;
     color: #d83b5b;
     color: #ee6911;
-    background-color: transparent;
+/*     background-color: transparent; */
 }
 
 .header_view .download {
@@ -209,8 +210,8 @@ a.pdf {
     margin-left: 7px;
     font-size: 16px;
   }
-  .header_view .download .pkp_screen_reader,
-  .header_view .download .pkp_page_index .cmp_announcements h2 {
+  .header_view .download .screen_reader,
+  .header_view .download .page_index .cmp_announcements h2 {
     display:none
   }
 }
