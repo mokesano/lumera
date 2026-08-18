@@ -13,8 +13,6 @@ declare(strict_types=1);
  * @see EmailTemplate
  *
  * @brief Operations for retrieving and modifying Email Template objects.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance & Signature Polyfill
  */
 
 import('lib.pkp.classes.mail.PKPEmailTemplateDAO');
@@ -162,8 +160,36 @@ class EmailTemplateDAO extends PKPEmailTemplateDAO {
      * @return bool
      */
     public function customTemplateExistsByKey($emailKey, $assocType, $assocId) {
-        // Force ASSOC_TYPE_JOURNAL to maintain OJS 2.x behavior within newer PKP lib
         return parent::customTemplateExistsByKey($emailKey, ASSOC_TYPE_JOURNAL, (int) $assocId);
     }
+
+    /**
+     * [WIZDAM SELF-HEALING] Pastikan sebuah kunci template email SUDAH
+     * terdaftar di database, untuk SEMUA locale terpasang di situs --
+     * memasang otomatis dari registry/emailTemplates.xml +
+     * locale/{locale}/emailTemplates.xml kalau BELUM ada.
+     * @param string $emailKey
+     * @return bool true kalau template (baru dipasang ATAU sudah ada)
+     * siap dipakai untuk MINIMAL satu locale.
+     */
+    public function ensureEmailTemplateInstalled(string $emailKey): bool {
+        if ($this->templateExistsByKey($emailKey)) {
+            return true;
+        }
+
+        $this->installEmailTemplates($this->getMainEmailTemplatesFilename(), false, $emailKey, true);
+
+        $request = Application::get()->getRequest();
+        $site = $request->getSite();
+        foreach ($site->getInstalledLocales() as $locale) {
+            $dataFile = $this->getMainEmailTemplateDataFilename($locale);
+            if ($dataFile && file_exists($dataFile)) {
+                $this->installEmailTemplateData($dataFile, false, $emailKey);
+            }
+        }
+
+        return $this->templateExistsByKey($emailKey);
+    }
+
 }
 ?>
