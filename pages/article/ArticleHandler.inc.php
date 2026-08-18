@@ -159,6 +159,15 @@ class ArticleHandler extends Handler {
             }
         }
 
+        // [FIX] Galley PDF spesifik diminta lewat URL ini -- arahkan ke
+        // halaman standalone (article/articleGalley.tpl), BUKAN lanjutkan
+        // merender article.tpl penuh di bawah (yang membawa serta
+        // article/header.tpl + article/footer.tpl). Ini akar masalah
+        // "footer halaman artikel ikut dirender saat menampilkan PDF".
+        if ($galley && $galley->isPdfGalley()) {
+            return $this->viewArticleGalley([$galley->getArticleId(), $galley->getId()], $request);
+        }
+
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->addJavaScript('js/inlinePdf.js');
         $templateMgr->addJavaScript('js/pdfobject.js');
@@ -453,6 +462,70 @@ class ArticleHandler extends Handler {
      */
     public function viewArticle($args, $request) {
         return $this->view($args, $request);
+    }
+
+    /**
+     * [FIX] View a PDF article galley as a standalone page (own header +
+     * common footer, NOT the full article.tpl with article/header.tpl +
+     * article/footer.tpl). Mirrors IssueHandler::viewIssue()'s pattern,
+     * which already does this correctly for issue galleys.
+     *
+     * Root cause this fixes: previously, viewing a PDF galley always fell
+     * through to $templateMgr->display('article/article.tpl') inside
+     * view() below -- the FULL article details page, complete with
+     * article/footer.tpl. The pdfJsViewer plugin's own articleGalley.tpl
+     * (a "Return to Article Details" mini nav bar) was only ever swapped
+     * in as a FRAGMENT via TemplateManager::include, never as an actual
+     * standalone page -- so the real article page's footer kept rendering
+     * around/below it regardless.
+     *
+     * @param array $args ($articleId, $galleyId)
+     * @param PKPRequest $request
+     * @return void
+     */
+    public function viewArticleGalley($args, $request) {
+        $articleId = isset($args[0]) ? $args[0] : 0;
+        $galleyId = isset($args[1]) ? $args[1] : 0;
+
+        $this->validate($request, $articleId, $galleyId);
+        $this->setupTemplate($request);
+
+        $journal = $this->journal;
+        $article = $this->article;
+
+        /** @var ArticleGalleyDAO $galleyDao */
+        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+        $galley = null;
+        if ($galleyDao) {
+            if ($journal->getSetting('enablePublicGalleyId')) {
+                $galley = $galleyDao->getGalleyByBestGalleyId($galleyId, $article->getId());
+            } else {
+                $galley = $galleyDao->getGalley($galleyId, $article->getId());
+            }
+        }
+
+        // Bukan galley PDF (atau tidak ditemukan) -- bukan skenario ini,
+        // kembali ke halaman detail artikel normal.
+        if (!$galley || !$galley->isPdfGalley()) {
+            $request->redirect(null, null, 'view', [$article->getBestArticleId($journal)]);
+            return;
+        }
+
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->addJavaScript('js/inlinePdf.js');
+        $templateMgr->addJavaScript('js/pdfobject.js');
+        $templateMgr->addStyleSheet($request->getBaseUrl() . '/styles/pdfView.css');
+
+        $templateMgr->assign([
+            'article'   => $article,
+            'galley'    => $galley,
+            'journal'   => $journal,
+            'articleId' => $article->getBestArticleId($journal),
+            'galleyId'  => $galley->getBestGalleyId($journal),
+            'locale'    => AppLocale::getLocale(),
+        ]);
+
+        $templateMgr->display('article/articleGalley.tpl');
     }
 
     /**

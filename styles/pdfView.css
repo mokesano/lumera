@@ -8,6 +8,34 @@
  * PDF inline viewer stylesheet.
  */
 
+*,
+:after,
+:before {
+  -webkit-box-sizing:inherit;
+  box-sizing:inherit;
+  -webkit-box-sizing:border-box;
+  box-sizing:border-box 
+}
+
+html {
+  overflow-y:scroll;
+  font:62.5% sans-serif; 
+  height: 100%;
+}
+
+body {
+  font-family: Nexus Sans,NexusSans,Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
+  min-height: 100%;
+  overflow-y: hidden;
+  margin: 0;
+}
+
+body:before {
+  position:absolute;
+  overflow: hidden;
+  content:'full';
+}
+
 #inlinePdfResizer {
 	width: 98%;
 	height: 400px;
@@ -39,9 +67,9 @@
 
 #pdfDownloadLinkContainer {
 	text-align: right;
-	/*! padding: 5px; */
-	z-index: 2;
+	z-index: 7;
 	position: relative;
+	display: flex;
 }
 
 a.pdf {
@@ -70,7 +98,7 @@ a.pdf {
 }
 
 .header_view {
-    z-index: 2;
+    z-index: 7;
     position: relative;
     background: #2f2f2f;
     font-family: NexusSerif,Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif;
@@ -88,21 +116,23 @@ a.pdf {
     width: 30px;
     height: 26px;
     line-height: 26px;
-    background: #fff;
-    /*color: #474747;*/
+    background-color: #fff;
+    color: #474747;
+    color: #025e8d;
     text-align: center;
 }
 
 .header_view .return:hover,
 .header_view .return:focus {
-    background:#2e2e2e;
+    background-color:#2e2e2e;
+    background-color:#025e8d;
     color:#fff
 }
 
 .header_view .return::before {
     display: inline-block;
     font: normal normal normal 14px/1 FontAwesome;
-    font-size: inherit;
+    font-size: 14px;
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -111,14 +141,14 @@ a.pdf {
     content: "\f060";
 }
 
-.pkp_screen_reader {
+.screen_reader {
     clip: rect(1px, 1px, 1px, 1px);
     position: absolute !important;
     left: -2000px;
 }
 
 .header_view .title {
-    display: block;
+    display: inline-block;
     padding-left: 40px;
     max-width: 100%;
     overflow-x: hidden;
@@ -138,18 +168,19 @@ a.pdf {
 }
 
 .header_view .download {
-    display: block;
+    font-family: inherit;
+    display: inline-block;
     position: absolute;
     top: 0;
     right: 0;
     width: 30px;
     background: #fff;
-    text-align: center;
 }
 
 .header_view .download:hover,
 .header_view .download:focus {
-    background:#2e2e2e;
+    background-color:#2e2e2e;
+    background-color:#025e8d;
     color:#fff
 }
 
@@ -161,6 +192,7 @@ a.pdf {
     -moz-osx-font-smoothing: grayscale;
     transform: translate(0, 0);
     content: "\f019";
+    font-size: 14px;
 }
 
 @media (min-width:768px) {
@@ -169,7 +201,7 @@ a.pdf {
   }
   .header_view .download {
     width:auto;
-    padding:0 20px
+    padding:0 17px;
   }
   .header_view .download .label {
     display:inline-block;
