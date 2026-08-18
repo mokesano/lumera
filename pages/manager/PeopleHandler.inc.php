@@ -772,12 +772,14 @@ class PeopleHandler extends ManagerHandler {
      * yang baru saja divalidasi lewat aksi Enable oleh Journal Manager.
      * @param User $userTarget Pengguna yang diaktifkan.
      * @param User $actingUser Journal Manager yang melakukan aksi Enable --
-     * penerima notifikasi kalau pengiriman gagal, supaya mereka tahu
-     * SEKETIKA di halaman yang sama, bukan lewat log server.
      */
     protected function _sendValidationConfirmedEmail($userTarget, $actingUser = null) {
         $request = Application::get()->getRequest();
         $journal = $request->getJournal();
+
+        /** @var EmailTemplateDAO $emailTemplateDao */
+        $emailTemplateDao = DAORegistry::getDAO('EmailTemplateDAO');
+        $emailTemplateDao->ensureEmailTemplateInstalled('USER_VALIDATE_CONFIRMED');
 
         import('classes.mail.MailTemplate');
         $mail = new MailTemplate('USER_VALIDATE_CONFIRMED');
@@ -793,8 +795,26 @@ class PeopleHandler extends ManagerHandler {
         ]);
         $mail->addRecipient($userTarget->getEmail(), $userTarget->getFullName());
 
+        if (empty(trim((string) $mail->getSubject()))) {
+            error_log(sprintf(
+                '[WIZDAM] enableUser: USER_VALIDATE_CONFIRMED subjeknya KOSONG untuk %s (user ID %d) -- '
+                . 'kemungkinan berkas locale/%s/emailTemplates.xml tidak lengkap. Email TIDAK dikirim.',
+                $userTarget->getEmail(), $userTarget->getId(), (string) AppLocale::getLocale()
+            ));
+
+            if ($actingUser) {
+                import('classes.notification.NotificationManager');
+                $notificationManager = new NotificationManager();
+                $notificationManager->createTrivialNotification(
+                    (int) $actingUser->getId(),
+                    NOTIFICATION_TYPE_ERROR,
+                    ['contents' => __('notification.email.validateConfirmedFailed', ['userEmail' => $userTarget->getEmail()])]
+                );
+            }
+            return;
+        }
+
         if (!$mail->send()) {
-            // Log teknis tetap dipertahankan untuk audit developer.
             error_log(sprintf(
                 '[WIZDAM] enableUser: gagal mengirim USER_VALIDATE_CONFIRMED ke %s (user ID %d).',
                 $userTarget->getEmail(), $userTarget->getId()
