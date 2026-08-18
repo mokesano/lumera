@@ -72,11 +72,11 @@
 	<meta name="prism.section" content="{$article->getSectionTitle()|strip_tags|escape}" />
     {if $article->getPages()}
         {if $article->getStartingPage()}
-        <meta name="prism.startingPage" content="{$article->getStartingPage()|escape}"/>{/if}
+        <meta name="prism.startingPage" content="{$article->getStartingPage()|escape}" />{/if}
 	    {if $article->getEndingPage()}
-    	<meta name="prism.endingPage" content="{$article->getEndingPage()|escape}"/>{/if}
+    	<meta name="prism.endingPage" content="{$article->getEndingPage()|escape}" />{/if}
 	{else}
-        <meta name="prism.startingPage" content="{$article->getID()|escape}"/>	
+        <meta name="prism.startingPage" content="{$article->getID()|escape}" />
     {/if}
 	<meta name="prism.copyright" content="{translate key="submission.copyrightStatement" copyrightHolder=$article->getLocalizedCopyrightHolder()|escape copyrightYear=$article->getCopyrightYear()|escape}" />
 	<meta name="prism.rightsAgent" content="journals@sangia.org" />
@@ -87,7 +87,7 @@
     <meta name="DOI" content="{$article->getPubId('doi')}" />
 	{/if}
 
-	<link rel="canonical" href="{$currentUrl|escape}">
+	<link rel="canonical" href="{$currentUrl|escape}" />
 	
 	<meta name="twitter:site" content="@{$currentJournal->getSetting('initials', $currentJournal->getPrimaryLocale())|escape}" />
 	<meta name="twitter:card" content='summary_large_image' />
@@ -111,7 +111,7 @@
 	<meta name="twitter:image" content="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" />
     {/if}
     
-	<meta name="robots" content="max-image-preview:large">
+	<meta name="robots" content="max-image-preview:large" />
 	<meta property="og:type" content="{$article->getSectionTitle()|strip_tags|escape}" />
 	<meta property="og:site_name" name="site_name" content="Sangia" />
 	<meta property="og:title" content="{$article->getLocalizedTitle()|strip_tags|nl2br}" />
@@ -134,8 +134,8 @@
     {if $article->getLanguage()}
     <meta property="og:locale" content="{$article->getLanguage()|strip_tags|escape}" />
     {/if}
-    <meta name="csrf-token" content="{$csrfToken}">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="csrf-token" content="{$csrfToken}" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <!-- Cookies CDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-migrate-3.4.0.min.js"></script>
@@ -167,11 +167,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 	<meta content="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|escape}" property="og:url" />
  	<link rel="stylesheet" href="{$baseUrl}/styles/articleView.css" type="text/css" />
- 	<link rel="canonical" href="{$currentUrl|escape}">
+ 	<link rel="canonical" href="{$currentUrl|escape}" />
 	
 	{elseif $galley->isHTMLGalley()}
 		{include file="article/head.tpl"}
-		<link rel="canonical" href="{$currentUrl|escape}">
+		<link rel="canonical" href="{$currentUrl|escape}" />
 	{/if}
 
 {else}
@@ -233,4 +233,3 @@
     {include file="common/banner.tpl"}
 	{include file="article/heading.tpl"}
 {/if}
-
