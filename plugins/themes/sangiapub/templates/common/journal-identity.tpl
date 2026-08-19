@@ -1,3 +1,12 @@
+{**
+ * @file templates/common/journal-identity.tpl
+ *
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ *
+ * Common Journal Identity.
+ *}
 {if $currentJournal}
 <section class="sangia-header sangia-sinta_score_grade bolmHa">
 
