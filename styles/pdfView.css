@@ -70,6 +70,7 @@ body::before {
 	z-index: 7;
 	position: relative;
 	display: flex;
+    padding-top: 1.7px;
 }
 
 a.pdf {
@@ -118,6 +119,7 @@ a.pdf {
     color: #025e8d;
     color: #fff;
     text-align: center;
+    border-radius: 0 7px 7px 0;
 }
 
 .header_view .return:hover,
@@ -130,7 +132,6 @@ a.pdf {
 .header_view .return::before {
     display: inline-block;
     font: normal normal normal 14px/1 FontAwesome;
-    font-size: 14px;
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -176,6 +177,7 @@ a.pdf {
     right: 0;
     width: 30px;
     background: #fff;
+    border-radius: 7px 0 0 7px;
 }
 
 .header_view .download:hover,

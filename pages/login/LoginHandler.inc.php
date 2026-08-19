@@ -122,7 +122,7 @@ class LoginHandler extends PKPLoginHandler {
      * @return string Valid return URL or empty string
      */
     private function _resolveReturnUrl($request, $session): string {
-        // 'source' is the OJS native parameter set when redirecting to login page
+        // 'source' is the App native parameter set when redirecting to login page
         $returnUrl = $request->getUserVar('source')
                   ?? $request->getUserVar('returnUrl')
                   ?? $session->getSessionVar('loginReturnUrl')
@@ -354,7 +354,7 @@ class LoginHandler extends PKPLoginHandler {
                 'affiliation' => $recordData['activities-summary']['employments']['affiliation-group'][0]['summaries'][0]['employment-summary']['organization']['name'] ?? '',
                 'biography'   => $recordData['person']['biography']['content'] ?? '',
             ]);
-            $request->redirect($contextPath ?: null, 'user', 'register');
+            $request->redirect($contextPath ?: null, 'register');  // [WIZDAM] Dipindah ke page="register" tersendiri
         }
     }
 
@@ -595,7 +595,7 @@ class LoginHandler extends PKPLoginHandler {
                 'lastName'  => $lastName,
                 'email'     => $googleEmail,
             ]);
-            $request->redirect($contextPath ?: null, 'user', 'register');
+            $request->redirect($contextPath ?: null, 'register');  // [WIZDAM] Dipindah ke page="register" tersendiri
         }
     }
 

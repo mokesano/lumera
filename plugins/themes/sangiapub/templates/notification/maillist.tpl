@@ -9,8 +9,8 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="notification.mailList"}
-{include file="common/header-parts/header-welcome.tpl"}
+    {assign var="pageTitle" value="notification.mailList"}
+    {include file="common/header-parts/header-welcome.tpl"}
 {/strip}
 
 <div class="login-container">
@@ -41,7 +41,7 @@
         {/if}
 
         <form id="notificationSettings" method="post" action="{url op="saveSubscribeMailList"}">
-            
+            <input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
             {* Email Fields *}
             <div class="form-group">
                 <input type="email" 
@@ -79,7 +79,7 @@
             {* [WIZDAM MODULAR SECURITY] *}
             {if $captchaEnabled || $turnstileEnabled || $reCaptchaEnabled}
             <div class="security-barrier">
-                {* 0. CAPTCHA Default OJS - NEW Version *}
+                {* 0. CAPTCHA Default - NEW Version *}
                 {if $captchaEnabled}
                 <div class="form-group">
                     <label class="form-section-label">{translate key="common.captchaField"}<span class="required-indicator">*</span></label>
@@ -134,11 +134,12 @@
             
             <p><input type="submit" value="{translate key="form.submit"}" class="button defaultButton" /></p>
         
+            {**
             {if $settings.allowRegReviewer || $settings.allowRegAuthor || $settings.subscriptionsEnabled}
             <h5 class="u-h5 u-mb-24">{translate key="notification.mailList.register"}</h5>
             <ul class="anonim">
             	{if $settings.allowRegReviewer}
-            		{url|assign:"url" page="user" op="register"}
+            		{url|assign:"url" page="register"}
             		<li>{translate key="notification.mailList.review" reviewUrl=$url} </li>
             	{/if}
             	{if $settings.allowRegAuthor}
@@ -146,11 +147,12 @@
             		<li>{translate key="notification.mailList.submit" submitUrl=$url} </li>
             	{/if}
             	{if $settings.subscriptionsEnabled}
-            		{url|assign:"url" page="user" op="register"}
+            		{url|assign:"url" page="register"}
             		<li>{translate key="notification.mailList.protectedContent" subscribeUrl=$url}
             	{/if}
             </ul>
             {/if}
+            **}
             
         </form>
         

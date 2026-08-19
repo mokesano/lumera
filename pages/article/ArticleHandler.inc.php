@@ -67,6 +67,58 @@ class ArticleHandler extends Handler {
     }
 
     /**
+     * [WIZDAM] Resolusi articleId dari args[0] URL menjadi INTERNAL numeric
+     * ID yang valid -- menangani BAIK ID numerik biasa MAUPUN custom
+     * publisher-id string (mis. "s2023111"). Dipakai SEMUA entry point
+     * yang menerima articleId sebagai argumen pertama URL: view(),
+     * viewFile(), download(), viewPDFInterstitial(),
+     * viewDownloadInterstitial(), downloadSuppFile().
+     *
+     * AKAR MASALAH yang diperbaiki method ini: Article::getBestArticleId()
+     * SENGAJA mengembalikan publisher-id STRING (bukan ID numerik) untuk
+     * membangun URL cantik ketika pengaturan jurnal enablePublicArticleId
+     * aktif. Tapi SEBELUM helper ini ada, method-method di atas langsung
+     * melakukan (int) cast pada args[0] -- mengubah "s2023111" menjadi 0
+     * dan membuat validate() SELALU gagal (redirect ke homepage) untuk
+     * SETIAP artikel yang diakses lewat custom ID-nya sendiri, termasuk
+     * link "Download PDF"/viewer PDF inline yang dibangun dari
+     * getBestArticleId() -- persis skenario yang dilaporkan.
+     *
+     * ID numerik TETAP diarahkan lewat jalur cache
+     * (getPublishedArticleByBestArticleId useCache=true) yang aman karena
+     * article_id internal unik secara GLOBAL lintas semua jurnal. ID
+     * kustom (string) diarahkan langsung journal-scoped TANPA cache
+     * global, supaya tidak salah ambil artikel jurnal lain yang kebetulan
+     * memakai publisher-id sama.
+     *
+     * @param mixed $articleIdInput Nilai args[0] URL -- bisa numerik atau string kustom.
+     * @param object $journal
+     * @return int Internal numeric article ID (0 kalau sama sekali tidak resolve).
+     */
+    protected function _resolveArticleId($articleIdInput, $journal) {
+        if ($articleIdInput === null || $articleIdInput === '' || !$journal) {
+            return 0;
+        }
+
+        $currentJournalId = (int) $journal->getId();
+        /** @var PublishedArticleDAO $publishedArticleDao */
+        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+
+        if (is_numeric($articleIdInput)) {
+            $articleObj = $publishedArticleDao->getPublishedArticleByBestArticleId($currentJournalId, $articleIdInput, true);
+        } else {
+            $articleObj = $publishedArticleDao->getPublishedArticleByPubId(
+                'publisher-id',
+                (string) $articleIdInput,
+                $currentJournalId,
+                false
+            );
+        }
+
+        return $articleObj ? (int) $articleObj->getId() : (int) $articleIdInput;
+    }
+
+    /**
      * View Article.
      * @param array $args
      * @param PKPRequest $request
@@ -89,25 +141,16 @@ class ArticleHandler extends Handler {
         }
         $currentJournalId = (int) $journal->getId();
 
-        // [WIZDAM] DETEKSI ID YANG LEBIH CERDAS (NUMERIC PUBLIC ID)
-        /** @var PublishedArticleDAO $publishedArticleDao */
-        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         /** @var IssueDAO $issueDao */
         $issueDao = DAORegistry::getDAO('IssueDAO');
-        $articleObj = null;
 
-        // 1. Coba cari pakai cara standar (Best ID)
-        $articleObj = $publishedArticleDao->getPublishedArticleByBestArticleId($currentJournalId, $articleIdInput, true);
-        // 2. FALLBACK: Jika gagal, inputnya angka, paksa cari sebagai Public ID
-        if (!$articleObj && is_numeric($articleIdInput)) {
-            $articleObj = $publishedArticleDao->getPublishedArticleByPubId(
-                'publisher-id', 
-                (string) $articleIdInput, 
-                $currentJournalId
-            );
-        }
-        // 3. RESOLUSI ID: Pastikan $articleId jadi INTERNAL ID (Integer) valid
-        $articleId = $articleObj ? (int) $articleObj->getId() : (int) $articleIdInput;
+        /** @var PublishedArticleDAO $publishedArticleDao */
+        $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+
+        // [WIZDAM BUGFIX] Resolusi ID lewat helper bersama _resolveArticleId()
+        // -- menangani ID numerik MAUPUN custom publisher-id string dengan
+        // benar (lihat dokblok helper untuk detail akar masalah & fix).
+        $articleId = $this->_resolveArticleId($articleIdInput, $journal);
         
         $issue = $issueDao ? $issueDao->getIssueByArticleId($articleId, $currentJournalId) : null;
 
@@ -376,7 +419,15 @@ class ArticleHandler extends Handler {
      * @param ArticleGalley|null $galley
      */
     public function viewPDFInterstitial($args, $request, $galley = null) {
-        $articleId = isset($args[0]) ? (int) $args[0] : 0;
+        // [WIZDAM BUGFIX] Sebelumnya (int) $args[0] langsung -- getBestArticleId()
+        // SENGAJA mengembalikan publisher-id STRING (mis. "s2023111") untuk
+        // URL cantik saat enablePublicArticleId aktif. (int) pada string yang
+        // diawali huruf menghasilkan 0, membuat validate() SELALU gagal
+        // (redirect ke homepage) untuk artikel yang diakses lewat custom ID --
+        // persis kasus link "Download PDF"/viewer PDF inline yang dibangun
+        // dari getBestArticleId(). Diperbaiki lewat helper _resolveArticleId()
+        // yang sama dipakai view().
+        $articleId = $this->_resolveArticleId(isset($args[0]) ? $args[0] : 0, $request->getJournal());
         $galleyId = isset($args[1]) ? (int) $args[1] : 0;
         
         $this->validate($request, $articleId, $galleyId);
@@ -419,7 +470,15 @@ class ArticleHandler extends Handler {
      * @param ArticleGalley|null $galley
      */
     public function viewDownloadInterstitial($args, $request, $galley = null) {
-        $articleId = isset($args[0]) ? (int) $args[0] : 0;
+        // [WIZDAM BUGFIX] Sebelumnya (int) $args[0] langsung -- getBestArticleId()
+        // SENGAJA mengembalikan publisher-id STRING (mis. "s2023111") untuk
+        // URL cantik saat enablePublicArticleId aktif. (int) pada string yang
+        // diawali huruf menghasilkan 0, membuat validate() SELALU gagal
+        // (redirect ke homepage) untuk artikel yang diakses lewat custom ID --
+        // persis kasus link "Download PDF"/viewer PDF inline yang dibangun
+        // dari getBestArticleId(). Diperbaiki lewat helper _resolveArticleId()
+        // yang sama dipakai view().
+        $articleId = $this->_resolveArticleId(isset($args[0]) ? $args[0] : 0, $request->getJournal());
         $galleyId = isset($args[1]) ? (int) $args[1] : 0;
         
         $this->validate($request, $articleId, $galleyId);
@@ -507,7 +566,8 @@ class ArticleHandler extends Handler {
         // Bukan galley PDF (atau tidak ditemukan) -- bukan skenario ini,
         // kembali ke halaman detail artikel normal.
         if (!$galley || !$galley->isPdfGalley()) {
-            $request->redirect(null, null, 'view', [$article->getBestArticleId($journal)]);
+            $redirectArticleId = $article->getBestArticleId($journal);
+            $request->redirect(null, null, 'view', [$redirectArticleId]);
             return;
         }
 
@@ -534,7 +594,15 @@ class ArticleHandler extends Handler {
      * @param PKPRequest $request
      */
     public function viewFile($args, $request) {
-        $articleId = isset($args[0]) ? (int) $args[0] : 0;
+        // [WIZDAM BUGFIX] Sebelumnya (int) $args[0] langsung -- getBestArticleId()
+        // SENGAJA mengembalikan publisher-id STRING (mis. "s2023111") untuk
+        // URL cantik saat enablePublicArticleId aktif. (int) pada string yang
+        // diawali huruf menghasilkan 0, membuat validate() SELALU gagal
+        // (redirect ke homepage) untuk artikel yang diakses lewat custom ID --
+        // persis kasus link "Download PDF"/viewer PDF inline yang dibangun
+        // dari getBestArticleId(). Diperbaiki lewat helper _resolveArticleId()
+        // yang sama dipakai view().
+        $articleId = $this->_resolveArticleId(isset($args[0]) ? $args[0] : 0, $request->getJournal());
         $galleyId = isset($args[1]) ? $args[1] : 0;
         $fileId = isset($args[2]) ? (int) $args[2] : 0;
 
@@ -579,7 +647,15 @@ class ArticleHandler extends Handler {
      * @param PKPRequest $request
      */
     public function download($args, $request) {
-        $articleId = isset($args[0]) ? (int) $args[0] : 0;
+        // [WIZDAM BUGFIX] Sebelumnya (int) $args[0] langsung -- getBestArticleId()
+        // SENGAJA mengembalikan publisher-id STRING (mis. "s2023111") untuk
+        // URL cantik saat enablePublicArticleId aktif. (int) pada string yang
+        // diawali huruf menghasilkan 0, membuat validate() SELALU gagal
+        // (redirect ke homepage) untuk artikel yang diakses lewat custom ID --
+        // persis kasus link "Download PDF"/viewer PDF inline yang dibangun
+        // dari getBestArticleId(). Diperbaiki lewat helper _resolveArticleId()
+        // yang sama dipakai view().
+        $articleId = $this->_resolveArticleId(isset($args[0]) ? $args[0] : 0, $request->getJournal());
         $galleyId = isset($args[1]) ? $args[1] : 0;
         
         $this->validate($request, $articleId, $galleyId);
@@ -612,7 +688,15 @@ class ArticleHandler extends Handler {
      * @param PKPRequest $request
      */
     public function downloadSuppFile($args, $request) {
-        $articleId = isset($args[0]) ? (int) $args[0] : 0;
+        // [WIZDAM BUGFIX] Sebelumnya (int) $args[0] langsung -- getBestArticleId()
+        // SENGAJA mengembalikan publisher-id STRING (mis. "s2023111") untuk
+        // URL cantik saat enablePublicArticleId aktif. (int) pada string yang
+        // diawali huruf menghasilkan 0, membuat validate() SELALU gagal
+        // (redirect ke homepage) untuk artikel yang diakses lewat custom ID --
+        // persis kasus link "Download PDF"/viewer PDF inline yang dibangun
+        // dari getBestArticleId(). Diperbaiki lewat helper _resolveArticleId()
+        // yang sama dipakai view().
+        $articleId = $this->_resolveArticleId(isset($args[0]) ? $args[0] : 0, $request->getJournal());
         $suppId = isset($args[1]) ? $args[1] : 0;
 
         $this->validate($request, $articleId);

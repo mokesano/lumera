@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file plugins/generic/pdfJsViewer/PdfJsViewerPlugin.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
  * @class PdfJsViewerPlugin
  *
@@ -70,7 +70,7 @@ class PdfJsViewerPlugin extends GenericPlugin {
                     $templateMgr->assign('pluginTemplatePath', $templatePath);
                     $templateMgr->assign('pluginUrl', Request::getBaseUrl() . DIRECTORY_SEPARATOR . $this->getPluginPath());
                     $params['smarty_include_tpl_file'] = $templatePath . 'articleGalley.tpl';
-                    break;
+                    break; // Jika return true; halaman pdf gagal tampil
             }
             return false;
         }
@@ -93,7 +93,7 @@ class PdfJsViewerPlugin extends GenericPlugin {
                     $templateMgr->assign('pluginTemplatePath', $templatePath);
                     $templateMgr->assign('pluginUrl', Request::getBaseUrl() . DIRECTORY_SEPARATOR . $this->getPluginPath());
                     $template = $templatePath . 'issueGalley.tpl';
-                    break;
+                    break; // Jika return true; halaman pdf gagal tampil
             }
             return false;
         }

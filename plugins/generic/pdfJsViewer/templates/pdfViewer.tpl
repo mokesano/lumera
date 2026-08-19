@@ -6,35 +6,23 @@
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * Embedded PDF viewer using pdf.js.
+ *
+ * [WIZDAM] Diperbarui total untuk pdf.js v6.2.108 (build legacy resmi
+ * Mozilla, dari https://github.com/mozilla/pdf.js/releases). pdf.js
+ * SEBELUMNYA hanya v1.0.907 (2015, ~10 tahun, banyak CVE parsing PDF
+ * yang sudah diperbaiki di rilis-rilis setelahnya).
+ *
+ * pdf.js modern (bahkan varian "legacy") didistribusikan sebagai ES
+ * module (.mjs) -- API level-rendah lama (global PDFJS.getDocument()
+ * + render manual ke <canvas>, sebelumnya DIKOMENTARI/nonaktif di
+ * berkas ini) TIDAK LAGI KOMPATIBEL begitu saja dengan format modul
+ * baru. Solusinya justru lebih SEDERHANA dan lebih TANGGUH: embed
+ * web/viewer.html APA ADANYA lewat iframe -- aplikasi viewer pdf.js
+ * yang LENGKAP DAN MANDIRI (memuat modul/worker/CSS-nya sendiri),
+ * tanpa perlu satu baris JS custom pun di sisi kita. ?file=... adalah
+ * parameter resmi viewer.html untuk memuat PDF dari URL.
  *}
 
-{*
-<script type="text/javascript" src="{$pluginUrl}/pdf.js/build/pdf.js"></script>
-<script type="text/javascript">
-	{literal}
-		$(document).ready(function() {
-			PDFJS.workerSrc='{/literal}{$pluginUrl}/pdf.js/build/pdf.worker.js{literal}';
-			PDFJS.getDocument({/literal}'{$pdfUrl|escape:"javascript"}'{literal}).then(function(pdf) {
-				// Using promise to fetch the page
-				pdf.getPage(1).then(function(page) {
-					var pdfCanvasContainer = $('#pdfCanvasContainer');
-					var canvas = document.getElementById('pdfCanvas');
-					canvas.height = pdfCanvasContainer.height();
-					canvas.width = pdfCanvasContainer.width()-2; // 1px border each side
-					var viewport = page.getViewport(canvas.width / page.getViewport(1.0).width);
-					var context = canvas.getContext('2d');
-					var renderContext = {
-						canvasContext: context,
-						viewport: viewport
-					};
-					page.render(renderContext);
-				});
-			});
-		});
-	{/literal}
-</script>
-<script type="text/javascript" src="{$pluginUrl}/pdf.js/web/viewer.js"></script> *}
-
 <div id="pdfCanvasContainer" class="galley_view">
-	<iframe src="{$pdfUrl}" width="100%" height="100%" style="min-height: 500px;" allowfullscreen webkitallowfullscreen></iframe> 
+	<iframe src="{$pluginUrl}/pdf.js/web/viewer.html?file={$pdfUrl|escape:'url'}" title="{translate key="article.pdf.download"|escape}" width="100%" height="100%" style="border:0; min-height:700px;" allowfullscreen webkitallowfullscreen></iframe>
 </div>

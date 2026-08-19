@@ -625,7 +625,8 @@ class RegistrationForm extends Form {
                 
                 $mail->assignParams(array(
                     'userFullName'   => $user->getFullName(),
-                    'activateUrl'    => Request::url($journal->getPath(), 'user', 'activateUser', array($this->getData('username'), $accessKey)),
+                    // [WIZDAM] Registrasi dipindah ke page="register" tersendiri.
+                    'activateUrl'    => Request::url($journal->getPath(), 'register', 'activateUser', array($this->getData('username'), $accessKey)),
                     'userEmail'      => $user->getEmail(),
                     'username'       => $this->getData('username'),
                     'dateRegistered' => date('d-m-Y', strtotime((string) $user->getDateRegistered())), // Format tanggal yang lebih rapi

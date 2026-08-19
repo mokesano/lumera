@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * templates/article/header.tpl
+ * templates/article/header-metrics.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2003-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
- * Article View -- Header component.
+ * Header Metrics Article -- Header component.
  *}
 <head>
 	<title>{translate key="article.articleMetrics"} | {$article->getLocalizedTitle()|strip_tags|escape} - Sangia Publishing</title>
@@ -360,7 +360,7 @@
                     </li>
                     {if !$hideRegisterLink}
                     <li class="u-hide c-header__item c-header__item--padding c-header__item--pipe">
-                		<a id="register-button" class="c-header__link placeholder" href="{url page="user" op="register"}" style="register" data-test="register-link" data-track="click" data-track-action="register" data-track-category="sangia-split-header" data-track-label="link">
+                		<a id="register-button" class="c-header__link placeholder" href="{url page="register"}" style="register" data-test="register-link" data-track="click" data-track-action="register" data-track-category="sangia-split-header" data-track-label="link">
                 		    <span>{translate key="navigation.register"}</span>
                             <svg role="img" aria-hidden="true" focusable="false" height="22" width="22" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M10.238 16.905a7.96 7.96 0 003.53-1.48c-.874-2.514-2.065-3.936-3.768-4.319V9.83a3.001 3.001 0 10-2 0v1.277c-1.703.383-2.894 1.805-3.767 4.319A7.96 7.96 0 009 17c.419 0 .832-.032 1.238-.095zm4.342-2.172a8 8 0 10-11.16 0c.757-2.017 1.84-3.608 3.49-4.322a4 4 0 114.182 0c1.649.714 2.731 2.305 3.488 4.322zM9 18A9 9 0 119 0a9 9 0 010 18z" fill="#333" fill-rule="evenodd"></path></svg>
                 		</a>
@@ -579,4 +579,3 @@
 </div>
 
 <div id="main-content" class="u-container u-mt-24 u-mb-32" data-component="article-container">
-    

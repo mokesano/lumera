@@ -1,5 +1,5 @@
 {**
- * File: /templates/user/register.tpl
+ * @file templates/user/register.tpl
  *
  * Copyright (c) 2017-2026 Wizdam Publishing House
  * Copyright (c) 2017-2026 Rochmady and Wizdam Team
@@ -35,12 +35,12 @@
                 {* Existing user handling *}
                 {if !$implicitAuth || ($implicitAuth === $smarty.const.IMPLICIT_AUTH_OPTIONAL && !$isloggedin)}
                     {if !$existingUser}
-                        {url|assign:"url" page="user" op="register" existingUser=1}
+                        {url|assign:"url" page="register" existingUser=1}
                         <div class="alert alert-info">
                             <p>{translate key="user.register.alreadyRegisteredOtherJournal" registerUrl=$url}</p>
                         </div>
                     {else}
-                        {url|assign:"url" page="user" op="register"}
+                        {url|assign:"url" page="register"}
                         <div class="alert alert-info">
                             <p>{translate key="user.register.notAlreadyRegisteredOtherJournal" registerUrl=$url}</p>
                         </div>
@@ -79,7 +79,7 @@
                     <h3 class="form-section-title">{translate key="form.formLanguage"}</h3>
                     <div class="form-group">
                         <div class="language-selector-container">
-                        {url|assign:"userRegisterUrl" page="user" op="register" escape=false}
+                        {url|assign:"userRegisterUrl" page="register" escape=false}
                         {form_language_chooser form="registerForm" url=$userRegisterUrl}
                         </div>
                         <div class="form-help-text">{translate key="form.formLanguage.description"}</div>

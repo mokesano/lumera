@@ -152,12 +152,9 @@
 	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" />
 	
 	<link rel="preload" href="{$baseUrl}/assets/static/styles/font.css" type="text/css" as="style" />
-    <link rel="preload" href="//assets.sangia.org/css/themes/art_srm.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="//assets.sangia.org/css/themes/art_srm.css"></noscript>
-
-    <link rel="preload" href="{$baseUrl}/assets/static/styles/wizdam_article_v1.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    
 	<link rel="stylesheet preload" href="{$baseUrl}/assets/static/styles/font.css" type="text/css" as="style" />
+
+    <link rel="preload" href="{$baseUrl}/assets/static/styles/Lumera_article--branded.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     
 	{$additionalHeadData}    
 

@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class ShibAuthPlugin
  * @ingroup plugins_implicitAuth_shibboleth
  *
- * @brief Shibboleth plugin class
- * MODERNIZED FOR WIZDAM FORK
+ * @brief Shibboleth implicit authentication plugin.
  */
 
 import('classes.plugins.ImplicitAuthPlugin');
@@ -20,39 +19,31 @@ import('classes.plugins.ImplicitAuthPlugin');
 class ShibAuthPlugin extends ImplicitAuthPlugin {
 
     /**
-     * Register the plugin
-     * @copydoc Plugin::register()
+     * Register the plugin.
      * @param string $category
      * @param string $path
      * @param int|null $mainContextId
-     * @return bool True if plugin initialized successfully
+     * @return bool
      */
     public function register(string $category, string $path, $mainContextId = null): bool {
-
-        // We use the callback mechanism to call the implicitAuth function.
-        //
-        // If there ends up being another implicitAuth plugin - then this registration statement
-        // should be removed - so that the other plugin gets called
-
         HookRegistry::register('ImplicitAuthPlugin::implicitAuth', [$this, 'implicitAuth']);
 
-        $success = parent::register($category, $path, $mainContextId);
+        $success = parent::register($category, $path);
         $this->addLocaleData();
+        
         return $success;
     }
 
     /**
-     * Get name of the plugin
-     * @copydoc Plugin::getName()
+     * Get the plugin name.
      * @return string
      */
     public function getName(): string {
-        return "ShibAuthPlugin";
+        return 'ShibAuthPlugin';
     }
 
     /**
-     * Get display name of the plugin
-     * @copydoc Plugin::getDisplayName()
+     * Get the display name.
      * @return string
      */
     public function getDisplayName(): string {
@@ -60,8 +51,7 @@ class ShibAuthPlugin extends ImplicitAuthPlugin {
     }
 
     /**
-     * Get description of the plugin
-     * @copydoc Plugin::getDescription()
+     * Get the description.
      * @return string
      */
     public function getDescription(): string {
@@ -69,7 +59,7 @@ class ShibAuthPlugin extends ImplicitAuthPlugin {
     }
 
     /**
-     * Return true that this is a site-wide plugin.
+     * Check if this is a site-wide plugin.
      * @return bool
      */
     public function isSitePlugin(): bool {
@@ -77,149 +67,109 @@ class ShibAuthPlugin extends ImplicitAuthPlugin {
     }
 
     /**
-     * Log a user in after they have been authenticated via Shibboleth
-     * @param string $hookname
-     * @param array $args
+     * Authenticate user via Shibboleth headers.
+     * @return bool
      */
     public function implicitAuth() {
-        // [Wizdam Fix] Capture arguments dynamically to resolve signature mismatch
-        // with parent::implicitAuth() which has no parameters.
         $arguments = func_get_args();
-        $hookname = isset($arguments[0]) ? $arguments[0] : null;
-        $args = isset($arguments[1]) ? $arguments[1] : null;
-        
-        // Get the name of the field to use a UIN (primary key) from config file
-        $uin = Config::getVar('security', 'implicit_auth_header_uin'); // For TDL this is HTTP_TDL_TDLUID
+        $args = $arguments[1] ?? [];
 
-        if ($uin == "") {
-            die("Implicit Auth enabled in config file - but implicit_auth_uin not defined.");
+        $uinHeader = Config::getVar('security', 'implicit_auth_header_uin');
+        if (empty($uinHeader)) {
+            die('Implicit Auth enabled in config file - but implicit_auth_header_uin not defined.');
         }
 
-        // If we can't find the user's UIN - this is a problem - send back to login screen (for the lack of something better to do)
-        if (!isset($_SERVER[$uin])) {
-            syslog(LOG_ERR, "Implicit Auth enabled in config file - but expected header variables not found.");
+        if (!isset($_SERVER[$uinHeader])) {
+            syslog(LOG_ERR, 'Implicit Auth: expected header variables not found.');
             Validation::logout();
             Validation::redirectLogin();
+            exit;
         }
 
-        // Get the header variable indicated by the config variable
-        $uid = $_SERVER[$uin];
-
-        // If we dont have a UIN in the header then we can't continue - so send them back to the login screen.
-        if ($uid == null) {
+        $uid = $_SERVER[$uinHeader];
+        if (empty($uid)) {
             Validation::logout();
             Validation::redirectLogin();
+            exit;
         }
 
-        // Get email from header -- after consulting the map
-        $email_key = Config::getVar('security', 'implicit_auth_header_email');
-
-        if ($email_key == "") {
-            die("Implicit Auth enabled in config file - but email is not defined.");
+        $emailHeader = Config::getVar('security', 'implicit_auth_header_email');
+        if (empty($emailHeader)) {
+            die('Implicit Auth enabled in config file - but implicit_auth_header_email not defined.');
         }
 
-        $email = $_SERVER[$email_key];
+        $email = $_SERVER[$emailHeader] ?? '';
 
-        // Get the user dao - so we can look up the user
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
-
-        // Get user by auth string
         $user = $userDao->getUserByAuthStr($uid, true);
-
-        if (isset($user)) {
-            syslog(LOG_ERR, "Found user by uid: " . $uid . " Returning user.");
-            syslog(LOG_ERR, "Users UID: " . $user->getAuthStr());
-
-            // Go see if this user should be an admin
-            ShibAuthPlugin::implicitAuthAdmin($user->getId(), $user->getAuthStr());
-            
-            // Set the user in the arguments array to return it to the hook caller
-            $args[0] = $user;
-
-            syslog(LOG_ERR, " In ShibAuthPlugin username: " . $user->getUsername());
+        
+        if ($user) {
+            self::implicitAuthAdmin($user->getId(), $user->getAuthStr());
+            if (is_array($args)) {
+                $args[0] = $user; // Note: Won't pass by reference due to func_get_args()
+            }
             return true;
         }
 
-        // If we were not succsessful getting user by UIN - see if we can get the user by email.
-        // If we find a user with this email - but with an existing UID - then this is a problem
         $user = $userDao->getUserByEmail($email);
-
-        if (isset($user)) {
-            if ($user->getAuthStr() != "") {
-                unset($user);
-                die("Implicit Auth: New email with existing UID");
+        if ($user) {
+            if ($user->getAuthStr() !== '') {
+                die('Implicit Auth: New email with existing UID');
             }
-
             $user->setAuthStr($uid);
             $userDao->updateObject($user);
-
-            // Go see if this user should be made an admin
-            ShibAuthPlugin::implicitAuthAdmin($user->getId(), $user->getAuthStr());
-
-            $args[0] = $user;
+            
+            self::implicitAuthAdmin($user->getId(), $user->getAuthStr());
+            if (is_array($args)) {
+                $args[0] = $user;
+            }
             return true;
         }
 
-        // User not found via UID or by email - so they are new - so just create them
         $user = $this->registerUserFromShib();
-
-        // Go see if this new user should be made an admin
-        ShibAuthPlugin::implicitAuthAdmin($user->getId(), $user->getAuthStr());
-
-        $args[0] = $user;
+        if ($user) {
+            self::implicitAuthAdmin($user->getId(), $user->getAuthStr());
+            if (is_array($args)) {
+                $args[0] = $user;
+            }
+        }
 
         return true;
     }
 
-
     /**
-     * Register a new user. 
-     * See classes/user/form/RegistrationForm.inc.php
-     * for how this is done for registering a user in a non-shib environment.
-     * @return User|false newly registered user or false on failure
+     * Register a new user from Shibboleth headers.
+     * @return User|false
      */
     public function registerUserFromShib() {
+        $uinHeader = Config::getVar('security', 'implicit_auth_header_uin');
+        $firstNameHeader = Config::getVar('security', 'implicit_auth_header_first_name');
+        $lastNameHeader = Config::getVar('security', 'implicit_auth_header_last_name');
+        $emailHeader = Config::getVar('security', 'implicit_auth_header_email');
+        $phoneHeader = Config::getVar('security', 'implicit_auth_header_phone');
+        $mailingAddressHeader = Config::getVar('security', 'implicit_auth_header_mailing_address');
 
-        // Grab the names of the header fields from the config file
-        $uin = Config::getVar('security', 'implicit_auth_header_uin'); // For TDL this is HTTP_TDL_TDLUID
-
-        $first_name = Config::getVar('security', 'implicit_auth_header_first_name');
-        $last_name = Config::getVar('security', 'implicit_auth_header_last_name');
-        $email = Config::getVar('security', 'implicit_auth_header_email');
-        $phone = Config::getVar('security', 'implicit_auth_header_phone');
-        $initials = Config::getVar('security', 'implicit_auth_header_initials');
-        $mailing_address = Config::getVar('security', 'implicit_auth_header_mailing_address');
-        $uin = Config::getVar('security', 'implicit_auth_header_uin');
-
-        // Create a new user object and set it's fields from the header variables
         $user = new User();
-
-        $user->setAuthStr($_SERVER[$uin]);
-        $user->setUsername($_SERVER[$email]); # Mail is userid
-
-        $user->setFirstName($_SERVER[$first_name]);
-        $user->setLastName($_SERVER[$last_name]);
-        $user->setEmail($_SERVER[$email]);
-        $user->setPhone($_SERVER[$phone]);
-        $user->setMailingAddress($_SERVER[$mailing_address]);
+        $user->setAuthStr($_SERVER[$uinHeader] ?? '');
+        $user->setUsername($_SERVER[$emailHeader] ?? '');
+        $user->setFirstName($_SERVER[$firstNameHeader] ?? '');
+        $user->setLastName($_SERVER[$lastNameHeader] ?? '');
+        $user->setEmail($_SERVER[$emailHeader] ?? '');
+        $user->setPhone($_SERVER[$phoneHeader] ?? '');
+        $user->setMailingAddress($_SERVER[$mailingAddressHeader] ?? '');
         $user->setDateRegistered(Core::getCurrentDate());
 
-        // Randomly genearate the user's password, using a randomly generated salt
-        // Salting with a value other than the authStr/UIN prevents password-based login
-        // (eg in the case that implicit auth is disabled later)
         $user->setPassword(Validation::encryptCredentials(Validation::generatePassword(40), Validation::generatePassword(40)));
 
-        // Now go insert the user in the db
+        /** @var UserDAO $userDao */
         $userDao = DAORegistry::getDAO('UserDAO');
         $userDao->insertUser($user);
 
-        $userId = $user->getId();
-
-        if (!$userId) {
+        if (!$user->getId()) {
             return false;
         }
 
-        // Go put the user into the session and return it.
         $sessionManager = SessionManager::getManager();
         $session = $sessionManager->getUserSession();
         $session->setSessionVar('username', $user->getUsername());
@@ -228,40 +178,31 @@ class ShibAuthPlugin extends ImplicitAuthPlugin {
     }
 
     /**
-     * If this user is in the list of admins then make sure they are set up as an admin.
-     * If they are not in the list - make sure they are not an admin. 
-     * This is so you can  take someone off the admin list - and their admin 
-     * privelege will be revoked.
-     * @param int $userID
+     * Synchronize user admin role based on config whitelist.
+     * @param int $userId
      * @param string $authStr
      * @return void
      */
-    public static function implicitAuthAdmin($userID, $authStr) {
+    public static function implicitAuthAdmin($userId, $authStr) {
+        $adminListStr = Config::getVar('security', 'implicit_auth_admin_list');
+        $adminList = $adminListStr ? explode(' ', $adminListStr) : [];
+        $isAdmin = in_array($authStr, $adminList, true);
 
-        $adminstr = Config::getVar('security', "implicit_auth_admin_list");
-        $adminlist = explode(" ", $adminstr);
-        $key = array_search($authStr, $adminlist);
-
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
-
-        // If they are in the list of users who should be admins
-        if ($key !== false) {
-            // and if they are not already an admin
-            if (!$roleDao->userHasRole(0, $userID, ROLE_ID_SITE_ADMIN)) {
-                syslog(LOG_ERR, "Implicit Auth - Making Admin: " . $userID);
-
-                // make them an admin
+        
+        if ($isAdmin) {
+            if (!$roleDao->userHasRole(0, $userId, ROLE_ID_SITE_ADMIN)) {
                 $role = new Role();
                 $role->setJournalId(0);
-                $role->setUserId($userID);
+                $role->setUserId($userId);
                 $role->setRoleId(ROLE_ID_SITE_ADMIN);
                 $roleDao->insertRole($role);
             }
         } else {
-            // If they are not in the admin list - then be sure they are not an admin in the role table
-            syslog(LOG_ERR, "removing admin for: " . $userID);
-            $roleDao->deleteRoleByUserId($userID, 0, ROLE_ID_SITE_ADMIN);
+            $roleDao->deleteRoleByUserId($userId, 0, ROLE_ID_SITE_ADMIN);
         }
     }
+
 }
 ?>

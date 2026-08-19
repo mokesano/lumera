@@ -9,22 +9,22 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="about.submissions"}
-{include file="common/header.tpl"}
+	{assign var="pageTitle" value="about.submissions"}
+	{include file="common/header.tpl"}
 {/strip}
 
-{if $currentJournal->getSetting('journalPaymentsEnabled') && 
-		($currentJournal->getSetting('submissionFeeEnabled') || $currentJournal->getSetting('fastTrackFeeEnabled') || $currentJournal->getSetting('publicationFeeEnabled')) }
+{if $currentJournal->getSetting('journalPaymentsEnabled') && ($currentJournal->getSetting('submissionFeeEnabled') || $currentJournal->getSetting('fastTrackFeeEnabled') || $currentJournal->getSetting('publicationFeeEnabled')) }
 	{assign var="authorFees" value=1}
 {/if}
 
 {if $currentJournal->getLocalizedSetting('authorGuidelines') != ''}
 <div id="authorGuidelines" class="block">
-    <header class="c-anchored-heading"><h3>{translate key="about.authorGuidelines"}</h3><a class="c-anchored-heading__helper" href="#menu">Back to top</a>
+    <header class="c-anchored-heading">
+		<h3>{translate key="about.authorGuidelines"}</h3><a class="c-anchored-heading__helper" href="#menu">Back to top</a>
     </header>
-<p>{$currentJournal->getLocalizedSetting('authorGuidelines')|nl2br}</p>
+	<p>{$currentJournal->getLocalizedSetting('authorGuidelines')|nl2br}</p>
 
-{if !$currentJournal->getSetting('disableUserReg')}
+	{if !$currentJournal->getSetting('disableUserReg')}
 		<p class="callout">{translate key="about.onlineSubmissions.registrationRequired"}</p>
 		<div >
 			<p>{translate key="about.onlineSubmissions.haveAccount" journalTitle=$siteTitle|escape}</p>
@@ -34,17 +34,18 @@
 		
 		<div >			
 			<p>{translate key="about.onlineSubmissions.needAccount"}</p>
-			<a href="{url page="user" op="register"}" class="action">{translate key="about.onlineSubmissions.registration"}</a>
+			<a href="{url page="register"}" class="action">{translate key="about.onlineSubmissions.registration"}</a>
 		</div>
-{/if}
+	{/if}
 
-<div class="separator">&nbsp;</div>
+	<div class="separator">&nbsp;</div>
 </div>
 {/if}
 
 {if $submissionChecklist}
-	<div id="submissionPreparationChecklist" class="block">
-	    <header class="c-anchored-heading"><h3>{translate key="about.submissionPreparationChecklist"}</h3><a class="c-anchored-heading__helper" href="#menu">Back to top</a>
+<div id="submissionPreparationChecklist" class="block">
+    <header class="c-anchored-heading">
+		<h3>{translate key="about.submissionPreparationChecklist"}</h3><a class="c-anchored-heading__helper" href="#menu">Back to top</a>
     </header>
 	<p>{translate key="about.submissionPreparationChecklist.description"}</p>
 	<ol>
@@ -53,32 +54,33 @@
 		{/foreach}
 	</ol>
 	<div class="separator">&nbsp;</div>
-	</div>
+</div>
 {/if}{* $submissionChecklist *}
 
 {if $currentJournal->getLocalizedSetting('copyrightNotice') != ''}
 <div id="copyrightNotice" class="block">
-    <header class="c-anchored-heading"><h3>{translate key="about.copyrightNotice"}</h3><a class="c-anchored-heading__helper" href="#menu">Back to top</a>
+    <header class="c-anchored-heading">
+		<h3>{translate key="about.copyrightNotice"}</h3><a class="c-anchored-heading__helper" href="#menu">Back to top</a>
     </header>
-<p>{$currentJournal->getLocalizedSetting('copyrightNotice')|nl2br}</p>
-
-<div class="separator">&nbsp;</div>
+	<p>{$currentJournal->getLocalizedSetting('copyrightNotice')|nl2br}</p>
+	<div class="separator">&nbsp;</div>
 </div>
 {/if}
 
-{if $currentJournal->getLocalizedSetting('privacyStatement') != ''}<div id="privacyStatement" class="block">
-    <header class="c-anchored-heading"><h3>{translate key="about.privacyStatement"}</h3><a class="c-anchored-heading__helper" href="#menu">Back to top</a>
+{if $currentJournal->getLocalizedSetting('privacyStatement') != ''}
+<div id="privacyStatement" class="block">
+    <header class="c-anchored-heading">
+		<h3>{translate key="about.privacyStatement"}</h3><a class="c-anchored-heading__helper" href="#menu">Back to top</a>
     </header>
-<p>{$currentJournal->getLocalizedSetting('privacyStatement')|nl2br}</p>
-
-<div class="separator">&nbsp;</div>
+	<p>{$currentJournal->getLocalizedSetting('privacyStatement')|nl2br}</p>
+	<div class="separator">&nbsp;</div>
 </div>
 {/if}
 
 {if $authorFees}
-
 <div id="authorFees" class="block">
-    <header class="c-anchored-heading"><h3>{translate key="manager.payment.authorFees"}</h3><a class="c-anchored-heading__helper" href="#menu">Back to top</a>
+    <header class="c-anchored-heading">
+		<h3>{translate key="manager.payment.authorFees"}</h3><a class="c-anchored-heading__helper" href="#menu">Back to top</a>
     </header>
 	<p>{translate key="about.authorFeesMessage"}</p>
 	{if $currentJournal->getSetting('submissionFeeEnabled')}
@@ -100,4 +102,3 @@
 {/if}
 
 {include file="common/footer.tpl"}
-

@@ -28,7 +28,7 @@
     <div class="auth-card login-card">
         <div class="auth-header u-mb-32">
             <h4 class="form-section-label">Welcome back!</h4>
-            <p class="auth-subtitle">Please enter your credentials below to sign in to your account{if !$hideRegisterLink}, or <a href="{url page="user" op=$registerOp}">register</a> if you don’t have an account yet{/if}.</p>
+            <p class="auth-subtitle">Please enter your credentials below to sign in to your account{if !$hideRegisterLink}, or <a href="{url page="register" op=$registerOp}">register</a> if you don’t have an account yet{/if}.</p>
         </div>
 
         {* [WIZDAM SSO] ORCID and Google Integration *}

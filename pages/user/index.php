@@ -40,15 +40,6 @@ switch ($op) {
 		import('pages.user.ProfileHandler');
 		break;
 	//
-	// Registration
-	//
-	case 'register':
-	case 'registerUser':
-	case 'activateUser':
-		define('HANDLER_CLASS', 'RegistrationHandler');
-		import('pages.user.RegistrationHandler');
-		break;
-	//
 	// Email
 	//
 	case 'email':
@@ -67,7 +58,6 @@ switch ($op) {
         define('HANDLER_CLASS', 'UserSubscriptionHandler');
         import('pages.user.UserSubscriptionHandler');
         break;
-
     //
     // Gifts
     //

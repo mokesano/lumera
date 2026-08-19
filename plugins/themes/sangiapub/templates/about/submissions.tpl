@@ -43,7 +43,7 @@
 		{if !$currentJournal->getSetting('disableUserReg')}
 			<p>
 				{translate key="about.onlineSubmissions.needAccount"}<br />
-				<a href="{url page="user" op="register"}" class="action">{translate key="about.onlineSubmissions.registration"}</a>
+				<a href="{url page="register"}" class="action">{translate key="about.onlineSubmissions.registration"}</a>
 			</p>
 			<p>{translate key="about.onlineSubmissions.registrationRequired"}</p>
 		{/if}

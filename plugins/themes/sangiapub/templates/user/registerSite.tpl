@@ -9,23 +9,23 @@
  *
  *}
 {strip}
-{include file="common/header-parts/header-register.tpl"}
+	{include file="common/header-parts/header-register.tpl"}
 {/strip}
 
 <div id="journals">
-{iterate from=journals item=journal}
-	{if !$notFirstJournal}
-		<h4 class="form-section-label">{translate key="user.register.selectJournal"}:</h4>
-		<ul>
-		{assign var=notFirstJournal value=1}
+	{iterate from=journals item=journal}
+		{if !$notFirstJournal}
+			<h4 class="form-section-label">{translate key="user.register.selectJournal"}:</h4>
+			<ul>
+			{assign var=notFirstJournal value=1}
+		{/if}
+		<li><a href="{url journal=$journal->getPath() page="register"}">{$journal->getLocalizedTitle()|escape}</a></li>
+	{/iterate}
+	{if $journals->wasEmpty()}
+		{translate key="user.register.noJournals"}
+	{else}
+		</ul>
 	{/if}
-	<li><a href="{url journal=$journal->getPath() page="user" op="register"}">{$journal->getLocalizedTitle()|escape}</a></li>
-{/iterate}
-{if $journals->wasEmpty()}
-	{translate key="user.register.noJournals"}
-{else}
-	</ul>
-{/if}
 </div>
 
 {include file="common/footer-parts/footer-welcome.tpl"}

@@ -1,4 +1,117 @@
 /**
+ * @file public/assets/js/Lumera_Article.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Code Lumera 
+ * Copyright (c) 2024-2026 Rochmady and Development Team
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief Pengaturan artikel.
+ *        - Menampilkan Highlights saat halaman dimuat
+ *        - Mengatur ulang panel referensi
+ *        - Mengatur tombol "Show more" referensi
+ */
+
+/**
+ * Show More/Less Affiliation
+ * Mengatur tampilan "Show More/Less" pada elemen afiliasi author
+ * 
+ * @author Rochmady and Wizdam Team
+ * @version 1.0.0
+ */
+document.addEventListener("DOMContentLoaded", function () {
+    const showMoreBtn = document.getElementById("show-more-btn");
+    const wrapper = document.querySelector(".wrapper");
+
+    // 1. Buat array dengan elemen standar dulu
+    const elementsToToggle = [
+        document.getElementById("affiliation-group"),
+        document.querySelector(".crossmark-button")
+    ];
+
+    // 2. Cek apakah wrapper ada. Jika ada, tambahkan elemen <p> ke dalam array tadi
+    if (wrapper) {
+        elementsToToggle.push(wrapper.querySelector("p"));
+    }
+
+    /**
+     * Mengatur arah panah
+     * @param {boolean} isExpanded - Menentukan apakah panah diperluas atau tidak.
+     */
+    const toggleArrowDirection = (isExpanded) => {
+        const svgIcon = showMoreBtn.querySelector("svg");
+        if (svgIcon) {
+            svgIcon.style.transform = isExpanded ? "rotate(180deg)" : "rotate(0deg)";
+        }
+    }
+
+    // Perbaikan: Cek apakah tombol showMoreBtn ada sebelum diproses
+    if (showMoreBtn) {
+        showMoreBtn.addEventListener("click", function () {
+            const isExpanded = showMoreBtn.getAttribute("aria-expanded") === "true";
+    
+            if (isExpanded) {
+                elementsToToggle.forEach(element => {
+                    if (element) {
+                        element.hidden = true;
+                    }
+                });
+                
+                // Cek wrapper untuk keamanan ekstra
+                if (typeof wrapper !== 'undefined' && wrapper) {
+                    wrapper.classList.add("truncated");
+                }
+                
+                showMoreBtn.setAttribute("aria-expanded", "false");
+                showMoreBtn.setAttribute("data-aa-button", "icon-collapse");
+                showMoreBtn.querySelector(".anchor-text").textContent = "Show more";
+                toggleArrowDirection(false);
+            } else {
+                elementsToToggle.forEach(element => {
+                    if (element) {
+                        element.hidden = false;
+                    }
+                });
+                
+                // Cek wrapper untuk keamanan ekstra
+                if (typeof wrapper !== 'undefined' && wrapper) {
+                    wrapper.classList.remove("truncated");
+                }
+                
+                showMoreBtn.setAttribute("aria-expanded", "true");
+                showMoreBtn.setAttribute("data-aa-button", "icon-expand");
+                showMoreBtn.querySelector(".anchor-text").textContent = "Show less";
+                toggleArrowDirection(true);
+            }
+        });
+    }
+
+    // Perbaikan: Cek dulu apakah showMoreBtn ada
+    if (showMoreBtn) {
+        const initialState = showMoreBtn.getAttribute("aria-expanded") === "true";
+        
+        if (!initialState) {
+            // Pastikan wrapper ada sebelum mengubah class-nya
+            if (typeof wrapper !== 'undefined' && wrapper) {
+                wrapper.classList.add("truncated");
+            }
+            
+            elementsToToggle.forEach(element => {
+                if (element) {
+                    element.hidden = true;
+                }
+            });
+        }
+
+        // PERBAIKAN UTAMA: Baris ini harus ada di dalam blok IF agar bisa membaca 'initialState'
+        toggleArrowDirection(initialState);
+    }
+});
+
+/**
+ * Lokasi asal Afiliasi penulis
+ */
+ 
+/**
  * Highlights
  * Article Highlight Generator (Mendukung Bahasa Indonesia dan Inggris)
  * Menghasilkan 4 poin penting dari judul dan abstrak artikel 
@@ -626,7 +739,7 @@ if (typeof module !== 'undefined') {
  * 2. Jika jumlah elemen <p> melebihi 17, elemen-elemen tersebut akan dihapus, menampilkan pemberitahuan menggunakan tombol view-more yang sudah ada untuk mengatur visibilitas elemen.
  * 3. Mengupdate total elemen <p> dielemen .section-title dispan class "count".
  * @author Rochmady and Wizdam Team
- * @version 7.0.0
+ * @version 0.0.7
  */
 document.addEventListener('DOMContentLoaded', function () {
     const bibliographySections = document.querySelectorAll('.ref-bibliography');

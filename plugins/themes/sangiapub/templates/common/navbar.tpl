@@ -8,7 +8,6 @@
  * Header Navigation Bar
  *
  *}
-
 <div class="c-header__row c-header__row--flush">
     <div class="c-header__container">
         <div class="c-header__split">
@@ -85,21 +84,28 @@
                             <div class="Sangia__user__dropdown c-account-nav__menu-header">
                                 <div class="Sangia__user__avatar">
                                     <figure class="Avatar Avatar--size-96">
-                                    {if $userData.profileImage && $userData.profileImage.uploadName}
-                                        <img class="Avatar__img is-inside-mask" src="{$sitePublicFilesDir}/{$userData.profileImage.uploadName}?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">
-                                    {elseif $userData.gender == 'F'}
-                                        <img class="Avatar__img is-inside-mask" src="{$baseUrl}/assets/img/contactPersonF.png?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">{elseif $userData.gender == 'M'}<img class="Avatar__img is-inside-mask" src="{$baseUrl}/assets/img/contactPersonM.png?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">{else}<img class="Avatar__img is-inside-mask" src="//assets.sangia.org/static/images/default_203.jpg?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">
-                                    {/if}
+                                        {if $userData.profileImage && $userData.profileImage.uploadName}
+                                            <img class="Avatar__img is-inside-mask" src="{$sitePublicFilesDir}/{$userData.profileImage.uploadName}?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">
+                                        {elseif $userData.gender == 'F'}
+                                            <img class="Avatar__img is-inside-mask" src="{$baseUrl}/assets/img/contactPersonF.png?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">{elseif $userData.gender == 'M'}<img class="Avatar__img is-inside-mask" src="{$baseUrl}/assets/img/contactPersonM.png?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">{else}<img class="Avatar__img is-inside-mask" src="//assets.sangia.org/static/images/default_203.jpg?as=webp" alt="{$userData.firstName|escape} {$userData.lastName|escape}">
+                                        {/if}
                                     </figure>
                                     
                                     {if $userData.is_verified}
-                                    <span class="verified badge" title="Your account is valid"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" height="18" width="18"><circle cx="50" cy="50" r="45" fill="#ffffff" stroke="#cccccc" stroke-width="2"></circle><circle cx="50" cy="50" fill="#1DA1F2" r="40"></circle><path d="M30 55 L45 70 L70 35" stroke="#ffffff" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>{else}<span class="unverified badge" title="Your account needs to be validated"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" height="18" width="18"><circle cx="50" cy="50" r="45" fill="#ffffff" stroke="#cccccc" stroke-width="2"></circle><path d="M35 35 L65 65" stroke="#FF0000" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"></path><path d="M35 65 L65 35" stroke="#FF0000" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>{/if}
+                                        <span class="verified badge" title="Your account is valid">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" height="18" width="18"><circle cx="50" cy="50" r="45" fill="#ffffff" stroke="#cccccc" stroke-width="2"></circle><circle cx="50" cy="50" fill="#1DA1F2" r="40"></circle><path d="M30 55 L45 70 L70 35" stroke="#ffffff" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                        </span>
+                                    {else}
+                                        <span class="unverified badge" title="Your account needs to be validated">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" height="18" width="18"><circle cx="50" cy="50" r="45" fill="#ffffff" stroke="#cccccc" stroke-width="2"></circle><path d="M35 35 L65 65" stroke="#FF0000" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"></path><path d="M35 65 L65 35" stroke="#FF0000" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                        </span>
+                                    {/if}
                                 </div>
 
                                 {if $userData.salutation || $userData.suffix}
-                                <div class="Sangia__user__salutation u-font-sangia-sans">{$userData.salutation|escape} {if $userData.suffix}— {$userData.suffix}{/if}</div>
+                                    <div class="Sangia__user__salutation u-font-sangia-sans">{$userData.salutation|escape} {if $userData.suffix}— {$userData.suffix}{/if}</div>
                                 {/if}
-                                <div class="Sangia__user__name">{$userData.firstName|escape} {if $userData.middleName} {$userData.middleName|escape}{/if} {$userData.lastName|escape}</div>
+                                <div class="Sangia__user__name">{$userData.firstName|escape}{if $userData.middleName} {$userData.middleName|escape}{/if} {$userData.lastName|escape}</div>
                                 <div class="Sangia__user__email">{$userData.email|escape}</div>
                                 <div id="account-nav-title" class="Sangia__user__account u-js-hide">
                                     <span class="u-mt-16 u-js-hide">{translate key="common.user.loggedInAs"}<br></span>
@@ -168,7 +174,7 @@
                 </li>
                 {if !$hideRegisterLink}
                 <li class="u-hide c-header__item c-header__item--padding c-header__item--pipe">
-            		<a id="register-button" class="c-header__link placeholder" href="{url page="user" op="register"}" style="register" data-test="register-link" data-track="click" data-track-action="register" data-track-category="sangia-split-header" data-track-label="link">
+            		<a id="register-button" class="c-header__link placeholder" href="{url page="register"}" style="register" data-test="register-link" data-track="click" data-track-action="register" data-track-category="sangia-split-header" data-track-label="link">
             		    <span>{translate key="navigation.register"}</span>
                         <svg role="img" aria-hidden="true" focusable="false" height="22" width="22" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M10.238 16.905a7.96 7.96 0 003.53-1.48c-.874-2.514-2.065-3.936-3.768-4.319V9.83a3.001 3.001 0 10-2 0v1.277c-1.703.383-2.894 1.805-3.767 4.319A7.96 7.96 0 009 17c.419 0 .832-.032 1.238-.095zm4.342-2.172a8 8 0 10-11.16 0c.757-2.017 1.84-3.608 3.49-4.322a4 4 0 114.182 0c1.649.714 2.731 2.305 3.488 4.322zM9 18A9 9 0 119 0a9 9 0 010 18z" fill="#333" fill-rule="evenodd"></path></svg>
             		</a>
@@ -178,4 +184,3 @@
         </div>
     </div>
 </div>
-    

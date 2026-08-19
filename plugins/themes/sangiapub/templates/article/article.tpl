@@ -19,11 +19,12 @@
 <!-- Begin to fulltext file -->      
 <div id="publication" class="Publication">
     <div id="SRM-Pub" class="publication-brand u-show-from-sm text-img">
-        <a rel="noreferrer noopener" title="Go to Sangia Publishing" href="{$baseUrl}" target="_blank"><img class="lazyload publication-brand-image u-font-sans" src="//assets.sangia.org/img/sangia-mono-branded-72x89-v2.png" height="100%" width="100%" loading="lazy" alt="Sangia Media"/></a>
+        <a rel="noreferrer noopener" title="Go to Sangia Publishing" href="{$baseUrl}" target="_blank">
+            <img class="lazyload publication-brand-image u-font-sans" src="//assets.sangia.org/img/sangia-mono-branded-72x89-v2.png" height="100%" width="100%" loading="lazy" alt="Sangia Media"/>
+        </a>
     </div>
     <div class="publication-volume u-text-center">
-        <h2 id="publication-title" class="publication-title u-h3"><a rel="noreferrer noopener" class="anchor publication-title-link anchor-navigation" title="Go to {$currentJournal->getLocalizedTitle()|strip_tags|escape}" href="{$currentJournal->getUrl()|escape}"><span class="anchor-text">{$currentJournal->getLocalizedTitle()|strip_tags|escape}</span></a>
-        </h2>
+        <h2 id="publication-title" class="publication-title u-h3"><a rel="noreferrer noopener" class="anchor publication-title-link anchor-navigation" title="Go to {$currentJournal->getLocalizedTitle()|strip_tags|escape}" href="{$currentJournal->getUrl()|escape}"><span class="anchor-text">{$currentJournal->getLocalizedTitle()|strip_tags|escape}</span></a></h2>
         <div class="text-xs"> 
         {if $issue->getVolume() && $article->getPages() || $status == STATUS_PUBLISHED}
             <a rel="noreferrer noopener" title="Go to table of contents for this volume/issue" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}" class="anchor anchor-default file"><span class="anchor-text-container"><span class="anchor-text">{translate key="issue.volume"} {$issue->getVolume()|escape}{if $issue->getNumber() != ""}{if $issue->getNumber()|regex_replace:"/[a-zA-Z]/":"" eq $issue->getNumber()}, {translate key="issue.issue"} {$issue->getNumber()|strip_tags|nl2br|escape}{else}, {$issue->getNumber()|strip_tags|nl2br|escape}{/if}{/if}</span></span></a>, {$issue->getDatePublished()|date_format:"%B %Y"}{if $article->getPages()}, Pages {$article->getPages()|escape}{else}, {$article->getId()|escape|string_format:"%07d"}{/if}
@@ -31,11 +32,9 @@
             Available online {$article->getDateStatusModified()|date_format:"%e %B %Y"}, {$article->getId()|escape|string_format:"%07d"}
             {if !$galley && $galleys|@count == 0}
                 {if $layoutFile != ''}{* CORRECTED PROOF *}
-                <div><span class="size-m publication-aip-text"><a rel="noreferrer noopener" href="{url page="issue" op="view" path="onlineFirst"}">In Press, Corrected Proof</a></span><span><a class="anchor" href="https://service.elsevier.com/app/answers/detail/a_id/22801/supporthub/sciencedirect/" target="_blank" title="What are Corrected Proof articles?"><svg focusable="false" viewBox="0 0 114 128" width="16" height="16" class="icon icon-help"><path d="m57 8c-14.7 0-28.5 5.72-38.9 16.1-10.38 10.4-16.1 24.22-16.1 38.9 0 30.32 24.68 55 55 55 14.68 0 28.5-5.72 38.88-16.1 10.4-10.4 16.12-24.2 16.12-38.9 0-30.32-24.68-55-55-55zm0 1e1c24.82 0 45 20.18 45 45 0 12.02-4.68 23.32-13.18 31.82s-19.8 13.18-31.82 13.18c-24.82 0-45-20.18-45-45 0-12.02 4.68-23.32 13.18-31.82s19.8-13.18 31.82-13.18zm-0.14 14c-11.55 0.26-16.86 8.43-16.86 18v2h1e1v-2c0-4.22 2.22-9.66 8-9.24 5.5 0.4 6.32 5.14 5.78 8.14-1.1 6.16-11.78 9.5-11.78 20.5v6.6h1e1v-5.56c0-8.16 11.22-11.52 12-21.7 0.74-9.86-5.56-16.52-16-16.74-0.39-0.01-0.76-0.01-1.14 0zm-4.86 5e1v1e1h1e1v-1e1h-1e1z"></path></svg></a></span>
-                </div>
+                <div><span class="size-m publication-aip-text"><a rel="noreferrer noopener" href="{url page="issue" op="view" path="onlineFirst"}">In Press, Corrected Proof</a></span><span><a class="anchor" href="https://service.elsevier.com/app/answers/detail/a_id/22801/supporthub/sciencedirect/" target="_blank" title="What are Corrected Proof articles?"><svg focusable="false" viewBox="0 0 114 128" width="16" height="16" class="icon icon-help"><path d="m57 8c-14.7 0-28.5 5.72-38.9 16.1-10.38 10.4-16.1 24.22-16.1 38.9 0 30.32 24.68 55 55 55 14.68 0 28.5-5.72 38.88-16.1 10.4-10.4 16.12-24.2 16.12-38.9 0-30.32-24.68-55-55-55zm0 1e1c24.82 0 45 20.18 45 45 0 12.02-4.68 23.32-13.18 31.82s-19.8 13.18-31.82 13.18c-24.82 0-45-20.18-45-45 0-12.02 4.68-23.32 13.18-31.82s19.8-13.18 31.82-13.18zm-0.14 14c-11.55 0.26-16.86 8.43-16.86 18v2h1e1v-2c0-4.22 2.22-9.66 8-9.24 5.5 0.4 6.32 5.14 5.78 8.14-1.1 6.16-11.78 9.5-11.78 20.5v6.6h1e1v-5.56c0-8.16 11.22-11.52 12-21.7 0.74-9.86-5.56-16.52-16-16.74-0.39-0.01-0.76-0.01-1.14 0zm-4.86 5e1v1e1h1e1v-1e1h-1e1z"></path></svg></a></span></div>
                 {else}{* ARTICLE IN PRESS (COMING SOON) *}
-                <div><span class="size-m publication-aip-text"><a rel="noreferrer noopener" href="{url page="issue" op="view" path="onlineFirst"}">Article in Press</a></span>
-                </div>
+                <div><span class="size-m publication-aip-text"><a rel="noreferrer noopener" href="{url page="issue" op="view" path="onlineFirst"}">Article in Press</a></span></div>
                 {/if}
             {/if}
         {/if}
@@ -261,16 +260,16 @@
 <ul id="issue-navigation" class="issue-navigation u-margin-s-bottom u-bg-grey1">
     <li class="previous move-left u-padding-s-ver u-padding-s-left">
         {if $prevArticle}
-        <a class="button-alternative button-alternative-tertiary button-alternative-icon-right" href="{url page="article" op="view" path=$prevArticle->getId()}" title="{$prevArticle->getLocalizedTitle()|truncate:170|escape} - {$prevArticle->getAuthorString()}"><svg focusable="false" viewBox="0 0 54 128" width="36" height="36" class="icon icon-navigate-left"><path d="m1 61l45-45 7 7-38 38 38 38-7 7z"></path></svg><span class="button-alternative-text"><strong>Previous </strong><span class="extra-detail-1">article</span><span class="extra-detail-2"> in issue</span></span></a>
+        <a class="button-alternative button-alternative-tertiary button-alternative-icon-right" href="{url page="article" op="view" path=$prevArticle->getId()}" title="{$prevArticle->getLocalizedTitle()|truncate:170|escape} - {$prevArticle->getAuthorString()}"><svg focusable="false" viewBox="0 0 54 128" width="36" height="36" class="icon icon-navigate-left"><path d="m1 61l45-45 7 7-38 38 38 38-7 7z"></path></svg><span class="button-alternative-text lumera-prev"><strong>Previous </strong><span class="extra-detail-1">article</span><span class="extra-detail-2"> in issue</span></span></a>
         {else}
-        <button class="button-alternative button-alternative-tertiary button-alternative-icon-right disabled" href="javascript:void(0);" disabled="" type="button"><svg focusable="false" viewBox="0 0 54 128" width="36" height="36" class="icon icon-navigate-left"><path d="m1 61l45-45 7 7-38 38 38 38-7 7z"></path></svg><span class="button-alternative-text"><strong>Previous </strong><span class="extra-detail-1">article</span><span class="extra-detail-2"> in issue</span></span></button>
+        <button class="button-alternative button-alternative-tertiary button-alternative-icon-right disabled" href="javascript:void(0);" disabled="" type="button"><svg focusable="false" viewBox="0 0 54 128" width="36" height="36" class="icon icon-navigate-left"><path d="m1 61l45-45 7 7-38 38 38 38-7 7z"></path></svg><span class="button-alternative-text lumera-prev"><strong>Previous </strong><span class="extra-detail-1">article</span><span class="extra-detail-2"> in issue</span></span></button>
         {/if}
     </li>
     <li class="next move-right u-padding-s-ver u-padding-s-right">
         {if $nextArticle}
-        <a class="button-alternative button-alternative-tertiary button-alternative-icon-right" href="{url page="article" op="view" path=$nextArticle->getId()}" title="{$nextArticle->getLocalizedTitle()|truncate:170|escape} - {$nextArticle->getAuthorString()}"><span class="button-alternative-text"><strong>Next </strong><span class="extra-detail-1">article</span><span class="extra-detail-2"> in issue</span></span><svg focusable="false" viewBox="0 0 54 128" width="36" height="36" class="icon icon-navigate-right"><path d="m1 99l38-38-38-38 7-7 45 45-45 45z"></path></svg></a>
+        <a class="button-alternative button-alternative-tertiary button-alternative-icon-right" href="{url page="article" op="view" path=$nextArticle->getId()}" title="{$nextArticle->getLocalizedTitle()|truncate:170|escape} - {$nextArticle->getAuthorString()}"><span class="button-alternative-text lumera-next"><strong>Next </strong><span class="extra-detail-1">article</span><span class="extra-detail-2"> in issue</span></span><svg focusable="false" viewBox="0 0 54 128" width="36" height="36" class="icon icon-navigate-right"><path d="m1 99l38-38-38-38 7-7 45 45-45 45z"></path></svg></a>
         {else}
-        <button class="button-alternative button-alternative-tertiary button-alternative-icon-right disabled" href="javascript:void(0);" disabled="" type="button"><span class="button-alternative-text"><strong>Next </strong><span class="extra-detail-1">article</span><span class="extra-detail-2"> in issue</span></span><svg focusable="false" viewBox="0 0 54 128" width="36" height="36" class="icon icon-navigate-right"><path d="m1 99l38-38-38-38 7-7 45 45-45 45z"></path></svg></button>
+        <button class="button-alternative button-alternative-tertiary button-alternative-icon-right disabled" href="javascript:void(0);" disabled="" type="button"><span class="button-alternative-text lumera-next"><strong>Next </strong><span class="extra-detail-1">article</span><span class="extra-detail-2"> in issue</span></span><svg focusable="false" viewBox="0 0 54 128" width="36" height="36" class="icon icon-navigate-right"><path d="m1 99l38-38-38-38 7-7 45 45-45 45z"></path></svg></button>
         {/if}
     </li>
 </ul>

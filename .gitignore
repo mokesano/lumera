@@ -64,7 +64,6 @@ Thumbs.db
 *.a
 *.out
 dist/
-build/
 target/
 coverage/
 htmlcov/
@@ -97,7 +96,7 @@ yarn-error.log*
 *.war
 *.ear
 .gradle/
-build/
+# build/ <-- Direktori plugin PDF.js Viewer
 
 # Go specific
 *.exe
