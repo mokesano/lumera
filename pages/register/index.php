@@ -16,9 +16,10 @@ declare(strict_types=1);
  *
  * [WIZDAM] Dipindahkan dari page="user" op="register" menjadi page="register"
  * tersendiri -- mengikuti pola pages/login (page sendiri, bare path memetakan
- * ke op=index). RegistrationHandler.inc.php TETAP berada di pages/user/
- * (kelasnya tidak dipindah, hanya rute URL-nya) dan diimpor lintas
- * direktori, pola yang sudah lazim dipakai di codebase ini.
+ * ke op=index). RegistrationHandler.inc.php JUGA dipindah secara FISIK ke
+ * direktori ini (dari pages/user/), sesuai konvensi HANDLER_CLASS hidup satu
+ * direktori dengan index.php-nya -- konsisten dengan mayoritas halaman lain
+ * di codebase (login, article, dst).
  *
  * TIDAK ADA redirect balik dari user/register lama (sesuai keputusan:
  * ganti total, fokus tema sangiapub, tema lain menyesuaikan manual).
