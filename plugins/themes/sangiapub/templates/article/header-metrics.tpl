@@ -89,7 +89,7 @@
     <meta name="DOI" content="{$article->getPubId('doi')}" />
 	{/if}
 
-	<link rel="canonical" href="{$currentUrl}">
+	<link rel="canonical" href="{$currentUrl}" />
 	
 	<meta name="twitter:site" content="@{$currentJournal->getSetting('initials', $currentJournal->getPrimaryLocale())}" />
 	<meta name="twitter:card" content='summary_large_image' />
@@ -121,7 +121,7 @@
     <meta name="twitter:image" content="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" />
     {/if}
     
-	<meta name="robots" content="max-image-preview:large">
+	<meta name="robots" content="max-image-preview:large" />
 	<meta property="og:type" content="{$article->getSectionTitle()|strip_tags|escape}" />
 	<meta property="og:site_name" name="site_name" content="Sangia" />
 	<meta property="og:title" content="{$article->getLocalizedTitle()|strip_tags|nl2br}" />
@@ -178,20 +178,18 @@
     <script src="https://code.jquery.com/jquery-migrate-3.4.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     
     <link rel="preload" href="https://badge.dimensions.ai/badge.js" as="script"><script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
     <link rel="preload" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/fonts/fontawesome-webfont.woff2?v=4.3.0" as="font" type="font/woff2" crossorigin />
 	<link rel="stylesheet preload" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" as="style" />
 
-    <link rel="preload" href="//assets.sangia.org/css/themes/art_srm.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="//assets.sangia.org/css/themes/art_srm.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="//assets.sangia.org/css/themes/art_srm.css"></noscript>
 
-    <link rel="preload" href="{$baseUrl}/assets/static/styles/wizdam_article_v1.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    
-	<link rel="stylesheet preload" href="{$baseUrl}/assets/static/styles/font.css" type="text/css" as="style" />
-	
-	<link rel="preload" href="{$baseUrl}/assets/static/branded/wizdam_frontend_v2.branded.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet preload" href="{$baseUrl}/assets/static/styles/Lumera_article--branded.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+	<link rel="stylesheet preload" href="{$baseUrl}/assets/static/styles/font.css" type="text/css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+	<link rel="stylesheet preload" href="{$baseUrl}/assets/static/branded/wizdam_frontend_v2.branded.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     
 	{$additionalHeadData}
 
