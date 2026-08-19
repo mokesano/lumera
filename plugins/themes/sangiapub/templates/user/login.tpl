@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Lumera Team
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3.
  *
  * User index.
  * 
@@ -28,7 +28,7 @@
     <div class="auth-card login-card">
         <div class="auth-header u-mb-32">
             <h4 class="form-section-label">Welcome back!</h4>
-            <p class="auth-subtitle">Please enter your credentials below to sign in to your account{if !$hideRegisterLink}, or <a href="{url page="register" op=$registerOp}">register</a> if you don’t have an account yet{/if}.</p>
+            <p class="auth-subtitle">Please enter your credentials below to sign in to your account{if !$hideRegisterLink}, or <a href="{url page="register"}">register</a> if you don’t have an account yet{/if}.</p>
         </div>
 
         {* [WIZDAM SSO] ORCID and Google Integration *}
