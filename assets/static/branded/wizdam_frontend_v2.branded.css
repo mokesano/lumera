@@ -403,11 +403,11 @@ th[valign=middle] {
 }
 @font-face {
  font-family:sn_pm_icons;
- src:url(/fonts/sn/sn_pm_icons.eot?1527153553);
- src:url('/fonts/sn/sn_pm_icons.eot?&1527153553#iefix') format('embedded-opentype'),
- url(/fonts/sn/sn_pm_icons.woff) format('woff'),
- url(/fonts/sn/sn_pm_icons.svg?1527153553) format('svg'),
- url(/fonts/sn/sn_pm_icons.ttf?1527153553) format('truetype');
+ src:url('/fonts/sn/sn_pm_icons.eot');
+ src:url('/fonts/sn/sn_pm_icons.eot') format('embedded-opentype'),
+ url('/fonts/sn/sn_pm_icons.woff') format('woff'),
+ url('/fonts/sn/sn_pm_icons.svg') format('svg'),
+ url('/fonts/sn/sn_pm_icons.ttf') format('truetype');
  font-weight:400
 }
 @media screen and (min-device-width:320px) {

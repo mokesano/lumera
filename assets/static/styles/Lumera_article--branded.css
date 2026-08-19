@@ -15044,13 +15044,13 @@ input::-moz-focus-inner {
   padding:0 
 }
 @font-face {
-  font-family:sn_pm_icons;
-  src:url(/assets/css/fonts/sn_pm_icons.eot?1527153553);
-  src:url(/assets/css/fonts/sn_pm_icons.eot?&1527153553#iefix) format("embedded-opentype"),
-  url(/assets/css/fonts/sn_pm_icons.woff?1527153553) format("woff"),
-  url(/assets/css/fonts/sn_pm_icons.svg?1527153553) format("svg"),
-  url(/assets/css/fonts/sn_pm_icons.ttf?1527153553) format("truetype");
-  font-weight:400 
+ font-family:sn_pm_icons;
+ src:url('/fonts/sn/sn_pm_icons.eot');
+ src:url('/fonts/sn/sn_pm_icons.eot') format('embedded-opentype'),
+ url('/fonts/sn/sn_pm_icons.woff') format('woff'),
+ url('/fonts/sn/sn_pm_icons.svg') format('svg'),
+ url('/fonts/sn/sn_pm_icons.ttf') format('truetype');
+ font-weight:400
 }
 body.show-menu #header .panel-menu,
 body.show-search #header .panel-search {
