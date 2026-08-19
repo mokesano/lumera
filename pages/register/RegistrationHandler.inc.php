@@ -27,6 +27,33 @@ class RegistrationHandler extends UserHandler {
     }
 
     /**
+     * [WIZDAM BUGFIX] UserHandler::setupTemplate($request, $subclass=true)
+     * menyuntikkan SATU segmen breadcrumb hardcode ke halaman "User"
+     * (baris: $templateMgr->assign('pageHierarchy', [[$request->url(null,
+     * 'user'), 'navigation.user']]);) setiap kali $subclass bernilai true --
+     * dan SELURUH method di kelas ini memanggil
+     * $this->setupTemplate($request, true).
+     *
+     * Itu benar SELAMA registrasi masih menjadi sub-halaman page="user"
+     * (breadcrumb: Situs > Jurnal > User > Register). Sekarang registrasi
+     * sudah menjadi halaman dedicated page="register" sendiri -- breadcrumb
+     * "User" itu jadi keliru (Situs > Jurnal > User > Register, padahal
+     * seharusnya Situs > Jurnal > Register).
+     *
+     * Method ini meng-override supaya SELALU memanggil parent dengan
+     * $subclass=false, terlepas dari apa yang dikirim tiap pemanggil --
+     * tidak perlu mengubah 8 titik pemanggilan yang sudah ada. Pola yang
+     * sama seperti LoginHandler::setupTemplate() -- halaman dedicated lain
+     * yang juga TIDAK menambahkan segmen breadcrumb induk untuk dirinya
+     * sendiri.
+     * @param object|null $request PKPRequest
+     * @param bool $subclass Diabaikan -- selalu dipaksa false.
+     */
+    public function setupTemplate($request = null, $subclass = false) {
+        parent::setupTemplate($request, false);
+    }
+
+    /**
      * [SHIM] Backward Compatibility
      */
     public function RegistrationHandler() {
