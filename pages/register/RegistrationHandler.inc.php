@@ -43,7 +43,7 @@ class RegistrationHandler extends UserHandler {
     /**
      * [WIZDAM] Alias untuk register() -- dipanggil saat halaman diakses
      * lewat path telanjang page="register" (tanpa op eksplisit), karena
-     * router OJS memetakan op kosong ke 'index' (ROUTER_DEFAULT_OP).
+     * router memetakan op kosong ke 'index' (ROUTER_DEFAULT_OP).
      * Mengikuti pola pages/login: LoginHandler::index() menampilkan form
      * login, di sini index() menampilkan form registrasi.
      * @param array $args
