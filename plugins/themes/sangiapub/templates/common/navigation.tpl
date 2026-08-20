@@ -1,11 +1,11 @@
 {**
- * navigation.tpl
+ * @file templates/common/navigation.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2000-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
  *
- * Journal site header.
+ * Navigation Bar Menu header.
  *}
  
 <div role="navigation" class="u-hide lm-primary-navigation">
@@ -83,7 +83,7 @@
 
                         {if not ($currentJournal->getSetting('publisherInstitution') == '' && $currentJournal->getLocalizedSetting('publisherNote') == '' && $currentJournal->getLocalizedSetting('contributorNote') == '' && empty($journalSettings.contributors) && $currentJournal->getLocalizedSetting('sponsorNote') == '' && empty($journalSettings.sponsors))}<li><a href="{url page="about" op="journalSponsorship"}">{translate key="about.journalSponsorship"}</a></li>{/if}
                         
-                        <li><a href="{url page="about" op="contact"}">{translate key="about.contact"}</a></li>
+                        <li><a href="{url page="about" op="contact-editorial-office"}">{translate key="about.contact"}</a></li>
                     </ul>
                 </li>      
                                       
