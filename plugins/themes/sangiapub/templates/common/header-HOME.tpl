@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * header.tpl
+ * @file templates/common/header-HOME.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2000-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
- * Common site header.
+ * HOME header.
  *}
 {strip}
-{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
-{if $pageCrumbTitle}
-	{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-	{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
+	{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
+	{if $pageCrumbTitle}
+		{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+	{elseif !$pageCrumbTitleTranslated}
+		{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+	{/if}
 {/strip}
 <head>
     <title>{$pageTitleTranslated} - Sangia</title>
+	
     <meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
     {if $metaSearchDescription|escape}
 	<meta name="description" content="{$metaSearchDescription|escape}" />
