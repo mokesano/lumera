@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * header.tpl
+ * @file templates/common/header-ABOUT.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2000-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
- * Common site header.
+ * Common header About.
  *}
 {strip}
-{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
-{if $pageCrumbTitle}
-	{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-	{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
+	{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
+	{if $pageCrumbTitle}
+		{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+	{elseif !$pageCrumbTitleTranslated}
+		{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+	{/if}
 {/strip}
 <head>
     <title>{$pageTitleTranslated}{if $currentJournal} - {$currentJournal->getLocalizedTitle()|strip_tags|escape} | Sangia{else} | {$siteTitle}{/if}</title>
@@ -165,7 +165,7 @@
 
 			        {if $currentJournal->getLocalizedSetting('history') != ''}<li class="c-sidemenu"><a href="{url page="about" op="journal-history"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.history"}</a></li>{/if}
 			        
-			        <li class="c-sidemenu"><a href="{url page="about" op="contact"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.contact"}</a></li>
+			        <li class="c-sidemenu"><a href="{url page="about" op="contact-editorial-office"}" data-track="click" data-track-label="link" data-test="explore-nav-item">{translate key="about.contact"}</a></li>
 			     </ul>
 			</div>    
 			</nav>
@@ -223,14 +223,13 @@
 	</div>
 	{/strip}
 
-<div class="column medium-7" role="main">
-<section class="article about">
-<h2 class="main-heading">{$pageTitleTranslated}</h2>
+	<div class="column medium-7" role="main">
+		<section class="article about">
+			<h2 class="main-heading">{$pageTitleTranslated}</h2>
 
-{if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
-{if $pageSubtitleTranslated}
-	<h3 class="sub-heading">{$pageSubtitleTranslated}</h3>
-{/if}
+			{if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
+			{if $pageSubtitleTranslated}
+				<h3 class="sub-heading">{$pageSubtitleTranslated}</h3>
+			{/if}
 
-<section id="content" class="publication content-body">
-
+			<section id="content" class="publication content-body">
