@@ -18,6 +18,29 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 class PdfJsViewerPlugin extends GenericPlugin {
 
     /**
+     * [WIZDAM] Prioritas registrasi lebih tinggi (nilai lebih rendah)
+     * dibanding default (0). PluginRegistry::loadCategory() memanggil
+     * ksort($plugins) berdasarkan getSeq() SEBELUM mendaftarkan hook tiap
+     * plugin -- tanpa override ini, urutan "siapa lebih dulu mengklaim
+     * target 'article/pdfViewer.tpl' di hook TemplateManager::include"
+     * ditentukan readdir() filesystem, yang TIDAK DIJAMIN alfabetis/
+     * konsisten lintas server.
+     *
+     * pdf.js SELF-HOSTED (vendor lokal, tidak bergantung layanan pihak
+     * ketiga mana pun) -- dijadikan pemenang deterministik dibanding
+     * GoogleViewerPlugin (bergantung layanan docs.google.com/viewer yang
+     * bisa gagal karena proteksi bot Cloudflare, rate-limit, atau
+     * keandalan layanan itu sendiri di luar kendali kita) setiap kali
+     * KEDUA plugin sama-sama aktif. Tidak perlu plugin ini tahu apa pun
+     * soal GoogleViewerPlugin secara langsung -- murni lewat mekanisme
+     * seq resmi PluginRegistry.
+     * @return int
+     */
+    public function getSeq(): int {
+        return -1;
+    }
+
+    /**
      * Register the plugin.
      * @param string $category
      * @param string $path
