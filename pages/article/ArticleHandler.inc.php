@@ -73,24 +73,6 @@ class ArticleHandler extends Handler {
      * yang menerima articleId sebagai argumen pertama URL: view(),
      * viewFile(), download(), viewPDFInterstitial(),
      * viewDownloadInterstitial(), downloadSuppFile().
-     *
-     * AKAR MASALAH yang diperbaiki method ini: Article::getBestArticleId()
-     * SENGAJA mengembalikan publisher-id STRING (bukan ID numerik) untuk
-     * membangun URL cantik ketika pengaturan jurnal enablePublicArticleId
-     * aktif. Tapi SEBELUM helper ini ada, method-method di atas langsung
-     * melakukan (int) cast pada args[0] -- mengubah "s2023111" menjadi 0
-     * dan membuat validate() SELALU gagal (redirect ke homepage) untuk
-     * SETIAP artikel yang diakses lewat custom ID-nya sendiri, termasuk
-     * link "Download PDF"/viewer PDF inline yang dibangun dari
-     * getBestArticleId() -- persis skenario yang dilaporkan.
-     *
-     * ID numerik TETAP diarahkan lewat jalur cache
-     * (getPublishedArticleByBestArticleId useCache=true) yang aman karena
-     * article_id internal unik secara GLOBAL lintas semua jurnal. ID
-     * kustom (string) diarahkan langsung journal-scoped TANPA cache
-     * global, supaya tidak salah ambil artikel jurnal lain yang kebetulan
-     * memakai publisher-id sama.
-     *
      * @param mixed $articleIdInput Nilai args[0] URL -- bisa numerik atau string kustom.
      * @param object $journal
      * @return int Internal numeric article ID (0 kalau sama sekali tidak resolve).
@@ -122,24 +104,6 @@ class ArticleHandler extends Handler {
      * [WIZDAM] Bangun URL styles/pdfView.css dengan cache-buster berbasis
      * filemtime() -- mencegah browser menyajikan versi CACHE LAMA dari
      * stylesheet ini setelah kontennya berubah di server.
-     *
-     * URL statis tanpa versi (addStyleSheet($baseUrl.'/styles/pdfView.css')
-     * apa adanya, tanpa query string) TIDAK MENJAMIN browser mengambil
-     * ulang file begitu isinya di-update -- ini VALID secara spesifikasi
-     * HTTP caching, tapi PERILAKUNYA BERBEDA-BEDA tergantung Cache-Control
-     * header dan heuristik caching MASING-MASING browser. Persis
-     * menjelaskan anomali "Firefox benar, Chrome full-width/full-height" --
-     * bukan bug CSS (specificity .PdfEmbed .galley_view berlaku universal
-     * di semua browser standar), melainkan Chrome menyajikan salinan
-     * pdfView.css versi LAMA dari cache-nya sendiri (dari sebelum override
-     * .PdfEmbed .galley_view ditambahkan), sementara Firefox kebetulan
-     * mengambil versi segar.
-     *
-     * Menambahkan ?v=<filemtime> membuat URL otomatis berubah setiap kali
-     * isi file berubah di server -- browser manapun (Chrome, Firefox, atau
-     * lainnya) WAJIB mengambil ulang, karena bagi browser itu URL yang
-     * SAMA SEKALI BEDA dari sebelumnya, bukan lagi bergantung kapan cache
-     * lama kedaluwarsa.
      * @param object $request
      * @return string URL lengkap pdfView.css dengan query string versi.
      */
