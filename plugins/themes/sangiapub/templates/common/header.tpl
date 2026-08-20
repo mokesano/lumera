@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * header.tpl
+ * @file templates/common/header.tpl
  *
  * Copyright (c) 2013-2015 Simon Fraser University Library
  * Copyright (c) 2000-2015 John Willinsky
@@ -22,6 +22,7 @@
 {/strip}
 <head>
 	<title>{$pageTitleTranslated} | Sangia</title>
+
 	<meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
 	{if !empty($about)}
     	<meta name="description" content="{$about|escape}" />
@@ -210,4 +211,3 @@
 						{/if}
 						
 						<div id="content" class="article publication content-body body">
-
