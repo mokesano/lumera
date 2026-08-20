@@ -161,11 +161,14 @@ class TemplateManager extends PKPTemplateManager {
      * [SHIM] Backward Compatibility
      */
     public function TemplateManager($request = null) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to parent::__construct().", 
-            E_USER_DEPRECATED
-        );
-        $this->__construct($request);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -305,19 +308,6 @@ class TemplateManager extends PKPTemplateManager {
      * instance singleton pertama kali dibuat lewat getManager() -- di
      * titik itu $this->styleSheets MASIH KOSONG. Smarty::assign() memakai
      * assignment PHP biasa (SALINAN NILAI untuk array, BUKAN referensi).
-     *
-     * Akibatnya: addStyleSheet() yang dipanggil BELAKANGAN dari method
-     * handler mana pun (mis. ArticleHandler::view()/viewArticleGalley()
-     * memanggil addStyleSheet('styles/pdfView.css')) menambah
-     * $this->styleSheets, tapi TIDAK PERNAH tercermin ke variabel Smarty
-     * 'stylesheets' yang sudah kadung ter-assign SEBELUM handler manapun
-     * sempat berjalan -- stylesheet itu lenyap dari <head> tanpa error
-     * apa pun, terlepas method mana yang memanggil addStyleSheet().
-     *
-     * Perbaikan: re-assign 'stylesheets' di SINI, tepat sebelum setiap
-     * render, dengan isi $this->styleSheets TERKINI -- menangkap SEMUA
-     * addStyleSheet() yang sudah dipanggil sampai titik ini, dari
-     * manapun asalnya (view(), viewArticleGalley(), atau method lain).
      * @param string $template
      * @param string|null $sendContentType
      * @param string|null $hookName
@@ -325,15 +315,6 @@ class TemplateManager extends PKPTemplateManager {
      * @return string|null
      */
     public function display($template, $sendContentType = null, $hookName = null, $display = true) {
-        // [WIZDAM DIAGNOSTIK] Sementara -- bandingkan spl_object_id dengan
-        // log di ArticleHandler::view() untuk pastikan instance yang SAMA,
-        // dan lihat isi styleSheets tepat SEBELUM di-assign ke Smarty.
-        error_log(sprintf(
-            '[WIZDAM DIAGNOSTIK][TemplateManager::display] template=%s spl_object_id=%d styleSheets=%s',
-            (string) $template,
-            spl_object_id($this),
-            json_encode($this->styleSheets)
-        ));
         $this->assign('stylesheets', $this->styleSheets);
         return parent::display($template, $sendContentType, $hookName, $display);
     }
