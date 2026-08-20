@@ -98,6 +98,11 @@ RewriteEngine On
  # (b) Blokir eksekusi PHP di direktori internal aplikasi.
  #     Semua akses ke sini seharusnya lewat index.php (front-controller).
  #     Aset statis (js/css/gambar) TIDAK terpengaruh.
+ #     PENGECUALIAN: dua skrip vendor TinyMCE:
+ #     1. tiny_mce_gzip.php
+ #     2. plugins/jbimages/ci/index.php
+ RewriteCond %{REQUEST_URI} !^/lib/pkp/lib/tinymce/jscripts/tiny_mce/tiny_mce_gzip\.php$
+ RewriteCond %{REQUEST_URI} !^/lib/pkp/lib/tinymce/jscripts/tiny_mce/plugins/jbimages/ci/index\.php$
  RewriteRule ^(classes|pages|lib|locale|registry|dbscripts|docs|tools|schemas|cache)/.*\.(php|phtml|phar|inc)$ - [F,L]
 
  # (c) Endpoint diagnostik — batasi ke IP Anda.
