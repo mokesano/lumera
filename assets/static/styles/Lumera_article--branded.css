@@ -261,28 +261,28 @@ h6 {
 }
 @font-face {
   font-family:Harding;
-  src:url(https://stipwunaraha.ac.id/static/fonts/HardingText-Regular-Web.b167e675dc.woff2) format("woff2"),
-  url(https://stipwunaraha.ac.id/static/fonts/HardingText-Regular-Web.62711b6c07.woff) format("woff");
+  src:url(/fonts/hd/HardingText-Regular-Web.b167e675dc.woff2) format("woff2"),
+  url(/fonts/hd/HardingText-Regular-Web.62711b6c07.woff) format("woff");
   font-display:fallback 
 }
 @font-face {
   font-family:Harding;
-  src:url(https://stipwunaraha.ac.id/static/fonts/HardingText-Bold-Web.72203f58c0.woff2) format("woff2"),
-  url(https://stipwunaraha.ac.id/static/fonts/HardingText-Bold-Web.d102a21e4f.woff) format("woff");
+  src:url(/fonts/hd/HardingText-Bold-Web.72203f58c0.woff2) format("woff2"),
+  url(/fonts/hd/HardingText-Bold-Web.d102a21e4f.woff) format("woff");
   font-display:swap;
   font-weight:700 
 }
 @font-face {
   font-family:Harding;
-  src:url(https://stipwunaraha.ac.id/static/fonts/HardingText-RegularItalic-Web.a3136343af.woff2) format("woff2"),
-  url(https://stipwunaraha.ac.id/static/fonts/HardingText-RegularItalic-Web.3cd6cb26e4.woff) format("woff");
+  src:url(/fonts/hd/HardingText-RegularItalic-Web.a3136343af.woff2) format("woff2"),
+  url(/fonts/hd/HardingText-RegularItalic-Web.3cd6cb26e4.woff) format("woff");
   font-display:swap;
   font-style:italic 
 }
 @font-face {
   font-family:Harding;
-  src:url(https://stipwunaraha.ac.id/static/fonts/HardingText-BoldItalic-Web.fe6dc3019e.woff2) format("woff2"),
-  url(https://stipwunaraha.ac.id/static/fonts/HardingText-BoldItalic-Web.6db8bc0375.woff) format("woff");
+  src:url(/fonts/hd/HardingText-BoldItalic-Web.fe6dc3019e.woff2) format("woff2"),
+  url(/fonts/hd/HardingText-BoldItalic-Web.6db8bc0375.woff) format("woff");
   font-display:swap;
   font-weight:700;
   font-style:italic 
@@ -1336,7 +1336,7 @@ h2 {
 }
 @font-face {
   font-family:npg-stix-regular;
-  src:url(https://stipwunaraha.ac.id/static/fonts/npg-stix-regular.a606c0f6d2.woff) format("woff");
+  src:url(/fonts/npg-stix-regular.a606c0f6d2.woff) format("woff");
   font-display:swap 
 }
 .input-placeholder {
@@ -2050,7 +2050,7 @@ a.hero:hover .hero-title-inner {
 .icon-table {
   /*padding-left:160px;*/
   /*min-height:90px;*/
-  /*background-image:url(https://stipwunaraha.ac.id/static/images/icons/icon-table-150x80-gray.2e3035a3cf.png);*/
+  /*background-image:url(/public/assets/images/icons/icon-table-150x80-gray.2e3035a3cf.png);*/
   color:#0272b1;
   cursor:pointer;
   font-size:1em;
@@ -7483,7 +7483,13 @@ table .border-bottom {
   padding-top:16px;
   padding-bottom:0 
 }
-/* .App .Article .bibliography-sec li+li:nth-child(n+16):not(:last-child), .App .Article .bibliography-sec li+li:nth-child(n+16):not(:nth-child(n+15):last-child), .App .Article .bibliography-sec p+p:nth-child(n+16):not(:last-child), .App .Article .bibliography-sec p+p:nth-child(n+16):not(:nth-child(n+15):last-child), */.App .Article .bibliography-sec p+p:nth-child(n+11) {
+/* 
+.App .Article .bibliography-sec li+li:nth-child(n+16):not(:last-child), 
+.App .Article .bibliography-sec li+li:nth-child(n+16):not(:nth-child(n+15):last-child), 
+.App .Article .bibliography-sec p+p:nth-child(n+16):not(:last-child), 
+.App .Article .bibliography-sec p+p:nth-child(n+16):not(:nth-child(n+15):last-child), 
+*/
+.App .Article .bibliography-sec p+p:nth-child(n+11) {
   display:none
 }
 table caption {
@@ -10848,7 +10854,7 @@ a.u-text-inherit:visited {
   text-decoration:none 
 }
 .journal-header {
-  background-image:url(//media.stipwunaraha.ac.id/static/Grey+Stipwunaraha+Homepage+Banner.jpg);
+  background-image:url(/assets/img/Grey+Stipwunaraha+Homepage+Banner.jpg);
   background-position:100% 0;
   background-repeat:no-repeat;
   background-size:cover 
@@ -22657,7 +22663,7 @@ span.icon-container {
   width:19px;
   position:absolute;
   left:0;
-  background-image:url(https://rd.springer.com/static/1227af22a55ae2f14b9ea2053e129d42f7cab06b/images/alert-info.png) 
+  background-image:url(/public/assets/images/alert-info.png) 
 }
 sub,
 sup {
@@ -27855,7 +27861,7 @@ body .rew {
 }
 #footer-nav .about h3 {
   display:inline-block;
-  background-image:url(//www.media.stipwunaraha.ac.id/static/stipwunaraha_logo_light.svg),linear-gradient(transparent,transparent);
+  background-image:url(/public/assets/image/brand/stipwunaraha_logo_light.svg),linear-gradient(transparent,transparent);
   background-position:0 0;
   height:65px;
   margin:7px 0 5px;
@@ -28631,31 +28637,31 @@ body .rew {
 .notifyIcon {
   width:16px;
   height:16px;
-  background-image:url(//media.stipwunaraha.ac.id/static/icons/email-notif.png) 
+  background-image:url(/public/assets/icons/email-notif.png) 
 }
 .ui-pnotify-closer .ui-icon {
-  background-image:url(//media.stipwunaraha.ac.id/static/icons/ui-icons_222222_256x240.png) 
+  background-image:url(/public/assets/icons/ui-icons_222222_256x240.png) 
 }
 .notifyIconNewPage {
-  background-image:url(//media.stipwunaraha.ac.id/static/icons/icons/page_new.gif) 
+  background-image:url(/public/assets/icons/page_new.gif) 
 }
 .notifyIconPageAttachment {
-  background-image:url(//media.stipwunaraha.ac.id/static/icons/page_attachment.gif) 
+  background-image:url(/public/assets/icons/page_attachment.gif) 
 }
 .notifyIconEdit {
-  background:url(//media.stipwunaraha.ac.id/static/icons/sprite-1127.png) -4px -2434px no-repeat 
+  background:url(/public/assets/icons/sprite-1127.png) -4px -2434px no-repeat 
 }
 .notifyIconNewComment {
-  background-image:url(//media.stipwunaraha.ac.id/static/icons/comment_new.gif) 
+  background-image:url(/public/assets/icons/comment_new.gif) 
 }
 .notifyIconPublished {
-  background-image:url(//media.stipwunaraha.ac.id/static/icons/list_world.gif) 
+  background-image:url(/public/assets/icons/list_world.gif) 
 }
 .notifyIconNewAnnouncement {
-  background-image:url(//media.stipwunaraha.ac.id/static/icons/note_new.gif) 
+  background-image:url(/public/assets/icons/note_new.gif) 
 }
 .notifyIconPageAlert {
-  background-image:url(//media.stipwunaraha.ac.id/static/icons/page_alert.gif) 
+  background-image:url(/public/assets/icons/page_alert.gif) 
 }
 .issue-title {
   color:#2b2b2b;
@@ -31867,6 +31873,9 @@ button .anchor svg.icon:first-child {
   /*! height:30px; */
   /*! width:30px; */
   border-radius: 7px;
+}
+.medium-bar .anchor svg.icon:first-child {
+  margin-right:16px;
 }
 .anchor-text svg.icon {
   margin-right:.5rem;

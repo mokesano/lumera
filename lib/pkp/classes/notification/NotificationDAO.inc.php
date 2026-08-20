@@ -13,6 +13,22 @@ declare(strict_types=1);
  * @see Notification
  *
  * @brief Operations for retrieving and modifying Notification objects.
+ *
+ * [WIZDAM BUGFIX -- KEAMANAN] getByUserId(), getByAssoc(), dan
+ * getNotificationCount() sebelumnya bisa dipanggil dengan userId=0
+ * (dipakai NotificationHandler untuk pengunjung TANPA LOGIN, atau
+ * UNSUBSCRIBED_USER_NOTIFICATION=0 di AnnouncementForm.inc.php untuk
+ * artefak internal mailing-list) dan TETAP menjalankan query yang bisa
+ * mencocokkan baris user_id=0 sungguhan -- mengekspos informasi yang
+ * seharusnya privat (mis. lewat /notification) ke SIAPA PUN tanpa
+ * perlu autentikasi sama sekali.
+ *
+ * Diperbaiki di lapisan DAO (bukan di satu Handler saja) supaya
+ * melindungi SEMUA pemanggil ketiga method ini di seluruh aplikasi.
+ * "AND user_id > 0" ditambahkan langsung ke SQL: untuk userId positif
+ * sungguhan kondisi ini selalu benar (tidak mengubah perilaku sama
+ * sekali), untuk userId=0/negatif kondisi ini menjamin nol baris
+ * cocok, tanpa percabangan kode tambahan.
  */
 
 import('classes.notification.Notification');
@@ -68,7 +84,9 @@ class NotificationDAO extends DAO {
      */
     public function getByUserId($userId, $level = NOTIFICATION_LEVEL_NORMAL, $type = null, $contextId = null, $rangeInfo = null) {
         $params = [(int) $userId, (int) $level];
-        $sql = 'SELECT * FROM notifications WHERE user_id = ? AND level = ?';
+        // [WIZDAM BUGFIX -- KEAMANAN] "AND user_id > 0" -- lihat dokblok
+        // kelas di atas.
+        $sql = 'SELECT * FROM notifications WHERE user_id = ? AND user_id > 0 AND level = ?';
         
         if ($type !== null) {
             $sql .= ' AND type = ?';
@@ -100,7 +118,12 @@ class NotificationDAO extends DAO {
         $sql = 'SELECT * FROM notifications WHERE assoc_type = ? AND assoc_id = ?';
         
         if ($userId !== null) {
-            $sql .= ' AND user_id = ?';
+            // [WIZDAM BUGFIX -- KEAMANAN] "AND user_id > 0" ditambahkan
+            // HANYA di cabang ini (saat userId eksplisit diberikan) --
+            // userId===null (maksud "semua pengguna", dipakai untuk tipe
+            // notifikasi yang memang publik-ke-semua-pengguna terdaftar)
+            // TIDAK disentuh, tetap berperilaku sama seperti sebelumnya.
+            $sql .= ' AND user_id = ? AND user_id > 0';
             $params[] = (int) $userId;
         }
         if ($contextId !== null) {
@@ -276,7 +299,9 @@ class NotificationDAO extends DAO {
      */
     public function getNotificationCount($userId, $contextId = null, $level = NOTIFICATION_LEVEL_NORMAL, $read = true) {
         $params = [(int) $userId, (int) $level];
-        $sql = 'SELECT COUNT(*) AS count FROM notifications WHERE user_id = ? AND date_read IS' . ($read ? ' NOT' : '') . ' NULL AND level = ?';
+        // [WIZDAM BUGFIX -- KEAMANAN] "AND user_id > 0" -- lihat dokblok
+        // kelas di atas.
+        $sql = 'SELECT COUNT(*) AS count FROM notifications WHERE user_id = ? AND user_id > 0 AND date_read IS' . ($read ? ' NOT' : '') . ' NULL AND level = ?';
         
         if ($contextId !== null) {
             $sql .= ' AND context_id = ?';
