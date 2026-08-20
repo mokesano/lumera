@@ -409,6 +409,20 @@ class ArticleHandler extends Handler {
             'citationTimestamp'   => $citationTimestamp ?? 0,
         ]);
 
+        // [WIZDAM BUGFIX] article.tpl SENDIRI merender {include file=
+        // "article/pdfViewer.tpl"} di dalam <div class="PdfEmbed"> kalau
+        // artikel punya galley PDF (lihat kondisi
+        // {if $galleys && $galley->isPdfGalley()} di article.tpl) --
+        // tapi styles/pdfView.css SEBELUMNYA CUMA didaftarkan dari
+        // viewArticleGalley() (halaman dedicated). Untuk halaman artikel
+        // BIASA ini, stylesheet itu tidak pernah ter-<link> sama sekali.
+        foreach ($galleys as $articleGalleyItem) {
+            if ($articleGalleyItem->isPdfGalley()) {
+                $templateMgr->addStyleSheet($request->getBaseUrl() . '/styles/pdfView.css');
+                break;
+            }
+        }
+
         $templateMgr->display('article/article.tpl');
     }
 
