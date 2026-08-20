@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * header-AUTHOR.tpl
+ * @file templates/common/header-AUTHOR.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2000-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
  * Common AUTHOR header.
  *}
@@ -19,7 +19,8 @@
 {/strip}
 <head>
     <title>{if $firstName|escape !== $lastName|escape}{$firstName|escape}{/if}{if $middleName} {$middleName|escape}{/if} {$lastName|escape} - {$pageTitleTranslated} | {if $currentJournal}Sangia{else}{$siteTitle}{/if}</title>
-    <meta name="description" content="{$metaSearchDescription|escape}" />
+    
+	<meta name="description" content="{$metaSearchDescription|escape}" />
     <meta name="keywords" content="{$metaSearchKeywords|escape}" />
     <meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
 
