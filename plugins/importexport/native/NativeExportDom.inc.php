@@ -322,8 +322,7 @@ class NativeExportDom {
                     $coverNode = XMLCustomWriter::createElement($doc, 'cover');
                     XMLCustomWriter::appendChild($root, $coverNode);
                     XMLCustomWriter::setAttribute($coverNode, 'locale', $locale);
-
-                    XMLCustomWriter::createChildWithText($doc, $coverNode, 'altText', $article->getCoverPageDescription($locale), false);
+                    XMLCustomWriter::createChildWithText($doc, $coverNode, 'altText', $article->getCoverPageAltText($locale), false);
 
                     $coverFile = $article->getFileName($locale);
                     if ($coverFile != '') {
