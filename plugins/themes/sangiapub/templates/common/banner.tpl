@@ -1,10 +1,20 @@
-<!-- info-banner -->
+{**
+ * @file templates/common/banner.tpl
+ *
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * Banner and Alert.
+ *
+ *}
+ <!-- info-banner -->
 <div class="u-hide panel-s info-banner adsbox">
     <button onclick="parentNode.remove()" title="Close">Close</button>
     <section class="c-header__menu--tools" data-component-mpu="">
         <div class="c-ad__inner">
             <p class="c-ad__label">Sangia Advertisement</p>
-            <div class="sangia-ads"><a href="https://www.journals.sangia.org/ISLE" target="_blank" rel="noopener nofollow"><img loading="lazy" class="lazyload" src="https://ads.antaranews.com/www/images/07fdba5168afb6277c774710d9d6d315.gif" alt="" title="" width="728" height="90" border="0"></a>
+            <div class="sangia-ads"><a href="https://journals.sangia.org/ISLE" target="_blank" rel="noopener nofollow"><img loading="lazy" class="lazyload" src="https://ads.antaranews.com/www/images/07fdba5168afb6277c774710d9d6d315.gif" alt="" title="" width="728" height="90" border="0"></a>
             </div>
         </div>
     </section>
