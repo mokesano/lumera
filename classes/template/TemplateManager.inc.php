@@ -299,5 +299,35 @@ class TemplateManager extends PKPTemplateManager {
         return $value;
     }
 
+    /**
+     * [WIZDAM BUGFIX] PKPTemplateManager::__construct() melakukan
+     * $this->assign('stylesheets', $this->styleSheets) SEKALI SAJA, saat
+     * instance singleton pertama kali dibuat lewat getManager() -- di
+     * titik itu $this->styleSheets MASIH KOSONG. Smarty::assign() memakai
+     * assignment PHP biasa (SALINAN NILAI untuk array, BUKAN referensi).
+     *
+     * Akibatnya: addStyleSheet() yang dipanggil BELAKANGAN dari method
+     * handler mana pun (mis. ArticleHandler::view()/viewArticleGalley()
+     * memanggil addStyleSheet('styles/pdfView.css')) menambah
+     * $this->styleSheets, tapi TIDAK PERNAH tercermin ke variabel Smarty
+     * 'stylesheets' yang sudah kadung ter-assign SEBELUM handler manapun
+     * sempat berjalan -- stylesheet itu lenyap dari <head> tanpa error
+     * apa pun, terlepas method mana yang memanggil addStyleSheet().
+     *
+     * Perbaikan: re-assign 'stylesheets' di SINI, tepat sebelum setiap
+     * render, dengan isi $this->styleSheets TERKINI -- menangkap SEMUA
+     * addStyleSheet() yang sudah dipanggil sampai titik ini, dari
+     * manapun asalnya (view(), viewArticleGalley(), atau method lain).
+     * @param string $template
+     * @param string|null $sendContentType
+     * @param string|null $hookName
+     * @param bool $display
+     * @return string|null
+     */
+    public function display($template, $sendContentType = null, $hookName = null, $display = true) {
+        $this->assign('stylesheets', $this->styleSheets);
+        return parent::display($template, $sendContentType, $hookName, $display);
+    }
+
 }
 ?>
