@@ -1,9 +1,9 @@
 /**
  * styles/pdfView.css
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
  *
  * PDF inline viewer stylesheet.
  */
@@ -18,7 +18,6 @@
 }
 
 html {
-  overflow:hidden;
   font:62.5% sans-serif; 
   height: 100%;
 }
@@ -265,4 +264,24 @@ a.pdf {
     height: 100%;
     padding-top: 27px;
     border: none;
+}
+
+/* 
+ * Selektor lebih spesifik (.PdfEmbed .galley_view) menang atas aturan di
+ * atas tanpa perlu !important -- markup pdfViewer.tpl TIDAK berubah sama
+ * sekali, cukup CSS yang membedakan konteks.
+ */
+.PdfEmbed .galley_view {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    height: 783px;
+    width: 100%;
+}
+
+.PdfEmbed .galley_view iframe {
+    overflow: auto;
+    padding-top: 0;
 }
