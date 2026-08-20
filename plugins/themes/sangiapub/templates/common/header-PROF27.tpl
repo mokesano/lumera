@@ -7,7 +7,7 @@
  * Copyright (c) 2017-2026 Rochmady and Team
  * Distributed under the GNU GPL v3.
  *
- * PROF header.
+ * PROF as Profile header.
  *}
 {strip}
 	{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
