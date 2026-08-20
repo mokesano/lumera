@@ -188,7 +188,6 @@ class TemplateManager extends PKPTemplateManager {
 
     /**
      * Smarty usage: {get_help_id key="(dir)*.page.topic" url="boolean"}
-     *
      * Custom Smarty function for retrieving help topic ids.
      * @param array $params
      * @param Smarty $smarty
@@ -210,7 +209,6 @@ class TemplateManager extends PKPTemplateManager {
 
     /**
      * Smarty usage: {help_topic key="(dir)*.page.topic" text="foo"}
-     *
      * Custom Smarty function for creating anchor tags
      * @param array $params associative array
      * @param Smarty $smarty
