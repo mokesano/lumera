@@ -866,8 +866,8 @@ Copyright (C) JT Types Ltd.
  font-family:'redwoodicons';
  src:url("https://www.oracle.com/asset/web/fonts/redwoodicons-v5.woff2?21.3.0") format("woff2"),
  url("https://www.oracle.com/asset/web/fonts/redwoodicons-v5.woff?21.3.0") format("woff");
- font-weight:normal !important;
- font-style:normal !important
+ font-weight:normal;
+ font-style:normal;
 }
 
 /* ---------------------------------------------------------------------------*/

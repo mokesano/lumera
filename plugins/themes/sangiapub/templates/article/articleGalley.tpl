@@ -137,7 +137,6 @@
 		<link rel="stylesheet" href="{$cssUrl}" type="text/css" />
 	{/foreach}
 
-	{$additionalHeadData}
 </head>
 <body class="article-view">
 	<div id="pdfDownloadLinkContainer" class="header_view">
