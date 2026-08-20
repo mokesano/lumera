@@ -1,9 +1,9 @@
 {**
- * head.tpl
+ * @file templates/common/head.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2000-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
  * Common site header.
  *}
@@ -12,6 +12,7 @@
 {assign var="siteOwner" value="www.sangia.org"}
 {assign var="publishingBrand" value="Sangia Publishing"}
 {assign var="themeBrand" value="Sangia Wizdam Indonesia"}
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta property="og:title" content="{$pageTitleTranslated}{if $currentJournal} - {$currentJournal->getLocalizedTitle()|strip_tags|escape} | {$owner}{else} | {$siteTitle}{/if}" />
 {if $currentJournal}
@@ -36,17 +37,17 @@
     {call_hook name="Templates::Article::Article::ArticleCoverImage"}
     {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
     {if $issue && $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && !$issue->getHideCoverPageArchives($locale)}
-    <meta property="og:image" content="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}" />
+        <meta property="og:image" content="{$coverPagePath|escape}{$issue->getFileName($locale)|escape}" />
     {elseif $displayHomepageImage && is_array($displayHomepageImage)}
-    <meta property="og:image" content="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" />
+        <meta property="og:image" content="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" />
     {else}
-    <meta property="og:image" content="{$baseUrl}/assets/static/images/not-available.webp" />
+        <meta property="og:image" content="{$baseUrl}/assets/static/images/not-available.webp" />
     {/if}
 {/if}
 <meta name="robots" content="max-image-preview:large">
 <meta name="referrer" content="origin-when-cross-origin" />
 {if $currentJournal}
-<meta name="twitter:site" content="@{$currentJournal->getSetting('initials', $currentJournal->getPrimaryLocale())}" />
+    <meta name="twitter:site" content="@{$currentJournal->getSetting('initials', $currentJournal->getPrimaryLocale())}" />
 {/if}
 <meta name="twitter:card" content='summary_large_image' />
 <meta name="twitter:image:alt" content="{$pageTitleTranslated|escape}{if $currentJournal} - {$currentJournal->getLocalizedTitle()|strip_tags|escape} | {$owner}{/if}" />
@@ -56,7 +57,7 @@
     <meta property="og:description" content="{$journalDescription|strip_tags|escape}" />
 {/if}
 {if $currentJournal}
-<meta name="publisher" content="{if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Sangia Publishing{elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing"}Sangia Publishing{elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}{$currentJournal->getSetting('publisherInstitution')}{else}{$currentJournal->getSetting('publisherInstitution')}{/if}" />
+    <meta name="publisher" content="{if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Sangia Publishing{elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing"}Sangia Publishing{elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}{$currentJournal->getSetting('publisherInstitution')}{else}{$currentJournal->getSetting('publisherInstitution')}{/if}" />
 {/if}
 <meta name="website_owner" content="{$siteOwner}" />
 <meta name="owner" content="{$brandOwner}" />
