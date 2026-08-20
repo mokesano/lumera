@@ -10605,7 +10605,11 @@ class DownloadManager extends BaseDownloadManager {
       if (!createValidAbsoluteUrl(originalUrl, "http://example.com")) {
         throw new Error(`_triggerDownload - not a valid URL: ${originalUrl}`);
       }
-      blobUrl = originalUrl + "#pdfjs.action=download";
+      const absoluteUrl = URL.parse(originalUrl, window.location.href);
+      if (!absoluteUrl || !["http:", "https:"].includes(absoluteUrl.protocol) || absoluteUrl.origin !== window.location.origin) {
+        throw new Error(`_triggerDownload - not an allowed URL: ${originalUrl}`);
+      }
+      blobUrl = absoluteUrl.href + "#pdfjs.action=download";
     }
     const a = document.createElement("a");
     a.href = blobUrl;
