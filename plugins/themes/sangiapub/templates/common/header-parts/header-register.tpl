@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * header.tpl
+ * @file templates/common/header-parts/header-register.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2000-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
  *
- * Common site header.
+ * User Register header.
+ *
  *}
 {strip}
-{if !$pageTitleTranslated}
-    {translate|assign:"pageTitleTranslated" key=$pageTitle}
-    {* Override untuk key default *}
-    {if $pageTitle == "common.openJournalSystems"}
-        {assign var="pageTitleTranslated" value=$siteTitle}
-    {/if}
-{/if}
-{if $pageCrumbTitle}
-	{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-	{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
+	{if !$pageTitleTranslated}
+		{translate|assign:"pageTitleTranslated" key=$pageTitle}
+		{* Override untuk key default *}
+		{if $pageTitle == "common.openJournalSystems"}
+			{assign var="pageTitleTranslated" value=$siteTitle}
+		{/if}
+	{/if}
+	{if $pageCrumbTitle}
+		{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+	{elseif !$pageCrumbTitleTranslated}
+		{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+	{/if}
 {/strip}
 <head>
 	<title>{$pageTitleTranslated} | Frontedge</title>
@@ -175,12 +176,11 @@
 
 <section class="column medium-8 welcome" role="main" tabindex="-1">
 
-<h2 class="u-h3">{$pageTitleTranslated}</h2>
+	<h2 class="u-h3">{$pageTitleTranslated}</h2>
 
-{if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
-{if $pageSubtitleTranslated}
-	<h3>{$pageSubtitleTranslated}</h3>
-{/if}
+	{if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
+	{if $pageSubtitleTranslated}
+		<h3>{$pageSubtitleTranslated}</h3>
+	{/if}
 
-<div id="welcome-content" class="content">
-
+	<div id="welcome-content" class="content">
