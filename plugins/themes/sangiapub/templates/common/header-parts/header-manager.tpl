@@ -7,7 +7,7 @@
  * Copyright (c) 2017-2026 Rochmady
  * Distributed under the GNU GPL v3.
  *
- * Common Author header.
+ * Common Journal Manager header.
  *
  *}
 {strip}
