@@ -10,7 +10,7 @@
  *
  *}
 {strip}
-{include file="common/header.tpl"}
+	{include file="common/header.tpl"}
 {/strip}
 
 <p>{translate key=$message}</p>
