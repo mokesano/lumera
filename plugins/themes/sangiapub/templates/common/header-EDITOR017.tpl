@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * header.tpl
+ * @file templates/common/header-EDITOR17.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2000-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
- * Common site header.
+ * Common EDITOR header.
  *}
 {strip}
-{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
-{if $pageCrumbTitle}
-	{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-	{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
+	{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
+	{if $pageCrumbTitle}
+		{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+	{elseif !$pageCrumbTitleTranslated}
+		{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+	{/if}
 {/strip}
 <head>
     <title>{$pageTitleTranslated} | ScholarWizdam</title>
@@ -182,14 +182,13 @@
 			</section>
 		</div>
 
-<div class="column medium-9" role="main">
+		<div class="column medium-9" role="main">
 
-<h2 class="main-heading">{$pageTitleTranslated}</h2>
+			<h2 class="main-heading">{$pageTitleTranslated}</h2>
 
-{if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
-{if $pageSubtitleTranslated}
-	<h3 class="sub-heading">{$pageSubtitleTranslated}</h3>
-{/if}
+			{if $pageSubtitle && !$pageSubtitleTranslated}{translate|assign:"pageSubtitleTranslated" key=$pageSubtitle}{/if}
+			{if $pageSubtitleTranslated}
+				<h3 class="sub-heading">{$pageSubtitleTranslated}</h3>
+			{/if}
 
-<div id="content" class="article editor">
-
+			<div id="content" class="article editor">
