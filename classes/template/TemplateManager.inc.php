@@ -325,6 +325,15 @@ class TemplateManager extends PKPTemplateManager {
      * @return string|null
      */
     public function display($template, $sendContentType = null, $hookName = null, $display = true) {
+        // [WIZDAM DIAGNOSTIK] Sementara -- bandingkan spl_object_id dengan
+        // log di ArticleHandler::view() untuk pastikan instance yang SAMA,
+        // dan lihat isi styleSheets tepat SEBELUM di-assign ke Smarty.
+        error_log(sprintf(
+            '[WIZDAM DIAGNOSTIK][TemplateManager::display] template=%s spl_object_id=%d styleSheets=%s',
+            (string) $template,
+            spl_object_id($this),
+            json_encode($this->styleSheets)
+        ));
         $this->assign('stylesheets', $this->styleSheets);
         return parent::display($template, $sendContentType, $hookName, $display);
     }

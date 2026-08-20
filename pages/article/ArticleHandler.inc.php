@@ -119,6 +119,42 @@ class ArticleHandler extends Handler {
     }
 
     /**
+     * [WIZDAM] Bangun URL styles/pdfView.css dengan cache-buster berbasis
+     * filemtime() -- mencegah browser menyajikan versi CACHE LAMA dari
+     * stylesheet ini setelah kontennya berubah di server.
+     *
+     * URL statis tanpa versi (addStyleSheet($baseUrl.'/styles/pdfView.css')
+     * apa adanya, tanpa query string) TIDAK MENJAMIN browser mengambil
+     * ulang file begitu isinya di-update -- ini VALID secara spesifikasi
+     * HTTP caching, tapi PERILAKUNYA BERBEDA-BEDA tergantung Cache-Control
+     * header dan heuristik caching MASING-MASING browser. Persis
+     * menjelaskan anomali "Firefox benar, Chrome full-width/full-height" --
+     * bukan bug CSS (specificity .PdfEmbed .galley_view berlaku universal
+     * di semua browser standar), melainkan Chrome menyajikan salinan
+     * pdfView.css versi LAMA dari cache-nya sendiri (dari sebelum override
+     * .PdfEmbed .galley_view ditambahkan), sementara Firefox kebetulan
+     * mengambil versi segar.
+     *
+     * Menambahkan ?v=<filemtime> membuat URL otomatis berubah setiap kali
+     * isi file berubah di server -- browser manapun (Chrome, Firefox, atau
+     * lainnya) WAJIB mengambil ulang, karena bagi browser itu URL yang
+     * SAMA SEKALI BEDA dari sebelumnya, bukan lagi bergantung kapan cache
+     * lama kedaluwarsa.
+     * @param object $request
+     * @return string URL lengkap pdfView.css dengan query string versi.
+     */
+    protected function _buildPdfViewCssUrl($request) {
+        $relativePath = '/styles/pdfView.css';
+        $filesystemPath = Core::getBaseDir() . $relativePath;
+        // Pengaman defensif -- pastikan filemtime() tidak membaca stat
+        // cache basi pada konfigurasi PHP tertentu (mis. opcache/worker
+        // persisten), meski PHP-FPM standar sudah segar per request.
+        clearstatcache(true, $filesystemPath);
+        $version = file_exists($filesystemPath) ? filemtime($filesystemPath) : time();
+        return $request->getBaseUrl() . $relativePath . '?v=' . $version;
+    }
+
+    /**
      * View Article.
      * @param array $args
      * @param PKPRequest $request
@@ -418,7 +454,7 @@ class ArticleHandler extends Handler {
         // BIASA ini, stylesheet itu tidak pernah ter-<link> sama sekali.
         foreach ($galleys as $articleGalleyItem) {
             if ($articleGalleyItem->isPdfGalley()) {
-                $templateMgr->addStyleSheet($request->getBaseUrl() . '/styles/pdfView.css');
+                $templateMgr->addStyleSheet($this->_buildPdfViewCssUrl($request));
                 break;
             }
         }
@@ -588,7 +624,7 @@ class ArticleHandler extends Handler {
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->addJavaScript('js/inlinePdf.js');
         $templateMgr->addJavaScript('js/pdfobject.js');
-        $templateMgr->addStyleSheet($request->getBaseUrl() . '/styles/pdfView.css');
+        $templateMgr->addStyleSheet($this->_buildPdfViewCssUrl($request));
 
         $templateMgr->assign([
             'article'   => $article,
