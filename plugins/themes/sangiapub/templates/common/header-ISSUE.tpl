@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * header.tpl
+ * @file templates/common/header-ISSUE.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2000-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
- * Common site header.
+ * NEW ISSUE header.
  *
  * [WIZDAM v2] Logika URL Bertingkat:
  *   L1 (Normal)      : volume ada + number ada  → /volumes/{vol}/issue/{slug}
@@ -20,22 +20,23 @@
  *   terutama untuk volume dan number yang bisa bernilai 0 (valid).
  *}
 {strip}
-{if !$pageTitleTranslated}
-    {translate|assign:"pageTitleTranslated" key=$pageTitle}
-    {* Override untuk key default OJS *}
-    {if $pageTitle == "common.openJournalSystems"}
-        {assign var="pageTitleTranslated" value="No Current Issue"}
-    {/if}
-{/if}
-{if $pageCrumbTitle}
-    {translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-    {assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
+	{if !$pageTitleTranslated}
+		{translate|assign:"pageTitleTranslated" key=$pageTitle}
+		{* Override untuk key default OJS *}
+		{if $pageTitle == "common.openJournalSystems"}
+			{assign var="pageTitleTranslated" value="No Current Issue"}
+		{/if}
+	{/if}
+	{if $pageCrumbTitle}
+		{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+	{elseif !$pageCrumbTitleTranslated}
+		{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+	{/if}
 {/strip}
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
 	<title>{$pageTitleTranslated} - {$currentJournal->getLocalizedTitle()|strip_tags|escape} | Sangia Publishing</title>
+	
+	<meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
     <meta name="description" content="{$metaSearchDescription|escape}" />
     <meta name="keywords" content="{$metaSearchKeywords|escape}" />
     
