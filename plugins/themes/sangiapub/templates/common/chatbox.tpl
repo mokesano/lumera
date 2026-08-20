@@ -1,15 +1,24 @@
+{**
+ * @file templates/common/chatbox.tpl
+ *
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * Chatbox chatbot Sangia.
+ *
+ *}
 <div id="wizdam-chat-widget" class="wizdam-chat-closed">
     <div class="wizdam-chat-header" onclick="WizdamChat.toggle()">
         <div style="display:flex; align-items:center; gap:8px;">
             <span style="font-size: 16px;">🤖</span> 
-            <span style="font-weight:bold; font-size:14px;">Wizdam Assistant</span>
+            <span style="font-weight:bold; font-size:14px;">Lumera Assistant</span>
         </div>
         <span id="wizdam-toggle-icon">▲</span>
         <div id="wizdam-bounce-indicator"></div> 
     </div>
 
-    <div class="wizdam-chat-body" id="wizdam-chat-body">
-        </div>
+    <div class="wizdam-chat-body" id="wizdam-chat-body"></div>
 
     <div id="wizdam-typing-container" style="display:none;">
         <div class="wizdam-message bot">
@@ -199,7 +208,6 @@ const WizdamChat = (function() {
     function delay(ms) {
         return new Promise(r => setTimeout(r, ms));
     }
-    
     
     // FUNGSI typeMessage (Animasi Ketik Per Karakter) TELAH DIHAPUS.
     // Teks Bot akan muncul instan setelah loading.
