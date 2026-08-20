@@ -66,16 +66,7 @@ class GoogleViewerPlugin extends GenericPlugin {
             switch ($params['smarty_include_tpl_file']) {
                 case 'article/pdfViewer.tpl':
                     $params['smarty_include_tpl_file'] = $this->getTemplatePath() . 'index.tpl';
-                    // [WIZDAM BUGFIX] Sebelumnya SELALU return false -- membuat
-                    // HookRegistry::dispatch() lanjut ke hook lain yang JUGA
-                    // mendaftar untuk target sama ('article/pdfViewer.tpl',
-                    // mis. PdfJsViewerPlugin), sehingga siapa pun yang KEBETULAN
-                    // terdaftar lebih dulu (alfabetis: googleViewer < pdfJsViewer)
-                    // yang menang -- bukan preferensi JM. return true
-                    // MENGHENTIKAN dispatch begitu SATU plugin berhasil
-                    // menangani target ini, membuat kedua plugin benar-benar
-                    // independen satu sama lain.
-                    return true;
+                    break;
             }
             return false;
         }
@@ -94,9 +85,7 @@ class GoogleViewerPlugin extends GenericPlugin {
             switch ($template) {
                 case 'issue/issueGalley.tpl':
                     $template = $this->getTemplatePath() . 'issueGalley.tpl';
-                    // [WIZDAM BUGFIX] Sama seperti _includeCallback() -- lihat
-                    // catatan di sana.
-                    return true;
+                    break;
             }
             return false;
         }
