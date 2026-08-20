@@ -183,10 +183,8 @@
 		{include file="common/minifiedScripts.tpl"}
 	{/if}
 
-	{foreach from=$stylesheets name="testUrl" item=cssUrl}
-		{if $cssUrl != "$baseUrl/styles/ojs.css"}
-			<link rel="stylesheet" href="{$cssUrl}" type="text/css" />
-		{/if}
+	{foreach from=$stylesheets item=cssUrl}
+		<link rel="stylesheet" href="{$cssUrl}" type="text/css" />
 	{/foreach}
 
 	<link rel="stylesheet" href="{$baseUrl}/assets/static/styles/print.css" media="print" type="text/css" />
