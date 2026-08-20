@@ -91,5 +91,45 @@ class GoogleViewerPlugin extends GenericPlugin {
         }
     }
 
+    /**
+     * [WIZDAM] Cegah plugin ini diaktifkan selama PdfJsViewerPlugin
+     * sudah aktif -- dicegah di SUMBERNYA (aksi enable itu sendiri
+     * ditolak), bukan cuma diselesaikan belakangan lewat prioritas
+     * eksekusi hook.
+     *
+     * Pesan hasil dikirim lewat NotificationManager, BUKAN mekanisme
+     * $message/$messageParams form biasa -- konvensi fork ini: semua
+     * pesan hasil aksi (apa pun jenisnya) WAJIB tampil sebagai
+     * notifikasi lewat NotificationManager, bukan error form biasa.
+     * @param string $verb
+     * @param array $args
+     * @param string|null $message
+     * @param array|null $messageParams
+     * @param object|null $request
+     * @return bool
+     */
+    public function manage(string $verb, array $args, ?string &$message = null, ?array &$messageParams = null, $request = null): bool {
+        if ($verb === 'enable') {
+            $request = $request instanceof PKPRequest ? $request : Application::get()->getRequest();
+
+            /** @var PdfJsViewerPlugin|null $pdfJsPlugin */
+            $pdfJsPlugin = PluginRegistry::getPlugin('generic', 'pdfjsviewerplugin');
+            if ($pdfJsPlugin && $pdfJsPlugin->getEnabled($request)) {
+                $user = $request->getUser();
+                if ($user) {
+                    import('classes.notification.NotificationManager');
+                    $notificationManager = new NotificationManager();
+                    $notificationManager->createTrivialNotification(
+                        (int) $user->getId(),
+                        NOTIFICATION_TYPE_ERROR,
+                        ['contents' => __('plugins.generic.googleViewer.pdfJsAlreadyEnabled')]
+                    );
+                }
+                return false;
+            }
+        }
+        return parent::manage($verb, $args, $message, $messageParams, $request);
+    }
+
 }
 ?>

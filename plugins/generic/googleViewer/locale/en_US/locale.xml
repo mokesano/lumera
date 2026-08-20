@@ -4,9 +4,9 @@
 <!--
   * plugins/generic/googleViewer/locale/en_US/locale.xml
   *
-  * Copyright (c) 2013-2019 Simon Fraser University
-  * Copyright (c) 2003-2019 John Willinsky
-  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  * Copyright (c) 2017-2026 Sangia Publishing House
+  * Copyright (c) 2017-2026 Rochmady and Team
+  * Distributed under the GNU GPL v3.
   *
   * Localization strings
   -->
@@ -14,4 +14,5 @@
 <locale name="en_US" full_name="U.S. English">
 	<message key="plugins.generic.googleViewer.name">Google embedded viewer Plugin</message>
 	<message key="plugins.generic.googleViewer.description"><![CDATA[This plugin uses the Google Docs Viewer service to embed PDFs on the article view page.]]></message>
+	<message key="plugins.generic.googleViewer.pdfJsAlreadyEnabled">Cannot enable this plugin while the PDF.js Viewer plugin is enabled. Only one PDF viewer plugin may be active at a time. Disable PDF.js Viewer first if you want to use Google Viewer instead.</message>
 </locale>
