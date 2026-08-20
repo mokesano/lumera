@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}">
 {**
- * header-ROLE.tpl
+ * @file templates/common/header-ROLE.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2000-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
- * Common ROLE header.
+ * Role header.
  *}
 {strip}
 	{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
@@ -19,6 +19,7 @@
 {/strip}
 <head>
     <title>{$pageTitleTranslated} | Lumera Editorial</title>
+
     <meta name="description" content="{$metaSearchDescription|escape}" />
     <meta name="keywords" content="{$metaSearchKeywords|escape}" />
     <meta http-equiv="Content-Type" content="text/html; charset={$defaultCharset|escape}" />
@@ -157,4 +158,3 @@
 						{/if}
 						
 						<div id="content" class="sangia-content">
-
