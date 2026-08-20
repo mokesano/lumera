@@ -1,18 +1,22 @@
 {**
  * common/search.tpl
  *
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
  *
  * Search Bar
  *
  *}
-
 <div class="u-container u-search u-mt-0 u-mb-32">
-<script type="text/javascript">
-	$(function() {ldelim}
-		// Attach the form handler.
-		$('#searchForm').pkpHandler('$.pkp.pages.search.SearchFormHandler');
-	{rdelim});
-</script>
+
+    <script type="text/javascript">
+        $(function() {ldelim}
+            // Attach the form handler.
+            $('#searchForm').pkpHandler('$.pkp.pages.search.SearchFormHandler');
+        {rdelim});
+    </script>
+
     <div class="s-search c-search--background">
         {capture assign="filterInput"}{call_hook name="Templates::Search::SearchResults::FilterInput" filterName=$filterName filterValue=$filterValue}{/capture}
         {url|assign:"searchFormUrl" page="search" op="search" escape=false}
