@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}" xml:lang="{$currentLocale|substr:0:2}">
 {**
- * header.tpl
+ * @file templates/common/header-SA07.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2000-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
- * Common site header.
+ * Search header.
  *}
 {strip}
-{if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
-{if $pageCrumbTitle}
-	{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-	{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
+    {if !$pageTitleTranslated}{translate|assign:"pageTitleTranslated" key=$pageTitle}{/if}
+    {if $pageCrumbTitle}
+        {translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+    {elseif !$pageCrumbTitleTranslated}
+        {assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+    {/if}
 {/strip}
 <head>
 	<title>{if $query}{$query|strip_unsafe_html}{elseif $hasActiveFilters}{$filterValue|escape}{else}{$pageTitleTranslated}{/if}{if $currentJournal} in {$currentJournal->getLocalizedInitials()|strip_tags|escape}{/if} | {if $siteSearch}Sangia Search Results{else}{$siteTitle}{/if}</title>
@@ -414,4 +414,3 @@
 	    <div class="u-mb-0"><span data-test="results-data" class="u-display-flex"><span>Showing {if $results && is_object($results)}{page_info iterator=$results}{/if} results.</span></span>
         </div>
     </div>
-
