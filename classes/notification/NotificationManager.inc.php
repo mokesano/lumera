@@ -155,6 +155,84 @@ class NotificationManager extends PKPNotificationManager {
     }
 
     /**
+     * [WIZDAM BUGFIX] Override getNotificationTitle() -- versi asli PKP
+     * mengembalikan judul GENERIK "Notification" untuk HAMPIR SEMUA
+     * tipe (cuma NOTIFICATION_TYPE_FORM_ERROR yang dapat judul khusus).
+     * Ini sebabnya notification.tpl SEBELUMNYA tidak pernah memakai
+     * $notificationTitle sama sekali -- tidak ada gunanya menampilkan
+     * judul yang selalu sama untuk setiap notifikasi.
+     *
+     * Diperbaiki di sini dengan judul spesifik per tipe untuk seluruh
+     * tipe severity generik (dipakai createTrivialNotification()) dan
+     * tipe workflow utama yang sudah ditelusuri (ARTICLE_SUBMITTED,
+     * METADATA_MODIFIED, dst.) -- supaya daftar notifikasi bisa
+     * menampilkan JUDUL SINGKAT dulu, dengan detail lengkap
+     * ($notificationContents) baru terlihat setelah diperluas/diklik.
+     * Tipe yang belum tercakup eksplisit tetap jatuh ke fallback
+     * generik yang sama seperti sebelumnya -- tidak ada regresi,
+     * cuma cakupan yang diperluas.
+     * @param mixed $notification
+     * @return string
+     */
+    public function getNotificationTitle($notification) {
+        $type = $notification->getType();
+        assert(isset($type));
+
+        switch ($type) {
+            case NOTIFICATION_TYPE_FORM_ERROR:
+                return __('form.errorsOccurred');
+            case NOTIFICATION_TYPE_SUCCESS:
+                return __('notification.title.success');
+            case NOTIFICATION_TYPE_WARNING:
+                return __('notification.title.warning');
+            case NOTIFICATION_TYPE_ERROR:
+                return __('notification.title.error');
+            case NOTIFICATION_TYPE_FORBIDDEN:
+                return __('notification.title.forbidden');
+            case NOTIFICATION_TYPE_INFORMATION:
+                return __('notification.title.information');
+            case NOTIFICATION_TYPE_HELP:
+                return __('notification.title.help');
+            case NOTIFICATION_TYPE_ARTICLE_SUBMITTED:
+                return __('notification.title.articleSubmitted');
+            case NOTIFICATION_TYPE_METADATA_MODIFIED:
+                return __('notification.title.metadataModified');
+            case NOTIFICATION_TYPE_SUPP_FILE_MODIFIED:
+                return __('notification.title.suppFileModified');
+            case NOTIFICATION_TYPE_GALLEY_MODIFIED:
+                return __('notification.title.galleyModified');
+            case NOTIFICATION_TYPE_SUBMISSION_COMMENT:
+                return __('notification.title.submissionComment');
+            case NOTIFICATION_TYPE_LAYOUT_COMMENT:
+                return __('notification.title.layoutComment');
+            case NOTIFICATION_TYPE_COPYEDIT_COMMENT:
+                return __('notification.title.copyeditComment');
+            case NOTIFICATION_TYPE_PROOFREAD_COMMENT:
+                return __('notification.title.proofreadComment');
+            case NOTIFICATION_TYPE_REVIEWER_COMMENT:
+                return __('notification.title.reviewerComment');
+            case NOTIFICATION_TYPE_REVIEWER_FORM_COMMENT:
+                return __('notification.title.reviewerFormComment');
+            case NOTIFICATION_TYPE_EDITOR_DECISION_COMMENT:
+                return __('notification.title.editorDecisionComment');
+            case NOTIFICATION_TYPE_USER_COMMENT:
+                return __('notification.title.userComment');
+            case NOTIFICATION_TYPE_PUBLISHED_ISSUE:
+                return __('notification.title.publishedIssue');
+            case NOTIFICATION_TYPE_NEW_ANNOUNCEMENT:
+                return __('notification.title.newAnnouncement');
+            case NOTIFICATION_TYPE_PLUGIN_ENABLED:
+                return __('notification.title.pluginEnabled');
+            case NOTIFICATION_TYPE_PLUGIN_DISABLED:
+                return __('notification.title.pluginDisabled');
+            case NOTIFICATION_TYPE_LOCALE_INSTALLED:
+                return __('notification.title.localeInstalled');
+            default:
+                return __('notification.notification');
+        }
+    }
+
+    /**
      * Construct a URL for the notification based on its type and associated object.
      * @param mixed $request
      * @param Notification $notification

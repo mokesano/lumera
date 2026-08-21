@@ -371,6 +371,29 @@
 	<message key="notification.mailList.review"><![CDATA[Participate in the <a href="{$reviewUrl}">peer review</a> process]]></message>
 	<message key="notification.noneExist">You have no notifications at this time.</message>
 	<message key="notification.notification">Notification</message>
+	<message key="notification.title.success">Success</message>
+	<message key="notification.title.warning">Warning</message>
+	<message key="notification.title.error">Error</message>
+	<message key="notification.title.forbidden">Forbidden</message>
+	<message key="notification.title.information">Information</message>
+	<message key="notification.title.help">Help</message>
+	<message key="notification.title.articleSubmitted">New Submission</message>
+	<message key="notification.title.metadataModified">Metadata Updated</message>
+	<message key="notification.title.suppFileModified">Supplementary File Updated</message>
+	<message key="notification.title.galleyModified">Galley Updated</message>
+	<message key="notification.title.submissionComment">New Comment</message>
+	<message key="notification.title.layoutComment">Layout Comment</message>
+	<message key="notification.title.copyeditComment">Copyediting Comment</message>
+	<message key="notification.title.proofreadComment">Proofreading Comment</message>
+	<message key="notification.title.reviewerComment">Reviewer Comment</message>
+	<message key="notification.title.reviewerFormComment">Reviewer Form Comment</message>
+	<message key="notification.title.editorDecisionComment">Editor Decision</message>
+	<message key="notification.title.userComment">New Comment</message>
+	<message key="notification.title.publishedIssue">Issue Published</message>
+	<message key="notification.title.newAnnouncement">New Announcement</message>
+	<message key="notification.title.pluginEnabled">Plugin Enabled</message>
+	<message key="notification.title.pluginDisabled">Plugin Disabled</message>
+	<message key="notification.title.localeInstalled">Locale Installed</message>
 	<message key="notification.notifications">Notifications</message>
 	<message key="notification.notificationsNew">({$numNew} new)</message>
 	<message key="notification.notificationsDescription">You have {$unreadCount} unread notifications and {$readCount} read notifications.<![CDATA[  <a href="{$settingsUrl}">Click here</a> to change your notification settings.]]></message>

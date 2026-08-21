@@ -304,6 +304,29 @@
 	<message key="notification.mailList.review"><![CDATA[Berpartisipasi di<a href="{$reviewUrl}">peer review</a> process]]></message>
 	<message key="notification.noneExist">Anda tidak punya notifikasi saat ini.</message>
 	<message key="notification.notification">Notifikasi</message>
+	<message key="notification.title.success">Berhasil</message>
+	<message key="notification.title.warning">Peringatan</message>
+	<message key="notification.title.error">Kesalahan</message>
+	<message key="notification.title.forbidden">Akses Ditolak</message>
+	<message key="notification.title.information">Informasi</message>
+	<message key="notification.title.help">Bantuan</message>
+	<message key="notification.title.articleSubmitted">Naskah Baru</message>
+	<message key="notification.title.metadataModified">Metadata Diperbarui</message>
+	<message key="notification.title.suppFileModified">Berkas Pendukung Diperbarui</message>
+	<message key="notification.title.galleyModified">Galley Diperbarui</message>
+	<message key="notification.title.submissionComment">Komentar Baru</message>
+	<message key="notification.title.layoutComment">Komentar Tata Letak</message>
+	<message key="notification.title.copyeditComment">Komentar Penyuntingan</message>
+	<message key="notification.title.proofreadComment">Komentar Pemeriksaan Akhir</message>
+	<message key="notification.title.reviewerComment">Komentar Reviewer</message>
+	<message key="notification.title.reviewerFormComment">Komentar Formulir Reviewer</message>
+	<message key="notification.title.editorDecisionComment">Keputusan Editor</message>
+	<message key="notification.title.userComment">Komentar Baru</message>
+	<message key="notification.title.publishedIssue">Edisi Diterbitkan</message>
+	<message key="notification.title.newAnnouncement">Pengumuman Baru</message>
+	<message key="notification.title.pluginEnabled">Plugin Diaktifkan</message>
+	<message key="notification.title.pluginDisabled">Plugin Dinonaktifkan</message>
+	<message key="notification.title.localeInstalled">Bahasa Terpasang</message>
 	<message key="notification.notifications">Notifikasi</message>
 	<message key="notification.notificationsNew">({$numNew} new)</message>
 	<message key="notification.notificationsDescription">Anda punya {$unreadCount} notifikasi yang belum dibaca dan  {$readCount} notifikasi yang sudah dibaca .<![CDATA[  <a href="{$settingsUrl}">Klik di sini</a>untuk mengganti pengaturan notifikasi Anda.]]></message>

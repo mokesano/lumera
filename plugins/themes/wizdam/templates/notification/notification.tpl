@@ -1,9 +1,9 @@
 {**
  * templates/notification/notification.tpl
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2000-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
  * Display a single notification.
  *}
@@ -31,7 +31,10 @@
 	<tr>
 		<td width="25">&nbsp;</td>
 		<td class="notificationContent">
-			<p{if !$notificationDateRead|date_format:"%d %b %Y %T"} style="font-weight: bold"{/if}>{$notificationContents|strip_unsafe_html|nl2br:"html"}
+			<details{if !$notificationDateRead} open{/if}>
+				<summary{if !$notificationDateRead} style="font-weight: bold"{/if}>{$notificationTitle|escape}</summary>
+				<p>{$notificationContents|strip_unsafe_html|nl2br:"html"}</p>
+			</details>
 		</td>
 	</tr>
 </table>

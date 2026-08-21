@@ -11,8 +11,7 @@ declare(strict_types=1);
  * @class NotificationBlockPlugin
  * @ingroup plugins_blocks_notification
  *
- * @brief Class for "notification" block plugin
- * [WIZDAM EDITION] Modernized Syntax Only (Safe Mode)
+ * @brief Class for "notification" block plugin.
  */
 
 import('lib.pkp.classes.plugins.BlockPlugin');
@@ -32,11 +31,12 @@ class NotificationBlockPlugin extends BlockPlugin {
     public function NotificationBlockPlugin() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::NotificationBlockPlugin(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -82,29 +82,37 @@ class NotificationBlockPlugin extends BlockPlugin {
      * @return string
      */
     public function getContents($templateMgr, $request = null) {
-        // [WIZDAM] LOGIKA ORIGINAL DIPERTAHANKAN
-        // Kita tidak menambah query baru agar tidak bentrok dengan Navbar.
-        
         $user = Request::getUser(); 
         $journal = $request->getJournal();
 
+        // [WIZDAM BUGFIX -- ARSITEKTUR] SEBELUMNYA hitungan ini
+        // disaring ke jurnal yang SEDANG DIBUKA ($journal->getId()
+        // diteruskan sebagai $contextId) -- bug arsitektur yang sama
+        // dengan yang diperbaiki di NotificationHandler::index()
+        // (lihat dokblok di sana untuk penjelasan lengkap). Notifikasi
+        // melekat pada PENGGUNA, bukan pada jurnal tempat aksinya
+        // terjadi -- badge navbar dan halaman /notification HARUS
+        // menunjukkan angka yang SAMA, terlepas jurnal mana yang
+        // sedang dibuka. $journal tetap dipertahankan untuk syarat
+        // "user && journal" (blok ini memang cuma tampil di halaman
+        // ber-jurnal), tapi TIDAK LAGI dipakai sebagai filter context.
         if ($user && $journal) {
             $userId = $user->getId();
-            // [MODERNISASI] Hapus referensi &
+            /** @var NotificationDAO $notificationDao */
             $notificationDao = DAORegistry::getDAO('NotificationDAO');
             
             // Assign variabel persis seperti aslinya
             $templateMgr->assign(
                 'unreadNotifications', 
-                $notificationDao->getNotificationCount(false, $userId, $journal->getId())
+                $notificationDao->getNotificationCount(false, $userId, null)
             );
         }
 
-        // SOLUSI BYPASS PARENT (WAJIB)
         $templateFilename = $this->getBlockTemplateFilename($request);
         if ($templateFilename === null) return '';
         
         return $templateMgr->fetch($this->getTemplatePath() . $templateFilename);
     }
+
 }
 ?>
