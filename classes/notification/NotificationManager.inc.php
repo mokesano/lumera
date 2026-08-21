@@ -48,37 +48,32 @@ class NotificationManager extends PKPNotificationManager {
     /**
      * [WIZDAM] Override createTrivialNotification() -- PKPNotificationManager
      * versi asli SELALU menetapkan level TRIVIAL (efemeral: tampil sekali
-     * lewat AJAX fetchNotification(), lalu DIHAPUS PERMANEN oleh
-     * deleteTrivialNotifications()), berapa pun jenis pesannya -- termasuk
-     * pesan ERROR/WARNING yang sebenarnya berguna diarsipkan supaya
-     * pengguna tidak perlu bolak-balik lihat log server hanya untuk tahu
-     * kenapa suatu aksi gagal.
+     * di halaman lewat AJAX fetchNotification(), lalu DIHAPUS PERMANEN
+     * oleh deleteTrivialNotifications()) dan context CONTEXT_ID_NONE,
+     * berapa pun jenis pesannya -- termasuk pesan ERROR/WARNING yang
+     * sebenarnya berguna diarsipkan supaya pengguna tidak perlu
+     * bolak-balik lihat log server hanya untuk tahu kenapa suatu aksi
+     * gagal.
      *
-     * Diperbaiki DI SINI (satu titik pusat) -- seluruh pemanggil di
-     * codebase memakai `new NotificationManager()` (kelas ini), jadi
-     * perbaikan otomatis berlaku untuk semuanya.
+     * Diperbaiki DI SINI (satu titik pusat, bukan di 99+ titik
+     * pemanggilan createTrivialNotification() di seluruh codebase) --
+     * seluruh pemanggil memakai `new NotificationManager()` (kelas ini),
+     * jadi perbaikan otomatis berlaku untuk semuanya, sekarang maupun
+     * kode baru yang ditambahkan di masa depan:
      *
-     * LEVEL: hanya NOTIFICATION_TYPE_SUCCESS yang tetap TRIVIAL
-     * (efemeral, sesuai instruksi eksplisit -- respons sukses tidak
-     * perlu diarsipkan). Tipe lain apa pun (ERROR, WARNING, FORBIDDEN,
-     * FORM_ERROR, atau tipe semantik seperti "buku terkirim") menjadi
-     * NOTIFICATION_LEVEL_NORMAL -- persisten, muncul di halaman
-     * /notification (privat, melekat pada akun pengguna).
-     *
-     * [KOREKSI PENTING] Percobaan SEBELUMNYA juga menambahkan deteksi
-     * context jurnal AKTIF (dari request saat itu) ke notification ini
-     * -- itu KELIRU. Notifikasi adalah aksi PENGGUNA, bukan aksi
-     * KONTEKS -- mengunci context_id ke jurnal tempat aksi terjadi
-     * membuat notifikasi itu cuma terlihat SELAMA pengguna tetap
-     * membuka jurnal yang SAMA, dan "hilang" (tersaring keluar) begitu
-     * mereka pindah ke jurnal lain atau ke level situs -- padahal
-     * identitas pengguna tidak berubah. context_id TIDAK disentuh di
-     * sini sama sekali (tetap CONTEXT_ID_NONE dari default parent) --
-     * notifikasi murni melekat pada userId, bebas dari konteks jurnal
-     * manapun. Konteks tetap relevan untuk TAUTAN/NAVIGASI saat
-     * notifikasi itu DIKLIK (getNotificationUrl() menghitung URL yang
-     * benar dari data notifikasi itu sendiri, mis. assocId artikel) --
-     * bukan untuk MENYARING mana yang boleh terlihat di daftar.
+     * 1. LEVEL: hanya NOTIFICATION_TYPE_SUCCESS yang tetap TRIVIAL
+     *    (efemeral, sesuai instruksi eksplisit -- respons sukses tidak
+     *    perlu diarsipkan). Tipe lain apa pun (ERROR, WARNING, FORBIDDEN,
+     *    FORM_ERROR, atau tipe semantik seperti "buku terkirim") menjadi
+     *    NOTIFICATION_LEVEL_NORMAL -- persisten, muncul di halaman
+     *    /notification (yang sekarang privat, lihat perbaikan
+     *    NotificationHandler/NotificationDAO sebelumnya).
+     * 2. CONTEXT: sebelumnya SELALU CONTEXT_ID_NONE (0) -- membuat
+     *    notifikasi persisten manapun TIDAK PERNAH cocok dengan filter
+     *    context_id jurnal spesifik di halaman /notification, bahkan
+     *    setelah levelnya diperbaiki. Sekarang otomatis memakai context
+     *    jurnal AKTIF dari request saat ini (kalau ada), supaya
+     *    notifikasi benar-benar muncul di jurnal tempat aksinya terjadi.
      * @param mixed $userId
      * @param mixed $notificationType
      * @param mixed $params
@@ -89,7 +84,11 @@ class NotificationManager extends PKPNotificationManager {
         $notificationDao = DAORegistry::getDAO('NotificationDAO');
         $notification = $notificationDao->newDataObject();
         $notification->setUserId($userId);
-        $notification->setContextId(CONTEXT_ID_NONE);
+
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $notification->setContextId($context ? $context->getId() : CONTEXT_ID_NONE);
+
         $notification->setType($notificationType);
 
         $level = ($notificationType === NOTIFICATION_TYPE_SUCCESS)
@@ -108,6 +107,51 @@ class NotificationManager extends PKPNotificationManager {
         }
 
         return $notification;
+    }
+
+    /**
+     * [WIZDAM BUGFIX] Override formatNotification() -- versi asli PKP
+     * menandai notifikasi sebagai SUDAH DIBACA (setDateRead()) secara
+     * OTOMATIS, hanya karena notifikasi itu diformat untuk ditampilkan --
+     * TIDAK ADA aksi klik/konfirmasi eksplisit apa pun dari pengguna.
+     * Akibatnya: sekadar MEMBUKA halaman /notification langsung menandai
+     * SEMUA notifikasi yang belum dibaca sebagai sudah dibaca, membuatnya
+     * tampak "hilang" dari indikator belum-dibaca -- persis gejala yang
+     * dilaporkan.
+     *
+     * Template notification.tpl SEBENARNYA sudah punya logika visual
+     * yang benar (tebal untuk yang belum dibaca, {if !$notificationDateRead}),
+     * tapi karena date_read sudah ditulis SEBELUM render sampai ke
+     * template, visual itu tidak pernah efektif -- semua tampak "sudah
+     * dibaca" sejak render pertama.
+     *
+     * Blok setDateRead() OTOMATIS dihapus di sini -- status baca
+     * sekarang HANYA berubah lewat aksi eksplisit
+     * (NotificationHandler::markRead(), tombol "Tandai sudah dibaca" di
+     * template), bukan lagi efek samping dari sekadar menampilkan
+     * halaman.
+     * @param PKPRequest $request
+     * @param mixed $notification object Notification
+     * @return string
+     */
+    public function formatNotification($request, $notification, $notificationTemplate = 'notification/notification.tpl') {
+        $templateMgr = TemplateManager::getManager();
+
+        $templateMgr->assign('notificationDateCreated', $notification->getDateCreated());
+        $templateMgr->assign('notificationId', $notification->getId());
+        $templateMgr->assign('notificationContents', $this->getNotificationContents($request, $notification));
+        $templateMgr->assign('notificationTitle', $this->getNotificationTitle($notification));
+        $templateMgr->assign('notificationStyleClass', $this->getStyleClass($notification));
+        $templateMgr->assign('notificationIconClass', $this->getIconClass($notification));
+        $templateMgr->assign('notificationDateRead', $notification->getDateRead());
+        if ($notification->getLevel() != NOTIFICATION_LEVEL_TRIVIAL) {
+            $templateMgr->assign('notificationUrl', $this->getNotificationUrl($request, $notification));
+        }
+
+        $user = $request->getUser();
+        $templateMgr->assign('isUserLoggedIn', $user);
+
+        return $templateMgr->fetch($notificationTemplate);
     }
 
     /**

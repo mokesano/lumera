@@ -294,6 +294,7 @@
 	<message key="notification.confirmSuccess">Anda telah berlangganan dengan sukses.</message>
 	<message key="notification.email">Kirimi saya email untuk tipe notifikasi ini.</message>
 	<message key="notification.location">Pergi ke URL</message>
+	<message key="notification.markAsRead">Tandai sudah dibaca</message>
 	<message key="notification.mailList">Daftar surat menyurat notifikasi</message>
 	<message key="notification.mailList.emailInvalid">Masukkan alamat email yang valid.</message>
 	<message key="notification.mailList.privacyProtection">Kebijakan Perlindungan Privasi</message>

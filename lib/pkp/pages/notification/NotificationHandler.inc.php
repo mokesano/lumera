@@ -55,28 +55,9 @@ class NotificationHandler extends Handler {
         $user = $request->getUser();
         $userId = (int) $user->getId();
         $templateMgr->assign('isUserLoggedIn', true);
-
-        // [WIZDAM BUGFIX -- ARSITEKTUR] SEBELUMNYA $contextId diturunkan
-        // dari jurnal yang SEDANG DIBUKA di URL ($request->getContext()),
-        // lalu dipakai menyaring SELURUH daftar dan hitungan notifikasi.
-        // Ini KELIRU: notifikasi adalah aksi PENGGUNA, bukan aksi
-        // KONTEKS -- identitas pengguna tidak berubah saat mereka
-        // berpindah dari /AGRIKAN/notification ke /ISLE/notification,
-        // jadi daftar notifikasi mereka juga TIDAK BOLEH berubah/hilang
-        // cuma karena jurnal yang sedang dibuka berbeda. Notifikasi yang
-        // tercipta saat aksi terjadi di jurnal A tidak boleh "terpenjara"
-        // di jurnal A -- pengguna yang sama harus tetap melihatnya dari
-        // jurnal manapun, atau dari level situs sekalipun.
-        //
-        // $contextId TIDAK LAGI diturunkan dari request/URL saat ini --
-        // selalu null di sini, supaya NotificationDAO::getByUserId()/
-        // getNotificationCount() (yang filter context_id-nya BERSYARAT,
-        // "if ($contextId !== null)") tidak pernah menyaring berdasarkan
-        // jurnal yang sedang dibuka. Konteks jurnal tetap relevan untuk
-        // TAUTAN/NAVIGASI saat notifikasi itu DIKLIK (getNotificationUrl()
-        // menghitung URL yang benar berdasarkan data notifikasi itu
-        // sendiri) -- bukan untuk MENYARING mana yang boleh terlihat.
-        $contextId = null;
+        
+        $context = $request->getContext();
+        $contextId = $context ? $context->getId() : null;
 
         $notificationManager = new NotificationManager();
         /** @var NotificationDAO $notificationDao */
@@ -126,6 +107,37 @@ class NotificationHandler extends Handler {
         /** @var NotificationDAO $notificationDao */
         $notificationDao = DAORegistry::getDAO('NotificationDAO');
         $notificationDao->deleteById($notificationId, $userId);
+
+        if (!$isAjax) {
+            $router = $request->getRouter();
+            $request->redirectUrl($router->url($request, null, 'notification'));
+        }
+    }
+
+    /**
+     * [WIZDAM] Tandai satu notifikasi sebagai sudah dibaca -- aksi
+     * EKSPLISIT pengganti penandaan otomatis yang dihapus dari
+     * NotificationManager::formatNotification(). Mengikuti pola persis
+     * delete() di atas (wajib login, ambil notificationId dari $args,
+     * dukung mode AJAX).
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function markRead($args, $request) {
+        $this->validate();
+
+        if (!Validation::isLoggedIn()) {
+            Validation::redirectLogin();
+        }
+
+        $notificationId = (int) array_shift($args);
+        $isAjax = (isset($args[0]) && $args[0] == 'ajax');
+
+        $user = $request->getUser();
+        $userId = (int) $user->getId();
+        /** @var NotificationDAO $notificationDao */
+        $notificationDao = DAORegistry::getDAO('NotificationDAO');
+        $notificationDao->setDateRead($notificationId, null, $userId);
 
         if (!$isAjax) {
             $router = $request->getRouter();

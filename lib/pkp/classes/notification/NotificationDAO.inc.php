@@ -146,13 +146,23 @@ class NotificationDAO extends DAO {
      * @param string|null $dateRead
      * @return string
      */
-    public function setDateRead($notificationId, $dateRead = null) {
+    public function setDateRead($notificationId, $dateRead = null, $userId = null) {
         $dateRead = $dateRead ?? Core::getCurrentDate();
 
-        $this->update(
-            'UPDATE notifications SET date_read = ? WHERE notification_id = ?',
-            [$this->datetimeToDB($dateRead), (int) $notificationId]
-        );
+        // [WIZDAM BUGFIX -- KEAMANAN] Sebelumnya method ini hanya
+        // memfilter "WHERE notification_id = ?" TANPA verifikasi
+        // kepemilikan -- berbeda dari deleteById() yang sudah benar
+        // memakai "AND user_id = ?" saat $userId diberikan. Sekarang
+        // konsisten: kalau $userId diberikan, notifikasi milik pengguna
+        // LAIN tidak bisa ditandai lewat panggilan ini.
+        $params = [$this->datetimeToDB($dateRead), (int) $notificationId];
+        $sql = 'UPDATE notifications SET date_read = ? WHERE notification_id = ?';
+        if ($userId !== null) {
+            $sql .= ' AND user_id = ?';
+            $params[] = (int) $userId;
+        }
+
+        $this->update($sql, $params);
 
         return $dateRead;
     }

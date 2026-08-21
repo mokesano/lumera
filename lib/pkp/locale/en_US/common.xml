@@ -361,6 +361,7 @@
 	<message key="notification.confirmSuccess">You have been successfully subscribed.</message>
 	<message key="notification.email">Send me an email for these types of notifications.</message>
 	<message key="notification.location">Go To URL</message>
+	<message key="notification.markAsRead">Mark as read</message>
 	<message key="notification.mailList">Notification mailing list</message>
 	<message key="notification.mailList.emailInvalid">Please enter a valid email address.</message>
 	<message key="notification.mailList.privacyProtection">Privacy protection policy</message>

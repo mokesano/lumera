@@ -21,6 +21,7 @@ declare(strict_types=1);
 switch ($op) {
 	case 'index':
 	case 'delete':
+	case 'markRead':
 	case 'settings':
 	case 'saveSettings':
 	case 'getNotificationFeedUrl':

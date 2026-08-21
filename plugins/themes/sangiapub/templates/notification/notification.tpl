@@ -13,7 +13,7 @@
 		<td width="25">
 		    <div class="notifyIcon {$notificationIconClass|escape}">&nbsp;</div>
 		</td>
-		<td class="notificationContent" colspan="2" width="80%">
+		<td class="notificationContent" colspan="2" width="70%">
 			{$notificationDateCreated|date_format:"%d %b %Y %T"}
 		</td>
 		{if $notificationUrl != null}
@@ -22,6 +22,9 @@
 			<td class="notificationFunction"></td>
 		{/if}
 		{if $isUserLoggedIn}
+			{if !$notificationDateRead}
+				<td class="notificationFunction"><a href="{url op="markRead" path=$notificationId}">{translate key="notification.markAsRead"}</a></td>
+			{/if}
 			<td class="notificationFunction"><a href="{url op="delete" path=$notificationId}">{translate key="common.delete"}</a></td>
 		{/if}
 	</tr>
