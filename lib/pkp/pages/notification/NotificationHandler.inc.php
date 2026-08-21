@@ -65,11 +65,29 @@ class NotificationHandler extends Handler {
 
         $rangeInfo = Handler::getRangeInfo('notifications');
 
-        // Construct the formatted notification string to display in the template
-        $formattedNotifications = $notificationManager->getFormattedNotificationsForUser($request, $userId, NOTIFICATION_LEVEL_NORMAL, $contextId, $rangeInfo);
-
-        // Get the same notifications used for the string so we can paginate
+        // [WIZDAM BUGFIX] SEBELUMNYA $formattedNotifications dan
+        // $notifications adalah HASIL DUA QUERY TERPISAH --
+        // getFormattedNotificationsForUser() memanggil getByUserId()
+        // SENDIRI secara internal, lalu baris di bawah memanggil
+        // getByUserId() LAGI secara independen dengan parameter yang
+        // sama. Dua eksekusi query terpisah (lewat ADOdb PageExecute(),
+        // yang menghitung total/halaman berdasarkan state internalnya
+        // sendiri di setiap pemanggilan) berpotensi TIDAK KONSISTEN
+        // satu sama lain -- salah satu bisa mendapat hasil/urutan
+        // berbeda dari yang lain, meski parameternya identik.
+        //
+        // Diperbaiki dengan HANYA SATU query -- $notifications diambil
+        // sekali, lalu $formattedNotifications dibangun dari OBJEK YANG
+        // SAMA lewat formatNotifications() (BUKAN
+        // getFormattedNotificationsForUser() yang re-query internal).
+        // Aman dilakukan karena getCount()/wasEmpty()/getPageCount()
+        // DAOResultFactory membaca properti yang sudah dihitung di
+        // awal -- TIDAK bergantung status iterator next() yang dipakai
+        // formatNotifications() untuk membangun string. Konten yang
+        // ditampilkan dan info pagination sekarang DIJAMIN berasal
+        // dari hasil query yang benar-benar sama.
         $notifications = $notificationDao->getByUserId($userId, NOTIFICATION_LEVEL_NORMAL, null, $contextId, $rangeInfo);
+        $formattedNotifications = $notificationManager->formatNotifications($request, $notifications, 'notification/notification.tpl');
 
         $templateMgr->assign('formattedNotifications', $formattedNotifications);
         $templateMgr->assign('notifications', $notifications);
