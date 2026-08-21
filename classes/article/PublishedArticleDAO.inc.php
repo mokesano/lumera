@@ -52,11 +52,14 @@ class PublishedArticleDAO extends DAO {
      * [SHIM] Backward Compatibility
      */
     public function PublishedArticleDAO() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to parent::__construct().", 
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -843,9 +846,16 @@ class PublishedArticleDAO extends DAO {
 
         if ($field === 'seq' || $field === 'access_status' || $field === 'section_id') {
             $value = (int) $value;
-        } elseif ($field === 'date_published') {
-            $value = $this->datetimeToDB($value);
         }
+        // [WIZDAM BUGFIX] Cabang "elseif ($field === 'date_published')"
+        // sebelumnya memakai $this->datetimeToDB($value) -- sama persis
+        // pola rusak yang sudah diperbaiki di NotificationDAO::insertObject()
+        // dan ArticleFileDAO -- hasilnya (string dibungkus kutip literal)
+        // dimasukkan ke $params sebagai parameter terikat (?), membuat
+        // MySQL gagal parse dan diam-diam mengganti dengan
+        // '0000-00-00 00:00:00'. Untuk field ini, $value dipakai APA
+        // ADANYA (sudah dalam format Y-m-d H:i:s dari pemanggil),
+        // cabang khusus tidak diperlukan lagi sama sekali.
 
         $this->update(
             "UPDATE published_articles SET $field = ? WHERE published_article_id = ?", 
