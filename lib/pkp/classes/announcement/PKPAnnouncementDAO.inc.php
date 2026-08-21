@@ -31,9 +31,13 @@ class PKPAnnouncementDAO extends DAO {
      */
     public function PKPAnnouncementDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class PKPAnnouncementDAO uses deprecated constructor. Please refactor to __construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -158,14 +162,24 @@ class PKPAnnouncementDAO extends DAO {
      * @return int
      */
     public function insertAnnouncement($announcement) {
+        // [WIZDAM BUGFIX] Sama persis pola rusak yang sudah diperbaiki
+        // di NotificationDAO::insertObject(), ArticleFileDAO, dan
+        // PublishedArticleDAO -- datetimeToDB() membungkus nilai dengan
+        // kutip literal, dipakai di sini sebagai elemen $params (parameter
+        // terikat ?) TANPA sprintf() untuk menyisipkannya ke teks SQL.
+        // MySQL menerima string tanggal cacat, gagal parse, diam-diam
+        // mengganti dengan '0000-00-00 00:00:00' -- membuat pengumuman
+        // salah tampil status kedaluwarsanya dan tanggal postingnya
+        // berubah setiap render (mekanisme sama seperti bug notifikasi).
+        // Nilai mentah dipakai langsung.
         $this->update(
             'INSERT INTO announcements (assoc_type, assoc_id, type_id, date_expire, date_posted) VALUES (?, ?, ?, ?, ?)',
             [
                 (int) $announcement->getAssocType(),
                 (int) $announcement->getAssocId(),
                 (int) $announcement->getTypeId(),
-                $this->datetimeToDB($announcement->getDateExpire()),
-                $this->datetimeToDB($announcement->getDatetimePosted())
+                $announcement->getDateExpire() ?: null,
+                $announcement->getDatetimePosted() ?: null
             ]
         );
         $announcement->setId($this->getInsertAnnouncementId());
