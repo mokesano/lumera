@@ -301,8 +301,19 @@ class ArticleFileDAO extends PKPFileDAO {
             array_unshift($params, (int) $fileId);
         }
 
-        $dateUploaded = $articleFile->getDateUploaded() ? $this->datetimeToDB($articleFile->getDateUploaded()) : null;
-        $dateModified = $articleFile->getDateModified() ? $this->datetimeToDB($articleFile->getDateModified()) : null;
+        // [WIZDAM BUGFIX -- SAMA PERSIS DENGAN NotificationDAO::insertObject()]
+        // datetimeToDB() mendelegasikan ke ADOdb DBTimeStamp(), yang
+        // MEMBUNGKUS string tanggal dengan tanda kutip literal SEBAGAI
+        // BAGIAN dari nilai return-nya sendiri untuk format non-14-digit
+        // (lihat lib/pkp/lib/adodb/adodb.inc.php). Method itu dirancang
+        // untuk disisipkan LANGSUNG ke TEKS SQL, BUKAN dipakai sebagai
+        // nilai PARAMETER TERIKAT (?) seperti array $params di bawah ini
+        // (dipakai lewat array_splice ke posisi tetap). MySQL menerima
+        // string tanggal cacat (kutip literal ikut jadi bagian nilai),
+        // gagal parse, diam-diam mengganti dengan '0000-00-00 00:00:00'.
+        // Nilai mentah dipakai langsung, tanpa datetimeToDB().
+        $dateUploaded = $articleFile->getDateUploaded() ?: null;
+        $dateModified = $articleFile->getDateModified() ?: null;
         
         array_splice($params, 9, 0, [$dateUploaded, $dateModified]);
 
@@ -357,8 +368,10 @@ class ArticleFileDAO extends PKPFileDAO {
             $revision
         ];
 
-        $dateUploaded = $articleFile->getDateUploaded() ? $this->datetimeToDB($articleFile->getDateUploaded()) : null;
-        $dateModified = $articleFile->getDateModified() ? $this->datetimeToDB($articleFile->getDateModified()) : null;
+        // [WIZDAM BUGFIX] Sama persis dengan insertArticleFile() di atas
+        // -- lihat dokblok di sana untuk penjelasan lengkap.
+        $dateUploaded = $articleFile->getDateUploaded() ?: null;
+        $dateModified = $articleFile->getDateModified() ?: null;
         
         array_splice($params, 8, 0, [$dateUploaded, $dateModified]);
 
