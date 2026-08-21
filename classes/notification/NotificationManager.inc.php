@@ -10,8 +10,10 @@ declare(strict_types=1);
  *
  * @class NotificationManager
  * @ingroup notification
+ * 
  * @see NotificationDAO
  * @see Notification
+ * 
  * @brief Class for Notification Manager.
  */
 
@@ -41,6 +43,70 @@ class NotificationManager extends PKPNotificationManager {
         }
         $args = func_get_args();
         call_user_func_array([$this, '__construct'], $args);
+    }
+
+    /**
+     * [WIZDAM] Override createTrivialNotification() -- PKPNotificationManager
+     * versi asli SELALU menetapkan level TRIVIAL (efemeral: tampil sekali
+     * di halaman lewat AJAX fetchNotification(), lalu DIHAPUS PERMANEN
+     * oleh deleteTrivialNotifications()) dan context CONTEXT_ID_NONE,
+     * berapa pun jenis pesannya -- termasuk pesan ERROR/WARNING yang
+     * sebenarnya berguna diarsipkan supaya pengguna tidak perlu
+     * bolak-balik lihat log server hanya untuk tahu kenapa suatu aksi
+     * gagal.
+     *
+     * Diperbaiki DI SINI (satu titik pusat, bukan di 99+ titik
+     * pemanggilan createTrivialNotification() di seluruh codebase) --
+     * seluruh pemanggil memakai `new NotificationManager()` (kelas ini),
+     * jadi perbaikan otomatis berlaku untuk semuanya, sekarang maupun
+     * kode baru yang ditambahkan di masa depan:
+     *
+     * 1. LEVEL: hanya NOTIFICATION_TYPE_SUCCESS yang tetap TRIVIAL
+     *    (efemeral, sesuai instruksi eksplisit -- respons sukses tidak
+     *    perlu diarsipkan). Tipe lain apa pun (ERROR, WARNING, FORBIDDEN,
+     *    FORM_ERROR, atau tipe semantik seperti "buku terkirim") menjadi
+     *    NOTIFICATION_LEVEL_NORMAL -- persisten, muncul di halaman
+     *    /notification (yang sekarang privat, lihat perbaikan
+     *    NotificationHandler/NotificationDAO sebelumnya).
+     * 2. CONTEXT: sebelumnya SELALU CONTEXT_ID_NONE (0) -- membuat
+     *    notifikasi persisten manapun TIDAK PERNAH cocok dengan filter
+     *    context_id jurnal spesifik di halaman /notification, bahkan
+     *    setelah levelnya diperbaiki. Sekarang otomatis memakai context
+     *    jurnal AKTIF dari request saat ini (kalau ada), supaya
+     *    notifikasi benar-benar muncul di jurnal tempat aksinya terjadi.
+     * @param mixed $userId
+     * @param mixed $notificationType
+     * @param mixed $params
+     * @return Notification
+     */
+    public function createTrivialNotification($userId, $notificationType = NOTIFICATION_TYPE_SUCCESS, $params = null) {
+        /** @var NotificationDAO $notificationDao */
+        $notificationDao = DAORegistry::getDAO('NotificationDAO');
+        $notification = $notificationDao->newDataObject();
+        $notification->setUserId($userId);
+
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $notification->setContextId($context ? $context->getId() : CONTEXT_ID_NONE);
+
+        $notification->setType($notificationType);
+
+        $level = ($notificationType === NOTIFICATION_TYPE_SUCCESS)
+            ? NOTIFICATION_LEVEL_TRIVIAL
+            : NOTIFICATION_LEVEL_NORMAL;
+        $notification->setLevel($level);
+
+        $notificationId = $notificationDao->insertObject($notification);
+
+        if ($params) {
+            /** @var NotificationSettingsDAO $notificationSettingsDao */
+            $notificationSettingsDao = DAORegistry::getDAO('NotificationSettingsDAO');
+            foreach ($params as $name => $value) {
+                $notificationSettingsDao->updateNotificationSetting($notificationId, $name, $value);
+            }
+        }
+
+        return $notification;
     }
 
     /**
