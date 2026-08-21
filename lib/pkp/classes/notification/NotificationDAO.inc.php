@@ -216,12 +216,40 @@ class NotificationDAO extends DAO {
      * @return int Notification Id
      */
     public function insertObject($notification) {
+        // [WIZDAM BUGFIX -- AKAR MASALAH date_created '0000-00-00
+        // 00:00:00'] SEBELUMNYA memakai $this->datetimeToDB(...) --
+        // yang mendelegasikan ke ADOdb DBTimeStamp(). Method itu
+        // MEMBUNGKUS string tanggal dengan tanda kutip literal SEBAGAI
+        // BAGIAN dari nilai return-nya sendiri (lihat
+        // lib/pkp/lib/adodb/adodb.inc.php:
+        // "if ($this->isoDates && strlen($ts) !== 14) return \"'$ts'\";"
+        // -- Core::getCurrentDate() berformat "Y-m-d H:i:s", 19 karakter,
+        // bukan 14, jadi baris ini SELALU terpicu untuk kolom ini).
+        //
+        // DBTimeStamp() dirancang untuk disisipkan LANGSUNG ke TEKS SQL
+        // (pola ADOdb lama, "..VALUES (" . $db->DBTimeStamp($d) . ")"),
+        // BUKAN dipakai sebagai nilai PARAMETER TERIKAT (?) seperti di
+        // sini. Query ini query BERPARAMETER ($this->update($sql,
+        // $params) dengan placeholder ?) -- nilai yang SUDAH DIBUNGKUS
+        // KUTIP itu diteruskan APA ADANYA sebagai parameter, membuat
+        // MySQL menerima string tanggal CACAT (kutip literal ikut jadi
+        // bagian nilai) -- gagal parse, diam-diam diganti
+        // '0000-00-00 00:00:00' (perilaku default MySQL mode non-strict
+        // untuk tanggal tidak valid, TANPA error yang terlihat sama
+        // sekali -- dibuktikan lewat diagnostik langsung: nilai PHP-nya
+        // benar, tapi yang tersimpan di database tetap kosong).
+        //
+        // Dikonfirmasi lewat datetimeFromDB() (pembacaan baliknya) yang
+        // mengharapkan format "Y-m-d H:i:s" MENTAH -- persis yang
+        // dihasilkan Core::getCurrentDate() -- sehingga TIDAK PERLU
+        // dibungkus datetimeToDB() sama sekali untuk konteks parameter
+        // terikat seperti ini. Nilai mentah dipakai langsung.
         $this->update(
             'INSERT INTO notifications (user_id, level, date_created, context_id, type, assoc_type, assoc_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [
                 (int) $notification->getUserId(),
                 (int) $notification->getLevel(),
-                $this->datetimeToDB(Core::getCurrentDate()),
+                Core::getCurrentDate(),
                 (int) $notification->getContextId(),
                 (int) $notification->getType(),
                 (int) $notification->getAssocType(),
