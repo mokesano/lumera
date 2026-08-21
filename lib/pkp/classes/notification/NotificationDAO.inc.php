@@ -96,7 +96,18 @@ class NotificationDAO extends DAO {
             $sql .= ' AND context_id = ?';
             $params[] = (int) $contextId;
         }
-        $sql .= ' ORDER BY date_created DESC';
+        // [WIZDAM BUGFIX] "date_created" presisinya cuma sampai DETIK
+        // (Core::getCurrentDate() -> date('Y-m-d H:i:s'), tanpa
+        // milidetik). Notifikasi yang dibuat berturut-turut dalam satu
+        // foreach/while (mis. menotifikasi beberapa editor sekaligus
+        // saat artikel disubmit -- lihat SubmitHandler.inc.php,
+        // Action.inc.php) sangat mungkin punya date_created IDENTIK.
+        // Tanpa penentu urutan kedua, MySQL/MariaDB TIDAK MENJAMIN
+        // urutan relatif antar baris yang nilainya sama -- bisa tampak
+        // tidak kronologis. notification_id (AUTO_INCREMENT, mencerminkan
+        // urutan INSERT persis) dipakai sebagai penentu urutan kedua
+        // yang deterministik.
+        $sql .= ' ORDER BY date_created DESC, notification_id DESC';
 
         $result = $this->retrieveRange($sql, $params, $rangeInfo);
         return new DAOResultFactory($result, $this, '_returnNotificationFromRow');
@@ -134,7 +145,9 @@ class NotificationDAO extends DAO {
             $sql .= ' AND type = ?';
             $params[] = (int) $type;
         }
-        $sql .= ' ORDER BY date_created DESC';
+        // [WIZDAM BUGFIX] Sama seperti getByUserId() di atas -- lihat
+        // dokblok di sana untuk penjelasan lengkap.
+        $sql .= ' ORDER BY date_created DESC, notification_id DESC';
 
         $result = $this->retrieveRange($sql, $params);
         return new DAOResultFactory($result, $this, '_returnNotificationFromRow');
