@@ -314,6 +314,37 @@ class TemplateManager extends PKPTemplateManager {
      */
     public function display($template, $sendContentType = null, $hookName = null, $display = true) {
         $this->assign('stylesheets', $this->styleSheets);
+
+        // [WIZDAM BUGFIX] navbar.tpl (SELALU dirender di setiap halaman)
+        // membaca {$unreadNotifications} sebagai variabel LANGSUNG --
+        // TIDAK lewat mekanisme {call_hook} block region apa pun.
+        // Satu-satunya tempat variabel ini sebelumnya di-assign adalah
+        // NotificationBlockPlugin::getContents() -- yang HANYA berjalan
+        // kalau block itu diaktifkan untuk region sidebar tertentu
+        // (Templates::Common::LeftSidebar/RightSidebar), dan HASIL
+        // render-nya masuk ke $leftSidebarCode/$rightSidebarCode --
+        // BUKAN ke variabel yang dibaca navbar.tpl. Navbar yang selalu
+        // tampil di semua halaman tidak boleh bergantung status
+        // block plugin opsional.
+        //
+        // Di-assign LANGSUNG di sini -- titik pusat yang sama dengan
+        // perbaikan stylesheets di atas -- supaya berlaku untuk SETIAP
+        // render halaman, terlepas block plugin manapun aktif atau
+        // tidak. NotificationBlockPlugin sendiri TIDAK disentuh/dihapus
+        // -- kalau block itu memang diaktifkan untuk sidebar, assign-nya
+        // di sana cuma jadi redundan (menimpa dengan nilai yang sama),
+        // tidak merusak apa pun.
+        $request = Application::get()->getRequest();
+        $user = $request->getUser();
+        if ($user) {
+            /** @var NotificationDAO $notificationDao */
+            $notificationDao = DAORegistry::getDAO('NotificationDAO');
+            $this->assign(
+                'unreadNotifications',
+                $notificationDao->getNotificationCount((int) $user->getId(), null, NOTIFICATION_LEVEL_NORMAL, false)
+            );
+        }
+
         return parent::display($template, $sendContentType, $hookName, $display);
     }
 
