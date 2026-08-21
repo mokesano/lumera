@@ -32,19 +32,29 @@ class NotificationHandler extends Handler {
 
         $this->validate();
         $this->setupTemplate();
-        
+
+        // [WIZDAM BUGFIX -- KEAMANAN] Halaman notifikasi adalah halaman
+        // PRIVAT yang melekat pada akun pengguna -- sebelumnya method ini
+        // TETAP merender halaman (cangkang kosong, tapi tetap dapat
+        // diakses) untuk pengunjung TANPA LOGIN, cuma mengandalkan
+        // userId=0 untuk membuat query tidak menghasilkan apa pun.
+        // Perbaikan DAO (NotificationDAO::getByUserId/getByAssoc/
+        // getNotificationCount, "AND user_id > 0") sudah mencegah
+        // KEBOCORAN DATA lewat celah ini, tapi halaman itu sendiri
+        // seharusnya memang TIDAK BOLEH diakses publik sama sekali --
+        // bukan cuma datanya kosong. Pola persis sama dengan
+        // UserHandler::validate() (dashboard pengguna, juga halaman
+        // privat yang melekat pada akun).
+        if (!Validation::isLoggedIn()) {
+            Validation::redirectLogin();
+        }
+
         $templateMgr = TemplateManager::getManager();
         $router = $request->getRouter();
 
         $user = $request->getUser();
-        if ($user) {
-            $userId = (int) $user->getId();
-            $templateMgr->assign('isUserLoggedIn', true);
-        } else {
-            $userId = 0;
-            $templateMgr->assign('emailUrl', $router->url($request, null, 'notification', 'subscribeMailList'));
-            $templateMgr->assign('isUserLoggedIn', false);
-        }
+        $userId = (int) $user->getId();
+        $templateMgr->assign('isUserLoggedIn', true);
         
         $context = $request->getContext();
         $contextId = $context ? $context->getId() : null;
@@ -78,16 +88,25 @@ class NotificationHandler extends Handler {
     public function delete($args, $request) {
         $this->validate();
 
+        // [WIZDAM BUGFIX -- KEAMANAN] Konsisten dengan index() -- lihat
+        // dokblok di sana. Sebelumnya method ini sudah aman dari
+        // kebocoran data (guard "if ($user)" mencegah deleteById()
+        // berjalan untuk pengunjung anonim), tapi redirect fallback-nya
+        // mengarah ke /notification secara tidak langsung -- sekarang
+        // dibuat eksplisit langsung ke login, tidak lagi bergantung
+        // rantai redirect.
+        if (!Validation::isLoggedIn()) {
+            Validation::redirectLogin();
+        }
+
         $notificationId = (int) array_shift($args);
         $isAjax = (isset($args[0]) && $args[0] == 'ajax');
 
         $user = $request->getUser();
-        if ($user) {
-            $userId = (int) $user->getId();
-            /** @var NotificationDAO $notificationDao */
-            $notificationDao = DAORegistry::getDAO('NotificationDAO');
-            $notificationDao->deleteById($notificationId, $userId);
-        }
+        $userId = (int) $user->getId();
+        /** @var NotificationDAO $notificationDao */
+        $notificationDao = DAORegistry::getDAO('NotificationDAO');
+        $notificationDao->deleteById($notificationId, $userId);
 
         if (!$isAjax) {
             $router = $request->getRouter();
@@ -104,15 +123,15 @@ class NotificationHandler extends Handler {
         $this->validate();
         $this->setupTemplate();
 
-        $user = $request->getUser();
-        if ($user) {
-            import('classes.notification.form.NotificationSettingsForm');
-            $notificationSettingsForm = new NotificationSettingsForm();
-            $notificationSettingsForm->display($request);
-        } else {
-            $router = $request->getRouter();
-            $request->redirectUrl($router->url($request, null, 'notification'));
+        // [WIZDAM BUGFIX -- KEAMANAN] Konsisten dengan index() -- lihat
+        // dokblok di sana.
+        if (!Validation::isLoggedIn()) {
+            Validation::redirectLogin();
         }
+
+        import('classes.notification.form.NotificationSettingsForm');
+        $notificationSettingsForm = new NotificationSettingsForm();
+        $notificationSettingsForm->display($request);
     }
 
     /**
