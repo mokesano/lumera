@@ -47,9 +47,13 @@ class NotificationDAO extends DAO {
      */
     public function NotificationDAO() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error('Class ' . get_class($this) . ' uses deprecated constructor parent::NotificationDAO(). Please refactor to parent::__construct().', E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -168,7 +172,10 @@ class NotificationDAO extends DAO {
         // memakai "AND user_id = ?" saat $userId diberikan. Sekarang
         // konsisten: kalau $userId diberikan, notifikasi milik pengguna
         // LAIN tidak bisa ditandai lewat panggilan ini.
-        $params = [$this->datetimeToDB($dateRead), (int) $notificationId];
+        // [WIZDAM BUGFIX] Sama persis dengan insertObject() -- lihat
+        // dokblok kelas untuk penjelasan lengkap. Nilai mentah dipakai
+        // langsung, tanpa datetimeToDB().
+        $params = [$dateRead, (int) $notificationId];
         $sql = 'UPDATE notifications SET date_read = ? WHERE notification_id = ?';
         if ($userId !== null) {
             $sql .= ' AND user_id = ?';
