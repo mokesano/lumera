@@ -73,8 +73,19 @@ class NotificationHandler extends Handler {
 
         $templateMgr->assign('formattedNotifications', $formattedNotifications);
         $templateMgr->assign('notifications', $notifications);
-        $templateMgr->assign('unread', $notificationDao->getNotificationCount(false, $userId, $contextId));
-        $templateMgr->assign('read', $notificationDao->getNotificationCount(true, $userId, $contextId));
+        // [WIZDAM BUGFIX] Urutan parameter SEBELUMNYA tertukar --
+        // getNotificationCount(false, $userId, $contextId) memanggil
+        // dengan urutan (userId=false, contextId=$userId, level=$contextId),
+        // tidak cocok dengan signature sesungguhnya
+        // getNotificationCount($userId, $contextId, $level, $read). Efeknya:
+        // "false"/"true" (dimaksudkan sebagai $read) justru terikat ke
+        // posisi $userId -- (int)false=0 -- membuat query jadi
+        // "WHERE user_id = 0 AND user_id > 0 ..." (kontradiksi, SELALU nol
+        // baris apa pun isi data sebenarnya). Persis penyebab "0 unread
+        // dan 0 read" yang dilaporkan, terlepas dari data yang benar-benar
+        // ada. Diperbaiki dengan urutan argumen yang benar dan eksplisit.
+        $templateMgr->assign('unread', $notificationDao->getNotificationCount($userId, $contextId, NOTIFICATION_LEVEL_NORMAL, false));
+        $templateMgr->assign('read', $notificationDao->getNotificationCount($userId, $contextId, NOTIFICATION_LEVEL_NORMAL, true));
         $templateMgr->assign('url', $router->url($request, null, 'notification', 'settings'));
         
         $templateMgr->display('notification/index.tpl');

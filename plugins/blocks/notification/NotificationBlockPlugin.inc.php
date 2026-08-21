@@ -101,10 +101,15 @@ class NotificationBlockPlugin extends BlockPlugin {
             /** @var NotificationDAO $notificationDao */
             $notificationDao = DAORegistry::getDAO('NotificationDAO');
             
-            // Assign variabel persis seperti aslinya
+            // [WIZDAM BUGFIX] Urutan parameter SEBELUMNYA tertukar --
+            // sama persis dengan bug di NotificationHandler::index()
+            // (lihat dokblok di sana). "false" (dimaksudkan $read) justru
+            // terikat ke posisi $userId, membuat query selalu nol baris.
+            // Inilah kenapa badge navbar tidak pernah muncul sama sekali,
+            // terlepas dari data notifikasi yang sebenarnya ada.
             $templateMgr->assign(
                 'unreadNotifications', 
-                $notificationDao->getNotificationCount(false, $userId, null)
+                $notificationDao->getNotificationCount($userId, null, NOTIFICATION_LEVEL_NORMAL, false)
             );
         }
 
