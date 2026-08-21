@@ -55,9 +55,28 @@ class NotificationHandler extends Handler {
         $user = $request->getUser();
         $userId = (int) $user->getId();
         $templateMgr->assign('isUserLoggedIn', true);
-        
-        $context = $request->getContext();
-        $contextId = $context ? $context->getId() : null;
+
+        // [WIZDAM BUGFIX -- ARSITEKTUR] SEBELUMNYA $contextId diturunkan
+        // dari jurnal yang SEDANG DIBUKA di URL ($request->getContext()),
+        // lalu dipakai menyaring SELURUH daftar dan hitungan notifikasi.
+        // Ini KELIRU: notifikasi adalah aksi PENGGUNA, bukan aksi
+        // KONTEKS -- identitas pengguna tidak berubah saat mereka
+        // berpindah dari /AGRIKAN/notification ke /ISLE/notification,
+        // jadi daftar notifikasi mereka juga TIDAK BOLEH berubah/hilang
+        // cuma karena jurnal yang sedang dibuka berbeda. Notifikasi yang
+        // tercipta saat aksi terjadi di jurnal A tidak boleh "terpenjara"
+        // di jurnal A -- pengguna yang sama harus tetap melihatnya dari
+        // jurnal manapun, atau dari level situs sekalipun.
+        //
+        // $contextId TIDAK LAGI diturunkan dari request/URL saat ini --
+        // selalu null di sini, supaya NotificationDAO::getByUserId()/
+        // getNotificationCount() (yang filter context_id-nya BERSYARAT,
+        // "if ($contextId !== null)") tidak pernah menyaring berdasarkan
+        // jurnal yang sedang dibuka. Konteks jurnal tetap relevan untuk
+        // TAUTAN/NAVIGASI saat notifikasi itu DIKLIK (getNotificationUrl()
+        // menghitung URL yang benar berdasarkan data notifikasi itu
+        // sendiri) -- bukan untuk MENYARING mana yang boleh terlihat.
+        $contextId = null;
 
         $notificationManager = new NotificationManager();
         /** @var NotificationDAO $notificationDao */
