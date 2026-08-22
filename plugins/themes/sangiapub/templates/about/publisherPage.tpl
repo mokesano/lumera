@@ -27,7 +27,7 @@
             {$pageContent|nl2br}
         </div>
     {else}
-        <p class="wi-page-empty" style="color: #777; font-style: italic;">
+        <p class="wi-page-empty">
             {translate key="about.publisher.noContent"}
         </p>
     {/if}
