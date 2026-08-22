@@ -20,7 +20,12 @@ declare(strict_types=1);
 /** @var string $op */
 switch ($op) {
 	//
-	// Article Submission
+	// [WIZDAM] Article Submission -- DIPINDAHKAN ke pages/submission/.
+	// Case di bawah ini HANYA kompatibilitas mundur (meneruskan
+	// link/bookmark lama), bukan alur submit yang sesungguhnya --
+	// lihat pages/submission/SubmitHandler.inc.php untuk implementasi
+	// aslinya, dan LegacySubmitRedirectHandler.inc.php untuk detail
+	// mekanisme penerusan ini.
 	//
 	case 'submit':
 	case 'saveSubmit':
@@ -28,8 +33,8 @@ switch ($op) {
 	case 'saveSubmitSuppFile':
 	case 'deleteSubmitSuppFile':
 	case 'expediteSubmission':
-		define('HANDLER_CLASS', 'SubmitHandler');
-		import('pages.author.SubmitHandler');
+		define('HANDLER_CLASS', 'LegacySubmitRedirectHandler');
+		import('pages.author.LegacySubmitRedirectHandler');
 		break;
 	//
 	// Submission Tracking

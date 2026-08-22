@@ -1,11 +1,11 @@
+@charset "UTF-8";
 /**
- * @file public/assets/css/Lumera_frontend--branded.css?v2
+ * @file public/assets/css/Lumera_frontend--branded.css
  * 
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Codecanau
  * Distributed under the GNU GPL v3.
  */
-@charset "UTF-8";
 .buttontop:active,.buttontop:hover {
  background-color:#007398
 }
@@ -403,11 +403,11 @@ th[valign=middle] {
 }
 @font-face {
  font-family:sn_pm_icons;
- src:url('/fonts/sn/sn_pm_icons.eot');
- src:url('/fonts/sn/sn_pm_icons.eot') format('embedded-opentype'),
- url('/fonts/sn/sn_pm_icons.woff') format('woff'),
- url('/fonts/sn/sn_pm_icons.svg') format('svg'),
- url('/fonts/sn/sn_pm_icons.ttf') format('truetype');
+ src:url('/fonts/sn/sn_pm_icons.eot?1474367378');
+ src:url('/fonts/sn/sn_pm_icons.eot?&1474367378#iefix') format('embedded-opentype'),
+ url('/fonts/sn/sn_pm_icons.woff?1474367378') format('woff'),
+ url('/fonts/sn/sn_pm_icons.svg?1474367378') format('svg'),
+ url('/fonts/sn/sn_pm_icons.ttf?1474367378') format('truetype');
  font-weight:400
 }
 @media screen and (min-device-width:320px) {
@@ -23646,6 +23646,7 @@ textarea {
  padding:0
 }
 h2+* {
+ color:inherit;
  /*-webkit-margin-before:1rem;*/
  /*margin-block-start:1rem*/
 }

@@ -69,7 +69,7 @@ class ObjectsForReviewReminder extends ScheduledTask {
             'authorName' => strip_tags((string) $author->getFullName()),
             'objectForReviewTitle' => '"' . strip_tags((string) $objectForReview->getTitle()) . '"',
             'objectForReviewDueDate' => date('l, F j, Y', strtotime((string) $ofrAssignment->getDateDue())),
-            'submissionUrl' => $request->url($journal->getPath(), 'author', 'submit'),
+            'submissionUrl' => $request->url($journal->getPath(), 'submission', 'submit'),
             'editorialContactSignature' => strip_tags((string) $editor->getContactSignature())
         ];
 

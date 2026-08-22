@@ -52,7 +52,7 @@
             <div class="sc-orwwe2-6 dtzDFi">
                 <a data-button-size="small" data-aa-name="Submit your paper" data-aa-region="sub-page-header" size="small" href="{url page="about" op="editorialTeam"}" class="sc-4ky1f6-0 sc-4ky1f6-1 hnoKGz hLnlQv sub-page-header-submit-your-paper">
                     <span>Editorial Team</span></a>                
-                <a data-button-size="small" data-aa-name="Submit your paper" data-aa-region="sub-page-header" size="small" href="{url page="author" op="submit"}" class="sc-4ky1f6-0 sc-4ky1f6-1 hnoKGz hLnlQv sub-page-header-submit-your-paper">
+                <a data-button-size="small" data-aa-name="Submit your paper" data-aa-region="sub-page-header" size="small" href="{url page="submission" op="submit"}" class="sc-4ky1f6-0 sc-4ky1f6-1 hnoKGz hLnlQv sub-page-header-submit-your-paper">
                     <span>Submit your Paper</span></a>
                 <a data-button-size="small" data-aa-name="View articles" data-aa-region="sub-page-header" size="small" href="{url page="issue" op="current"}" class="sc-4ky1f6-0 sc-4ky1f6-3 hnoKGz hcBixJ sub-page-header-view-articles">
                     <span>View Articles</span></a>

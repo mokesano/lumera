@@ -24,42 +24,42 @@
 	<tr>
 		<td colspan="5" class="headseparator">&nbsp;</td>
 	</tr>
-{iterate from=booksForReview item=bookForReview}
-		{assign var=status value=$bookForReview->getStatus()}
-	<tr valign="top">
-		<td>{$bookForReview->getLocalizedTitle()|escape|truncate:60:"..."}</td>
-		<td>{translate key=$bookForReview->getStatusString()}</td>
-		{if $bookForReview->getEditorId()}
-			{assign var=editorFullName value=$bookForReview->getEditorFullName()}
-			{assign var=editorEmail value=$bookForReview->getEditorEmail()}
-			{assign var=emailString value="$editorFullName <$editorEmail>"}
-			{url|assign:"url" page="user" op="email" to=$emailString|to_array redirectUrl=$currentUrl}
-			<td>{$editorFullName|escape}&nbsp;{icon name="mail" url=$url}</td>
-		{else}
-			<td>&nbsp;</td>
-		{/if}
-		<td>{$bookForReview->getDateDue()|date_format:$dateFormatTrunc}</td>
-		{if $status == $smarty.const.BFR_STATUS_ASSIGNED || $status == $smarty.const.BFR_STATUS_MAILED}
-			<td><a href="{url page="author" op="submit"}" class="action">{translate key="plugins.generic.booksForReview.author.submit"}</a></td>
-		{else}
-			<td>&nbsp;</td>
-		{/if}
-	</tr>
-	<tr>
-		<td colspan="5" class="{if $booksForReview->eof()}end{/if}separator">&nbsp;</td>
-	</tr>
-{/iterate}
-{if $booksForReview->wasEmpty()}
-	<tr>
-		<td colspan="5" class="nodata">{translate key="plugins.generic.booksForReview.author.noneCreated"}</td>
-	</tr>
-	<tr>
-		<td colspan="5" class="endseparator">&nbsp;</td>
-	</tr>
-{else}
-	<tr>
-		<td colspan="2" align="left">{page_info iterator=$booksForReview}</td>
-		<td colspan="2" align="right">{page_links anchor="booksForReview" name="booksForReview" iterator=$booksForReview}</td>
-	</tr>
-{/if}
+	{iterate from=booksForReview item=bookForReview}
+			{assign var=status value=$bookForReview->getStatus()}
+		<tr valign="top">
+			<td>{$bookForReview->getLocalizedTitle()|escape|truncate:60:"..."}</td>
+			<td>{translate key=$bookForReview->getStatusString()}</td>
+			{if $bookForReview->getEditorId()}
+				{assign var=editorFullName value=$bookForReview->getEditorFullName()}
+				{assign var=editorEmail value=$bookForReview->getEditorEmail()}
+				{assign var=emailString value="$editorFullName <$editorEmail>"}
+				{url|assign:"url" page="user" op="email" to=$emailString|to_array redirectUrl=$currentUrl}
+				<td>{$editorFullName|escape}&nbsp;{icon name="mail" url=$url}</td>
+			{else}
+				<td>&nbsp;</td>
+			{/if}
+			<td>{$bookForReview->getDateDue()|date_format:$dateFormatTrunc}</td>
+			{if $status == $smarty.const.BFR_STATUS_ASSIGNED || $status == $smarty.const.BFR_STATUS_MAILED}
+				<td><a href="{url page="submission" op="submit"}" class="action">{translate key="plugins.generic.booksForReview.author.submit"}</a></td>
+			{else}
+				<td>&nbsp;</td>
+			{/if}
+		</tr>
+		<tr>
+			<td colspan="5" class="{if $booksForReview->eof()}end{/if}separator">&nbsp;</td>
+		</tr>
+	{/iterate}
+	{if $booksForReview->wasEmpty()}
+		<tr>
+			<td colspan="5" class="nodata">{translate key="plugins.generic.booksForReview.author.noneCreated"}</td>
+		</tr>
+		<tr>
+			<td colspan="5" class="endseparator">&nbsp;</td>
+		</tr>
+	{else}
+		<tr>
+			<td colspan="2" align="left">{page_info iterator=$booksForReview}</td>
+			<td colspan="2" align="right">{page_links anchor="booksForReview" name="booksForReview" iterator=$booksForReview}</td>
+		</tr>
+	{/if}
 </table>

@@ -32,8 +32,7 @@ class DAO {
     protected $_dataSource;
 
     /**
-     * Constructor
-     * 
+     * Constructor.
      * @param \ADOConnection|null $dataSource
      * @param bool $callHooks
      */
@@ -52,14 +51,17 @@ class DAO {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function DAO($dataSource = null, $callHooks = true) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($dataSource, $callHooks);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -90,7 +92,7 @@ class DAO {
     /**
      * Execute a SELECT SQL statement.
      * @param string $sql the SQL statement
-     * @param array|mixed $params parameters for the SQL statement
+     * @param array|mixed $params
      * @param bool $callHooks
      * @return \ADORecordSet|false
      */
@@ -558,7 +560,7 @@ class DAO {
 
     /**
      * Get the settings for a data object from the database and set them on the data object.
-     * @param string $tableName The name of the settings table to query
+     * @param string $tableName
      * @param string|null $idFieldName
      * @param mixed $idFieldValue
      * @param DataObject $dataObject

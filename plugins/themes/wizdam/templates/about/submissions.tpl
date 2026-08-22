@@ -38,7 +38,7 @@
             {/if}
 
             <!-- <li class="c-list-group__item">
-            	Make sure your manuscript is accurate and readable - <a href="{url page="pages" op="view/language-editing-services}"> Language editing services </a>
+            	Make sure your manuscript is accurate and readable - <a href="{url page="pages" op="view/language-editing-services"}"> Language editing services </a>
             </li> -->
 
             {if $currentJournal->getLocalizedSetting('copyrightNotice') != ''}
@@ -93,7 +93,7 @@
 </ol>
 
 <p class="submit-manuscript">
-	<a id="linkToSubmission" data-track="click" data-track-category="Submission guidelines" data-track-action="Click Submit a manuscript" data-track-label="Marine Biodiversity Records" href="{url page="author" op="submit"}">Submit your manuscript</a>
+	<a id="linkToSubmission" data-track="click" data-track-category="Submission guidelines" data-track-action="Click Submit a manuscript" data-track-label="Marine Biodiversity Records" href="{url page="submission" op="submit"}">Submit your manuscript</a>
 </p>
 </div>
 

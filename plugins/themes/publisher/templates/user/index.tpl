@@ -146,7 +146,7 @@
 						<a href="{url journal=$journalPath path="completed" page="author"}">{$authorSubmissionsCount[1]} {translate key="common.queue.short.completed"}</a>
 					{else}<span class="disabled">0 {translate key="common.queue.short.completed"}</span>{/if}
 				</td>
-				<td align="right">[<a href="{url journal=$journalPath page="author" op="submit"}">{translate key="author.submit"}</a>]</td>
+				<td align="right">[<a href="{url journal=$journalPath page="submission" op="submit"}">{translate key="author.submit"}</a>]</td>
 			</tr>
 		{/if}
 		{if $isValid.Reviewer.$journalId}
@@ -183,7 +183,7 @@
 		<ul>
 			<li>
 				{if $allowRegAuthor}
-					{url|assign:"submitUrl" page="author" op="submit"}
+					{url|assign:"submitUrl" page="submission" op="submit"}
 					<a href="{url op="become" path="author" source=$submitUrl}">{translate key="user.noRoles.submitArticle"}</a>
 				{else}{* $allowRegAuthor *}
 					{translate key="user.noRoles.submitArticleRegClosed"}

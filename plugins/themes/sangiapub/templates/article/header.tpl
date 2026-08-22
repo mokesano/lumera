@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="js svg" lang="{$currentLocale|substr:0:2}" xml:lang="{$currentLocale|substr:0:2}">
+<html class="js svg" lang="{$currentLocale|substr:0:2}">
 {**
  * templates/article/header.tpl
  *
@@ -36,9 +36,9 @@
 	<meta name="citation_article_type" content="{$article->getSectionTitle()|strip_tags|escape}" />
     
 	{if $displayFavicon}
-	<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
+		<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
 	{else}
-	<link rel="icon" type="img/ico" href="{$baseUrl}/favicon.ico" />	
+		<link rel="icon" type="img/ico" href="{$baseUrl}/favicon.ico" />	
 	{/if}
     <link rel="apple-touch-icon" sizes="57x57" href="//assets.sangia.org/static/favicon/apple-icon-57x57.png" />
     <link rel="apple-touch-icon" sizes="60x60" href="//assets.sangia.org/static/favicon/apple-icon-60x60.png" />
@@ -59,15 +59,15 @@
 	{include file="article/googlescholar.tpl"}		
 	
 	{if $issn}
-	<meta name="prism.issn" content="{$issn|strip_tags|escape}" />
+		<meta name="prism.issn" content="{$issn|strip_tags|escape}" />
 	{/if}
 	<meta name="prism.publicationName" content="{$currentJournal->getLocalizedTitle()|strip_tags|nl2br|escape}" />
     {if is_a($article, 'PublishedArticle') && $article->getDatePublished()}
-	<meta name="prism.publicationDate" content="{$article->getDatePublished()|date_format:"%Y/%m/%d"|escape}" />
+		<meta name="prism.publicationDate" content="{$article->getDatePublished()|date_format:"%Y/%m/%d"|escape}" />
     {elseif $issue && $issue->getYear()}
-	<meta name="prism.publicationDate" content="{$issue->getYear()|escape}" />
+		<meta name="prism.publicationDate" content="{$issue->getYear()|escape}" />
     {elseif $issue && $issue->getDatePublished()}
-	<meta name="prism.publicationDate" content="{$issue->getDatePublished()|date_format:"%Y/%m/%d"|escape}" />
+		<meta name="prism.publicationDate" content="{$issue->getDatePublished()|date_format:"%Y/%m/%d"|escape}" />
     {/if}	
 	<meta name="prism.section" content="{$article->getSectionTitle()|strip_tags|escape}" />
     {if $article->getPages()}
@@ -83,8 +83,8 @@
 	<meta name="prism.url" content="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)}" />
 	{assign var="doi" value=$article->getStoredPubId('doi')}
     {if $article->getPubId('doi')}
-	<meta name="prism.doi" content="doi:{$article->getPubId('doi')}" />
-    <meta name="DOI" content="{$article->getPubId('doi')}" />
+		<meta name="prism.doi" content="doi:{$article->getPubId('doi')}" />
+		<meta name="DOI" content="{$article->getPubId('doi')}" />
 	{/if}
 
 	<link rel="canonical" href="{$currentUrl|escape}" />
@@ -104,11 +104,11 @@
         {assign var=showCoverPage value=false}
     {/if}
     {if $showCoverPage}
-	<meta name="twitter:image" content="{$publicFilesDir}/{$article->getLocalizedFileName()|escape}" />
+		<meta name="twitter:image" content="{$publicFilesDir}/{$article->getLocalizedFileName()|escape}" />
     {elseif $issue && $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && is_array($displayCoverIssue)}
-	<meta name="twitter:image" content="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" /> 
+		<meta name="twitter:image" content="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" /> 
     {elseif $displayHomepageImage && is_array($displayHomepageImage)}
-	<meta name="twitter:image" content="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" />
+		<meta name="twitter:image" content="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" />
     {/if}
     
 	<meta name="robots" content="max-image-preview:large" />
@@ -122,20 +122,21 @@
     {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
     {assign var="displayCoverIssue" value=$issue->getShowCoverPage($locale)}
     {if $coverPagePath}
-    <meta property="og:image" content="{$coverPagePath|escape}{$coverPageFileName|escape}" />
+    	<meta property="og:image" content="{$coverPagePath|escape}{$coverPageFileName|escape}" />
     {elseif $issue && $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && is_array($displayCoverIssue)}
-    <meta property="og:image" content="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" />    
+    	<meta property="og:image" content="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" />    
     {elseif $displayHomepageImage && is_array($displayHomepageImage)}
-    <meta property="og:image" content="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" />
+    	<meta property="og:image" content="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" />
     {/if}
     
     <meta property='article:publisher' content='//www.facebook.com/111429340332887' />
     <meta property='fb:app_id' content='1575594642876231' />
     {if $article->getLanguage()}
-    <meta property="og:locale" content="{$article->getLanguage()|strip_tags|escape}" />
+    	<meta property="og:locale" content="{$article->getLanguage()|strip_tags|escape}" />
     {/if}
     <meta name="csrf-token" content="{$csrfToken}" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+
     <!-- Cookies CDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-migrate-3.4.0.min.js"></script>
@@ -143,17 +144,17 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     
 	{call_hook name="Templates::Article::Header::Metadata"}
+	
 	{call_hook|assign:"leftSidebarCode" name="Templates::Common::LeftSidebar"}
 	{call_hook|assign:"rightSidebarCode" name="Templates::Common::RightSidebar"}
 
-	<script async="" src="//scholar.google.com/scholar_js/casa.js" type="text/javascript" referrerpolicy="strict-origin-when-cross-origin"></script>
+	{** <script async="" src="//scholar.google.com/scholar_js/casa.js" type="text/javascript" referrerpolicy="strict-origin-when-cross-origin"></script> **}
     <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8" referrerpolicy="strict-origin-when-cross-origin"></script>
     
-	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" />
+	{** <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" /> **}
 	
 	<link rel="preload" href="{$baseUrl}/assets/static/styles/font.css" type="text/css" as="style" />
 	<link rel="stylesheet preload" href="{$baseUrl}/assets/static/styles/font.css" type="text/css" as="style" />
-
     <link rel="preload" href="{$baseUrl}/assets/static/styles/Lumera_article--branded.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     
 	{$additionalHeadData}    
@@ -173,6 +174,7 @@
 
 {else}
 
+	{** --Pembuka tag
 	<!-- Default global locale keys for JavaScript -->
 	{include file="common/jsLocaleKeys.tpl" }
 
@@ -182,6 +184,7 @@
 	{else}
 		{include file="common/minifiedScripts.tpl"}
 	{/if}
+	---Penutup tag **}
 
 	{foreach from=$stylesheets item=cssUrl}
 		<link rel="stylesheet" href="{$cssUrl}" type="text/css" />

@@ -1,4 +1,11 @@
 @charset "UTF-8";
+/**
+ * @file public/assets/css/Lumera_mosaic--branded.css
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Codecanau
+ * Distributed under the GNU GPL v3.
+ */
 .c-banner,body,table {
  font-family:-apple-system,
  BlinkMacSystemFont,
@@ -158,6 +165,7 @@ a:hover {
  font-style:italic
 }
 input+label {
+ color:inherit;
  /*padding-left:.5em*/
 }
 html {
@@ -479,7 +487,7 @@ button:focus,
 input:focus,
 select:focus {
  outline:#fece3e solid 3px;
- /*/*will-change:transform*/*/
+ /*will-change:transform*/
 }
 blockquote,
 body,
@@ -2883,7 +2891,7 @@ a.small-header-icons:hover .icon-ealert-25x25-gray {
 .secondary-button:hover {
  text-decoration:underline;
  -webkit-text-decoration-skip:skip;
- text-decoration-skip-ink:auto
+ text-decoration-skip-ink:auto;
 }
 .link-link:focus,
 a.featured-article:focus h3,
@@ -3837,7 +3845,7 @@ body:before {
  background-image:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIiBjbGFzcz0idWlsLXJpbmciPjxwYXRoIGNsYXNzPSJiayIgZD0iTTAgMGgxMDB2MTAwaC0xMDB6IiBmaWxsPSJub25lIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDIuNSIgc3Ryb2tlLWRhc2hhcnJheT0iMjEzLjYyODMwMDQ0NDEwNTk1IDUzLjQwNzA3NTExMTAyNjQ3IiBzdHJva2U9IiM1YTVhNjIiIHN0cm9rZS13aWR0aD0iMTUiIGZpbGw9Im5vbmUiLz48L3N2Zz4=),none;
  background-repeat:no-repeat;
  background-position:50% 50%;
- webkit-animation:spin running 1s infinite linear;
+ -moz-animation:spin running 1s infinite linear;
  -webkit-animation:1s linear infinite spin;
  animation:1s linear infinite spin
 }
@@ -5739,6 +5747,7 @@ section {
  font-size:1.4rem
 }
 .c-footer__header {
+ color:inherit;
  /*margin-bottom:24px;*/
  /*padding-bottom:24px;*/
  /*border-bottom:1px solid #555*/
@@ -6086,6 +6095,7 @@ ins {
  border-bottom:2px solid;
  -o-border-image:linear-gradient(to right,#fff,#fff 23%,#eee 0,#eee 74%,#fff 23%,#fff) 10;
  border-image:-webkit-gradient(linear,left top,right top,from(#fff),color-stop(23%,#fff),color-stop(0,#eee),color-stop(74%,#eee),color-stop(23%,#fff),to(#fff)) 10;
+ border-image: -ms-gradient(linear,left top,right top,from(#fff),color-stop(23%,#fff),color-stop(0,#eee),color-stop(74%,#eee),color-stop(23%,#fff),to(#fff)) 10;
  border-image:linear-gradient(to right,#fff,#fff 23%,#eee 0,#eee 74%,#fff 23%,#fff) 10
 }
 .book-image {
@@ -6830,7 +6840,8 @@ template {
 .twitter-graph-grab {
  cursor:pointer;
  cursor:-webkit-grab;
- cursor:-moz-grab
+ cursor:-moz-grab;
+ cursor:grab;
 }
 .twitter-graph-grabbing {
  cursor:move
@@ -7268,6 +7279,7 @@ a {
   font-size:1.6rem
  }
  .c-header__item:not(:first-child) {
+ color:inherit;
   /*margin-left:8px*/
  }
  .c-header__link>svg {
@@ -7948,7 +7960,8 @@ progress {
 }
 html {
  -ms-text-size-adjust:100%;
- -webkit-text-size-adjust:100%
+ -webkit-text-size-adjust:100%;
+ text-size-adjust:100%;
 }
 body {
  margin:0;
@@ -7977,6 +7990,7 @@ samp {
 }
 a {
  -webkit-text-decoration-skip:objects;
+ text-decoration:objects;
  color:#069
 }
 a:active,
@@ -8037,7 +8051,8 @@ select {
 [type=submit],
 button,
 html [type=button] {
- -webkit-appearance:button
+ -webkit-appearance:button;
+ appearance:button;
 }
 [type=button]::-moz-focus-inner,
 [type=reset]::-moz-focus-inner,
@@ -8078,6 +8093,7 @@ legend {
 }
 [type=search] {
  -webkit-appearance:textfield;
+ appearance:textfield;
  outline-offset:-2px
 }
 [type=search]::-webkit-search-cancel-button,

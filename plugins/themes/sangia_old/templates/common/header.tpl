@@ -178,7 +178,7 @@
 					</ul>
 					<ul class="listToOpenLayer">
 						<li class="listItemToOpenLayer hashover">
-							<a class="external linkToOpenLayer isLink rightArrow" href="{url page="author" op="submit"}" target="_blank" title="It opens in new window"><span>Manuscript Submission</span></a>
+							<a class="external linkToOpenLayer isLink rightArrow" href="{url page="submission" op="submit"}" target="_blank" title="It opens in new window"><span>Manuscript Submission</span></a>
 						</li>
 						<li class="listItemToOpenLayer hashover">
 							<a class="external linkToOpenLayer" href="{url page="about" op="editorialTeam"}" ><span>Editorial Board</span></a>

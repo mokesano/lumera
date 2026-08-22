@@ -107,7 +107,7 @@
                         {if $donationEnabled}<li><a href="{url page="donations"}">{translate key="payment.type.donation"}</a></li>{/if}
                         {if $currentJournal->getSetting('membershipFee')}<li><a href="{url page="about" op="memberships"}">{translate key="about.memberships"}</a></li>{/if}
                         {if $paymentConfigured && $journalSettings.journalPaymentsEnabled && $journalSettings.membershipFeeEnabled && $journalSettings.membershipFee > 0}<li><a href="{url op="memberships"}">{translate key="about.memberships"}</a></li>{/if}                        
-                        <li><a class="button-base-2906877647" href="{url page="author" op="submit"}" target="_blank" data-track="click"><span class="button-label-1281676810">Submit manuscript </span>
+                        <li><a class="button-base-2906877647" href="{url page="submission" op="submit"}" target="_blank" data-track="click"><span class="button-label-1281676810">Submit manuscript </span>
                         <svg width="16" height="16" viewBox="0 0 16 16" class="button-icon-1969128361"><path fill="inherit" fill-rule="evenodd" d="M13.161 12.387c.428 0 .774.347.774.774v1.033c0 .996-.81 1.806-1.806 1.806H1.677A1.68 1.68 0 0 1 0 14.323V3.87c0-.996.81-1.806 1.806-1.806H2.84a.774.774 0 0 1 0 1.548H1.806a.258.258 0 0 0-.258.258v10.452a.13.13 0 0 0 .13.129h10.451a.258.258 0 0 0 .258-.258V13.16c0-.427.347-.774.774-.774zM14.323 0A1.68 1.68 0 0 1 16 1.677V8a.774.774 0 0 1-1.548 0V2.644l-9.002 9a.768.768 0 0 1-.547.227.773.773 0 0 1-.547-1.321l9-9.002H8A.774.774 0 0 1 8 0h6.323z"></path></svg></a></li>                        
                     </ul>
                 </li>

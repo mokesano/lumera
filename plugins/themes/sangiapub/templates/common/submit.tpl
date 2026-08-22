@@ -13,6 +13,6 @@
 	</div>
 {else}
 	<div id="customblock-Large-Button" class="_largeButton">
-		<a href="{url page="author" op="submit"}">{translate key="user.noRoles.submitArticle"}</a>
+		<a href="{url page="submission" op="submit"}">{translate key="user.noRoles.submitArticle"}</a>
 	</div>
 {/if}

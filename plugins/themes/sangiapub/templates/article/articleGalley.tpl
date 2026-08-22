@@ -39,9 +39,9 @@
 	<meta name="citation_article_type" content="{$article->getSectionTitle()|strip_tags|escape}" />
     
 	{if $displayFavicon}
-	<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
+		<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
 	{else}
-	<link rel="icon" type="img/ico" href="{$baseUrl}/favicon.ico" />	
+		<link rel="icon" type="img/ico" href="{$baseUrl}/favicon.ico" />	
 	{/if}
     <link rel="apple-touch-icon" sizes="57x57" href="//assets.sangia.org/static/favicon/apple-icon-57x57.png" />
     <link rel="apple-touch-icon" sizes="60x60" href="//assets.sangia.org/static/favicon/apple-icon-60x60.png" />
@@ -62,22 +62,22 @@
 	{include file="article/googlescholar.tpl"}		
 	
 	{if $issn}
-	<meta name="prism.issn" content="{$issn|strip_tags|escape}" />
+		<meta name="prism.issn" content="{$issn|strip_tags|escape}" />
 	{/if}
 	<meta name="prism.publicationName" content="{$currentJournal->getLocalizedTitle()|strip_tags|nl2br|escape}" />
     {if is_a($article, 'PublishedArticle') && $article->getDatePublished()}
-	<meta name="prism.publicationDate" content="{$article->getDatePublished()|date_format:"%Y/%m/%d"|escape}" />
+		<meta name="prism.publicationDate" content="{$article->getDatePublished()|date_format:"%Y/%m/%d"|escape}" />
     {elseif $issue && $issue->getYear()}
-	<meta name="prism.publicationDate" content="{$issue->getYear()|escape}" />
+		<meta name="prism.publicationDate" content="{$issue->getYear()|escape}" />
     {elseif $issue && $issue->getDatePublished()}
-	<meta name="prism.publicationDate" content="{$issue->getDatePublished()|date_format:"%Y/%m/%d"|escape}" />
+		<meta name="prism.publicationDate" content="{$issue->getDatePublished()|date_format:"%Y/%m/%d"|escape}" />
     {/if}	
-	<meta name="prism.section" content="{$article->getSectionTitle()|strip_tags|escape}" />
+		<meta name="prism.section" content="{$article->getSectionTitle()|strip_tags|escape}" />
     {if $article->getPages()}
         {if $article->getStartingPage()}
-        <meta name="prism.startingPage" content="{$article->getStartingPage()|escape}"/>{/if}
+        	<meta name="prism.startingPage" content="{$article->getStartingPage()|escape}"/>{/if}
 	    {if $article->getEndingPage()}
-    	<meta name="prism.endingPage" content="{$article->getEndingPage()|escape}"/>{/if}
+    		<meta name="prism.endingPage" content="{$article->getEndingPage()|escape}"/>{/if}
 	{else}
         <meta name="prism.startingPage" content="{$article->getID()|escape}"/>	
     {/if}
@@ -86,8 +86,8 @@
 	<meta name="prism.url" content="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)}" />
 	{assign var="doi" value=$article->getStoredPubId('doi')}
     {if $article->getPubId('doi')}
-	<meta name="prism.doi" content="doi:{$article->getPubId('doi')}" />
-    <meta name="DOI" content="{$article->getPubId('doi')}" />
+		<meta name="prism.doi" content="doi:{$article->getPubId('doi')}" />
+		<meta name="DOI" content="{$article->getPubId('doi')}" />
 	{/if}
 
 	<link rel="canonical" href="{$currentUrl|escape}" />
@@ -108,7 +108,7 @@
     <meta property='article:publisher' content='//www.facebook.com/111429340332887' />
     <meta property='fb:app_id' content='1575594642876231' />
     {if $article->getLanguage()}
-    <meta property="og:locale" content="{$article->getLanguage()|strip_tags|escape}" />
+    	<meta property="og:locale" content="{$article->getLanguage()|strip_tags|escape}" />
     {/if}
     <meta name="csrf-token" content="{$csrfToken}" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -119,7 +119,7 @@
 	<meta name="revisit-after" content="3 days" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />    
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-	{$metaCustomHeaders}
+	{** {$metaCustomHeaders} **}
 	<meta name="publisher" content="{if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Sangia Publishing{elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing"}Sangia Publishing{elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}{$currentJournal->getSetting('publisherInstitution')|escape}{else}{$currentJournal->getSetting('publisherInstitution')|escape}{/if}" />
 	<meta name="owner" content="PT. Sangia Research Media and Publishing" />
 	<meta name="website_owner" content="www.sangia.org" />

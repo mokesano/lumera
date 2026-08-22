@@ -167,7 +167,7 @@
 						</li>
 
 						<li>
-							<a class="external" href="{url page="author" op="submit"}" target="_blank" title="It opens in new window">Manuscript Submission</a>
+							<a class="external" href="{url page="submission" op="submit"}" target="_blank" title="It opens in new window">Manuscript Submission</a>
 						</li>
 
 					</ul>

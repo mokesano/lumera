@@ -140,7 +140,7 @@
     							<a class="external linkToOpenLayer" href="{url page="about" op="editorialTeam"}" ><span>Editorial Board</span></a>
     						</li>
     						<li class="listItemToOpenLayer">
-    							<a class="external linkToOpenLayer" href="{url page="author" op="submit"}" ><span>Manuscript Submission</span></a>
+    							<a class="external linkToOpenLayer" href="{url page="submission" op="submit"}" ><span>Manuscript Submission</span></a>
     						</li>
     					</ul>
     				</dd>

@@ -12,58 +12,71 @@ declare(strict_types=1);
  * @ingroup plugins_generic_booksForReview
  *
  * @brief Handle requests for editor books for review functions.
- * [WIZDAM EDITION] Modernized. PHP 8 Safe. Security Hardened (XSS & Open Redirect Prevention).
  */
 
 import('classes.handler.Handler');
+
+if (!defined('BOOKS_FOR_REVIEW_PLUGIN_NAME')) define('BOOKS_FOR_REVIEW_PLUGIN_NAME', 'booksForReview');
+if (!defined('BFR_BOOK_SEARCH_TITLE')) define('BFR_BOOK_SEARCH_TITLE', 1);
+if (!defined('BFR_BOOK_SEARCH_AUTHOR')) define('BFR_BOOK_SEARCH_AUTHOR', 2);
+if (!defined('BFR_BOOK_SEARCH_ISBN')) define('BFR_BOOK_SEARCH_ISBN', 3);
+if (!defined('BFR_STATUS_AVAILABLE')) define('BFR_STATUS_AVAILABLE', 1);
+if (!defined('BFR_STATUS_REQUESTED')) define('BFR_STATUS_REQUESTED', 2);
+if (!defined('BFR_STATUS_ASSIGNED')) define('BFR_STATUS_ASSIGNED', 3);
+if (!defined('BFR_STATUS_MAILED')) define('BFR_STATUS_MAILED', 4);
+if (!defined('BFR_STATUS_SUBMITTED')) define('BFR_STATUS_SUBMITTED', 5);
+if (!defined('FILTER_EDITOR_ALL')) define('FILTER_EDITOR_ALL', 0);
+if (!defined('FILTER_EDITOR_ME')) define('FILTER_EDITOR_ME', 1);
+if (!defined('BFR_FIELD_TITLE')) define('BFR_FIELD_TITLE', 1);
+if (!defined('BFR_FIELD_PUBLISHER')) define('BFR_FIELD_PUBLISHER', 2);
+if (!defined('BFR_FIELD_YEAR')) define('BFR_FIELD_YEAR', 3);
+if (!defined('BFR_FIELD_ISBN')) define('BFR_FIELD_ISBN', 4);
+if (!defined('BFR_FIELD_DESCRIPTION')) define('BFR_FIELD_DESCRIPTION', 5);
 
 class BooksForReviewEditorHandler extends Handler {
 
     /**
      * Display books for review listing pages.
-     * [MODERNISASI] Hapus referensi & pada $request
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function booksForReview($args = array(), $request) {
+    public function booksForReview($args = [], $request) {
         $this->setupTemplate();
 
         $journal = $request->getJournal();
         $journalId = $journal->getId();
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
         $mode = $bfrPlugin->getSetting($journalId, 'mode');
         $bfrPlugin->import('classes.BookForReview');
         
         $searchField = null;
         $searchMatch = null;
-        
-        // [SECURITY FIX] Amankan 'search' (string) dengan trim()
-        $search = trim($request->getUserVar('search'));
+        $search = trim((string) $request->getUserVar('search'));
 
         if (!empty($search)) {
-            // [SECURITY FIX] Whitelist 'searchField'
-            // Tentukan whitelist field yang valid (sesuaikan dengan konstanta plugin BFR)
-            $validSearchFields = array(
+            $validSearchFields = [
                 BFR_BOOK_SEARCH_TITLE,
                 BFR_BOOK_SEARCH_AUTHOR,
                 BFR_BOOK_SEARCH_ISBN
-                // Tambahkan konstanta field lain yang valid di sini
-            );
+            ];
             $searchField = $request->getUserVar('searchField');
-            if (!in_array($searchField, $validSearchFields)) {
-                $searchField = null; // Set default aman
+            if (!in_array($searchField, $validSearchFields, true)) {
+                $searchField = null;
             }
 
-            // [SECURITY FIX] Whitelist 'searchMatch'
-            $validSearchMatches = array('is', 'contains', 'startsWith');
-            $searchMatch = trim($request->getUserVar('searchMatch'));
-            if (!in_array($searchMatch, $validSearchMatches)) {
-                $searchMatch = 'contains'; // Set default aman
+            $validSearchMatches = ['is', 'contains', 'startsWith'];
+            $searchMatch = trim((string) $request->getUserVar('searchMatch'));
+            if (!in_array($searchMatch, $validSearchMatches, true)) {
+                $searchMatch = 'contains';
             }
         }
 
-        $path = !isset($args) || empty($args) ? null : $args[0];
+        $path = $args[0] ?? null;
 
-        switch($path) {
+        switch ($path) {
             case 'available':
                 $status = BFR_STATUS_AVAILABLE;
                 $template = 'booksForReviewAvailable.tpl';
@@ -90,118 +103,110 @@ class BooksForReviewEditorHandler extends Handler {
                 $template = 'booksForReviewAll.tpl';
         }
 
-
         import('pages.editor.EditorHandler');
         $user = $request->getUser();
-        $filterEditorOptions = array(
-            FILTER_EDITOR_ALL => AppLocale::Translate('editor.allEditors'),
-            FILTER_EDITOR_ME => AppLocale::Translate('editor.me')
-        );
+        $filterEditorOptions = [
+            FILTER_EDITOR_ALL => __('editor.allEditors'),
+            FILTER_EDITOR_ME => __('editor.me')
+        ];
 
-        // [SECURITY FIX] Amankan 'filterEditor' (diharapkan integer) dengan trim() dan (int)
-        $filterEditor = (int) trim($request->getUserVar('filterEditor'));
+        $filterEditor = (int) $request->getUserVar('filterEditor');
 
         if (array_key_exists($filterEditor, $filterEditorOptions)) {
             $user->updateSetting('filterEditor', $filterEditor, 'int', $journalId);
         } else {
             $filterEditor = $user->getSetting('filterEditor', $journalId);
-            if ($filterEditor == null) {
+            if ($filterEditor === null) {
                 $filterEditor = FILTER_EDITOR_ALL;
                 $user->updateSetting('filterEditor', $filterEditor, 'int', $journalId);
             }
         }
 
-        if ($filterEditor == FILTER_EDITOR_ME) {
-            $editorId = $user->getId();
-        } else {
-            $editorId = null;
-        }
+        $editorId = ($filterEditor === FILTER_EDITOR_ME) ? $user->getId() : null;
 
         $rangeInfo = Handler::getRangeInfo('booksForReview');
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
         $booksForReview = $bfrDao->getBooksForReviewByJournalId($journalId, $searchField, $search, $searchMatch, $status, null, $editorId, $rangeInfo);
 
         $templateMgr = TemplateManager::getManager();
         $templateMgr->assign('mode', $mode);
-        // [MODERNISASI] Assign biasa
         $templateMgr->assign('booksForReview', $booksForReview);
         $templateMgr->assign('filterEditor', $filterEditor);
         $templateMgr->assign('returnPage', $path);
 
-        // Set search parameters
-        $duplicateParameters = array(
-            'searchField', 'searchMatch', 'search'
-        );
+        $duplicateParameters = ['searchField', 'searchMatch', 'search'];
         foreach ($duplicateParameters as $param) {
-            // [SECURITY FIX] Escape semua output ke template untuk mencegah XSS
-            $templateMgr->assign(
-                $param,
-                htmlspecialchars(trim($request->getUserVar($param)), ENT_QUOTES, 'UTF-8')
-            );
+            $templateMgr->assign($param, htmlspecialchars(trim((string) $request->getUserVar($param)), ENT_QUOTES, 'UTF-8'));
         }
 
-        $fieldOptions = Array(
+        $fieldOptions = [
             BFR_FIELD_TITLE => 'plugins.generic.booksForReview.field.title',
             BFR_FIELD_PUBLISHER => 'plugins.generic.booksForReview.field.publisher',
             BFR_FIELD_YEAR => 'plugins.generic.booksForReview.field.year',
             BFR_FIELD_ISBN => 'plugins.generic.booksForReview.field.isbn',
             BFR_FIELD_DESCRIPTION => 'plugins.generic.booksForReview.field.description'
-        );
+        ];
+        
         $templateMgr->assign('fieldOptions', $fieldOptions);
         $templateMgr->assign('editorOptions', $filterEditorOptions);
         $templateMgr->assign('counts', $bfrDao->getStatusCounts($journalId));
 
-        $templateMgr->display($bfrPlugin->getTemplatePath() . 'editor' . '/' . $template);
+        $templateMgr->display($bfrPlugin->getTemplatePath() . 'editor/' . $template);
     }
 
     /**
-     * Create/edit book for review.
-     * [MODERNISASI] Hapus referensi &
+     * Create book for review.
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function createBookForReview($args = array(), $request) {
+    public function createBookForReview($args = [], $request) {
         $this->editBookForReview($args, $request);
     }
 
     /**
-     * Create/edit book for review.
-     * [MODERNISASI] Hapus referensi &
+     * Edit book for review.
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function editBookForReview($args = array(), $request) {
+    public function editBookForReview($args = [], $request) {
         $this->setupTemplate(true);
 
         $journal = $request->getJournal();
         $journalId = $journal->getId();
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
         $mode = $bfrPlugin->getSetting($journalId, 'mode');
-        $bookId = !isset($args) || empty($args) ? null : (int) $args[0];
+        $bookId = isset($args[0]) ? (int) $args[0] : null;
         
-        // [SECURITY FIX] Amankan 'returnPage' dengan trim()
-        $returnPage = trim($request->getUserVar('returnPage'));
+        $returnPage = trim((string) $request->getUserVar('returnPage'));
 
         if (!empty($returnPage)) { 
             $validPages = $this->getValidReturnPages();
-            
-            // Validasi whitelist yang sudah ada ini sangat bagus
-            if (!in_array($returnPage, $validPages)) {
-                $returnPage = null; // Set default aman jika tidak valid
+            if (!in_array($returnPage, $validPages, true)) {
+                $returnPage = null;
             }
         }
 
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
-
-        // Ensure book for review is valid and for this journal
-        if (($bookId != null && $bfrDao->getBookForReviewJournalId($bookId) == $journalId) || ($bookId == null)) {
+        if (($bookId !== null && $bfrDao->getBookForReviewJournalId($bookId) === $journalId) || $bookId === null) {
             $bfrPlugin->import('classes.form.BookForReviewForm');
 
+            /** @var JournalSettingsDAO $journalSettingsDao */
             $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
             $journalSettings = $journalSettingsDao->getJournalSettings($journalId);
 
+            /** @var CountryDAO $countryDao */
             $countryDao = DAORegistry::getDAO('CountryDAO');
             $countries = $countryDao->getCountries();
 
             $bfrForm = new BookForReviewForm(BOOKS_FOR_REVIEW_PLUGIN_NAME, $bookId);
             $bfrForm->initData();
+            
             $templateMgr = TemplateManager::getManager();
             $templateMgr->assign('mode', $mode);
             $templateMgr->assign('journalSettings', $journalSettings);
@@ -215,116 +220,96 @@ class BooksForReviewEditorHandler extends Handler {
 
     /**
      * Update book for review.
-     * [MODERNISASI] Hapus referensi &
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function updateBookForReview($args = array(), $request) {
+    public function updateBookForReview($args = [], $request) {
         $this->setupTemplate(true);
 
         $journal = $request->getJournal();
         $journalId = $journal->getId();
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
         $mode = $bfrPlugin->getSetting($journalId, 'mode');
         $bfrPlugin->import('classes.form.BookForReviewForm');
         
-        // [SECURITY FIX] Amankan 'bookId' dengan trim() dan (int)
-        $bookId = (int) trim($request->getUserVar('bookId'));
-
-        // [SECURITY FIX] Amankan 'returnPage' dengan trim()
-        $returnPage = trim($request->getUserVar('returnPage'));
+        $bookId = (int) $request->getUserVar('bookId');
+        $returnPage = trim((string) $request->getUserVar('returnPage'));
 
         if (!empty($returnPage)) { 
             $validPages = $this->getValidReturnPages();
-            if (!in_array($returnPage, $validPages)) {
+            if (!in_array($returnPage, $validPages, true)) {
                 $returnPage = null;
             }
         }
 
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
-
-        if (($bookId != null && $bfrDao->getBookForReviewJournalId($bookId) == $journalId) || $bookId == null) {
+        if (($bookId !== null && $bfrDao->getBookForReviewJournalId($bookId) === $journalId) || $bookId === null) {
 
             $bfrForm = new BookForReviewForm(BOOKS_FOR_REVIEW_PLUGIN_NAME, $bookId);
             $bfrForm->readInputData();
+            $editData = false;
 
-            // [SECURITY FIX] Amankan flag boolean 'addAuthor'
-            if ((int) $request->getUserVar('addAuthor')) {
+            if ((bool) $request->getUserVar('addAuthor')) {
                 $editData = true;
                 $authors = $bfrForm->getData('authors');
-                array_push($authors, array());
+                $authors[] = [];
                 $bfrForm->setData('authors', $authors);
-
-            // [SECURITY FIX] Amankan flag array 'delAuthor'
-            } else if (($delAuthor = (array) $request->getUserVar('delAuthor')) && count($delAuthor) == 1) {
+            } elseif (($delAuthor = (array) $request->getUserVar('delAuthor')) && count($delAuthor) === 1) {
                 $editData = true;
-                list($delAuthor) = array_keys($delAuthor);
-                $delAuthor = (int) $delAuthor; 
+                list($delAuthorIndex) = array_keys($delAuthor);
                 $authors = $bfrForm->getData('authors');
-                array_splice($authors, $delAuthor, 1);
+                array_splice($authors, (int) $delAuthorIndex, 1);
                 $bfrForm->setData('authors', $authors);
-
-            // [SECURITY FIX] Amankan flag boolean 'moveAuthor'
-            } else if ((int) $request->getUserVar('moveAuthor')) {
+            } elseif ((bool) $request->getUserVar('moveAuthor')) {
                 $editData = true;
-                
-                // [SECURITY FIX] Amankan string key 'moveAuthorDir'
-                $moveAuthorDir = trim($request->getUserVar('moveAuthorDir'));
-                $moveAuthorDir = $moveAuthorDir == 'u' ? 'u' : 'd'; 
-                
-                // [SECURITY FIX] Amankan index 'moveAuthorIndex'
-                $moveAuthorIndex = (int) trim($request->getUserVar('moveAuthorIndex'));
+                $moveAuthorDir = trim((string) $request->getUserVar('moveAuthorDir'));
+                $moveAuthorDir = $moveAuthorDir === 'u' ? 'u' : 'd'; 
+                $moveAuthorIndex = (int) $request->getUserVar('moveAuthorIndex');
                 $authors = $bfrForm->getData('authors');
 
-                if (isset($authors[$moveAuthorIndex]) && isset($authors[$moveAuthorIndex + ($moveAuthorDir == 'u' ? -1 : 1)])) {
+                $targetIndex = $moveAuthorIndex + ($moveAuthorDir === 'u' ? -1 : 1);
+                if (isset($authors[$moveAuthorIndex]) && isset($authors[$targetIndex])) {
                     $tmpAuthor = $authors[$moveAuthorIndex];
-                    $authors[$moveAuthorIndex] = $authors[$moveAuthorIndex + ($moveAuthorDir == 'u' ? -1 : 1)];
-                    $authors[$moveAuthorIndex + ($moveAuthorDir == 'u' ? -1 : 1)] = $tmpAuthor;
+                    $authors[$moveAuthorIndex] = $authors[$targetIndex];
+                    $authors[$targetIndex] = $tmpAuthor;
                 }
-                
                 $bfrForm->setData('authors', $authors);
             }
 
-            if (!isset($editData) && $bfrForm->validate()) {
+            if (!$editData && $bfrForm->validate()) {
                 $bfrForm->execute();
 
-                if ($bookId == null) {
-                    $notificationType = NOTIFICATION_TYPE_BOOK_CREATED;
-                } else {
-                    $notificationType = NOTIFICATION_TYPE_BOOK_UPDATED;
-                }
+                $notificationType = ($bookId === null) ? NOTIFICATION_TYPE_BOOK_CREATED : NOTIFICATION_TYPE_BOOK_UPDATED;
                 
                 $user = $request->getUser();
                 import('classes.notification.NotificationManager');
                 $notificationManager = new NotificationManager();
                 $notificationManager->createTrivialNotification($user->getId(), $notificationType);
                 
-                // [SECURITY FIX] Validasi $returnPage untuk mencegah Open Redirect
-                $redirectParams = null;
-                // Request::isPathValid adalah helper fiktif jika tidak ada di OJS 2, tapi validasi di atas sudah cukup
-                if (!empty($returnPage)) {
-                    $redirectParams = array('returnPage' => $returnPage);
-                }
+                $redirectParams = !empty($returnPage) ? ['returnPage' => $returnPage] : null;
 
-                // [SECURITY FIX] Amankan flag boolean 'createAnother'
-                if ((int) $request->getUserVar('createAnother')) {
+                if ((bool) $request->getUserVar('createAnother')) {
                     $request->redirect(null, 'editor', 'createBookForReview', null, $redirectParams);
                 } else {
-                    $request->redirect(null, 'editor', 'booksForReview', $returnPage); // Redirect diperbaiki
+                    $request->redirect(null, 'editor', 'booksForReview', $returnPage);
                 }
             } else {
+                /** @var JournalSettingsDAO $journalSettingsDao */
                 $journalSettingsDao = DAORegistry::getDAO('JournalSettingsDAO');
                 $journalSettings = $journalSettingsDao->getJournalSettings($journal->getId());
                 
+                /** @var CountryDAO $countryDao */
                 $countryDao = DAORegistry::getDAO('CountryDAO');
                 $countries = $countryDao->getCountries();
 
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign('mode', $mode);
                 $templateMgr->assign('journalSettings', $journalSettings);
-                
-                // [SECURITY FIX] Escape 'returnPage' untuk mencegah XSS di template
                 $templateMgr->assign('returnPage', htmlspecialchars($returnPage, ENT_QUOTES, 'UTF-8'));
-                
                 $templateMgr->assign('countries', $countries);
                 $bfrForm->display();
             }
@@ -335,31 +320,30 @@ class BooksForReviewEditorHandler extends Handler {
 
     /**
      * Delete book for review.
-     * [MODERNISASI] Hapus referensi &
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function deleteBookForReview($args = array(), $request) {
+    public function deleteBookForReview($args = [], $request) {
         $this->setupTemplate();
 
         $journal = $request->getJournal();
         $journalId = $journal->getId();
 
-        $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
-
-        // [SECURITY FIX] Amankan 'returnPage'
-        $returnPage = trim($request->getUserVar('returnPage'));
+        $returnPage = trim((string) $request->getUserVar('returnPage'));
         if (!empty($returnPage)) { 
             $validPages = $this->getValidReturnPages();
-            if (!in_array($returnPage, $validPages)) {
+            if (!in_array($returnPage, $validPages, true)) {
                 $returnPage = null;
             }
         }
 
         if (!empty($args)) {
             $bookId = (int) $args[0];
+            /** @var BookForReviewDAO $bfrDao */
             $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
 
-            // Ensure book for review is for this journal
-            if ($bfrDao->getBookForReviewJournalId($bookId) == $journalId) {
+            if ($bfrDao->getBookForReviewJournalId($bookId) === $journalId) {
                 $bfrDao->deleteBookForReviewById($bookId);
                 $user = $request->getUser();
                 import('classes.notification.NotificationManager');
@@ -372,14 +356,17 @@ class BooksForReviewEditorHandler extends Handler {
 
     /**
      * Update book for review settings.
-     * [MODERNISASI] Hapus referensi &
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function booksForReviewSettings($args = array(), $request) {
+    public function booksForReviewSettings($args = [], $request) {
         $this->setupTemplate(true);
 
         $journal = $request->getJournal();
         $journalId = $journal->getId();
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
         $bfrPlugin->import('classes.form.BooksForReviewSettingsForm');
         $templateMgr = TemplateManager::getManager();
@@ -390,11 +377,11 @@ class BooksForReviewEditorHandler extends Handler {
             $templateMgr->assign('scheduledTasksEnabled', true);
         }
 
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
         $templateMgr->assign('counts', $bfrDao->getStatusCounts($journalId));
         
-        // [SECURITY FIX] Amankan flag boolean 'save' dengan (int)
-        if ((int) $request->getUserVar('save')) {
+        if ((bool) $request->getUserVar('save')) {
             $form->readInputData();
             if ($form->validate()) {
                 $form->execute();
@@ -415,51 +402,50 @@ class BooksForReviewEditorHandler extends Handler {
 
     /**
      * Display a list of authors from which to choose a book reviewer.
-     * [MODERNISASI] Hapus referensi &
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function selectBookForReviewAuthor($args = array(), $request) {
+    public function selectBookForReviewAuthor($args = [], $request) {
         $this->setupTemplate(true);
 
         $journal = $request->getJournal();
         $journalId = $journal->getId();
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
-        $bookId = (int) $args[0];
+        $bookId = (int) ($args[0] ?? 0);
         
-        // [SECURITY FIX] Amankan 'returnPage'
-        $returnPage = trim($request->getUserVar('returnPage'));
+        $returnPage = trim((string) $request->getUserVar('returnPage'));
         if (!empty($returnPage)) { 
             $validPages = $this->getValidReturnPages();
-            if (!in_array($returnPage, $validPages)) {
+            if (!in_array($returnPage, $validPages, true)) {
                 $returnPage = null;
             }
         }
 
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
 
-        // Ensure book for review is for this journal
-        if ($bfrDao->getBookForReviewJournalId($bookId) != $journalId) {
+        if ($bfrDao->getBookForReviewJournalId($bookId) !== $journalId) {
             $request->redirect(null, 'editor', 'booksForReview', $returnPage);
         }
 
         $templateMgr = TemplateManager::getManager();
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
 
         $searchType = null;
         $searchMatch = null;
-        
-        // [SECURITY FIX] Amankan 'search' (string) dengan trim()
-        $search = $searchQuery = trim($request->getUserVar('search'));
+        $search = $searchQuery = trim((string) $request->getUserVar('search'));
 
-        // [SECURITY FIX] Amankan 'searchInitial' (1 char)
-        $searchInitial = trim($request->getUserVar('searchInitial'));
+        $searchInitial = trim((string) $request->getUserVar('searchInitial'));
         if (!preg_match('/^[A-Z0-9]$/i', $searchInitial)) {
-            $searchInitial = ''; // Set default aman
+            $searchInitial = '';
         }
 
         if (!empty($search)) {
-            // [SECURITY FIX] Whitelist 'searchField'
-            $validSearchFields = array(
+            $validSearchFields = [
                 BFR_BOOK_SEARCH_TITLE,
                 BFR_BOOK_SEARCH_AUTHOR,
                 BFR_BOOK_SEARCH_ISBN,
@@ -467,19 +453,18 @@ class BooksForReviewEditorHandler extends Handler {
                 USER_FIELD_LASTNAME,
                 USER_FIELD_USERNAME,
                 USER_FIELD_EMAIL
-            );
+            ];
             $searchType = $request->getUserVar('searchField');
-            // Hanya gunakan jika ada di whitelist (atau null default handler RoleDAO)
-            // if (!in_array($searchType, $validSearchFields)) $searchType = null;
-
-            // [SECURITY FIX] Whitelist 'searchMatch'
-            $validSearchMatches = array('is', 'contains', 'startsWith');
-            $searchMatch = trim($request->getUserVar('searchMatch'));
-            if (!in_array($searchMatch, $validSearchMatches)) {
-                $searchMatch = 'contains'; // Set default aman
+            if (!in_array($searchType, $validSearchFields, true)) {
+                $searchType = null;
             }
 
-        } else if (!empty($searchInitial)) { 
+            $validSearchMatches = ['is', 'contains', 'startsWith'];
+            $searchMatch = trim((string) $request->getUserVar('searchMatch'));
+            if (!in_array($searchMatch, $validSearchMatches, true)) {
+                $searchMatch = 'contains';
+            }
+        } elseif (!empty($searchInitial)) { 
             $searchInitial = PKPString::strtoupper($searchInitial);
             $searchType = USER_FIELD_INITIAL;
             $search = $searchInitial;
@@ -491,76 +476,70 @@ class BooksForReviewEditorHandler extends Handler {
         $templateMgr->assign('searchField', $searchType);
         $templateMgr->assign('searchMatch', $searchMatch);
         $templateMgr->assign('search', $searchQuery);
-        
-        // [SECURITY FIX] Amankan output 'searchInitial'
         $templateMgr->assign('searchInitial', htmlspecialchars($searchInitial, ENT_QUOTES, 'UTF-8'));
 
         import('classes.security.Validation');
         $templateMgr->assign('isJournalManager', Validation::isJournalManager());
 
-        $templateMgr->assign('fieldOptions', Array(
+        $templateMgr->assign('fieldOptions', [
             USER_FIELD_FIRSTNAME => 'user.firstName',
             USER_FIELD_LASTNAME => 'user.lastName',
             USER_FIELD_USERNAME => 'user.username',
             USER_FIELD_EMAIL => 'user.email'
-        ));
+        ]);
 
         $templateMgr->assign('users', $users);
         $templateMgr->assign('helpTopicId', 'journal.roles.author');
         $templateMgr->assign('bookId', $bookId);
         $templateMgr->assign('returnPage', $returnPage);
         $templateMgr->assign('alphaList', explode(' ', __('common.alphaList')));
-        $templateMgr->display($bfrPlugin->getTemplatePath() . 'editor' . '/' . 'authors.tpl');
+
+        $templateMgr->display($bfrPlugin->getTemplatePath() . 'editor/authors.tpl');
     }
 
     /**
      * Display a list of submissions from which to choose a book review submission.
-     * [MODERNISASI] Hapus referensi &
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function selectBookForReviewSubmission($args = array(), $request) {
+    public function selectBookForReviewSubmission($args = [], $request) {
         $this->setupTemplate(true);
 
         $journal = $request->getJournal();
         $journalId = $journal->getId();
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
-        $bookId = (int) $args[0];
+        $bookId = (int) ($args[0] ?? 0);
         
-        // [SECURITY FIX] Amankan 'returnPage'
-        $returnPage = trim($request->getUserVar('returnPage'));
-
-        if ($returnPage != null) {
+        $returnPage = trim((string) $request->getUserVar('returnPage'));
+        if ($returnPage !== null && $returnPage !== '') {
             $validPages = $this->getValidReturnPages();
-            if (!in_array($returnPage, $validPages)) {
+            if (!in_array($returnPage, $validPages, true)) {
                 $returnPage = null;
             }
         }
 
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
-
-        // Ensure book for review is for this journal
-        if ($bfrDao->getBookForReviewJournalId($bookId) != $journalId) {
+        if ($bfrDao->getBookForReviewJournalId($bookId) !== $journalId) {
             $request->redirect(null, 'editor', 'booksForReview', $returnPage);
         }
 
+        /** @var EditorSubmissionDAO $editorSubmissionDao */
         $editorSubmissionDao = DAORegistry::getDAO('EditorSubmissionDAO');
         $templateMgr = TemplateManager::getManager();
 
         $searchField = null;
         $searchMatch = null;
-        
-        // [SECURITY FIX] Amankan 'search'
-        $search = $searchQuery = trim($request->getUserVar('search'));
+        $search = $searchQuery = trim((string) $request->getUserVar('search'));
         
         if (!empty($search)) {
-            // [SECURITY FIX] Whitelist 'searchField'
             $searchField = $request->getUserVar('searchField');
-            // Validasi searchField sesuai kebutuhan
-
-            // [SECURITY FIX] Whitelist 'searchMatch'
-            $validSearchMatches = array('is', 'contains', 'startsWith');
-            $searchMatch = trim($request->getUserVar('searchMatch'));
-            if (!in_array($searchMatch, $validSearchMatches)) {
+            $validSearchMatches = ['is', 'contains', 'startsWith'];
+            $searchMatch = trim((string) $request->getUserVar('searchMatch'));
+            if (!in_array($searchMatch, $validSearchMatches, true)) {
                 $searchMatch = 'contains'; 
             }
         }
@@ -571,54 +550,47 @@ class BooksForReviewEditorHandler extends Handler {
 
         import('lib.pkp.classes.db.DAO');
         $submissions = $editorSubmissionDao->getEditorSubmissions(
-            $journalId,
-            0,
-            $editorId,
-            $searchField,
-            $searchMatch,
-            $search,
-            null,
-            null,
-            null,
-            $rangeInfo,
-            'id',
-            SORT_DIRECTION_DESC
+            $journalId, 0, $editorId, $searchField, $searchMatch, $search, 
+            null, null, null, $rangeInfo, 'id', SORT_DIRECTION_DESC
         );
 
         $templateMgr->assign('searchField', $searchField);
         $templateMgr->assign('searchMatch', $searchMatch);
         $templateMgr->assign('search', $searchQuery);
 
-        $templateMgr->assign('fieldOptions', array(
+        $templateMgr->assign('fieldOptions', [
             SUBMISSION_FIELD_TITLE => 'article.title',
             SUBMISSION_FIELD_AUTHOR => 'user.role.author'
-        ));
+        ]);
 
         $templateMgr->assign('submissions', $submissions);
         $templateMgr->assign('helpTopicId', 'journal.roles.editor');
         $templateMgr->assign('bookId', $bookId);
         $templateMgr->assign('returnPage', $returnPage);
-        $templateMgr->display($bfrPlugin->getTemplatePath() . 'editor' . '/' . 'submissions.tpl');
+
+        $templateMgr->display($bfrPlugin->getTemplatePath() . 'editor/submissions.tpl');
     }
 
     /**
      * Assign a book for review submission.
-     * [MODERNISASI] Hapus referensi &
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function assignBookForReviewSubmission($args = array(), $request) {
+    public function assignBookForReviewSubmission($args = [], $request) {
         $this->setupTemplate();
 
         if (empty($args)) {
             $request->redirect(null, 'editor');
         }
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
         
         $returnPage = $request->getUserVar('returnPage');
-
-        if ($returnPage != null) {
+        if ($returnPage !== null) {
             $validPages = $this->getValidReturnPages();
-            if (!in_array($returnPage, $validPages)) {
+            if (!in_array($returnPage, $validPages, true)) {
                 $returnPage = null;
             }
         }
@@ -626,23 +598,21 @@ class BooksForReviewEditorHandler extends Handler {
         $journal = $request->getJournal();
         $journalId = $journal->getId();
         $bookId = (int) $args[0];
+
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
-
-        // Ensure book for review is for this journal
-        if ($bfrDao->getBookForReviewJournalId($bookId) == $journalId) {
+        if ($bfrDao->getBookForReviewJournalId($bookId) === $journalId) {
             $book = $bfrDao->getBookForReview($bookId);
-            
-            // [SECURITY FIX] Amankan 'articleId'
-            $articleId = (int) trim($request->getUserVar('articleId'));
+            $articleId = (int) $request->getUserVar('articleId');
 
-            // Ensure article is for this journal and update book for review
+            /** @var ArticleDAO $articleDao */
             $articleDao = DAORegistry::getDAO('ArticleDAO');
-            if ($articleDao->getArticleJournalId($articleId) == $journalId) {
+            if ($articleDao->getArticleJournalId($articleId) === $journalId) {
                 $book->setArticleId($articleId);
                 $book->setStatus(BFR_STATUS_SUBMITTED);
                 $bfrDao->updateObject($book);
+                
                 $user = $request->getUser();
-
                 import('classes.notification.NotificationManager');
                 $notificationManager = new NotificationManager();
                 $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_BOOK_SUBMISSION_ASSIGNED);
@@ -653,22 +623,24 @@ class BooksForReviewEditorHandler extends Handler {
 
     /**
      * Assign a book for review author.
-     * [MODERNISASI] Hapus referensi &
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function assignBookForReviewAuthor($args = array(), $request) {
+    public function assignBookForReviewAuthor($args = [], $request) {
         $this->setupTemplate();
 
         if (empty($args)) {
             $request->redirect(null, 'editor');
         }
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
         
         $returnPage = $request->getUserVar('returnPage');
-
-        if ($returnPage != null) {
+        if ($returnPage !== null) {
             $validPages = $this->getValidReturnPages();
-            if (!in_array($returnPage, $validPages)) {
+            if (!in_array($returnPage, $validPages, true)) {
                 $returnPage = null;
             }
         }
@@ -676,24 +648,23 @@ class BooksForReviewEditorHandler extends Handler {
         $journal = $request->getJournal();
         $journalId = $journal->getId();
         $bookId = (int) $args[0];
+        
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
 
-        // Ensure book for review is for this journal
-        if ($bfrDao->getBookForReviewJournalId($bookId) == $journalId) {
+        if ($bfrDao->getBookForReviewJournalId($bookId) === $journalId) {
             $book = $bfrDao->getBookForReview($bookId);
             $status = $book->getStatus();
 
-            // Book was never requested by an author
-            if ($status == BFR_STATUS_AVAILABLE) {
-                // [SECURITY FIX] Amankan 'userId'
-                $userId = (int) trim($request->getUserVar('userId'));
+            if ($status === BFR_STATUS_AVAILABLE) {
+                $userId = (int) $request->getUserVar('userId');
+                /** @var UserDAO $userDao */
                 $userDao = DAORegistry::getDAO('UserDAO');
                 $user = $userDao->getUser($userId);
                 $userName = $user->getFullName();
                 $userEmail = $user->getEmail();
                 $userMailingAddress = $user->getMailingAddress();
                 $userCountryCode = $user->getCountry();
-            // Book has already been requested by author
             } else {
                 $userId = $book->getUserId();
                 $userName = $book->getUserFullName();
@@ -702,17 +673,14 @@ class BooksForReviewEditorHandler extends Handler {
                 $userCountryCode = $book->getUserCountry();
             }
 
-            // Ensure user is an author for this journal
+            /** @var RoleDAO $roleDao */
             $roleDao = DAORegistry::getDAO('RoleDAO');
             if ($roleDao->userHasRole($journalId, $userId, ROLE_ID_AUTHOR)) {
                 import('classes.mail.MailTemplate');
                 $email = new MailTemplate('BFR_BOOK_ASSIGNED');
-                // [SECURITY FIX] Amankan flag boolean 'send'
-                $send = (int) trim($request->getUserVar('send'));
+                $send = (bool) $request->getUserVar('send');
 
-                // Editor has filled out mail form or skipped mail
                 if ($send && !$email->hasErrors()) {
-                    // Update book for review
                     $dueWeeks = $bfrPlugin->getSetting($journalId, 'dueWeeks');
                     $dueDateTimestamp = time() + ($dueWeeks * 7 * 24 * 60 * 60);
                     $dueDate = date('Y-m-d H:i:s', $dueDateTimestamp);
@@ -731,38 +699,36 @@ class BooksForReviewEditorHandler extends Handler {
                     $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_BOOK_AUTHOR_ASSIGNED);
 
                     $request->redirect(null, 'editor', 'booksForReview', $returnPage);
-
-                // Display mail form for editor
                 } else {
-                    // [SECURITY FIX] Amankan flag boolean 'continued'
-                    if (!(int) trim($request->getUserVar('continued'))) {
+                    if (!(bool) $request->getUserVar('continued')) {
                         $dueWeeks = $bfrPlugin->getSetting($journalId, 'dueWeeks');
                         $dueDateTimestamp = time() + ($dueWeeks * 7 * 24 * 60 * 60);
 
                         if (empty($userMailingAddress)) {
                             $userMailingAddress = __('plugins.generic.booksForReview.editor.noMailingAddress');
                         } else {
+                            /** @var CountryDAO $countryDao */
                             $countryDao = DAORegistry::getDAO('CountryDAO');
                             $countries = $countryDao->getCountries();
-                            $userCountry = $countries[$userCountryCode];
+                            $userCountry = $countries[$userCountryCode] ?? '';
                             $userMailingAddress .= "\n" . $userCountry;
                         }
 
-                        $paramArray = array(
+                        $paramArray = [
                             'authorName' => strip_tags($userName),
                             'authorMailingAddress' => PKPString::html2text($userMailingAddress),
                             'bookForReviewTitle' => '"' . strip_tags($book->getLocalizedTitle()) . '"',
                             'bookForReviewDueDate' => date('l, F j, Y', $dueDateTimestamp),
                             'userProfileUrl' => $request->url(null, 'user', 'profile'),
-                            'submissionUrl' => $request->url(null, 'author', 'submit'),
+                            'submissionUrl' => $request->url(null, 'submission', 'submit'),
                             'editorialContactSignature' => PKPString::html2text($book->getEditorContactSignature())
-                        );
+                        ];
 
                         $email->addRecipient($userEmail, $userName);
                         $email->setFrom($book->getEditorEmail(), $book->getEditorFullName());
                         $email->assignParams($paramArray);
                     }
-                    $returnUrl = $request->url(null, 'editor', 'assignBookForReviewAuthor', $bookId, array('returnPage' => $returnPage, 'userId' => $userId));
+                    $returnUrl = $request->url(null, 'editor', 'assignBookForReviewAuthor', $bookId, ['returnPage' => $returnPage, 'userId' => $userId]);
                     $email->displayEditForm($returnUrl);
                 }
             }
@@ -772,22 +738,24 @@ class BooksForReviewEditorHandler extends Handler {
 
     /**
      * Deny a book for review request.
-     * [MODERNISASI] Hapus referensi &
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function denyBookForReviewAuthor($args = array(), $request) {
+    public function denyBookForReviewAuthor($args = [], $request) {
         $this->setupTemplate();
 
         if (empty($args)) {
             $request->redirect(null, 'editor');
         }
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
         
         $returnPage = $request->getUserVar('returnPage');
-
-        if ($returnPage != null) {
+        if ($returnPage !== null) {
             $validPages = $this->getValidReturnPages();
-            if (!in_array($returnPage, $validPages)) {
+            if (!in_array($returnPage, $validPages, true)) {
                 $returnPage = null;
             }
         }
@@ -795,21 +763,17 @@ class BooksForReviewEditorHandler extends Handler {
         $journal = $request->getJournal();
         $journalId = $journal->getId();
         $bookId = (int) $args[0];
+        
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
 
-        // Ensure book for review is for this journal
-        if ($bfrDao->getBookForReviewJournalId($bookId) == $journalId) {
+        if ($bfrDao->getBookForReviewJournalId($bookId) === $journalId) {
             import('classes.mail.MailTemplate');
             $email = new MailTemplate('BFR_BOOK_DENIED');
-            
-            // [SECURITY FIX] Amankan flag boolean 'send'
-            $send = (int) trim($request->getUserVar('send'));
+            $send = (bool) $request->getUserVar('send');
 
-            // Editor has filled out mail form or skipped mail
             if ($send && !$email->hasErrors()) {
-                // Update book for review
                 $book = $bfrDao->getBookForReview($bookId);
-
                 $book->setStatus(BFR_STATUS_AVAILABLE);
                 $book->setUserId(null);
                 $book->setDateRequested(null);
@@ -823,27 +787,24 @@ class BooksForReviewEditorHandler extends Handler {
                 $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_BOOK_AUTHOR_DENIED);
 
                 $request->redirect(null, 'editor', 'booksForReview', $returnPage);
-
-            // Display mail form for editor
             } else {
-                // [SECURITY FIX] Amankan flag boolean 'continued'
-                if (!(int) trim($request->getUserVar('continued'))) {
+                if (!(bool) $request->getUserVar('continued')) {
                     $book = $bfrDao->getBookForReview($bookId);
                     $userFullName = $book->getUserFullName();
                     $userEmail = $book->getUserEmail();
 
-                    $paramArray = array(
+                    $paramArray = [
                         'authorName' => strip_tags($userFullName),
                         'bookForReviewTitle' => '"' . strip_tags($book->getLocalizedTitle()) . '"',
-                        'submissionUrl' => $request->url(null, 'author', 'submit'),
+                        'submissionUrl' => $request->url(null, 'submission', 'submit'),
                         'editorialContactSignature' => PKPString::html2text($book->getEditorContactSignature())
-                    );
+                    ];
 
                     $email->addRecipient($userEmail, $userFullName);
                     $email->setFrom($book->getEditorEmail(), $book->getEditorFullName());
                     $email->assignParams($paramArray);
                 }
-                $returnUrl = $request->url(null, 'editor', 'denyBookForReviewAuthor', $bookId, array('returnPage' => $returnPage));
+                $returnUrl = $request->url(null, 'editor', 'denyBookForReviewAuthor', $bookId, ['returnPage' => $returnPage]);
                 $email->displayEditForm($returnUrl);
             }
         }
@@ -852,22 +813,24 @@ class BooksForReviewEditorHandler extends Handler {
 
     /**
      * Mark a book for review as mailed.
-     * [MODERNISASI] Hapus referensi &
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function notifyBookForReviewMailed($args = array(), $request) {
+    public function notifyBookForReviewMailed($args = [], $request) {
         $this->setupTemplate();
 
         if (empty($args)) {
             $request->redirect(null, 'editor');
         }
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
         
         $returnPage = $request->getUserVar('returnPage');
-
-        if ($returnPage != null) {
+        if ($returnPage !== null) {
             $validPages = $this->getValidReturnPages();
-            if (!in_array($returnPage, $validPages)) {
+            if (!in_array($returnPage, $validPages, true)) {
                 $returnPage = null;
             }
         }
@@ -875,21 +838,17 @@ class BooksForReviewEditorHandler extends Handler {
         $journal = $request->getJournal();
         $journalId = $journal->getId();
         $bookId = (int) $args[0];
+        
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
 
-        // Ensure book for review is for this journal
-        if ($bfrDao->getBookForReviewJournalId($bookId) == $journalId) {
+        if ($bfrDao->getBookForReviewJournalId($bookId) === $journalId) {
             import('classes.mail.MailTemplate');
             $email = new MailTemplate('BFR_BOOK_MAILED');
-            
-            // [SECURITY FIX] Amankan flag boolean 'send'
-            $send = (int) trim($request->getUserVar('send'));
+            $send = (bool) $request->getUserVar('send');
 
-            // Editor has filled out mail form or skipped mail
             if ($send && !$email->hasErrors()) {
-                // Update book for review
                 $book = $bfrDao->getBookForReview($bookId);
-
                 $book->setStatus(BFR_STATUS_MAILED);
                 $book->setDateMailed(date('Y-m-d H:i:s', time()));
                 $bfrDao->updateObject($book);
@@ -902,13 +861,9 @@ class BooksForReviewEditorHandler extends Handler {
                 $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_BOOK_MAILED);
 
                 $request->redirect(null, 'editor', 'booksForReview', $returnPage);
-
-            // Display mail form for editor
             } else {
-                // [SECURITY FIX] Amankan flag boolean 'continued'
-                if (!(int) trim($request->getUserVar('continued'))) {
+                if (!(bool) $request->getUserVar('continued')) {
                     $book = $bfrDao->getBookForReview($bookId);
-
                     $userFullName = $book->getUserFullName();
                     $userEmail = $book->getUserEmail();
                     $userMailingAddress = $book->getUserMailingAddress();
@@ -917,25 +872,26 @@ class BooksForReviewEditorHandler extends Handler {
                     if (empty($userMailingAddress)) {
                         $userMailingAddress = __('plugins.generic.booksForReview.editor.noMailingAddress');
                     } else {
+                        /** @var CountryDAO $countryDao */
                         $countryDao = DAORegistry::getDAO('CountryDAO');
                         $countries = $countryDao->getCountries();
-                        $userCountry = $countries[$userCountryCode];
+                        $userCountry = $countries[$userCountryCode] ?? '';
                         $userMailingAddress .= "\n" . $userCountry;
                     }
 
-                    $paramArray = array(
+                    $paramArray = [
                         'authorName' => strip_tags($userFullName),
                         'authorMailingAddress' => PKPString::html2text($userMailingAddress),
                         'bookForReviewTitle' => '"' . strip_tags($book->getLocalizedTitle()) . '"',
-                        'submissionUrl' => $request->url(null, 'author', 'submit'),
+                        'submissionUrl' => $request->url(null, 'submission', 'submit'),
                         'editorialContactSignature' => PKPString::html2text($book->getEditorContactSignature())
-                    );
+                    ];
 
                     $email->addRecipient($userEmail, $userFullName);
                     $email->setFrom($book->getEditorEmail(), $book->getEditorFullName());
                     $email->assignParams($paramArray);
                 }
-                $returnUrl = $request->url(null, 'editor', 'notifyBookForReviewMailed', $bookId, array('returnPage' => $returnPage));
+                $returnUrl = $request->url(null, 'editor', 'notifyBookForReviewMailed', $bookId, ['returnPage' => $returnPage]);
                 $email->displayEditForm($returnUrl);
             }
         }
@@ -944,22 +900,24 @@ class BooksForReviewEditorHandler extends Handler {
 
     /**
      * Remove book reviewer and reset book for review.
-     * [MODERNISASI] Hapus referensi &
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function removeBookForReviewAuthor($args = array(), $request) {
+    public function removeBookForReviewAuthor($args = [], $request) {
         $this->setupTemplate();
 
         if (empty($args)) {
             $request->redirect(null, 'editor');
         }
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
         
         $returnPage = $request->getUserVar('returnPage');
-
-        if ($returnPage != null) {
+        if ($returnPage !== null) {
             $validPages = $this->getValidReturnPages();
-            if (!in_array($returnPage, $validPages)) {
+            if (!in_array($returnPage, $validPages, true)) {
                 $returnPage = null;
             }
         }
@@ -967,21 +925,17 @@ class BooksForReviewEditorHandler extends Handler {
         $journal = $request->getJournal();
         $journalId = $journal->getId();
         $bookId = (int) $args[0];
+        
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
 
-        // Ensure book for review is for this journal
-        if ($bfrDao->getBookForReviewJournalId($bookId) == $journalId) {
+        if ($bfrDao->getBookForReviewJournalId($bookId) === $journalId) {
             import('classes.mail.MailTemplate');
             $email = new MailTemplate('BFR_REVIEWER_REMOVED');
-            
-            // [SECURITY FIX] Amankan flag boolean 'send'
-            $send = (int) trim($request->getUserVar('send'));
+            $send = (bool) $request->getUserVar('send');
 
-            // Editor has filled out mail form or skipped mail
             if ($send && !$email->hasErrors()) {
-                // Update book for review
                 $book = $bfrDao->getBookForReview($bookId);
-
                 $book->setStatus(BFR_STATUS_AVAILABLE);
                 $book->setUserId(null);
                 $book->setDateRequested(null);
@@ -1000,27 +954,23 @@ class BooksForReviewEditorHandler extends Handler {
                 $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_BOOK_AUTHOR_REMOVED);
 
                 $request->redirect(null, 'editor', 'booksForReview', $returnPage);
-
-            // Display mail form for editor
             } else {
-                // [SECURITY FIX] Amankan flag boolean 'continued'
-                if (!(int) trim($request->getUserVar('continued'))) {
+                if (!(bool) $request->getUserVar('continued')) {
                     $book = $bfrDao->getBookForReview($bookId);
-
                     $userFullName = $book->getUserFullName();
                     $userEmail = $book->getUserEmail();
 
-                    $paramArray = array(
+                    $paramArray = [
                         'authorName' => strip_tags($userFullName),
                         'bookForReviewTitle' => '"' . strip_tags($book->getLocalizedTitle()) . '"',
                         'editorialContactSignature' => PKPString::html2text($book->getEditorContactSignature())
-                    );
+                    ];
 
                     $email->addRecipient($userEmail, $userFullName);
                     $email->setFrom($book->getEditorEmail(), $book->getEditorFullName());
                     $email->assignParams($paramArray);
                 }
-                $returnUrl = $request->url(null, 'editor', 'removeBookForReviewAuthor', $bookId, array('returnPage' => $returnPage));
+                $returnUrl = $request->url(null, 'editor', 'removeBookForReviewAuthor', $bookId, ['returnPage' => $returnPage]);
                 $email->displayEditForm($returnUrl);
             }
         }
@@ -1029,9 +979,11 @@ class BooksForReviewEditorHandler extends Handler {
 
     /**
      * Remove book for review cover page image.
-     * [MODERNISASI] Hapus referensi &
+     * @param array $args
+     * @param PKPRequest $request
+     * @return void
      */
-    public function removeBookForReviewCoverPage($args = array(), $request) {
+    public function removeBookForReviewCoverPage($args = [], $request) {
         $this->setupTemplate();
 
         if (empty($args) || count($args) < 2) {
@@ -1045,13 +997,13 @@ class BooksForReviewEditorHandler extends Handler {
             $request->redirect(null, 'editor');
         }
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
         
         $returnPage = $request->getUserVar('returnPage');
-
-        if ($returnPage != null) {
+        if ($returnPage !== null) {
             $validPages = $this->getValidReturnPages();
-            if (!in_array($returnPage, $validPages)) {
+            if (!in_array($returnPage, $validPages, true)) {
                 $returnPage = null;
             }
         }
@@ -1059,89 +1011,88 @@ class BooksForReviewEditorHandler extends Handler {
         $journal = $request->getJournal();
         $journalId = $journal->getId();
 
+        /** @var BookForReviewDAO $bfrDao */
         $bfrDao = DAORegistry::getDAO('BookForReviewDAO');
 
-        // Ensure book for review is for this journal
-        if ($bfrDao->getBookForReviewJournalId($bookId) == $journalId) {
+        if ($bfrDao->getBookForReviewJournalId($bookId) === $journalId) {
             $bfrDao->removeCoverPage($bookId, $formLocale);
-            $request->redirect(null, 'editor', 'editBookForReview', $bookId, array('returnPage' => $returnPage));
+            $request->redirect(null, 'editor', 'editBookForReview', $bookId, ['returnPage' => $returnPage]);
         }
         $request->redirect(null, 'editor', 'booksForReview', $returnPage);
     }
 
     /**
-     * Return valid landing/return pages
-     * [MODERNISASI] Hapus referensi &
+     * Return valid landing/return pages.
+     * @return array
      */
     public function getValidReturnPages() {
-        $validPages = array(
-            'available',
-            'requested',
-            'assigned',
-            'mailed',
-            'submitted'
-        );
-        return $validPages;
+        return ['available', 'requested', 'assigned', 'mailed', 'submitted'];
     }
 
     /**
      * Ensure that we have a journal, plugin is enabled, and user is editor.
-     * [MODERNISASI] Perbaiki signature sesuai parent (tanpa &)
+     * @param PKPRequest $request
+     * @param array $args
+     * @param array $roleAssignments
+     * @return bool
      */
-    public function authorize($request, &$args, $roleAssignments) {
+    public function authorize($request, $args, $roleAssignments) {
         $journal = $request->getJournal();
-        if (!isset($journal)) return false;
+        if ($journal === null) {
+            return false;
+        }
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
+        if ($bfrPlugin === null || !$bfrPlugin->getEnabled()) {
+            return false;
+        }
 
-        if (!isset($bfrPlugin)) return false;
-
-        if (!$bfrPlugin->getEnabled()) return false;
-
-        if (!Validation::isEditor($journal->getId())) Validation::redirectLogin();;
+        if (!Validation::isEditor($journal->getId())) {
+            Validation::redirectLogin();
+        }
 
         return parent::authorize($request, $args, $roleAssignments);
     }
 
     /**
      * Setup common template variables.
-     * @param $subclass boolean set to true if caller is below this handler in the hierarchy
+     * @param bool $subclass
+     * @return void
      */
     public function setupTemplate($subclass = false) {
+        $request = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager();
-        $pageCrumbs = array(
-            array(
-                Request::url(null, 'user'),
-                'navigation.user'
-            ),
-            array(
-                Request::url(null, 'editor'),
-                'user.role.editor'
-            )
-        );
+        
+        $pageCrumbs = [
+            [$request->url(null, 'user'), 'navigation.user'],
+            [$request->url(null, 'editor'), 'user.role.editor']
+        ];
 
         if ($subclass) {
-            // [SECURITY FIX] Amankan 'returnPage'
-            $returnPage = trim(Request::getUserVar('returnPage'));
+            $returnPage = trim((string) $request->getUserVar('returnPage'));
     
             if (!empty($returnPage)) { 
                 $validPages = $this->getValidReturnPages();
-                if (!in_array($returnPage, $validPages)) {
+                if (!in_array($returnPage, $validPages, true)) {
                     $returnPage = null;
                 }
             }
 
-            $pageCrumbs[] = array(
-                Request::url(null, 'editor', 'booksForReview', $returnPage),
-                AppLocale::Translate('plugins.generic.booksForReview.displayName'),
+            $pageCrumbs[] = [
+                $request->url(null, 'editor', 'booksForReview', $returnPage),
+                __('plugins.generic.booksForReview.displayName'),
                 true
-            );
+            ];
         }
         $templateMgr->assign('pageHierarchy', $pageCrumbs);
 
+        /** @var BooksForReviewPlugin $bfrPlugin */
         $bfrPlugin = PluginRegistry::getPlugin('generic', BOOKS_FOR_REVIEW_PLUGIN_NAME);
-        $templateMgr->addStyleSheet(Request::getBaseUrl() . '/' . $bfrPlugin->getStyleSheet());
+        if ($bfrPlugin) {
+            $templateMgr->addStyleSheet($request->getBaseUrl() . '/' . $bfrPlugin->getStyleSheet());
+        }
     }
-}
 
+}
 ?>

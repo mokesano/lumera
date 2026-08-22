@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html lang="{$currentLocale|substr:0:2}" xml:lang="{$currentLocale|substr:0:2}">
 {**
- * header.tpl
+ * @file templates/common/header-volumes.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2000-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
- * Common site header.
+ * Volumes header.
  *}
 {strip}
-{if !$pageTitleTranslated}
-    {translate|assign:"pageTitleTranslated" key=$pageTitle}
-    {* Override untuk key default OJS *}
-    {if $pageTitle == "common.openJournalSystems"}
-        {assign var="pageTitleTranslated" value="No Current Issue"}
-    {/if}
-{/if}
-{if $pageCrumbTitle}
-    {translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
-{elseif !$pageCrumbTitleTranslated}
-    {assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
-{/if}
+	{if !$pageTitleTranslated}
+		{translate|assign:"pageTitleTranslated" key=$pageTitle}
+		{* Override untuk key default OJS *}
+		{if $pageTitle == "common.openJournalSystems"}
+			{assign var="pageTitleTranslated" value="No Current Issue"}
+		{/if}
+	{/if}
+	{if $pageCrumbTitle}
+		{translate|assign:"pageCrumbTitleTranslated" key=$pageCrumbTitle}
+	{elseif !$pageCrumbTitleTranslated}
+		{assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+	{/if}
 {/strip}
 <head>
     <title>{$pageTitleTranslated} - {$currentJournal->getLocalizedTitle()|strip_tags|escape} | Sangia Publishing</title>
@@ -32,7 +32,7 @@
     {$metaCustomHeaders}
     
 	{if $displayFavicon}
-	<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
+		<link rel="icon" href="{$faviconDir}/{$displayFavicon.uploadName|escape:"url"}" type="{$displayFavicon.mimeType|escape}" />
 	{/if}
 	
 	{include file="common/jqueryScripts.tpl"}
@@ -101,14 +101,12 @@
 		</script>
 	{/if}{* hasSystemNotifications *}
 
-	<link rel="stylesheet" href="{$baseUrl}/assets/static/styles/wizdam-mosaic-v1-branded.css" type="text/css" />
+	<link rel="stylesheet" href="{$baseUrl}/assets/static/styles/Lumera_mosaic--branded.css" type="text/css" />
 
 	{include file="common/commonCSS.tpl"}
 	
-	{foreach from=$stylesheets name="testUrl" item=cssUrl}
-		{if $cssUrl == "$baseUrl/styles/ojs.css"}
-			<link rel="stylesheet" href="{$cssUrl}" type="text/css" />
-		{/if}
+	{foreach from=$stylesheets item=cssUrl}
+		<link rel="stylesheet" href="{$cssUrl}" type="text/css" />
 	{/foreach}
 
 	{$additionalHeadData}
@@ -146,4 +144,3 @@
 </div>
 
 <div class="column medium-12 cleared container-type-issue-grid" data-container-type="issue-grid" data-track-component="issue grid" >
-

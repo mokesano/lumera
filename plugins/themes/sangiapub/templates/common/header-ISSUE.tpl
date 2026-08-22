@@ -112,14 +112,12 @@
 		</script>
 	{/if}{* hasSystemNotifications *}
 
-	<link rel="stylesheet" href="{$baseUrl}/assets/static/styles/wizdam-mosaic-v1-branded.css" type="text/css" />
+	<link rel="stylesheet" href="{$baseUrl}/assets/static/styles/Lumera_mosaic--branded.css" type="text/css" />
 	
 	{include file="common/commonCSS.tpl"}
 
-	{foreach from=$stylesheets name="testUrl" item=cssUrl}
-		{if $cssUrl == "$baseUrl/styles/ojs.css"}
-			<link rel="stylesheet" href="{$cssUrl}" type="text/css" />
-		{/if}
+	{foreach from=$stylesheets item=cssUrl}
+		<link rel="stylesheet" href="{$cssUrl}" type="text/css" />
 	{/foreach}
 
 	{$additionalHeadData}

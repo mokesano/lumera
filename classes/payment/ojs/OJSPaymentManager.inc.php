@@ -166,7 +166,7 @@ class OJSPaymentManager extends PaymentManager {
                 $authorSubmissionDao = DAORegistry::getDAO('AuthorSubmissionDAO');
                 $authorSubmission = $authorSubmissionDao->getAuthorSubmission($assocId);
                 if ($authorSubmission->getSubmissionProgress()!=0) {
-                    $payment->setRequestUrl($this->request->url(null, 'author', 'submit', $authorSubmission->getSubmissionProgress(), ['articleId' => $assocId]));
+                    $payment->setRequestUrl($this->request->url(null, 'submission', 'submit', $authorSubmission->getSubmissionProgress(), ['articleId' => $assocId]));
                 } else {
                     $payment->setRequestUrl($this->request->url(null, 'author'));
                 }

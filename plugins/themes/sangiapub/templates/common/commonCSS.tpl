@@ -8,7 +8,7 @@
  * Common CSS styles.
  *
  *}
-<link rel="stylesheet" href="{$baseUrl}/assets/static/branded/wizdam_frontend_v2.branded.css" type="text/css" />
+<link rel="stylesheet" href="{$baseUrl}/assets/static/branded/Lumera_frontend--branded.css" type="text/css" />
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" />
 <link rel="stylesheet" href="{$baseUrl}/assets/static/styles/font.css" type="text/css" />

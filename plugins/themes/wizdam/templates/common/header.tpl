@@ -219,7 +219,7 @@
 			<aside class="column medium-3">
 				<section class="box">
 					<section><h4 class="headline-524909129">Want to publish with us? Submit your Manuscript online.</h4></section>
-					<a href="{url page="author" op="submit"}" target="_blank" data-track="click" class="button-base-2906877647">
+					<a href="{url page="submission" op="submit"}" target="_blank" data-track="click" class="button-base-2906877647">
 						<span class="button-label-1281676810">Submit paper</span>
 						<svg width="16" height="16" viewBox="0 0 16 16" class="button-icon-1969128361"><path fill="inherit" fill-rule="evenodd" d="M13.161 12.387c.428 0 .774.347.774.774v1.033c0 .996-.81 1.806-1.806 1.806H1.677A1.68 1.68 0 0 1 0 14.323V3.87c0-.996.81-1.806 1.806-1.806H2.84a.774.774 0 0 1 0 1.548H1.806a.258.258 0 0 0-.258.258v10.452a.13.13 0 0 0 .13.129h10.451a.258.258 0 0 0 .258-.258V13.16c0-.427.347-.774.774-.774zM14.323 0A1.68 1.68 0 0 1 16 1.677V8a.774.774 0 0 1-1.548 0V2.644l-9.002 9a.768.768 0 0 1-.547.227.773.773 0 0 1-.547-1.321l9-9.002H8A.774.774 0 0 1 8 0h6.323z"></path></svg>
 					</a>

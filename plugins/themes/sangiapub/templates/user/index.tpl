@@ -296,7 +296,7 @@
                                 <a href="{url journal=$journalPath path="completed" page="author"}">{$authorSubmissionsCount[1]} {translate key="common.queue.short.completed"}</a>
                             {else}<span class="disabled">0 {translate key="common.queue.short.completed"}</span>{/if}
                         </td>
-                        <td align="right">[<a href="{url journal=$journalPath page="author" op="submit"}">{translate key="author.submit"}</a>]</td>
+                        <td align="right">[<a href="{url journal=$journalPath page="submission" op="submit"}">{translate key="author.submit"}</a>]</td>
                     </tr>
                 {/if}
                 {if $isValid.Reviewer.$journalId}
@@ -334,7 +334,7 @@
     	<p>{translate key="user.noRoles.noRolesForJournal"}</p>
     	<ul class="account-container__grid">
     	    {if $allowRegAuthor}
-    	    {url|assign:"submitUrl" page="author" op="submit"}
+    	    {url|assign:"submitUrl" page="submission" op="submit"}
             <li><article class="eds-c-card-composable eds-c-card-composable--faux-link">
                 <div class="eds-c-card-composable__container eds-c-card-composable__container--with-sidebar">
                     <div class="eds-c-card-composable__body">
@@ -365,7 +365,7 @@
             {/if}{* $allowRegAuthor *}
     		<li class="u-hide">
     			{if $allowRegAuthor}
-    				{url|assign:"submitUrl" page="author" op="submit"}
+    				{url|assign:"submitUrl" page="submission" op="submit"}
     				<a href="{url op="become" path="author" source=$submitUrl}">{translate key="user.noRoles.submitArticle"}</a>
     			{else}{* $allowRegAuthor *}
     				{translate key="user.noRoles.submitArticleRegClosed"}
@@ -899,7 +899,7 @@
             <div class="eds-c-card-composable__container eds-c-card-composable__container--with-sidebar">
                 <div class="eds-c-card-composable__body">
                     <div class="eds-c-card-composable__content">
-                        <h3 class="eds-c-card-composable__title"><a data-track="click_myprofile_homepage" data-track-context="my-profile_homepage" data-track-label="Your work" data-track-value="Peer review" href="{url journal=$journalPath page="author" op="submit"}">{translate key="author.submit"}</a>
+                        <h3 class="eds-c-card-composable__title"><a data-track="click_myprofile_homepage" data-track-context="my-profile_homepage" data-track-label="Your work" data-track-value="Peer review" href="{url journal=$journalPath page="submission" op="submit"}">{translate key="author.submit"}</a>
                         </h3>
                         <p class="eds-c-card-composable__summary">Manage assigned manuscript reviews and submit your expert evaluations and recommendations.</p>
                     </div>

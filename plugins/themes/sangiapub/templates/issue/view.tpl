@@ -151,7 +151,7 @@
 	        </div>
 	        <div class="c-empty-state-card__text">
 	            <h3 class="c-empty-state-card__text--title headline-5">{translate key="current.noCurrentIssueDesc"}</h3>
-	            <div class="c-empty-state-card__text--description">We are currently in the early stages of our publication process. Please visit our <a href="{url page="about" op="editorialPolicies" anchor="focusAndScope"}">About</a> page to learn more about our scope and objectives, or consider <a href="{url page="author" op="submit"}">submitting your manuscript</a> to contribute to our upcoming inaugural issue.</div>
+	            <div class="c-empty-state-card__text--description">We are currently in the early stages of our publication process. Please visit our <a href="{url page="about" op="editorialPolicies" anchor="focusAndScope"}">About</a> page to learn more about our scope and objectives, or consider <a href="{url page="submission" op="submit"}">submitting your manuscript</a> to contribute to our upcoming inaugural issue.</div>
 	        </div>
 	    </div>
 	</div>

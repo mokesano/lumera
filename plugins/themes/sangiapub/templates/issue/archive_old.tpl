@@ -64,7 +64,7 @@
         </div>
         <div class="c-empty-state-card__text">
             <h3 class="c-empty-state-card__text--title headline-5">{translate key="current.noCurrentIssueDesc"}</h3>
-            <div class="c-empty-state-card__text--description">We are currently preparing our inaugural content. Please check back soon for our upcoming publications, or consider <a href="{url page="author" op="submit"}">submitting your manuscript</a> to be part of our first issue. Visit our <a href="{url page="about" op="submissions"}">Submission Guidelines</a> for more information.</div>
+            <div class="c-empty-state-card__text--description">We are currently preparing our inaugural content. Please check back soon for our upcoming publications, or consider <a href="{url page="submission" op="submit"}">submitting your manuscript</a> to be part of our first issue. Visit our <a href="{url page="about" op="submissions"}">Submission Guidelines</a> for more information.</div>
         </div>
     </div>
 </div>

@@ -1445,14 +1445,14 @@ class ObjectsForReviewEditorHandler extends Handler {
                         'objectForReviewTitle' => '"' . strip_tags((string) $objectForReview->getTitle()) . '"',
                         'objectForReviewDueDate' => date('l, F j, Y', $dueDateTimestamp),
                         'userProfileUrl' => $request->url(null, 'user', 'profile'),
-                        'submissionUrl' => $request->url(null, 'author', 'submit'),
+                        'submissionUrl' => $request->url(null, 'submission', 'submit'),
                         'editorialContactSignature' => PKPString::html2text($editorContactSignature)
                     ];
                 } elseif ($action === 'OFR_OBJECT_DENIED') {
                     $paramArray = [
                         'authorName' => strip_tags($userFullName),
                         'objectForReviewTitle' => '"' . strip_tags((string) $objectForReview->getTitle()) . '"',
-                        'submissionUrl' => $request->url(null, 'author', 'submit'),
+                        'submissionUrl' => $request->url(null, 'submission', 'submit'),
                         'editorialContactSignature' => PKPString::html2text($editorContactSignature)
                     ];
                 } elseif ($action === 'OFR_OBJECT_MAILED') {
@@ -1460,7 +1460,7 @@ class ObjectsForReviewEditorHandler extends Handler {
                         'authorName' => strip_tags($userFullName),
                         'authorMailingAddress' => PKPString::html2text($userMailingAddress),
                         'objectForReviewTitle' => '"' . strip_tags((string) $objectForReview->getTitle()) . '"',
-                        'submissionUrl' => $request->url(null, 'author', 'submit'),
+                        'submissionUrl' => $request->url(null, 'submission', 'submit'),
                         'editorialContactSignature' => PKPString::html2text($editorContactSignature)
                     ];
                 } elseif ($action === 'OFR_REVIEWER_REMOVED') {

@@ -15051,11 +15051,11 @@ input::-moz-focus-inner {
 }
 @font-face {
  font-family:sn_pm_icons;
- src:url('/fonts/sn/sn_pm_icons.eot');
- src:url('/fonts/sn/sn_pm_icons.eot') format('embedded-opentype'),
- url('/fonts/sn/sn_pm_icons.woff') format('woff'),
- url('/fonts/sn/sn_pm_icons.svg') format('svg'),
- url('/fonts/sn/sn_pm_icons.ttf') format('truetype');
+ src:url('/fonts/sn/sn_pm_icons.eot?1474367378');
+ src:url('/fonts/sn/sn_pm_icons.eot?&1474367378#iefix') format('embedded-opentype'),
+ url('/fonts/sn/sn_pm_icons.woff?1474367378') format('woff'),
+ url('/fonts/sn/sn_pm_icons.svg?1474367378') format('svg'),
+ url('/fonts/sn/sn_pm_icons.ttf?1474367378') format('truetype');
  font-weight:400
 }
 body.show-menu #header .panel-menu,
@@ -29195,7 +29195,7 @@ details[open] .details-marker-1174223415 {
   margin-bottom:4px!important;
   color:#333;
   line-height:1.5; 
-  text-align: initial;
+  text-align: inherit;
 }
 a:focus,
 button:focus,

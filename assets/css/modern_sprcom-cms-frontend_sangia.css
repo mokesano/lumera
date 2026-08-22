@@ -1,5 +1,11 @@
 @charset "UTF-8";
-
+/**
+ * @file public/assets/css/Lumera_Sangia-Frontend--Branded.css
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Codecanau
+ * Distributed under the GNU GPL v3.
+ */
 html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, img, ins, kbd, q, s, samp, tt, var, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {
   border: 0;
   font-size: 100%;
@@ -35,6 +41,7 @@ html {
   overflow-y: scroll;
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /*
@@ -2051,6 +2058,7 @@ body.show-menu.show-search #header .panel-menu {
 
   .ie9 .btn:active {
     -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(direction=0,color=#000000,strength=5);";
+    filter: "progid:DXImageTransform.Microsoft.Shadow(direction=0,color=#000000,strength=5);";
   }
 
   button.btn {
@@ -2241,6 +2249,7 @@ body.show-menu.show-search #header .panel-menu {
 
   .ie9 .btn:active {
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(enabled=false)";
+    filter: "progid:DXImageTransform.Microsoft.gradient(enabled=false)";
   }
 
   button.btn {
