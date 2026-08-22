@@ -1,51 +1,91 @@
+/**
+ * @file public/assets/js/priceupdate.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ *
+ * @brief Versi dengan keamanan yang ditingkatkan.
+ * 
+ * @author Rochmady
+ * @version v0.0.7
+ */
 document.addEventListener("DOMContentLoaded", function() {
+
     /**
      * Fetches the user's IP address using the ipify API.
      * @returns {Promise<string>} A promise that resolves to the user's IP address.
      */
     function getUserIP() {
-        return $.getJSON('https://api.ipify.org?format=json').then(function(data) {
-            return data.ip;
-        });
+        return fetch('https://api.ipify.org?format=json')
+            .then(response => {
+                if (!response.ok) throw new Error('IP API error: ' + response.status);
+                return response.json();
+            })
+            .then(data => data.ip);
     }
 
     /**
-     * Fetches geographic information based on the user's IP address using the ipinfo API.
+     * Fetches geographic information based on the user's IP.
      * @param {string} userIP - The user's IP address.
      * @returns {Promise<Object>} A promise that resolves to the geographic information.
      */
     function getGeolocationData(userIP) {
-        return $.getJSON('https://ipinfo.io/' + userIP + '/json');
+        return fetch('https://ipinfo.io/' + userIP + '/json')
+            .then(response => {
+                if (!response.ok) throw new Error('Geo API error: ' + response.status);
+                return response.json();
+            });
     }
 
     /**
-     * Fetches country and currency information based on the country code using the restcountries API.
+     * Fetches country data using fetch (supports CORS).
      * @param {string} countryCode - The country code.
      * @returns {Promise<Object>} A promise that resolves to the country and currency information.
      */
     function getCountryData(countryCode) {
-        return $.getJSON('https://restcountries.com/v3.1/alpha/' + countryCode);
+        return fetch('https://restcountries.com/v3.1/alpha/' + countryCode)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Country API error: ' + response.status + ' - ' + response.statusText);
+                }
+                return response.json();
+            });
     }
 
     /**
-     * Fetches exchange rates with respect to IDR using the exchangerate-api.
+     * Fetches exchange rates with IDR as base (using exchangerate.host which supports CORS).
      * @returns {Promise<Object>} A promise that resolves to the exchange rate data.
      */
     function getExchangeRates() {
-        return $.getJSON('https://api.exchangerate-api.com/v4/latest/IDR');
+        return fetch('https://api.exchangerate.host/latest?base=IDR')
+            .then(response => {
+                if (!response.ok) throw new Error('Exchange rate API error: ' + response.status);
+                return response.json();
+            })
+            .then(data => data.rates);
     }
 
     /**
-     * Extracts the price value from a text string.
+     * Extracts numeric price from a string (handles thousands separators and comma decimal).
      * @param {string} priceText - The text containing the price.
      * @returns {number} The numeric value of the price.
      */
     function extractPrice(priceText) {
-        return parseFloat(priceText.replace(/[^0-9,-]+/g, "").replace(",", "."));
+        // Remove non-numeric except comma and period
+        let cleaned = priceText.replace(/[^0-9,.]/g, '');
+        // If comma is used as decimal (e.g., "1.234,56"), replace comma with period and remove dots
+        if (cleaned.includes(',') && cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.')) {
+            cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+        } else {
+            // Otherwise just remove commas (thousands separators)
+            cleaned = cleaned.replace(/,/g, '');
+        }
+        return parseFloat(cleaned) || 0;
     }
 
     /**
-     * Formats a number as a string with commas as thousand separators.
+     * Formats a number with thousand separators and two decimals.
      * @param {number} number - The number to format.
      * @returns {string} The formatted number.
      */
@@ -53,39 +93,51 @@ document.addEventListener("DOMContentLoaded", function() {
         return number.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
     }
 
-    // Main function to update price and country information
-    getUserIP().then(function(userIP) {
-        $('#diagnostic-ip').text(userIP);
+    // Main flow
+    getUserIP()
+        .then(userIP => {
+            $('#diagnostic-ip').text(userIP);
+            return getGeolocationData(userIP);
+        })
+        .then(ipData => {
+            const userCountry = ipData.country;
+            // Fetch both country and exchange rate data in parallel
+            return Promise.all([
+                getCountryData(userCountry),
+                getExchangeRates()
+            ]);
+        })
+        .then(([countryData, rates]) => {
+            // countryData is the array from restcountries
+            const countryInfo = countryData[0];
+            const countryName = countryInfo.name.common;
+            // Safely get currency code
+            const currencies = countryInfo.currencies;
+            let currencyCode = currencies ? Object.keys(currencies)[0] : 'IDR';
+            // If currencyCode is undefined or not in rates, fallback to IDR
+            if (!currencyCode || !rates[currencyCode]) {
+                console.warn('Currency ' + currencyCode + ' not found, using IDR');
+                currencyCode = 'IDR';
+            }
 
-        return getGeolocationData(userIP);
-    }).then(function(ipData) {
-        var userCountry = ipData.country;
+            // Update country name
+            $('.price-table-small-print-2284778856').text('price for ' + countryName + ' (gross)');
 
-        return $.when(
-            getCountryData(userCountry),
-            getExchangeRates()
-        );
-    }).then(function(countryData, rateData) {
-        var countryInfo = countryData[0][0];
-        var exchangeRateData = rateData[0];
-        var countryName = countryInfo.name.common;
-        var currencyCode = Object.keys(countryInfo.currencies)[0];
+            // Extract price in IDR
+            const priceText = $('.price-cell-2689446056').text().trim();
+            const priceInIDR = extractPrice(priceText);
+            const conversionRate = rates[currencyCode] || 1;
+            const priceInLocalCurrency = priceInIDR * conversionRate;
 
-        // Update country name in HTML
-        $('.price-table-small-print-2284778856').text('price for ' + countryName + ' (gross)');
-
-        // Extract and convert price
-        var priceText = $('.price-cell-2689446056').text().trim();
-        var priceInIDR = extractPrice(priceText);
-        var conversionRate = exchangeRateData.rates[currencyCode];
-        var priceInLocalCurrency = priceInIDR * conversionRate;
-
-        // Format and update price and currency code in HTML
-        $('.price-cell-2689446056').text(currencyCode + ' ' + formatPrice(priceInLocalCurrency));
-
-        // Add "update" class to indicate successful update
-        $('.price-table-2827577461').addClass('update');
-    }).catch(function(error) {
-        console.error('Error:', error);
-    });
+            // Update price display
+            $('.price-cell-2689446056').text(currencyCode + ' ' + formatPrice(priceInLocalCurrency));
+            $('.price-table-2827577461').addClass('update');
+        })
+        .catch(error => {
+            // Log detailed error
+            console.error('Error in price update:', error.message);
+            console.error('Stack:', error.stack);
+            // Optionally show a user-friendly message
+            $('.price-table-2827577461').addClass('error');
+        });
 });
