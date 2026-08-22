@@ -95,6 +95,7 @@ class TinyMCEPlugin extends GenericPlugin {
                 $fields[] = 'publisherHistory';
                 $fields[] = 'publisherLeaderships';
                 $fields[] = 'publisherAwards';
+                $fields[] = 'crossmarkPolicyText';
                 break;
                 
             case 'admin/settings':

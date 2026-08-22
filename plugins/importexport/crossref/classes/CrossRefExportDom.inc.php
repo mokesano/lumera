@@ -359,8 +359,22 @@ class CrossRefExportDom extends DOIExportDom {
         XMLCustomWriter::setAttribute($journalArticleNode, 'metadata_distribution_opts', 'any');
 
         /* Titles */
+        // [WIZDAM BUGFIX] SEBELUMNYA judul dikirim APA ADANYA (termasuk
+        // markup HTML mentah seperti <i>...</i> untuk nama spesies latin,
+        // umum di judul artikel biologi/kelautan) ke createChildWithText()
+        // -- yang membuatnya jadi SATU text node polos. Saat diserialisasi,
+        // DOMDocument otomatis meng-escape karakter < dan > demi keamanan
+        // (perilaku XML yang benar untuk TEXT NODE) -- tapi hasilnya
+        // <i>Lysiosquillina maculata</i> tampil sebagai TEKS LITERAL
+        // "&lt;i&gt;Lysiosquillina maculata&lt;/i&gt;", bukan miring.
+        // Diperbaiki lewat _appendFaceMarkup() -- mengonversi markup AMAN
+        // (i/b/sub/sup, sesuai "face markup" yang didukung skema Crossref)
+        // jadi ELEMEN XML SUNGGUHAN (mixed content), bukan teks polos yang
+        // di-escape ATAU dihapus begitu saja.
         $titlesNode = XMLCustomWriter::createElement($doc, 'titles');
-        XMLCustomWriter::createChildWithText($doc, $titlesNode, 'title', (string) $article->getTitle($article->getLocale()));
+        $titleNode = XMLCustomWriter::createElement($doc, 'title');
+        $this->_appendFaceMarkup($doc, $titleNode, (string) $article->getTitle($article->getLocale()));
+        XMLCustomWriter::appendChild($titlesNode, $titleNode);
         XMLCustomWriter::appendChild($journalArticleNode, $titlesNode);
 
         /* AuthorList */
@@ -377,10 +391,16 @@ class CrossRefExportDom extends DOIExportDom {
         XMLCustomWriter::appendChild($journalArticleNode, $contributorsNode);
 
         /* Abstracts */
+        // [WIZDAM] Sama seperti title di atas -- _appendFaceMarkup()
+        // dipakai di sini juga (menggantikan strip_tags() polos yang
+        // SEBELUMNYA menghapus SEMUA markup, termasuk yang seharusnya
+        // dipertahankan seperti nama spesies miring di abstrak).
         $abstract = $article->getAbstract($journal->getPrimaryLocale());
         if (!empty($abstract)) {
             $abstractNode = XMLCustomWriter::createElement($doc, 'jats:abstract');
-            XMLCustomWriter::createChildWithText($doc, $abstractNode, 'jats:p', PKPString::html2utf(strip_tags((string) $abstract)));
+            $abstractPNode = XMLCustomWriter::createElement($doc, 'jats:p');
+            $this->_appendFaceMarkup($doc, $abstractPNode, (string) $abstract);
+            XMLCustomWriter::appendChild($abstractNode, $abstractPNode);
             XMLCustomWriter::appendChild($journalArticleNode, $abstractNode);
         }
 
@@ -622,6 +642,107 @@ class CrossRefExportDom extends DOIExportDom {
         $textNode = XMLCustomWriter::createTextNode($doc, date('Y-m-d', $timestamp));
         XMLCustomWriter::appendChild($assertionNode, $textNode);
         XMLCustomWriter::appendChild($parentNode, $assertionNode);
+    }
+
+    /**
+     * [WIZDAM] Bangun mixed-content (teks diselingi elemen inline) dari
+     * HTML MENTAH -- dipakai untuk title dan abstract, yang di database
+     * OJS sering memuat markup terbatas seperti <i>...</i> untuk nama
+     * spesies latin/genus, atau <sub>/<sup> untuk formula kimia.
+     *
+     * Cuma tag AMAN dan DIKENAL yang dikonversi jadi ELEMEN XML
+     * SUNGGUHAN (sesuai "face markup" yang didukung skema Crossref --
+     * i, b, sub, sup, u, scp): <em>/<strong> dinormalisasi dulu ke
+     * <i>/<b> (Crossref memakai i/b, bukan em/strong). SEGALA markup
+     * LAIN yang tidak dikenali dihapus (strip_tags), bukan diloloskan
+     * mentah -- mencegah XML rusak atau markup yang tidak didukung
+     * Crossref ikut terkirim.
+     *
+     * Ini MENGGANTIKAN dua pola SEBELUMNYA yang sama-sama tidak ideal:
+     * (1) title -- dikirim mentah TANPA diproses sama sekali, membuat
+     *     DOMDocument meng-escape < dan > jadi teks literal
+     *     "&lt;i&gt;...&lt;/i&gt;" alih-alih tampil miring;
+     *     ditemukan lewat audit XML deposit nyata (6 dari 10 artikel
+     *     dalam satu batch terkena).
+     * (2) abstract -- strip_tags() polos, MENGHAPUS SELURUH markup
+     *     termasuk yang seharusnya dipertahankan (nama spesies miring).
+     * @param object $doc
+     * @param object $parentNode
+     * @param string $html
+     */
+    private function _appendFaceMarkup($doc, $parentNode, $html) {
+        $html = (string) $html;
+        if (trim($html) === '') {
+            return;
+        }
+
+        // Normalisasi tag semantik-setara ke bentuk yang dipakai Crossref.
+        $html = preg_replace('/<\s*em\s*>/i', '<i>', $html);
+        $html = preg_replace('/<\s*\/\s*em\s*>/i', '</i>', $html);
+        $html = preg_replace('/<\s*strong\s*>/i', '<b>', $html);
+        $html = preg_replace('/<\s*\/\s*strong\s*>/i', '</b>', $html);
+
+        $allowedTags = ['i', 'b', 'sub', 'sup', 'u', 'scp'];
+        $pattern = '/<(' . implode('|', $allowedTags) . ')>(.*?)<\/\1>/is';
+
+        $lastPos = 0;
+        $hasMatch = preg_match_all($pattern, $html, $matches, PREG_OFFSET_CAPTURE);
+
+        if ($hasMatch) {
+            foreach ($matches[0] as $i => $fullMatch) {
+                $matchText = $fullMatch[0];
+                $matchPos = $fullMatch[1];
+                $tag = $matches[1][$i][0];
+                $inner = $matches[2][$i][0];
+
+                if ($matchPos > $lastPos) {
+                    $plainBefore = $this->_stripKnownHtmlTagsOnly(substr($html, $lastPos, $matchPos - $lastPos));
+                    if ($plainBefore !== '') {
+                        XMLCustomWriter::appendChild($parentNode, XMLCustomWriter::createTextNode($doc, PKPString::html2utf($plainBefore)));
+                    }
+                }
+
+                $innerPlain = $this->_stripKnownHtmlTagsOnly($inner);
+                if ($innerPlain !== '') {
+                    $tagNode = XMLCustomWriter::createElement($doc, $tag);
+                    XMLCustomWriter::appendChild($tagNode, XMLCustomWriter::createTextNode($doc, PKPString::html2utf($innerPlain)));
+                    XMLCustomWriter::appendChild($parentNode, $tagNode);
+                }
+
+                $lastPos = $matchPos + strlen($matchText);
+            }
+        }
+
+        if ($lastPos < strlen($html)) {
+            $plainAfter = $this->_stripKnownHtmlTagsOnly(substr($html, $lastPos));
+            if ($plainAfter !== '') {
+                XMLCustomWriter::appendChild($parentNode, XMLCustomWriter::createTextNode($doc, PKPString::html2utf($plainAfter)));
+            }
+        }
+    }
+
+    /**
+     * [WIZDAM BUGFIX -- KRITIS] PHP strip_tags() bawaan punya perilaku
+     * BERBAHAYA: kalau ada karakter '<' TANPA '>' penutup yang jelas
+     * SETELAHNYA (mis. notasi matematis/statistik "P<0.05" tanpa tag
+     * HTML sungguhan mengikutinya), strip_tags() menganggap SISA STRING
+     * SAMPAI AKHIR adalah "isi tag yang belum ditutup" dan MENGHAPUS
+     * SEMUANYA -- kehilangan data secara diam-diam, TANPA error/warning
+     * apa pun. Ditemukan lewat pengujian nyata: "...(P<0.05) on most
+     * properties" jadi cuma "...(P" setelah strip_tags().
+     *
+     * Diperbaiki dengan regex yang HANYA mencocokkan tag yang BENAR-BENAR
+     * berbentuk baik -- nama tag WAJIB diawali HURUF (bukan digit),
+     * langsung diikuti '>' penutup TANPA karakter < atau > lain di
+     * antaranya. "P<0.05" TIDAK PERNAH cocok (karakter setelah '<' adalah
+     * '0', sebuah digit -- bukan huruf), jadi karakter '<' itu DIBIARKAN
+     * apa adanya, lalu di-escape dengan BENAR oleh XML SERIALIZER
+     * menjadi "P&lt;0.05" -- bukan dihapus.
+     * @param string $text
+     * @return string
+     */
+    private function _stripKnownHtmlTagsOnly($text) {
+        return preg_replace('/<\/?[a-zA-Z][a-zA-Z0-9]*(\s[^<>]*)?>/', '', (string) $text);
     }
 
     /**
