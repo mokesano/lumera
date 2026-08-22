@@ -75,6 +75,8 @@ class Depositor extends ScheduledTask {
         // For all journals
         while ($journal = $journals->next()) {
             $journalId = (int) $journal->getId();
+
+            DBConnection::ensureConnection();
             
             // If the plugin isn't enabled for this journal, skip it
             if (!$this->_plugin->getSetting($journalId, 'enabled')) {
@@ -227,6 +229,7 @@ class Depositor extends ScheduledTask {
 
         // Loop through all of the deposits that need packaging
         while ($deposit = $depositQueue->next()) {
+            DBConnection::ensureConnection();
             $depositPackage = new DepositPackage($deposit, $this);
             $depositPackage->packageDeposit();
         }

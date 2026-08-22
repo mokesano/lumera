@@ -79,7 +79,9 @@ function fatalError(string $reason, int $httpStatus = 500): void {
     $isErrorCondition = true;
 
     $statusHeader = $httpStatus === 404 ? 'HTTP/1.0 404 Not Found' : 'HTTP/1.1 500 Internal Server Error';
-    header($statusHeader);
+    if (!headers_sent()) {
+        header($statusHeader);
+    }
 
     // [LUMERA] Closure menggantikan goto
     $logAndDie = function() use ($reason): void {
