@@ -17,8 +17,12 @@ declare(strict_types=1);
  */
 
 import('lib.pkp.classes.form.Form');
+import('lib.wizdam.classes.services.DoiCredentialService');
 
 class AboutSiteForm extends Form {
+
+    /** @var \DoiCredentialService $doiCredentials */
+    private DoiCredentialService $doiCredentials;
 
     /**
      * Constructor.
@@ -26,6 +30,8 @@ class AboutSiteForm extends Form {
     public function __construct() {
         parent::__construct('admin/aboutSite.tpl');
         $this->addCheck(new FormValidatorPost($this));
+
+        $this->doiCredentials = new DoiCredentialService();
 
         $this->addCheck(new FormValidatorCustom(
             $this, 'publisherColorPrimary', 'optional', 'admin.siteSettings.error.invalidColor',
@@ -35,6 +41,17 @@ class AboutSiteForm extends Form {
         $this->addCheck(new FormValidatorCustom(
             $this, 'publisherColorSecondary', 'optional', 'admin.siteSettings.error.invalidColor',
             function ($color) { return empty($color) || preg_match('/^#[0-9A-Fa-f]{6}$/', $color); }
+        ));
+
+        // [WIZDAM] DOI Kebijakan Crossmark -- OPSIONAL (Crossmark aktivasi
+        // bersifat opt-in, tidak wajib untuk registrasi DOI dasar berjalan),
+        // tapi kalau diisi, HARUS berupa DOI lengkap yang valid (bukan
+        // cuma prefix seperti doi_prefix di doiSettings.tpl) -- pola
+        // "10.xxxx/apa-saja", sesuai contoh nyata:
+        // 10.29239/sangia.crossmark.policy.
+        $this->addCheck(new FormValidatorCustom(
+            $this, 'crossmarkPolicyDoi', 'optional', 'admin.siteSettings.error.invalidCrossmarkPolicyDoi',
+            function ($doi) { return empty($doi) || preg_match('/^10\.[0-9]{4,9}\/.+$/', trim((string) $doi)); }
         ));
     }
 
@@ -74,7 +91,24 @@ class AboutSiteForm extends Form {
             $this->setData('publisherColorPrimary', $site->getSetting('publisherColorPrimary') ?? '#1a4f8b');
             $this->setData('publisherColorSecondary', $site->getSetting('publisherColorSecondary') ?? '#28a745');
             $this->setData('publisherLogo', $site->getSetting('publisherLogo') ?? null);
+
+            // [WIZDAM] Teks kebijakan pembaruan Crossmark -- MULTIBAHASA,
+            // pola PERSIS sama dengan publisherMission/History/dst di
+            // atas (disimpan lewat SiteSettingsDAO langsung, BUKAN lewat
+            // DoiCredentialService seperti crossmarkPolicyDoi di bawah --
+            // ini konten halaman publik /about/crossmarkPolicy, bukan
+            // kredensial API Crossref).
+            $this->setData('crossmarkPolicyText', $site->getSetting('crossmarkPolicyText') ?? []);
         }
+
+        // [WIZDAM] Dibaca dari DoiCredentialService (site setting
+        // wizdam_doi_crossmark_policy_doi) -- BUKAN dari $site->getSetting()
+        // langsung seperti field lain di atas. Ini SATU-SATUNYA sumber
+        // kebenaran untuk nilai ini, dipakai juga oleh
+        // CrossRefExportDom::_generateCrossmarkDom() saat membentuk XML
+        // deposit -- menghindari duplikasi nama key antara form ini dan
+        // DoiCredentialService.
+        $this->setData('crossmarkPolicyDoi', $this->doiCredentials->getCrossmarkPolicyDoi());
     }
 
     /**
@@ -94,6 +128,8 @@ class AboutSiteForm extends Form {
             'publisherAddress',
             'publisherColorPrimary',
             'publisherColorSecondary',
+            'crossmarkPolicyText',
+            'crossmarkPolicyDoi',
         ]);
     }
 
@@ -185,6 +221,19 @@ class AboutSiteForm extends Form {
         if ($this->getData('publisherLogo') !== null) {
             $siteSettingsDao->updateSetting('publisherLogo', $this->getData('publisherLogo'), 'object', false);
         }
+
+        // [WIZDAM] Teks kebijakan Crossmark -- multibahasa, pola sama
+        // seperti publisherMission/History di atas.
+        $siteSettingsDao->updateSetting('crossmarkPolicyText', $this->getData('crossmarkPolicyText'), null, true);
+
+        // [WIZDAM] Disimpan lewat DoiCredentialService (bukan
+        // $siteSettingsDao langsung seperti field lain di atas) --
+        // supaya nama key PERSIS sama dengan yang dibaca
+        // CrossRefExportDom::_generateCrossmarkDom() lewat
+        // getCrossmarkPolicyDoi(). trim() dulu -- string kosong (belum
+        // diisi) valid, berarti Crossmark tetap tidak aktif untuk
+        // deposit sampai nilai ini diisi.
+        $this->doiCredentials->updateSetting('crossmark_policy_doi', trim((string) $this->getData('crossmarkPolicyDoi')), 'string');
         
         return true;
     }
@@ -227,6 +276,8 @@ class AboutSiteForm extends Form {
             'publisherColorPrimary' => $this->getData('publisherColorPrimary') ?? '#1a4f8b',
             'publisherColorSecondary' => $this->getData('publisherColorSecondary') ?? '#28a745',
             'currentLogoUrl' => $logoUrl,
+            'crossmarkPolicyText' => $this->getData('crossmarkPolicyText') ?? [],
+            'crossmarkPolicyDoi' => $this->getData('crossmarkPolicyDoi') ?? '',
         ]);
         
         parent::display($request, $template);

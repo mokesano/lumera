@@ -43,6 +43,13 @@
             </td>
         </tr>
         <tr valign="top">
+            <td class="label"><label for="crossmarkPolicyDoi">{translate key="admin.siteSettings.crossmarkPolicyDoi"}</label></td>
+            <td class="value">
+                <input type="text" name="crossmarkPolicyDoi" id="crossmarkPolicyDoi" value="{$crossmarkPolicyDoi|escape}" size="40" maxlength="255" class="textField" placeholder="10.29239/sangia.crossmark.policy" />
+                <span class="instruct">{translate key="admin.siteSettings.crossmarkPolicyDoi.description"}</span>
+            </td>
+        </tr>
+        <tr valign="top">
             <td class="label">{translate key="admin.siteSettings.publisherLogo"}</td>
             <td class="value">
                 {if $currentLogoUrl}
@@ -106,6 +113,13 @@
                     <td class="value">
                         {* PERBAIKAN: 'id' statis, 'name' multilingual *}
                         <textarea name="publisherAwards[{$localeKey|escape}]" id="publisherAwards" cols="60" rows="10" class="textArea">{$publisherAwards[$localeKey]|escape}</textarea>
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <td class="label"><label for="crossmarkPolicyText">{translate key="admin.siteSettings.crossmarkPolicyText"}</label></td>
+                    <td class="value">
+                        <textarea name="crossmarkPolicyText[{$localeKey|escape}]" id="crossmarkPolicyText" cols="60" rows="10" class="textArea">{$crossmarkPolicyText[$localeKey]|escape}</textarea>
+                        <span class="instruct">{translate key="admin.siteSettings.crossmarkPolicyText.description"}</span>
                     </td>
                 </tr>
             </table>

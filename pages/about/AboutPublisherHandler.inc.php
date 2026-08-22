@@ -129,6 +129,22 @@ class AboutPublisherHandler extends AboutHandler {
     }
 
     /**
+     * Menampilkan halaman statis Penerbit (Kebijakan Pembaruan Crossmark).
+     * Rute: /about/crossmarkPolicy -- URL INI yang didaftarkan (dengan DOI
+     * dari pengaturan crossmarkPolicyDoi, lihat AboutSiteForm) ke Crossref
+     * sebagai halaman kebijakan Crossmark resmi Penerbit -- isinya
+     * mencakup kebijakan editorial, panduan etik, cara pembaca melaporkan
+     * masalah, dan kondisi pembaruan/retraksi pasca-publikasi, sesuai
+     * panduan resmi Crossref (crossmark-policy-page).
+     * @param array $args
+     * @param PKPRequest $request
+     */
+    public function crossmarkPolicy($args, $request = null) {
+        if (!$request) $request = Application::get()->getRequest();
+        $this->_renderPublisherPage($request, 'about.publisher.crossmarkPolicy', 'crossmarkPolicyText');
+    }
+
+    /**
      * Helper bersama untuk keempat halaman statis Penerbit di atas --
      * satu template generik (about/publisherPage.tpl), dibedakan lewat
      * $pageTitleKey + $pageContent.

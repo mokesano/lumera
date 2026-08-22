@@ -22,6 +22,10 @@
 	<message key="admin.siteSettings.publisherLegalEntity">Legal Entity</message>
 	<message key="admin.siteSettings.publisherLegalEntity.description">Official registered name and legal registration number (e.g. business entity type, registration decree number).</message>
 	<message key="admin.siteSettings.publisherAddress">Publisher Address</message>
+	<message key="admin.siteSettings.crossmarkPolicyDoi">Crossmark Policy DOI</message>
+	<message key="admin.siteSettings.crossmarkPolicyDoi.description">Optional. The Crossmark policy DOI registered with Crossref for this publisher (e.g. 10.29239/sangia.crossmark.policy) -- the DOI that resolves to the policy page written below. Leave blank if Crossmark has not been set up -- Crossref deposits will continue to work normally without it.</message>
+	<message key="admin.siteSettings.crossmarkPolicyText">Crossmark Update Policy</message>
+	<message key="admin.siteSettings.crossmarkPolicyText.description">Displayed publicly at /about/crossmarkPolicy -- the page the Crossmark Policy DOI above should be registered to point to. Per Crossref's guidelines, this should cover: editorial policies, ethical guidelines for authors, how readers can report issues with published content, and under what circumstances works may be updated, corrected, or retracted after publication.</message>
 	<message key="admin.siteSettings.publisherLogo">Publisher Logo</message>
 	<message key="admin.siteSettings.publisherLogo.description">Recommended: transparent PNG, at least 300px wide.</message>
 	<message key="admin.siteSettings.publisherColors">Brand Colors</message>
@@ -30,6 +34,7 @@
 	<message key="admin.siteSettings.publisherMotto">Motto</message>
 	<message key="admin.siteSettings.publisherTagline">Tagline</message>
 	<message key="admin.siteSettings.error.invalidColor">Please enter a valid hex color code (e.g. #1A4F8B).</message>
+	<message key="admin.siteSettings.error.invalidCrossmarkPolicyDoi">Please enter a valid, complete DOI (e.g. 10.29239/sangia.crossmark.policy), not just a prefix.</message>
 	<message key="admin.siteSettings.error.logoUploadFailed">The uploaded logo file is not a valid image. Please try a different file.</message>
 	
 	<message key="admin.hostedJournals">Hosted Journals</message>

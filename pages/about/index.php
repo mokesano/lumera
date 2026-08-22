@@ -60,6 +60,7 @@ switch($op) {
 	case 'history':
 	case 'leadership':
 	case 'awards':
+	case 'crossmark-policy':
 	case 'contact':
 		define('HANDLER_CLASS', 'AboutPublisherHandler');
 		import('pages.about.AboutPublisherHandler');

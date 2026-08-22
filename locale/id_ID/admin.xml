@@ -22,6 +22,10 @@
 	<message key="admin.siteSettings.publisherLegalEntity">Legalitas Hukum</message>
 	<message key="admin.siteSettings.publisherLegalEntity.description">Nama badan hukum resmi dan nomor legalitas (contoh: bentuk badan usaha, nomor SK pendirian).</message>
 	<message key="admin.siteSettings.publisherAddress">Alamat Penerbit</message>
+	<message key="admin.siteSettings.crossmarkPolicyDoi">DOI Kebijakan Crossmark</message>
+	<message key="admin.siteSettings.crossmarkPolicyDoi.description">Opsional. DOI kebijakan Crossmark yang sudah terdaftar di Crossref untuk penerbit ini (contoh: 10.29239/sangia.crossmark.policy) -- DOI ini seharusnya mengarah ke halaman kebijakan yang dituliskan di bawah. Kosongkan kalau Crossmark belum diaktifkan -- deposit ke Crossref tetap berjalan normal tanpanya.</message>
+	<message key="admin.siteSettings.crossmarkPolicyText">Kebijakan Pembaruan Crossmark</message>
+	<message key="admin.siteSettings.crossmarkPolicyText.description">Ditampilkan publik di /about/crossmarkPolicy -- halaman yang seharusnya dituju oleh DOI Kebijakan Crossmark di atas. Sesuai panduan resmi Crossref, isinya sebaiknya mencakup: kebijakan editorial, panduan etik bagi penulis, cara pembaca melaporkan masalah pada konten yang sudah terbit, dan dalam kondisi apa artikel bisa diperbarui, dikoreksi, atau ditarik setelah terbit.</message>
 	<message key="admin.siteSettings.publisherLogo">Logo Penerbit</message>
 	<message key="admin.siteSettings.publisherLogo.description">Disarankan: PNG transparan, lebar minimal 300px.</message>
 	<message key="admin.siteSettings.publisherColors">Warna Brand</message>
@@ -30,6 +34,7 @@
 	<message key="admin.siteSettings.publisherMotto">Motto</message>
 	<message key="admin.siteSettings.publisherTagline">Tagline</message>
 	<message key="admin.siteSettings.error.invalidColor">Masukkan kode warna hex yang valid (contoh: #1A4F8B).</message>
+	<message key="admin.siteSettings.error.invalidCrossmarkPolicyDoi">Masukkan DOI lengkap yang valid (contoh: 10.29239/sangia.crossmark.policy), bukan cuma prefix.</message>
 	<message key="admin.siteSettings.error.logoUploadFailed">File logo yang diunggah bukan gambar yang valid. Silakan coba file lain.</message>
 
 	<message key="admin.hostedJournals">Host Jurnal</message>

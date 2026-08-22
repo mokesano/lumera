@@ -416,12 +416,33 @@ class CrossRefExportDom extends DOIExportDom {
             }
         }
 
-        /* License URL */
+        /* License URL -- dibangun sebagai NODE dulu, TIDAK langsung
+         * di-append. Skema 4.3.6 mendefinisikan <crossmark> dan
+         * <ai:program> sebagai <xsd:choice> -- SALING EKSKLUSIF sebagai
+         * saudara langsung journal_article. Kalau Crossmark aktif
+         * (kebijakan DOI sudah dikonfigurasi), node lisensi ini
+         * dipindahkan ke DALAM <crossmark><custom_metadata> oleh
+         * _generateCrossmarkDom() di bawah -- BUKAN di-append langsung
+         * di sini. Kalau Crossmark belum dikonfigurasi, node ini tetap
+         * berdiri sendiri seperti perilaku asli (tidak ada regresi). */
         $licenseUrl = $article->getLicenseUrl();
+        $licenseNode = null;
         if (!empty($licenseUrl)) {
             $licenseNode = XMLCustomWriter::createElement($doc, 'ai:program');
             XMLCustomWriter::setAttribute($licenseNode, 'name', 'AccessIndicators');
             XMLCustomWriter::createChildWithText($doc, $licenseNode, 'ai:license_ref', (string) $licenseUrl);
+        }
+
+        // [WIZDAM] Crossmark -- lihat _generateCrossmarkDom() untuk detail
+        // lengkap. Mengembalikan null kalau kebijakan Crossmark belum
+        // dikonfigurasi Publisher (wizdam_doi_crossmark_policy_doi kosong)
+        // -- dalam kasus itu, $licenseNode (kalau ada) di-append berdiri
+        // sendiri seperti sebelumnya, TIDAK ADA REGRESI untuk instalasi
+        // yang belum mengisi pengaturan ini.
+        $crossmarkNode = $this->_generateCrossmarkDom($doc, $journal, $article, $licenseNode);
+        if ($crossmarkNode) {
+            XMLCustomWriter::appendChild($journalArticleNode, $crossmarkNode);
+        } elseif ($licenseNode) {
             XMLCustomWriter::appendChild($journalArticleNode, $licenseNode);
         }
 
@@ -435,12 +456,172 @@ class CrossRefExportDom extends DOIExportDom {
         $DOIdataNode = $this->_generateDOIdataDom($doc, (string) $article->getPubId('doi'), $articleUrl, $galleys);
         XMLCustomWriter::appendChild($journalArticleNode, $DOIdataNode);
 
+        // [WIZDAM] Sitasi (referensi) artikel -- diikutsertakan kalau
+        // penulis/editor sudah menginput daftar sitasi untuk artikel ini
+        // (lewat editor sitasi di halaman submission), terlepas deposit
+        // ini dijalankan otomatis (Acron/CrossrefInfoSender) maupun
+        // manual (export lewat halaman plugin). Lihat _generateCitationListDom()
+        // untuk detail pemetaan ke skema Crossref.
+        $citationListNode = $this->_generateCitationListDom($doc, $article);
+        if ($citationListNode) {
+            XMLCustomWriter::appendChild($journalArticleNode, $citationListNode);
+        }
+
         $componentListNode = $this->_generateComponentListDom($doc, $journal, $article);
         if ($componentListNode) {
             XMLCustomWriter::appendChild($journalArticleNode, $componentListNode);
         }
 
         return $journalArticleNode;
+    }
+
+    /**
+     * Generate the citation_list node -- sitasi/referensi artikel yang
+     * sudah diinput lewat editor sitasi (CitationGridHandler, disimpan
+     * di tabel `citations` lewat CitationDAO). Dipakai baik untuk
+     * deposit otomatis (Acron -> CrossrefInfoSender) maupun manual
+     * (export lewat halaman pengaturan plugin) karena keduanya sama-sama
+     * memanggil generate() -> _generateJournalArticleDom() di kelas ini.
+     *
+     * Memakai <unstructured_citation> (teks mentah apa adanya, field
+     * rawCitation) alih-alih elemen terstruktur (journal_title, author,
+     * volume, dst.) -- rawCitation SELALU tersedia begitu sitasi diinput,
+     * TIDAK bergantung apakah sitasi itu sudah melalui proses parsing
+     * terstruktur (CITATION_PARSED/CITATION_LOOKED_UP) atau belum.
+     * @param object $doc
+     * @param PublishedArticle $article
+     * @return object|null
+     */
+    public function _generateCitationListDom($doc, $article) {
+        /** @var CitationDAO $citationDao */
+        $citationDao = DAORegistry::getDAO('CitationDAO');
+        $citations = $citationDao->getObjectsByAssocId(ASSOC_TYPE_ARTICLE, (int) $article->getId());
+
+        $citationListNode = null;
+        $key = 0;
+        while ($citation = $citations->next()) {
+            $rawCitation = trim((string) $citation->getRawCitation());
+            if ($rawCitation === '') {
+                continue;
+            }
+            if ($citationListNode === null) {
+                $citationListNode = XMLCustomWriter::createElement($doc, 'citation_list');
+            }
+            $key++;
+            $citationNode = XMLCustomWriter::createElement($doc, 'citation');
+            XMLCustomWriter::setAttribute($citationNode, 'key', 'ref' . $key);
+            XMLCustomWriter::createChildWithText(
+                $doc,
+                $citationNode,
+                'unstructured_citation',
+                PKPString::html2utf(strip_tags($rawCitation))
+            );
+            XMLCustomWriter::appendChild($citationListNode, $citationNode);
+        }
+
+        return $citationListNode;
+    }
+
+    /**
+     * Generate elemen <crossmark> -- mengembalikan null (tidak menyisipkan
+     * apa pun) kalau kebijakan Crossmark Publisher belum dikonfigurasi.
+     *
+     * STRUKTUR (sesuai XSD 4.3.6, urutan WAJIB):
+     *   crossmark_version, crossmark_policy, custom_metadata
+     *     (custom_metadata berisi: ai:program yang DIPINDAHKAN ke sini
+     *      -- lihat penjelasan xsd:choice di _generateJournalArticleDom --
+     *      lalu assertion publication_history: received/accepted/
+     *      published_online)
+     *
+     * SUMBER TANGGAL publication_history (dikonfirmasi via ArticleHandler
+     * dan template artikel, BUKAN dugaan):
+     *   - received        -> Submission::getDateSubmitted() (tanggal submit asli)
+     *   - accepted         -> ArticleDAO::getEditorialTimeline()['acceptedDate']
+     *                         (dari tabel edit_decisions, decision=1 --
+     *                         SUMBER SAMA yang dipakai ArticleHandler
+     *                         menampilkan tanggal diterima di halaman
+     *                         artikel publik)
+     *   - published_online -> Article::getDatePublished() (sudah dipakai
+     *                         di tempat lain pada file ini)
+     * Tanggal yang kosong/tidak ditemukan dilewati -- TIDAK memaksakan
+     * assertion dengan nilai kosong/dugaan.
+     * @param object $doc
+     * @param Journal $journal
+     * @param PublishedArticle $article
+     * @param object|null $licenseNode Node ai:program yang sudah dibangun
+     *   sebelumnya (atau null kalau artikel tidak punya lisensi) --
+     *   dipindahkan KE DALAM custom_metadata di sini, bukan dibangun ulang.
+     * @return object|null
+     */
+    public function _generateCrossmarkDom($doc, $journal, $article, $licenseNode) {
+        import('lib.wizdam.classes.services.DoiCredentialService');
+        $doiCredentials = DoiCredentialService::resolveForJournal($journal);
+        $crossmarkPolicyDoi = $doiCredentials->getCrossmarkPolicyDoi();
+
+        if ($crossmarkPolicyDoi === '') {
+            return null;
+        }
+
+        $crossmarkNode = XMLCustomWriter::createElement($doc, 'crossmark');
+        XMLCustomWriter::createChildWithText($doc, $crossmarkNode, 'crossmark_version', '1');
+        XMLCustomWriter::createChildWithText($doc, $crossmarkNode, 'crossmark_policy', $crossmarkPolicyDoi);
+
+        $customMetadataNode = XMLCustomWriter::createElement($doc, 'custom_metadata');
+
+        // ai:program (lisensi) yang sebelumnya berdiri sendiri --
+        // dipindahkan ke sini karena xsd:choice (lihat dokblok di atas).
+        if ($licenseNode) {
+            XMLCustomWriter::appendChild($customMetadataNode, $licenseNode);
+        }
+
+        /** @var ArticleDAO $articleDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO');
+        $timeline = $articleDao->getEditorialTimeline((int) $article->getId());
+
+        $order = 0;
+        $received = $article->getDateSubmitted();
+        if (!empty($received)) {
+            $this->_appendPublicationHistoryAssertion($doc, $customMetadataNode, 'received', 'Received', $received, $order++);
+        }
+        $accepted = $timeline['acceptedDate'] ?? null;
+        if (!empty($accepted)) {
+            $this->_appendPublicationHistoryAssertion($doc, $customMetadataNode, 'accepted', 'Accepted', $accepted, $order++);
+        }
+        $publishedOnline = $article->getDatePublished();
+        if (!empty($publishedOnline)) {
+            $this->_appendPublicationHistoryAssertion($doc, $customMetadataNode, 'published_online', 'Published Online', $publishedOnline, $order++);
+        }
+
+        XMLCustomWriter::appendChild($crossmarkNode, $customMetadataNode);
+
+        return $crossmarkNode;
+    }
+
+    /**
+     * Helper -- satu <assertion> grup publication_history, format tanggal
+     * YYYY-MM-DD (cocok dengan contoh XML resmi Crossref dan hasil nyata
+     * yang sudah terdeposit sebelumnya untuk publisher ini).
+     * @param object $doc
+     * @param object $parentNode
+     * @param string $name
+     * @param string $label
+     * @param string $rawDate
+     * @param int $order
+     */
+    private function _appendPublicationHistoryAssertion($doc, $parentNode, $name, $label, $rawDate, $order) {
+        $timestamp = strtotime((string) $rawDate);
+        if ($timestamp === false) {
+            return;
+        }
+        $assertionNode = XMLCustomWriter::createElement($doc, 'assertion');
+        XMLCustomWriter::setAttribute($assertionNode, 'name', $name);
+        XMLCustomWriter::setAttribute($assertionNode, 'label', $label);
+        XMLCustomWriter::setAttribute($assertionNode, 'group_name', 'publication_history');
+        XMLCustomWriter::setAttribute($assertionNode, 'group_label', 'Publication History');
+        XMLCustomWriter::setAttribute($assertionNode, 'order', (string) $order);
+        $textNode = XMLCustomWriter::createTextNode($doc, date('Y-m-d', $timestamp));
+        XMLCustomWriter::appendChild($assertionNode, $textNode);
+        XMLCustomWriter::appendChild($parentNode, $assertionNode);
     }
 
     /**
@@ -581,13 +762,68 @@ class CrossRefExportDom extends DOIExportDom {
         $middleName = $author->getMiddleName() ? ' ' . ucfirst((string) $author->getMiddleName()) : '';
         XMLCustomWriter::createChildWithText($doc, $authorNode, 'given_name', $firstName . $middleName);
         XMLCustomWriter::createChildWithText($doc, $authorNode, 'surname', ucfirst((string) $author->getLastName()));
-        
+
+        // [WIZDAM] Afiliasi penulis -- elemen <affiliation> skema 4.3.6
+        // adalah TEKS POLOS SEDERHANA (bukan struktur <affiliations>
+        // <institution> yang baru mulai skema 5.3+ -- lihat dokumentasi
+        // resmi Crossref: "replace <affiliation> tag with <affiliations>
+        // tag ... changes from 4.8.1" ke versi 5.3.1). Codebase ini
+        // memakai 4.3.6, jadi sengaja TIDAK memakai struktur
+        // <affiliations><institution> yang lebih baru.
+        //
+        // Urutan elemen WAJIB sesuai XSD 4.3.6: given_name, surname,
+        // suffix, affiliation, ORCID -- affiliation HARUS sebelum ORCID.
+        //
+        // Teks afiliasi dibangun lewat _buildAuthorAffiliationText() --
+        // logika PERSIS SAMA dengan PKPAuthor::buildAffiliationMap()
+        // (dipakai halaman artikel publik) supaya konsisten: baris
+        // afiliasi dipecah per baris baru, dan NEGARA dari field Country
+        // terpisah (CountryDAO) ditambahkan ke baris TERAKHIR -- bukan
+        // cuma mengandalkan teks yang diketik manual, yang mungkin lupa
+        // menyertakan negara.
+        $affiliation = $this->_buildAuthorAffiliationText($author);
+        if ($affiliation !== '') {
+            XMLCustomWriter::createChildWithText($doc, $authorNode, 'affiliation', $affiliation);
+        }
+
         $orcid = $author->getData('orcid');
         if (!empty($orcid)) {
             XMLCustomWriter::createChildWithText($doc, $authorNode, 'ORCID', (string) $orcid);
         }
 
         return $authorNode;
+    }
+
+    /**
+     * Bangun teks afiliasi LENGKAP untuk SATU penulis -- baris-baris
+     * afiliasi (dipisah enter/baris baru) digabung, dengan nama negara
+     * (dari field Country terpisah, CountryDAO) ditambahkan ke baris
+     * TERAKHIR. Mereplikasi logika inti PKPAuthor::buildAffiliationMap()
+     * (dipakai untuk deduplikasi lintas-penulis di halaman artikel
+     * publik) tapi disederhanakan untuk SATU penulis saja -- elemen
+     * <affiliation> Crossref 4.3.6 cuma butuh satu string polos per
+     * penulis, tidak perlu deduplikasi/referensi silang antar penulis
+     * seperti tampilan halaman publik.
+     * @param Author $author
+     * @return string
+     */
+    public function _buildAuthorAffiliationText($author) {
+        $lines = preg_split('/\r\n|\r|\n/', (string) $author->getLocalizedAffiliation());
+        $lines = array_values(array_filter(array_map('trim', $lines), function ($line) {
+            return $line !== '';
+        }));
+
+        if (!empty($lines) && $author->getCountry()) {
+            $countryName = (string) $author->getCountryLocalized();
+            if ($countryName !== '') {
+                $lastIndex = count($lines) - 1;
+                if (stripos($lines[$lastIndex], $countryName) === false) {
+                    $lines[$lastIndex] .= ', ' . $countryName;
+                }
+            }
+        }
+
+        return implode('; ', $lines);
     }
 
     /**

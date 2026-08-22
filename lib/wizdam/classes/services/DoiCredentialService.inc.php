@@ -151,6 +151,32 @@ class DoiCredentialService {
     }
 
     /**
+     * [WIZDAM] DOI kebijakan Crossmark -- SELALU scope Publisher, sama
+     * persis pola getDoiPrefix() di atas (satu kebijakan berlaku untuk
+     * seluruh jurnal di bawah naungan Publisher, sifatnya tetap).
+     *
+     * Dikonfigurasi lewat wizdam_doi_crossmark_policy_doi di site
+     * settings, atau fallback config.inc.php ([wizdam_doi]
+     * crossmark_policy_doi = ...) -- mengikuti mekanisme yang SAMA
+     * dengan crossref_depositor_name/crossref_email yang sudah ada
+     * (tidak ditemukan form UI khusus untuk field wizdam_doi_* manapun
+     * di codebase ini saat ini -- dikonfigurasi langsung lewat
+     * config.inc.php atau baris site_settings). Kalau di masa depan
+     * dibutuhkan form UI untuk SEMUA pengaturan wizdam_doi_* sekaligus,
+     * itu pekerjaan terpisah dari refactor deposit XML ini.
+     *
+     * Kalau nilai ini KOSONG (belum dikonfigurasi), CrossRefExportDom
+     * TIDAK menyisipkan elemen <crossmark> sama sekali -- deposit tetap
+     * berjalan seperti sebelumnya (ai:program berdiri sendiri, tanpa
+     * Crossmark) sampai nilai ini diisi. Tidak ada regresi untuk
+     * instalasi yang belum sempat mengisi pengaturan ini.
+     * @return string
+     */
+    public function getCrossmarkPolicyDoi(): string {
+        return trim((string) $this->_getPublisherOnlySetting('crossmark_policy_doi'));
+    }
+
+    /**
      * Get Crossref depositor name
      */
     public function getCrossrefDepositorName(): string {
