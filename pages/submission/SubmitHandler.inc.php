@@ -167,6 +167,52 @@ class SubmitHandler extends AuthorHandler {
                             }
                         }
                         $submitForm->setData('authors', $authors);
+
+                    } elseif ($request->getUserVar('addFunder')) {
+                        // [WIZDAM] Tambah baris funder (pendanaan/hibah) --
+                        // pola sama persis dengan addAuthor di atas.
+                        $editData = true;
+                        $funders = $submitForm->getData('funders');
+                        array_push($funders, []);
+                        $submitForm->setData('funders', $funders);
+
+                    } elseif (($delFunder = $request->getUserVar('delFunder')) && count($delFunder) == 1) {
+                        // [WIZDAM] Hapus baris funder -- pola sama persis
+                        // dengan delAuthor, TANPA penanganan primaryContact
+                        // (funder tidak punya konsep setara itu).
+                        $editData = true;
+                        list($delFunder) = array_keys($delFunder);
+                        $delFunder = (int) $delFunder;
+                        $funders = $submitForm->getData('funders');
+                        if (isset($funders[$delFunder]['funderId']) && !empty($funders[$delFunder]['funderId'])) {
+                            $deletedFunders = explode(':', (string) $submitForm->getData('deletedFunders'));
+                            array_push($deletedFunders, $funders[$delFunder]['funderId']);
+                            $submitForm->setData('deletedFunders', join(':', $deletedFunders));
+                        }
+                        array_splice($funders, $delFunder, 1);
+                        $submitForm->setData('funders', $funders);
+
+                    } elseif ($request->getUserVar('moveFunder')) {
+                        // [WIZDAM] Pindah urutan funder naik/turun -- pola
+                        // sama persis dengan moveAuthor, TANPA penyesuaian
+                        // primaryContact.
+                        $editData = true;
+                        $moveFunderDir = $request->getUserVar('moveFunderDir');
+                        $moveFunderDir = $moveFunderDir == 'u' ? 'u' : 'd';
+                        $moveFunderIndex = (int) $request->getUserVar('moveFunderIndex');
+                        $funders = $submitForm->getData('funders');
+
+                        if (!(($moveFunderDir == 'u' && $moveFunderIndex <= 0) || ($moveFunderDir == 'd' && $moveFunderIndex >= count($funders) - 1))) {
+                            $tmpFunder = $funders[$moveFunderIndex];
+                            if ($moveFunderDir == 'u') {
+                                $funders[$moveFunderIndex] = $funders[$moveFunderIndex - 1];
+                                $funders[$moveFunderIndex - 1] = $tmpFunder;
+                            } else {
+                                $funders[$moveFunderIndex] = $funders[$moveFunderIndex + 1];
+                                $funders[$moveFunderIndex + 1] = $tmpFunder;
+                            }
+                        }
+                        $submitForm->setData('funders', $funders);
                     }
                     break;
 

@@ -67,6 +67,20 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
         $this->addCheck(new FormValidatorLocale($this, 'title', 'required', 'author.submit.form.titleRequired', $this->getRequiredLocale()));
 
+        // [WIZDAM] Validasi funders -- keseluruhan field OPSIONAL (tidak
+        // semua artikel punya pendanaan eksternal), TAPI kalau satu baris
+        // funder sudah ditambahkan lewat grid, funderName WAJIB diisi
+        // (awardNumber tetap opsional -- tidak semua pengakuan pendanaan
+        // menyertakan nomor hibah spesifik). Pola FormValidatorArrayCustom
+        // mengikuti persis validasi email/url authors di atas.
+        $this->addCheck(new FormValidatorArrayCustom(
+            $this, 'funders', 'required', 'author.submit.form.funderNameRequired',
+            function($funderName) { return trim((string) $funderName) !== ''; },
+            [],
+            false,
+            ['funderName']
+        ));
+
         /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $section = $sectionDao->getSection($article->getSectionId());
@@ -95,11 +109,12 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
     public function AuthorSubmitStep3Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'. Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($article, $journal, $request);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -123,6 +138,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
             $article = $this->article;
             $this->_data = [
                 'authors' => [],
+                'funders' => [],
                 'title' => $article->getTitle(null),
                 'abstract' => $article->getAbstract(null),
                 'discipline' => $article->getDiscipline(null),
@@ -178,6 +194,21 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
                     $this->setData('primaryContact', $i);
                 }
             }
+
+            // [WIZDAM] Isi data funders (pendanaan/hibah) dari database --
+            // pola sama seperti authors di atas, tapi TANPA perulangan
+            // multi-bahasa karena funder_name/award_number bukan field
+            // terlokalisasi.
+            /** @var ArticleFunderDAO $funderDao */
+            $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+            $funders = $funderDao->getByArticleId($article->getId())->toArray();
+            foreach ($funders as $funder) {
+                $this->_data['funders'][] = [
+                    'funderId' => $funder->getId(),
+                    'funderName' => $funder->getFunderName(),
+                    'awardNumber' => $funder->getAwardNumber(),
+                ];
+            }
         }
         return parent::initData();
     }
@@ -189,6 +220,8 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         $this->readUserVars([
             'authors',
             'deletedAuthors',
+            'funders',
+            'deletedFunders',
             'primaryContact',
             'title',
             'abstract',
@@ -239,6 +272,12 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
             }
         } else {
             $this->_data['authors'] = [];
+        }
+
+        // [WIZDAM] Normalisasi funders -- pola sama seperti authors di
+        // atas, tapi tanpa perulangan locale.
+        if (!is_array($this->_data['funders'])) {
+            $this->_data['funders'] = [];
         }
 
         // Load the section.
@@ -345,7 +384,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
                 $author->setData('orcid', $authors[$i]['orcid']);
                 $author->setUrl($authors[$i]['url']);
                 if (array_key_exists('competingInterests', $authors[$i])) {
-                    $author->setCompetingInterests($authors[$i]['competingInterests'], null);
+                    $author->setCompetingInterests($authors[$i]['competingInterests'], null); // Undefined method 'setCompetingInterests'.
                 }
                 $author->setBiography($authors[$i]['biography'], null);
                 $author->setPrimaryContact($this->getData('primaryContact') == $i ? 1 : 0);
@@ -367,6 +406,57 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         $deletedAuthors = preg_split('/:/', $this->getData('deletedAuthors'), -1,  PREG_SPLIT_NO_EMPTY);
         for ($i=0, $count=count($deletedAuthors); $i < $count; $i++) {
             $authorDao->deleteAuthorById($deletedAuthors[$i], $article->getId());
+        }
+
+        // [WIZDAM] Simpan funders (pendanaan/hibah) -- pola PERSIS sama
+        // dengan authors di atas (insert baru kalau funderId <= 0,
+        // update kalau sudah ada), tapi tanpa penanganan
+        // primaryContact/HookRegistry khusus karena funder tidak
+        // punya konsep setara itu.
+        /** @var ArticleFunderDAO $funderDao */
+        $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+        $funders = $this->getData('funders');
+        if (is_array($funders)) {
+            for ($i = 0, $count = count($funders); $i < $count; $i++) {
+                $funderName = trim((string) ($funders[$i]['funderName'] ?? ''));
+                if ($funderName === '') {
+                    // Baris kosong (mis. ditambahkan lewat grid lalu tidak
+                    // diisi) -- dilewati, tidak disimpan sebagai baris
+                    // funder kosong.
+                    continue;
+                }
+
+                $funderId = (int) ($funders[$i]['funderId'] ?? 0);
+                if ($funderId > 0) {
+                    $funder = $funderDao->getById($funderId, $article->getId());
+                    $isExistingFunder = ($funder !== null);
+                } else {
+                    $funder = null;
+                    $isExistingFunder = false;
+                }
+                if ($funder === null) {
+                    $funder = $funderDao->newDataObject();
+                    $isExistingFunder = false;
+                }
+
+                $funder->setArticleId($article->getId());
+                $funder->setFunderName($funderName);
+                $funder->setAwardNumber(trim((string) ($funders[$i]['awardNumber'] ?? '')) ?: null);
+                $funder->setSequence($i + 1);
+
+                if ($isExistingFunder) {
+                    $funderDao->updateArticleFunder($funder);
+                } else {
+                    $funderDao->insertArticleFunder($funder);
+                }
+                unset($funder);
+            }
+        }
+
+        // Remove deleted funders
+        $deletedFunders = preg_split('/:/', (string) $this->getData('deletedFunders'), -1, PREG_SPLIT_NO_EMPTY);
+        for ($i = 0, $count = count($deletedFunders); $i < $count; $i++) {
+            $funderDao->deleteById((int) $deletedFunders[$i], $article->getId());
         }
 
         parent::execute();
