@@ -30,73 +30,68 @@
 <div class="separator"></div>
 
 <form id="submit" method="post" action="{url op="saveSubmit" path=$submitStep}">
-
-    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
-
+    <input value="{$csrfToken|escape}" name="csrfToken" type="hidden" />
     {include file="common/formErrors.tpl"}
 
-{if $articleId}
-<input type="hidden" name="articleId" value="{$articleId|escape}" />{/if}
+	{if $articleId}
+		<input type="hidden" name="articleId" value="{$articleId|escape}" />
+	{/if}
 
-{if count($sectionOptions) <= 1}
-	<p class="alert-text">{translate key="author.submit.notAccepting"}</p>
-{else}
+	{if count($sectionOptions) <= 1}
+		<p class="alert-text">{translate key="author.submit.notAccepting"}</p>
+	{else}
 
-{if count($sectionOptions) == 2}
-	{* If there's only one section, force it and skip the section parts
-	   of the interface. *}
-	{foreach from=$sectionOptions item=val key=key}
-		<input type="hidden" name="sectionId" value="{$key|escape}" />
-	{/foreach}
-{else}{* if count($sectionOptions) == 2 *}
-<div id="section" class="block">
+	{if count($sectionOptions) == 2}
+		{* If there's only one section, force it and skip the section parts
+		of the interface. *}
+		{foreach from=$sectionOptions item=val key=key}
+			<input type="hidden" name="sectionId" value="{$key|escape}" />
+		{/foreach}
+	{else}{* if count($sectionOptions) == 2 *}
+		<div id="section" class="block">
+			<h3>{translate key="author.submit.journalSection"}</h3>
+			{url|assign:"url" page="about"}
+			<p class="alert-text">{translate key="author.submit.journalSectionDescription" aboutUrl=$url}</p>
 
-    <h3>{translate key="author.submit.journalSection"}</h3>
+			<table class="data" width="100%">
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="sectionId" required="true" key="section.section"}</td>
+					<td width="80%" class="value"><select name="sectionId" id="sectionId" size="1" class="selectMenu">{html_options options=$sectionOptions selected=$sectionId}</select></td>
+				</tr>
+			</table>
 
-    {url|assign:"url" page="about"}
-    <p class="alert-text">{translate key="author.submit.journalSectionDescription" aboutUrl=$url}</p>
+		</div>{* section *}
+		
+		<div class="separator"></div>
+	{/if}{* if count($sectionOptions) == 2 *}
 
-    <table class="data" width="100%">
-    	<tr valign="top">
-    		<td width="20%" class="label">{fieldLabel name="sectionId" required="true" key="section.section"}</td>
-    		<td width="80%" class="value"><select name="sectionId" id="sectionId" size="1" class="selectMenu">{html_options options=$sectionOptions selected=$sectionId}</select></td>
-    	</tr>
-    </table>
+	{if count($supportedSubmissionLocaleNames) == 1}
+		{* There is only one supported submission locale; choose it invisibly *}
+		{foreach from=$supportedSubmissionLocaleNames item=localeName key=locale}
+			<input type="hidden" name="locale" value="{$locale|escape}" />
+		{/foreach}
+	{else}
+		{* There are several submission locales available; allow choice *}
+		<div id="submissionLocale" >
+			<h3>{translate key="author.submit.submissionLocale"}</h3>
+			<p class="alert-text">{translate key="author.submit.submissionLocaleDescription"}</p>
 
-</div>{* section *}
+			<table class="data" width="100%">
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="locale" required="true" key="article.language"}</td>
+					<td width="80%" class="value"><select name="locale" id="locale" size="1" class="selectMenu">{html_options options=$supportedSubmissionLocaleNames selected=$locale}</select></td>
+				</tr>
+			</table>
 
-<div class="separator"></div>
+			<div class="separator"></div>
 
-{/if}{* if count($sectionOptions) == 2 *}
+		</div>{* submissionLocale *}
+	{/if}{* count($supportedSubmissionLocaleNames) == 1 *}
 
-{if count($supportedSubmissionLocaleNames) == 1}
-	{* There is only one supported submission locale; choose it invisibly *}
-	{foreach from=$supportedSubmissionLocaleNames item=localeName key=locale}
-		<input type="hidden" name="locale" value="{$locale|escape}" />
-	{/foreach}
-{else}
-	{* There are several submission locales available; allow choice *}
-	<div id="submissionLocale" >
-
-    	<h3>{translate key="author.submit.submissionLocale"}</h3>
-    	<p class="alert-text">{translate key="author.submit.submissionLocaleDescription"}</p>
-
-    	<table class="data" width="100%">
-    		<tr valign="top">
-    			<td width="20%" class="label">{fieldLabel name="locale" required="true" key="article.language"}</td>
-    			<td width="80%" class="value"><select name="locale" id="locale" size="1" class="selectMenu">{html_options options=$supportedSubmissionLocaleNames selected=$locale}</select></td>
-    		</tr>
-    	</table>
-
-    	<div class="separator"></div>
-
-	</div>{* submissionLocale *}
-{/if}{* count($supportedSubmissionLocaleNames) == 1 *}
-
-{if $authorFees} {* Bagian Fees ini seharusnya ada di bagian STEP 5 *}
-	{include file="author/submit/authorFees.tpl" showPayLinks=0}
-	<div class="separator"></div>
-{/if}
+	{if $authorFees} {* Bagian Fees ini seharusnya ada di bagian STEP 5 *}
+		{include file="author/submit/authorFees.tpl" showPayLinks=0}
+		<div class="separator"></div>
+	{/if}
 
 	<div id="titleAndAbstract" class="block">
 		<h3>{translate key="submission.titleAndAbstract"}</h3>
