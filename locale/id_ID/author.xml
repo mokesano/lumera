@@ -84,6 +84,24 @@
 	<message key="author.submit.addFunder">Tambah Pemberi Dana</message>
 	<message key="author.submit.deleteFunder">Hapus Pemberi Dana</message>
 	<message key="author.submit.noFunders">Belum ada sumber pendanaan yang ditambahkan. Kalau artikel ini menerima pendanaan eksternal, klik "Tambah Pemberi Dana" di bawah.</message>
+	
+	<message key="author.credit.label">Peran Kontributor (CRediT)</message>
+	<message key="author.credit.description">Opsional. Pilih semua peran yang berlaku untuk penulis ini, berdasarkan standar CRediT (Contributor Role Taxonomy).</message>
+	<message key="author.credit.role.conceptualization">Konseptualisasi</message>
+	<message key="author.credit.role.data_curation">Kurasi data</message>
+	<message key="author.credit.role.formal_analysis">Analisis formal</message>
+	<message key="author.credit.role.funding_acquisition">Perolehan pendanaan</message>
+	<message key="author.credit.role.investigation">Investigasi</message>
+	<message key="author.credit.role.methodology">Metodologi</message>
+	<message key="author.credit.role.project_administration">Administrasi proyek</message>
+	<message key="author.credit.role.resources">Sumber daya</message>
+	<message key="author.credit.role.software">Perangkat lunak</message>
+	<message key="author.credit.role.supervision">Supervisi</message>
+	<message key="author.credit.role.validation">Validasi</message>
+	<message key="author.credit.role.visualization">Visualisasi</message>
+	<message key="author.credit.role.writing_original_draft">Penulisan - draf awal</message>
+	<message key="author.credit.role.writing_review_editing">Penulisan - review &amp; penyuntingan</message>
+	
 	<message key="author.submit.submissionIndexingDescription">Masukkan istilah untuk mengindeks naskah; memisahkan istilah dengan titik dua (term1; term2; term3).</message> 
 	<message key="author.submit.submissionSupportingAgencies">Lembaga Pendukung</message> 
 	<message key="author.submit.submissionSupportingAgenciesDescription">Masukkan nama lembaga yang menyediakan dana atau dukungan untuk pekerjaan yang ditampilkan dalam jurnal.</message> 

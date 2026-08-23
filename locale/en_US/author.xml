@@ -84,6 +84,24 @@
 	<message key="author.submit.addFunder">Add Funder</message>
 	<message key="author.submit.deleteFunder">Delete Funder</message>
 	<message key="author.submit.noFunders">No funding sources added yet. If this article received external funding, click "Add Funder" below.</message>
+	
+	<message key="author.credit.label">Contributor Roles (CRediT)</message>
+	<message key="author.credit.description">Optional. Select all roles that apply to this author, based on the CRediT (Contributor Role Taxonomy) standard.</message>
+	<message key="author.credit.role.conceptualization">Conceptualization</message>
+	<message key="author.credit.role.data_curation">Data curation</message>
+	<message key="author.credit.role.formal_analysis">Formal analysis</message>
+	<message key="author.credit.role.funding_acquisition">Funding acquisition</message>
+	<message key="author.credit.role.investigation">Investigation</message>
+	<message key="author.credit.role.methodology">Methodology</message>
+	<message key="author.credit.role.project_administration">Project administration</message>
+	<message key="author.credit.role.resources">Resources</message>
+	<message key="author.credit.role.software">Software</message>
+	<message key="author.credit.role.supervision">Supervision</message>
+	<message key="author.credit.role.validation">Validation</message>
+	<message key="author.credit.role.visualization">Visualization</message>
+	<message key="author.credit.role.writing_original_draft">Writing – original draft</message>
+	<message key="author.credit.role.writing_review_editing">Writing – review &amp; editing</message>
+	
 	<message key="author.submit.submissionIndexingDescription">Provide terms for indexing the submission; separate terms with a semi-colon (term1; term2; term3).</message>
 	<message key="author.submit.submissionSupportingAgencies">Contributors and Supporting Agencies</message>
 	<message key="author.submit.submissionSupportingAgenciesDescription">Identify agencies (a person, an organization, or a service) that made contributions to the content or provided funding or support for the work presented in this submission. Separate them with a semi-colon (e.g. John Doe, Metro University; Master University, Department of Computer Science).</message>
