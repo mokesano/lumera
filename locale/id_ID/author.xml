@@ -111,6 +111,7 @@
 	<message key="author.submit.generativeAiDeclaration">Declaration of Generative AI Use</message>
 	<message key="author.submit.generativeAiDeclarationDescription">Jelaskan penggunaan alat generative AI apa pun (mis. ChatGPT) dalam penyusunan karya ini, termasuk alat mana dan untuk tujuan apa. Kalau tidak dipakai, nyatakan secara eksplisit.</message>
 	<message key="author.submit.generativeAiDeclarationLabel">Declaration of Generative AI</message>
+	
 	<message key="author.submit.overview">Ringkasan</message>
 	<message key="author.submit.saveToDraft">Simpan sebagai Draft</message>
 	
