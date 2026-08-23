@@ -166,6 +166,7 @@ class Application extends PKPApplication {
             'ArticleCommentDAO' => 'classes.article.ArticleCommentDAO',
             'ArticleDAO' => 'classes.article.ArticleDAO',
             'ArticleFileDAO' => 'classes.article.ArticleFileDAO',
+            'ArticleFunderDAO' => 'classes.article.ArticleFunderDAO',
             'ArticleGalleyDAO' => 'classes.article.ArticleGalleyDAO',
             'ArticleNoteDAO' => 'classes.article.ArticleNoteDAO',
             'ArticleSearchDAO' => 'classes.search.ArticleSearchDAO',

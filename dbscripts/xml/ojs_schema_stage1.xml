@@ -2,7 +2,7 @@
 <!DOCTYPE schema SYSTEM "../../lib/pkp/dtd/xmlSchema.dtd">
 
 <!--
-  * ojs_schema.xml
+  * ojs_schema_stage1.xml
   *
   * Copyright (c) 2013-2019 Simon Fraser University
   * Copyright (c) 2003-2019 John Willinsky
@@ -744,6 +744,30 @@
 		<field name="date_posted" type="T"/>
 		<field name="date_modified" type="T"/>
 		<descr>Reader comments on articles.</descr>
+	</table>
+
+	<!--
+	  *
+	  * TABLE article_funders
+	  *
+	  -->
+	<table name="article_funders">
+		<field name="funder_id" type="I8">
+			<KEY />
+			<AUTOINCREMENT/>
+		</field>
+		<field name="article_id" type="I8">
+			<NOTNULL/>
+		</field>
+		<field name="seq" type="F">
+			<NOTNULL/>
+			<DEFAULT VALUE="0"/>
+		</field>
+		<field name="funder_name" type="C2" size="255">
+			<NOTNULL/>
+		</field>
+		<field name="award_number" type="C2" size="255"/>
+		<descr>Funder/grant metadata for articles (FundRef data for Crossref deposit).</descr>
 	</table>
 
 	<!--

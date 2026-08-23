@@ -120,5 +120,32 @@
             <col>journal_id</col>
         </index>
     </table>
+
+    <!--
+      *
+      * TABLE article_funders
+      *
+      -->
+    <table name="article_funders">
+        <field name="funder_id" type="I8">
+            <KEY/>
+            <AUTOINCREMENT/>
+        </field>
+        <field name="article_id" type="I8">
+            <NOTNULL/>
+        </field>
+        <field name="seq" type="F">
+            <NOTNULL/>
+            <DEFAULT VALUE="0"/>
+        </field>
+        <field name="funder_name" type="C2" size="255">
+            <NOTNULL/>
+        </field>
+        <field name="award_number" type="C2" size="255" />
+        <descr>Funder/grant metadata for articles (FundRef data for Crossref deposit).</descr>
+        <index name="article_funders_article_id">
+            <col>article_id</col>
+        </index>
+    </table>
     
 </schema>
