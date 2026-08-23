@@ -102,6 +102,16 @@
 	<message key="author.credit.role.writing_original_draft">Penulisan - draf awal</message>
 	<message key="author.credit.role.writing_review_editing">Penulisan - review &amp; penyuntingan</message>
 	
+	<message key="author.submit.competingInterest">Competing Interest</message>
+	<message key="author.submit.competingInterestDescription">Semua penulis wajib menyatakan hubungan finansial atau pribadi apa pun yang bisa dianggap memengaruhi karya yang dilaporkan dalam artikel ini. Kalau tidak ada, nyatakan secara eksplisit.</message>
+	<message key="author.submit.competingInterestLabel">Pernyataan Competing Interest</message>
+	<message key="author.submit.ethicalApproval">Ethical Approval</message>
+	<message key="author.submit.ethicalApprovalDescription">Kalau karya ini melibatkan partisipan manusia, hewan, atau data sensitif, jelaskan persetujuan etik yang diperoleh (nama komite, nomor persetujuan). Kalau tidak berlaku, nyatakan secara eksplisit.</message>
+	<message key="author.submit.ethicalApprovalLabel">Pernyataan Ethical Approval</message>
+	<message key="author.submit.generativeAiDeclaration">Declaration of Generative AI Use</message>
+	<message key="author.submit.generativeAiDeclarationDescription">Jelaskan penggunaan alat generative AI apa pun (mis. ChatGPT) dalam penyusunan karya ini, termasuk alat mana dan untuk tujuan apa. Kalau tidak dipakai, nyatakan secara eksplisit.</message>
+	<message key="author.submit.generativeAiDeclarationLabel">Declaration of Generative AI</message>
+	
 	<message key="author.submit.submissionIndexingDescription">Masukkan istilah untuk mengindeks naskah; memisahkan istilah dengan titik dua (term1; term2; term3).</message> 
 	<message key="author.submit.submissionSupportingAgencies">Lembaga Pendukung</message> 
 	<message key="author.submit.submissionSupportingAgenciesDescription">Masukkan nama lembaga yang menyediakan dana atau dukungan untuk pekerjaan yang ditampilkan dalam jurnal.</message> 
