@@ -133,31 +133,6 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
             ))
         );
 
-        // Set up required Payment Related Information (sama seperti Step 1 lama)
-        import('classes.payment.ojs.OJSPaymentManager');
-        $paymentManager = new OJSPaymentManager($this->request);
-        if ($paymentManager->submissionEnabled() || $paymentManager->fastTrackEnabled() || $paymentManager->publicationEnabled()) {
-            $templateMgr->assign('authorFees', true);
-
-            import('lib.wizdam.classes.invoice.Invoice');
-            /** @var InvoiceDAO $invoiceDao */
-            $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
-            $articleId = $this->articleId;
-
-            if ($articleId !== null) {
-                if ($paymentManager->submissionEnabled()) {
-                    $templateMgr->assign('submissionPayment', $invoiceDao->getPaidInvoiceForArticleFee(
-                        $journal->getId(), $articleId, Invoice::FEE_TYPE_SUBMISSION, PAYMENT_TYPE_SUBMISSION
-                    ));
-                }
-                if ($paymentManager->fastTrackEnabled()) {
-                    $templateMgr->assign('fastTrackPayment', $invoiceDao->getPaidInvoiceForArticleFee(
-                        $journal->getId(), $articleId, Invoice::FEE_TYPE_FAST_TRACK, PAYMENT_TYPE_FASTTRACK
-                    ));
-                }
-            }
-        }
-
         parent::display($request, $template);
     }
 

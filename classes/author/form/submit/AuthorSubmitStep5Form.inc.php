@@ -107,11 +107,6 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
         $paymentManager = new OJSPaymentManager($this->request);
         if ( $paymentManager->submissionEnabled() || $paymentManager->fastTrackEnabled() || $paymentManager->publicationEnabled()) {
             $templateMgr->assign('authorFees', true);
-            // [WIZDAM BUGFIX] Sebelumnya OJSCompletedPaymentDAO -- lihat
-            // catatan lengkap di SubmissionEditHandler::submission() untuk
-            // penjelasan akar masalah. Diganti InvoiceDAO::
-            // getPaidInvoiceForArticleFee() -- satu sumber kebenaran yang
-            // konsisten dengan halaman editor.
             import('lib.wizdam.classes.invoice.Invoice');
             /** @var InvoiceDAO $invoiceDao */
             $invoiceDao = DAORegistry::getDAO('InvoiceDAO');
