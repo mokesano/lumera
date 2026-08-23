@@ -2,6 +2,7 @@
  * plugins/themes/sangiapub/templates/author/submit/step2.tpl
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
  * Distributed under the GNU GPL v3.
  *
  * [WIZDAM] Step 2 dari wizard submit yang DIRESTRUKTURISASI --

@@ -2,6 +2,7 @@
  * plugins/themes/sangiapub/templates/author/submit/step3.tpl
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
  * Distributed under the GNU GPL v3.
  *
  * [WIZDAM] Step 3 dari wizard submit yang DIRESTRUKTURISASI --

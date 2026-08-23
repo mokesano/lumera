@@ -1,9 +1,9 @@
 {**
  * templates/author/submit/step1.tpl
  *
- * Copyright (c) 2013-2017 Simon Fraser University
- * Copyright (c) 2003-2016 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
  * Step 1 of author article submission.
  *
