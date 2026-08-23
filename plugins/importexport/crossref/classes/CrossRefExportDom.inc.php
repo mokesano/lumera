@@ -453,17 +453,33 @@ class CrossRefExportDom extends DOIExportDom {
             XMLCustomWriter::createChildWithText($doc, $licenseNode, 'ai:license_ref', (string) $licenseUrl);
         }
 
+        // [WIZDAM] fr:program (FundRef) -- SAMA PERSIS posisinya dengan
+        // ai:program dalam xsd:choice skema 4.3.6 (dikonfirmasi lewat
+        // dokumentasi resmi Crossref: fr:program dan ai:program adalah
+        // SATU xsd:sequence bersama, alternatif terhadap <crossmark>).
+        // Dibangun sebagai node terpisah dulu -- ditempatkan oleh
+        // _generateCrossmarkDom() di bawah, TEPAT seperti licenseNode.
+        $fundRefNode = $this->_generateFundRefDom($doc, $article);
+
         // [WIZDAM] Crossmark -- lihat _generateCrossmarkDom() untuk detail
         // lengkap. Mengembalikan null kalau kebijakan Crossmark belum
         // dikonfigurasi Publisher (wizdam_doi_crossmark_policy_doi kosong)
-        // -- dalam kasus itu, $licenseNode (kalau ada) di-append berdiri
-        // sendiri seperti sebelumnya, TIDAK ADA REGRESI untuk instalasi
-        // yang belum mengisi pengaturan ini.
-        $crossmarkNode = $this->_generateCrossmarkDom($doc, $journal, $article, $licenseNode);
+        // -- dalam kasus itu, $licenseNode dan $fundRefNode (kalau ada)
+        // di-append berdiri sendiri seperti perilaku asli, TIDAK ADA
+        // REGRESI untuk instalasi yang belum mengisi pengaturan ini.
+        $crossmarkNode = $this->_generateCrossmarkDom($doc, $journal, $article, $licenseNode, $fundRefNode);
         if ($crossmarkNode) {
             XMLCustomWriter::appendChild($journalArticleNode, $crossmarkNode);
-        } elseif ($licenseNode) {
-            XMLCustomWriter::appendChild($journalArticleNode, $licenseNode);
+        } else {
+            // [WIZDAM] Tanpa Crossmark, fr:program dan ai:program tetap
+            // SATU xsd:sequence bersama -- urutan fr: SEBELUM ai: (sesuai
+            // urutan deklarasi elemen dalam skema).
+            if ($fundRefNode) {
+                XMLCustomWriter::appendChild($journalArticleNode, $fundRefNode);
+            }
+            if ($licenseNode) {
+                XMLCustomWriter::appendChild($journalArticleNode, $licenseNode);
+            }
         }
 
         // DOI data node
@@ -493,6 +509,75 @@ class CrossRefExportDom extends DOIExportDom {
         }
 
         return $journalArticleNode;
+    }
+
+    /**
+     * Generate elemen fr:program (FundRef) -- data pendanaan/hibah
+     * artikel dari ArticleFunderDAO (lihat classes/article/ArticleFunder,
+     * diisi lewat grid Funders di Step 3 wizard submit). Mengembalikan
+     * null kalau artikel tidak punya funder sama sekali -- TIDAK
+     * menyisipkan elemen kosong.
+     * @param object $doc
+     * @param PublishedArticle $article
+     * @return object|null
+     */
+    public function _generateFundRefDom($doc, $article) {
+        /** @var ArticleFunderDAO $funderDao */
+        $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+        $funders = $funderDao->getByArticleId((int) $article->getId())->toArray();
+
+        if (empty($funders)) {
+            return null;
+        }
+
+        // [WIZDAM] fr:program (FundRef) -- dikonfirmasi lewat dokumentasi
+        // resmi Crossref (funding-data-overview, funding-data-deposits):
+        //   - funder_name WAJIB untuk setiap entri (skema menolak deposit
+        //     yang cuma berisi award_number tanpa funder_name).
+        //   - award_number OPSIONAL per funder -- "Deposits without an
+        //     award_number will be accepted".
+        //   - funder_identifier (ID Registry Crossref, mis. DOI funder)
+        //     TIDAK diikutsertakan di sini -- field ini TIDAK ada di form
+        //     submission (hanya funderName + awardNumber, sesuai keputusan
+        //     eksplisit sebelumnya). Tanpa funder_identifier, deposit
+        //     TETAP VALID dan DITERIMA Crossref, hanya saja funder_name-nya
+        //     tidak akan muncul di pencarian/filter Open Funder Registry
+        //     mereka sampai dicocokkan manual oleh tim Crossref.
+        //   - fundgroup membungkus SETIAP funder+award SECARA TERPISAH --
+        //     wajib dipakai kalau ada BEBERAPA funder sekaligus, supaya
+        //     tidak ambigu award_number mana kepunyaan funder yang mana
+        //     (dikonfirmasi: "items with several award numbers... should
+        //     be grouped together by enclosing funder_name...within a
+        //     fundgroup assertion").
+        $fundRefNode = XMLCustomWriter::createElement($doc, 'fr:program');
+        XMLCustomWriter::setAttribute($fundRefNode, 'name', 'fundref');
+
+        foreach ($funders as $funder) {
+            $funderName = trim((string) $funder->getFunderName());
+            if ($funderName === '') {
+                continue;
+            }
+
+            $fundgroupNode = XMLCustomWriter::createElement($doc, 'fr:assertion');
+            XMLCustomWriter::setAttribute($fundgroupNode, 'name', 'fundgroup');
+
+            $funderNameNode = XMLCustomWriter::createElement($doc, 'fr:assertion');
+            XMLCustomWriter::setAttribute($funderNameNode, 'name', 'funder_name');
+            XMLCustomWriter::appendChild($funderNameNode, XMLCustomWriter::createTextNode($doc, PKPString::html2utf($funderName)));
+            XMLCustomWriter::appendChild($fundgroupNode, $funderNameNode);
+
+            $awardNumber = trim((string) $funder->getAwardNumber());
+            if ($awardNumber !== '') {
+                $awardNumberNode = XMLCustomWriter::createElement($doc, 'fr:assertion');
+                XMLCustomWriter::setAttribute($awardNumberNode, 'name', 'award_number');
+                XMLCustomWriter::appendChild($awardNumberNode, XMLCustomWriter::createTextNode($doc, PKPString::html2utf($awardNumber)));
+                XMLCustomWriter::appendChild($fundgroupNode, $awardNumberNode);
+            }
+
+            XMLCustomWriter::appendChild($fundRefNode, $fundgroupNode);
+        }
+
+        return $fundRefNode;
     }
 
     /**
@@ -571,9 +656,13 @@ class CrossRefExportDom extends DOIExportDom {
      * @param object|null $licenseNode Node ai:program yang sudah dibangun
      *   sebelumnya (atau null kalau artikel tidak punya lisensi) --
      *   dipindahkan KE DALAM custom_metadata di sini, bukan dibangun ulang.
+     * @param object|null $fundRefNode Node fr:program yang sudah dibangun
+     *   sebelumnya (atau null kalau artikel tidak punya funder) -- sama
+     *   seperti $licenseNode, dipindahkan KE DALAM custom_metadata,
+     *   BUKAN dibangun ulang.
      * @return object|null
      */
-    public function _generateCrossmarkDom($doc, $journal, $article, $licenseNode) {
+    public function _generateCrossmarkDom($doc, $journal, $article, $licenseNode, $fundRefNode = null) {
         import('lib.wizdam.classes.services.DoiCredentialService');
         $doiCredentials = DoiCredentialService::resolveForJournal($journal);
         $crossmarkPolicyDoi = $doiCredentials->getCrossmarkPolicyDoi();
@@ -588,8 +677,10 @@ class CrossRefExportDom extends DOIExportDom {
 
         $customMetadataNode = XMLCustomWriter::createElement($doc, 'custom_metadata');
 
-        // ai:program (lisensi) yang sebelumnya berdiri sendiri --
-        // dipindahkan ke sini karena xsd:choice (lihat dokblok di atas).
+        if ($fundRefNode) {
+            XMLCustomWriter::appendChild($customMetadataNode, $fundRefNode);
+        }
+
         if ($licenseNode) {
             XMLCustomWriter::appendChild($customMetadataNode, $licenseNode);
         }

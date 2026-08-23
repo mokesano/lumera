@@ -23,6 +23,11 @@ define('DOI_EXPORT_FILETYPE_PS', 'PostScript');
 define('DOI_EXPORT_XMLNS_XSI' , 'http://www.w3.org/2001/XMLSchema-instance');
 define('DOI_EXPORT_XMLNS_JATS', 'http://www.ncbi.nlm.nih.gov/JATS1');
 define('DOI_EXPORT_XMLNS_AI', 'http://www.crossref.org/AccessIndicators.xsd');
+// [WIZDAM] Namespace FundRef -- dikonfirmasi lewat dokumentasi resmi
+// Crossref (funding-data-overview, funding-data-deposits): fr:program
+// SELALU dideklarasikan dengan xmlns:fr="http://www.crossref.org/fundref.xsd"
+// di root doi_batch, sama seperti ai:/jats: di atas.
+define('DOI_EXPORT_XMLNS_FR', 'http://www.crossref.org/fundref.xsd');
 
 class DOIExportDom {
 
@@ -219,6 +224,7 @@ class DOIExportDom {
         }
         XMLCustomWriter::setAttribute($rootElement, 'xmlns:jats', DOI_EXPORT_XMLNS_JATS);
         XMLCustomWriter::setAttribute($rootElement, 'xmlns:ai', DOI_EXPORT_XMLNS_AI);
+        XMLCustomWriter::setAttribute($rootElement, 'xmlns:fr', DOI_EXPORT_XMLNS_FR);
         XMLCustomWriter::setAttribute($rootElement, 'xsi:schemaLocation', $this->getXmlSchemaLocation());
 
         return $rootElement;
