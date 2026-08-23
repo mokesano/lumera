@@ -85,7 +85,12 @@
 	<message key="author.submit.languageInstructions"><![CDATA[English=en; French=fr; Spanish=es. <a href="http://www.loc.gov/standards/iso639-2/php/code_list.php" target="_blank">Kode Tambahan</a>.]]></message>	<message key="author.submit.form.authorRequired">Setidaknya dibutuhkan satu penulis.</message>
 	<message key="author.submit.form.funderNameRequired">Nama pemberi dana wajib diisi untuk setiap entri pendanaan yang ditambahkan.</message>
 	<message key="author.submit.form.authorRequiredFields">Nama pertama, Nama terakhir, dan alamat email masing-masing penulis dibutuhkan.</message> 
-	<message key="author.submit.form.titleRequired">Masukkan judul artikel Anda.</message> 
+	<message key="author.submit.form.titleRequired">Masukkan judul artikel Anda.</message>
+	<message key="author.submit.form.checklistRequired">Anda harus mencentang setiap butir checklist sebelum melanjutkan.</message>
+	<message key="author.submit.form.copyrightNoticeAgreeRequired">Anda harus menyetujui pernyataan hak cipta sebelum melanjutkan.</message>
+	<message key="author.submit.form.competingInterestRequired">Masukkan pernyataan Competing Interest (kalau tidak ada, nyatakan secara eksplisit, mis. "Penulis menyatakan tidak ada competing interest.").</message>
+	<message key="author.submit.form.ethicalApprovalRequired">Masukkan pernyataan Ethical Approval (kalau tidak berlaku, nyatakan secara eksplisit, mis. "Tidak berlaku.").</message>
+	<message key="author.submit.form.generativeAiDeclarationRequired">Masukkan pernyataan Declaration of Generative AI (kalau tidak dipakai, nyatakan secara eksplisit, mis. "Tidak ada alat generative AI yang dipakai dalam penyusunan karya ini.").</message>
 	<message key="author.submit.form.abstractRequired">Masukkam sari artikel Anda.</message> 
 	<message key="author.submit.form.wordCountAlert">Anda melampaui batas maksimal kata untuk sari.</message> 
 	<message key="author.submit.submissionFile">File Penyerahan.</message> 

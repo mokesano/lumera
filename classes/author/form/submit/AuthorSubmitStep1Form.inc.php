@@ -4,14 +4,30 @@ declare(strict_types=1);
 /**
  * @file classes/author/form/submit/AuthorSubmitStep1Form.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Distributed under the GNU GPL v3.
  *
  * @class AuthorSubmitStep1Form
  * @ingroup author_form_submit
  *
- * @brief Form for Step 1 of author article submission.
+ * @brief [WIZDAM] Step 1 dari wizard submit yang DIRESTRUKTURISASI --
+ * Metadata (judul, abstrak, kata kunci, dst) SEKALIGUS pembuatan
+ * record artikel itu sendiri (section, locale, penulis awal dari
+ * profil user login).
+ *
+ * Ini PENGGABUNGAN dua form lama: logika pembuatan artikel dari
+ * AuthorSubmitStep1Form LAMA (sectionId, locale, insertArticle(),
+ * penulis awal) DIGABUNG dengan field metadata dari
+ * AuthorSubmitStep3Form LAMA (title, abstract, discipline,
+ * subjectClass, subject, coverage*, type, language, sponsor,
+ * citations) -- authors/funders/CRediT SENGAJA TIDAK di sini,
+ * dipindahkan ke AuthorSubmitStep2Form baru.
+ *
+ * commentsToEditor SENGAJA tidak lagi dikumpulkan di step ini
+ * (sebelumnya ada di Step 1 lama DAN Step 5 lama sekaligus) --
+ * disederhanakan jadi HANYA di Step 5 (Overview+Submit), yang jauh
+ * lebih relevan konteksnya (catatan untuk editor biasanya ditulis
+ * setelah melihat seluruh input, bukan di awal sebelum apa pun diisi).
  */
 
 import('classes.author.form.submit.AuthorSubmitForm');
@@ -27,13 +43,45 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
     public function __construct($article, $journal, $request) {
         parent::__construct($article, 1, $journal, $request);
 
-        // Validation checks for this form
+        // --- Validasi dari Step 1 LAMA (pembuatan artikel) ---
         $this->addCheck(new FormValidator($this, 'sectionId', 'required', 'author.submit.form.sectionRequired'));
         $this->addCheck(new FormValidatorCustom($this, 'sectionId', 'required', 'author.submit.form.sectionRequired', [DAORegistry::getDAO('SectionDAO'), 'sectionExists'], [$journal->getId()]));
 
         $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
         if (!is_array($supportedSubmissionLocales) || count($supportedSubmissionLocales) < 1) $supportedSubmissionLocales = [$journal->getPrimaryLocale()];
         $this->addCheck(new FormValidatorInSet($this, 'locale', 'required', 'author.submit.form.localeRequired', $supportedSubmissionLocales));
+
+        // --- Validasi dari Step 3 LAMA (metadata) ---
+        $this->addCheck(new FormValidatorLocale($this, 'title', 'required', 'author.submit.form.titleRequired', $this->getRequiredLocale()));
+
+        // Validasi jumlah kata abstrak & wajib/tidaknya abstrak baru bisa
+        // diketahui SETELAH section diketahui -- section BARU ada kalau
+        // $this->article sudah ada (artikel sudah pernah dibuat, user
+        // kembali ke step ini untuk edit). Untuk pembuatan BARU (section
+        // belum dipilih sama sekali saat form pertama kali dirender),
+        // validasi abstrak wajib/word-count ditambahkan di readInputData()
+        // setelah section diketahui dari input, mengikuti pola persis
+        // Step 3 lama.
+        if (isset($article)) {
+            /** @var SectionDAO $sectionDao */
+            $sectionDao = DAORegistry::getDAO('SectionDAO');
+            $section = $sectionDao->getSection($article->getSectionId());
+            if ($section) {
+                $abstractWordCount = $section->getAbstractWordCount();
+                if (isset($abstractWordCount) && $abstractWordCount > 0) {
+                    $this->addCheck(new FormValidatorCustom(
+                        $this, 'abstract', 'required', 'author.submit.form.wordCountAlert',
+                        function($abstract, $wordCount) {
+                            foreach ($abstract as $localizedAbstract) {
+                                return count(preg_split("/\s+/", trim(str_replace("&nbsp;", " ", strip_tags($localizedAbstract))))) <= $wordCount;
+                            }
+                            return true;
+                        },
+                        [$abstractWordCount]
+                    ));
+                }
+            }
+        }
     }
 
     /**
@@ -75,7 +123,17 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
         $isEditor = $roleDao->userHasRole($journal->getId(), $user->getId(), ROLE_ID_EDITOR) || $roleDao->userHasRole($journal->getId(), $user->getId(), ROLE_ID_SECTION_EDITOR);
         $templateMgr->assign('sectionOptions', ['0' => __('author.submit.selectSection')] + $sectionDao->getSectionTitles($journal->getId(), !$isEditor));
 
-        // Set up required Payment Related Information
+        $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
+        if (empty($supportedSubmissionLocales)) $supportedSubmissionLocales = [$journal->getPrimaryLocale()];
+        $templateMgr->assign(
+            'supportedSubmissionLocaleNames',
+            array_flip(array_intersect(
+                array_flip(AppLocale::getAllLocales()),
+                $supportedSubmissionLocales
+            ))
+        );
+
+        // Set up required Payment Related Information (sama seperti Step 1 lama)
         import('classes.payment.ojs.OJSPaymentManager');
         $paymentManager = new OJSPaymentManager($this->request);
         if ($paymentManager->submissionEnabled() || $paymentManager->fastTrackEnabled() || $paymentManager->publicationEnabled()) {
@@ -92,7 +150,6 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
                         $journal->getId(), $articleId, Invoice::FEE_TYPE_SUBMISSION, PAYMENT_TYPE_SUBMISSION
                     ));
                 }
-
                 if ($paymentManager->fastTrackEnabled()) {
                     $templateMgr->assign('fastTrackPayment', $invoiceDao->getPaidInvoiceForArticleFee(
                         $journal->getId(), $articleId, Invoice::FEE_TYPE_FAST_TRACK, PAYMENT_TYPE_FASTTRACK
@@ -101,16 +158,6 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
             }
         }
 
-        $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
-        if (empty($supportedSubmissionLocales)) $supportedSubmissionLocales = [$journal->getPrimaryLocale()];
-        $templateMgr->assign(
-            'supportedSubmissionLocaleNames',
-            array_flip(array_intersect(
-                array_flip(AppLocale::getAllLocales()),
-                $supportedSubmissionLocales
-            ))
-        );
-
         parent::display($request, $template);
     }
 
@@ -118,46 +165,111 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
      * Initialize form data from current article.
      */
     public function initData() {
+        $formLocales = $this->getSubmissionLocales();
+
         if (isset($this->article)) {
+            $article = $this->article;
+            /** @var SectionDAO $sectionDao */
+            $sectionDao = DAORegistry::getDAO('SectionDAO');
+
             $this->_data = [
-                'sectionId' => $this->article->getSectionId(),
-                'locale' => $this->article->getLocale(),
-                'commentsToEditor' => $this->article->getCommentsToEditor()
+                'sectionId' => $article->getSectionId(),
+                'locale' => $article->getLocale(),
+                'section' => $sectionDao->getSection($article->getSectionId()),
+                'title' => $article->getTitle(null),
+                'abstract' => $article->getAbstract(null),
+                'discipline' => $article->getDiscipline(null),
+                'subjectClass' => $article->getSubjectClass(null),
+                'subject' => $article->getSubject(null),
+                'coverageGeo' => $article->getCoverageGeo(null),
+                'coverageChron' => $article->getCoverageChron(null),
+                'coverageSample' => $article->getCoverageSample(null),
+                'type' => $article->getType(null),
+                'language' => $article->getLanguage(),
+                'sponsor' => $article->getSponsor(null),
+                'citations' => $article->getCitations(),
             ];
+
+            if (!is_array($this->_data['title'])) $this->_data['title'] = [];
+            if (!is_array($this->_data['abstract'])) $this->_data['abstract'] = [];
+            foreach ($formLocales as $locale) {
+                if (!isset($this->_data['title'][$locale])) $this->_data['title'][$locale] = '';
+                if (!isset($this->_data['abstract'][$locale])) $this->_data['abstract'][$locale] = '';
+            }
         } else {
-            // [WIZDAM] Singleton Fallback
+            // [WIZDAM] Singleton Fallback -- artikel BELUM dibuat (kunjungan
+            // pertama ke wizard submit). Pola persis Step 1 lama untuk
+            // menentukan locale default.
             $request = Application::get()->getRequest();
-            $journal = $request->getJournal(); /** DEPRECATED */
+            $journal = $request->getJournal();
             $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
-            // Try these locales in order until we find one that's
-            // supported to use as a default.
             $fallbackLocales = array_keys($supportedSubmissionLocales);
             $tryLocales = [
-                $this->getFormLocale(), // Current form locale
-                AppLocale::getLocale(), // Current UI locale
-                $journal->getPrimaryLocale(), // Journal locale
-                $supportedSubmissionLocales[array_shift($fallbackLocales)] // Fallback: first one on the list
+                $this->getFormLocale(),
+                AppLocale::getLocale(),
+                $journal->getPrimaryLocale(),
+                $supportedSubmissionLocales[array_shift($fallbackLocales)]
             ];
             $this->_data = [];
             foreach ($tryLocales as $locale) {
                 if (in_array($locale, $supportedSubmissionLocales)) {
-                    // Found a default to use
                     $this->_data['locale'] = $locale;
                     break;
                 }
             }
         }
+        return parent::initData();
     }
 
     /**
      * Assign form data to user-submitted data.
      */
     public function readInputData() {
-        $this->readUserVars(['locale', 'submissionChecklist', 'copyrightNoticeAgree', 'sectionId', 'commentsToEditor']);
+        $this->readUserVars([
+            'locale', 'sectionId',
+            'title', 'abstract', 'discipline', 'subjectClass', 'subject',
+            'coverageGeo', 'coverageChron', 'coverageSample', 'type',
+            'language', 'sponsor', 'citations',
+        ]);
+
+        $formLocales = $this->getSubmissionLocales();
+
+        if (!is_array($this->_data['title'])) $this->_data['title'] = [];
+        if (!is_array($this->_data['abstract'])) $this->_data['abstract'] = [];
+        foreach ($formLocales as $formLocale) {
+            if (!isset($this->_data['title'][$formLocale])) $this->_data['title'][$formLocale] = '';
+            if (!isset($this->_data['abstract'][$formLocale])) $this->_data['abstract'][$formLocale] = '';
+        }
+
+        // Load the section (dari input, karena bisa jadi INI kunjungan
+        // pertama -- $this->article belum tentu ada) -- pola persis
+        // Step 3 lama.
+        /** @var SectionDAO $sectionDao */
+        $sectionDao = DAORegistry::getDAO('SectionDAO');
+        $sectionId = $this->getData('sectionId');
+        $this->_data['section'] = $sectionId ? $sectionDao->getSection($sectionId) : null;
+
+        if ($this->_data['section'] && $this->_data['section']->getAbstractsNotRequired() == 0) {
+            $this->addCheck(new FormValidatorLocale($this, 'abstract', 'required', 'author.submit.form.abstractRequired', $this->getRequiredLocale()));
+        }
     }
 
     /**
-     * Save changes to article.
+     * Get the names of fields for which data should be localized
+     * @return array
+     */
+    public function getLocaleFieldNames() {
+        return array_merge(parent::getLocaleFieldNames(), [
+            'title', 'abstract', 'subjectClass', 'subject', 'coverageGeo', 'coverageChron',
+            'coverageSample', 'type', 'sponsor'
+        ]);
+    }
+
+    /**
+     * Save changes to article -- kalau artikel BELUM ada, buat baru
+     * (persis Step 1 lama, TERMASUK pembuatan penulis awal dari profil
+     * user login). Kalau SUDAH ada, update field metadata (persis
+     * bagian metadata Step 3 lama).
      * @param object|null $object
      * @return int the article ID
      */
@@ -167,18 +279,42 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
 
         if (isset($this->article)) {
             // Update existing article
-            $this->article->setSectionId($this->getData('sectionId'));
-            $this->article->setLocale($this->getData('locale'));
-            $this->article->setCommentsToEditor($this->getData('commentsToEditor'));
-            if ($this->article->getSubmissionProgress() <= $this->step) {
-                $this->article->stampStatusModified();
-                $this->article->setSubmissionProgress($this->step + 1);
+            $article = $this->article;
+            $previousRawCitationList = $article->getCitations();
+
+            $article->setSectionId($this->getData('sectionId'));
+            $article->setLocale($this->getData('locale'));
+            $article->setTitle($this->getData('title'), null);
+            $article->setAbstract($this->getData('abstract'), null);
+            $article->setDiscipline($this->getData('discipline'), null);
+            $article->setSubjectClass($this->getData('subjectClass'), null);
+            $article->setSubject($this->getData('subject'), null);
+            $article->setCoverageGeo($this->getData('coverageGeo'), null);
+            $article->setCoverageChron($this->getData('coverageChron'), null);
+            $article->setCoverageSample($this->getData('coverageSample'), null);
+            $article->setType($this->getData('type'), null);
+            $article->setLanguage($this->getData('language'));
+            $article->setSponsor($this->getData('sponsor'), null);
+            $article->setCitations($this->getData('citations'));
+
+            if ($article->getSubmissionProgress() <= $this->step) {
+                $article->stampStatusModified();
+                $article->setSubmissionProgress($this->step + 1);
             }
-            $articleDao->updateArticle($this->article);
+            $articleDao->updateArticle($article);
+
+            // Perbarui daftar referensi kalau berubah -- pola persis
+            // Step 3 lama.
+            /** @var CitationDAO $citationDao */
+            $citationDao = DAORegistry::getDAO('CitationDAO');
+            $rawCitationList = $article->getCitations();
+            if ($previousRawCitationList != $rawCitationList) {
+                $request = $this->request ? $this->request : Application::get()->getRequest();
+                $citationDao->importCitations($request, ASSOC_TYPE_ARTICLE, $article->getId(), $rawCitationList);
+            }
 
         } else {
-            // Insert new article
-            // [WIZDAM] Singleton Fallback
+            // Insert new article -- pola PERSIS Step 1 lama.
             $request = Application::get()->getRequest();
             $journal = $request->getJournal();
             $user = $request->getUser();
@@ -188,16 +324,26 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
             $this->article->setUserId($user->getId());
             $this->article->setJournalId($journal->getId());
             $this->article->setSectionId($this->getData('sectionId'));
+            $this->article->setTitle($this->getData('title'), null);
+            $this->article->setAbstract($this->getData('abstract'), null);
+            $this->article->setDiscipline($this->getData('discipline'), null);
+            $this->article->setSubjectClass($this->getData('subjectClass'), null);
+            $this->article->setSubject($this->getData('subject'), null);
+            $this->article->setCoverageGeo($this->getData('coverageGeo'), null);
+            $this->article->setCoverageChron($this->getData('coverageChron'), null);
+            $this->article->setCoverageSample($this->getData('coverageSample'), null);
+            $this->article->setType($this->getData('type'), null);
+            $this->article->setSponsor($this->getData('sponsor'), null);
+            $this->article->setCitations($this->getData('citations'));
             $this->article->stampStatusModified();
             $this->article->setSubmissionProgress($this->step + 1);
             $this->article->setLanguage(PKPString::substr($this->article->getLocale(), 0, 2));
-            $this->article->setCommentsToEditor($this->getData('commentsToEditor'));
             $articleDao->insertArticle($this->article);
             $this->articleId = $this->article->getId();
 
-            // Set user to initial author
-            $authorDao = DAORegistry::getDAO('AuthorDAO'); /** @var AuthorDAO $authorDao */
-            $user = $request->getUser();
+            // Set user to initial author -- pola PERSIS Step 1 lama.
+            /** @var AuthorDAO $authorDao */
+            $authorDao = DAORegistry::getDAO('AuthorDAO');
             $author = new Author();
             $author->setSubmissionId($this->articleId);
             $author->setFirstName($user->getFirstName());
@@ -211,7 +357,19 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
             $author->setBiography($user->getBiography(null), null);
             $author->setPrimaryContact(1);
             $authorDao->insertAuthor($author);
+
+            // Referensi (kalau diinput saat pembuatan baru -- jarang
+            // terjadi tapi tetap ditangani, pola persis cabang existing
+            // article di atas).
+            $rawCitationList = $this->article->getCitations();
+            if (!empty($rawCitationList)) {
+                /** @var CitationDAO $citationDao */
+                $citationDao = DAORegistry::getDAO('CitationDAO');
+                $citationDao->importCitations($request, ASSOC_TYPE_ARTICLE, $this->articleId, $rawCitationList);
+            }
         }
+
+        parent::execute();
 
         return $this->articleId;
     }

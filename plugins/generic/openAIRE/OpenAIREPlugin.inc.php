@@ -39,20 +39,27 @@ class OpenAIREPlugin extends GenericPlugin {
             // Consider the new field in the metadata view
             HookRegistry::register('Templates::Submission::Metadata::Metadata::AdditionalMetadata', [$this, 'metadataFieldView']);
 
+            // [WIZDAM] Keempat hook di bawah ini diperbarui dari
+            // 'authorsubmitstep3form::*' -- wizard submit direstrukturisasi,
+            // projectID (nomor proyek hibah UE) sekarang dikelompokkan
+            // bersama AuthorSubmitStep2Form (Authors+CRediT+Funders),
+            // konsisten dengan keputusan yang sama di addCheck() di
+            // bawah -- lihat dokumentasi di sana untuk alasan lengkap.
+            //
             // Hook for initData in two forms -- init the new field
             HookRegistry::register('metadataform::initdata', [$this, 'metadataInitData']);
-            HookRegistry::register('authorsubmitstep3form::initdata', [$this, 'metadataInitData']);
+            HookRegistry::register('authorsubmitstep2form::initdata', [$this, 'metadataInitData']);
 
             // Hook for readUserVars in two forms -- consider the new field entry
             HookRegistry::register('metadataform::readuservars', [$this, 'metadataReadUserVars']);
-            HookRegistry::register('authorsubmitstep3form::readuservars', [$this, 'metadataReadUserVars']);
+            HookRegistry::register('authorsubmitstep2form::readuservars', [$this, 'metadataReadUserVars']);
 
             // Hook for execute in two forms -- consider the new field in the article settings
-            HookRegistry::register('authorsubmitstep3form::execute', [$this, 'metadataExecute']);
+            HookRegistry::register('authorsubmitstep2form::execute', [$this, 'metadataExecute']);
             HookRegistry::register('metadataform::execute', [$this, 'metadataExecute']);
 
             // Hook for save in two forms -- add validation for the new field
-            HookRegistry::register('authorsubmitstep3form::Constructor', [$this, 'addCheck']);
+            HookRegistry::register('authorsubmitstep2form::Constructor', [$this, 'addCheck']);
             HookRegistry::register('metadataform::Constructor', [$this, 'addCheck']);
 
             // Consider the new field for ArticleDAO for storage
@@ -158,7 +165,15 @@ class OpenAIREPlugin extends GenericPlugin {
      */
     public function addCheck($hookName, $params) {
         $form = $params[0];
-        if ($form instanceof AuthorSubmitStep3Form || $form instanceof MetadataForm) {
+        // [WIZDAM] Diperbarui dari 'AuthorSubmitStep3Form' -- wizard
+        // submit direstrukturisasi, class itu tidak lagi ada di posisi
+        // yang sama. projectID (nomor proyek hibah Uni Eropa) SECARA
+        // KONSEPTUAL dekat dengan data pendanaan/hibah (Funders/FundRef)
+        // yang sekarang ada di AuthorSubmitStep2Form -- keputusan
+        // pengelompokan ini bisa ditinjau ulang kalau tim jurnal lebih
+        // suka projectID digabung ke Step 1 (Metadata) atau Step 3
+        // (Deklarasi) sebagai gantinya.
+        if ($form instanceof AuthorSubmitStep2Form || $form instanceof MetadataForm) {
             $form->addCheck(new FormValidatorRegExp($form, 'projectID', 'optional', 'plugins.generic.openAIRE.projectIDValid', '/^\d{6}$/'));
         }
         return false;

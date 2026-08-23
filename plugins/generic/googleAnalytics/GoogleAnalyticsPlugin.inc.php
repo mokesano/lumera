@@ -30,7 +30,10 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
      */
     public function GoogleAnalyticsPlugin() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            trigger_error("Class '" . get_class($this) . "' uses deprecated constructor parent::GoogleAnalyticsPlugin(). Please refactor to parent::__construct().", E_USER_DEPRECATED);
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                E_USER_DEPRECATED
+            );
         }
         $args = func_get_args();
         call_user_func_array([$this, '__construct'], $args);
@@ -55,10 +58,18 @@ class GoogleAnalyticsPlugin extends GenericPlugin {
 
             // Hook for initData in two forms
             HookRegistry::register('metadataform::initdata', [$this, 'metadataInitData']);
-            HookRegistry::register('authorsubmitstep3form::initdata', [$this, 'metadataInitData']);
+            // [WIZDAM] Diperbarui dari 'authorsubmitstep3form::initdata' --
+            // wizard submit direstrukturisasi, bagian authors (tempat
+            // field custom 'gs'/Google Scholar ID ini disimpan) sekarang
+            // ada di AuthorSubmitStep2Form (bukan lagi Step3Form). Hook
+            // otomatis ini namanya mengikuti strtolower(nama_class), jadi
+            // HARUS diperbarui bersamaan dengan pemindahan class.
+            HookRegistry::register('authorsubmitstep2form::initdata', [$this, 'metadataInitData']);
 
             // Hook for execute in two forms
-            HookRegistry::register('Author::Form::Submit::AuthorSubmitStep3Form::Execute', [$this, 'metadataExecute']);
+            // [WIZDAM] Diperbarui dari 'Author::Form::Submit::AuthorSubmitStep3Form::Execute'
+            // -- lihat penjelasan sama seperti di atas.
+            HookRegistry::register('Author::Form::Submit::AuthorSubmitStep2Form::Execute', [$this, 'metadataExecute']);
             HookRegistry::register('Submission::Form::MetadataForm::Execute', [$this, 'metadataExecute']);
 
             // Add element for AuthorDAO for storage
