@@ -105,13 +105,12 @@ class SubmitHandler extends AuthorHandler {
             // Check for any special cases before trying to save
             switch ($step) {
                 case 2:
-                    if ($request->getUserVar('uploadSubmissionFile')) {
-                        $submitForm->uploadSubmissionFile('submissionFile');
-                        $editData = true;
-                    }
-                    break;
-
-                case 3:
+                    // [WIZDAM] Authors + Funders (grid tambah/hapus/pindah)
+                    // -- DIPINDAHKAN dari case 3 LAMA. Wizard submit
+                    // direstrukturisasi: Step 2 sekarang Authors+CRediT+
+                    // Funders (sebelumnya Step 3 lama menggabungkan
+                    // metadata+authors -- lihat AuthorSubmitStep2Form
+                    // untuk detail lengkap restrukturisasi ini).
                     if ($request->getUserVar('addAuthor')) {
                         // Add a author
                         $editData = true;
@@ -217,6 +216,16 @@ class SubmitHandler extends AuthorHandler {
                     break;
 
                 case 4:
+                    // [WIZDAM] Upload naskah utama -- DIPINDAHKAN dari
+                    // case 2 LAMA (Step 4 baru = gabungan upload naskah
+                    // utama + file pendukung, lihat AuthorSubmitStep4Form).
+                    if ($request->getUserVar('uploadSubmissionFile')) {
+                        $submitForm->uploadSubmissionFile('submissionFile');
+                        $editData = true;
+                    }
+                    // File pendukung -- TETAP di case 4, TIDAK berubah
+                    // dari sebelumnya (kebetulan tetap benar karena file
+                    // pendukung tetap tinggal di Step 4 pada struktur baru).
                     if ($request->getUserVar('submitUploadSuppFile')) {
                         $this->submitUploadSuppFile([], $request);
                         return;
