@@ -112,6 +112,9 @@
 	<message key="author.submit.generativeAiDeclarationDescription">Describe any use of generative AI tools (e.g. ChatGPT) in the preparation of this work, including which tool and for what purpose. If none was used, state so explicitly.</message>
 	<message key="author.submit.generativeAiDeclarationLabel">Generative AI Declaration</message>
 	
+	<message key="author.submit.overview">Overview</message>
+	<message key="author.submit.saveToDraft">Save to Draft</message>
+	
 	<message key="author.submit.submissionIndexingDescription">Provide terms for indexing the submission; separate terms with a semi-colon (term1; term2; term3).</message>
 	<message key="author.submit.submissionSupportingAgencies">Contributors and Supporting Agencies</message>
 	<message key="author.submit.submissionSupportingAgenciesDescription">Identify agencies (a person, an organization, or a service) that made contributions to the content or provided funding or support for the work presented in this submission. Separate them with a semi-colon (e.g. John Doe, Metro University; Master University, Department of Computer Science).</message>
