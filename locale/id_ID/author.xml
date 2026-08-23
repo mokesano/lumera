@@ -70,6 +70,13 @@
 	<message key="author.submit.selectPrincipalContact">Kontak Utama untuk Korespondensi Editorial.</message>	
 	<message key="author.submit.addAuthor">Tambah Penulis</message> 
 	<message key="author.submit.deleteAuthor">Hapus Penulis</message> 
+	<message key="author.submit.funders">Pendanaan / Hibah</message>
+	<message key="author.submit.funderName">Nama Pemberi Dana</message>
+	<message key="author.submit.awardNumber">Nomor Hibah/Penghargaan</message>
+	<message key="author.submit.awardNumber.description">Opsional -- kosongkan kalau pemberi dana tidak menetapkan nomor hibah spesifik.</message>
+	<message key="author.submit.addFunder">Tambah Pemberi Dana</message>
+	<message key="author.submit.deleteFunder">Hapus Pemberi Dana</message>
+	<message key="author.submit.noFunders">Belum ada sumber pendanaan yang ditambahkan. Kalau artikel ini menerima pendanaan eksternal, klik "Tambah Pemberi Dana" di bawah.</message>
 	<message key="author.submit.submissionIndexingDescription">Masukkan istilah untuk mengindeks naskah; memisahkan istilah dengan titik dua (term1; term2; term3).</message> 
 	<message key="author.submit.submissionSupportingAgencies">Lembaga Pendukung</message> 
 	<message key="author.submit.submissionSupportingAgenciesDescription">Masukkan nama lembaga yang menyediakan dana atau dukungan untuk pekerjaan yang ditampilkan dalam jurnal.</message> 

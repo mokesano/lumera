@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 
 import('classes.author.form.submit.AuthorSubmitForm');
+import('classes.article.Author');
 
 class AuthorSubmitStep3Form extends AuthorSubmitForm {
 
@@ -364,6 +365,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
         for ($i=0, $count=count($authors); $i < $count; $i++) {
             if ($authors[$i]['authorId'] > 0) {
                 // Update an existing author
+                /** @var Author $author */
                 $author = $authorDao->getAuthor($authors[$i]['authorId'], $article->getId());
                 $isExistingAuthor = true;
 
@@ -384,7 +386,7 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
                 $author->setData('orcid', $authors[$i]['orcid']);
                 $author->setUrl($authors[$i]['url']);
                 if (array_key_exists('competingInterests', $authors[$i])) {
-                    $author->setCompetingInterests($authors[$i]['competingInterests'], null); // Undefined method 'setCompetingInterests'.
+                    $author->setCompetingInterests($authors[$i]['competingInterests'], null);
                 }
                 $author->setBiography($authors[$i]['biography'], null);
                 $author->setPrimaryContact($this->getData('primaryContact') == $i ? 1 : 0);

@@ -70,6 +70,13 @@
 	<message key="author.submit.selectPrincipalContact">Principal contact for editorial correspondence.</message>
 	<message key="author.submit.addAuthor">Add Author</message>
 	<message key="author.submit.deleteAuthor">Delete Author</message>
+	<message key="author.submit.funders">Funding / Grants</message>
+	<message key="author.submit.funderName">Funder Name</message>
+	<message key="author.submit.awardNumber">Award / Grant Number</message>
+	<message key="author.submit.awardNumber.description">Optional -- leave blank if the funder did not assign a specific award or grant number.</message>
+	<message key="author.submit.addFunder">Add Funder</message>
+	<message key="author.submit.deleteFunder">Delete Funder</message>
+	<message key="author.submit.noFunders">No funding sources added yet. If this article received external funding, click "Add Funder" below.</message>
 	<message key="author.submit.submissionIndexingDescription">Provide terms for indexing the submission; separate terms with a semi-colon (term1; term2; term3).</message>
 	<message key="author.submit.submissionSupportingAgencies">Contributors and Supporting Agencies</message>
 	<message key="author.submit.submissionSupportingAgenciesDescription">Identify agencies (a person, an organization, or a service) that made contributions to the content or provided funding or support for the work presented in this submission. Separate them with a semi-colon (e.g. John Doe, Metro University; Master University, Department of Computer Science).</message>
