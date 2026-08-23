@@ -31,6 +31,13 @@
 	<message key="author.submit.metadata">3. Enter Metadata</message>
 	<message key="author.submit.supplementaryFiles">4. Upload Supplementary Files</message>
 	<message key="author.submit.confirmation">5. Confirmation</message>
+
+	<message key="author.submit.stepLabel.metadata">1. Metadata</message>
+	<message key="author.submit.stepLabel.authors">2. Authors</message>
+	<message key="author.submit.stepLabel.declarations">3. Declarations</message>
+	<message key="author.submit.stepLabel.upload">4. Upload Files</message>
+	<message key="author.submit.stepLabel.overview">5. Overview &amp; Submit</message>
+	
 	<message key="author.submit.cancelSubmission">You can complete this submission at a later date by selecting Active Submissions from the Author home.</message>
 	<message key="author.submit.notAccepting">This journal is not accepting submissions at this time.</message>
 	<message key="author.submit.requestWaiver">Request Waiver</message>

@@ -31,19 +31,19 @@
         <div class="step-indicators">
             <div class="step-indicator pending" 
                  data-step="1" 
-                 title="{translate key="author.submit.start"}">1</div>
+                 title="{translate key="author.submit.stepLabel.metadata"}">1</div>
             <div class="step-indicator pending" 
                  data-step="2" 
-                 title="{translate key="author.submit.upload"}">2</div>
+                 title="{translate key="author.submit.stepLabel.authors"}">2</div>
             <div class="step-indicator pending" 
                  data-step="3" 
-                 title="{translate key="author.submit.metadata"}">3</div>
+                 title="{translate key="author.submit.stepLabel.declarations"}">3</div>
             <div class="step-indicator pending" 
                  data-step="4" 
-                 title="{translate key="author.submit.supplementaryFiles"}">4</div>
+                 title="{translate key="author.submit.stepLabel.upload"}">4</div>
             <div class="step-indicator pending" 
                  data-step="5" 
-                 title="{translate key="author.submit.confirmation"}">5</div>
+                 title="{translate key="author.submit.stepLabel.overview"}">5</div>
             <div class="complete-indicator pending" 
                  title="{translate key="common.complete"}">
                 <span class="complete-icon">✓</span>
@@ -71,7 +71,7 @@
             {if $submitStep != 1 && $submissionProgress >= 1}
                 <a href="{url op="submit" path="1" articleId=$articleId}">
             {/if}
-            {translate key="author.submit.start"}
+            {translate key="author.submit.stepLabel.metadata"}
             {if $submitStep != 1 && $submissionProgress >= 1}
                 </a>
             {/if}
@@ -88,7 +88,7 @@
             {if $submitStep != 2 && $submissionProgress >= 2}
                 <a href="{url op="submit" path="2" articleId=$articleId}">
             {/if}
-            {translate key="author.submit.upload"}
+            {translate key="author.submit.stepLabel.authors"}
             {if $submitStep != 2 && $submissionProgress >= 2}
                 </a>
             {/if}
@@ -105,7 +105,7 @@
             {if $submitStep != 3 && $submissionProgress >= 3}
                 <a href="{url op="submit" path="3" articleId=$articleId}">
             {/if}
-            {translate key="author.submit.metadata"}
+            {translate key="author.submit.stepLabel.declarations"}
             {if $submitStep != 3 && $submissionProgress >= 3}
                 </a>
             {/if}
@@ -122,7 +122,7 @@
             {if $submitStep != 4 && $submissionProgress >= 4}
                 <a href="{url op="submit" path="4" articleId=$articleId}">
             {/if}
-            {translate key="author.submit.supplementaryFiles"}
+            {translate key="author.submit.stepLabel.upload"}
             {if $submitStep != 4 && $submissionProgress >= 4}
                 </a>
             {/if}
@@ -139,7 +139,7 @@
             {if $submitStep != 5 && $submissionProgress >= 5}
                 <a href="{url op="submit" path="5" articleId=$articleId}">
             {/if}
-            {translate key="author.submit.confirmation"}
+            {translate key="author.submit.stepLabel.overview"}
             {if $submitStep != 5 && $submissionProgress >= 5}
                 </a>
             {/if}
