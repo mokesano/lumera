@@ -61,7 +61,7 @@
 			</table>
 
 		</div>{* section *}
-		
+
 		<div class="separator"></div>
 	{/if}{* if count($sectionOptions) == 2 *}
 
@@ -87,11 +87,6 @@
 
 		</div>{* submissionLocale *}
 	{/if}{* count($supportedSubmissionLocaleNames) == 1 *}
-
-	{if $authorFees} {* Bagian Fees ini seharusnya ada di bagian STEP 5 *}
-		{include file="author/submit/authorFees.tpl" showPayLinks=0}
-		<div class="separator"></div>
-	{/if}
 
 	<div id="titleAndAbstract" class="block">
 		<h3>{translate key="submission.titleAndAbstract"}</h3>
