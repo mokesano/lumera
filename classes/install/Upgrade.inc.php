@@ -1462,5 +1462,112 @@ class Upgrade extends Installer {
         return true; 
     }
 
+    /**
+     * [WIZDAM] Migrasi competingInterests PER-PENULIS (data lama) ke
+     * field competingInterest LEVEL ARTIKEL yang baru (satu pernyataan
+     * mencakup seluruh penulis -- dikonfirmasi lewat riset publikasi
+     * akademik nyata sebagai praktik standar, lihat Article::
+     * setCompetingInterest()).
+     *
+     * PENTING soal nama tabel: kolom author_id/setting_name/setting_value
+     * ada di tabel `author_settings` -- BUKAN `article_author_settings`
+     * seperti yang dideskripsikan di schema.xml. Dikonfirmasi langsung
+     * lewat PKPAuthorDAO::updateLocaleFields() (baris sesungguhnya yang
+     * dieksekusi di produksi), bukan asumsi dari nama tabel di skema --
+     * kejanggalan penamaan yang sama persis ditemukan sebelumnya untuk
+     * tabel `authors` (vs `article_authors` di skema).
+     *
+     * STRATEGI PENGGABUNGAN: setiap penulis yang PUNYA competingInterests
+     * terisi digabung jadi satu baris "Nama Penulis: isi pernyataannya",
+     * dipisah baris baru -- BUKAN mencoba menyusun ulang jadi prosa yang
+     * mulus (penggabungan bahasa alami otomatis berisiko salah makna).
+     * Ini best-effort MELESTARIKAN DATA, bukan menulis ulang -- penulis
+     * korresponden bisa menghaluskan lewat UI deklarasi baru nanti.
+     *
+     * AMAN DIJALANKAN ULANG: kalau field artikel BARU sudah terisi
+     * (migrasi ini pernah jalan sebagian/diulang), artikel itu DILEWATI,
+     * tidak ditimpa.
+     * @param object $installer
+     * @param string $version
+     * @return bool
+     */
+    public function migrateAuthorCompetingInterestsToArticle($installer, $version) {
+        set_time_limit(0);
+        if (function_exists('ob_clean')) ob_clean();
+        if (function_exists('flush')) flush();
+
+        /** @var ArticleDAO $articleDao */
+        $articleDao = DAORegistry::getDAO('ArticleDAO');
+
+        // Ambil SEMUA article_id yang punya minimal satu penulis dengan
+        // competingInterests terisi (tidak kosong). JOIN ke authors
+        // (bukan article_authors) untuk mendapatkan article_id --
+        // konfirmasi nama tabel sesungguhnya seperti dijelaskan di atas.
+        $result = $articleDao->retrieve(
+            "SELECT DISTINCT a.article_id
+             FROM author_settings aset
+             INNER JOIN authors a ON a.author_id = aset.author_id
+             WHERE aset.setting_name = 'competingInterests'
+               AND aset.setting_value IS NOT NULL
+               AND aset.setting_value != ''"
+        );
+
+        $articleIds = [];
+        while (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $articleIds[] = (int) $row['article_id'];
+            $result->MoveNext();
+        }
+        $result->Close();
+
+        $migratedCount = 0;
+        $skippedExistingCount = 0;
+        foreach ($articleIds as $articleId) {
+            $article = $articleDao->getArticle($articleId);
+            if ($article === null) {
+                continue;
+            }
+
+            $locale = $article->getLocale();
+
+            // Kalau field artikel BARU sudah terisi (migrasi ini pernah
+            // jalan sebagian/diulang), JANGAN timpa -- hormati apa yang
+            // sudah ada.
+            $existing = trim((string) $article->getCompetingInterest($locale));
+            if ($existing !== '') {
+                $skippedExistingCount++;
+                continue;
+            }
+
+            $authors = $article->getAuthors();
+            $lines = [];
+            if (is_array($authors)) {
+                foreach ($authors as $author) {
+                    $ci = trim((string) $author->getCompetingInterests($locale));
+                    if ($ci === '') {
+                        continue;
+                    }
+                    $name = trim($author->getFirstName() . ' ' . $author->getLastName());
+                    $lines[] = ($name !== '' ? "$name: " : '') . $ci;
+                }
+            }
+
+            if (!empty($lines)) {
+                $combined = implode("\n", $lines);
+                $article->setCompetingInterest($combined, $locale);
+                $articleDao->updateLocaleFields($article);
+                $migratedCount++;
+            }
+        }
+
+        error_log(sprintf(
+            '[WIZDAM] Migrasi competingInterests per-penulis -> level artikel selesai. %d artikel dimigrasi, %d dilewati (sudah terisi sebelumnya).',
+            $migratedCount,
+            $skippedExistingCount
+        ));
+
+        return true;
+    }
+
 }
 ?>

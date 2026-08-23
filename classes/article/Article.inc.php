@@ -609,6 +609,99 @@ class Article extends Submission {
         return $this->getLocalizedSponsor();
     }
 
+    // [WIZDAM] Deklarasi level artikel -- Competing Interest, Ethical
+    // Approval, Declaration of Generative AI. Dikonfirmasi lewat riset
+    // publikasi akademik nyata (Elsevier, Springer, Taylor & Francis,
+    // Cell Press, arXiv): ketiganya SATU pernyataan mencakup SELURUH
+    // penulis ("The authors declare..."), BUKAN entri terpisah per
+    // penulis -- atribusi individual (kalau perlu) dilakukan lewat
+    // inisial DI DALAM teks pernyataan itu sendiri, bukan field
+    // database terpisah. Disimpan lewat mekanisme generic settings
+    // yang sama seperti sponsor (getData/setData -> article_settings
+    // via ArticleDAO::updateLocaleFields()) -- TIDAK perlu kolom
+    // tabel baru sama sekali.
+
+    /**
+     * Get localized Competing Interest declaration.
+     * @return string
+     */
+    public function getLocalizedCompetingInterest() {
+        return $this->getLocalizedData('competingInterest');
+    }
+
+    /**
+     * Get Competing Interest declaration.
+     * @param string|null $locale
+     * @return string
+     */
+    public function getCompetingInterest($locale) {
+        $value = $this->getData('competingInterest', $locale);
+        return is_array($value) ? $value : (string) $value;
+    }
+
+    /**
+     * Set Competing Interest declaration.
+     * @param string $competingInterest
+     * @param string|null $locale
+     */
+    public function setCompetingInterest($competingInterest, $locale) {
+        return $this->setData('competingInterest', is_array($competingInterest) ? $competingInterest : (string) $competingInterest, $locale);
+    }
+
+    /**
+     * Get localized Ethical Approval declaration.
+     * @return string
+     */
+    public function getLocalizedEthicalApproval() {
+        return $this->getLocalizedData('ethicalApproval');
+    }
+
+    /**
+     * Get Ethical Approval declaration.
+     * @param string|null $locale
+     * @return string
+     */
+    public function getEthicalApproval($locale) {
+        $value = $this->getData('ethicalApproval', $locale);
+        return is_array($value) ? $value : (string) $value;
+    }
+
+    /**
+     * Set Ethical Approval declaration.
+     * @param string $ethicalApproval
+     * @param string|null $locale
+     */
+    public function setEthicalApproval($ethicalApproval, $locale) {
+        return $this->setData('ethicalApproval', is_array($ethicalApproval) ? $ethicalApproval : (string) $ethicalApproval, $locale);
+    }
+
+    /**
+     * Get localized Declaration of Generative AI.
+     * @return string
+     */
+    public function getLocalizedGenerativeAiDeclaration() {
+        return $this->getLocalizedData('generativeAiDeclaration');
+    }
+
+    /**
+     * Get Declaration of Generative AI.
+     * @param string|null $locale
+     * @return string
+     */
+    public function getGenerativeAiDeclaration($locale) {
+        $value = $this->getData('generativeAiDeclaration', $locale);
+        return is_array($value) ? $value : (string) $value;
+    }
+
+    /**
+     * Set Declaration of Generative AI.
+     * @param string $generativeAiDeclaration
+     * @param string|null $locale
+     */
+    public function setGenerativeAiDeclaration($generativeAiDeclaration, $locale) {
+        return $this->setData('generativeAiDeclaration', is_array($generativeAiDeclaration) ? $generativeAiDeclaration : (string) $generativeAiDeclaration, $locale);
+    }
+
     /**
      * Get the localized article cover filename.
      * DEPRECATED in favour of getLocalizedFileName.
