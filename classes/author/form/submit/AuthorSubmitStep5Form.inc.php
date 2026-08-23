@@ -4,14 +4,32 @@ declare(strict_types=1);
 /**
  * @file classes/author/form/submit/AuthorSubmitStep5Form.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Distributed under the GNU GPL v3.
  *
  * @class AuthorSubmitStep5Form
  * @ingroup author_form_submit
  *
- * @brief Form for Step 5 of author article submission.
+ * @brief [WIZDAM] Step 5 dari wizard submit yang DIRESTRUKTURISASI --
+ * Overview (ringkasan seluruh input Step 1-4) + tombol Submit + "Save
+ * to Draft".
+ *
+ * PENTING: "Save to Draft" TIDAK memerlukan logika/status baru apa pun
+ * (dikonfirmasi eksplisit) -- artikel SUDAH otomatis tersimpan
+ * bertahap di setiap step (submissionProgress), bisa ditinggal dan
+ * dilanjutkan kapan saja. "Save to Draft" di sini murni PELABELAN
+ * ULANG tautan "kembali ke daftar submission saya" TANPA memanggil
+ * execute() -- ditangani di TEMPLATE (link biasa, bukan form submit),
+ * TIDAK ADA perubahan method PHP untuk itu.
+ *
+ * SATU-SATUNYA perubahan nyata di kelas ini dibanding Step 5 lama:
+ * display() sekarang MENGUMPULKAN data ringkasan (title, authors,
+ * funders, files, deklarasi) dari step-step sebelumnya untuk
+ * ditampilkan sebagai overview. SELURUH logika finalisasi
+ * (execute()/validate() -- signoff, penugasan editor, email notifikasi,
+ * pencatatan log) DIPERTAHANKAN PERSIS TANPA PERUBAHAN dari Step 5
+ * lama -- ini bagian PALING BERISIKO untuk diubah, jadi SENGAJA tidak
+ * disentuh sama sekali.
  */
 
 import('classes.author.form.submit.AuthorSubmitForm');
@@ -40,11 +58,12 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
     public function AuthorSubmitStep5Form($article, $journal, $request) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'. Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($article, $journal, $request);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -78,6 +97,11 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
         $templateMgr->assign('files', $articleFiles);
         $templateMgr->assign('journal', $journal);
 
+        // [WIZDAM] Overview -- ringkasan seluruh input Step 1-4, murni
+        // BACA data yang SUDAH tersimpan (tidak menghitung/memvalidasi
+        // apa pun baru), ditampilkan sebelum tombol Submit/Save Draft.
+        $this->_assignOverviewData($templateMgr);
+
         // Set up required Payment Related Information
         import('classes.payment.ojs.OJSPaymentManager');
         $paymentManager = new OJSPaymentManager($this->request);
@@ -108,6 +132,49 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
         }
 
         parent::display($request, $template);
+    }
+
+    /**
+     * [WIZDAM] Kumpulkan data overview dari SELURUH step sebelumnya --
+     * murni pembacaan data yang SUDAH tersimpan di database (Step 1-4
+     * masing-masing sudah menyimpan datanya sendiri saat dilewati),
+     * TIDAK ADA perhitungan/logika bisnis baru di sini. Kalau salah
+     * satu step belum pernah diisi (mis. user melompat langsung ke
+     * Step 5 lewat URL manual), field terkait cukup kosong -- template
+     * yang menentukan cara menampilkannya (mis. "belum diisi").
+     * @param PKPTemplateManager $templateMgr
+     */
+    private function _assignOverviewData($templateMgr) {
+        $article = $this->article;
+        if (!$article) {
+            return;
+        }
+
+        /** @var SectionDAO $sectionDao */
+        $sectionDao = DAORegistry::getDAO('SectionDAO');
+        $templateMgr->assign('overviewSection', $sectionDao->getSection($article->getSectionId()));
+
+        // --- Ringkasan Step 1: Metadata ---
+        $templateMgr->assign('overviewTitle', $article->getLocalizedTitle());
+        $templateMgr->assign('overviewAbstract', $article->getLocalizedAbstract());
+
+        // --- Ringkasan Step 2: Authors + Funders ---
+        $templateMgr->assign('overviewAuthors', $article->getAuthors());
+        /** @var ArticleFunderDAO $funderDao */
+        $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+        $templateMgr->assign('overviewFunders', $funderDao->getByArticleId($article->getId())->toArray());
+
+        // --- Ringkasan Step 3: Deklarasi ---
+        $templateMgr->assign('overviewCompetingInterest', $article->getLocalizedCompetingInterest());
+        $templateMgr->assign('overviewEthicalApproval', $article->getLocalizedEthicalApproval());
+        $templateMgr->assign('overviewGenerativeAiDeclaration', $article->getLocalizedGenerativeAiDeclaration());
+
+        // --- Ringkasan Step 4: File (submission file sudah diambil di
+        // $templateMgr->assign('files', ...) sebelum method ini dipanggil
+        // -- tidak perlu diulang, dipakai lewat variabel $files yang sama). ---
+        /** @var SuppFileDAO $suppFileDao */
+        $suppFileDao = DAORegistry::getDAO('SuppFileDAO');
+        $templateMgr->assign('overviewSuppFiles', $suppFileDao->getSuppFilesByArticle($article->getId()));
     }
 
     /**
