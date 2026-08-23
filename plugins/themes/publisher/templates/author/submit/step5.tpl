@@ -33,20 +33,31 @@
 				<td width="20%" class="label">{translate key="article.abstract"}</td>
 				<td width="80%" class="value">{if $overviewAbstract}{$overviewAbstract|strip_tags|escape}{else}-{/if}</td>
 			</tr>
+
+			{if $overviewAuthors}
 			<tr valign="top">
 				<td width="20%" class="label">{translate key="article.authors"}</td>
 				<td width="80%" class="value">
-					{if $overviewAuthors}
-						{foreach from=$overviewAuthors item=overviewAuthor name=overviewAuthorsList}
-							{$overviewAuthor->getFullName()|escape}{if !$smarty.foreach.overviewAuthorsList.last}; {/if}
-						{foreachelse}
-							-
-						{/foreach}
-					{else}
-						-
-					{/if}
+					{foreach from=$overviewAuthors item=overviewAuthor name=overviewAuthorsList}
+						{$overviewAuthor->getFullName()|escape}{if !$smarty.foreach.overviewAuthorsList.last}; {/if}
+					{/foreach}
 				</td>
 			</tr>
+			{/if}
+
+			{if $overviewAuthorCredits}
+			<tr valign="top">
+				<td width="20%" class="label">{translate key="author.credit.label"}</td>
+				<td width="80%" class="value">
+					<ul class="overviewList">
+						{foreach from=$overviewAuthorCredits item=overviewAuthorCreditLine}
+							<li>{$overviewAuthorCreditLine|escape}</li>
+						{/foreach}
+					</ul>	
+				</td>
+			</tr>
+			{/if}
+			
 			<tr valign="top">
 				<td width="20%" class="label">{translate key="author.submit.funders"}</td>
 				<td width="80%" class="value">

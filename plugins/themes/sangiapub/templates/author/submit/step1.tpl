@@ -40,6 +40,7 @@
 
 	{if count($sectionOptions) <= 1}
 		<p class="alert-text">{translate key="author.submit.notAccepting"}</p>
+	</form>
 	{else}
 
 	{if count($sectionOptions) == 2}

@@ -154,10 +154,33 @@ class AuthorSubmitStep5Form extends AuthorSubmitForm {
         $templateMgr->assign('overviewAbstract', $article->getLocalizedAbstract());
 
         // --- Ringkasan Step 2: Authors + Funders ---
-        $templateMgr->assign('overviewAuthors', $article->getAuthors());
+        $authors = $article->getAuthors();
+        $templateMgr->assign('overviewAuthors', $authors);
         /** @var ArticleFunderDAO $funderDao */
         $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
         $templateMgr->assign('overviewFunders', $funderDao->getByArticleId($article->getId())->toArray());
+
+        // [WIZDAM] CRediT -- SENGAJA dijadikan bagian TERPISAH dari
+        // authors (bukan digabung jadi satu tabel dengan kolom
+        // tambahan), sesuai permintaan eksplisit. Format "Nama: Peran1,
+        // Peran2" DISUSUN DI SINI (PHP), bukan di template -- supaya
+        // template cukup {foreach} sederhana tanpa {if} bersarang.
+        // Penulis TANPA satu pun peran CRediT dilewati (tidak masuk
+        // daftar), bukan ditampilkan sebagai baris kosong.
+        $overviewAuthorCredits = [];
+        if (is_array($authors)) {
+            foreach ($authors as $author) {
+                $roles = $author->getCreditRolesArray();
+                if (empty($roles)) {
+                    continue;
+                }
+                $roleLabels = array_map(function ($roleCode) {
+                    return __('author.credit.role.' . $roleCode);
+                }, $roles);
+                $overviewAuthorCredits[] = $author->getFullName() . ': ' . implode(', ', $roleLabels);
+            }
+        }
+        $templateMgr->assign('overviewAuthorCredits', $overviewAuthorCredits);
 
         // --- Ringkasan Step 3: Deklarasi ---
         $templateMgr->assign('overviewCompetingInterest', $article->getLocalizedCompetingInterest());
