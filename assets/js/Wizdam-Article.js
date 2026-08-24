@@ -15,7 +15,7 @@
  * Show More/Less Affiliation
  * Mengatur tampilan "Show More/Less" pada elemen afiliasi author
  * 
- * @author Rochmady and Wizdam Team
+ * @author Rochmady, Khayra and Rakha
  * @version 1.0.0
  */
 document.addEventListener("DOMContentLoaded", function () {
@@ -999,6 +999,6 @@ $(document).ready(function() {
 });
 
 /**
- * Pengaturan Referensi dibuat oleh model AI (ChatGPT, DeepSeek, Qwen, Claude)
- * Dibantu oleh: Rochmady and Wizdam Lumera Team, pengguna yang luar biasa
+ * Pengaturan Referensi oleh model AI (ChatGPT, DeepSeek, Qwen, Claude)
+ * Dibuat oleh: @author Rochmady and Khayra and Rakha
  */
