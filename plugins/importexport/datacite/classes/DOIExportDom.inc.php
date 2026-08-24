@@ -2,14 +2,14 @@
 declare(strict_types=1);
 
 /**
- * @file plugins/importexport/crossref/classes/DOIExportDom.inc.php
+ * @file plugins/importexport/datacite/classes/DOIExportDom.inc.php
  *
  * Copyright (c) 2013-2019 Simon Fraser University
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @class DOIExportDom
- * @ingroup plugins_importexport_crossref_classes
+ * @ingroup plugins_importexport_datacite_classes
  *
  * @brief Onix for DOI (O4DOI) XML export format implementation.
  */
