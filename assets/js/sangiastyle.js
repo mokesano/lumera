@@ -1,4 +1,13 @@
 /**
+ * @file public/assets/js/sangiastyle.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief Kompilasi berbagai fungsi halaman.
+ */
+/**
  * Back To Top
  * Kode default, inisialisasi event ketika dokumen sudah siap.
  * 
