@@ -1,10 +1,16 @@
 /**
- * Article Highlight Generator (Supports Indonesian and English)
+ * @file public/assets/js/wizdam/ArticleHighlight_v2.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief Article Highlight Generator (Supports Indonesian and English)
  * Generates 4 key points from titles and abstracts with enhanced paraphrasing
+ * 
  * @author Rochmady and Wizdam Team
- * @version 1.0.0
+ * @version 0.0.1.0
  */
-
 (function() {
   'use strict';
   
