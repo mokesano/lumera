@@ -97,12 +97,11 @@
 	{/if}{* hasSystemNotifications *}
 	
 	<link rel="stylesheet" href="{$baseUrl}/assets/static/styles/search.css" type="text/css" />
-	
-	<!-- CSS style via JS sheet -->
 	<link rel="stylesheet" href="{$baseUrl}/assets/static/styles/wizdam_search.css" type="text/css" />
-	<!--
+	{**
+    <link rel="stylesheet" href="{$baseUrl}/assets/static/styles/journal-mosaic-v1-branded.css" type="text/css" />
 	<style rel="stylesheet" type="text/css">@import url({$baseUrl}/plugins/themes/sangiapub/css/journal-mosaic-v1-branded.css);</style>
-	-->
+	**}
 	
 	{include file="common/commonCSS.tpl"}
 	
