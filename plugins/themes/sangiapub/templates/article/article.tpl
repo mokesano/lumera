@@ -1,9 +1,9 @@
 {**
  * templates/article/article.tpl
  *
- * Copyright (c) 2013-2017 Simon Fraser University
- * Copyright (c) 2003-2016 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
  * Article View.
  *}
@@ -382,10 +382,23 @@
                 <p id="p0350">Acknowledgment from the full-text PDF of this article cannot be displayed.</p>
             </section>
             
-            {if $article->getLocalizedSponsor()}
+            {* [WIZDAM] Section ini tampil kalau SALAH SATU (sponsor
+               ATAU funders) terisi -- tidak mengharuskan keduanya, dan
+               tidak menghilangkan salah satunya kalau keduanya ada.
+               Dua {if} sejajar, TIDAK bersarang. *}
+            {if $article->getLocalizedSponsor() || $articleFunders}
             <section id="fund0020" class="section-funding Agencies Body">
                 <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">Funding Information</h2>
-                <p id="p0450">{$article->getLocalizedSponsor()|escape}</p>
+                {if $article->getLocalizedSponsor()}
+                    <p id="p0450">{$article->getLocalizedSponsor()|escape}</p>
+                {/if}
+                {if $articleFunders}
+                    <ul class="fundersList">
+                    {foreach from=$articleFunders item=funder}
+                        <li>{$funder->getFunderName()|escape}{if $funder->getAwardNumber()} ({$funder->getAwardNumber()|escape}){/if}</li>
+                    {/foreach}
+                    </ul>
+                {/if}
             </section>
             {/if}
                 

@@ -423,6 +423,14 @@ class ArticleHandler extends Handler {
             }
         }
 
+        // [WIZDAM] Funders (pendanaan/hibah terstruktur) -- untuk
+        // ditampilkan berdampingan dengan sponsor (field lama) di bagian
+        // "Funding Information" article.tpl, TANPA menghilangkan salah
+        // satunya.
+        /** @var ArticleFunderDAO $funderDao */
+        $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+        $templateMgr->assign('articleFunders', $funderDao->getByArticleId($article->getId())->toArray());
+
         $templateMgr->display('article/article.tpl');
     }
 
