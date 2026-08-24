@@ -1,7 +1,13 @@
 /**
- * Format indeks afiliasi penulis pada artikel
+ * @file public/assets/js/wizdam/Wizdam-Article.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief Format indeks afiliasi penulis pada artikel
  * @author Rochmady and Wizdam Team
- * @version 1.0.0
+ * @version 0.0.1.0
  */
 document.addEventListener("DOMContentLoaded", function() {
     function processAffiliations() {
@@ -1103,6 +1109,6 @@ $(document).ready(function() {
 });
 
 /**
- * Pengaturan Referensi dibuat oleh: ChatGPT, sebuah model AI dari OpenAI
- * Dibantu oleh: Rochmady and Wizdam, pengguna yang luar biasa
+ * Ditulis oleh: ChatGPT, sebuah model AI dari OpenAI
+ * Dibuat oleh: @author Rochmady and Wizdam
  */
