@@ -4,15 +4,14 @@ declare(strict_types=1);
 /**
  * @file pages/index/IndexHandler.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @class IndexHandler
  * @ingroup pages_index
  *
- * @brief Handle site index requests.
- * Modifikasi: Pemisahan logika index Jurnal dan Publisher.
+ * @brief Handle site index requests. Pemisahan logika index Jurnal dan Publisher.
  * 
  */
 
@@ -78,6 +77,17 @@ class IndexHandler extends Handler {
      * @return void
      */
     private function journal($journal, $request, $templateMgr) {
+        $templateMgr->assign('isJournalHomepage', true);
+        $journalId = (int) $journal->getId();
+        $hiddenIdsRaw = (string) Config::getVar('lumera', 'hide_breadcrumb_journal_ids');
+        $hiddenIds = [];
+        if (!empty($hiddenIdsRaw)) {
+            $hiddenIds = array_map('trim', explode(',', $hiddenIdsRaw));
+        }
+
+        $isBreadcrumbHiddenJournal = in_array((string) $journalId, $hiddenIds, true);
+        $templateMgr->assign('isBreadcrumbHiddenJournal', $isBreadcrumbHiddenJournal);
+
         // Assign header and content for home page
         $templateMgr->assign('displayPageHeaderTitle', $journal->getLocalizedPageHeaderTitle(true));
         $templateMgr->assign('displayPageHeaderLogo', $journal->getLocalizedPageHeaderLogo(true));
@@ -97,31 +107,23 @@ class IndexHandler extends Handler {
         if ($displayCurrentIssue && $issue !== null) {
             import('pages.issue.IssueHandler');
             IssueHandler::_setupIssueTemplate($request, $issue); // The current issue TOC/cover.
-
-            // [UI/UX] Reset breadcrumb agar volume tidak muncul di Homepage Jurnal
-            $journalId = (int) $journal->getId();
-            // 1. Ambil nama jurnal
             $journalName = (string) $journal->getLocalizedTitle();
             if (empty($journalName)) {
                 $journalName = (string) $journal->getPath();
             }
-            // 2. Ambil URL homepage menggunakan Router
+
             $router = $request->getRouter();
             $homeUrl = $router->url($request, null, 'index');
-            // 3. Cek apakah jurnal breadcrumb-nya dari config.inc.php
-            $hiddenIdsRaw = (string) Config::getVar('lumera', 'hide_breadcrumb_journal_ids');
-            $hiddenIds = [];
-            if (!empty($hiddenIdsRaw)) {
-                $hiddenIds = array_map('trim', explode(',', $hiddenIdsRaw));
-            }
-            // 4. Tentukan isi breadcrumb berdasarkan konfigurasi
-            if (in_array((string) $journalId, $hiddenIds, true)) {
+            if ($isBreadcrumbHiddenJournal) {
                 $templateMgr->assign('pageHierarchy', []);
+                $templateMgr->assign('pageCrumbTitleTranslated', '&nbsp;');
             } else {
                 $templateMgr->assign('pageHierarchy', [
                     [$homeUrl, $journalName]
                 ]);
+                $templateMgr->assign('pageCrumbTitleTranslated', null);
             }
+            $templateMgr->assign('pageCrumbTitle', null);
 
             // FIX: Kalkulasi total artikel untuk validasi Homepage ---
             $publishedArticles = $templateMgr->getTemplateVars('publishedArticles');
