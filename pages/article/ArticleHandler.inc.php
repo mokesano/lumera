@@ -235,6 +235,74 @@ class ArticleHandler extends Handler {
 
             $templateMgr->assign($subscriptionData);
 
+            // [FIX] "hasAccess" SEBELUMNYA di-derive ULANG di DALAM template
+            // (bukan sekali, tapi 3 KALI per file, dengan rumus yang
+            // SEDIKIT BERBEDA tiap kali) -- dan pola yang SAMA diduplikasi
+            // di templates/article/article.tpl inti + 5 tema (sangia_old,
+            // classical, sangiapub, publisher, wizdam). Total puluhan
+            // salinan logic akses yang sama tersebar di template.
+            //
+            // Dipindah ke SATU tempat di sini, PERSIS rumus aslinya
+            // (tidak diubah semantiknya) supaya pemindahan ini murni
+            // relokasi logic, bukan perubahan perilaku:
+            //
+            // - hasSubscriptionOrOpenAccess: dipakai gerbang render galleys
+            //   HTML saat access status artikel = SUBSCRIPTION. [CATATAN]
+            //   formula ASLI di template memakai ARTICLE_ACCESS_SUBSCRIPTION
+            //   di sini (BUKAN ACCESS_OPEN seperti 2 formula turunannya di
+            //   bawah) -- kemungkinan ini bug lama di template, tapi
+            //   DIPERTAHANKAN apa adanya karena tugas ini cuma memindah
+            //   logic, bukan mengubahnya. Perlu diverifikasi terpisah
+            //   apakah ini disengaja.
+            // - hasAccessWithExpiryGrant: dipakai di jalur fallback ketika
+            //   subscription diwajibkan TAPI galleys tetap ada (termasuk
+            //   celah akses "expiry partial"). [CATATAN] $subscriptionExpiryPartial
+            //   dan $articleExpiryPartial TIDAK PERNAH di-assign oleh
+            //   ArticleHandler (hanya oleh VolumesHandler/IssueHandler untuk
+            //   halaman daftar issue) -- jadi bagian formula ini SELALU
+            //   falsy di halaman artikel tunggal saat ini (dead code yang
+            //   dipertahankan apa adanya, bukan bug baru dari relokasi ini).
+            // - hasOpenAccessOrSubscribed: dipakai di jalur non-subscription
+            //   (bagian author-visible section).
+            $accessStatus = $article ? $article->getAccessStatus() : null; // Undefined method 'getAccessStatus'.
+            $subscriptionRequiredFlag = $subscriptionData['subscriptionRequired'] ?? false;
+            $subscribedUserFlag = $subscriptionData['subscribedUser'];
+            $subscribedDomainFlag = $subscriptionData['subscribedDomain'];
+
+            $templateMgr->assign([
+                'hasSubscriptionOrOpenAccess' => (
+                    !$subscriptionRequiredFlag
+                    || $accessStatus == ARTICLE_ACCESS_SUBSCRIPTION
+                    || $subscribedUserFlag
+                    || $subscribedDomainFlag
+                ),
+                'hasAccessWithExpiryGrant' => (
+                    !$subscriptionRequiredFlag
+                    || $accessStatus == ARTICLE_ACCESS_OPEN
+                    || $subscribedUserFlag
+                    || $subscribedDomainFlag
+                    // [CATATAN] Klausul expiry-partial ASLI di template
+                    // membaca $subscriptionExpiryPartial / $articleExpiryPartial
+                    // -- variabel itu TIDAK PERNAH di-assign oleh
+                    // ArticleHandler (beda dengan VolumesHandler/IssueHandler),
+                    // jadi di halaman artikel tunggal klausul ini SELALU false.
+                    // Ditulis eksplisit `false` di sini (bukan referensi ke
+                    // variabel yang memang tidak pernah ada) supaya jelas ini
+                    // dead code yang DIPERTAHANKAN, bukan bug baru dari
+                    // relokasi ini. Kalau nanti "akses expiry-partial" ini
+                    // memang ingin diaktifkan juga di halaman artikel,
+                    // ArticleHandler perlu meniru cara IssueHandler
+                    // meng-assign kedua variabel itu (lihat IssueHandler::view()).
+                    || false
+                ),
+                'hasOpenAccessOrSubscribed' => (
+                    !$subscriptionRequiredFlag
+                    || $accessStatus == ARTICLE_ACCESS_OPEN
+                    || $subscribedUserFlag
+                    || $subscribedDomainFlag
+                ),
+            ]);
+
             import('classes.payment.ojs.OJSPaymentManager');
             $paymentManager = new OJSPaymentManager($request);
             $paymentFlags = [];
