@@ -5,7 +5,7 @@
  * Copyright (c) 2017-2026 Rochmady and Team
  * Distributed under the GNU GPL v3.
  *
- * Heading Article View -- Head component.
+ * Heading Article View -- Head component -- Bredging Header and Article.
  *
  *}
 <header class="c-header" style="border-color:#000">
@@ -912,7 +912,7 @@
                         </li>
                     </ul>
                     <a type="button" title="Article Impact by Altmetrics" class="u-hide btn-sangia btn-default hidden-sm hidden-xs btn-impact" data-test-id="view-article-impact" href="https://www.altmetric.com/details/doi/{$article->getPubId('doi')}" target="_blank"><span class="icon-impact"><i class="fa fa-line-chart"></i></span>View Article Impact</a>
-                    <a type="button" aria-label="Article Impact by PlumX Metrics" class="btn-sangia btn-default hidden-sm hidden-xs btn-impact" data-test-id="view-article-impact" href="https://plu.mx/plum/a/?doi={$article->getPubId('doi')}" target="_blank" aria-haspopup="false"><span class="icon-impact"><i class="fa fa-line-chart"></i></span>View Article Impact</a>
+                    <button type="button" aria-label="View article metrics" class="button btn-sangia btn-default hidden-sm hidden-xs btn-impact" data-test-id="view-article-impact" onclick="window.location.href='{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|to_array:"metrics"}'"><span class="icon-impact"><i class="fa fa-line-chart"></i></span>View Article Impact</button>
                 </div>
 
                 <div class="js-ad sideAds">
@@ -1001,13 +1001,9 @@
                     </details>
                 </section>
 			    
-                <section class="u-hide SidePanel link externals">
+                <section class="u-hide SidePanel link u-margin-s-bottom externals">
 			    	<div class="js-shown u-padding-s-bottom">
-                        {if $sharingEnabled}
-                        <!-- start AddThis -->
-                        <!-- Go to www.addthis.com to customize your tools --> <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5b1b8c88d8801350"></script> 
-                        <!-- end AddThis -->
-                        {else}
+                        {if !$sharingEnabled}
                             {include file="article/shared.tpl"}
 			    		{/if}
 			    	</div>
@@ -1016,8 +1012,8 @@
 			    {assign var="doi" value=$article->getStoredPubId('doi')}
 			    {if $article->getPubId('doi')}
 			    <section class="u-hide SidePanel p-separator link u-font-sans-sang">
-			        <a class="external anchor" rel="noreferrer noopener" href="https://www.readcube.com/articles/{$article->getPubId('doi')}" target="_blank" title="Go to view fulltext epdf format in ReadCube (Dimension)"><button type="button" class="button-alternative DownloadFullIssue button-alternative-primary" id=""><svg focusable="false" viewBox="0 0 54 128" width="36" height="36" class="icon icon-navigate-right"><path d="m1 99l38-38-38-38 7-7 45 45-45 45z" fill="#ffffff"></path></svg><span class="button-alternative-text anchor-text u-font-sans">View article in ReadCube</span></button></a>
-			        <a class="external anchor" rel="noreferrer noopener" style="hover:none" href="https://publons.com/follow/publon/create/{$article->getPubId('doi')}" title="Go to view article in Publons (Web of Science)" target="_blank"><button type="button" class="button-alternative DownloadFullIssue button-alternative-primary" id=""><svg focusable="false" viewBox="0 0 54 128" width="36" height="36" class="icon icon-navigate-right"><path d="m1 99l38-38-38-38 7-7 45 45-45 45z" fill="#ffffff"></path></svg><span class="button-alternative-text anchor-text u-font-sans">View article in Publons</span></button></a>
+			        <a class="external anchor" rel="noreferrer noopener" href="https://www.readcube.com/articles/{$article->getPubId('doi')}" target="_blank" title="Go to view fulltext epdf format in ReadCube (Dimension)"><button type="button" class="button-alternative DownloadFullIssue button-alternative-primary" id=""><svg focusable="false" viewBox="0 0 54 128" width="32" height="32" class="icon icon-navigate-right"><path d="m1 99l38-38-38-38 7-7 45 45-45 45z" fill="#ffffff"></path></svg><span class="button-alternative-text anchor-text u-font-sans">View article in ReadCube</span></button></a>
+			        <a class="external anchor" rel="noreferrer noopener" style="hover:none" href="https://publons.com/follow/publon/create/{$article->getPubId('doi')}" title="Go to view article in Publons (Web of Science)" target="_blank"><button type="button" class="button-alternative DownloadFullIssue button-alternative-primary" id=""><svg focusable="false" viewBox="0 0 54 128" width="32" height="32" class="icon icon-navigate-right"><path d="m1 99l38-38-38-38 7-7 45 45-45 45z" fill="#ffffff"></path></svg><span class="button-alternative-text anchor-text u-font-sans">View article in Publons</span></button></a>
 			    </section>
 			    {/if}
 

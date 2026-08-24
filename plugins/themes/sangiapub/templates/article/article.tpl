@@ -50,8 +50,8 @@
 
     <div class="publication-cover u-show-from-sm journal-page">
         <noscript>
-        {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
         {assign var="displayCoverIssue" value=$issue->getShowCoverPage($locale)}
+        {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
         {if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && is_array($displayCoverIssue)}
         <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" /></a>
         {elseif $displayHomepageImage && is_array($displayHomepageImage)}
@@ -60,9 +60,9 @@
         <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" src="//media.stipwunaraha.ac.id/img/img-default.jpg" alt="Sangia Publishing Group" loading="lazy"/></a>
         {/if}
         </noscript>
-            
-        {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
+        
         {assign var="displayCoverIssue" value=$issue->getShowCoverPage($locale)}
+        {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
         {if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && is_array($displayCoverIssue)}
         <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" /></a>
         {elseif $displayHomepageImage && is_array($displayHomepageImage)}
@@ -329,7 +329,7 @@
         {/foreach}
     
     {else}
-
+    
         {if $article->getLocalizedAbstract(null) && $article->getLocalizedSubject(null)}
         <div id="body" class="Body text-pdf u-font-serif">
             {** Dalam tahap pengembangan --- Sebagai pengganti HTML article
@@ -405,11 +405,7 @@
                     <p id="p0310">{translate key="article.ethicalApproval.statement"}</p>
                 {/if}
             </section>
-                
-            {* [WIZDAM] Section ini tampil kalau SALAH SATU (sponsor
-            ATAU funders) terisi -- tidak mengharuskan keduanya, dan
-            tidak menghilangkan salah satunya kalau keduanya ada.
-            Dua {if} sejajar, TIDAK bersarang. *}
+
             {if $article->getLocalizedSponsor() || $articleFunders}
                 <section id="fund0020" class="section-funding Agencies Body">
                     <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.funding"}</h2>
@@ -515,24 +511,24 @@
 {if $hasAccess || ($subscriptionRequired)}
     {if $article->getAccessStatus() == $smarty.const.ARTICLE_ACCESS_SUBSCRIPTION && $subscriptionRequired}
     
-    <subscribe>
-        {** Belum di Set -- Masih dalam pengembangan layout tampilan **}
-    </subscribe>
+        <subscribe>
+            {** Belum di Set -- Masih dalam pengembangan layout tampilan **}
+        </subscribe>
         
     {else}
 
-    {if $section && $section->getLocalizedIdentifyType() == "Erratum" || $section->getLocalizedIdentifyType() == "Retraction notice" || $section->getLocalizedIdentifyType() == "Corrigendum" || $section->getLocalizedIdentifyType() == "Correction"}
-    
-        {foreach from=$article->getGalleys() item=galley name=galleyList}
-        {if $galleys && $hasAccess || ($subscriptionRequired && $showGalleyLinks) || $article->getLocalizedAbstract(null) && $article->getLocalizedSubject(null)}
-        <div class="PdfEmbed" role="region" aria-label="PDF viewer">
-            {include file="article/pdfViewer.tpl"}
-            <div class="u-margin-s-ver medium-bar"><a class="anchor" href="{url op="viewFile" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}" target="_blank"><svg focusable="false" viewBox="0 0 32 32" width="24" height="24" class="icon icon-pdf-multicolor"><path d="M7 .362h17.875l6.763 6.1V31.64H6.948V16z" stroke="#000" stroke-width=".703" fill="#fff"></path><path d="M.167 2.592H22.39V9.72H.166z" stroke="#aaa" stroke-width=".315" fill="#da0000"></path><path fill="#fff9f9" d="M5.97 3.638h1.62c1.053 0 1.483.677 1.488 1.564.008.96-.6 1.564-1.492 1.564h-.644v1.66h-.977V3.64m.977.897v1.34h.542c.27 0 .596-.068.596-.673-.002-.6-.32-.667-.596-.667h-.542m3.8.036v2.92h.35c.933 0 1.223-.448 1.228-1.462.008-1.06-.316-1.45-1.23-1.45h-.347m-.977-.94h1.03c1.68 0 2.523.586 2.534 2.39.01 1.688-.607 2.4-2.534 2.4h-1.03V3.64m4.305 0h2.63v.934h-1.657v.894H16.6V6.4h-1.56v2.026h-.97V3.638"></path><path d="M19.462 13.46c.348 4.274-6.59 16.72-8.508 15.792-1.82-.85 1.53-3.317 2.92-4.366-2.864.894-5.394 3.252-3.837 3.93 2.113.895 7.048-9.25 9.41-15.394zM14.32 24.874c4.767-1.526 14.735-2.974 15.152-1.407.824-3.157-13.72-.37-15.153 1.407zm5.28-5.043c2.31 3.237 9.816 7.498 9.788 3.82-.306 2.046-6.66-1.097-8.925-4.164-4.087-5.534-2.39-8.772-1.682-8.732.917.047 1.074 1.307.67 2.442-.173-1.406-.58-2.44-1.224-2.415-1.835.067-1.905 4.46 1.37 9.065z" fill="#f91d0a"></path></svg><span class="anchor-text">Download full text in {$galley->getLabel()|escape}</span></a>
+        {if $section && $section->getLocalizedIdentifyType() == "Erratum" || $section->getLocalizedIdentifyType() == "Retraction notice" || $section->getLocalizedIdentifyType() == "Corrigendum" || $section->getLocalizedIdentifyType() == "Correction"}
+        
+            {foreach from=$article->getGalleys() item=galley name=galleyList}
+            {if $galleys && $hasAccess || ($subscriptionRequired && $showGalleyLinks) || $article->getLocalizedAbstract(null) && $article->getLocalizedSubject(null)}
+            <div class="PdfEmbed" role="region" aria-label="PDF viewer">
+                {include file="article/pdfViewer.tpl"}
+                <div class="u-margin-s-ver medium-bar"><a class="anchor" href="{url op="viewFile" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}" target="_blank"><svg focusable="false" viewBox="0 0 32 32" width="24" height="24" class="icon icon-pdf-multicolor"><path d="M7 .362h17.875l6.763 6.1V31.64H6.948V16z" stroke="#000" stroke-width=".703" fill="#fff"></path><path d="M.167 2.592H22.39V9.72H.166z" stroke="#aaa" stroke-width=".315" fill="#da0000"></path><path fill="#fff9f9" d="M5.97 3.638h1.62c1.053 0 1.483.677 1.488 1.564.008.96-.6 1.564-1.492 1.564h-.644v1.66h-.977V3.64m.977.897v1.34h.542c.27 0 .596-.068.596-.673-.002-.6-.32-.667-.596-.667h-.542m3.8.036v2.92h.35c.933 0 1.223-.448 1.228-1.462.008-1.06-.316-1.45-1.23-1.45h-.347m-.977-.94h1.03c1.68 0 2.523.586 2.534 2.39.01 1.688-.607 2.4-2.534 2.4h-1.03V3.64m4.305 0h2.63v.934h-1.657v.894H16.6V6.4h-1.56v2.026h-.97V3.638"></path><path d="M19.462 13.46c.348 4.274-6.59 16.72-8.508 15.792-1.82-.85 1.53-3.317 2.92-4.366-2.864.894-5.394 3.252-3.837 3.93 2.113.895 7.048-9.25 9.41-15.394zM14.32 24.874c4.767-1.526 14.735-2.974 15.152-1.407.824-3.157-13.72-.37-15.153 1.407zm5.28-5.043c2.31 3.237 9.816 7.498 9.788 3.82-.306 2.046-6.66-1.097-8.925-4.164-4.087-5.534-2.39-8.772-1.682-8.732.917.047 1.074 1.307.67 2.442-.173-1.406-.58-2.44-1.224-2.415-1.835.067-1.905 4.46 1.37 9.065z" fill="#f91d0a"></path></svg><span class="anchor-text">Download full text in {$galley->getLabel()|escape}</span></a>
+                </div>
             </div>
-        </div>
+            {/if}
+            {/foreach}
         {/if}
-        {/foreach}
-    {/if}
     
     {/if}
     

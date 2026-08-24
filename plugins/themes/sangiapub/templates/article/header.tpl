@@ -3,9 +3,9 @@
 {**
  * templates/article/header.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2003-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
  * Article View -- Header component.
  *}
@@ -159,18 +159,10 @@
     
 	{$additionalHeadData}    
 
-<!-- Begin for PDF Galley -->
-{if $galley}
-	{if $galley->isPdfGalley()}
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-	<meta content="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|escape}" property="og:url" />
- 	<link rel="stylesheet" href="{$baseUrl}/styles/articleView.css" type="text/css" />
- 	<link rel="canonical" href="{$currentUrl|escape}" />
-	
-	{elseif $galley->isHTMLGalley()}
-		{include file="article/head.tpl"}
-		<link rel="canonical" href="{$currentUrl|escape}" />
-	{/if}
+{if $galley && $galley->isHTMLGalley()}
+
+	{include file="article/head.tpl"}
+	<link rel="canonical" href="{$currentUrl|escape}" />
 
 {else}
 
@@ -219,15 +211,5 @@
 <a class="sr-only sr-only-focusable u-hide" href="#screen-reader-main-title">Skip to article</a>
 
 <div data-iso-key="_0">
-{if $galley}
-	{if $galley->isPdfGalley() && $smarty.template != 'article/pdfViewer.tpl'}
-	    {include file="article/pdfViewer.tpl"}
-	{/if}
-	{if $galley->isHTMLGalley()}
-	    {include file="common/banner.tpl"}
-		{include file="article/heading.tpl"}
-	{/if}	
-{else}
     {include file="common/banner.tpl"}
 	{include file="article/heading.tpl"}
-{/if}
