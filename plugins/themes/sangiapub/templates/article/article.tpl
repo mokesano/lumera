@@ -101,9 +101,9 @@
     <div class="wrapper truncated">
         <div class="AuthorGroups text-s">
             <div id="author-group" class="author-group">
-                <span class="sr-only">Author links open overlay panel</span>
+                <span class="sr-only">{translate key="article.authorLink"}</span>
             </div>
-            <p class="text-s">Available online {$article->getDateStatusModified()|date_format:"%e %B %Y"}.</p>
+            <p class="text-s">{translate key="article.availableOnline"} {$article->getDateStatusModified()|date_format:"%e %B %Y"}.</p>
             <button class="button-link crossmark-button button-link-primary button-link-icon-only"><link rel="preload" href="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js" as="script"><script src="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js"></script><img loading="lazy" class="lazyload crossmark-button" title="Check for updates with Crossmark" data-target="crossmark" alt="crossmark-logo" src="https://crossmark-cdn.crossref.org/widget/v2.0/logos/CROSSMARK_Color_horizontal.svg" width="150" />
             </button>
         </div>
@@ -114,7 +114,7 @@
             <div id="author-group" class="author-group">
                 {assign var=count value=0}
                 {assign var=authors value=$article->getAuthors()}
-                <span class="sr-only">Author links open overlay panel</span>
+                <span class="sr-only">{translate key="article.authorLink"}</span>
                 {foreach from=$authors item=author name=authors key=i}
                 {assign var=authorCount value=$authors|@count}
                 {assign var=fullname value=$author->getFullName()}
@@ -142,36 +142,30 @@
                 {/foreach}
             </div>
             
-            <p class="text-s">{if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}Available online {$article->getDateStatusModified()|date_format:"%e %B %Y"}.{else}{if $article->getLocalizedAbstract(null) || $article->getLocalizedSubject(null)}Received {$article->getDateSubmitted()|date_format:"%e %B %Y"}{if $revisionDate}, Revised {$revisionDate|date_format:"%e %B %Y"}{/if}{if $acceptedDate}, Accepted {$acceptedDate|date_format:"%e %B %Y"}{/if}, Published {$article->getDatePublished()|date_format:"%e %B %Y"}, Available online {$article->getDateStatusModified()|date_format:"%e %B %Y"}, Version of Record {$article->getLastModified()|date_format:"%e %B %Y"}.{else}Available online {$article->getDateStatusModified()|date_format:"%e %B %Y"}.{/if}{/if}</p>
+            <p class="text-s">{if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}{translate key="article.availableOnline"} {$article->getDateStatusModified()|date_format:"%e %B %Y"}.{else}{if $article->getLocalizedAbstract(null) || $article->getLocalizedSubject(null)}{translate key="article.received"} {$article->getDateSubmitted()|date_format:"%e %B %Y"}{if $revisionDate}, {translate key="article.revised"} {$revisionDate|date_format:"%e %B %Y"}{/if}{if $acceptedDate}, {translate key="article.accepted"} {$acceptedDate|date_format:"%e %B %Y"}{/if}, {translate key="article.published"} {$article->getDatePublished()|date_format:"%e %B %Y"}, {translate key="article.availableOnline"} {$article->getDateStatusModified()|date_format:"%e %B %Y"}, {translate key="article.versionOfRecord"} {$article->getLastModified()|date_format:"%e %B %Y"}.{else}{translate key="article.availableOnline"} {$article->getDateStatusModified()|date_format:"%e %B %Y"}.{/if}{/if}</p>
             <button class="button-link crossmark-button button-link-primary button-link-icon-only"><link rel="preload" href="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js" as="script"><script src="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js"></script><img loading="lazy" class="lazyload crossmark-button" title="Check for updates with Crossmark" data-target="crossmark" alt="crossmark-logo" src="https://crossmark-cdn.crossref.org/widget/v2.0/logos/CROSSMARK_Color_horizontal.svg" width="150" />
             </button>
         </div>
     </div>
     {/if}
     
-    <button id="show-more-btn" class="button-link u-margin-s-ver show-hide-details u-font-sans-sang" type="button" aria-expanded="false" data-aa-button="icon-collapse"><span class="anchor-text text-s">Show more</span><svg focusable="false" viewBox="0 0 92 128" height="20" width="17.25" class="icon icon-navigate-down u-flip-vertically"><path d="m1 51l7-7 38 38 38-38 7 7-45 45z"></path></svg></button>
+    <button id="show-more-btn" class="button-link u-margin-s-ver show-hide-details u-font-sans-sang" type="button" aria-expanded="false" data-aa-button="icon-collapse"><span class="anchor-text text-s">{translate key="article.button.showMore"}</span><svg focusable="false" viewBox="0 0 92 128" height="20" width="17.25" class="icon icon-navigate-down u-flip-vertically"><path d="m1 51l7-7 38 38 38-38 7 7-45 45z"></path></svg></button>
 
     <div class="banner-options u-padding-xs-bottom">
-        <div id="AddToMendeley" class="button-link AddToMendeley button-link-secondary u-display-inline-block u-display-inline-flex-from-md button-link-icon-left"><a rel="noreferrer noopener" href="javascript:document.getElementsByTagName('body')[0].appendChild(document.createElement('script')).setAttribute('src','https://www.mendeley.com/minified/bookmarklet.js');"><button class="button button-anchor" role="button" aria-expanded="false" aria-haspopup="true" type="button"><svg focusable="false" viewBox="0 0 86 128" height="20" width="20" class="icon icon-plus"><path d="m48 58v-38h-1e1v38h-38v1e1h38v38h1e1v-38h38v-1e1z"></path></svg><span class="button-link-text-container"><span class="button-text">Save to Mendeley</span></span></button></a></div>
+        <div id="AddToMendeley" class="button-link AddToMendeley button-link-secondary u-display-inline-block u-display-inline-flex-from-md button-link-icon-left"><a rel="noreferrer noopener" href="javascript:document.getElementsByTagName('body')[0].appendChild(document.createElement('script')).setAttribute('src','https://www.mendeley.com/minified/bookmarklet.js');"><button class="button button-anchor" role="button" aria-expanded="false" aria-haspopup="true" type="button"><svg focusable="false" viewBox="0 0 86 128" height="20" width="20" class="icon icon-plus"><path d="m48 58v-38h-1e1v38h-38v1e1h38v38h1e1v-38h38v-1e1z"></path></svg><span class="button-link-text-container"><span class="button-text">{translate key="article.button.saveToMendeley"}</span></span></button></a></div>
         <div id="social" class="Social u-display-inline-block">
             <div id="social-popover" class="popover social-popover" aria-label="Share article on social media">
-                <div id="popover-trigger-social-popover"><button class="button button-anchor" role="button" aria-expanded="false" aria-haspopup="true" type="button"><svg focusable="false" viewBox="0 0 128 128" height="20" width="20" class="icon icon-share"><path d="m9e1 112c-6.62 0-12-5.38-12-12s5.38-12 12-12 12 5.38 12 12-5.38 12-12 12zm-66-36c-6.62 0-12-5.38-12-12s5.38-12 12-12 12 5.38 12 12-5.38 12-12 12zm66-6e1c6.62 0 12 5.38 12 12s-5.38 12-12 12-12-5.38-12-12 5.38-12 12-12zm0 62c-6.56 0-12.44 2.9-16.48 7.48l-28.42-15.28c0.58-1.98 0.9-4.04 0.9-6.2s-0.32-4.22-0.9-6.2l28.42-15.28c4.04 4.58 9.92 7.48 16.48 7.48 12.14 0 22-9.86 22-22s-9.86-22-22-22-22 9.86-22 22c0 1.98 0.28 3.9 0.78 5.72l-28.64 15.38c-4.02-4.34-9.76-7.1-16.14-7.1-12.14 0-22 9.86-22 22s9.86 22 22 22c6.38 0 12.12-2.76 16.14-7.12l28.64 15.38c-0.5 1.84-0.78 3.76-0.78 5.74 0 12.14 9.86 22 22 22s22-9.86 22-22-9.86-22-22-22z"></path></svg><span class="button-text">Share</span></button>
+                <div id="popover-trigger-social-popover"><button class="button button-anchor" role="button" aria-expanded="false" aria-haspopup="true" type="button"><svg focusable="false" viewBox="0 0 128 128" height="20" width="20" class="icon icon-share"><path d="m9e1 112c-6.62 0-12-5.38-12-12s5.38-12 12-12 12 5.38 12 12-5.38 12-12 12zm-66-36c-6.62 0-12-5.38-12-12s5.38-12 12-12 12 5.38 12 12-5.38 12-12 12zm66-6e1c6.62 0 12 5.38 12 12s-5.38 12-12 12-12-5.38-12-12 5.38-12 12-12zm0 62c-6.56 0-12.44 2.9-16.48 7.48l-28.42-15.28c0.58-1.98 0.9-4.04 0.9-6.2s-0.32-4.22-0.9-6.2l28.42-15.28c4.04 4.58 9.92 7.48 16.48 7.48 12.14 0 22-9.86 22-22s-9.86-22-22-22-22 9.86-22 22c0 1.98 0.28 3.9 0.78 5.72l-28.64 15.38c-4.02-4.34-9.76-7.1-16.14-7.1-12.14 0-22 9.86-22 22s9.86 22 22 22c6.38 0 12.12-2.76 16.14-7.12l28.64 15.38c-0.5 1.84-0.78 3.76-0.78 5.74 0 12.14 9.86 22 22 22s22-9.86 22-22-9.86-22-22-22z"></path></svg><span class="button-text">{translate key="article.button.share"}</span></button>
                 </div>
                 <div id="popover-content-social-popover" class="popover-content popover-align-left u-js-hide" role="region">
                     <div class="popover-content-inner popover-close-button-hidden">
                         <div class="popover-children">
                             <ul class="share-options-list">
-                                <li class="u-margin-xs-bottom"><a class="anchor social-anchor anchor-primary anchor-icon-left" href="mailto:?subject=I would like to share with you '{$article->getLocalizedTitle()|strip_tags|escape}': {url page="article" op="view" path=$article->getBestArticleId($currentJournal)}" target="_blank" id="Email" aria-label="Email"><svg focusable="false" viewBox="0 0 102 128" height="20" class="icon icon-envelope"><path d="M55.8 57.2c-1.78 1.31-5.14 1.31-6.9 0L17.58 34h69.54L55.8 57.19zM0 32.42l42.94 32.62c2.64 1.95 6.02 2.93 9.4 2.93s6.78-.98 9.42-2.93L102 34.34V24H0zM92 88.9L73.94 66.16l-8.04 5.95L83.28 94H18.74l18.38-23.12-8.04-5.96L10 88.94V51.36L0 42.9V104h102V44.82l-10 8.46V88.9"></path></svg><span class="anchor-text-container"><span class="anchor-text">Email</span><svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg>
-                                    </span></a>
-                                </li>
-                                <li class="u-margin-xs-bottom"><a class="anchor social-anchor anchor-primary anchor-icon-left" href="https://www.facebook.com/sharer/sharer.php?u={url page="article" op="view" path=$article->getBestArticleId($currentJournal)}" target="_blank" id="Facebook" aria-label="Facebook"><svg focusable="false" viewBox="0 0 24 24" height="20" class="icon icon-facebook"><path d="M24.08 12c0-6.629-5.373-12.001-12-12.001-6.63 0-12.002 5.371-12.002 12 0 5.99 4.388 10.955 10.125 11.855v-8.386H7.157V12h3.047V9.355c0-3.007 1.792-4.669 4.533-4.669 1.313 0 2.686.235 2.686.235v2.953H15.91c-1.49 0-1.956.925-1.956 1.874V12h3.329l-.532 3.47h-2.797v8.385C19.692 22.954 24.08 17.99 24.08 12"></path><path d="M16.75 15.468L17.284 12h-3.329V9.75c0-.95.465-1.875 1.956-1.875h1.513V4.921s-1.373-.235-2.686-.235c-2.741 0-4.533 1.662-4.533 4.67v2.643H7.157v3.47h3.047v8.385a12.09 12.09 0 0 0 3.75 0v-8.386h2.797" fill="#fff"></path></svg><span class="anchor-text-container"><span class="anchor-text">Facebook</span><svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg></span></a>
-                                </li>
-                                <li class="u-margin-xs-bottom"><a class="anchor social-anchor anchor-primary anchor-icon-left" href="https://twitter.com/share?text={$article->getLocalizedTitle()|strip_tags|escape}&amp;url={url page="article" op="view" path=$article->getBestArticleId($currentJournal)}&amp;via=SangiaNews @SRMadhy" target="_blank" id="Twitter" aria-label="Twitter"><svg focusable="false" viewBox="0 0 24 24" height="20" class="icon icon-twitter"><path d="M14.226 10.162 22.97 0h-2.072l-7.591 8.824L7.243 0H.25l9.168 13.343L.25 24h2.072l8.016-9.318L16.741 24h6.993l-9.508-13.838Zm-2.837 3.299-.93-1.329L3.07 1.56h3.18l5.965 8.532.93 1.329 7.753 11.09h-3.182l-6.327-9.05z"></path></svg><span class="anchor-text-container"><span class="anchor-text">X (Twitter)</span><svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg></span></a>
-                                </li>
-                                <li class="u-margin-xs-bottom"><a class="anchor social-anchor anchor-primary anchor-icon-left" href="https://www.linkedin.com/shareArticle?mini=true&amp;url={url page="article" op="view" path=$article->getBestArticleId($currentJournal)}&amp;title={$article->getLocalizedTitle()|strip_tags|escape}&amp;source=SangiaPublishing" target="_blank" id="LinkedIn" aria-label="LinkedIn"><svg focusable="false" viewBox="0 0 128 128" height="20" class="icon icon-linkedin"><path d="M114.597 1H13.685A12.632 12.632 0 001 13.685v100.63A12.632 12.632 0 0013.685 127h100.63A12.632 12.632 0 00127 114.315V13.403C127 6.638 121.362 1 114.597 1z" fill-rule="evenodd" clip-rule="evenodd"></path><path d="M29.47 21.013c-6.202 0-11.557 5.074-11.557 11.557 0 6.484 5.355 11.558 11.557 11.558 6.201 0 11.557-5.074 11.557-11.558 0-6.483-5.356-11.557-11.557-11.557zm-9.302 86.82h18.886V51.173H20.168zM86.409 50.61c-7.61 0-13.53 3.382-16.349 7.892v-7.047H51.456v56.658h18.886V84.436c0-8.738 3.101-14.094 9.866-14.094 5.074 0 9.02 3.383 9.02 12.403v25.37h18.886v-34.39c0-16.35-7.329-23.114-21.705-23.114z" fill-rule="evenodd" clip-rule="evenodd" fill="#fff"></path></svg><span class="anchor-text-container"><span class="anchor-text">LinkedIn</span><svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg></span></a>
-                                </li>
-                                <li><a class="anchor social-anchor anchor-primary anchor-icon-left" href="https://reddit.com/submit?url={url page="article" op="view" path=$article->getBestArticleId($currentJournal)}&amp;title={$article->getLocalizedTitle()|strip_tags|escape}" target="_blank" id="Reddit" aria-label="Reddit"><svg focusable="false" viewBox="0 0 24 24" height="20" class="icon icon-reddit"><path d="M8.584 17.03c-.919.005-1.018 1.35-.191 1.632 1.957 1.277 4.64 1.284 6.723.313.64-.253 1.51-1.007.87-1.702-.829-.777-1.635.615-2.467.62-1.607.358-3.379.176-4.71-.836a.707.707 0 0 0-.225-.026zm12.345-6.57c1.035-.048 1.72 1.418 1.147 2.067-.371-.773-.948-1.463-1.554-2.03.133-.033.27-.044.407-.036zm-17.856-.005c.066-.004.135-.002.203.006.468.064-.467.576-.576.885a6.533 6.533 0 0 0-.784 1.226c-.53-.898.162-2.068 1.157-2.117zm8.936-1.296c3.194.032 6.867 1.013 8.61 3.92 1.245 2.127-.204 4.67-2.143 5.767-3.767 2.263-8.786 2.296-12.626.189-1.956-1.024-3.628-3.396-2.61-5.627 1.534-3.146 5.524-4.22 8.77-4.249zm7.752-7.052a2.529 2.529 0 0 0-2.1 1.27c-1.418-.206-4.242-.853-4.242-.853L11.254 7.63c-2.22.107-4.452.668-6.358 1.832C3.216 8.142.448 9.314.223 11.44a2.977 2.977 0 0 0 1.198 2.852c-.362 3.075 2.173 5.576 4.81 6.668 4.381 1.833 9.82 1.567 13.723-1.266 1.672-1.232 2.91-3.268 2.642-5.402 1.83-1.19 1.53-4.249-.464-5.096a2.977 2.977 0 0 0-3.01.266c-1.812-1.108-3.918-1.665-6.023-1.813l1.065-3.469 3.193.83c.2 1.874 2.711 2.832 4.104 1.559 1.498-1.13 1.039-3.756-.752-4.313a2.475 2.475 0 0 0-.948-.15zm.082 1.253a1.189 1.189 0 0 1 1.189 1.19 1.189 1.189 0 0 1-1.189 1.19 1.189 1.189 0 0 1-1.189-1.19 1.189 1.189 0 0 1 1.19-1.19zM10.5 13.656a1.875 1.875 0 0 1-1.875 1.875 1.875 1.875 0 0 1-1.875-1.875 1.875 1.875 0 0 1 1.875-1.875 1.875 1.875 0 0 1 1.875 1.875zm6.947-.002a1.875 1.875 0 0 1-1.875 1.875 1.875 1.875 0 0 1-1.875-1.875 1.875 1.875 0 0 1 1.875-1.875 1.875 1.875 0 0 1 1.875 1.875z"></path></svg><span class="anchor-text-container"><span class="anchor-text">Reddit</span><svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg></span></a>
-                                </li>
+                                <li class="u-margin-xs-bottom"><a class="anchor social-anchor anchor-primary anchor-icon-left" href="mailto:?subject=I would like to share with you '{$article->getLocalizedTitle()|strip_tags|escape}': {url page="article" op="view" path=$article->getBestArticleId($currentJournal)}" target="_blank" id="Email" aria-label="Email"><svg focusable="false" viewBox="0 0 102 128" height="20" class="icon icon-envelope"><path d="M55.8 57.2c-1.78 1.31-5.14 1.31-6.9 0L17.58 34h69.54L55.8 57.19zM0 32.42l42.94 32.62c2.64 1.95 6.02 2.93 9.4 2.93s6.78-.98 9.42-2.93L102 34.34V24H0zM92 88.9L73.94 66.16l-8.04 5.95L83.28 94H18.74l18.38-23.12-8.04-5.96L10 88.94V51.36L0 42.9V104h102V44.82l-10 8.46V88.9"></path></svg><span class="anchor-text-container"><span class="anchor-text">Email</span><svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg></span></a></li>
+                                <li class="u-margin-xs-bottom"><a class="anchor social-anchor anchor-primary anchor-icon-left" href="https://www.facebook.com/sharer/sharer.php?u={url page="article" op="view" path=$article->getBestArticleId($currentJournal)}" target="_blank" id="Facebook" aria-label="Facebook"><svg focusable="false" viewBox="0 0 24 24" height="20" class="icon icon-facebook"><path d="M24.08 12c0-6.629-5.373-12.001-12-12.001-6.63 0-12.002 5.371-12.002 12 0 5.99 4.388 10.955 10.125 11.855v-8.386H7.157V12h3.047V9.355c0-3.007 1.792-4.669 4.533-4.669 1.313 0 2.686.235 2.686.235v2.953H15.91c-1.49 0-1.956.925-1.956 1.874V12h3.329l-.532 3.47h-2.797v8.385C19.692 22.954 24.08 17.99 24.08 12"></path><path d="M16.75 15.468L17.284 12h-3.329V9.75c0-.95.465-1.875 1.956-1.875h1.513V4.921s-1.373-.235-2.686-.235c-2.741 0-4.533 1.662-4.533 4.67v2.643H7.157v3.47h3.047v8.385a12.09 12.09 0 0 0 3.75 0v-8.386h2.797" fill="#fff"></path></svg><span class="anchor-text-container"><span class="anchor-text">Facebook</span><svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg></span></a></li>
+                                <li class="u-margin-xs-bottom"><a class="anchor social-anchor anchor-primary anchor-icon-left" href="https://twitter.com/share?text={$article->getLocalizedTitle()|strip_tags|escape}&amp;url={url page="article" op="view" path=$article->getBestArticleId($currentJournal)}&amp;via=SangiaNews @SRMadhy" target="_blank" id="Twitter" aria-label="Twitter"><svg focusable="false" viewBox="0 0 24 24" height="20" class="icon icon-twitter"><path d="M14.226 10.162 22.97 0h-2.072l-7.591 8.824L7.243 0H.25l9.168 13.343L.25 24h2.072l8.016-9.318L16.741 24h6.993l-9.508-13.838Zm-2.837 3.299-.93-1.329L3.07 1.56h3.18l5.965 8.532.93 1.329 7.753 11.09h-3.182l-6.327-9.05z"></path></svg><span class="anchor-text-container"><span class="anchor-text">X (Twitter)</span><svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg></span></a></li>
+                                <li class="u-margin-xs-bottom"><a class="anchor social-anchor anchor-primary anchor-icon-left" href="https://www.linkedin.com/shareArticle?mini=true&amp;url={url page="article" op="view" path=$article->getBestArticleId($currentJournal)}&amp;title={$article->getLocalizedTitle()|strip_tags|escape}&amp;source=SangiaPublishing" target="_blank" id="LinkedIn" aria-label="LinkedIn"><svg focusable="false" viewBox="0 0 128 128" height="20" class="icon icon-linkedin"><path d="M114.597 1H13.685A12.632 12.632 0 001 13.685v100.63A12.632 12.632 0 0013.685 127h100.63A12.632 12.632 0 00127 114.315V13.403C127 6.638 121.362 1 114.597 1z" fill-rule="evenodd" clip-rule="evenodd"></path><path d="M29.47 21.013c-6.202 0-11.557 5.074-11.557 11.557 0 6.484 5.355 11.558 11.557 11.558 6.201 0 11.557-5.074 11.557-11.558 0-6.483-5.356-11.557-11.557-11.557zm-9.302 86.82h18.886V51.173H20.168zM86.409 50.61c-7.61 0-13.53 3.382-16.349 7.892v-7.047H51.456v56.658h18.886V84.436c0-8.738 3.101-14.094 9.866-14.094 5.074 0 9.02 3.383 9.02 12.403v25.37h18.886v-34.39c0-16.35-7.329-23.114-21.705-23.114z" fill-rule="evenodd" clip-rule="evenodd" fill="#fff"></path></svg><span class="anchor-text-container"><span class="anchor-text">LinkedIn</span><svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg></span></a></li>
+                                <li><a class="anchor social-anchor anchor-primary anchor-icon-left" href="https://reddit.com/submit?url={url page="article" op="view" path=$article->getBestArticleId($currentJournal)}&amp;title={$article->getLocalizedTitle()|strip_tags|escape}" target="_blank" id="Reddit" aria-label="Reddit"><svg focusable="false" viewBox="0 0 24 24" height="20" class="icon icon-reddit"><path d="M8.584 17.03c-.919.005-1.018 1.35-.191 1.632 1.957 1.277 4.64 1.284 6.723.313.64-.253 1.51-1.007.87-1.702-.829-.777-1.635.615-2.467.62-1.607.358-3.379.176-4.71-.836a.707.707 0 0 0-.225-.026zm12.345-6.57c1.035-.048 1.72 1.418 1.147 2.067-.371-.773-.948-1.463-1.554-2.03.133-.033.27-.044.407-.036zm-17.856-.005c.066-.004.135-.002.203.006.468.064-.467.576-.576.885a6.533 6.533 0 0 0-.784 1.226c-.53-.898.162-2.068 1.157-2.117zm8.936-1.296c3.194.032 6.867 1.013 8.61 3.92 1.245 2.127-.204 4.67-2.143 5.767-3.767 2.263-8.786 2.296-12.626.189-1.956-1.024-3.628-3.396-2.61-5.627 1.534-3.146 5.524-4.22 8.77-4.249zm7.752-7.052a2.529 2.529 0 0 0-2.1 1.27c-1.418-.206-4.242-.853-4.242-.853L11.254 7.63c-2.22.107-4.452.668-6.358 1.832C3.216 8.142.448 9.314.223 11.44a2.977 2.977 0 0 0 1.198 2.852c-.362 3.075 2.173 5.576 4.81 6.668 4.381 1.833 9.82 1.567 13.723-1.266 1.672-1.232 2.91-3.268 2.642-5.402 1.83-1.19 1.53-4.249-.464-5.096a2.977 2.977 0 0 0-3.01.266c-1.812-1.108-3.918-1.665-6.023-1.813l1.065-3.469 3.193.83c.2 1.874 2.711 2.832 4.104 1.559 1.498-1.13 1.039-3.756-.752-4.313a2.475 2.475 0 0 0-.948-.15zm.082 1.253a1.189 1.189 0 0 1 1.189 1.19 1.189 1.189 0 0 1-1.189 1.19 1.189 1.189 0 0 1-1.189-1.19 1.189 1.189 0 0 1 1.19-1.19zM10.5 13.656a1.875 1.875 0 0 1-1.875 1.875 1.875 1.875 0 0 1-1.875-1.875 1.875 1.875 0 0 1 1.875-1.875 1.875 1.875 0 0 1 1.875 1.875zm6.947-.002a1.875 1.875 0 0 1-1.875 1.875 1.875 1.875 0 0 1-1.875-1.875 1.875 1.875 0 0 1 1.875-1.875 1.875 1.875 0 0 1 1.875 1.875z"></path></svg><span class="anchor-text-container"><span class="anchor-text">Reddit</span><svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg></span></a></li>
                             </ul>
                         </div>
                     </div>
@@ -180,8 +174,7 @@
         </div>
         <div class="ExportCitation u-display-inline-block" id="export-citation">
             <div class="popover export-citation-popover" id="export-citation-popover" aria-label="Export or save citation">
-                <div id="popover-trigger-export-citation-popover"><button class="button button-anchor" role="button" aria-expanded="false" aria-haspopup="true" type="button"><svg focusable="false" viewBox="0 0 106 128" height="20" width="20" class="icon icon-cited-by-66"><path xmlns="http://www.w3.org/2000/svg" d="m2 58.78v47.22h44v-42h-34v-5.22c0-18.5 17.08-26.78 34-26.78v-1e1c-25.9 0-44 15.12-44 36.78zm1e2 -26.78v-1e1c-25.9 0-44 15.12-44 36.78v47.22h44v-42h-34v-5.22c0-18.5 17.08-26.78 34-26.78z"></path></svg><span class="button-text">Cite</span></button>
-                </div>
+                <div id="popover-trigger-export-citation-popover"><button class="button button-anchor" role="button" aria-expanded="false" aria-haspopup="true" type="button"><svg focusable="false" viewBox="0 0 106 128" height="20" width="20" class="icon icon-cited-by-66"><path xmlns="http://www.w3.org/2000/svg" d="m2 58.78v47.22h44v-42h-34v-5.22c0-18.5 17.08-26.78 34-26.78v-1e1c-25.9 0-44 15.12-44 36.78zm1e2 -26.78v-1e1c-25.9 0-44 15.12-44 36.78v47.22h44v-42h-34v-5.22c0-18.5 17.08-26.78 34-26.78z"></path></svg><span class="button-text">{translate key="article.button.cite"}</span></button></div>
                 <div id="popover-content-export-citation-popover" class="popover-content popover-align-left u-js-hide" role="region"><div class="popover-content-inner popover-close-button-hidden"><div class="popover-children"><ul class="export-options-list link"><li class="u-margin-xs-bottom"><form action="{url page="rt" op="captureCite" path=$articleId|to_array:$galleyId}/RefManCitationPlugin" aria-label="Refworks"><button class="button-link button-link-secondary citation-type button-link-icon-left button-link-has-colored-icon" aria-label="ris" type="submit"><svg focusable="false" viewBox="0 0 54 128" height="20" class="icon icon-navigate-right"><path d="M1 99l38-38L1 23l7-7 45 45-45 45z"></path></svg><span class="button-link-text-container"><span class="button-link-text">Save to Refworks</span><svg focusable="false" viewBox="0 0 8 8" height="20" aria-label="Opens in new window" class="icon icon-arrow-up-right-tiny arrow-external-link"><path d="M1.12949 2.1072V1H7V6.85795H5.89111V2.90281L0.784057 8L0 7.21635L5.11902 2.1072H1.12949Z"></path></svg></span></button></form></li><li class="u-margin-xs-bottom"><form action="{url page="rt" op="captureCite" path=$articleId|to_array:$galleyId}/ProCiteCitationPlugin"><input type="hidden" name="format" value="application/x-research-info-systems"><input type="hidden" name="withabstract" value="true"><button class="button-link button-link-secondary citation-type button-link-icon-left button-link-has-colored-icon" aria-label="ris" type="submit"><svg focusable="false" viewBox="0 0 54 128" height="20" class="icon icon-navigate-right"><path d="M1 99l38-38L1 23l7-7 45 45-45 45z"></path></svg><span class="button-link-text-container"><span class="button-link-text">Export citation to RIS</span></span></button></form></li><li class="u-margin-xs-bottom"><form action="{url page="rt" op="captureCite" path=$article->getBestArticleId()|to_array:$galleyId}/BibtexCitationPlugin"><input type="hidden" name="format" value="text/x-bibtex"><input type="hidden" name="withabstract" value="true"><button class="button-link button-link-secondary citation-type button-link-icon-left button-link-has-colored-icon" aria-label="bibtex" type="submit"><svg focusable="false" viewBox="0 0 54 128" height="20" class="icon icon-navigate-right"><path d="M1 99l38-38L1 23l7-7 45 45-45 45z"></path></svg><span class="button-link-text-container"><span class="button-link-text">Export citation to BibTeX</span></span></button></form></li><li><form action="{url page="rt" op="captureCite" path=$articleId|to_array:$galleyId}/EndNoteCitationPlugin"><input type="hidden" name="format" value="text/plain"><input type="hidden" name="withabstract" value="true"><button class="button-link button-link-secondary citation-type button-link-icon-left button-link-has-colored-icon" aria-label="text" type="submit"><svg focusable="false" viewBox="0 0 54 128" height="20" class="icon icon-navigate-right"><path d="M1 99l38-38L1 23l7-7 45 45-45 45z"></path></svg><span class="button-link-text-container"><span class="button-link-text">Export citation to text</span></span></button></form></li></ul></div></div></div>
                 <a href="javascript:openRTWindow('{url page="rt" op="captureCite" path=$articleId|to_array:$galleyId}');"></a>
             </div>
@@ -197,12 +190,12 @@
         {assign var=pubId value=$pubIdPlugin->getPubId($pubObject, true)}{* Preview rather than assign a pubId *}
     {/if}
     {if $pubId}
-        {if $pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}<a class="anchor doi anchor-default anchor-external-link" target="_blank" rel="noreferrer noopener" aria-label="Persistent link using digital object identifier" title="Persistent link using digital object identifier" href="{$pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}"><span class="anchor-text">{$pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}</span></a>{else}<a rel="noreferrer noopener" href="javascript:void(0)">DOI not available</a>{/if}
+        {if $pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}<a class="anchor doi anchor-default anchor-external-link" target="_blank" rel="noreferrer noopener" aria-label="Persistent link using digital object identifier" title="Persistent link using digital object identifier" href="{$pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}"><span class="anchor-text">{$pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}</span></a>{else}<a rel="noreferrer noopener" href="javascript:void(0)">{translate key="article.button.DOI.notAvaliable"}</a>{/if}
     {else}
     <a href="https://doi.org/{$article->getPubId('doi')}" class="anchor doi anchor-default anchor-external-link" target="_blank" rel="noreferrer noopener" title="Persistent link using digital object identifier"><span class="anchor-text">https://doi.org/{$article->getPubId('doi')}</span></a>
     {/if}
     {/foreach}
-    <a class="anchor rights-and-content anchor-default anchor-external-link" rel="noreferrer noopener" href="{url page="about" op="submissions" anchor="copyrightNotice"}" target="_blank"><span class="anchor-text">Get rights and content</span></a>
+    <a class="anchor rights-and-content anchor-default anchor-external-link" rel="noreferrer noopener" href="{url page="about" op="submissions" anchor="copyrightNotice"}" target="_blank"><span class="anchor-text">{translate key="article.button.rightsContent"}</span></a>
 </div>
 
 <div class="LicenseInfo u-font-sans-sang">
@@ -219,7 +212,7 @@
 <div id="abstracts" class="Abstracts u-font-serif">
     {if $article->getLocalizedSubject(null)}
     <div id="ab810" class="abstract author-highlights u-js-hide" lang="{$metaLocale|String_substr:0:2|escape}">
-        <h2 class="u-fonts-serif u-h4 u-margin-l-top u-margin-xs-bottom">Highlights</h2>
+        <h2 class="u-fonts-serif u-h4 u-margin-l-top u-margin-xs-bottom">{translate key="article.highlights"}</h2>
         <div id="as710">
             <div id="sp1310" class="Abstracts highlights u-fonts-serif">
                 <ul class="non-list">
@@ -229,7 +222,7 @@
                 </ul>
             </div>
         </div>
-        <p class="highlights u-font-sans" style="margin: 0;font-size: 14px;text-align: end;">Generate NLP AI by Wizdam ID.</p>
+        <p class="highlights u-font-sans" style="margin: 0;font-size: 14px;text-align: end;">Generate by WizdamLumera.</p>
     </div>
     {/if}
     {foreach from=$article->getAbstract(null) key=metaLocale item=metaValue}
@@ -303,6 +296,31 @@
             {/if}
             {/foreach}
         {else}
+            <div class="Tail"></div>      
+            {if (!$subscriptionRequired || $article->getAccessStatus() == $smarty.const.ARTICLE_ACCESS_OPEN || $subscribedUser || $subscribedDomain || ($subscriptionExpiryPartial && $articleExpiryPartial.$articleId))}
+                {assign var=hasAccess value=1}
+            {else}
+                {assign var=hasAccess value=0}
+            {/if}
+            {if $hasAccess || ($subscriptionRequired)}
+                {if $article->getAccessStatus() == $smarty.const.ARTICLE_ACCESS_SUBSCRIPTION && $subscriptionRequired}
+                    <subscribe>
+                        {** Belum di Set -- Masih dalam pengembangan layout tampilan **}
+                    </subscribe>
+                {else}
+                    {if $section && $section->getLocalizedIdentifyType() == "Erratum" || $section->getLocalizedIdentifyType() == "Retraction notice" || $section->getLocalizedIdentifyType() == "Corrigendum" || $section->getLocalizedIdentifyType() == "Correction"}
+                        {foreach from=$article->getGalleys() item=galley name=galleyList}
+                            {if $galleys && $hasAccess || ($subscriptionRequired && $showGalleyLinks) || $article->getLocalizedAbstract(null) && $article->getLocalizedSubject(null)}
+                            <div class="PdfEmbed" role="region" aria-label="PDF viewer">
+                                {include file="article/pdfViewer.tpl"}
+                                <div class="u-margin-s-ver medium-bar"><a class="anchor" href="{url op="viewFile" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}" target="_blank"><svg focusable="false" viewBox="0 0 32 32" width="24" height="24" class="icon icon-pdf-multicolor"><path d="M7 .362h17.875l6.763 6.1V31.64H6.948V16z" stroke="#000" stroke-width=".703" fill="#fff"></path><path d="M.167 2.592H22.39V9.72H.166z" stroke="#aaa" stroke-width=".315" fill="#da0000"></path><path fill="#fff9f9" d="M5.97 3.638h1.62c1.053 0 1.483.677 1.488 1.564.008.96-.6 1.564-1.492 1.564h-.644v1.66h-.977V3.64m.977.897v1.34h.542c.27 0 .596-.068.596-.673-.002-.6-.32-.667-.596-.667h-.542m3.8.036v2.92h.35c.933 0 1.223-.448 1.228-1.462.008-1.06-.316-1.45-1.23-1.45h-.347m-.977-.94h1.03c1.68 0 2.523.586 2.534 2.39.01 1.688-.607 2.4-2.534 2.4h-1.03V3.64m4.305 0h2.63v.934h-1.657v.894H16.6V6.4h-1.56v2.026h-.97V3.638"></path><path d="M19.462 13.46c.348 4.274-6.59 16.72-8.508 15.792-1.82-.85 1.53-3.317 2.92-4.366-2.864.894-5.394 3.252-3.837 3.93 2.113.895 7.048-9.25 9.41-15.394zM14.32 24.874c4.767-1.526 14.735-2.974 15.152-1.407.824-3.157-13.72-.37-15.153 1.407zm5.28-5.043c2.31 3.237 9.816 7.498 9.788 3.82-.306 2.046-6.66-1.097-8.925-4.164-4.087-5.534-2.39-8.772-1.682-8.732.917.047 1.074 1.307.67 2.442-.173-1.406-.58-2.44-1.224-2.415-1.835.067-1.905 4.46 1.37 9.065z" fill="#f91d0a"></path></svg><span class="anchor-text">Download full text in {$galley->getLabel()|escape}</span></a>
+                                </div>
+                            </div>
+                            {/if}
+                        {/foreach}
+                    {/if}
+                {/if}
+            {/if}
             &nbsp;<a rel="noreferrer noopener" href="{url page="about" op="subscriptions"}" target="_parent">{translate key="reader.subscribersOnly"}</a>
         {/if}
     {/if}
@@ -344,6 +362,11 @@
     
         {if $article->getLocalizedAbstract(null) && $article->getLocalizedSubject(null)}
         <div id="body" class="Body text-pdf u-font-serif">
+            {** Dalam tahap pengembangan --- Sebagai pengganti HTML article
+                Perlu penambahan elemen input meniru pola pada Setup Step 2 Jurnal
+                About Item Untuk diterapkan pada elemen Bab/Bagian Artikel
+                Selanjutnya elemen/bagian artikel ditampilkan di SINI dan TOC
+
             <section id="preview-section-introduction" class="u-js-hide">
                 <div class="Introduction u-font-serif u-margin-l-ver">
                     <h2 class="section-title u-h3 u-margin-s-bottom">Introduction</h2>
@@ -381,63 +404,78 @@
                 <h2 id="sectitle0200" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">Acknowledgment</h2>
                 <p id="p0350">Acknowledgment from the full-text PDF of this article cannot be displayed.</p>
             </section>
-            
-            {* [WIZDAM] Section ini tampil kalau SALAH SATU (sponsor
-               ATAU funders) terisi -- tidak mengharuskan keduanya, dan
-               tidak menghilangkan salah satunya kalau keduanya ada.
-               Dua {if} sejajar, TIDAK bersarang. *}
-            {if $article->getLocalizedSponsor() || $articleFunders}
-            <section id="fund0020" class="section-funding Agencies Body">
-                <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">Funding Information</h2>
-                {if $article->getLocalizedSponsor()}
-                    <p id="p0450">{$article->getLocalizedSponsor()|escape}</p>
-                {/if}
-                {if $articleFunders}
-                    <ul class="fundersList">
-                    {foreach from=$articleFunders item=funder}
-                        <li>{$funder->getFunderName()|escape}{if $funder->getAwardNumber()} ({$funder->getAwardNumber()|escape}){/if}</li>
-                    {/foreach}
-                    </ul>
-                {/if}
-            </section>
+            **}
+
+            {assign var="articleYear" value=$article->getDatePublished()|date_format:"%Y"}
+            {if $articleYear >= 2024}
+                <section id="dGAI0115" class="section-declareGAI Body Declaration u-font-serif">
+                    <h2 id="st0115" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.generativeAiDeclaration"}</h2>
+                    {if $article->getLocalizedGenerativeAiDeclaration()}
+                        <p id="p0310">{$article->getLocalizedGenerativeAiDeclaration()|escape|nl2br}</p>
+                    {else}
+                        <p id="p0310">{translate key="article.generativeAiDeclaration.statement"}</p>
+                    {/if}
+                </section>
             {/if}
                 
-            {if $article->getLocalizedAbstract(null) && $article->getLocalizedSubject(null)}
-                <section id="coi0025" class="section-coi Declaration u-font-serif">
-                    <h2 id="st0005" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">Competing interest</h2>
-                    <p id="p0125">The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.</p>
-                </section>
-                
-                {assign var="articleYear" value=$article->getDatePublished()|date_format:"%Y"}
-                {if $articleYear >= 2024}
-                <section id="dGAI0115" class="section-declareGAI Body Declaration u-font-serif">
-                    <h2 id="st0115" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">Declaration of generative AI and AI-assisted</h2>
-                    <p id="p0310">During the preparation of this work the authors not used any AI tools like ChatGPT 4, DeepSeek R1 or the others in order to improve the readability and language of the manuscript.</p>
-                </section>
-                {/if}
-                
+            {**
+            {if $article->getLocalizedConflictOfInterest()}
                 <section id="scoi0025" class="Body Declaration u-font-serif u-hide">
                     <h2 id="st0025" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">Conflict of interest</h2>
                     <p id="p0310">The authors declare that the research was conducted in the absence of any commercial or financial relationships that could be construed as a potential conflict of interest.</p>
                 </section>
-                
-                <section id="s0135" class="Body Declaration u-font-serif">
-                    <h2 id="st0190" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">Ethical approval acknowledgements</h2>
-                    <p id="p0310">No ethical approval required for this article. All procedures followed were in accordance with the ethical standards of the responsible committee on human experimentation (institutional and national) and with the Helsinki Declaration of 1975, as revised in 2008 (5)</p>
-                </section>
-            
-                {if $article->getSuppFiles()}
-                <section id="s0145">
-                    <h2 id="st0200" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">Data availability</h2>
-                    <p id="p0320">All the data have been provided via Supplementary files. Any further information can be requested from the corresponding author via email upon reasonable request.</p>
-                </section>
+            {/if}
+            **}
+
+            <section id="s0135" class="Body Declaration u-font-serif">
+                <h2 id="st0190" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.ethicalApproval"}</h2>
+                {if $article->getLocalizedEthicalApproval()}
+                    <p id="p0310">{$article->getLocalizedEthicalApproval()|escape|nl2br}</p>
+                {else}
+                    <p id="p0310">{translate key="article.ethicalApproval.statement"}</p>
                 {/if}
+            </section>
+                
+            {* [WIZDAM] Section ini tampil kalau SALAH SATU (sponsor
+            ATAU funders) terisi -- tidak mengharuskan keduanya, dan
+            tidak menghilangkan salah satunya kalau keduanya ada.
+            Dua {if} sejajar, TIDAK bersarang. *}
+            {if $article->getLocalizedSponsor() || $articleFunders}
+                <section id="fund0020" class="section-funding Agencies Body">
+                    <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.funding"}</h2>
+                    {if $article->getLocalizedSponsor()}
+                        <p id="p0450">{$article->getLocalizedSponsor()|escape}</p>
+                    {/if}
+                    {if $articleFunders}
+                        <p class="fundersList">
+                        {foreach from=$articleFunders item=funder}
+                            <span>{$funder->getFunderName()|escape}{if $funder->getAwardNumber()} ({$funder->getAwardNumber()|escape}){/if}</span>
+                        {/foreach}
+                        </p>
+                    {/if}
+                </section>
+            {/if}
+
+            <section id="coi0025" class="section-coi Declaration u-font-serif">
+                <h2 id="st0005" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.competingInterest"}</h2>
+                {if $article->getLocalizedCompetingInterest()}
+                    <p id="p0125">{$article->getLocalizedCompetingInterest()|escape|nl2br}</p>
+                {else}
+                    <p id="p0125">{translate key="article.competingInterest.statement"}</p>
+                {/if}
+            </section>
+
+            {if $article->getSuppFiles()}
+                <section id="s0145">
+                    <h2 id="st0200" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.suppfile"}</h2>
+                    <p id="p0320">{translate key="article.suppfile.available"}</p>
+                </section>
+            {/if}
             
-                {if $journalRt->getSupplementaryFiles() && is_a($article, 'PublishedArticle') && $article->getSuppFiles()}
+            {if $journalRt->getSupplementaryFiles() && is_a($article, 'PublishedArticle') && $article->getSuppFiles()}
                 <section id="SuppFiles" class="Body u-font-serif">
-                    <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">Appendix. Supplementary materials</h2>
-                    <span class="download-all-supplemental-data"><span class="article-attachment"><span class="button-link button-link-secondary u-font-sans" type="submit"><svg focusable="false" viewBox="0 0 98 128" width="18.375" height="24" class="icon icon-download"><path d="m77.38 56.18l-6.6-7.06-16.78 17.24v-40.36h-1e1v40.34l-17.72-17.24-7.3 7.08 29.2 29.32 29.2-29.32m10.62 17.82v2e1h-78v-2e1h-1e1v3e1h98v-3e1h-1e1"></path></svg><span class="button-link-text"><span class="download-all-title">Download all </span>supplementary files<span class="desktop-text"> included with this article</span></span></span><a class="anchor anchor-external-link help-link move-right u-font-sans u-margin-0-bottom" href="{url page="information" op="authors"}" title="Help (Opens in new window)" target="_blank"><span class="anchor-text">Help</span></a></span>
-                    </span>
+                    <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.suppfile.appendix"}</h2>
+                    <span class="download-all-supplemental-data"><span class="article-attachment"><span class="button-link button-link-secondary u-font-sans" type="submit"><svg focusable="false" viewBox="0 0 98 128" width="18.375" height="24" class="icon icon-download"><path d="m77.38 56.18l-6.6-7.06-16.78 17.24v-40.36h-1e1v40.34l-17.72-17.24-7.3 7.08 29.2 29.32 29.2-29.32m10.62 17.82v2e1h-78v-2e1h-1e1v3e1h98v-3e1h-1e1"></path></svg><span class="button-link-text"><span class="download-all-title">Download all </span>supplementary files<span class="desktop-text"> included with this article</span></span></span><a class="anchor anchor-external-link help-link move-right u-font-sans u-margin-0-bottom" href="{url page="information" op="authors"}" title="Help (Opens in new window)" target="_blank"><span class="anchor-text">Help</span></a></span></span>
                     
                     {foreach from=$article->getSuppFiles() item=suppFile key=key}
                     <div id="SuppFile-{$key+1}" class="supplement-files--value e-component">
@@ -446,26 +484,28 @@
                         </span>                     
                         <div class="display" {if $suppFile->getSuppFileDescription()} style="background-color:#ebebeb;padding-top:1.7em"{/if}>
                             <span class="captions" style="margin-top:0;">
-                                <p class="supplement-files-title supplement-files--label u-h4 download-link">Supplementary File {$key+1}{if $suppFile->getSuppFileTitle()}<span>: {$suppFile->getSuppFileTitle()|escape}</span>{/if}
+                                <p class="supplement-files-title supplement-files--label u-h4 download-link">{translate key="article.suppfile.file"} {$key+1}{if $suppFile->getSuppFileTitle()}<span>: {$suppFile->getSuppFileTitle()|escape}</span>{/if}
                                     <span class="u-font-sans" style="font-size: initial;">{if $suppFile->getType()|escape}({$suppFile->getType()|escape}{elseif $suppFile->getSuppFileTypeOther()}; {translate key="common.type"}{$suppFile->getSuppFileTypeOther()|escape}{else}; {translate key="common.type"} {translate key="common.other"}{/if})</span>
                                 </p>
                                 <div class="contents u-font-sans">
                                     {if $suppFile->getSuppFileCreator()}
-                                    <p class="files-owner u-font-sans"><span class="italic">Owner: </span> {$suppFile->getSuppFileCreator()|escape}
+                                    <p class="files-owner u-font-sans">
+                                        <span class="italic">Owner: </span> {$suppFile->getSuppFileCreator()|escape}
                                     </p>
                                     {/if}
                                     {if $suppFile->getSuppFileSponsor()}
-                                    <p class="files-sponsor u-font-sans"><span class="italic">Sponsor </span>{$suppFile->getSuppFileSponsor()|escape}
+                                    <p class="files-sponsor u-font-sans">
+                                        <span class="italic">Sponsor </span>{$suppFile->getSuppFileSponsor()|escape}
                                     </p>
                                     {/if}
                                     {if $suppFile->getSuppFilePublisher()}
-                                    <p class="files-publisher u-font-sans"><span class="italic">{translate key="common.publisher"} </span>{$suppFile->getSuppFilePublisher()|escape}
+                                    <p class="files-publisher u-font-sans">
+                                        <span class="italic">{translate key="common.publisher"} </span>{$suppFile->getSuppFilePublisher()|escape}
                                     </p>
                                     {/if}
                                 </div>
                                 {if $suppFile->getSuppFileDescription()}
-                                <div class="u-hide supplement-files-value u-font-sans">{$suppFile->getSuppFileDescription()|strip_unsafe_html|nl2br} {if $suppFile->isInlineable() || $suppFile->getRemoteURL()}{/if}{if !$suppFile->getRemoteURL()}{/if}
-                                </div>
+                                <div class="u-hide supplement-files-value u-font-sans">{$suppFile->getSuppFileDescription()|strip_unsafe_html|nl2br} {if $suppFile->isInlineable() || $suppFile->getRemoteURL()}{/if}{if !$suppFile->getRemoteURL()}{/if}</div>
                                 {/if}
                             </span>
                         </div>
@@ -473,9 +513,9 @@
                     {/foreach}
                 </section>
                 <section id="Declaration" class="Body Declaration u-font-serif">
-                    <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">Declarations information</h2>        
+                    <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.declare.information"}</h2>        
                     <div id="copyrightBadge" class="u-hide Body u-margin-s-bottom">
-                        <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">License and permission</h2>
+                        <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.declare.license"}</h2>
                         <p>{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if} {$article->getLicense()|escape} (<a href="{$article->getLicenseURL()|escape}" rel="license" class="anchor"><span class="anchor-text">{$article->getLicenseURL()|escape}</span></a>), {translate key="submission.license.Statement1"}</p>                
                     </div>
                     <div id="PublisherName" class="Body">
@@ -483,51 +523,16 @@
                         <p>{if $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}{$currentJournal->getSetting('publisherInstitution')|escape}{else}Sangia Publishing{/if} remains neutral with regard to jurisdictional claims in published maps and institutional affiliations.</p>
                     </div>
                 </section>
-                {else}
+            {else}
                 <section id="SuppFiles" class="Body u-font-serif">
                     <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="rt.suppFiles"}</h2>
                     <p>{translate key="author.submit.suppFile.noFile"}</p>
                 </section>
-                {/if}
             {/if}
         </div>
         {/if}
-    {/if} {* omit authors *} <!-- end omit authors -->
-{/if} {* article access subscription *} <!-- end open access -->
-
-<div class="Tail"></div>
-        
-{if (!$subscriptionRequired || $article->getAccessStatus() == $smarty.const.ARTICLE_ACCESS_OPEN || $subscribedUser || $subscribedDomain || ($subscriptionExpiryPartial && $articleExpiryPartial.$articleId))}
-    {assign var=hasAccess value=1}
-{else}
-    {assign var=hasAccess value=0}
-{/if}
-
-{if $hasAccess || ($subscriptionRequired)}
-    {if $article->getAccessStatus() == $smarty.const.ARTICLE_ACCESS_SUBSCRIPTION && $subscriptionRequired}
-    
-    <subscribe>
-        
-    </subscribe>
-        
-    {else}
-
-    {if $section && $section->getLocalizedIdentifyType() == "Erratum" || $section->getLocalizedIdentifyType() == "Retraction notice" || $section->getLocalizedIdentifyType() == "Corrigendum" || $section->getLocalizedIdentifyType() == "Correction"}
-    
-        {foreach from=$article->getGalleys() item=galley name=galleyList}
-        {if $galleys && $hasAccess || ($subscriptionRequired && $showGalleyLinks) || $article->getLocalizedAbstract(null) && $article->getLocalizedSubject(null)}
-        <div class="PdfEmbed" role="region" aria-label="PDF viewer">
-            {include file="article/pdfViewer.tpl"}
-            <div class="u-margin-s-ver medium-bar"><a class="anchor" href="{url op="viewFile" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}" target="_blank"><svg focusable="false" viewBox="0 0 32 32" width="24" height="24" class="icon icon-pdf-multicolor"><path d="M7 .362h17.875l6.763 6.1V31.64H6.948V16z" stroke="#000" stroke-width=".703" fill="#fff"></path><path d="M.167 2.592H22.39V9.72H.166z" stroke="#aaa" stroke-width=".315" fill="#da0000"></path><path fill="#fff9f9" d="M5.97 3.638h1.62c1.053 0 1.483.677 1.488 1.564.008.96-.6 1.564-1.492 1.564h-.644v1.66h-.977V3.64m.977.897v1.34h.542c.27 0 .596-.068.596-.673-.002-.6-.32-.667-.596-.667h-.542m3.8.036v2.92h.35c.933 0 1.223-.448 1.228-1.462.008-1.06-.316-1.45-1.23-1.45h-.347m-.977-.94h1.03c1.68 0 2.523.586 2.534 2.39.01 1.688-.607 2.4-2.534 2.4h-1.03V3.64m4.305 0h2.63v.934h-1.657v.894H16.6V6.4h-1.56v2.026h-.97V3.638"></path><path d="M19.462 13.46c.348 4.274-6.59 16.72-8.508 15.792-1.82-.85 1.53-3.317 2.92-4.366-2.864.894-5.394 3.252-3.837 3.93 2.113.895 7.048-9.25 9.41-15.394zM14.32 24.874c4.767-1.526 14.735-2.974 15.152-1.407.824-3.157-13.72-.37-15.153 1.407zm5.28-5.043c2.31 3.237 9.816 7.498 9.788 3.82-.306 2.046-6.66-1.097-8.925-4.164-4.087-5.534-2.39-8.772-1.682-8.732.917.047 1.074 1.307.67 2.442-.173-1.406-.58-2.44-1.224-2.415-1.835.067-1.905 4.46 1.37 9.065z" fill="#f91d0a"></path></svg><span class="anchor-text">Download full text in {$galley->getLabel()|escape}</span></a>
-            </div>
-        </div>
-        {/if}
-        {/foreach}
-    {/if}
-    
-    {/if}
-    
-{/if}
+    {/if} {* omit authors <!-- end omit authors --> *}
+{/if} {* article access subscription <!-- end open access --> *}
 
 {if $citationFactory && $citationFactory->getCount() > 0}
     <div class="PageDivider"></div>
@@ -540,13 +545,13 @@
         </header>
         <section class="ref-bibliography">
             {iterate from=citationFactory item=citation}
-            <p id="ref-sangia{$citation->getId()|escape}" class="reference">{$citation->getRawCitation()|strip_unsafe_html}</p>
+                <p id="ref-sangia{$citation->getId()|escape}" class="reference">{$citation->getRawCitation()|strip_unsafe_html}</p>
             {/iterate}
-            <div class="notice u-font-sans u-mb-0 u-margin-xl-top">There are more references available in the full text version of this article.</div>
+            <div class="notice u-font-sans u-mb-0 u-margin-xl-top">{translate key="article.citations.more"}</div>
             <button class="button-alternative view-more button-alternative-secondary u-margin-xl-top">
                 <svg focusable="false" viewBox="0 0 92 128" height="34" width="34" class="icon icon-navigate-down" style="transform: rotate(0deg);"><path d="m1 51l7-7 38 38 38-38 7 7-45 45z"></path></svg>
                 <span class="button-alternative-text-container text-m">
-                    <span class="button-alternative-text">View more references</span>
+                    <span class="button-alternative-text">{translate key="article.button.citations.more"}</span>
                 </span>
             </button>
         </section>
@@ -559,7 +564,7 @@
 <section id="CopyrightNote" class="further-reading">    
     <div class="PageDivider"></div>
     <div id="additionalNotes" class="additionalNotes">
-        <h2 class="section-title sub-title u-h3">Bibliographic Information</h2>
+        <h2 class="section-title sub-title u-h3">{translate key="article.bibliographic.information"}</h2>
         <div id="bibliometricts-info" class="bibliographic-information col-lg-12">
             <div class="crossmark col-lg-12">
                 <span class="bibliometricts">
@@ -575,7 +580,7 @@
 
             <div class="crossmark__adjacent col-lg-12">
                 <div id="CiteAs" class="crossmark__adjacent CiteAs">
-                    <h3 class="heading">Cite this article as:</h3>
+                    <h3 class="heading">{translate key="article.bibliographic.citedAs"}</h3>
                     <div class="stateCiteAs u-font-sans">
                     {assign var=authors value=$article->getAuthors()}
                     {assign var=authorCount value=$authors|@count}
@@ -590,33 +595,33 @@
 
                 <ul class="c-bibliographic-information__list">
                     <li class="c-bibliographic-information__list-item">
-                        <h5 class="strong u-font-serif">Submitted</h5>
+                        <h5 class="strong u-font-serif">{translate key="article.submitted"}</h5>
                         <span class="c-bibliographic-information__value u-font-sans">{$article->getDateSubmitted()|date_format:"%e %B %Y"}</span>
                     </li>
                     {if $revisionDate}
                     <li class="c-bibliographic-information__list-item">
-                        <h5 class="strong u-font-serif">Revised</h5>
+                        <h5 class="strong u-font-serif">{translate key="article.revised"}</h5>
                         <span class="c-bibliographic-information__value u-font-sans">{$revisionDate|date_format:"%e %B %Y"}</span>
                     </li>
                     {/if}
                     {if $acceptedDate}
                     <li class="c-bibliographic-information__list-item">
-                        <h5 class="strong u-font-serif">Accepted</h5>
+                        <h5 class="strong u-font-serif">{translate key="article.accepted"}</h5>
                         <span class="c-bibliographic-information__value u-font-sans">{$acceptedDate|date_format:"%e %B %Y"}</span>
                     </li>
                     {/if}
                     <li class="c-bibliographic-information__list-item">
-                        <h5 class="strong u-font-serif">Published</h5>
+                        <h5 class="strong u-font-serif">{translate key="article.published"}</h5>
                         <span class="c-bibliographic-information__value u-font-sans">{$article->getDatePublished()|date_format:"%e %B %Y"}</span>
                     </li>
                     {if $article->getLastModified()}
                     <li class="c-bibliographic-information__list-item">
-                        <h5 class="strong u-font-serif">Version of record</h5>
+                        <h5 class="strong u-font-serif">{translate key="article.versionOfRecord"}</h5>
                         <span class="c-bibliographic-information__value u-font-sans">{$article->getLastModified()|date_format:"%e %B %Y"}</span>
                     </li>
                     {/if}
                     <li class="c-bibliographic-information__list-item">
-                        <h5 class="strong u-font-serif">Issue date</h5>
+                        <h5 class="strong u-font-serif">{translate key="article.issueDate"}</h5>
                         <span class="c-bibliographic-information__value u-font-sans">{$issue->getDatePublished()|date_format:"%e %B %Y"}</span>
                     </li>
                 </ul>
@@ -662,7 +667,7 @@
     </div>
 
     <div id="copyright" class="Body u-font-serif u-hide">
-        <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="submission.copyright}</h2>
+        <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="submission.copyright"}</h2>
         <div class="Body u-font-serif">
         {if $currentJournal->getSetting('includeCopyrightStatement')}
         {translate key="submission.copyrightStatement" copyrightYear=$article->getCopyrightYear()|strip_unsafe_html|nl2br copyrightHolder=$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}{/if}</div>
@@ -673,7 +678,7 @@
 <div class="js-ad u-mb-32">
     <aside data-component-mpu="" class="adsbox c-ad c-ad--970x90 u-mt-16 u-mb-16">
         <div class="c-ad__inner">
-            <p class="c-ad__label">Sangia Advertisement</p>
+            <p class="c-ad__label">Advertisement</p>
             {literal}
             <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416265824412721" crossorigin="anonymous"></script>
             <!-- Sangia_Publishing_ads -->
@@ -692,7 +697,7 @@
 
 
 {if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
-<div class="article-biography author-group"></div>
+    <div class="article-biography author-group"></div>
 {else}
 <div class="authors-group">
 
@@ -737,44 +742,44 @@
             
 {if $galley}
     {if $galley->isHTMLGalley()}
-    
-    {if $issue->getLocalizedDescription()}
-    <div id="article-footnote-id1" class="Footnotes"><dl class="footnote"><dt class="footnote-label"><sup>{if $issue->getShowTitle()}<a rel="noreferrer noopener" href="#special-issue-articles">☆</a>{else}<a rel="noreferrer noopener" href="#special-issue-articles"></a>{/if}</sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}
-    {if $issue->getShowTitle()}
-    <div id="article-footnote-id1" class="Footnotes u-hide"><dl class="footnote"><dt class="footnote-label"><sup><a rel="noreferrer noopener" href="#special-issue-articles">☆</a></sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}    
-    
-    {if $galley && $galley->isHTMLGalley()}
-    <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans" href="{url page="article" op="view" path=$articleId}" aria-disabled="false" tabindex="1"><span class="anchor-text">View Abstract</span></a>
-    {else}
-    <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans" href="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|to_array:$galley->getBestGalleyId($currentJournal)}" aria-disabled="false" tabindex="1"><span class="anchor-text">View full text</span></a>
-    {/if}
-    
-    {if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
-    {else}    
-    <div id="permission" class="Copyright">
-        <p class="copyright-line u-font-sans-sang">{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}<span class="bold">Copyright</span> {/if}{if $currentJournal->getSetting('includeCopyrightStatement')}© {$article->getCopyrightYear()|strip_unsafe_html|nl2br}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} {$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}.{/if}{/if} {if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Production & hosting by Sangia Publishing on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing LLC"}Published by {$currentJournal->getSetting('publisherInstitution')} on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}Published by {$currentJournal->getSetting('publisherInstitution')} on behalf of Sangia Research Media.{else}{$currentJournal->getSetting('publisherInstitution')}. Production and hosting by Sangia (SRM™).{/if}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} <span class="License" id="copyrightBadge"><span class="anchor-text">{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if}{$article->getLicense()|escape}.</span></span>{/if}
-        </p>
-    </div>
-    <p data-test-id="article-disclaimer-text"><span class="bold">Disclaimer: </span>All claims expressed in this article are solely those of the authors and do not necessarily represent those of their affiliated organizations, or those of the publisher, the editors and the reviewers. Any product that may be evaluated in this article or claim that may be made by its manufacturer is not guaranteed or endorsed by the publisher.</p>
-    {/if}
+        
+        {if $issue->getLocalizedDescription()}
+        <div id="article-footnote-id1" class="Footnotes"><dl class="footnote"><dt class="footnote-label"><sup>{if $issue->getShowTitle()}<a rel="noreferrer noopener" href="#special-issue-articles">☆</a>{else}<a rel="noreferrer noopener" href="#special-issue-articles"></a>{/if}</sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}
+        {if $issue->getShowTitle()}
+        <div id="article-footnote-id1" class="Footnotes u-hide"><dl class="footnote"><dt class="footnote-label"><sup><a rel="noreferrer noopener" href="#special-issue-articles">☆</a></sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}    
+        
+        {if $galley && $galley->isHTMLGalley()}
+        <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans" href="{url page="article" op="view" path=$articleId}" aria-disabled="false" tabindex="1"><span class="anchor-text">View Abstract</span></a>
+        {else}
+        <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans" href="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|to_array:$galley->getBestGalleyId($currentJournal)}" aria-disabled="false" tabindex="1"><span class="anchor-text">View full text</span></a>
+        {/if}
+        
+        {if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
+        {else}    
+        <div id="permission" class="Copyright">
+            <p class="copyright-line u-font-sans-sang">{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}<span class="bold">Copyright</span> {/if}{if $currentJournal->getSetting('includeCopyrightStatement')}© {$article->getCopyrightYear()|strip_unsafe_html|nl2br}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} {$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}.{/if}{/if} {if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Production & hosting by Sangia Publishing on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing LLC"}Published by {$currentJournal->getSetting('publisherInstitution')} on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}Published by {$currentJournal->getSetting('publisherInstitution')} on behalf of Sangia Research Media.{else}{$currentJournal->getSetting('publisherInstitution')}. Production and hosting by Sangia (SRM™).{/if}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} <span class="License" id="copyrightBadge"><span class="anchor-text">{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if}{$article->getLicense()|escape}.</span></span>{/if}
+            </p>
+        </div>
+        <p data-test-id="article-disclaimer-text">{translate key="article.disclaimer"}</p>
+        {/if}
     
     {else}{** <!-- End to fulltext HTML --> **}         
 
-    {if $issue->getLocalizedDescription()}
-    <div id="article-footnote-id1" class="Footnotes"><dl class="footnote"><dt class="footnote-label"><sup>{if $issue->getShowTitle()}<a rel="noreferrer noopener" href="#special-issue-articles">☆</a>{else}<a rel="noreferrer noopener" href="#special-issue-articles"></a>{/if}</sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}
-    {if $issue->getShowTitle()}
-    <div id="article-footnote-id1" class="Footnotes u-hide"><dl class="footnote"><dt class="footnote-label"><sup><a rel="noreferrer noopener" href="#special-issue-articles">☆</a></sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}    
+        {if $issue->getLocalizedDescription()}
+        <div id="article-footnote-id1" class="Footnotes"><dl class="footnote"><dt class="footnote-label"><sup>{if $issue->getShowTitle()}<a rel="noreferrer noopener" href="#special-issue-articles">☆</a>{else}<a rel="noreferrer noopener" href="#special-issue-articles"></a>{/if}</sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}
+        {if $issue->getShowTitle()}
+        <div id="article-footnote-id1" class="Footnotes u-hide"><dl class="footnote"><dt class="footnote-label"><sup><a rel="noreferrer noopener" href="#special-issue-articles">☆</a></sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}    
 
-    <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans file-link" {if $galley && $galley->isHTMLGalley()}href="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|to_array:$galley->getBestGalleyId($currentJournal)|escape}" class="file" {if $galley->getRemoteURL()}target="_blank"{/if} aria-disabled="false" tabindex="1"{elseif $galley && $galley->isPdfGalley()}aria-disabled="true" tabindex="1"{/if}><span class="anchor-text">View full text</span></a>
-    
-    {if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
-    {else}            
-    <div id="permission" class="Copyright">
-        <p class="copyright-line u-font-sans-sang">{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}<span class="bold">Copyright</span> {/if}{if $currentJournal->getSetting('includeCopyrightStatement')}© {$article->getCopyrightYear()|strip_unsafe_html|nl2br}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} {$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}.{/if}{/if} {if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Production & hosting by Sangia Publishing on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing LLC"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media.{else}{$currentJournal->getSetting('publisherInstitution')|escape}. Production and hosting by Sangia (SRM™).{/if}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} <span class="License" id="copyrightBadge"><span class="anchor-text">{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if}{$article->getLicense()|escape}.</span></span>{/if}
-        </p>
-    </div>
-    <p data-test-id="article-disclaimer-text"><span class="bold">Disclaimer: </span>All claims expressed in this article are solely those of the authors and do not necessarily represent those of their affiliated organizations, or those of the publisher, the editors and the reviewers. Any product that may be evaluated in this article or claim that may be made by its manufacturer is not guaranteed or endorsed by the publisher.</p>
-    {/if}
+        <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans file-link" {if $galley && $galley->isHTMLGalley()}href="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|to_array:$galley->getBestGalleyId($currentJournal)|escape}" class="file" {if $galley->getRemoteURL()}target="_blank"{/if} aria-disabled="false" tabindex="1"{elseif $galley && $galley->isPdfGalley()}aria-disabled="true" tabindex="1"{/if}><span class="anchor-text">View full text</span></a>
+        
+        {if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
+        {else}            
+        <div id="permission" class="Copyright">
+            <p class="copyright-line u-font-sans-sang">{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}<span class="bold">Copyright</span> {/if}{if $currentJournal->getSetting('includeCopyrightStatement')}© {$article->getCopyrightYear()|strip_unsafe_html|nl2br}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} {$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}.{/if}{/if} {if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Production & hosting by Sangia Publishing on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing LLC"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media.{else}{$currentJournal->getSetting('publisherInstitution')|escape}. Production and hosting by Sangia (SRM™).{/if}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} <span class="License" id="copyrightBadge"><span class="anchor-text">{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if}{$article->getLicense()|escape}.</span></span>{/if}
+            </p>
+        </div>
+        <p data-test-id="article-disclaimer-text">{translate key="article.disclaimer"}</p>
+        {/if}
 
     {/if}   <!-- End fulltext with Galley PDF -->
 
@@ -782,6 +787,7 @@
     {if $issue->getShowTitle() && $issue->getLocalizedDescription()}
     <div id="article-footnote-id1" class="Footnotes"><dl class="footnote"><dt class="footnote-label"><sup>{if $issue->getShowTitle()}<a rel="noreferrer noopener" href="#special-issue-articles">☆</a>{else}<a rel="noreferrer noopener" href="#special-issue-articles"></a>{/if}</sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>
     {/if}
+
     {if $issue->getShowTitle()}
     <div id="article-footnote-id1" class="Footnotes u-hide"><dl class="footnote"><dt class="footnote-label"><sup><a rel="noreferrer noopener" href="#special-issue-articles">☆</a></sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>
     {/if}
@@ -794,7 +800,7 @@
         <p class="copyright-line u-font-sans-sang">{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}<span class="bold">Copyright</span> {/if}{if $currentJournal->getSetting('includeCopyrightStatement')}© {$article->getCopyrightYear()|strip_unsafe_html|nl2br}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} {$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}.{/if}{/if} {if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Production & hosting by Sangia Publishing on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing LLC"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media.{else}{$currentJournal->getSetting('publisherInstitution')|escape}. Production and hosting by Sangia (SRM™).{/if}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} <span class="License" id="copyrightBadge"><span class="anchor-text">{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if}{$article->getLicense()|escape}.</span></span>{/if}
         </p>
     </div>
-    <p data-test-id="article-disclaimer-text"><span class="bold">Disclaimer: </span>All claims expressed in this article are solely those of the authors and do not necessarily represent those of their affiliated organizations, or those of the publisher, the editors and the reviewers. Any product that may be evaluated in this article or claim that may be made by its manufacturer is not guaranteed or endorsed by the publisher.</p>
+    <p data-test-id="article-disclaimer-text">{translate key="article.disclaimer"}</p>
     {/if}
 
 {/if}{** -- Galley not available end -- **}

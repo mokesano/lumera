@@ -12,7 +12,44 @@
   -->
 
 <locale name="en_US" full_name="English">
-    
+
+	<message key="article.authorLink">Author links open overlay panel</message>
+	<message key="article.availableOnline">Available online</message>
+	<message key="article.submitted">Submitted</message>
+	<message key="article.received">Received</message>
+	<message key="article.revised">Revised</message>
+	<message key="article.accepted">Accepted</message>
+	<message key="article.published">Published</message>
+	<message key="article.versionOfRecord">Version of Record</message>
+	<message key="article.issueDate">Issue date</message>
+	<message key="article.highlights">Highlights</message>
+	<message key="article.creditAuthorships">CRediT authorship contribution statement</message>
+	<message key="article.generativeAiDeclaration">Declaration of Generative AI and AI-assisted technologies in the writing process</message>
+	<message key="article.generativeAiDeclaration.statement">During the preparation of this work the authors not used any AI tools like ChatGPT 4, DeepSeek R1 or the others in order to improve the readability and language of the manuscript.</message>
+	<message key="article.ethicalApproval">Ethical approval acknowledgements</message>
+	<message key="article.ethicalApproval.statement">No ethical approval required for this article. All procedures followed were in accordance with the ethical standards of the responsible committee on human experimentation (institutional and national) and with the Helsinki Declaration of 1975, as revised in 2008 (5).</message>
+	<message key="article.funding">Funding Information</message>
+	<message key="article.competingInterest">Declaration of competing interest</message>
+	<message key="article.competingInterest.statement">The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.</message>
+	<message key="article.suppfile">Data availability</message>
+	<message key="article.suppfile.available">All the data have been provided via Supplementary files. Any further information can be requested from the corresponding author via email upon reasonable request.</message>
+	<message key="article.suppfile.appendix">Appendix. Supplementary materials</message>
+	<message key="article.suppfile.file">Supplementary File</message>
+	<message key="article.declare.information">Declarations information</message>
+	<message key="article.declare.license">License and permission</message>
+	<message key="article.bibliographic.information">Bibliographic Information</message>
+	<message key="article.bibliographic.citedAs">Cite this article as:</message>
+	<message key="article.disclaimer"><![CDATA[<span class="bold">Disclaimer: </span>All claims expressed in this article are solely those of the authors and do not necessarily represent those of their affiliated organizations, or those of the publisher, the editors and the reviewers. Any product that may be evaluated in this article or claim that may be made by its manufacturer is not guaranteed or endorsed by the publisher.]]></message>
+
+	<message key="article.button.showMore">Show more</message>
+	<message key="article.button.saveToMendeley">Save to Mendeley</message>
+	<message key="article.button.share">Share</message>
+	<message key="article.button.cite">Cite</message>
+	<message key="article.button.DOI.notAvaliable">DOI not available</message>
+	<message key="article.button.rightsContent">Get rights and content</message>
+	<message key="article.button.citations.more">View more references</message>
+	<message key="article.citations.more">There are more references available in the full text version of this article.</message>
+
 	<!-- Author Submission -->
 	<message key="author.submit.submissionCitations">Provide a formatted list of references for works cited in this submission. Please separate individual references with a blank line.</message>
 
@@ -131,6 +168,7 @@
 	<message key="submission.ask">Ask</message>
 	<message key="submission.backToSubmissionEditing">Back to Submission Editing</message>
 	<message key="submission.changeComments">Change to</message>
+
 	<message key="submission.citations">References</message>
 	<message key="submission.citations.editor.citationlist.approved">Approved</message>
 	<message key="submission.citations.editor.citationlist.deleteCitationConfirmation">Are you sure you want to delete this citation?</message>
