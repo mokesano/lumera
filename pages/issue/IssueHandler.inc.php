@@ -100,7 +100,7 @@ class IssueHandler extends Handler {
 
         $router = $request->getRouter();
         $templateMgr->assign('pageHierarchy', [
-            [$router->url($request, null, 'issue', 'current'), __('current.current')]
+            [$router->url($request, null, 'issue', 'current'), 'current.current']
         ]);
 
         $templateMgr->assign('helpTopicId', 'user.currentAndArchives');
@@ -224,6 +224,7 @@ class IssueHandler extends Handler {
         $issue   = $this->getIssue();
 
         $templateMgr = TemplateManager::getManager();
+        $issueTitleString = null;
 
         // --- BLOK LOGIKA HANDLER (NAVIGASI & BREADCRUMB) ---
         if ($issue) {
@@ -256,13 +257,15 @@ class IssueHandler extends Handler {
                 [$volumesUrl, $volumesKey],
                 [$volumeUrl, $volumeTitleString, true]
             ]);
-            $templateMgr->assign('pageCrumbTitleTranslated', $issueTitleString);
             $templateMgr->assign('pageTitleTranslated', $issueTitleString);
             $templateMgr->assign('issueId', $issue->getBestIssueId());
         }
         // --- AKHIR BLOK LOGIKA HANDLER ---
 
         $this->_setupIssueTemplate($request, $issue, ($showToc == 'showToc'));
+        if ($issue) {
+            $templateMgr->assign('pageCrumbTitleTranslated', $issueTitleString);
+        }
 
         $templateMgr->assign('helpTopicId', 'user.currentAndArchives');
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
