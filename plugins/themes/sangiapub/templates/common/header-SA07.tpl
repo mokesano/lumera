@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{$currentLocale|substr:0:2}" xml:lang="{$currentLocale|substr:0:2}">
+<html class="js" lang="{$currentLocale|substr:0:2}" xml:lang="{$currentLocale|substr:0:2}">
 {**
  * @file templates/common/header-SA07.tpl
  *
