@@ -1,5 +1,7 @@
 /**
- * Sinta Impact Factor
+ * @file public/assets/js/wizdam/sintaScore.js
+ * 
+ * @brief Sinta Impact Factor
  * Versi dengan keamanan yang ditingkatkan dan efek skeleton loading
  * 
  * @author Rochmady
