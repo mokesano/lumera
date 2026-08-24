@@ -916,7 +916,7 @@
                         </li>
                     </ul>
                     {** <a type="button" title="Article Impact by Altmetrics" class="u-hide btn-sangia btn-default hidden-sm hidden-xs btn-impact" data-test-id="view-article-impact" href="https://www.altmetric.com/details/doi/{$article->getPubId('doi')}" target="_blank"><span class="icon-impact"><i class="fa fa-line-chart"></i></span>View Article Impact</a> **}
-                    <button type="button" class="button btn-sangia btn-default hidden-sm hidden-xs btn-impact" data-test-id="view-article-impact" onclick="window.location.href='{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|to_array:"metrics"}'"><span class="icon-impact"><i class="fa fa-line-chart"></i></span>View Article Impact</button>
+                    <button type="button" class="button btn-sangia btn-default hidden-sm hidden-xs btn-impact" data-test-id="view-article-impact" onclick="window.location.href='{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|to_array:"metrics"}'"><span class="icon-impact"><i class="fa fa-line-chart"></i></span>View Article Metrics</button>
                 </div>
 
                 <div class="js-ad sideAds">
