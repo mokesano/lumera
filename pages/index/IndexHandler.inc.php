@@ -4,14 +4,15 @@ declare(strict_types=1);
 /**
  * @file pages/index/IndexHandler.inc.php
  *
- * Copyright (c) 2017-2026 Sangia Publishing House
- * Copyright (c) 2017-2026 Rochmady and Team
+ * Copyright (c) 2013-2019 Simon Fraser University
+ * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @class IndexHandler
  * @ingroup pages_index
  *
- * @brief Handle site index requests. Pemisahan logika index Jurnal dan Publisher.
+ * @brief Handle site index requests.
+ * Modifikasi: Pemisahan logika index Jurnal dan Publisher.
  * 
  */
 
@@ -77,7 +78,29 @@ class IndexHandler extends Handler {
      * @return void
      */
     private function journal($journal, $request, $templateMgr) {
+        // [FIX] Flag "kita sedang di homepage jurnal" -- di-assign LANGSUNG
+        // dari handler yang memang secara definisi menangani homepage, tidak
+        // bergantung pada string $requestedPage dari router (terbukti tidak
+        // konsisten di lingkungan production: guard $requestedPage != 'index'
+        // && $requestedPage != '' gagal mendeteksi homepage, sehingga
+        // breadcrumb tetap tampil walau journal ID ada di
+        // hide_breadcrumb_journal_ids). Dipakai oleh
+        // plugins/themes/sangiapub/templates/common/breadcrumbs.tpl untuk
+        // menekan bagian hierarki/current-crumb di SEMUA homepage jurnal
+        // (bukan penentu hide/show total -- itu tugas isBreadcrumbHiddenJournal
+        // di bawah).
         $templateMgr->assign('isJournalHomepage', true);
+
+        // [FIX] Seleksi hide_breadcrumb_journal_ids DIPINDAH ke sini --
+        // di LUAR blok "if displayCurrentIssue" -- karena SEBELUMNYA
+        // seleksi ini menumpang di dalam blok tersebut, sehingga kalau
+        // Current Issue nonaktif (atau jurnal belum punya current issue),
+        // seleksi ID hidden ini TIDAK PERNAH DIHITUNG SAMA SEKALI, walau
+        // journal ID-nya memang ada di config.inc.php. Desainnya sendiri
+        // (hide_breadcrumb_journal_ids) TIDAK PERNAH terkait dengan
+        // Current Issue -- ini murni soal "jurnal ID mana yang breadcrumb
+        // homepage-nya disembunyikan", jadi harus dihitung tanpa syarat
+        // untuk SETIAP render homepage.
         $journalId = (int) $journal->getId();
         $hiddenIdsRaw = (string) Config::getVar('lumera', 'hide_breadcrumb_journal_ids');
         $hiddenIds = [];
@@ -85,7 +108,28 @@ class IndexHandler extends Handler {
             $hiddenIds = array_map('trim', explode(',', $hiddenIdsRaw));
         }
 
-        $isBreadcrumbHiddenJournal = in_array((string) $journalId, $hiddenIds, true);
+        // [FIX] Dukungan wildcard "*" / "all" / "All" (case-insensitive):
+        // kalau ada TOKEN wildcard di antara nilai hide_breadcrumb_journal_ids,
+        // breadcrumb homepage disembunyikan untuk SEMUA jurnal tanpa perlu
+        // daftar ID eksplisit -- termasuk otomatis berlaku untuk jurnal baru
+        // yang ditambahkan nanti. Contoh isi config yang valid:
+        //   hide_breadcrumb_journal_ids = "*"          -> semua jurnal
+        //   hide_breadcrumb_journal_ids = "all"         -> semua jurnal
+        //   hide_breadcrumb_journal_ids = "1,4,7"       -> hanya ID 1, 4, 7
+        // Kalau tidak ada token wildcard, kembali ke perilaku lama: strict
+        // match per journal ID lewat in_array() di bawah.
+        $hideAllJournals = false;
+        foreach ($hiddenIds as $hiddenIdToken) {
+            if ($hiddenIdToken === '*' || strcasecmp($hiddenIdToken, 'all') === 0) {
+                $hideAllJournals = true;
+                break;
+            }
+        }
+
+        // Satu-satunya sumber kebenaran: apakah jurnal INI (via journal ID,
+        // BUKAN via $requestedPage atau state lain apa pun) memang di-set
+        // untuk disembunyikan breadcrumb homepage-nya -- atau wildcard aktif.
+        $isBreadcrumbHiddenJournal = $hideAllJournals || in_array((string) $journalId, $hiddenIds, true);
         $templateMgr->assign('isBreadcrumbHiddenJournal', $isBreadcrumbHiddenJournal);
 
         // Assign header and content for home page
@@ -107,13 +151,52 @@ class IndexHandler extends Handler {
         if ($displayCurrentIssue && $issue !== null) {
             import('pages.issue.IssueHandler');
             IssueHandler::_setupIssueTemplate($request, $issue); // The current issue TOC/cover.
+
+            // [UI/UX] Reset breadcrumb agar volume tidak muncul di Homepage Jurnal
+            //
+            // Catatan: sekarang bagian hierarki+current-crumb ini SELALU
+            // ditekan di homepage lewat guard {if !$isJournalHomepage} di
+            // breadcrumbs.tpl (lihat komentar di file itu), jadi
+            // pageHierarchy/pageCrumbTitleTranslated di bawah ini sudah
+            // tidak lagi terlihat pada breadcrumb homepage tema sangiapub.
+            // TETAP dipertahankan (bukan dihapus) sebagai fallback yang
+            // aman untuk tema lain yang mungkin masih membaca variabel ini
+            // secara langsung tanpa guard $isJournalHomepage.
             $journalName = (string) $journal->getLocalizedTitle();
             if (empty($journalName)) {
                 $journalName = (string) $journal->getPath();
             }
-
             $router = $request->getRouter();
             $homeUrl = $router->url($request, null, 'index');
+
+            // [FIX] IssueHandler::_setupIssueTemplate() di atas menimpa
+            // 'pageCrumbTitleTranslated' dengan identitas current issue (mis.
+            // "Vol. 5 No. 2 (2024)"). Itu benar untuk halaman /issue/view/...,
+            // tapi bocor ke breadcrumb Homepage Jurnal saat Current Issue
+            // ditampilkan di sini -- jadi HARUS direset di kedua cabang di
+            // bawah. TAPI cara mereset berbeda per cabang, karena
+            // lib/pkp/templates/common/header.tpl punya fallback:
+            //     {elseif !$pageCrumbTitleTranslated}
+            //         {assign var="pageCrumbTitleTranslated" value=$pageTitleTranslated}
+            // yaitu: NILAI FALSY (null/"") APA PUN otomatis diisi ulang
+            // dengan $pageTitleTranslated (site title) oleh header.tpl
+            // sendiri. Ini yang diinginkan untuk jurnal NORMAL (supaya
+            // breadcrumb jatuh balik ke judul halaman utama, bukan identitas
+            // issue) -- tapi untuk jurnal yang di-hide TOTAL lewat
+            // hide_breadcrumb_journal_ids, fallback ini justru
+            // memunculkan kembali site title sebagai crumb terakhir,
+            // sehingga breadcrumb TIDAK PERNAH benar-benar kosong walau
+            // pageHierarchy sudah di-set []. Reset dengan null di kedua
+            // cabang (versi sebelumnya) gagal untuk skenario "hidden" ini.
+            //
+            // Solusinya: pakai idiom yang sudah ada di codebase ini sendiri
+            // (lihat templates/comment/comments.tpl) -- assign string TRUTHY
+            // tapi visualnya kosong ("&nbsp;") supaya fallback header.tpl
+            // tidak pernah terpicu untuk jurnal yang memang harus disembunyikan.
+            //
+            // Pakai $isBreadcrumbHiddenJournal yang sudah dihitung di atas --
+            // BUKAN menghitung ulang in_array() di sini -- supaya cuma ada
+            // SATU sumber kebenaran untuk "jurnal ini hidden atau tidak".
             if ($isBreadcrumbHiddenJournal) {
                 $templateMgr->assign('pageHierarchy', []);
                 $templateMgr->assign('pageCrumbTitleTranslated', '&nbsp;');
