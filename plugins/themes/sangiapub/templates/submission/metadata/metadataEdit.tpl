@@ -15,7 +15,6 @@
 {url|assign:"competingInterestGuidelinesUrl" page="information" op="competingInterestGuidelines"}
 
 <form id="metadata" method="post" action="{url op="saveMetadata"}" enctype="multipart/form-data">
-	{* WIZDAM SECURITY: Token CSRF Wajib Ada *}
 	<input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
 	<input type="hidden" name="articleId" value="{$articleId|escape}" />
 	{include file="common/formErrors.tpl"}
@@ -32,6 +31,14 @@
 				form.moveAuthorIndex.value = authorIndex;
 				form.submit();
 			}
+			// [WIZDAM] Move funder up/down -- pola sama persis moveAuthor.
+			function moveFunder(dir, funderIndex) {
+				var form = document.getElementById('metadata');
+				form.moveFunder.value = 1;
+				form.moveFunderDir.value = dir;
+				form.moveFunderIndex.value = funderIndex;
+				form.submit();
+			}
 			// -->
 		</script>
 		{/literal}
@@ -43,13 +50,12 @@
 						<td width="20%" class="label">{fieldLabel name="formLocale" key="form.formLanguage"}</td>
 						<td width="80%" class="value">
 							{url|assign:"formUrl" path=$articleId escape=false}
-							{* Maintain localized author info across requests *}
+							{* Maintain localized author info across requests --
+							   [WIZDAM] competingInterests per-penulis DIHAPUS dari
+							   sini (field itu sudah tidak ada di struktur data
+							   MetadataForm baru, digantikan competingInterest
+							   level artikel di bawah). *}
 							{foreach from=$authors key=authorIndex item=author}
-								{if $currentJournal->getSetting('requireAuthorCompetingInterests')}
-									{foreach from=$author.competingInterests key="thisLocale" item="thisCompetingInterests"}
-										{if $thisLocale != $formLocale}<input type="hidden" name="authors[{$authorIndex|escape}][competingInterests][{$thisLocale|escape}]" value="{$thisCompetingInterests|escape}" />{/if}
-									{/foreach}
-								{/if}
 								{foreach from=$author.biography key="thisLocale" item="thisBiography"}
 									{if $thisLocale != $formLocale}<input type="hidden" name="authors[{$authorIndex|escape}][biography][{$thisLocale|escape}]" value="{$thisBiography|escape}" />{/if}
 								{/foreach}
@@ -123,13 +129,24 @@
 							</select>
 						</td>
 					</tr>
-					{if $currentJournal->getSetting('requireAuthorCompetingInterests')}
-						<tr valign="top">
-							<td width="20%" class="label">{fieldLabel name="authors-$authorIndex-competingInterests" key="author.competingInterests" competingInterestGuidelinesUrl=$competingInterestGuidelinesUrl}</td>
-							<td width="80%" class="value"><textarea name="authors[{$authorIndex|escape}][competingInterests][{$formLocale|escape}]" class="textArea" id="authors-{$authorIndex|escape}-competingInterests" rows="5" cols="40">{$author.competingInterests[$formLocale]|escape}</textarea>
-							</td>
-						</tr>
-					{/if}{* requireAuthorCompetingInterests *}
+					{* [WIZDAM] CRediT -- 14 peran baku, checkbox multi-pilih,
+					   MENGGANTIKAN textarea competingInterests per-penulis
+					   yang lama (sudah dipindah jadi field level artikel,
+					   lihat bagian Deklarasi di bawah). Opsional. *}
+					<tr valign="top">
+						<td width="20%" class="label">{fieldLabel name="authors-$authorIndex-creditRoles" key="author.credit.label"}</td>
+						<td width="80%" class="value">
+							<div class="creditRolesGrid">
+							{foreach from=$allCreditRoles item=roleCode}
+								<label class="creditRoleOption">
+									<input type="checkbox" name="authors[{$authorIndex|escape}][creditRoles][]" value="{$roleCode|escape}"{if in_array($roleCode, $author.creditRoles)} checked="checked"{/if} />
+									{translate key="author.credit.role.`$roleCode`"}
+								</label>
+							{/foreach}
+							</div>
+							<span class="instruct">{translate key="author.credit.description"}</span>
+						</td>
+					</tr>
 					<tr valign="top">
 						<td class="label">{fieldLabel name="authors-$authorIndex-biography" key="user.biography"}</td>
 						<td class="value"><textarea name="authors[{$authorIndex|escape}][biography][{$formLocale|escape}]" id="authors-{$authorIndex|escape}-biography" rows="5" cols="40" class="textArea">{$author.biography[$formLocale]|escape}</textarea>
@@ -200,12 +217,20 @@
 							</select>
 						</td>
 					</tr>
-					{if $currentJournal->getSetting('requireAuthorCompetingInterests')}
-						<tr valign="top">
-							<td width="20%" class="label">{fieldLabel name="authors-0-competingInterests" key="author.competingInterests" competingInterestGuidelinesUrl=$competingInterestGuidelinesUrl}</td>
-							<td width="80%" class="value"><textarea name="authors[0][competingInterests][{$formLocale|escape}]" class="textArea" id="authors-0-competingInterests" rows="5" cols="40"></textarea></td>
-						</tr>
-					{/if}
+					<tr valign="top">
+						<td width="20%" class="label">{fieldLabel name="authors-0-creditRoles" key="author.credit.label"}</td>
+						<td width="80%" class="value">
+							<div class="creditRolesGrid">
+							{foreach from=$allCreditRoles item=roleCode}
+								<label class="creditRoleOption">
+									<input type="checkbox" name="authors[0][creditRoles][]" value="{$roleCode|escape}" />
+									{translate key="author.credit.role.`$roleCode`"}
+								</label>
+							{/foreach}
+							</div>
+							<span class="instruct">{translate key="author.credit.description"}</span>
+						</td>
+					</tr>
 					<tr valign="top">
 						<td class="label">{fieldLabel name="authors-0-biography" key="user.biography"}</td>
 						<td class="value"><textarea name="authors[0][biography][{$formLocale|escape}]" id="authors-0-biography" rows="5" cols="40" class="textArea"></textarea>
@@ -398,7 +423,90 @@
 				<td width="20%" class="label">{fieldLabel name="sponsor" key="submission.agencies"}</td>
 				<td width="80%" class="value">
 					<input type="text" name="sponsor[{$formLocale|escape}]" id="sponsor" value="{$sponsor[$formLocale]|escape}" size="60" maxlength="255" class="textField" />
+					{if $sponsor[$formLocale]}
+						{* [WIZDAM] KONSOLIDASI DATA LAMA -> BARU -- lihat
+						   Action::saveMetadata() (aksi migrateSponsorToFunder)
+						   untuk detail lengkap. Cuma tampil kalau sponsor
+						   terisi -- tidak ada yang perlu dimigrasi kalau
+						   kosong. *}
+						<br />
+						<input type="submit" name="migrateSponsorToFunder" value="{translate key="author.submit.migrateSponsorToFunder"}" class="button" />
+						<span class="instruct">{translate key="author.submit.migrateSponsorToFunder.description"}</span>
+					{/if}
 				</td>
+			</tr>
+		</table>
+	</div>
+
+	<div class="separator"></div>
+
+	{* [WIZDAM] Blok Funders (pendanaan/hibah terstruktur) -- pola sama
+	   persis blok Authors di atas, TAPI TIDAK dibungkus pengecekan
+	   canViewAuthors karena Funders bukan informasi khusus penulis
+	   (tetap perlu tampil untuk reviewer/siapa pun yang membuka
+	   halaman ini). *}
+	<div id="funders" class="block">
+		<h3>{translate key="author.submit.funders"}</h3>
+		<input type="hidden" name="deletedFunders" value="{$deletedFunders|escape}" />
+		<input type="hidden" name="moveFunder" value="0" />
+		<input type="hidden" name="moveFunderDir" value="" />
+		<input type="hidden" name="moveFunderIndex" value="" />
+
+		{foreach name=funders from=$funders key=funderIndex item=funder}
+			<input type="hidden" name="funders[{$funderIndex|escape}][funderId]" value="{$funder.funderId|escape}" />
+			<input type="hidden" name="funders[{$funderIndex|escape}][seq]" value="{$funderIndex+1}" />
+
+			<table width="100%" class="data">
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="funders-$funderIndex-funderName" required="true" key="author.submit.funderName"}</td>
+					<td width="80%" class="value"><input type="text" class="textField" name="funders[{$funderIndex|escape}][funderName]" id="funders-{$funderIndex|escape}-funderName" value="{$funder.funderName|escape}" size="40" maxlength="255" /></td>
+				</tr>
+				<tr valign="top">
+					<td width="20%" class="label">{fieldLabel name="funders-$funderIndex-awardNumber" key="author.submit.awardNumber"}</td>
+					<td width="80%" class="value"><input type="text" class="textField" name="funders[{$funderIndex|escape}][awardNumber]" id="funders-{$funderIndex|escape}-awardNumber" value="{$funder.awardNumber|escape}" size="40" maxlength="255" />
+						<span class="instruct">{translate key="author.submit.awardNumber.description"}</span>
+					</td>
+				</tr>
+				{if $smarty.foreach.funders.total > 1}
+					<tr valign="top">
+						<td colspan="2">
+							<a href="javascript:moveFunder('u', '{$funderIndex|escape}')" class="action">&uarr;</a> <a href="javascript:moveFunder('d', '{$funderIndex|escape}')" class="action">&darr;</a>
+							{translate key="author.submit.reorderInstructions"}
+						</td>
+					</tr>
+				{/if}
+				<tr valign="top">
+					<td width="80%" class="value" colspan="2"><input type="submit" name="delFunder[{$funderIndex|escape}]" value="{translate key="author.submit.deleteFunder"}" class="button" /></td>
+				</tr>
+			</table>
+		{foreachelse}
+			<p class="instruct">{translate key="author.submit.noFunders"}</p>
+		{/foreach}
+
+		<p><input type="submit" class="button" name="addFunder" value="{translate key="author.submit.addFunder"}" /></p>
+	</div>
+
+	<div class="separator"></div>
+
+	{* [WIZDAM] Deklarasi level artikel -- Competing Interest, Ethical
+	   Approval, Declaration of Generative AI. Sekarang bisa diedit di
+	   sini (review/copyediting), tidak lagi terkunci hanya di wizard
+	   submit awal. *}
+	<div id="declarations" class="block">
+		<h3>{translate key="author.submit.declarations"}</h3>
+
+		<table width="100%" class="data">
+			<tr valign="top">
+				<td width="20%" class="label">{fieldLabel name="competingInterest" key="author.submit.competingInterestLabel"}</td>
+				<td width="80%" class="value"><textarea name="competingInterest[{$formLocale|escape}]" id="competingInterest" class="textArea" rows="5" cols="60">{$competingInterest[$formLocale]|escape}</textarea></td>
+			</tr>
+			<tr valign="top">
+				<td width="20%" class="label">{fieldLabel name="ethicalApproval" key="author.submit.ethicalApprovalLabel"}</td>
+				<td width="80%" class="value"><textarea name="ethicalApproval[{$formLocale|escape}]" id="ethicalApproval" class="textArea" rows="5" cols="60">{$ethicalApproval[$formLocale]|escape}</textarea></td>
+			</tr>
+			<tr valign="top">
+				<td width="20%" class="label">{fieldLabel name="generativeAiDeclaration" key="author.submit.generativeAiDeclarationLabel"}</td>
+				<td width="80%" class="value"><textarea name="generativeAiDeclaration[{$formLocale|escape}]" id="generativeAiDeclaration" class="textArea" rows="5" cols="60">{$generativeAiDeclaration[$formLocale]|escape}</textarea></td>
 			</tr>
 		</table>
 	</div>
