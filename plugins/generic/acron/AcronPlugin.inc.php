@@ -386,6 +386,27 @@ class AcronPlugin extends GenericPlugin {
         $xmlParser->destroy();
 
         $this->updateSetting(0, 'crontab', $tasks, 'object');
+        // [FIX] Simpan juga "sidik jari" registry/scheduledTasks.xml saat ini
+        // (lihat _loadMasterCrontab() -- dipakai untuk MENDETEKSI kalau file
+        // ini berubah lagi di deploy berikutnya, mis. task baru ditambahkan,
+        // tanpa perlu admin mengklik "Reload Scheduled Tasks" secara manual).
+        $this->updateSetting(0, 'crontabSourceFingerprint', $this->_getCrontabSourceFingerprint(), 'string');
+    }
+
+    /**
+     * [FIX] "Sidik jari" ringan (mtime + ukuran file) dari registry/scheduledTasks.xml,
+     * dipakai _loadMasterCrontab() untuk mendeteksi task baru yang ditambahkan
+     * lewat deploy kode (BUKAN lewat UI admin) -- skenario yang SEBELUMNYA
+     * tidak pernah memicu re-parse otomatis sama sekali (lihat catatan
+     * _loadMasterCrontab()).
+     * @return string
+     */
+    protected function _getCrontabSourceFingerprint(): string {
+        $filePath = Config::getVar('general', 'registry_dir') . '/scheduledTasks.xml';
+        if (!file_exists($filePath)) {
+            return '';
+        }
+        return filemtime($filePath) . ':' . filesize($filePath);
     }
 
     /**
@@ -467,11 +488,36 @@ class AcronPlugin extends GenericPlugin {
 
     /**
      * Load the master crontab from database, or trigger parsing if not available.
+     *
+     * [FIX] AKAR MASALAH utama task baru (CitationRefreshTask, SintaScoreTask)
+     * tidak pernah tereksekusi SAMA SEKALI: method ini SEBELUMNYA cuma
+     * re-parse kalau setting 'crontab' persis NULL (artinya cuma sekali,
+     * pertama kali plugin pernah dipakai). Menambahkan <task> baru ke
+     * registry/scheduledTasks.xml lewat deploy kode TIDAK PERNAH secara
+     * otomatis menghapus/mengosongkan cache 'crontab' yang sudah tersimpan
+     * di plugin_settings -- re-parse SEBELUMNYA hanya terjadi lewat 3 jalur:
+     * (1) instalasi baru (Installer::postInstall), (2) admin mengklik
+     * "Reload Scheduled Tasks" di halaman Plugins, atau (3) admin
+     * enable/disable sebuah lazy-load plugin. Kalau situs ini sudah pernah
+     * jalan SEBELUM CitationRefreshTask ditambahkan ke scheduledTasks.xml,
+     * dan tidak satupun dari 3 jalur di atas terjadi setelahnya, task itu
+     * SECARA PERMANEN tidak pernah masuk daftar kandidat _getTasksToRun() --
+     * bukan soal jadwal belum tiba, bukan fatal error, tapi memang tidak
+     * pernah "terlihat" oleh scheduler sama sekali.
+     *
+     * Sekarang ditambahkan jalur ke-4: bandingkan sidik jari file
+     * registry/scheduledTasks.xml SAAT INI dengan sidik jari saat cache
+     * terakhir dibuat (lihat _getCrontabSourceFingerprint()) -- kalau beda
+     * (file berubah/bertambah task sejak cache terakhir), otomatis re-parse,
+     * TANPA perlu aksi admin manual.
      * @return array
      */
     protected function _loadMasterCrontab(): array {
         $scheduledTasks = $this->getSetting(0, 'crontab');
-        if ($scheduledTasks === null) {
+        $cachedFingerprint = $this->getSetting(0, 'crontabSourceFingerprint');
+        $currentFingerprint = $this->_getCrontabSourceFingerprint();
+
+        if ($scheduledTasks === null || $cachedFingerprint !== $currentFingerprint) {
             $this->_parseCrontab();
             $scheduledTasks = $this->getSetting(0, 'crontab');
         }
@@ -481,22 +527,31 @@ class AcronPlugin extends GenericPlugin {
 
     /**
      * Evaluate if a task is ready to be executed based on its frequency.
+     *
+     * [FIX] Sebelumnya method ini HANYA mengambil SATU atribut pertama dari
+     * $task['frequency'] (lewat key()/current()) untuk dijadikan XMLNode yang
+     * diperiksa -- atribut frekuensi lain di-DROP begitu saja. Untuk task
+     * dengan frekuensi SATU atribut (mis. <frequency hour="0"/> milik
+     * ReviewReminder dkk) ini kebetulan tidak kelihatan salah. Tapi untuk
+     * task dengan LEBIH dari satu atribut -- persis kasus CitationRefreshTask
+     * & SintaScoreTask (<frequency dayofweek="0" hour="1"/>) -- atribut
+     * KEDUA (hour) SELALU hilang, sehingga ScheduledTaskHelper::checkFrequency()
+     * cuma pernah mengecek dayofweek dan tidak pernah mengecek hour sama
+     * sekali. Sekarang SEMUA atribut frekuensi disalin ke XMLNode yang
+     * diperiksa, sama seperti isi <frequency> aslinya di scheduledTasks.xml.
      * @param array $task
      * @return bool
      */
     protected function _isTaskReadyToExecute(array $task): bool {
-        if (!isset($task['frequency']) || !is_array($task['frequency'])) {
-            return false;
-        }
-
-        $key = key($task['frequency']);
-        if (!$key) {
+        if (!isset($task['frequency']) || !is_array($task['frequency']) || empty($task['frequency'])) {
             return false;
         }
 
         $frequencyNode = new XMLNode();
-        $frequencyNode->setAttribute($key, current($task['frequency']));
-        
+        foreach ($task['frequency'] as $attrName => $attrValue) {
+            $frequencyNode->setAttribute($attrName, $attrValue);
+        }
+
         return ScheduledTaskHelper::checkFrequency($task['className'], $frequencyNode);
     }
 

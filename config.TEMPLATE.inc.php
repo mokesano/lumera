@@ -45,7 +45,13 @@ session_cookie_name = SRMSID
 
 ; Number of days to save login cookie for if user selects to remember
 ; (set to 0 to force expiration at end of current session)
-session_lifetime = 90
+session_lifetime = 170
+
+; Probability Gate, tipe data integer untuk mt_rand untuk menghindari
+; serangan bot yang mengakibatkan database overload request
+; Default: 100 (Artinya hanya 1 dari 100 request yang akan memicu cek database).
+; Ubah nilai 100 menjadi 1 untuk memicu Acron memperbarui Task yang terdaftar.
+; acron_throttle = 100
 
 ; Path to the registry directory (containing various settings files)
 ; Although the files in this directory generally do not contain any
