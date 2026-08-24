@@ -19,6 +19,66 @@ declare(strict_types=1);
 
 class TrendsManager {
 
+    /** Nama class scheduled task yang mengisi tabel `metrics` (views & downloads). */
+    private const TASK_USAGE_STATS = 'plugins.generic.usageStats.UsageStatsLoader';
+
+    /** Nama class scheduled task yang mengisi citationCount di article_settings. */
+    private const TASK_CITATION_REFRESH = 'lib.wizdam.classes.tasks.CitationRefreshTask';
+
+    /**
+     * [FIX] Waktu "last update" data trends TIDAK BOLEH memakai date('Y-m-d H:i:s')
+     * (itu jam server saat request diproses, bukan kapan data cache-nya benar-benar
+     * diperbarui). Cross-check dengan ArticleMetricsHandler::metrics() -- di sana
+     * angka views/downloads berasal dari tabel `metrics` yang diisi scheduled task
+     * UsageStatsLoader, dan waktu terakhir kali task itu berjalan diambil lewat
+     * ScheduledTaskDAO::getLastRunTime(). Method ini memakai sumber & format yang
+     * SAMA PERSIS supaya "Trends: Popular/Download" konsisten dengan halaman
+     * metrics artikel.
+     *
+     * [CATATAN FORMAT] ArticleMetricsHandler::metrics() mencetak
+     * 'statsLastUpdated' langsung sebagai string ('l, d M Y H:i:s T'). Halaman
+     * trends BEDA -- template-nya (most_popular.tpl dkk) memproses nilai ini
+     * lewat modifier Smarty {$lastUpdateDate|date_format:...}, yang mem-parse
+     * ulang via strtotime(). Singkatan zona waktu non-standar seperti "WIB"
+     * tidak selalu dikenali strtotime(), jadi di sini kita pakai 'Y-m-d H:i:s'
+     * (unambiguous, format yang sama dipakai kode lama) -- SUMBER angkanya
+     * (timestamp dari getLastRunTime) tetap identik dengan ArticleMetricsHandler,
+     * hanya representasi string-nya disesuaikan ke konsumennya.
+     *
+     * @param string $taskClassName Nama class scheduled task (lihat konstanta TASK_*).
+     * @return string|null Tanggal terformat, atau null kalau task belum pernah jalan.
+     */
+    private static function _getLastRunDate(string $taskClassName): ?string {
+        import('lib.pkp.classes.scheduledTask.ScheduledTaskDAO');
+        /** @var ScheduledTaskDAO $scheduledTaskDao */
+        $scheduledTaskDao = DAORegistry::getDAO('ScheduledTaskDAO');
+        $lastRunTimestamp = (int) $scheduledTaskDao->getLastRunTime($taskClassName);
+
+        // Sama seperti ArticleMetricsHandler::metrics(): kalau task belum pernah
+        // jalan, jangan pura-pura ada tanggal (jangan fallback ke waktu server).
+        return $lastRunTimestamp > 0
+            ? date('Y-m-d H:i:s', $lastRunTimestamp)
+            : null;
+    }
+
+    /**
+     * Waktu pemutakhiran terakhir untuk data Views & Downloads (Trends: Popular,
+     * Trends: Download) -- sumbernya tabel `metrics`, diisi oleh UsageStatsLoader.
+     * @return string|null
+     */
+    private static function _getStatsLastUpdated(): ?string {
+        return self::_getLastRunDate(self::TASK_USAGE_STATS);
+    }
+
+    /**
+     * Waktu pemutakhiran terakhir untuk data Citation (Trends: Citation) --
+     * sumbernya article_settings.citationCount, diisi oleh CitationRefreshTask.
+     * @return string|null
+     */
+    private static function _getCitationsLastUpdated(): ?string {
+        return self::_getLastRunDate(self::TASK_CITATION_REFRESH);
+    }
+
     /**
      * Assign data Most Popular Artciles to Smarty.
      *
@@ -77,7 +137,10 @@ class TrendsManager {
             'remainingArticles'    => array_slice($articlesPayload, 9),
             'totalPopularArticles' => count($articlesPayload),
             'popularArticlesList'  => $articlesPayload,
-            'lastUpdateDate'       => date('Y-m-d H:i:s'),
+            // [FIX] Bukan date('Y-m-d H:i:s') (jam server) -- diambil dari
+            // waktu terakhir UsageStatsLoader jalan, sama seperti
+            // ArticleMetricsHandler::metrics() (statsLastUpdated).
+            'lastUpdateDate'       => self::_getStatsLastUpdated(),
             'cacheInfo'            => ['enabled' => true, 'hit' => false]
         ]);
 
@@ -116,7 +179,9 @@ class TrendsManager {
             'remainingArticles'    => array_slice($articlesPayload, 9),
             'totalPopularArticles' => count($articlesPayload),
             'popularArticlesList'  => $articlesPayload,
-            'lastUpdateDate'       => date('Y-m-d H:i:s'),
+            // [FIX] Sama seperti assignMostPopularPayload() -- ambil dari
+            // last-run UsageStatsLoader, konsisten dengan ArticleMetricsHandler.
+            'lastUpdateDate'       => self::_getStatsLastUpdated(),
             'cacheInfo'            => ['enabled' => true, 'hit' => false]
         ]);
     }
@@ -153,7 +218,8 @@ class TrendsManager {
             'secondTierDownloadedArticles' => array_slice($articlesPayload, 1, 4),
             'thirdTierDownloadedArticles'  => array_slice($articlesPayload, 5, 4),
             'totalDownloadedArticles'      => count($articlesPayload),
-            'lastUpdateDate'               => date('Y-m-d H:i:s'),
+            // [FIX] Idem -- widget homepage juga pakai sumber yang sama.
+            'lastUpdateDate'               => self::_getStatsLastUpdated(),
         ]);
 
         // [WIZDAM] Business rule (backend, bukan Smarty {math}):
@@ -248,7 +314,11 @@ class TrendsManager {
             'remainingArticles'    => array_slice($articlesPayload, 9),
             'totalPopularArticles' => count($articlesPayload),
             'popularArticlesList'  => $articlesPayload,
-            'lastUpdateDate'       => date('Y-m-d H:i:s'),
+            // [FIX] Kutipan sumbernya BEDA dari views/downloads -- diambil dari
+            // last-run CitationRefreshTask (bukan UsageStatsLoader, dan bukan
+            // jam server), konsisten dengan komentar ArticleMetricsHandler
+            // ("itu tanggung jawab CitationRefreshTask mingguan").
+            'lastUpdateDate'       => self::_getCitationsLastUpdated(),
             'cacheInfo'            => ['enabled' => true, 'hit' => false]
         ]);
     }
@@ -285,7 +355,8 @@ class TrendsManager {
             'secondTierCitedArticles' => array_slice($articlesPayload, 1, 4),
             'thirdTierCitedArticles'  => array_slice($articlesPayload, 5, 4),
             'totalCitedArticles'      => count($articlesPayload),
-            'lastUpdateDate'          => date('Y-m-d H:i:s'),
+            // [FIX] Idem -- widget homepage juga pakai sumber yang sama.
+            'lastUpdateDate'          => self::_getCitationsLastUpdated(),
         ]);
 
         // [WIZDAM] Business rule (backend, bukan Smarty {math}):
