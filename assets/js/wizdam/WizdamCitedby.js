@@ -1,9 +1,9 @@
 /**
- * @file WizdamCitedby.js
+ * @file public/assets/js/WizdamCitedby.js
  * 
  * Copyright (c) 2017-2026 Sangia Code Lumera 
  * Copyright (c) 2024-2026 Rochmady and Development Team
- * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3.
  * 
  * @brief JavaScript untuk menampilkan kutipan artikel berbasis DOI dengan fitur modern dan performa tinggi.
  * Citation Display JS Fully Optimized Version
@@ -16,7 +16,7 @@
  * - Refresh cooldown system based on last update time
  * 
  * @author Rochmady and Wizdam Team
- * @version 3.1.6
+ * @version 0.1.7
  */
 (function() {
    // Flag untuk melacak pemrosesan
