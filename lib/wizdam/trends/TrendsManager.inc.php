@@ -31,34 +31,34 @@ class TrendsManager {
      * diperbarui). Cross-check dengan ArticleMetricsHandler::metrics() -- di sana
      * angka views/downloads berasal dari tabel `metrics` yang diisi scheduled task
      * UsageStatsLoader, dan waktu terakhir kali task itu berjalan diambil lewat
-     * ScheduledTaskDAO::getLastRunTime(). Method ini memakai sumber & format yang
-     * SAMA PERSIS supaya "Trends: Popular/Download" konsisten dengan halaman
-     * metrics artikel.
+     * ScheduledTaskDAO::getLastRunTime(). Method ini memakai sumber yang SAMA
+     * PERSIS supaya "Trends: Popular/Download" konsisten dengan halaman metrics
+     * artikel.
      *
+     * @param string $taskClassName Nama class scheduled task (lihat konstanta TASK_*).
+     * @return int Unix timestamp, atau 0 kalau task belum pernah tercatat jalan.
+     */
+    private static function _getLastRunTimestamp(string $taskClassName): int {
+        import('lib.pkp.classes.scheduledTask.ScheduledTaskDAO');
+        /** @var ScheduledTaskDAO $scheduledTaskDao */
+        $scheduledTaskDao = DAORegistry::getDAO('ScheduledTaskDAO');
+        return (int) $scheduledTaskDao->getLastRunTime($taskClassName);
+    }
+
+    /**
      * [CATATAN FORMAT] ArticleMetricsHandler::metrics() mencetak
      * 'statsLastUpdated' langsung sebagai string ('l, d M Y H:i:s T'). Halaman
      * trends BEDA -- template-nya (most_popular.tpl dkk) memproses nilai ini
      * lewat modifier Smarty {$lastUpdateDate|date_format:...}, yang mem-parse
      * ulang via strtotime(). Singkatan zona waktu non-standar seperti "WIB"
      * tidak selalu dikenali strtotime(), jadi di sini kita pakai 'Y-m-d H:i:s'
-     * (unambiguous, format yang sama dipakai kode lama) -- SUMBER angkanya
-     * (timestamp dari getLastRunTime) tetap identik dengan ArticleMetricsHandler,
-     * hanya representasi string-nya disesuaikan ke konsumennya.
-     *
-     * @param string $taskClassName Nama class scheduled task (lihat konstanta TASK_*).
-     * @return string|null Tanggal terformat, atau null kalau task belum pernah jalan.
+     * (unambiguous) -- SUMBER angkanya tetap identik, hanya representasi
+     * string-nya disesuaikan ke konsumennya.
+     * @param int $timestamp Unix timestamp, atau 0/negatif untuk "tidak ada data".
+     * @return string|null
      */
-    private static function _getLastRunDate(string $taskClassName): ?string {
-        import('lib.pkp.classes.scheduledTask.ScheduledTaskDAO');
-        /** @var ScheduledTaskDAO $scheduledTaskDao */
-        $scheduledTaskDao = DAORegistry::getDAO('ScheduledTaskDAO');
-        $lastRunTimestamp = (int) $scheduledTaskDao->getLastRunTime($taskClassName);
-
-        // Sama seperti ArticleMetricsHandler::metrics(): kalau task belum pernah
-        // jalan, jangan pura-pura ada tanggal (jangan fallback ke waktu server).
-        return $lastRunTimestamp > 0
-            ? date('Y-m-d H:i:s', $lastRunTimestamp)
-            : null;
+    private static function _formatLastUpdate(int $timestamp): ?string {
+        return $timestamp > 0 ? date('Y-m-d H:i:s', $timestamp) : null;
     }
 
     /**
@@ -67,16 +67,82 @@ class TrendsManager {
      * @return string|null
      */
     private static function _getStatsLastUpdated(): ?string {
-        return self::_getLastRunDate(self::TASK_USAGE_STATS);
+        return self::_formatLastUpdate(self::_getLastRunTimestamp(self::TASK_USAGE_STATS));
     }
 
     /**
-     * Waktu pemutakhiran terakhir untuk data Citation (Trends: Citation) --
-     * sumbernya article_settings.citationCount, diisi oleh CitationRefreshTask.
+     * Waktu pemutakhiran terakhir untuk data Citation (Trends: Citation).
+     *
+     * [FIX] Sebelumnya HANYA mengandalkan ScheduledTaskDAO::getLastRunTime()
+     * untuk CitationRefreshTask -- kalau task itu belum pernah tercatat jalan
+     * lewat scheduler resmi (tools/runScheduledTasks.php / acron), hasilnya
+     * SELALU 0 dan halaman jatuh ke "N/A", PADAHAL citationCount yang
+     * ditampilkan di daftar Most Cited nyata berasal dari cache per-DOI yang
+     * SUDAH terisi (mis. dipicu cold-start di halaman artikel).
+     *
+     * Sekarang meniru PERSIS pola yang dipakai ArticleHandler/ArticleMetricsHandler
+     * untuk citation: kedua handler itu membaca 'last_updated' dari
+     * CitationFetcherService::getCachedCitations() (lihat $citationTimestamp
+     * di ArticleHandler::view(), dan $citationData di
+     * ArticleMetricsHandler::metrics()) -- BUKAN dari tabel scheduled_tasks.
+     * Jadi urutan sumber di sini:
+     *   1. Waktu last-run resmi CitationRefreshTask (paling akurat kalau ada).
+     *   2. FALLBACK: timestamp 'last_updated' TERBARU dari cache per-DOI di
+     *      antara artikel yang tampil di halaman trends ini -- sumber & cara
+     *      baca yang SAMA PERSIS dengan ArticleHandler/ArticleMetricsHandler,
+     *      hanya diagregasi (MAX) karena di sini banyak artikel sekaligus.
+     *
+     * @param Journal|null $journal
+     * @param array $articlesPayload Payload hasil _formatMicroPayload() (butuh key 'doi').
      * @return string|null
      */
-    private static function _getCitationsLastUpdated(): ?string {
-        return self::_getLastRunDate(self::TASK_CITATION_REFRESH);
+    private static function _getCitationsLastUpdated(?Journal $journal, array $articlesPayload = []): ?string {
+        $taskTimestamp = self::_getLastRunTimestamp(self::TASK_CITATION_REFRESH);
+        if ($taskTimestamp > 0) {
+            return self::_formatLastUpdate($taskTimestamp);
+        }
+
+        $cacheTimestamp = self::_getMostRecentCitationCacheTimestamp($journal, $articlesPayload);
+        return self::_formatLastUpdate($cacheTimestamp);
+    }
+
+    /**
+     * Ambil timestamp 'last_updated' TERBARU dari cache citation per-DOI
+     * (CitationFetcherService) di antara artikel yang tampil pada payload.
+     *
+     * getCachedCitations() HANYA membaca file cache -- tidak pernah memicu
+     * request jaringan -- jadi aman dipanggil berulang untuk tiap artikel
+     * di halaman ini (persis prinsip yang sama dengan ArticleMetricsHandler:
+     * "baca cache saja, tidak memicu fetch jaringan").
+     *
+     * @param Journal|null $journal Dipakai hanya untuk resolusi kredensial;
+     *   tidak berpengaruh ke pembacaan cache (key cache = md5(doi), lintas jurnal).
+     * @param array $articlesPayload
+     * @return int Unix timestamp, 0 kalau tidak ada satupun cache citation.
+     */
+    private static function _getMostRecentCitationCacheTimestamp(?Journal $journal, array $articlesPayload): int {
+        if (empty($articlesPayload)) {
+            return 0;
+        }
+
+        import('lib.wizdam.classes.citation.CitationFetcherService');
+        $citationFetcher = new CitationFetcherService($journal);
+
+        $latest = 0;
+        foreach ($articlesPayload as $item) {
+            $doi = (string) ($item['doi'] ?? '');
+            if ($doi === '') continue;
+
+            $cached = $citationFetcher->getCachedCitations($doi);
+            if ($cached === null) continue;
+
+            $ts = (int) ($cached['last_updated'] ?? $cached['timestamp'] ?? 0);
+            if ($ts > $latest) {
+                $latest = $ts;
+            }
+        }
+
+        return $latest;
     }
 
     /**
@@ -314,11 +380,12 @@ class TrendsManager {
             'remainingArticles'    => array_slice($articlesPayload, 9),
             'totalPopularArticles' => count($articlesPayload),
             'popularArticlesList'  => $articlesPayload,
-            // [FIX] Kutipan sumbernya BEDA dari views/downloads -- diambil dari
-            // last-run CitationRefreshTask (bukan UsageStatsLoader, dan bukan
-            // jam server), konsisten dengan komentar ArticleMetricsHandler
-            // ("itu tanggung jawab CitationRefreshTask mingguan").
-            'lastUpdateDate'       => self::_getCitationsLastUpdated(),
+            // [FIX] Kutipan sumbernya BEDA dari views/downloads. Utamakan
+            // last-run resmi CitationRefreshTask; kalau task itu belum
+            // pernah tercatat jalan, JANGAN langsung "N/A" -- jatuhkan ke
+            // timestamp cache per-DOI (persis pola $citationTimestamp di
+            // ArticleHandler / $citationData di ArticleMetricsHandler).
+            'lastUpdateDate'       => self::_getCitationsLastUpdated($journal, $articlesPayload),
             'cacheInfo'            => ['enabled' => true, 'hit' => false]
         ]);
     }
@@ -355,8 +422,8 @@ class TrendsManager {
             'secondTierCitedArticles' => array_slice($articlesPayload, 1, 4),
             'thirdTierCitedArticles'  => array_slice($articlesPayload, 5, 4),
             'totalCitedArticles'      => count($articlesPayload),
-            // [FIX] Idem -- widget homepage juga pakai sumber yang sama.
-            'lastUpdateDate'          => self::_getCitationsLastUpdated(),
+            // [FIX] Idem -- widget homepage juga pakai sumber + fallback yang sama.
+            'lastUpdateDate'          => self::_getCitationsLastUpdated($journal, $articlesPayload),
         ]);
 
         // [WIZDAM] Business rule (backend, bukan Smarty {math}):
