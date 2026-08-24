@@ -1,5 +1,12 @@
 /**
- * Inisialisasi nonaktif tombol next previous pada artikel.
+ * @file public/assets/js/WizdamArticleStyle.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief Inisialisasi nonaktif tombol next previous pada artikel.
+ * @version 0.0.1
  */
 $(document).ready(function() {
     /**
@@ -2455,6 +2462,6 @@ $(document).ready(function() {
 });
 
 /**
- * Dibuat oleh: ChatGPT, sebuah model AI dari OpenAI
- * Dibantu oleh: Anda, pengguna yang luar biasa
+ * Ditulis oleh: ChatGPT, sebuah model AI dari OpenAI
+ * Dibuat oleh: @author Rochmady and Wizdam Lumera Team (Khayra and Rakha)
  */
