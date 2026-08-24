@@ -1,9 +1,15 @@
 /**
- * Highlights
- * Article Highlight Generator (Mendukung Bahasa Indonesia dan Inggris)
- * Menghasilkan 4 poin penting dari judul dan abstrak artikel 
+ * @file public/assets/js/wizdam/ArticleHighlight_v1.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief Article Highlight Generator (Mendukung Bahasa Indonesia dan Inggris)
+ * Menghasilkan 4 poin penting dari judul dan abstrak artikel.
+ *  
  * @author Rochmady and Wizdam Team
- * @version 1.0.0
+ * @version 0.0.1.0
  */
 
 // Fungsi utama untuk menghasilkan highlight dari abstrak artikel
