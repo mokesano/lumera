@@ -1,9 +1,17 @@
 /**
- * Ultra Simple Approach - Back to Basics
+ * @file public/assets/sangiapub/js/dev/markdown-email.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief Ultra Simple Approach - Back to Basics
  * Tidak pakai contenteditable, tidak pakai complex logic
  * HANYA focus: ketik markdown → tampil formatted
+ * 
+ * @author Rochmady
+ * @version 0.0.7
  */
-
 $(document).ready(function() {
     console.log('Ultra simple approach...');
     
