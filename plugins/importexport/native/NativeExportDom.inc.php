@@ -227,10 +227,8 @@ class NativeExportDom {
         }
 
         /* --- Indexing --- */
-
         $indexingNode = XMLCustomWriter::createElement($doc, 'indexing');
         $isIndexingNecessary = false;
-
         if (is_array($article->getDiscipline(null))) {
             foreach ($article->getDiscipline(null) as $locale => $discipline) {
                 $disciplineNode = XMLCustomWriter::createChildWithText($doc, $indexingNode, 'discipline', $discipline, false);
@@ -306,7 +304,56 @@ class NativeExportDom {
 
         if ($isIndexingNecessary) XMLCustomWriter::appendChild($root, $indexingNode);
 
-        /* --- */
+        /** --- Funders and Sponsor --- */
+        // [WIZDAM] Sponsor -- field lama (bebas format), SEBELUMNYA
+        // TIDAK PERNAH diekspor sama sekali di format Native ini
+        // (ditemukan lewat audit langsung, bukan diasumsikan). Diekspor
+        // BERDAMPINGAN dengan funders di bawah -- SALING TIDAK
+        // MENIADAKAN, keduanya independen.
+        if (is_array($article->getSponsor(null))) {
+            foreach ($article->getSponsor(null) as $locale => $sponsor) {
+                if (trim((string) $sponsor) === '') continue;
+                $sponsorNode = XMLCustomWriter::createChildWithText($doc, $root, 'sponsor', $sponsor, false);
+                if ($sponsorNode) XMLCustomWriter::setAttribute($sponsorNode, 'locale', $locale);
+            }
+        }
+
+        // [WIZDAM] Funders (pendanaan/hibah terstruktur) -- BARU,
+        // berdampingan dengan sponsor di atas, TIDAK menggantikannya.
+        // Bukan field lokal Article (tabel terpisah, ArticleFunderDAO),
+        // makanya polanya beda dari field lain di method ini.
+        /** @var ArticleFunderDAO $funderDao */
+        $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+        $funders = $funderDao->getByArticleId($article->getId())->toArray();
+        if (!empty($funders)) {
+            $fundersNode = XMLCustomWriter::createElement($doc, 'funders');
+            foreach ($funders as $funder) {
+                $funderNode = XMLCustomWriter::createElement($doc, 'funder');
+                XMLCustomWriter::createChildWithText($doc, $funderNode, 'funder_name', $funder->getFunderName(), false);
+                if ($funder->getAwardNumber()) {
+                    XMLCustomWriter::createChildWithText($doc, $funderNode, 'award_number', $funder->getAwardNumber(), false);
+                }
+                XMLCustomWriter::appendChild($fundersNode, $funderNode);
+            }
+            XMLCustomWriter::appendChild($root, $fundersNode);
+        }
+
+        // [WIZDAM] Deklarasi level artikel -- BARU, pola sama seperti
+        // sponsor di atas (localized, opsional).
+        /** --- Sponsors --- */
+        foreach ([
+            'competing_interest' => $article->getCompetingInterest(null),
+            'ethical_approval' => $article->getEthicalApproval(null),
+            'generative_ai_declaration' => $article->getGenerativeAiDeclaration(null),
+        ] as $elementName => $localizedValues) {
+            if (is_array($localizedValues)) {
+                foreach ($localizedValues as $locale => $value) {
+                    if (trim((string) $value) === '') continue;
+                    $node = XMLCustomWriter::createChildWithText($doc, $root, $elementName, $value, false);
+                    if ($node) XMLCustomWriter::setAttribute($node, 'locale', $locale);
+                }
+            }
+        }
 
         /* --- Authors --- */
 
@@ -315,7 +362,7 @@ class NativeExportDom {
             XMLCustomWriter::appendChild($root, $authorNode);
         }
 
-        /* --- */
+        /* --- Cover page --- */
         if (is_array($article->getShowCoverPage(null))) {
             foreach (array_keys($article->getShowCoverPage(null)) as $locale) {
                 if ($article->getShowCoverPage($locale)) {
@@ -349,9 +396,6 @@ class NativeExportDom {
 
         $node = XMLCustomWriter::createChildWithText($doc, $root, 'date_published', self::formatDate($article->getDatePublished()), false);
         if (!$node) {
-            // Bug #6480: Fixes for incorrect date_published handling required nulling-out
-            // of potentially erroneous data. In case the article's date_published is null,
-            // fall back on the issue date_published.
             XMLCustomWriter::createChildWithText($doc, $root, 'date_published', self::formatDate($issue->getDatePublished()), false);
         }
 
@@ -365,6 +409,7 @@ class NativeExportDom {
         XMLCustomWriter::appendChild($root, $permissionsNode);
         XMLCustomWriter::createChildWithText($doc, $permissionsNode, 'license_url', $article->getLicenseURL(), false);
         
+        /* --- Copyright --- */
         $copyrightHolders = $article->getCopyrightHolder(null);
         if (is_array($copyrightHolders)) {
             foreach ($copyrightHolders as $locale => $copyrightHolder) {
@@ -375,8 +420,6 @@ class NativeExportDom {
             }
         }
         XMLCustomWriter::createChildWithText($doc, $permissionsNode, 'copyright_year', (string) $article->getCopyrightYear(), false);
-
-        /* --- */
 
         /* --- Galleys --- */
         foreach ($article->getGalleys() as $galley) {
@@ -426,6 +469,15 @@ class NativeExportDom {
                 $competingInterestsNode = XMLCustomWriter::createChildWithText($doc, $root, 'competing_interests', $competingInterests, false);
                 if ($competingInterestsNode) XMLCustomWriter::setAttribute($competingInterestsNode, 'locale', $locale);
             }
+        }
+
+        $creditRoles = $author->getCreditRolesArray();
+        if (!empty($creditRoles)) {
+            $creditRolesNode = XMLCustomWriter::createElement($doc, 'credit_roles');
+            foreach ($creditRoles as $roleCode) {
+                XMLCustomWriter::createChildWithText($doc, $creditRolesNode, 'credit_role', $roleCode, false);
+            }
+            XMLCustomWriter::appendChild($root, $creditRolesNode);
         }
         if (is_array($author->getBiography(null))) {
             foreach ($author->getBiography(null) as $locale => $biography) {
