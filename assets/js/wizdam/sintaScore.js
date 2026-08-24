@@ -1,6 +1,10 @@
 /**
  * @file public/assets/js/wizdam/sintaScore.js
  * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
  * @brief Sinta Impact Factor
  * Versi dengan keamanan yang ditingkatkan dan efek skeleton loading
  * 
