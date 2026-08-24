@@ -39,15 +39,20 @@
 				<td class="label">{translate key="common.country"}</td>
 				<td class="value">{$author.countryLocalized|escape|default:"&mdash;"}</td>
 			</tr>
-			{if $currentJournal->getSetting('requireAuthorCompetingInterests')}
-				<tr valign="top">
-					<td class="label">
-						{url|assign:"competingInterestGuidelinesUrl" page="information" op="competingInterestGuidelines"}
-						{translate key="author.competingInterests" competingInterestGuidelinesUrl=$competingInterestGuidelinesUrl}
-					</td>
-					<td class="value">{$author.competingInterests.$formLocale|strip_unsafe_html|nl2br|default:"&mdash;"}</td>
-				</tr>
-			{/if}
+			{* [WIZDAM] CRediT -- MENGGANTIKAN competingInterests per-penulis
+			   yang lama (sudah dipindah jadi field level artikel, lihat
+			   bagian Deklarasi di bawah). Daftar peran dipisah koma,
+			   foreach datar satu tingkat -- tidak ada nested if. *}
+			<tr valign="top">
+				<td class="label">{translate key="author.credit.label"}</td>
+				<td class="value">
+					{if $author.creditRoles}
+						{foreach from=$author.creditRoles item=roleCode name=creditRolesList}{translate key="author.credit.role.`$roleCode`"}{if !$smarty.foreach.creditRolesList.last}, {/if}{/foreach}
+					{else}
+						&mdash;
+					{/if}
+				</td>
+			</tr>
 			<tr valign="top">
 				<td class="label">{translate key="user.biography"}</td>
 				<td class="value">{$author.biography.$formLocale|strip_unsafe_html|nl2br|default:"&mdash;"}</td>
@@ -187,6 +192,60 @@
 		<tr valign="top">
 			<td width="20%" class="label">{translate key="submission.agencies"}</td>
 			<td width="80%" class="value">{$sponsor[$formLocale]|escape|default:"&mdash;"}</td>
+		</tr>
+	</table>
+</div>
+
+<div class="separator"></div>
+
+{* [WIZDAM] Funders (pendanaan/hibah terstruktur) -- read-only, foreach
+   datar satu tingkat, satu funder per baris. *}
+<div id="funders" class="block">
+	<h3>{translate key="author.submit.funders"}</h3>
+
+	<table width="100%" class="data">
+		{foreach from=$funders item=funder name=fundersList}
+			<tr valign="top">
+				<td width="20%" class="label">{translate key="author.submit.funderName"}</td>
+				<td width="80%" class="value">{$funder.funderName|escape}{if $funder.awardNumber} ({$funder.awardNumber|escape}){/if}</td>
+			</tr>
+			{if !$smarty.foreach.fundersList.last}
+				<tr>
+					<td colspan="2" class="separator">&nbsp;</td>
+				</tr>
+			{/if}
+		{foreachelse}
+			<tr valign="top">
+				<td colspan="2" class="value">&mdash;</td>
+			</tr>
+		{/foreach}
+	</table>
+</div>
+
+<div class="separator"></div>
+
+{* [WIZDAM] Deklarasi level artikel -- read-only. *}
+<div id="declarations" class="block">
+	<h3>{translate key="author.submit.declarations"}</h3>
+
+	<table width="100%" class="data">
+		<tr valign="top">
+			<td width="20%" class="label">{translate key="author.submit.competingInterestLabel"}</td>
+			<td width="80%" class="value">{$competingInterest[$formLocale]|escape|nl2br|default:"&mdash;"}</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="separator">&nbsp;</td>
+		</tr>
+		<tr valign="top">
+			<td class="label">{translate key="author.submit.ethicalApprovalLabel"}</td>
+			<td class="value">{$ethicalApproval[$formLocale]|escape|nl2br|default:"&mdash;"}</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="separator">&nbsp;</td>
+		</tr>
+		<tr valign="top">
+			<td class="label">{translate key="author.submit.generativeAiDeclarationLabel"}</td>
+			<td class="value">{$generativeAiDeclaration[$formLocale]|escape|nl2br|default:"&mdash;"}</td>
 		</tr>
 	</table>
 </div>
