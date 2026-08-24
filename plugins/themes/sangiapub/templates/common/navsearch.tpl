@@ -27,12 +27,7 @@
     {$searchFormUrl|parse_url:$smarty.const.PHP_URL_QUERY|parse_str:$formUrlParameters}
 
     <form class="c-header__search-form" action="{$searchFormUrl|strtok:"?"|escape}" method="GET" role="search" autocomplete="off" data-track="submit" data-track-action="search" data-track-label="form" data-track-category="inline search" onsubmit="return validateSearch(event)">
-        
-        {* WIZDAM SECURITY: Token CSRF Wajib Ada *}
-        <input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
-        
-        <label class="c-header__heading" for="keywords">Search articles by subject, keyword or author</label>
-        
+        <label class="c-header__heading" for="keywords">Search articles by subject, keyword or author</label>        
         <div class="c-header__search-layout c-header__search-layout--max-width">
             {capture assign="queryFilter"}{call_hook name="Templates::Search::SearchResults::FilterInput" filterName="query" filterValue=$query}{/capture}
             {if empty($queryFilter)}
