@@ -52,7 +52,7 @@
         <noscript>
         {assign var="displayCoverIssue" value=$issue->getShowCoverPage($locale)}
         {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
-        {if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && is_array($displayCoverIssue)}
+        {if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale)}
         <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" /></a>
         {elseif $displayHomepageImage && is_array($displayHomepageImage)}
         <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" /></a>
@@ -63,7 +63,7 @@
         
         {assign var="displayCoverIssue" value=$issue->getShowCoverPage($locale)}
         {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
-        {if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale) && is_array($displayCoverIssue)}
+        {if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale)}
         <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" /></a>
         {elseif $displayHomepageImage && is_array($displayHomepageImage)}
         <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" /></a>
