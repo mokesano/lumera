@@ -1,3 +1,14 @@
+/**
+ * @file public/assets/js/wizdam/gabungan.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief Gabungan fungsi JS halaman
+ * @author Rochmady, Khayra and Rakha
+ * @version 0.0.1
+ */
 jQuery(document).ready(function($) {
     var $menuToggle = $(".mtoggle");
     var $menu = $(".menu");
