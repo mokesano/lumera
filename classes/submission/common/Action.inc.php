@@ -16,10 +16,7 @@ declare(strict_types=1);
  * @ingroup submission_common
  *
  * @brief Application-specific submission actions.
- *
- * [WIZDAM EDITION] Refactored for PHP 8.1+ Strict Compliance & HookRegistry::dispatch
  */
-
 
 /* These constants correspond to editing decision "decision codes". */
 define('SUBMISSION_EDITOR_DECISION_ACCEPT', 1);
@@ -163,6 +160,70 @@ class Action extends PKPAction {
                     }
                 }
                 $metadataForm->setData('authors', $authors);
+            } else if ($request->getUserVar('addFunder')) {
+                // [WIZDAM] Tambah baris funder -- pola sama persis
+                // addAuthor di atas.
+                $editData = true;
+                $funders = $metadataForm->getData('funders');
+                $funders[] = [];
+                $metadataForm->setData('funders', $funders);
+
+            } else if (($delFunder = $request->getUserVar('delFunder')) && count($delFunder) == 1) {
+                // [WIZDAM] Hapus baris funder.
+                $editData = true;
+                list($delFunderIndex) = array_keys($delFunder);
+                $delFunderIndex = (int) $delFunderIndex;
+                $funders = $metadataForm->getData('funders');
+                if (isset($funders[$delFunderIndex]['funderId']) && !empty($funders[$delFunderIndex]['funderId'])) {
+                    $deletedFunders = explode(':', (string) $metadataForm->getData('deletedFunders'));
+                    $deletedFunders[] = $funders[$delFunderIndex]['funderId'];
+                    $metadataForm->setData('deletedFunders', join(':', $deletedFunders));
+                }
+                array_splice($funders, $delFunderIndex, 1);
+                $metadataForm->setData('funders', $funders);
+
+            } else if ($request->getUserVar('moveFunder')) {
+                // [WIZDAM] Pindah urutan funder naik/turun.
+                $editData = true;
+                $moveFunderDir = $request->getUserVar('moveFunderDir');
+                $moveFunderDir = $moveFunderDir == 'u' ? 'u' : 'd';
+                $moveFunderIndex = (int) $request->getUserVar('moveFunderIndex');
+                $funders = $metadataForm->getData('funders');
+
+                if (!(($moveFunderDir == 'u' && $moveFunderIndex <= 0) || ($moveFunderDir == 'd' && $moveFunderIndex >= count($funders) - 1))) {
+                    $tmpFunder = $funders[$moveFunderIndex];
+                    if ($moveFunderDir == 'u') {
+                        $funders[$moveFunderIndex] = $funders[$moveFunderIndex - 1];
+                        $funders[$moveFunderIndex - 1] = $tmpFunder;
+                    } else {
+                        $funders[$moveFunderIndex] = $funders[$moveFunderIndex + 1];
+                        $funders[$moveFunderIndex + 1] = $tmpFunder;
+                    }
+                }
+                $metadataForm->setData('funders', $funders);
+
+            } else if ($request->getUserVar('migrateSponsorToFunder')) {
+                // [WIZDAM] KONSOLIDASI DATA LAMA -> BARU -- tombol yang
+                // memindahkan teks sponsor (field lama, bebas format)
+                // jadi SATU baris funder_name baru di grid Funders, TANPA
+                // menghapus sponsor aslinya (editor masih bisa lihat
+                // keduanya, sponsor TETAP ada sampai editor sendiri yang
+                // menghapusnya/mengosongkannya secara sadar). Ini aksi
+                // PER ARTIKEL, dipicu manual oleh editor/penulis yang
+                // sedang membuka artikel itu -- BUKAN migrasi massal
+                // otomatis (teks sponsor tidak terstruktur/bisa berisi
+                // banyak funder sekaligus, jadi HARUS direview manusia
+                // sebelum benar-benar disimpan -- baris funder yang
+                // ditambahkan di sini BELUM tersimpan ke database sampai
+                // editor menekan "Save" pada form, memberi kesempatan
+                // mengedit/memecah teksnya dulu).
+                $editData = true;
+                $sponsorText = trim((string) ($metadataForm->getData('sponsor')[$metadataForm->getFormLocale()] ?? ''));
+                if ($sponsorText !== '') {
+                    $funders = $metadataForm->getData('funders');
+                    $funders[] = ['funderId' => 0, 'funderName' => $sponsorText, 'awardNumber' => ''];
+                    $metadataForm->setData('funders', $funders);
+                }
             }
 
             if (isset($editData)) {
@@ -263,7 +324,7 @@ class Action extends PKPAction {
             }
         }
 
-        $templateMgr->assign('pageTitle', $title);
+        $templateMgr->assign('pageTitle', $title); // Possible undefined variable '$title'.
         $templateMgr->assign('instructions', $instructions);
         $templateMgr->display('submission/instructions.tpl');
 
@@ -326,13 +387,14 @@ class Action extends PKPAction {
     /**
      * Delete comment.
      * @param int $commentId
-     * @param object|null $user The user who owns the comment, or null to default to Request::getUser
+     * @param object|null $user
      */
     public static function deleteComment($commentId, $user = null) {
         if ($user == null) {
             $user = Application::get()->getRequest()->getUser();
         }
 
+        /** @var ArticleCommentDAO $articleCommentDao */
         $articleCommentDao = DAORegistry::getDAO('ArticleCommentDAO');
         $comment = $articleCommentDao->getArticleCommentById($commentId);
 
@@ -342,5 +404,6 @@ class Action extends PKPAction {
             }
         }
     }
+
 }
 ?>

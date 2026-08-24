@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 
 import('lib.pkp.classes.form.Form');
+import('classes.article.Author');
 
 define('COVER_PAGE_IMAGE_NAME', 'coverPage');
 
@@ -41,7 +42,9 @@ class MetadataForm extends Form {
      * @param object $journal Journal
      */
     public function __construct($article, $journal) {
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
+        /** @var SignoffDAO $signoffDao */
         $signoffDao = DAORegistry::getDAO('SignoffDAO');
 
         // [LUMERA] Request Singleton
@@ -133,7 +136,9 @@ class MetadataForm extends Form {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param object $article Article
+     * @param object $journal Journal
      */
     public function MetadataForm($article, $journal) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
@@ -197,8 +202,31 @@ class MetadataForm extends Form {
                 'language' => $article->getLanguage(),
                 'sponsor' => $article->getSponsor(null) ?? [],
                 'citations' => $article->getCitations(),
-                'hideAuthor' => $article->getHideAuthor()
+                'hideAuthor' => $article->getHideAuthor(),
+                // [WIZDAM] Funders (pendanaan/hibah terstruktur) -- pola
+                // sama persis AuthorSubmitStep2Form, supaya editor bisa
+                // mengelola Funders dari halaman metadata editorial
+                // (review/copyediting), TIDAK cuma dari wizard submit
+                // yang hanya berlaku sekali di awal.
+                'funders' => [],
+                // [WIZDAM] Deklarasi level artikel (SATU pernyataan
+                // mencakup seluruh penulis, sama seperti Step 3 wizard
+                // submit baru) -- lihat Article::getCompetingInterest()
+                // dkk.
+                'competingInterest' => $article->getCompetingInterest(null) ?? [],
+                'ethicalApproval' => $article->getEthicalApproval(null) ?? [],
+                'generativeAiDeclaration' => $article->getGenerativeAiDeclaration(null) ?? [],
             ];
+
+            /** @var ArticleFunderDAO $funderDao */
+            $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+            foreach ($funderDao->getByArticleId($article->getId())->toArray() as $funder) {
+                $this->_data['funders'][] = [
+                    'funderId' => $funder->getId(),
+                    'funderName' => $funder->getFunderName(),
+                    'awardNumber' => $funder->getAwardNumber(),
+                ];
+            }
             // consider the additional field names from the public identifer plugins
             import('classes.plugins.PubIdPluginHelper');
             $pubIdPluginHelper = new PubIdPluginHelper();
@@ -219,7 +247,12 @@ class MetadataForm extends Form {
                         'email' => $authors[$i]->getEmail(),
                         'orcid' => $authors[$i]->getData('orcid'),
                         'url' => $authors[$i]->getUrl(),
-                        'competingInterests' => $authors[$i]->getCompetingInterests(null) ?? [],
+                        // [WIZDAM] competingInterests per-penulis DIHAPUS
+                        // dari sini -- digantikan competingInterest LEVEL
+                        // ARTIKEL di atas (konsisten dengan wizard submit
+                        // baru). Digantikan creditRoles (CRediT, BEDA
+                        // kasus -- memang per-penulis, terstruktur).
+                        'creditRoles' => $authors[$i]->getCreditRolesArray(),
                         'biography' => $authors[$i]->getBiography(null) ?? []
                     ]
                 );
@@ -244,7 +277,7 @@ class MetadataForm extends Form {
         return array_merge(parent::getLocaleFieldNames(), [
             'title', 'abstract', 'coverPageAltText', 'showCoverPage', 'hideCoverPageToc', 'hideCoverPageAbstract', 'originalFileName', 'fileName', 'width', 'height',
             'discipline', 'subjectClass', 'subject', 'coverageGeo', 'coverageChron', 'coverageSample', 'type', 'sponsor', 'citations',
-            'copyrightHolder'
+            'copyrightHolder', 'competingInterest', 'ethicalApproval', 'generativeAiDeclaration'
         ]);
     }
 
@@ -256,8 +289,11 @@ class MetadataForm extends Form {
         $request = $request ?? Application::get()->getRequest();
         $journal = $request->getJournal();
         
+        /** @var JournalSettingsDAO $settingsDao */
         $settingsDao = DAORegistry::getDAO('JournalSettingsDAO');
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
 
         AppLocale::requireComponents(LOCALE_COMPONENT_APP_EDITOR); // editor.cover.xxx locale keys; FIXME?
@@ -268,6 +304,7 @@ class MetadataForm extends Form {
         $templateMgr->assign('rolePath', $request->getRequestedPage());
         $templateMgr->assign('canViewAuthors', $this->canViewAuthors);
 
+        /** @var CountryDAO $countryDao */
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $templateMgr->assign('countries', $countryDao->getCountries());
 
@@ -324,17 +361,43 @@ class MetadataForm extends Form {
                 'language',
                 'sponsor',
                 'citations',
-                'hideAuthor'
+                'hideAuthor',
+                // [WIZDAM] Funders + Deklarasi
+                'funders',
+                'deletedFunders',
+                'competingInterest',
+                'ethicalApproval',
+                'generativeAiDeclaration'
             ]
         );
         if ($this->isEditor) {
             $this->readUserVars(['copyrightHolder', 'copyrightYear', 'licenseURL']);
         }
+
+        // [WIZDAM] Normalisasi creditRoles per-penulis -- checkbox HTML
+        // yang TIDAK dicentang tidak ikut terkirim sama sekali dalam
+        // POST, jadi kalau key-nya hilang, berarti tidak ada peran
+        // dipilih (array kosong), BUKAN error. Pola sama persis
+        // AuthorSubmitStep2Form::readInputData().
+        if (is_array($this->_data['authors'])) {
+            foreach ($this->_data['authors'] as $i => $author) {
+                if (!isset($this->_data['authors'][$i]['creditRoles']) || !is_array($this->_data['authors'][$i]['creditRoles'])) {
+                    $this->_data['authors'][$i]['creditRoles'] = [];
+                }
+            }
+        }
+
+        // [WIZDAM] Normalisasi funders.
+        if (!is_array($this->_data['funders'])) {
+            $this->_data['funders'] = [];
+        }
+
         // consider the additional field names from the public identifer plugins
         import('classes.plugins.PubIdPluginHelper');
         $pubIdPluginHelper = new PubIdPluginHelper();
         $pubIdPluginHelper->readInputData($this);
 
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
         $section = $sectionDao->getSection($this->article->getSectionId());
         if (!$section->getAbstractsNotRequired()) {
@@ -380,9 +443,13 @@ class MetadataForm extends Form {
         // [WIZDAM] Strict Dependency Injection
         $request = $request ?? Application::get()->getRequest();
         
+        /** @var ArticleDAO $articleDao */
         $articleDao = DAORegistry::getDAO('ArticleDAO');
+        /** @var AuthorDAO $authorDao */
         $authorDao = DAORegistry::getDAO('AuthorDAO');
+        /** @var SectionDAO $sectionDao */
         $sectionDao = DAORegistry::getDAO('SectionDAO');
+        /** @var CitationDAO $citationDao */
         $citationDao = DAORegistry::getDAO('CitationDAO');
         $article = $this->article;
 
@@ -456,6 +523,14 @@ class MetadataForm extends Form {
         $article->setType($this->getData('type'), null); // Localized
         $article->setLanguage($this->getData('language')); // Localized
         $article->setSponsor($this->getData('sponsor'), null); // Localized
+        // [WIZDAM] Deklarasi level artikel -- pola sama persis
+        // AuthorSubmitStep3Form (wizard submit baru), sekarang JUGA bisa
+        // diedit editor/penulis lewat halaman metadata editorial ini
+        // (review/copyediting), tidak lagi terkunci hanya di wizard
+        // submit awal.
+        $article->setCompetingInterest($this->getData('competingInterest'), null);
+        $article->setEthicalApproval($this->getData('ethicalApproval'), null);
+        $article->setGenerativeAiDeclaration($this->getData('generativeAiDeclaration'), null);
         $article->setCitations($this->getData('citations'));
         if ($this->isEditor) {
             $article->setHideAuthor($this->getData('hideAuthor') ? $this->getData('hideAuthor') : 0);
@@ -470,6 +545,10 @@ class MetadataForm extends Form {
         for ($i=0, $count=count($authors); $i < $count; $i++) {
             if ($authors[$i]['authorId'] > 0) {
                 // Update an existing author
+                // [WIZDAM BUGFIX] Lihat penjelasan lengkap di import()
+                // paling atas file ini soal kenapa anotasi ini
+                // diperlukan.
+                /** @var Author $author */
                 $author = $authorDao->getAuthor($authors[$i]['authorId'], $article->getId());
                 $isExistingAuthor = true;
 
@@ -489,8 +568,11 @@ class MetadataForm extends Form {
                 $author->setEmail($authors[$i]['email']);
                 $author->setData('orcid', $authors[$i]['orcid']);
                 $author->setUrl($authors[$i]['url']);
-                if (array_key_exists('competingInterests', $authors[$i])) {
-                    $author->setCompetingInterests($authors[$i]['competingInterests'], null); // Localized
+                if (array_key_exists('creditRoles', $authors[$i])) {
+                    // [WIZDAM] Menggantikan setCompetingInterests() per-
+                    // penulis yang lama -- lihat penjelasan lengkap di
+                    // initData().
+                    $author->setCreditRolesArray($authors[$i]['creditRoles']);
                 }
                 $author->setBiography($authors[$i]['biography'], null); // Localized
                 $author->setPrimaryContact($this->getData('primaryContact') == $i ? 1 : 0);
@@ -511,6 +593,52 @@ class MetadataForm extends Form {
         $deletedAuthors = preg_split('/:/', $this->getData('deletedAuthors'), -1, PREG_SPLIT_NO_EMPTY);
         for ($i=0, $count=count($deletedAuthors); $i < $count; $i++) {
             $authorDao->deleteAuthorById($deletedAuthors[$i], $article->getId());
+        }
+
+        // [WIZDAM] Simpan funders (pendanaan/hibah) -- pola sama persis
+        // AuthorSubmitStep2Form, sekarang JUGA bisa dikelola dari
+        // halaman metadata editorial.
+        /** @var ArticleFunderDAO $funderDao */
+        $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+        $funders = $this->getData('funders');
+        if (is_array($funders)) {
+            for ($i = 0, $count = count($funders); $i < $count; $i++) {
+                $funderName = trim((string) ($funders[$i]['funderName'] ?? ''));
+                if ($funderName === '') {
+                    continue;
+                }
+
+                $funderId = (int) ($funders[$i]['funderId'] ?? 0);
+                if ($funderId > 0) {
+                    $funder = $funderDao->getById($funderId, $article->getId());
+                    $isExistingFunder = ($funder !== null);
+                } else {
+                    $funder = null;
+                    $isExistingFunder = false;
+                }
+                if ($funder === null) {
+                    $funder = $funderDao->newDataObject();
+                    $isExistingFunder = false;
+                }
+
+                $funder->setArticleId($article->getId());
+                $funder->setFunderName($funderName);
+                $funder->setAwardNumber(trim((string) ($funders[$i]['awardNumber'] ?? '')) ?: null);
+                $funder->setSequence($i + 1);
+
+                if ($isExistingFunder) {
+                    $funderDao->updateArticleFunder($funder);
+                } else {
+                    $funderDao->insertArticleFunder($funder);
+                }
+                unset($funder);
+            }
+        }
+
+        // Remove deleted funders
+        $deletedFunders = preg_split('/:/', (string) $this->getData('deletedFunders'), -1, PREG_SPLIT_NO_EMPTY);
+        for ($i = 0, $count = count($deletedFunders); $i < $count; $i++) {
+            $funderDao->deleteById((int) $deletedFunders[$i], $article->getId());
         }
 
         if ($this->isEditor) {
@@ -546,5 +674,6 @@ class MetadataForm extends Form {
     public function getCanEdit() {
         return $this->canEdit;
     }
+
 }
 ?>
