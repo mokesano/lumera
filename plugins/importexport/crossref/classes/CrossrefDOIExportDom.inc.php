@@ -8,7 +8,7 @@ declare(strict_types=1);
  * Copyright (c) 2003-2019 John Willinsky
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
- * @class DOIExportDom
+ * @class CrossrefDOIExportDom
  * @ingroup plugins_importexport_crossref_classes
  *
  * @brief Onix for DOI (O4DOI) XML export format implementation.
@@ -16,20 +16,20 @@ declare(strict_types=1);
 
 import('lib.pkp.classes.xml.XMLCustomWriter');
 
-define('DOI_EXPORT_FILETYPE_PDF', 'PDF');
-define('DOI_EXPORT_FILETYPE_HTML', 'HTML');
-define('DOI_EXPORT_FILETYPE_XML', 'XML');
-define('DOI_EXPORT_FILETYPE_PS', 'PostScript');
-define('DOI_EXPORT_XMLNS_XSI' , 'http://www.w3.org/2001/XMLSchema-instance');
-define('DOI_EXPORT_XMLNS_JATS', 'http://www.ncbi.nlm.nih.gov/JATS1');
-define('DOI_EXPORT_XMLNS_AI', 'http://www.crossref.org/AccessIndicators.xsd');
+define('CROSSREF_DOI_EXPORT_FILETYPE_PDF', 'PDF');
+define('CROSSREF_DOI_EXPORT_FILETYPE_HTML', 'HTML');
+define('CROSSREF_DOI_EXPORT_FILETYPE_XML', 'XML');
+define('CROSSREF_DOI_EXPORT_FILETYPE_PS', 'PostScript');
+define('CROSSREF_DOI_EXPORT_XMLNS_XSI' , 'http://www.w3.org/2001/XMLSchema-instance');
+define('CROSSREF_DOI_EXPORT_XMLNS_JATS', 'http://www.ncbi.nlm.nih.gov/JATS1');
+define('CROSSREF_DOI_EXPORT_XMLNS_AI', 'http://www.crossref.org/AccessIndicators.xsd');
 // [WIZDAM] Namespace FundRef -- dikonfirmasi lewat dokumentasi resmi
 // Crossref (funding-data-overview, funding-data-deposits): fr:program
 // SELALU dideklarasikan dengan xmlns:fr="http://www.crossref.org/fundref.xsd"
 // di root doi_batch, sama seperti ai:/jats: di atas.
-define('DOI_EXPORT_XMLNS_FR', 'http://www.crossref.org/fundref.xsd');
+define('CROSSREF_DOI_EXPORT_XMLNS_FR', 'http://www.crossref.org/fundref.xsd');
 
-class DOIExportDom {
+class CrossrefDOIExportDom {
 
     //
     // Public properties
@@ -149,7 +149,7 @@ class DOIExportDom {
      * @param Journal $journal
      * @param PubObjectCache $objectCache
      */
-    public function DOIExportDom($request, $plugin, $journal, $objectCache) {
+    public function CrossrefDOIExportDom($request, $plugin, $journal, $objectCache) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
                 "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
@@ -218,13 +218,13 @@ class DOIExportDom {
         $rootElement = XMLCustomWriter::createElement($this->getDoc(), $this->getRootElementName());
 
         XMLCustomWriter::setAttribute($rootElement, 'xmlns', $this->getNamespace());
-        XMLCustomWriter::setAttribute($rootElement, 'xmlns:xsi', DOI_EXPORT_XMLNS_XSI);
+        XMLCustomWriter::setAttribute($rootElement, 'xmlns:xsi', CROSSREF_DOI_EXPORT_XMLNS_XSI);
         if ($this->getXmlSchemaVersion() !== '') {
             XMLCustomWriter::setAttribute($rootElement, 'version', $this->getXmlSchemaVersion());
         }
-        XMLCustomWriter::setAttribute($rootElement, 'xmlns:jats', DOI_EXPORT_XMLNS_JATS);
-        XMLCustomWriter::setAttribute($rootElement, 'xmlns:ai', DOI_EXPORT_XMLNS_AI);
-        XMLCustomWriter::setAttribute($rootElement, 'xmlns:fr', DOI_EXPORT_XMLNS_FR);
+        XMLCustomWriter::setAttribute($rootElement, 'xmlns:jats', CROSSREF_DOI_EXPORT_XMLNS_JATS);
+        XMLCustomWriter::setAttribute($rootElement, 'xmlns:ai', CROSSREF_DOI_EXPORT_XMLNS_AI);
+        XMLCustomWriter::setAttribute($rootElement, 'xmlns:fr', CROSSREF_DOI_EXPORT_XMLNS_FR);
         XMLCustomWriter::setAttribute($rootElement, 'xsi:schemaLocation', $this->getXmlSchemaLocation());
 
         return $rootElement;
@@ -565,25 +565,25 @@ class DOIExportDom {
      */
     public function getFileType($articleFile): ?string {
         if ($articleFile instanceof ArticleXMLGalley) {
-            return DOI_EXPORT_FILETYPE_XML;
+            return CROSSREF_DOI_EXPORT_FILETYPE_XML;
         }
         if ($articleFile instanceof ArticleHTMLGalley) {
-            return DOI_EXPORT_FILETYPE_HTML;
+            return CROSSREF_DOI_EXPORT_FILETYPE_HTML;
         }
         
         $fileType = $articleFile->getFileType();
         if (!empty($fileType)) {
             if (str_contains($fileType, 'html')) {
-                return DOI_EXPORT_FILETYPE_HTML;
+                return CROSSREF_DOI_EXPORT_FILETYPE_HTML;
             }
             if (str_contains($fileType, 'pdf')) {
-                return DOI_EXPORT_FILETYPE_PDF;
+                return CROSSREF_DOI_EXPORT_FILETYPE_PDF;
             }
             if (str_contains($fileType, 'postscript')) {
-                return DOI_EXPORT_FILETYPE_PS;
+                return CROSSREF_DOI_EXPORT_FILETYPE_PS;
             }
             if (str_contains($fileType, 'xml')) {
-                return DOI_EXPORT_FILETYPE_XML;
+                return CROSSREF_DOI_EXPORT_FILETYPE_XML;
             }
         }
         

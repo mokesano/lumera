@@ -14,9 +14,7 @@ declare(strict_types=1);
  * @brief CrossRef XML export format implementation.
  */
 
-if (!class_exists('DOIExportDom')) {
-    import('plugins.importexport.crossref.classes.DOIExportDom');
-}
+import('plugins.importexport.crossref.classes.CrossrefDOIExportDom');
 
 // XML attributes
 define('CROSSREF_XMLNS_XSI' , 'http://www.w3.org/2001/XMLSchema-instance');
@@ -25,7 +23,7 @@ define('CROSSREF_VERSION' , '4.3.6');
 define('CROSSREF_XSI_SCHEMAVERSION' , '4.3.6');
 define('CROSSREF_XSI_SCHEMALOCATION' , 'http://www.crossref.org/schema/4.3.6 https://www.crossref.org/schemas/crossref4.3.6.xsd');
 
-class CrossRefExportDom extends DOIExportDom {
+class CrossRefExportDom extends CrossrefDOIExportDom {
 
     /**
      * Constructor
@@ -63,7 +61,7 @@ class CrossRefExportDom extends DOIExportDom {
      * Generate the CrossRef XML document.
      * @param array $objects Array of objects to export
      * @return object XMLDocument
-     * @see DOIExportDom::generate()
+     * @see CrossrefDOIExportDom::generate()
      */
     public function generate($objects) {
         $journal = $this->getJournal();
@@ -109,7 +107,7 @@ class CrossRefExportDom extends DOIExportDom {
     //
     /**
      * Get the name of the root element.
-     * @see DOIExportDom::getRootElementName()
+     * @see CrossrefDOIExportDom::getRootElementName()
      * @return string
      */
     public function getRootElementName(): string {
@@ -118,7 +116,7 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Get the XML namespace.
-     * @see DOIExportDom::getNamespace()
+     * @see CrossrefDOIExportDom::getNamespace()
      * @return string
      */
     public function getNamespace(): string {
@@ -127,7 +125,7 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Get the XML schema version.
-     * @see DOIExportDom::getXmlSchemaVersion()
+     * @see CrossrefDOIExportDom::getXmlSchemaVersion()
      * @return string
      */
     public function getXmlSchemaVersion(): string {
@@ -136,7 +134,7 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Get the XML schema location.
-     * @see DOIExportDom::getXmlSchemaLocation()
+     * @see CrossrefDOIExportDom::getXmlSchemaLocation()
      * @return string
      */
     public function getXmlSchemaLocation(): string {
@@ -147,7 +145,7 @@ class CrossRefExportDom extends DOIExportDom {
      * Retrieve the publication objects required for export.
      * @param Issue|PublishedArticle|ArticleGalley $object
      * @return array
-     * @see DOIExportDom::retrievePublicationObjects()
+     * @see CrossrefDOIExportDom::retrievePublicationObjects()
      */
     public function retrievePublicationObjects($object): array {
         // Retrieve basic Lumera objects.
@@ -166,7 +164,7 @@ class CrossRefExportDom extends DOIExportDom {
     //
     /**
      * Generate the <head> tag that accompanies each submission
-     * @see DOIExportDom::generateHeadDom()
+     * @see CrossrefDOIExportDom::generateHeadDom()
      * @param object $doc
      * @param Journal $journal
      * @return object
@@ -214,7 +212,7 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Generate depositor node
-     * @see DOIExportDom::generateDepositorDom()
+     * @see CrossrefDOIExportDom::generateDepositorDom()
      * @param object $doc
      * @param string $name
      * @param string $email
@@ -230,7 +228,7 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Generate and append the XML per article
-     * @see DOIExportDom::appendArticleXML()
+     * @see CrossrefDOIExportDom::appendArticleXML()
      * @param object $doc
      * @param Journal $journal
      * @param Issue $issue
@@ -260,7 +258,7 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Generate metadata for journal - accompanies every article
-     * @see DOIExportDom::generateJournalMetadataDom()
+     * @see CrossrefDOIExportDom::generateJournalMetadataDom()
      * @param object $doc
      * @param Journal $journal
      * @return object
@@ -303,7 +301,7 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Generate journal issue tag to accompany every article
-     * @see DOIExportDom::generateJournalIssueDom()
+     * @see CrossrefDOIExportDom::generateJournalIssueDom()
      * @param object $doc
      * @param Journal $journal
      * @param Issue $issue
@@ -344,7 +342,7 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Generate the journal_article node (the heart of the file).
-     * @see DOIExportDom::generateJournalArticleDom()
+     * @see CrossrefDOIExportDom::generateJournalArticleDom()
      * @param object $doc
      * @param Journal $journal
      * @param Issue $issue
@@ -526,7 +524,16 @@ class CrossRefExportDom extends DOIExportDom {
         $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
         $funders = $funderDao->getByArticleId((int) $article->getId())->toArray();
 
-        if (empty($funders)) {
+        // [WIZDAM] sponsor (field lama, bebas format) -- diikutsertakan
+        // BERDAMPINGAN dengan funders terstruktur, TIDAK saling
+        // meniadakan. Dimasukkan sebagai SATU fundgroup TAMBAHAN
+        // (funder_name = teks sponsor apa adanya, tanpa award_number)
+        // -- bukan menggantikan funders yang sudah ada, murni entri
+        // ekstra supaya artikel yang belum sempat "dipindahkan" lewat
+        // tombol migrateSponsorToFunder tetap ikut ter-deposit.
+        $sponsorText = trim((string) $article->getLocalizedSponsor());
+
+        if (empty($funders) && $sponsorText === '') {
             return null;
         }
 
@@ -575,6 +582,22 @@ class CrossRefExportDom extends DOIExportDom {
             }
 
             XMLCustomWriter::appendChild($fundRefNode, $fundgroupNode);
+        }
+
+        // [WIZDAM] sponsor sebagai fundgroup TAMBAHAN -- lihat penjelasan
+        // di atas. Ditempatkan SETELAH funders terstruktur (urutan tidak
+        // signifikan secara skema, funders terstruktur diutamakan tampil
+        // lebih dulu karena datanya lebih lengkap/terpercaya).
+        if ($sponsorText !== '') {
+            $sponsorFundgroupNode = XMLCustomWriter::createElement($doc, 'fr:assertion');
+            XMLCustomWriter::setAttribute($sponsorFundgroupNode, 'name', 'fundgroup');
+
+            $sponsorFunderNameNode = XMLCustomWriter::createElement($doc, 'fr:assertion');
+            XMLCustomWriter::setAttribute($sponsorFunderNameNode, 'name', 'funder_name');
+            XMLCustomWriter::appendChild($sponsorFunderNameNode, XMLCustomWriter::createTextNode($doc, PKPString::html2utf($sponsorText)));
+            XMLCustomWriter::appendChild($sponsorFundgroupNode, $sponsorFunderNameNode);
+
+            XMLCustomWriter::appendChild($fundRefNode, $sponsorFundgroupNode);
         }
 
         return $fundRefNode;
@@ -838,7 +861,7 @@ class CrossRefExportDom extends DOIExportDom {
 
     /**
      * Generate the component_list node (supplementary files).
-     * @see DOIExportDom::generateComponentListDom()
+     * @see CrossrefDOIExportDom::generateComponentListDom()
      * @param object $doc
      * @param Journal $journal
      * @param PublishedArticle $article
