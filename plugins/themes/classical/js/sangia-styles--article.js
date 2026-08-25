@@ -5,10 +5,11 @@
  * Copyright (c) 2017-2026 Rochmady
  * Distributed under the GNU GPL v3.
  * 
- * @brief Fungsi untuk mengelola tampilan elemen <p> di dalam bagian dengan kelas .bibliography-sec.
+ * @brief Fungsi untuk mengelola tampilan elemen <p> kelas .bibliography-sec.
  * Jika jumlah elemen <p> melebihi 17, elemen-elemen tersebut akan dihapus,
- * menampilkan pemberitahuan, dan menggunakan tombol view-more yang sudah ada untuk mengatur visibilitas elemen.
- * Juga mengupdate jumlah total elemen <p> di dalam elemen .section-title pada span dengan class "count".
+ * menampilkan pemberitahuan, dan menggunakan tombol view-more yang sudah ada
+ * untuk mengatur visibilitas elemen. Juga mengupdate jumlah total elemen <p> 
+ * di dalam elemen .section-title pada span dengan class "count".
  * 
  * @author Rochmady and Khayra
  * @version 0.0.1 Basic
