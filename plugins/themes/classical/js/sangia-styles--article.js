@@ -1,8 +1,17 @@
 /**
- * Fungsi untuk mengelola tampilan elemen <p> di dalam bagian dengan kelas .bibliography-sec.
+ * @file public/assets/classical/js/sangia-styles--article.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief Fungsi untuk mengelola tampilan elemen <p> di dalam bagian dengan kelas .bibliography-sec.
  * Jika jumlah elemen <p> melebihi 17, elemen-elemen tersebut akan dihapus,
  * menampilkan pemberitahuan, dan menggunakan tombol view-more yang sudah ada untuk mengatur visibilitas elemen.
  * Juga mengupdate jumlah total elemen <p> di dalam elemen .section-title pada span dengan class "count".
+ * 
+ * @author Rochmady and Khayra
+ * @version 0.0.1 Basic
  */
 document.addEventListener('DOMContentLoaded', function () {
     const bibliographySections = document.querySelectorAll('.ref-bibliography');
@@ -257,6 +266,5 @@ $(document).ready(function() {
 });
 
 /**
- * Dibuat oleh: ChatGPT, sebuah model AI dari OpenAI
- * Dibantu oleh: Anda, pengguna yang luar biasa
+ * Credit by Wizdam Lumera
  */
