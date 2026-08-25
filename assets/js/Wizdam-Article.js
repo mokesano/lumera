@@ -736,7 +736,8 @@ if (typeof module !== 'undefined') {
 /**
  * Smart Link References (View PDF, DOI, dan GS)
  * 1. Fungsi untuk mengelola tampilan elemen <p> pada kelas .bibliography-sec.
- * 2. Jika jumlah elemen <p> melebihi 17, elemen-elemen tersebut akan dihapus, menampilkan pemberitahuan menggunakan tombol view-more yang sudah ada untuk mengatur visibilitas elemen.
+ * 2. Jika jumlah elemen <p> melebihi 17, elemen-elemen dihapus, menampilkan 
+ *    pemberitahuan via tombol view-more yang ada untuk visibilitas elemen.
  * 3. Mengupdate total elemen <p> dielemen .section-title dispan class "count".
  * @author Rochmady and Wizdam Team
  * @version 0.0.7
@@ -997,7 +998,4 @@ $(document).ready(function() {
     });
 });
 
-/**
- * Copyright
- * Dibuat oleh: @author Rochmady and Khayra and Rakha
- */
+/** Copyright: @author Rochmady and Khayra and Rakha */
