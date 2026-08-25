@@ -1,8 +1,14 @@
 /**
- * UserScopus.js - Menampilkan data publikasi dari UserScopus_v32.php
+ * @file public/assets/js/wizdam/editor_scopus.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief UserScopus.js - Menampilkan data publikasi dari UserScopus_v32.php
  * 
  * @author Rochmady and Wizdam Team
- * @version 2.0 - Fixed Open Access status article
+ * @version 2.0.0 - Fixed Open Access status article
  * @date 2025-06-27
  */
 (function() {
