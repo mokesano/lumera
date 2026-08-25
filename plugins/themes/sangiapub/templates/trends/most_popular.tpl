@@ -42,13 +42,6 @@
                                                     <img src="{$article.cover_image.file_url}" alt="{$article.title|escape}" itemprop="image">
                                                 </picture>
                                             </div>
-                                            {else}
-                                            <div class="c-card__image">
-                                                <picture>
-                                                    <source type="image/webp" srcset="//assets.sangia.org/static/images/not-available.webp 450w, //assets.sangia.org/static/images/not-available.webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px">
-                                                    <img src="//assets.sangia.org/static/images/not-available.webp" alt="{$article.title|escape}" itemprop="image">
-                                                </picture>
-                                            </div>
                                             {/if}
                                             <div class="c-card__body u-display-flex u-flex-direction-column">
                                                 <h3 class="c-card__title" itemprop="name headline">

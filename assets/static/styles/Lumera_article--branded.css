@@ -7454,12 +7454,8 @@ table .border-bottom {
   text-indent:0;
   font-family:"Elsevier Sans",NexusSans,"Bliss Regular","Open Sans",Calibri,"Helvetica Neue",Arial,sans-serif;
 }
-.ReferenceLinks .view-pdf {
-  margin-left: 8px
-}
 .ReferenceLinks .link svg.pdf-icon {
   width:20px;
-  height:19px;
 }
 .ReferenceLinks .link svg.arrow-external-link {
   height:clamp(10px, 0.5em, 0.5em);
@@ -31878,8 +31874,9 @@ button .anchor svg.icon:first-child {
 }
 .anchor svg.icon {
   position: inherit;
-  vertical-align:middle;
-  fill:currentColor
+  vertical-align:center;
+  fill:currentColor;
+  margin-right:8px;
 }
 .PdfDownloadButton .pdf-icon {
   height:30px;
