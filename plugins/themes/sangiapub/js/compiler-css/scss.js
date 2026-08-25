@@ -1,3 +1,14 @@
+/**
+ * @file public/assets/sangiapub/js/compiler-css/scss.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief Compiler CSS ke SCSS
+ * @author Rochmady and Khayra
+ * @version 0.0.1 Basic
+ */
 document.addEventListener('DOMContentLoaded', () => {
   const scriptTag = document.getElementById('scss-settings');
   let scssUrls = [];
