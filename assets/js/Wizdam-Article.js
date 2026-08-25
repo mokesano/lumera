@@ -841,8 +841,7 @@ $(document).ready(function() {
             let titleEnd = content.indexOf('. ', titleStart);
             if (titleEnd === -1) titleEnd = content.length;
             const rawTitle = content.substring(titleStart, titleEnd).trim();
-            const sanitizedTitle = DOMPurify.sanitize(rawTitle);
-            return $('<div>').html(sanitizedTitle).text().trim();
+            return $('<div>').html(rawTitle).text().trim();
         }
         return '';
     };
