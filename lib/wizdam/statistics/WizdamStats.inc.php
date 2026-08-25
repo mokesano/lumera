@@ -25,6 +25,21 @@ class WizdamStats {
     const SITE_CACHE_PATH = 'cache/t_wizdam/stats/site_stats.php';
 
     /**
+     * [FIX] AKAR MASALAH ditemukan lewat data live: validasi cache
+     * SEBELUMNYA hanya membandingkan HASH DATA (jumlah artikel/views di
+     * database) -- BUKAN kode yang menghasilkannya. Selama data di database
+     * tidak berubah, cache lama (dihitung oleh kode versi SEBELUM semua
+     * perbaikan turn ini -- field 'acceptanceRate', pengelompokan tahun
+     * yang salah, dst) TERUS dipakai selamanya, walau kode PHP-nya sudah
+     * di-deploy berkali-kali. Setiap kali logic perhitungan di class ini
+     * (atau WizdamStatsDAO) berubah secara struktural, konstanta ini WAJIB
+     * dinaikkan -- itu otomatis membuat SEMUA cache lama (untuk SEMUA
+     * jurnal) dianggap tidak valid pada request berikutnya, tanpa perlu
+     * hapus file cache manual.
+     */
+    const CACHE_SCHEMA_VERSION = '2';
+
+    /**
      * Get Statistics
      * @param mixed $journalId
      */
@@ -234,6 +249,14 @@ class WizdamStats {
     /**
      * Membaca data statistik jurnal dari file cache PHP (Smart Cache).
      *
+     * [FIX] Validasi sekarang membandingkan "versi:hash" gabungan
+     * (CACHE_SCHEMA_VERSION + hash data), bukan cuma hash data. Cache lama
+     * yang ditulis sebelum konstanta ini ada (formatnya cuma hash polos,
+     * tanpa prefix versi) otomatis TIDAK PERNAH cocok dengan format baru
+     * ini -- jadi begitu perbaikan ini di-deploy, cache basi otomatis
+     * ter-invalidasi pada request PERTAMA setelahnya, tanpa perlu hapus
+     * file cache manual.
+     *
      * @param int $journalId ID jurnal.
      * @return array|false Array data statistik jika cache valid, atau false jika cache tidak ada/kedaluwarsa/rusak.
      */
@@ -243,8 +266,9 @@ class WizdamStats {
         $hashFile = $cacheFile . '.hash';
         if (file_exists($cacheFile) && file_exists($hashFile)) {
             $currentHash = self::_getJournalStatsDataHash($journalId);
-            $cachedHash = trim((string)@file_get_contents($hashFile));
-            if ($currentHash !== '' && $cachedHash !== '' && hash_equals($cachedHash, $currentHash)) {
+            $expectedTag = self::CACHE_SCHEMA_VERSION . ':' . $currentHash;
+            $cachedTag = trim((string)@file_get_contents($hashFile));
+            if ($currentHash !== '' && $cachedTag !== '' && hash_equals($cachedTag, $expectedTag)) {
                 try {
                     $c = unserialize((string)@file_get_contents($cacheFile));
                     if (is_array($c)) return $c;
@@ -265,6 +289,9 @@ class WizdamStats {
      * (encode + gzip + I/O disk) sejak template sekarang menerima data
      * langsung dari handler, bukan lagi fetch file terpisah.
      *
+     * [FIX] File hash sekarang menyimpan "versi:hash" (lihat catatan di
+     * _getJournalStatsFromCache()), bukan hash polos.
+     *
      * @param int $journalId ID jurnal.
      * @param array $stats Payload data statistik yang akan di-cache.
      * @return bool True jika penyimpanan berhasil, false jika gagal.
@@ -276,7 +303,8 @@ class WizdamStats {
         $hashFile = $cacheFile . '.hash';
         try {
             $r1 = @file_put_contents($cacheFile, serialize($stats));
-            $r2 = @file_put_contents($hashFile, self::_getJournalStatsDataHash($journalId));
+            $tag = self::CACHE_SCHEMA_VERSION . ':' . self::_getJournalStatsDataHash($journalId);
+            $r2 = @file_put_contents($hashFile, $tag);
             return ($r1 !== false && $r2 !== false);
         } catch (Exception $e) { return false; }
     }
@@ -344,7 +372,14 @@ class WizdamStats {
         if (file_exists($cacheFile)) {
             try {
                 $cached = @unserialize((string) @file_get_contents($cacheFile));
-                if (is_array($cached) && ($cached['_fingerprint'] ?? null) === $currentFingerprint) {
+                // [FIX] Sekarang juga cek '_schemaVersion' -- cache lama
+                // (ditulis sebelum konstanta ini ada) tidak punya key ini
+                // sama sekali, jadi otomatis dianggap tidak valid begitu
+                // perbaikan ini di-deploy, persis pola yang sama dengan
+                // _getJournalStatsFromCache().
+                if (is_array($cached)
+                    && ($cached['_fingerprint'] ?? null) === $currentFingerprint
+                    && ($cached['_schemaVersion'] ?? null) === self::CACHE_SCHEMA_VERSION) {
                     return $cached;
                 }
             } catch (Exception $e) {}
@@ -374,7 +409,7 @@ class WizdamStats {
                 }
             }
             usort($jStats, fn($a, $b) => $b['views'] <=> $a['views']);
-            $site = ['journalsStats'=>$jStats, 'allTotalViews'=>$vTot, 'allTotalDownloads'=>$dTot, 'allTotalInteractions'=>$iTot, 'allTotalAuthors'=>$aTot, '_fingerprint'=>$currentFingerprint];
+            $site = ['journalsStats'=>$jStats, 'allTotalViews'=>$vTot, 'allTotalDownloads'=>$dTot, 'allTotalInteractions'=>$iTot, 'allTotalAuthors'=>$aTot, '_fingerprint'=>$currentFingerprint, '_schemaVersion'=>self::CACHE_SCHEMA_VERSION];
             $dir = dirname($cacheFile); if (!file_exists($dir)) @mkdir($dir, 0755, true);
             @file_put_contents($cacheFile, serialize($site));
             return $site;
