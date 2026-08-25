@@ -1,9 +1,15 @@
 /**
- * journal-stats.js
- * Visualisasi statistik jurnal dengan tahun pada sumbu X
+ * @file public/assets/js/wizdam/journal-stats.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Codecanau Team
+ * Distributed under MIT license.
+ * 
+ * @brief Visualisasi statistik jurnal dengan tahun pada sumbu X.
+ * 
  * @author Rochmady and Wizdam Team
  * @version v1.22.6-isolated
- * License None
+ * License MIT
  */
 (function(window, document) {
     'use strict';
