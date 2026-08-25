@@ -59,7 +59,7 @@
         {* KARTU 3: MOST CITED *}
         <div class="wizdam-metric-card" style="border: 1px solid #ddd; border-radius: 8px; padding: 2rem; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div class="metric-icon" style="font-size: 3rem; margin-bottom: 1rem; color: #dc3545;">
-                Ц </div>
+                📑 </div>
             <h2>Most Cited</h2>
             <p style="color: #666; margin-bottom: 1.5rem;">
                 Daftar artikel yang paling banyak disitasi oleh penelitian lain. 
