@@ -1,5 +1,11 @@
 /**
- * scopus-visualizer-with-custom-font.js - Versi Perbaikan
+ * @file public/assest/sangiapub/js/dev/editor_scopus_v1.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief scopus-visualizer-with-custom-font.js - Versi Perbaikan
  * Fokus pada:
  * 1. Ketebalan dan kecerahan sumbu Y
  * 2. Tick mark pada kedua sumbu Y
@@ -9,6 +15,9 @@
  * - Standardisasi ketebalan garis menjadi 1.5px
  * - Ukuran legenda sitasi (bulatan) lebih kecil
  * - Tick mark kedua sumbu Y diatur menjadi 1px (lebih tipis dari ketebalan sumbu Y)
+ * 
+ * @author Rochmady and Khayra (Wizdam Lumera Team)
+ * @version 0.0.0.1 Basic
  */
 (function() {
     // Konfigurasi
