@@ -141,39 +141,83 @@ class WizdamStatsDAO extends DAO {
      * @param bool $metricsTableExists Status of metrics table existence.
      * @return array Associative array with 'views' and 'downloads' keys (integers).
      */
-    public function getCoreViewsDownloads(int $journalId, bool $metricsTableExists): array {
-        if (!$metricsTableExists) {
-            return ['views' => 0, 'downloads' => 0];
+    /**
+     * [FIX] Sebelumnya kalau tabel `metrics` menghasilkan total 0/0 (baik
+     * karena tabelnya memang tidak ada, ATAU ada tapi datanya kosong),
+     * method ini langsung berhenti di situ. Kode asli (getJournalStats.php)
+     * punya fallback: kalau totalnya 0/0, coba lagi dari
+     * article_view_stats / article_galley_view_stats sebelum menyerah.
+     * Tanpa fallback ini, instalasi yang datanya tersimpan di tabel lama
+     * (bukan `metrics`) akan selalu menampilkan 0 views/downloads padahal
+     * datanya sebenarnya ada.
+     * @param int $journalId
+     * @param bool $metricsTableExists
+     * @param bool $articleStatsExists Dari checkDatabaseStructure()['articleStatsExists'].
+     * @param bool $galleyStatsExists Dari checkDatabaseStructure()['galleyStatsExists'].
+     * @return array{views: int, downloads: int}
+     */
+    public function getCoreViewsDownloads(int $journalId, bool $metricsTableExists, bool $articleStatsExists = false, bool $galleyStatsExists = false): array {
+        $views = 0;
+        $downloads = 0;
+
+        if ($metricsTableExists) {
+            $views = (int) ($this->fetchScalar(
+                "SELECT SUM(metric) AS total FROM metrics WHERE context_id = ? AND assoc_type = ?",
+                [(int) $journalId, ASSOC_TYPE_ARTICLE],
+                'total'
+            ) ?? 0);
+            $downloads = (int) ($this->fetchScalar(
+                "SELECT SUM(metric) AS total FROM metrics WHERE context_id = ? AND assoc_type = ?",
+                [(int) $journalId, ASSOC_TYPE_GALLEY],
+                'total'
+            ) ?? 0);
         }
-        
-        $views = $this->fetchScalar(
-            "SELECT SUM(metric) AS total FROM metrics WHERE context_id = ? AND assoc_type = ?", 
-            [(int) $journalId, ASSOC_TYPE_ARTICLE], 
-            'total'
-        );
-        $downloads = $this->fetchScalar(
-            "SELECT SUM(metric) AS total FROM metrics WHERE context_id = ? AND assoc_type = ?", 
-            [(int) $journalId, ASSOC_TYPE_GALLEY], 
-            'total'
-        );
-        
-        return [
-            'views' => (int) ($views ?? 0), 
-            'downloads' => (int) ($downloads ?? 0)
-        ];
+
+        // [FIX] Fallback -- sama persis dengan getJournalStats.php baris
+        // ~294-324. Hanya dipicu kalau KEDUANYA masih 0 (bukan cuma salah
+        // satu), supaya tidak menimpa angka yang sudah benar dari `metrics`.
+        if ($views === 0 && $downloads === 0) {
+            if ($articleStatsExists) {
+                $views = (int) ($this->fetchScalar(
+                    "SELECT SUM(avs.views) AS total FROM article_view_stats avs
+                     JOIN articles a ON avs.article_id = a.article_id
+                     WHERE a.journal_id = ?",
+                    [(int) $journalId],
+                    'total'
+                ) ?? 0);
+            }
+            if ($galleyStatsExists) {
+                $downloads = (int) ($this->fetchScalar(
+                    "SELECT SUM(agvs.views) AS total FROM article_galley_view_stats agvs
+                     JOIN article_galleys ag ON agvs.galley_id = ag.galley_id
+                     JOIN articles a ON ag.article_id = a.article_id
+                     WHERE a.journal_id = ?",
+                    [(int) $journalId],
+                    'total'
+                ) ?? 0);
+            }
+        }
+
+        return ['views' => $views, 'downloads' => $downloads];
     }
 
     /**
      * Determine the available date column name in the metrics table for yearly queries.
+     *
+     * [FIX] Sebelumnya HANYA cek 'day'/'load_time' -- kode asli
+     * (getJournalStats.php) cek 4 kandidat kolom: 'day', 'load_time',
+     * 'entry_time', 'date'. Kalau instalasi ini pakai skema metrics dengan
+     * kolom 'entry_time'/'date', versi sebelumnya menganggap TIDAK ADA
+     * kolom tanggal sama sekali -> breakdown views/downloads per tahun
+     * kosong total, walau total keseluruhan (all-time) tetap benar.
      * @param array $metricsColumns List of column names from the metrics table.
-     * @return string Valid date column name ('day' or 'load_time'), or empty string if none.
+     * @return string Valid date column name, atau string kosong kalau tidak ada satupun kandidat ditemukan.
      */
     public function getDateColumn(array $metricsColumns): string {
-        if (in_array('day', $metricsColumns, true)) {
-            return 'day';
-        }
-        if (in_array('load_time', $metricsColumns, true)) {
-            return 'load_time';
+        foreach (['day', 'load_time', 'entry_time', 'date'] as $candidate) {
+            if (in_array($candidate, $metricsColumns, true)) {
+                return $candidate;
+            }
         }
         return '';
     }

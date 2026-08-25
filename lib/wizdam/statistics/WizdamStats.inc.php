@@ -60,7 +60,15 @@ class WizdamStats {
         $metricsColumnsStr = $dbStruct['metricsTableExists'] ? implode(", ", $dbStruct['metricsColumns']) : "Tidak ditemukan";
 
         // 1. Core Stats & Yearly Views/Downloads
-        $core = $dao->getCoreViewsDownloads($journalId, $dbStruct['metricsTableExists']);
+        // [FIX] Sekarang mengirim articleStatsExists/galleyStatsExists supaya
+        // getCoreViewsDownloads() bisa fallback ke tabel lama kalau `metrics`
+        // kosong -- lihat catatan [FIX] di WizdamStatsDAO::getCoreViewsDownloads().
+        $core = $dao->getCoreViewsDownloads(
+            $journalId,
+            $dbStruct['metricsTableExists'],
+            $dbStruct['articleStatsExists'] ?? false,
+            $dbStruct['galleyStatsExists'] ?? false
+        );
         $totalViews = $core['views'];
         $totalDownloads = $core['downloads'];
 
@@ -84,7 +92,45 @@ class WizdamStats {
         }
         foreach ($yearlyStats as $y => $d) {
             $s = $d['submissions'] ?? 0; $p = $d['published'] ?? 0;
-            if ($s > 0) $yearlyStats[$y]['acceptanceRate'] = round(($p / $s) * 100, 1);
+            if ($s > 0) $yearlyStats[$y]['acceptRate'] = round(($p / $s) * 100, 1);
+        }
+
+        // [FIX] Rekonsiliasi proporsional -- PERSIS logic getJournalStats.php
+        // baris ~863-897 ("PERBAIKAN: Verifikasi konsistensi data"), yang
+        // sebelumnya tidak ada sama sekali di sini. Kalau breakdown
+        // per-tahun untuk views/downloads GAGAL total (jumlah semua tahun =
+        // 0) padahal total keseluruhan ($totalViews/$totalDownloads) tidak
+        // nol, distribusikan total itu ke tiap tahun secara proporsional
+        // berdasarkan jumlah artikel terbit di tahun tsb. Tanpa ini, chart
+        // Views & Downloads bisa tampil nol per-tahun walau angka total
+        // jurnal sebenarnya besar.
+        $totalViewsFromYears = 0;
+        $totalDownloadsFromYears = 0;
+        $totalPublishedFromYears = 0;
+        foreach ($yearlyStats as $d) {
+            $totalViewsFromYears += $d['views'] ?? 0;
+            $totalDownloadsFromYears += $d['downloads'] ?? 0;
+            $totalPublishedFromYears += $d['published'] ?? 0;
+        }
+        if (Config::getVar('debug', 'log_errors')) {
+            error_log("Stats verification - Total views: $totalViews, Sum from years: $totalViewsFromYears");
+            error_log("Stats verification - Total downloads: $totalDownloads, Sum from years: $totalDownloadsFromYears");
+        }
+        if ($totalPublishedFromYears > 0) {
+            if ($totalViews > 0 && $totalViewsFromYears === 0) {
+                foreach ($yearlyStats as $y => $d) {
+                    if (($d['published'] ?? 0) > 0) {
+                        $yearlyStats[$y]['views'] = (int) round($totalViews * ($d['published'] / $totalPublishedFromYears));
+                    }
+                }
+            }
+            if ($totalDownloads > 0 && $totalDownloadsFromYears === 0) {
+                foreach ($yearlyStats as $y => $d) {
+                    if (($d['published'] ?? 0) > 0) {
+                        $yearlyStats[$y]['downloads'] = (int) round($totalDownloads * ($d['published'] / $totalPublishedFromYears));
+                    }
+                }
+            }
         }
 
         // 3. Median All-Time
@@ -104,11 +150,23 @@ class WizdamStats {
         for ($y = $startYear; $y <= $currentYear; $y++) {
             $yd = $dao->getYearlyTimelineData($journalId, $y, $hasEd);
             if (!isset($yearlyStats[$y])) $yearlyStats[$y] = ['year' => $y];
-            $yearlyStats[$y]['daysToPublication'] = round(self::_getMedian($yd['publication']));
-            $yearlyStats[$y]['reviewTime'] = round(self::_getMedian($yd['review']));
-            $yearlyStats[$y]['firstDecision'] = round(self::_getMedian($yd['firstDecision']));
-            $yearlyStats[$y]['submissionToAcceptance'] = round(self::_getMedian($yd['acceptance']));
-            $yearlyStats[$y]['acceptanceToPublication'] = round(self::_getMedian($yd['acceptanceToPub']));
+            // [FIX] 5 key di bawah SEBELUMNYA dinamai ulang (daysToPublication,
+            // reviewTime, firstDecision, submissionToAcceptance,
+            // acceptanceToPublication) -- tidak cocok dengan yang dibaca
+            // journal-stats.js (daysToPublish, daysPerReview,
+            // daysToFirstDecision, daysToAcceptance,
+            // daysAcceptanceToPublication) untuk KEY PER-TAHUN ini secara
+            // spesifik. [CATATAN] ini BEDA dari key top-level di bawah
+            // (baris ~186-187: 'daysPerReview', 'daysToPublication', dst)
+            // yang MEMANG harus tetap seperti itu karena sudah dipakai
+            // editorial-timeline.tpl -- sudah diverifikasi tidak ada
+            // konsumen lain yang membaca isi per-tahun ini selain
+            // journal-stats.js, jadi aman diselaraskan ke situ.
+            $yearlyStats[$y]['daysToPublish'] = round(self::_getMedian($yd['publication']));
+            $yearlyStats[$y]['daysPerReview'] = round(self::_getMedian($yd['review']));
+            $yearlyStats[$y]['daysToFirstDecision'] = round(self::_getMedian($yd['firstDecision']));
+            $yearlyStats[$y]['daysToAcceptance'] = round(self::_getMedian($yd['acceptance']));
+            $yearlyStats[$y]['daysAcceptanceToPublication'] = round(self::_getMedian($yd['acceptanceToPub']));
         }
 
         // 5. Totals
@@ -118,16 +176,17 @@ class WizdamStats {
 
         // 6. Zero-Fill
         if (!empty($yearlyStats)) {
-            $allKeys = ['year'=>0, 'views'=>0, 'downloads'=>0, 'submissions'=>0, 'published'=>0, 'acceptanceRate'=>0, 'daysToPublication'=>0, 'reviewTime'=>0, 'firstDecision'=>0, 'submissionToAcceptance'=>0, 'acceptanceToPublication'=>0, 'accepted'=>0, 'declined'=>0];
+            // [FIX] Disamakan ke nama key final yang benar (lihat catatan
+            // di atas), dan 'published' TIDAK LAGI dipaksa jadi
+            // 'publications' -- journal-stats.js membaca stat.published.
+            $allKeys = ['year'=>0, 'views'=>0, 'downloads'=>0, 'submissions'=>0, 'published'=>0, 'acceptRate'=>0, 'daysToPublish'=>0, 'daysPerReview'=>0, 'daysToFirstDecision'=>0, 'daysToAcceptance'=>0, 'daysAcceptanceToPublication'=>0, 'accepted'=>0, 'declined'=>0];
             ksort($yearlyStats);
             foreach ($yearlyStats as $y => $d) {
                 foreach ($allKeys as $k => $def) {
                     if (!isset($yearlyStats[$y][$k])) {
-                        if ($k == 'published') $yearlyStats[$y]['publications'] = $def;
-                        else $yearlyStats[$y][$k] = ($k == 'year') ? $y : $def;
+                        $yearlyStats[$y][$k] = ($k == 'year') ? $y : $def;
                     }
                 }
-                if (isset($yearlyStats[$y]['published'])) unset($yearlyStats[$y]['published']);
             }
         }
 
