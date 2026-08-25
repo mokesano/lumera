@@ -555,6 +555,28 @@ class WizdamStatsDAO extends DAO {
 
     /**
      * Fetch raw yearly timeline data for various editorial metrics.
+     *
+     * [FIX] SEMUA metrik di bawah ini SEBELUMNYA dikelompokkan per tahun
+     * berdasarkan tanggal EVENT-nya sendiri (date_completed/date_decided/
+     * date_published) -- kode asli (getJournalStats.php) SELALU
+     * mengelompokkan berdasarkan YEAR(a.date_submitted), tanpa kecuali.
+     * Perbedaan ini membuat data "melompat" ke tahun yang salah (atau di
+     * luar rentang tahun yang di-loop), yang tampak sebagai grafik nyaris
+     * kosong. Disamakan persis ke YEAR(a.date_submitted).
+     *
+     * [FIX] Blok "else" (fallback tanpa tabel edit_decisions, pakai
+     * a.status=3 + a.date_status_modified) SEBELUMNYA TIDAK ADA SAMA SEKALI
+     * di sini -- kalau $hasEditDecisions false, firstDecision/acceptance/
+     * acceptanceToPub selalu array kosong untuk semua tahun. Sekarang
+     * ditambahkan, persis logic original.
+     *
+     * [CATATAN] Query 'review' di original TIDAK memfilter journal_id sama
+     * sekali (site-wide, lintas semua jurnal) -- kemungkinan itu bug di
+     * kode asli sendiri, mengingat platform ini multi-jurnal. Filter
+     * journal_id TETAP dipertahankan di sini (bukan dihapus) supaya data
+     * review time tidak tercampur antar jurnal -- satu-satunya deviasi
+     * yang disengaja dari original, sisanya disamakan persis.
+     *
      * @param int $journalId Journal ID.
      * @param int $year Specific year to fetch data for.
      * @param bool $hasEditDecisions Status of edit_decisions table existence.
@@ -570,7 +592,7 @@ class WizdamStatsDAO extends DAO {
         ];
         
         $r = $this->retrieve(
-            "SELECT DATEDIFF(ra.date_completed, ra.date_notified) AS days FROM review_assignments ra JOIN articles a ON (ra.submission_id = a.article_id) WHERE a.journal_id = ? AND ra.date_completed IS NOT NULL AND ra.declined = 0 AND ra.cancelled = 0 AND YEAR(ra.date_completed) = ?", 
+            "SELECT DATEDIFF(ra.date_completed, ra.date_notified) AS days FROM review_assignments ra JOIN articles a ON (ra.submission_id = a.article_id) WHERE a.journal_id = ? AND ra.date_completed IS NOT NULL AND ra.declined = 0 AND ra.cancelled = 0 AND YEAR(a.date_submitted) = ?", 
             [(int) $journalId, (int) $year]
         );
         if ($r) {
@@ -586,7 +608,7 @@ class WizdamStatsDAO extends DAO {
         }
 
         $r = $this->retrieve(
-            "SELECT DATEDIFF(pa.date_published, a.date_submitted) AS days FROM published_articles pa JOIN articles a ON (pa.article_id = a.article_id) WHERE a.journal_id = ? AND YEAR(pa.date_published) = ? AND pa.date_published IS NOT NULL", 
+            "SELECT DATEDIFF(pa.date_published, a.date_submitted) AS days FROM published_articles pa JOIN articles a ON (pa.article_id = a.article_id) WHERE a.journal_id = ? AND YEAR(a.date_submitted) = ? AND pa.date_published IS NOT NULL", 
             [(int) $journalId, (int) $year]
         );
         if ($r) {
@@ -603,7 +625,7 @@ class WizdamStatsDAO extends DAO {
 
         if ($hasEditDecisions) {
             $r = $this->retrieve(
-                "SELECT a.date_submitted, MIN(ed.date_decided) as d FROM articles a JOIN edit_decisions ed ON (a.article_id = ed.article_id) WHERE a.journal_id = ? AND YEAR(ed.date_decided) = ? GROUP BY a.article_id", 
+                "SELECT a.date_submitted, MIN(ed.date_decided) as d FROM articles a JOIN edit_decisions ed ON (a.article_id = ed.article_id) WHERE a.journal_id = ? AND YEAR(a.date_submitted) = ? GROUP BY a.article_id", 
                 [(int) $journalId, (int) $year]
             );
             if ($r) {
@@ -623,7 +645,7 @@ class WizdamStatsDAO extends DAO {
             }
 
             $r = $this->retrieve(
-                "SELECT a.date_submitted, MAX(ed.date_decided) as d FROM articles a JOIN edit_decisions ed ON (a.article_id = ed.article_id) WHERE a.journal_id = ? AND YEAR(ed.date_decided) = ? AND ed.decision = 1 GROUP BY a.article_id", 
+                "SELECT a.date_submitted, MAX(ed.date_decided) as d FROM articles a JOIN edit_decisions ed ON (a.article_id = ed.article_id) WHERE a.journal_id = ? AND YEAR(a.date_submitted) = ? AND ed.decision = 1 GROUP BY a.article_id", 
                 [(int) $journalId, (int) $year]
             );
             if ($r) {
@@ -643,13 +665,59 @@ class WizdamStatsDAO extends DAO {
             }
 
             $r = $this->retrieve(
-                "SELECT MAX(ed.date_decided) as d, pa.date_published FROM articles a JOIN edit_decisions ed ON (a.article_id = ed.article_id) JOIN published_articles pa ON (a.article_id = pa.article_id) WHERE a.journal_id = ? AND YEAR(pa.date_published) = ? AND ed.decision = 1 GROUP BY a.article_id", 
+                "SELECT a.date_submitted, MAX(ed.date_decided) as d, pa.date_published FROM articles a JOIN edit_decisions ed ON (a.article_id = ed.article_id) JOIN published_articles pa ON (a.article_id = pa.article_id) WHERE a.journal_id = ? AND YEAR(a.date_submitted) = ? AND ed.decision = 1 GROUP BY a.article_id", 
                 [(int) $journalId, (int) $year]
             );
             if ($r) {
                 while (!$r->EOF) {
                     $row = $r->GetRowAssoc(false);
                     $d = strtotime((string) $row['d']);
+                    $p = strtotime((string) $row['date_published']);
+                    if ($d && $p) {
+                        $diff = (int) round(($p - $d) / 86400);
+                        if ($diff > 0) {
+                            $data['acceptanceToPub'][] = (float) $diff;
+                        }
+                    }
+                    $r->MoveNext();
+                }
+                $r->Close();
+            }
+        } else {
+            // [FIX] Fallback yang SEBELUMNYA hilang total -- persis
+            // getJournalStats.php: tanpa tabel edit_decisions, gunakan
+            // a.status=3 (diterima) + a.date_status_modified sebagai
+            // pengganti tanggal keputusan.
+            $r = $this->retrieve(
+                "SELECT a.date_submitted, a.date_status_modified FROM articles a WHERE a.journal_id = ? AND YEAR(a.date_submitted) = ? AND a.status = 3",
+                [(int) $journalId, (int) $year]
+            );
+            if ($r) {
+                while (!$r->EOF) {
+                    $row = $r->GetRowAssoc(false);
+                    $s = strtotime((string) $row['date_submitted']);
+                    $d = strtotime((string) $row['date_status_modified']);
+                    if ($s && $d) {
+                        $diff = (int) round(($d - $s) / 86400);
+                        if ($diff > 0) {
+                            // Original memakai nilai yang sama untuk firstDecision & acceptance di jalur fallback ini.
+                            $data['firstDecision'][] = (float) $diff;
+                            $data['acceptance'][] = (float) $diff;
+                        }
+                    }
+                    $r->MoveNext();
+                }
+                $r->Close();
+            }
+
+            $r = $this->retrieve(
+                "SELECT a.date_status_modified, pa.date_published FROM articles a JOIN published_articles pa ON (a.article_id = pa.article_id) WHERE a.journal_id = ? AND YEAR(a.date_submitted) = ? AND a.status = 3 AND pa.date_published IS NOT NULL",
+                [(int) $journalId, (int) $year]
+            );
+            if ($r) {
+                while (!$r->EOF) {
+                    $row = $r->GetRowAssoc(false);
+                    $d = strtotime((string) $row['date_status_modified']);
                     $p = strtotime((string) $row['date_published']);
                     if ($d && $p) {
                         $diff = (int) round(($p - $d) / 86400);
