@@ -36,10 +36,11 @@
                                     <article class="u-full-height c-card c-card--flush c-card--major" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
                                         <div class="c-card__layout u-full-height">
                                             {if $article.cover_image.file_exists}
-                                            <div class="c-card__image"><picture><source type="image/webp" srcset="{$article.cover_image.file_url}?as=webp 450w,{$article.cover_image.file_url}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px,735px"><img src="{$article.cover_image.file_url}" alt="{$article.title|escape}" itemprop="image"></picture>
-                                            </div>
-                                            {else}
-                                            <div class="c-card__image"><picture><source type="image/webp" srcset="//assets.sangia.org/static/images/not-available.webp 450w, //assets.sangia.org/static/images/not-available.webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img src="//assets.sangia.org/static/images/not-available.webp" alt="{$article.title|escape}" itemprop="image"></picture>
+                                            <div class="c-card__image">
+                                                <picture>
+                                                    <source type="image/webp" srcset="{$article.cover_image.file_url}?as=webp 450w,{$article.cover_image.file_url}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px,735px">
+                                                    <img src="{$article.cover_image.file_url}" alt="{$article.title|escape}" itemprop="image">
+                                                </picture>
                                             </div>
                                             {/if}
                                             <div class="c-card__body u-display-flex u-flex-direction-column">
@@ -47,8 +48,7 @@
                                                     <a href="{$article.article_url}" class="c-card__link u-link-inherit" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$article.title}</a>
                                                 </h3>
                                                 {if $article.abstract}
-                                                <div data-test="article-description" class="c-card__summary ellipse u-mb-16" itemprop="description"><p>{$article.abstract}</p>
-                                                </div>
+                                                <div data-test="article-description" class="c-card__summary ellipse u-mb-16" itemprop="description"><p>{$article.abstract}</p></div>
                                                 {/if}
                                                 <div class="c-card__section c-meta">
                                                     <div>
@@ -83,8 +83,7 @@
                                                     <a href="{$article.article_url}" class="c-card__link u-link-inherit" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$article.title}</a>
                                                 </h3>
                                                 {if $article.abstract}
-                                                <div data-test="article-description" class="c-card__summary ellips u-mb-16 u-hide-sm-max" itemprop="description"><p>{$article.abstract}</p>
-                                                </div>
+                                                <div data-test="article-description" class="c-card__summary ellips u-mb-16 u-hide-sm-max" itemprop="description"><p>{$article.abstract}</p></div>
                                                 {/if}
                                             </div>
                                         </div>
