@@ -7456,6 +7456,7 @@ table .border-bottom {
 }
 .ReferenceLinks .link svg.pdf-icon {
   width:20px;
+  height:20px;
 }
 .ReferenceLinks .link svg.arrow-external-link {
   height:clamp(10px, 0.5em, 0.5em);
@@ -31874,7 +31875,7 @@ button .anchor svg.icon:first-child {
 }
 .anchor svg.icon {
   position: inherit;
-  vertical-align:center;
+  vertical-align:middle;
   fill:currentColor;
   margin-right:8px;
 }
