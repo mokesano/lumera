@@ -999,6 +999,6 @@ $(document).ready(function() {
 });
 
 /**
- * Pengaturan Referensi oleh model AI (ChatGPT, DeepSeek, Qwen, Claude)
+ * Copyright
  * Dibuat oleh: @author Rochmady and Khayra and Rakha
  */
