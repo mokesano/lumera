@@ -1,5 +1,5 @@
 /**
- * @file assets/js/LumeraCitedby.js
+ * @file public/assets/js/LumeraCitedBy.js
  * 
  * Copyright (c) 2017-2026 Sangia Code Lumera 
  * Copyright (c) 2024-2026 Rochmady and Development Team
