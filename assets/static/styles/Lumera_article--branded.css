@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /**
  * @file public/assets/css/Lumera_article--branded.css
  * 
@@ -5,7 +6,6 @@
  * Copyright (c) 2017-2026 Rochmady and Codecanau
  * Distributed under the GNU GPL v3.
  */
-@charset "UTF-8";
 h2,table {
   margin-bottom:0 
 }
@@ -105,14 +105,6 @@ input[type=image],
 input[type=submit],
 label {
   cursor:pointer 
-}
-[contenteditable]:focus,
-[tabindex="0"]:focus,
-a:focus:focus,
-button:focus,
-input:focus,
-select:focus {
- outline:#fece3e solid 3px;
 }
 .button,
 .link-button {
@@ -538,6 +530,15 @@ table.info tr.heading {
     display:none;
     visibility:hidden 
   }
+  [contenteditable]:focus,
+  [tabindex="0"]:focus,
+  a:focus:focus,
+  button:focus,
+  input:focus,
+  select:focus {
+    outline:#fece3e solid 3px;
+    will-change:transform;
+  }
 }
 h3,
 h4,
@@ -565,14 +566,6 @@ h1 {
 h2 {
   letter-spacing:-.01875rem;
   margin-top:0 
-}
-[contenteditable]:focus,
-[tabindex="0"]:focus,
-a:focus,
-button:focus,
-input:focus {
-  outline:#fece3e solid 3px;
-  will-change:transform;
 }
 .OabDMe,
 .c-list-group,
@@ -7461,7 +7454,13 @@ table .border-bottom {
   text-indent:0;
   font-family:"Elsevier Sans",NexusSans,"Bliss Regular","Open Sans",Calibri,"Helvetica Neue",Arial,sans-serif;
 }
-
+.ReferenceLinks .view-pdf {
+  margin-left: 8px
+}
+.ReferenceLinks .link svg.pdf-icon {
+  width:20px;
+  height:19px;
+}
 .ReferenceLinks .link svg.arrow-external-link {
   height:clamp(10px, 0.5em, 0.5em);
 }
@@ -29196,12 +29195,6 @@ details[open] .details-marker-1174223415 {
   color:#333;
   line-height:1.5; 
   text-align: inherit;
-}
-a:focus,
-button:focus,
-input:focus,
-select:focus {
-  outline:#fece3e solid 3px;
 }
 #copyrightBadge img,
 .article-view .journal-header,
