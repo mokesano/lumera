@@ -74,8 +74,11 @@
                                     <article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
                                         <div class="c-card__layout u-full-height">
                                             {if $article.cover_image.file_exists}
-                                            <div class="c-card__image"><picture><source type="image/webp" srcset="{$article.cover_image.file_url}?as=webp 160w,{$article.cover_image.file_url}?as=webp 290w" sizes="(max-width: 640px) 160px,(max-width: 1200px) 290px,290px">
-                                                <img src="{$article.cover_image.file_url}" alt="" itemprop="image"></picture>
+                                            <div class="c-card__image">
+                                                <picture>
+                                                    <source type="image/webp" srcset="{$article.cover_image.file_url}?as=webp 160w,{$article.cover_image.file_url}?as=webp 290w" sizes="(max-width: 640px) 160px,(max-width: 1200px) 290px,290px">
+                                                    <img src="{$article.cover_image.file_url}" alt="" itemprop="image">
+                                                </picture>
                                             </div>
                                             {/if}
                                             <div class="c-card__body u-display-flex u-flex-direction-column">
@@ -174,8 +177,11 @@
                         <article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
                             <div class="c-card__layout u-full-heights">
                                 {if $article.cover_image.file_exists}
-                                <div class="c-card__image"><picture><source type="image/webp" srcset="{$article.cover_image.file_url}?as=webp 160w,{$article.cover_image.file_url}?as=webp 290w" sizes="(max-width: 640px) 160px,(max-width: 1200px) 290px,290px">
-                                    <img src="{$article.cover_image.file_url}" alt="{$article.title|escape}" itemprop="image"></picture>
+                                <div class="c-card__image">
+                                    <picture>
+                                        <source type="image/webp" srcset="{$article.cover_image.file_url}?as=webp 160w,{$article.cover_image.file_url}?as=webp 290w" sizes="(max-width: 640px) 160px,(max-width: 1200px) 290px,290px">
+                                        <img src="{$article.cover_image.file_url}" alt="{$article.title|escape}" itemprop="image">
+                                    </picture>
                                 </div>
                                 {/if}
                                 <div class="c-card__body u-display-flex u-flex-direction-column">
