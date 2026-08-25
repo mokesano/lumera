@@ -14,12 +14,14 @@ declare(strict_types=1);
  *
  * Usage: Access this script via a web browser or HTTP client to get the status.
  */
+
 http_response_code(200);
 header('Content-Type: application/json');
 
 $response = [
     'status' => 'up',
     'time' => date('Y-m-d H:i:s'),
+    'php_version' => PHP_VERSION,
     'message' => 'Endpoint is operational',
 ];
 echo json_encode($response, JSON_PRETTY_PRINT);
