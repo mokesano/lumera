@@ -1,11 +1,12 @@
 /**
- * @file citedby_doi_v1.js
+ * @file public/assets/sangiapub/js/dev/citedby_doi_v1.js
  * 
  * Copyright (c) 2017-2026 Sangia Code Lumera 
  * Copyright (c) 2024-2026 Rochmady and Development Team
- * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3.
  * 
  * @class CitedByDOIHandler
+ * 
  * @brief Script untuk menampilkan kutipan artikel berbasis DOI dengan fitur refresh dan tooltip modern.
  * Citation Display JS v3.1.4 - Fully Optimized Version
  * - Hide panel when no citations
@@ -14,6 +15,9 @@
  * - Refresh button positioned on the right
  * - Support for various publication types
  * - PDF button only shows for allowed journals
+ * 
+ * @author Rochmady and Khayra
+ * @version 0.0.0.1 Basic
  */
 (function() {
    // Flag untuk melacak pemrosesan
