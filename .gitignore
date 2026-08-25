@@ -43,7 +43,7 @@ config.inc.php
 # Directories
 /fonts
 fonts/
-plugins/themes/sangiapub/php/*
+# plugins/themes/sangiapub/php/*
 
 # Editor/IDE
 .vscode/
