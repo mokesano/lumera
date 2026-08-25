@@ -1,3 +1,15 @@
+/**
+ * @file public/assets/sangiapub/js/gabungan.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief Gabungan js halaman
+ * 
+ * @author Rochmady and Khayra (Lumera Team)
+ * @version 0.0.0.1 Basic
+ */
 jQuery(document).ready(function($) {
     var $menuToggle = $(".mtoggle");
     var $menu = $(".menu");
