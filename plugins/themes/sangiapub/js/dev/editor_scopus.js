@@ -1,10 +1,19 @@
 /**
- * scopus-visualizer-with-highcharts.js - Versi Perbaikan Final
+ * @file public/assets/sangiapub/js/dev/editor_scopus.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
+ * 
+ * @brief scopus-visualizer-with-highcharts.js - Versi Perbaikan Final
  * Fokus pada:
  * 1. Latar belakang kolom hover yang abu-abu transparan
  * 2. Label bold untuk sumbu Y yang di-hover dengan latar berwarna
  * 3. Garis putus-putus dari sumbu Y dokumen ke sumbu Y sitasi saat hover
  * 4. Pembagian sumbu Y menjadi 4 zona dengan latar berselang-seling
+ * 
+ * @author Rochmady and Khayra
+ * @version 0.0.1 Basic
  */
 (function() {
     // Konfigurasi
