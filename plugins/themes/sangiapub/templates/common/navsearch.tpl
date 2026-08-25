@@ -8,7 +8,6 @@
  * Search Bar
  *
  *}
-
 <div class="c-header__container">
     <h2 class="c-header__visually-hidden">Search</h2>
     {capture assign="filterInput"}{call_hook name="Templates::Search::SearchResults::FilterInput" filterName=$filterName filterValue=$filterValue}{/capture}
@@ -103,7 +102,6 @@
         }
     }
 
-    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         const journalSelect = document.getElementById('journal');
         
@@ -112,9 +110,7 @@
         }
     });
 
-    // HANYA attach ke form search tertentu - BUKAN semua form
     document.addEventListener('DOMContentLoaded', function() {
-        // Target HANYA form search dengan selector spesifik
         var searchForms = document.querySelectorAll(
             'form[role="search"], ' +
             'form.c-header__search-form, ' +
@@ -124,10 +120,9 @@
         
         for (var i = 0; i < searchForms.length; i++) {
             var form = searchForms[i];
-            // Double check: pastikan ada input query sebelum attach
-            if (form.querySelector('input[name="query"]')) {
-                form.onsubmit = function() { return checkEmpty(this); };
-            }
+            form.onsubmit = function() {
+                return validateSearch(this);
+            };
         }
     });
     // -->
