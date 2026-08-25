@@ -204,9 +204,13 @@ class IndexHandler extends Handler {
             }
             $templateMgr->assign('statsError', 'Gagal memuat statistik jurnal.');
         }
-        $basePath = $request->getBasePath();
-        $jsonPath = $basePath . '/public/wizdam_cache/stats/journal_' . $journalId . '_stats.json.gz';
-        $templateMgr->assign('statsJsonPath', $jsonPath);
+        // [FIX] Sebelumnya assign 'statsJsonPath' (URL ke journal_{id}_stats.json.gz
+        // untuk di-fetch() browser) -- workaround era query N+1 lambat, sudah
+        // tidak relevan. $journalStats sudah dihitung cepat di atas; kirim
+        // langsung sebagai JSON inline bersama halaman.
+        $templateMgr->assign('journalStatsJson', isset($journalStats) && is_array($journalStats) && !isset($journalStats['error'])
+            ? json_encode($journalStats, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)
+            : 'null');
 
         import('lib.wizdam.trends.TrendsManager');
         TrendsManager::assignMostPopularPayload($templateMgr, $journal, $request, $issue, 10);

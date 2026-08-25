@@ -6,7 +6,7 @@ declare(strict_types=1);
  * 
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Codecanau Team
- * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3.
  *
  * @class WizdamStats
  * @ingroup Statistics
@@ -196,7 +196,15 @@ class WizdamStats {
     }
 
     /**
-     * Menyimpan payload statistik ke dalam cache (format PHP serialize, JSON gzip, dan Hash).
+     * Menyimpan payload statistik ke dalam cache (format PHP serialize + Hash).
+     *
+     * [FIX] Sebelumnya juga menulis salinan '.json.gz' -- itu HANYA pernah
+     * dibaca oleh fetch() sisi-browser di journal-stats.js (pola lama untuk
+     * menghindari beban query N+1). getStats()/_getJournalStatsFromCache()
+     * di file ini SENDIRI tidak pernah membaca file .json.gz itu, cuma file
+     * '.php' (unserialize) -- jadi penulisan .json.gz murni kerja mubazir
+     * (encode + gzip + I/O disk) sejak template sekarang menerima data
+     * langsung dari handler, bukan lagi fetch file terpisah.
      *
      * @param int $journalId ID jurnal.
      * @param array $stats Payload data statistik yang akan di-cache.
@@ -207,14 +215,10 @@ class WizdamStats {
         if (!self::_ensureCacheDirExists($cacheDir)) return false;
         $cacheFile = $cacheDir . 'journal_' . $journalId . '_stats.php';
         $hashFile = $cacheFile . '.hash';
-        $jsonCacheFile = $cacheDir . 'journal_' . $journalId . '_stats.json.gz';
         try {
             $r1 = @file_put_contents($cacheFile, serialize($stats));
-            $r2 = false;
-            $json = json_encode($stats);
-            if ($json !== false) { $gz = gzencode($json, 9); if ($gz !== false) $r2 = @file_put_contents($jsonCacheFile, $gz); }
-            $r3 = @file_put_contents($hashFile, self::_getJournalStatsDataHash($journalId));
-            return ($r1 !== false && $r2 !== false && $r3 !== false);
+            $r2 = @file_put_contents($hashFile, self::_getJournalStatsDataHash($journalId));
+            return ($r1 !== false && $r2 !== false);
         } catch (Exception $e) { return false; }
     }
 
@@ -224,7 +228,14 @@ class WizdamStats {
      * @return string Path direktori cache (diakhiri dengan slash).
      */
     private static function _getCacheDir(): string {
-        return Core::getBaseDir() . '/public/wizdam_cache/stats/'; 
+        // [FIX] Sebelumnya '/public/wizdam_cache/stats/' -- cache internal
+        // ini TIDAK PERNAH diakses langsung oleh browser (beda dengan file
+        // JSON.gz yang dulu di-fetch client-side, yang sekarang sudah
+        // dihapus total -- lihat AboutJournalHandler/IndexHandler). Jadi
+        // aman dipindah ke luar public/, disamakan dengan SITE_CACHE_PATH
+        // ('cache/t_wizdam/stats/...') yang sudah lebih dulu benar di
+        // file ini.
+        return Core::getBaseDir() . '/cache/t_wizdam/stats/';
     }
 
     /**

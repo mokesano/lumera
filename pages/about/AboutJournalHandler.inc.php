@@ -614,22 +614,25 @@ class AboutJournalHandler extends AboutHandler {
                     $templateMgr->assign($key, $value);
                 }
 
-                // Buat dan kirim $jsonPath
-                $journalId = $journal->getId();
-                $basePath = $request->getBasePath();
-                $jsonPath = $basePath . '/public/wizdam_cache/stats/journal_' . $journalId . '_stats.json.gz';
-                $templateMgr->assign('statsJsonPath', $jsonPath);
+                // [FIX] Sebelumnya assign 'statsJsonPath' (URL ke file
+                // journal_{id}_stats.json.gz) untuk di-fetch() ulang oleh
+                // browser lewat journal-stats.js. Itu workaround jaman query
+                // N+1 lambat -- sekarang $journalStats sudah dihitung cepat
+                // di atas, jadi kirim langsung sebagai JSON inline bersama
+                // halaman. Tidak ada lagi request HTTP terpisah, tidak ada
+                // lagi ketergantungan file .gz yang harus web-accessible.
+                $templateMgr->assign('journalStatsJson', json_encode($journalStats, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
 
             } else {
                  $templateMgr->assign('statsError', 'Data statistik tidak valid.');
-                 $templateMgr->assign('statsJsonPath', ''); 
+                 $templateMgr->assign('journalStatsJson', 'null');
             }
         } catch (Exception $e) { 
             if (Config::getVar('debug', 'log_errors')) {
                 error_log('WizdamStats (Handler): Exception loading WizdamStats for Statistics Page: ' . $e->getMessage());
             }
             $templateMgr->assign('statsError', 'Gagal memuat statistik jurnal.');
-            $templateMgr->assign('statsJsonPath', '');
+            $templateMgr->assign('journalStatsJson', 'null');
         }
         // --- AKHIR BLOK WizdamStats ---
 

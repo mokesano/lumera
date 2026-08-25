@@ -1,32 +1,13 @@
 {**
- * templates/common/journal-insights.tpl
+ * templates/common/journal-timeline.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2003-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Team
+ * Distributed under the GNU GPL v3.
  *
  * Journal Insights
  *
  *}
-
-{php}
-foreach ((array)$this->template_dir as $dir) {
-    if (preg_match('/plugins\/themes\/([^\/]+)/', $dir, $matches) && 
-        file_exists($statsFile = 'plugins/themes/' . $matches[1] . '/php/journal_stats/getJournalStats.php')) {
-        include_once($statsFile);
-        $journalStats = getJournalStats($this->_tpl_vars['currentJournal']->getId(), Request::getUserVar('refresh_stats') == 'true');
-            
-        foreach ($journalStats as $key => $value) {
-            if ($key != 'yearlyStats') $this->assign($key, $value);
-        }
-            
-        $jsonPath = Request::getBasePath() . '/plugins/themes/' . $matches[1] . '/php/journal_stats/cache/journal_' . $this->_tpl_vars['currentJournal']->getId() . '_stats.json';
-        $this->assign('statsJsonPath', file_exists('.' . $jsonPath . '.gz') ? $jsonPath . '.gz' : $jsonPath);
-        break;
-    }
-}
-{/php}
-
 <div id="__next" class="journal-metrics">
     <!-- editing -->
     {assign var=currentYear value="now"|date_format:"%Y"}
@@ -166,10 +147,8 @@ foreach ((array)$this->template_dir as $dir) {
     <!-- editing -->
 </div>
 
-{* Hidden container untuk data JSON *}
-<div id="journalStatsCharts" data-json-path="{$statsJsonPath}" class="u-mb-48">
-  <div class="loading-stats">Menyiapkan data statistik...</div>
-</div>
+<script type="application/json" id="journalStatsData">{$journalStatsJson}</script>
+<div id="journalStatsCharts" class="u-mb-48"></div>
 
 <div id="__next" class="journal-metrics">
     <!-- editing -->

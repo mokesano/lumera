@@ -1,9 +1,15 @@
 /**
- * journal-stats.js
- * Visualisasi statistik jurnal dengan tahun pada sumbu X
+ * @file public/assets/js/journal-stats.js
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Codecanau Team
+ * Distributed under MIT license.
+ * 
+ * @brief Visualisasi statistik jurnal dengan tahun pada sumbu X.
+ * 
  * @author Rochmady and Wizdam Team
- * @version v1.22.6-isolated
- * License None
+ * @version v1.23.0-inline
+ * License MIT
  */
 (function(window, document) {
     'use strict';
@@ -23,90 +29,37 @@
             if (!statsChartDiv) return;
             
             this.initialized = true;
-            const jsonPath = statsChartDiv.dataset.jsonPath;
-            
-            if (!jsonPath) {
-                console.error('[Wizdam Journal Stats]: Data path tidak tersedia');
+
+            // [FIX] Sebelumnya baca data-json-path lalu fetch() + dekompresi
+            // gzip pakai library pako -- workaround era query N+1 lambat.
+            // Sekarang data statistik sudah dikirim LANGSUNG bersama HTML
+            // (server-side, cepat), lewat <script type="application/json"
+            // id="journalStatsData">. Tidak ada lagi request HTTP terpisah,
+            // tidak ada lagi dependensi pako, tidak ada lagi loading spinner
+            // (datanya sudah ada saat halaman selesai dimuat).
+            const dataScript = document.getElementById('journalStatsData');
+            if (!dataScript) {
+                console.error('[Wizdam Journal Stats]: Elemen data statistik tidak ditemukan');
                 return;
             }
-            
-            this.loadStats(jsonPath);
+
+            this.loadStats(dataScript);
         },
         
-        async loadStats(jsonPath) {
+        loadStats(dataScript) {
+            const container = document.getElementById('journalStatsCharts');
             try {
-                // Tampilkan loading spinner dengan background transparan
-                const container = document.getElementById('journalStatsCharts');
-                container.innerHTML = `
-                    <div class="loading-overlay" style="
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background-color: rgba(255, 255, 255, 0.7);
-                        z-index: 1000;
-                    ">
-                        <div class="loading-spinner" style="
-                            border: 5px solid #f3f3f3;
-                            border-top: 5px solid #3498db;
-                            border-radius: 50%;
-                            width: 50px;
-                            height: 50px;
-                            animation: spin 1s linear infinite;
-                        "></div>
-                        <style>
-                            @keyframes spin {
-                                0% { transform: rotate(0deg); }
-                                100% { transform: rotate(360deg); }
-                            }
-                        </style>
-                    </div>
-                    <div class="loading-text" style="
-                        position: absolute;
-                        top: 60%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        z-index: 1001;
-                        color: #333;
-                        font-weight: bold;
-                    ">Data statistics loading...</div>
-                `;
-                
-                // Lakukan fetch data
-                const response = await fetch(jsonPath);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                // Dekompresi dan parse data
-                let statsData;
-                if (jsonPath.endsWith('.gz')) {
-                    if (typeof pako === 'undefined') {
-                        throw new Error('Library pako tidak tersedia untuk dekompresi');
-                    }
-                    const compressedData = await response.arrayBuffer();
-                    const decompressedData = pako.inflate(new Uint8Array(compressedData), { to: 'string' });
-                    statsData = JSON.parse(decompressedData);
-                } else {
-                    statsData = await response.json();
-                }
-                
+                const statsData = JSON.parse(dataScript.textContent);
+
                 // Validasi data
                 if (!statsData || !statsData.yearlyStats || statsData.yearlyStats.length === 0) {
                     container.innerHTML = '<div class="error-stats">Data tidak valid atau kosong</div>';
                     return;
                 }
-                
-                // Bersihkan kontainer dan siapkan untuk grafik
-                container.innerHTML = '';
-                
+
                 // Siapkan kontainer grafik
                 this.setupCharts(statsData, container);
-                
+
             } catch (error) {
                 this.handleError(error);
             }
@@ -1331,10 +1284,12 @@
                    }
                }
                
-               // Hapus atribut data-json-path
+               // [FIX] Sebelumnya cek+hapus atribut data-json-path (penanda
+               // "sudah selesai fetch") -- atribut itu sudah tidak pernah
+               // di-set lagi sejak data dikirim inline, jadi log sukses ini
+               // cukup dipanggil langsung tanpa syarat.
                const statsContainer = document.getElementById('journalStatsCharts');
-               if (statsContainer && statsContainer.hasAttribute('data-json-path')) {
-                   statsContainer.removeAttribute('data-json-path');
+               if (statsContainer) {
                    console.log('[Wizdam Journal Stats]: CLEAR - Chart display succesfull!');
                }
            }, 1000);
