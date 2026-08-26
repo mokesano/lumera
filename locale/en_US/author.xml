@@ -185,4 +185,33 @@
 	<message key="author.article.authorRevisedFile">Author File</message>
 
 	<message key="author.submit.authorSubmitLoginMessage">A user account is required to submit to this journal. This allows our editors to track your submissions and contact you when the status of your submission changes, or if additional information is required from you.</message>
+
+	<message key="article.type.label">Article Type</message>
+	<message key="article.type.description">Select the type of scholarly work this article represents.</message>
+	<message key="article.type.standardType">Standard Type</message>
+	<message key="article.type.customType">Custom Type (this journal)</message>
+
+	<!-- Tipe PUBLIK: bisa dipilih penulis saat submit -->
+	<message key="article.type.standard.research-article">Original Research Article</message>
+	<message key="article.type.standard.review-article">Review Article</message>
+	<message key="article.type.standard.systematic-review">Systematic Review</message>
+	<message key="article.type.standard.mini-review">Mini Review</message>
+	<message key="article.type.standard.case-report">Case Report</message>
+	<message key="article.type.standard.short-communication">Short Communication</message>
+	<message key="article.type.standard.brief-report">Brief Report</message>
+	<message key="article.type.standard.article-commentary">Commentary</message>
+	<message key="article.type.standard.perspective">Perspective</message>
+	<message key="article.type.standard.hypothesis-and-theory">Hypothesis and Theory</message>
+	<message key="article.type.standard.conceptual-analysis">Conceptual Analysis</message>
+	<message key="article.type.standard.methods">Methods</message>
+	<message key="article.type.standard.data-report">Data Report</message>
+	<message key="article.type.standard.editorial">Editorial</message>
+	<message key="article.type.standard.letter">Letter to the Editor</message>
+	<message key="article.type.standard.book-review">Book Review</message>
+
+	<!-- Tipe EDITORIAL-ONLY: hanya JM/Editor/Section Editor -->
+	<message key="article.type.standard.erratum">Erratum</message>
+	<message key="article.type.standard.corrigendum">Corrigendum</message>
+	<message key="article.type.standard.correction">Correction</message>
+	<message key="article.type.standard.retraction">Retraction</message>
 </locale>

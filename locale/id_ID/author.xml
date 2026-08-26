@@ -184,4 +184,33 @@
 	<message key="author.article.authorRevisedFile">File Penulis</message> 
 	
 	<message key="author.submit.authorSubmitLoginMessage">Akun pengguna dibutuhkan untuk menyerahkan jurnal ini. Hal ini memungkinkan editor kami untuk melacak penyerahan Anda dan menghubungi Anda saat status penyerahan Anda berubah, atau jika ada informasi tambahan.</message> 
+
+	<message key="article.type.label">Tipe Artikel</message>
+	<message key="article.type.description">Pilih jenis karya ilmiah yang mewakili artikel ini.</message>
+	<message key="article.type.standardType">Tipe Baku</message>
+	<message key="article.type.customType">Tipe Kustom (khusus jurnal ini)</message>
+
+	<!-- Tipe PUBLIK: bisa dipilih penulis saat submit -->
+	<message key="article.type.standard.research-article">Artikel Penelitian Asli</message>
+	<message key="article.type.standard.review-article">Artikel Ulasan (Review)</message>
+	<message key="article.type.standard.systematic-review">Tinjauan Sistematis</message>
+	<message key="article.type.standard.mini-review">Tinjauan Singkat (Mini Review)</message>
+	<message key="article.type.standard.case-report">Laporan Kasus</message>
+	<message key="article.type.standard.short-communication">Komunikasi Singkat</message>
+	<message key="article.type.standard.brief-report">Laporan Ringkas</message>
+	<message key="article.type.standard.article-commentary">Komentar</message>
+	<message key="article.type.standard.perspective">Perspektif</message>
+	<message key="article.type.standard.hypothesis-and-theory">Hipotesis dan Teori</message>
+	<message key="article.type.standard.conceptual-analysis">Analisis Konseptual</message>
+	<message key="article.type.standard.methods">Metode</message>
+	<message key="article.type.standard.data-report">Laporan Data</message>
+	<message key="article.type.standard.editorial">Editorial</message>
+	<message key="article.type.standard.letter">Surat kepada Editor</message>
+	<message key="article.type.standard.book-review">Ulasan Buku</message>
+
+	<!-- Tipe EDITORIAL-ONLY: hanya JM/Editor/Section Editor -->
+	<message key="article.type.standard.erratum">Erratum</message>
+	<message key="article.type.standard.corrigendum">Corrigendum</message>
+	<message key="article.type.standard.correction">Koreksi</message>
+	<message key="article.type.standard.retraction">Retraksi</message>
 </locale>

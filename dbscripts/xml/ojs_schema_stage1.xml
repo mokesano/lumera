@@ -772,6 +772,50 @@
 
 	<!--
 	  *
+	  * TABLE article_type_custom
+	  *
+	  -->
+	<table name="article_type_custom">
+		<field name="custom_type_id" type="I8">
+			<KEY />
+			<AUTOINCREMENT/>
+		</field>
+		<field name="journal_id" type="I8">
+			<NOTNULL/>
+		</field>
+		<field name="seq" type="F">
+			<NOTNULL/>
+			<DEFAULT VALUE="0"/>
+		</field>
+		<descr>Custom (journal-specific) article types, supplementing the standard JATS-based types.</descr>
+	</table>
+
+	<!--
+	  *
+	  * TABLE article_type_custom_settings
+	  *
+	  -->
+	<table name="article_type_custom_settings">
+		<field name="custom_type_id" type="I8">
+			<NOTNULL/>
+		</field>
+		<field name="locale" type="C2" size="5">
+			<NOTNULL/>
+			<DEFAULT VALUE=""/>
+		</field>
+		<field name="setting_name" type="C2" size="255">
+			<NOTNULL/>
+		</field>
+		<field name="setting_value" type="X"/>
+		<field name="setting_type" type="C2" size="6">
+			<NOTNULL/>
+			<DEFAULT VALUE="string"/>
+		</field>
+		<descr>Localized name for custom article types.</descr>
+	</table>
+
+	<!--
+	  *
 	  * TABLE article_authors
 	  *
 	  -->

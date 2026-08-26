@@ -147,5 +147,71 @@
             <col>article_id</col>
         </index>
     </table>
+
+    <!--
+      *
+      * TABLE article_type_custom
+      *
+      * [WIZDAM] Tipe artikel KUSTOM per-jurnal - mendampingi tipe BAKU
+      * (kode JATS standar, didefinisikan sebagai constant di
+      * classes/article/ArticleType.inc.php, TIDAK perlu tabel karena
+      * tetap sama untuk semua jurnal). Dikelola Journal Manager lewat
+      * halaman pengaturan khusus, mirip pengelolaan Section - TAPI
+      * SENGAJA TIDAK menggantikan/memodifikasi Section (Section tetap
+      * untuk topik/Mini Jurnal, konsep terpisah).
+      *
+      -->
+    <table name="article_type_custom">
+        <field name="custom_type_id" type="I8">
+            <KEY/>
+            <AUTOINCREMENT/>
+        </field>
+        <field name="journal_id" type="I8">
+            <NOTNULL/>
+        </field>
+        <field name="seq" type="F">
+            <NOTNULL/>
+            <DEFAULT VALUE="0"/>
+        </field>
+        <descr>Custom (journal-specific) article types, supplementing the standard JATS-based types.</descr>
+        <index name="article_type_custom_journal_id">
+            <col>journal_id</col>
+        </index>
+    </table>
+
+    <!--
+      *
+      * TABLE article_type_custom_settings
+      *
+      * [WIZDAM] Nama tipe kustom, di-localize - pola generic settings
+      * yang sama seperti article_author_settings (perhatikan: field
+      * composite-key di sini SENGAJA HANYA pakai NOTNULL, TANPA KEY -
+      * mengikuti PERSIS konvensi tabel settings asli OJS, DTD xmlSchema
+      * TIDAK MENGIZINKAN <KEY/> dan <NOTNULL/> pada field yang sama,
+      * dan tabel settings serupa di OJS memang tidak mendeklarasikan
+      * composite key eksplisit lewat <KEY/> sama sekali).
+      *
+      -->
+    <table name="article_type_custom_settings">
+        <field name="custom_type_id" type="I8">
+            <NOTNULL/>
+        </field>
+        <field name="locale" type="C2" size="5">
+            <NOTNULL/>
+            <DEFAULT VALUE=""/>
+        </field>
+        <field name="setting_name" type="C2" size="255">
+            <NOTNULL/>
+        </field>
+        <field name="setting_value" type="X" />
+        <field name="setting_type" type="C2" size="6">
+            <NOTNULL/>
+            <DEFAULT VALUE="string"/>
+        </field>
+        <descr>Localized name for custom article types.</descr>
+        <index name="article_type_custom_settings_custom_type_id">
+            <col>custom_type_id</col>
+        </index>
+    </table>
     
 </schema>
