@@ -1,14 +1,13 @@
 {**
  * templates/common/navbar.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2003-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady
+ * Distributed under the GNU GPL v3.
  *
  * Navigation Bar
  *
  *}
- 
 <header class="c-header u-mb-0" style="border-color:#000">
     <div class="c-header__row c-header__row--flush">
         <div class="c-header__container">
@@ -73,4 +72,3 @@
     </div>
     <div class="c-journal-header__identity c-journal-header__identity--default"></div> 
 </header>
-
