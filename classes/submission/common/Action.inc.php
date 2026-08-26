@@ -322,11 +322,11 @@ class Action extends PKPAction {
                 default:
                     return false;
             }
-        }
 
-        $templateMgr->assign('pageTitle', $title); // Possible undefined variable '$title'.
-        $templateMgr->assign('instructions', $instructions);
-        $templateMgr->display('submission/instructions.tpl');
+            $templateMgr->assign('pageTitle', $title);
+            $templateMgr->assign('instructions', $instructions);
+            $templateMgr->display('submission/instructions.tpl');
+        }
 
         return true;
     }
