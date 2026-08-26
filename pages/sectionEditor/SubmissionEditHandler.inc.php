@@ -38,8 +38,8 @@ class SubmissionEditHandler extends SectionEditorHandler {
                 E_USER_DEPRECATED
             );
         }
-        // [LUMERA FIX] Use $this instead of self for non-static method call
-        $this->__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
