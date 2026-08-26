@@ -1,14 +1,13 @@
 {**
  * templates/common/navbar.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2003-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * Navigation Bar
  *
  *}
- 
 <div class="c-header__row">
     <div class="c-header__container" data-test="navigation-row">
         <div class="c-header__split">
@@ -128,4 +127,3 @@
         </div>
     </div>
 </div>
-
