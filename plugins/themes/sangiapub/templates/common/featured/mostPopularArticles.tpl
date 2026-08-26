@@ -1,10 +1,11 @@
 {**
- * templates/common/feature/mostPopularArticle.tpl
+ * templates/common/featured/mostPopularArticles.tpl
  *
+ * Copyright (c) 2018-2026 Sangia Publishing House
  * Copyright (c) 2018-2025 Rochmady and Wizdam Team
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3.
  *
- * Most Popular Articles
+ * Widget Most Popular Articles
  *
  * Data ($topArticle, $secondTierArticles, $thirdTierArticles, $lastUpdateDate)
  * dan keputusan tampil/tidaknya grid "app-reviews-row" ($showMostPopularGrid)
@@ -13,7 +14,6 @@
  * Template tidak lagi menghitung articleCount sendiri.
  *
  *}
-
 <section id="latest-popular" class="live-area u-mt-32 u-mb-48" data-track-component="latest popular grid" >
     <div class="row raw">
         <div id="articles-popular" class="c-article-most__popular">
@@ -30,104 +30,110 @@
                 <li class="app-reviews-row__main">
                     <ul class="app-reviews-row__grid">
                         {if $topArticle}
-                        {foreach from=$topArticle item=article}
-                        <li class="app-reviews-row__item app-reviews-row__item--major">
-                            <div class="u-full-height">
-                                <div class="u-full-height" data-native-ad-placement="false">
-                                    <article class="u-full-height c-card c-card--flush c-card--major" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
-                                        <div class="c-card__layout u-full-height">
-                                            {if $article.cover_image.file_exists}
-                                            <div class="c-card__image"><picture><source type="image/webp" srcset="{$article.cover_image.file_url}?as=webp 450w,{$article.cover_image.file_url}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px,735px"><img src="{$article.cover_image.file_url}" alt="{$article.title|escape}" itemprop="image"></picture>
-                                            </div>
-                                            {else}
-                                            <div class="c-card__image"><picture><source type="image/webp" srcset="//assets.sangia.org/static/images/not-available.webp 450w, //assets.sangia.org/static/images/not-available.webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px"><img src="//assets.sangia.org/static/images/not-available.webp" alt="{$article.title|escape}" itemprop="image"></picture>
-                                            </div>
-                                            {/if}
-                                            <div class="c-card__body u-display-flex u-flex-direction-column">
-                                                <h3 class="c-card__title" itemprop="name headline">
-                                                    <a href="{$article.article_url}" class="c-card__link u-link-inherit" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$article.title}</a>
-                                                </h3>
-                                                {if $article.abstract}
-                                                <div data-test="article-description" class="c-card__summary ellipse u-mb-16" itemprop="description"><p>{$article.abstract}</p>
-                                                </div>
-                                                {/if}
-                                                <div class="c-card__section c-meta">
-                                                    <div><ul data-test="author-list" class="c-author-list c-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span>{/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></span></li>{/foreach}</ul>
+                            {foreach from=$topArticle item=article}
+                                <li class="app-reviews-row__item app-reviews-row__item--major">
+                                    <div class="u-full-height">
+                                        <div class="u-full-height" data-native-ad-placement="false">
+                                            <article class="u-full-height c-card c-card--flush c-card--major" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
+                                                <div class="c-card__layout u-full-height">
+                                                    {if $article.cover_image.file_exists}
+                                                    <div class="c-card__image">
+                                                        <picture>
+                                                            <source type="image/webp" srcset="{$article.cover_image.file_url}?as=webp 450w,{$article.cover_image.file_url}?as=webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px,735px">
+                                                            <img src="{$article.cover_image.file_url}" alt="{$article.title|escape}" itemprop="image">
+                                                        </picture>
                                                     </div>
-                                                    <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type|escape}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">Open Access</span></span>{/if}{if $showMostPopularGrid}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>{else}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %B %Y"}</time>{/if}<span class="c-meta__item rank">{$article.total_views|number_format} views</span>
+                                                    {else}
+                                                    <div class="c-card__image">
+                                                        <picture>
+                                                            <source type="image/webp" srcset="//assets.sangia.org/static/images/not-available.webp 450w, //assets.sangia.org/static/images/not-available.webp 735w" sizes="(max-width: 1024px) 450px,(max-width: 100vw) 735px 735px">
+                                                            <img src="//assets.sangia.org/static/images/not-available.webp" alt="{$article.title|escape}" itemprop="image">
+                                                        </picture>
+                                                    </div>
+                                                    {/if}
+                                                    <div class="c-card__body u-display-flex u-flex-direction-column">
+                                                        <h3 class="c-card__title" itemprop="name headline">
+                                                            <a href="{$article.article_url}" class="c-card__link u-link-inherit" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$article.title}</a>
+                                                        </h3>
+                                                        {if $article.abstract}
+                                                        <div data-test="article-description" class="c-card__summary ellipse u-mb-16" itemprop="description"><p>{$article.abstract}</p></div>
+                                                        {/if}
+                                                        <div class="c-card__section c-meta">
+                                                            <div><ul data-test="author-list" class="c-author-list c-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span>{/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></span></li>{/foreach}</ul></div>
+                                                            <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type|escape}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">Open Access</span></span>{/if}{if $showMostPopularGrid}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>{else}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %B %Y"}</time>{/if}<span class="c-meta__item rank">{$article.total_views|number_format} views</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </article>
                                         </div>
-                                    </article>
-                                </div>
-                            </div>
-                        </li>
-                        {/foreach}
+                                    </div>
+                                </li>
+                            {/foreach}
                         {/if}
 
                         {if $secondTierArticles}
-                        {foreach from=$secondTierArticles item=article name=secondLoop}
-                        {assign var="rank" value=$smarty.foreach.secondLoop.iteration+1}
-                        <li class="app-reviews-row__item">
-                            <div class="u-full-height">
-                                <div class="u-full-height" data-native-ad-placement="false">
-                                    <article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
-                                        <div class="c-card__layout u-full-height">
-                                            {if $article.cover_image.file_exists}
-                                            <div class="c-card__image"><picture><source type="image/webp" srcset="{$article.cover_image.file_url}?as=webp 160w,{$article.cover_image.file_url}?as=webp 290w" sizes="(max-width: 640px) 160px,(max-width: 1200px) 290px,290px">
-                                                <img src="{$article.cover_image.file_url}" alt="" itemprop="image"></picture>
-                                            </div>
-                                            {/if}
-                                            <div class="c-card__body u-display-flex u-flex-direction-column">
-                                                <h3 class="c-card__title" itemprop="name headline">
-                                                    <a href="{$article.article_url}" class="c-card__link u-link-inherit" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$article.title}</a>
-                                                </h3>
-                                                {if $article.abstract}
-                                                <div data-test="article-description" class="c-card__summary ellips u-mb-16 u-hide-sm-max" itemprop="description"><p>{$article.abstract}</p>
+                            {foreach from=$secondTierArticles item=article name=secondLoop}
+                                {assign var="rank" value=$smarty.foreach.secondLoop.iteration+1}
+                                <li class="app-reviews-row__item">
+                                    <div class="u-full-height">
+                                        <div class="u-full-height" data-native-ad-placement="false">
+                                            <article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
+                                                <div class="c-card__layout u-full-height">
+                                                    {if $article.cover_image.file_exists}
+                                                    <div class="c-card__image">
+                                                        <picture>
+                                                            <source type="image/webp" srcset="{$article.cover_image.file_url}?as=webp 160w,{$article.cover_image.file_url}?as=webp 290w" sizes="(max-width: 640px) 160px,(max-width: 1200px) 290px,290px">
+                                                            <img src="{$article.cover_image.file_url}" alt="" itemprop="image">
+                                                        </picture>
+                                                    </div>
+                                                    {/if}
+                                                    <div class="c-card__body u-display-flex u-flex-direction-column">
+                                                        <h3 class="c-card__title" itemprop="name headline">
+                                                            <a href="{$article.article_url}" class="c-card__link u-link-inherit" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$article.title}</a>
+                                                        </h3>
+                                                        {if $article.abstract}
+                                                        <div data-test="article-description" class="c-card__summary ellips u-mb-16 u-hide-sm-max" itemprop="description"><p>{$article.abstract}</p></div>
+                                                        {/if}
+                                                    </div>
                                                 </div>
-                                                {/if}
-                                            </div>
+                                                <div class="c-card__section c-meta">
+                                                    <div><ul data-test="author-list" class="c-author-list c-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span>{/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></span></li>{/foreach}</ul></div>
+                                                    <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type|escape}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access">{if $showMostPopularGrid}<span class="u-color-open-access">OA</span>{else}<span class="u-color-open-access">Open Access</span>{/if}</span>{/if}{if $showMostPopularGrid}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>{else}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %B %Y"}</time>{/if}
+                                                </div>
+                                            </article>
                                         </div>
-                                        <div class="c-card__section c-meta">
-                                            <div><ul data-test="author-list" class="c-author-list c-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span>{/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></span></li>{/foreach}</ul>
-                                            </div>
-                                            <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type|escape}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access">{if $showMostPopularGrid}<span class="u-color-open-access">OA</span>{else}<span class="u-color-open-access">Open Access</span>{/if}</span>{/if}{if $showMostPopularGrid}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>{else}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %B %Y"}</time>{/if}
-                                        </div>
-                                    </article>
-                                </div>
-                            </div>
-                        </li>
-                        {/foreach}
+                                    </div>
+                                </li>
+                            {/foreach}
                         {/if}
                     </ul>
                     {if $thirdTierArticles}
-                    <li>
-                        <ul class="app-reviews-row__side">
-                            {foreach from=$thirdTierArticles item=article name=thirdLoop}
-                            {assign var="rank" value=$smarty.foreach.thirdLoop.iteration+5}
-                            <li class="app-reviews-row__side-item">
-                                <div class="u-full-height">
-                                    <div class="u-full-height" data-native-ad-placement="false">
-                                        <article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
-                                            <div class="c-card__layout u-full-height">
-                                                <div class="c-card__body u-display-flex u-flex-direction-column">
-                                                    <h3 class="c-card__title elipsis" itemprop="name headline">
-                                                        <a href="{$article.article_url}" class="c-card__link u-link-inherit" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$article.title}</a>
-                                                    </h3>
+                        <li>
+                            <ul class="app-reviews-row__side">
+                                {foreach from=$thirdTierArticles item=article name=thirdLoop}
+                                {assign var="rank" value=$smarty.foreach.thirdLoop.iteration+5}
+                                <li class="app-reviews-row__side-item">
+                                    <div class="u-full-height">
+                                        <div class="u-full-height" data-native-ad-placement="false">
+                                            <article class="u-full-height c-card c-card--flush" itemscope="" itemtype="http://schema.org/ScholarlyArticle">
+                                                <div class="c-card__layout u-full-height">
+                                                    <div class="c-card__body u-display-flex u-flex-direction-column">
+                                                        <h3 class="c-card__title elipsis" itemprop="name headline">
+                                                            <a href="{$article.article_url}" class="c-card__link u-link-inherit" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$article.title}</a>
+                                                        </h3>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="c-card__section c-meta">
-                                                <div><ul data-test="author-list" class="c-author-list c-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span>{/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></span></li>{/foreach}</ul>
+                                                <div class="c-card__section c-meta">
+                                                    <div><ul data-test="author-list" class="c-author-list c-author-list--compact">{foreach from=$article.authors item=author name=authorLoop}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">{if $author.first_name !== $author.last_name}<span itemprop="given-name">{$author.first_name}</span>{/if}{if $author.middle_name}<span itemprop="middle-name">{$author.middle_name}</span>{/if}<span itemprop="surname">{$author.last_name}</span></span></li>{/foreach}</ul></div>
+                                                    <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">OA</span></span>{/if}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
                                                 </div>
-                                                <span class="c-meta__item" data-test="article.type"><span class="c-meta__type">{$article.article_type}</span></span>{if $article.is_open_access}<span class="c-meta__item" itemprop="openAccess" data-test="open-access"><span class="u-color-open-access">OA</span></span>{/if}<time class="c-meta__item" datetime="{$article.date_published_formatted}" itemprop="datePublished">{$article.date_published_formatted|date_format:"%d %b %Y"}</time>
-                                            </div>
-                                        </article>
+                                            </article>
+                                        </div>
                                     </div>
-                                </div>
-                            </li>
-                            {/foreach}
-                        </ul>
-                    </li>
+                                </li>
+                                {/foreach}
+                            </ul>
+                        </li>
                     {/if}
                 </li>
             </ul>
