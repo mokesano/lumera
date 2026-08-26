@@ -9,17 +9,6 @@
  *
  *}
 
-{* Include article hero PHP dengan proxy yang sudah diperbaiki *}
-{php}
-foreach ((array)$this->template_dir as $dir) {
-    if (preg_match('/plugins\/themes\/([^\/]+)/', $dir, $matches) && 
-        file_exists($articleHeroFile = 'plugins/themes/' . $matches[1] . '/php/hero_futured/article_hero.php')) {
-        include_once($articleHeroFile);
-        break;
-    }
-}
-{/php}
-
 {if $heroCandidatesScoring && $featuredCandidatesScoring}
 
 {* Hero Article Section *}
