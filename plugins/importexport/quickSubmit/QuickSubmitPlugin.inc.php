@@ -176,6 +176,56 @@ class QuickSubmitPlugin extends ImportExportPlugin {
             $tempFileId = $form->getData('tempFileId');
             $tempFileId[$formLocale] = $form->uploadSubmissionFile('submissionFile');
             $form->setData('tempFileId', $tempFileId);
+        } elseif ($request->getUserVar('addFunder')) {
+            // [WIZDAM] Tambah baris funder -- pola sama persis addAuthor.
+            $editData = true;
+            $funders = $form->getData('funders');
+            $funders[] = [];
+            $form->setData('funders', $funders);
+        } elseif (($delFunder = $request->getUserVar('delFunder')) && count($delFunder) == 1) {
+            // [WIZDAM] Hapus baris funder.
+            $editData = true;
+            $delFunderKeys = array_keys($delFunder);
+            $delFunderIndex = (int) array_shift($delFunderKeys);
+
+            $funders = $form->getData('funders');
+            if (isset($funders[$delFunderIndex]['funderId']) && !empty($funders[$delFunderIndex]['funderId'])) {
+                $deletedFunders = explode(':', (string) $form->getData('deletedFunders'));
+                $deletedFunders[] = $funders[$delFunderIndex]['funderId'];
+                $form->setData('deletedFunders', implode(':', $deletedFunders));
+            }
+            array_splice($funders, $delFunderIndex, 1);
+            $form->setData('funders', $funders);
+        } elseif ($request->getUserVar('moveFunder')) {
+            // [WIZDAM] Pindah urutan funder naik/turun.
+            $editData = true;
+            $moveFunderDir = $request->getUserVar('moveFunderDir');
+            $moveFunderDir = $moveFunderDir == 'u' ? 'u' : 'd';
+            $moveFunderIndex = (int) $request->getUserVar('moveFunderIndex');
+            $funders = $form->getData('funders');
+
+            if (!(($moveFunderDir == 'u' && $moveFunderIndex <= 0) || ($moveFunderDir == 'd' && $moveFunderIndex >= count($funders) - 1))) {
+                $tmpFunder = $funders[$moveFunderIndex];
+                if ($moveFunderDir == 'u') {
+                    $funders[$moveFunderIndex] = $funders[$moveFunderIndex - 1];
+                    $funders[$moveFunderIndex - 1] = $tmpFunder;
+                } else {
+                    $funders[$moveFunderIndex] = $funders[$moveFunderIndex + 1];
+                    $funders[$moveFunderIndex + 1] = $tmpFunder;
+                }
+            }
+            $form->setData('funders', $funders);
+        } elseif ($request->getUserVar('migrateSponsorToFunder')) {
+            // [WIZDAM] KONSOLIDASI DATA LAMA -> BARU -- lihat penjelasan
+            // lengkap di Action::saveMetadata() (MetadataForm editorial).
+            // Pola sama persis, disesuaikan untuk QuickSubmit.
+            $editData = true;
+            $sponsorText = trim((string) ($form->getData('sponsor')[$formLocale] ?? ''));
+            if ($sponsorText !== '') {
+                $funders = $form->getData('funders');
+                $funders[] = ['funderId' => 0, 'funderName' => $sponsorText, 'awardNumber' => ''];
+                $form->setData('funders', $funders);
+            }
         }
 
         if ($request->getUserVar('createAnother') && $form->validate()) {

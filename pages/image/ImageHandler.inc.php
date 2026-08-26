@@ -6,7 +6,7 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady
- * Distributed under the GNU GPL v2.
+ * Distributed under the GNU GPL v3.
  *
  * @class ImageHandler
  * @ingroup pages_image
@@ -105,7 +105,7 @@ class ImageHandler extends Handler {
             // Panggil delegasi pemroses gambar (The Brain)
             $processor = new ImageProcessor();
             
-            if ($processor->resizeAndOptimize($originalFilePath, $cacheFilePath, $width, $height, 75)) {
+            if ($processor->resizeAndOptimize($originalFilePath, $cacheFilePath, $width, $height, 75)) { // Too many arguments. Expected 4. Found 5.
                 $this->_serveImage($cacheFilePath);
             } else {
                 // Fallback aman: jika gagal diproses, tampilkan yang asli

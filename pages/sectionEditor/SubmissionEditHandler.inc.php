@@ -152,6 +152,15 @@ class SubmissionEditHandler extends SectionEditorHandler {
         }
 
         $templateMgr->assign('canEditMetadata', true);
+        // [WIZDAM] Funders -- untuk ditampilkan di metadata.tpl (subtemplate
+        // ringkasan, di-include halaman ini), sama seperti article.tpl
+        // publik. Field lain (competingInterest/ethicalApproval/
+        // generativeAiDeclaration/creditRoles) TIDAK perlu assign() manual
+        // -- otomatis termuat lewat article_settings/author_settings
+        // generik (dikonfirmasi sebelumnya).
+        /** @var ArticleFunderDAO $funderDao */
+        $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+        $templateMgr->assign('funders', $funderDao->getByArticleId($articleId)->toArray());
         $templateMgr->display('sectionEditor/submission.tpl');
     }
 

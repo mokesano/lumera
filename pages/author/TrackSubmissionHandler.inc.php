@@ -196,6 +196,11 @@ class TrackSubmissionHandler extends AuthorHandler {
         $initialCopyeditSignoff = $submission->getSignoff('SIGNOFF_COPYEDITING_INITIAL');
         $templateMgr->assign('canEditMetadata', !$initialCopyeditSignoff->getDateCompleted() && $submission->getStatus() != STATUS_PUBLISHED);
 
+        // [WIZDAM] Funders -- lihat penjelasan di SubmissionEditHandler.inc.php.
+        /** @var ArticleFunderDAO $funderDao */
+        $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+        $templateMgr->assign('funders', $funderDao->getByArticleId($articleId)->toArray());
+
         $templateMgr->display('author/submission.tpl');
     }
 

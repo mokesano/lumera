@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 
 import('lib.pkp.classes.form.Form');
+import('classes.article.Author');
 
 class QuickSubmitForm extends Form {
     
@@ -145,7 +146,7 @@ class QuickSubmitForm extends Form {
      * @return array
      */
     public function getLocaleFieldNames(): array {
-        return ['title', 'abstract', 'discipline', 'subjectClass', 'subject', 'coverageGeo', 'coverageChron', 'coverageSample', 'type', 'sponsor'];
+        return ['title', 'abstract', 'discipline', 'subjectClass', 'subject', 'coverageGeo', 'coverageChron', 'coverageSample', 'type', 'sponsor', 'competingInterest', 'ethicalApproval', 'generativeAiDeclaration'];
     }
 
     /**
@@ -260,8 +261,23 @@ class QuickSubmitForm extends Form {
             'tempFileId', 'destination', 'issueId', 'pages', 'sectionId', 'authors',
             'primaryContact', 'title', 'abstract', 'discipline', 'subjectClass', 'subject',
             'coverageGeo', 'coverageChron', 'coverageSample', 'type', 'language', 'sponsor',
-            'citations', 'locale'
+            'citations', 'locale',
+            // [WIZDAM] Funders + Deklarasi
+            'funders', 'deletedFunders', 'competingInterest', 'ethicalApproval', 'generativeAiDeclaration'
         ]);
+
+        // [WIZDAM] Normalisasi creditRoles per-penulis dan funders --
+        // pola sama persis AuthorSubmitStep2Form/MetadataForm.
+        if (is_array($this->_data['authors'])) {
+            foreach ($this->_data['authors'] as $i => $author) {
+                if (!isset($this->_data['authors'][$i]['creditRoles']) || !is_array($this->_data['authors'][$i]['creditRoles'])) {
+                    $this->_data['authors'][$i]['creditRoles'] = [];
+                }
+            }
+        }
+        if (!is_array($this->_data['funders'])) {
+            $this->_data['funders'] = [];
+        }
 
         $this->readUserDateVars(['datePublished']);
 
@@ -331,6 +347,14 @@ class QuickSubmitForm extends Form {
         $article->setCitations($this->getData('citations'));
         $article->setPages($this->getData('pages'));
 
+        // [WIZDAM] Deklarasi level artikel -- QuickSubmit dipakai editor
+        // untuk menambah artikel langsung (mis. digitalisasi terbitan
+        // lama), jadi field ini juga perlu tersedia di sini, sama seperti
+        // wizard submit dan halaman metadata editorial.
+        $article->setCompetingInterest($this->getData('competingInterest'), null);
+        $article->setEthicalApproval($this->getData('ethicalApproval'), null);
+        $article->setGenerativeAiDeclaration($this->getData('generativeAiDeclaration'), null);
+
         $article->setDateSubmitted(Core::getCurrentDate());
         $article->setStatus($this->getData('destination') === 'queue' ? STATUS_QUEUED : STATUS_PUBLISHED);
         $article->setSubmissionProgress(0);
@@ -352,6 +376,9 @@ class QuickSubmitForm extends Form {
             $authorId = (int) ($authorData['authorId'] ?? 0);
             
             if ($authorId > 0) {
+                // [WIZDAM BUGFIX] Anotasi tipe -- lihat penjelasan di
+                // import() paling atas file ini.
+                /** @var Author $author */
                 $author = $authorDao->getAuthor($authorId, $articleId);
                 $isExistingAuthor = true;
             } else {
@@ -371,8 +398,11 @@ class QuickSubmitForm extends Form {
                 $author->setEmail($authorData['email']);
                 $author->setData('orcid', $authorData['orcid'] ?? '');
                 $author->setUrl($authorData['url'] ?? '');
-                if (array_key_exists('competingInterests', $authorData)) {
-                    $author->setData('competingInterests', $authorData['competingInterests'], null);
+                if (array_key_exists('creditRoles', $authorData)) {
+                    // [WIZDAM] Menggantikan setData('competingInterests', ...)
+                    // per-penulis lama -- lihat penjelasan lengkap di
+                    // MetadataForm.inc.php/AuthorSubmitStep2Form.inc.php.
+                    $author->setCreditRolesArray($authorData['creditRoles'] ?? []);
                 }
                 $author->setBiography($authorData['biography'] ?? '', null);
                 $author->setPrimaryContact(((int) $this->getData('primaryContact')) === $i ? 1 : 0);
@@ -386,6 +416,28 @@ class QuickSubmitForm extends Form {
 
         $article->initializePermissions();
         $articleDao->updateLocaleFields($article);
+
+        // [WIZDAM] Simpan funders (pendanaan/hibah) -- pola sama persis
+        // AuthorSubmitStep2Form/MetadataForm.
+        /** @var ArticleFunderDAO $funderDao */
+        $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+        $funders = (array) $this->getData('funders');
+        foreach ($funders as $i => $funderData) {
+            $funderName = trim((string) ($funderData['funderName'] ?? ''));
+            if ($funderName === '') {
+                continue;
+            }
+            $funder = $funderDao->newDataObject();
+            $funder->setArticleId($articleId);
+            $funder->setFunderName($funderName);
+            $funder->setAwardNumber(trim((string) ($funderData['awardNumber'] ?? '')) ?: null);
+            $funder->setSequence($i + 1);
+            $funderDao->insertArticleFunder($funder);
+        }
+        // Tidak perlu penanganan "deletedFunders" di sini -- QuickSubmit
+        // SELALU membuat artikel BARU (insertArticle di atas), jadi
+        // tidak ada funder existing yang mungkin perlu dihapus dalam
+        // satu kali proses submit.
 
         // Add the submission files as galleys
         import('classes.file.TemporaryFileManager');
