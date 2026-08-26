@@ -1,4 +1,10 @@
 {**
+ * templates/common/featured/sample.tpl
+ *
+ * Copyright (c) 2024-2026 Sangia Lumera Frontedge
+ * Copyright (c) 2024-2026 Rochmady and Codecanau
+ * Distributed under the GNU GPL v3.
+ *
  * Article Hero Template Implementation - FIXED
  * Contoh lengkap penggunaan dengan PHP proxy dan data yang dihasilkan
  *}
