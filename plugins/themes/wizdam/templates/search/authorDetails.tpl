@@ -9,8 +9,8 @@
  *
  *}
 {strip}
-{assign var="pageTitle" value="search.authorDetails"}
-{include file="common/header-AUTH27.tpl"}
+	{assign var="pageTitle" value="search.authorDetails"}
+	{include file="common/header-AUTH27.tpl"}
 {/strip}
 
             	<div class="sc-uosj0-0 AcWHr">
@@ -142,8 +142,6 @@
 			<aside data-component-mpu="" class="adsbox c-ad c-ad--160x600 u-mt-16 null">
                 <div class="c-ad__inner">
                     <p class="c-ad__label">Advertisement</p>
-                    <style>@media(max-width:500px){.Sangia-600x160{width:auto !important;height:600px;}}@media(min-width: 500px){.Sangia-600x160{width:auto !important;height:600px;}}@media(min-width:800px){.Sangia-600x160{width:auto !important;height:600px;}}
-                    </style>
                     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416265824412721"
                          crossorigin="anonymous"></script>
                     <!-- Sangia-Advertisement -->
