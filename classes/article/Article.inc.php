@@ -702,6 +702,58 @@ class Article extends Submission {
         return $this->setData('generativeAiDeclaration', is_array($generativeAiDeclaration) ? $generativeAiDeclaration : (string) $generativeAiDeclaration, $locale);
     }
 
+    // [WIZDAM] Tipe Artikel -- lihat classes/article/ArticleType.inc.php
+    // (11 tipe baku, kode JATS standar) dan
+    // classes/article/ArticleTypeCustom.inc.php (tipe kustom
+    // per-jurnal). Pola generic settings SAMA seperti hideAuthor di
+    // atas -- TIDAK localized (kode/ID, bukan teks bebas), TIDAK perlu
+    // kolom tabel baru. TEPAT SATU dari kedua field ini yang seharusnya
+    // terisi dalam satu waktu (baku ATAU kustom, tidak keduanya
+    // sekaligus) -- pemilihan mana yang dipakai ditentukan di
+    // form/template (radio button "Tipe Baku" vs "Tipe Kustom"), BUKAN
+    // dipaksakan di level data object ini.
+    //
+    // INI BUKAN pengganti Section (topik/Mini Jurnal, konsep terpisah)
+    // ATAU field 'type' bebas teks lama (Submission::getType(),
+    // dikontrol setting 'metaType') -- keduanya TETAP ada berdampingan.
+
+    /**
+     * Get the standard article type code (ARTICLE_TYPE_* constant
+     * value from ArticleType.inc.php), if a standard type was chosen.
+     * @return string|null
+     */
+    public function getArticleTypeCode() {
+        $value = $this->getData('articleTypeCode');
+        return $value !== null && $value !== '' ? (string) $value : null;
+    }
+
+    /**
+     * Set the standard article type code.
+     * @param string|null $articleTypeCode
+     */
+    public function setArticleTypeCode($articleTypeCode) {
+        return $this->setData('articleTypeCode', $articleTypeCode);
+    }
+
+    /**
+     * Get the custom article type ID (references
+     * article_type_custom.custom_type_id), if a custom (journal-
+     * specific) type was chosen instead of a standard one.
+     * @return int|null
+     */
+    public function getArticleTypeCustomId() {
+        $value = $this->getData('articleTypeCustomId');
+        return $value !== null && (int) $value > 0 ? (int) $value : null;
+    }
+
+    /**
+     * Set the custom article type ID.
+     * @param int|null $articleTypeCustomId
+     */
+    public function setArticleTypeCustomId($articleTypeCustomId) {
+        return $this->setData('articleTypeCustomId', $articleTypeCustomId !== null ? (int) $articleTypeCustomId : null);
+    }
+
     /**
      * Get the localized article cover filename.
      * DEPRECATED in favour of getLocalizedFileName.
