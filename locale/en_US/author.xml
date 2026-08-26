@@ -214,4 +214,27 @@
 	<message key="article.type.standard.corrigendum">Corrigendum</message>
 	<message key="article.type.standard.correction">Correction</message>
 	<message key="article.type.standard.retraction">Retraction</message>
+
+	<message key="article.type.form.name">Name</message>
+	<message key="article.type.form.nameRequired">Please enter a name for this custom article type.</message>
+	<message key="article.type.customType.description">Add custom article types specific to this journal, to supplement the standard types above.</message>
+	<message key="article.type.customType.noneCreated">No custom article types have been created yet.</message>
+	<message key="article.type.customType.create">Create Custom Article Type</message>
+	<message key="article.type.confirmDelete">Are you sure you want to delete this custom article type?</message>
+
+	<message key="article.type.availability">Availability</message>
+	<message key="article.type.availability.enabled">Enabled</message>
+	<message key="article.type.availability.public">Selectable by authors</message>
+	<message key="article.type.availability.editorialOnly">Editorial staff only (Journal Manager / Editor / Section Editor)</message>
+	<message key="article.type.availability.journalDescription">Uncheck any standard article type you do not want to be available to authors submitting to this journal. Unchecked types will not appear anywhere in this journal, including in any section.</message>
+	<message key="article.type.availability.editorialOnlyReference">Editorial-only Types (reference)</message>
+	<message key="article.type.availability.editorialOnlyReference.description">These types can only be assigned by editorial staff and are never shown to authors during submission.</message>
+	<message key="article.type.availability.sectionDescription">Uncheck any article type you do not want to be available to authors submitting to this specific section. Only types already enabled at the journal level are shown here as checkboxes -- types disabled by the Journal Manager cannot be re-enabled here.</message>
+	<message key="article.type.availability.disabledAtJournalLevel.title">Disabled Journal-wide (reference)</message>
+	<message key="article.type.availability.disabledAtJournalLevel">These types were disabled journal-wide by the Journal Manager and cannot be re-enabled for this section here. To make one available, it must first be re-enabled in Journal Manager &gt; Article Types.</message>
+
+	<message key="article.type.mySections">My Sections</message>
+	<message key="article.type.mySections.description">Configure which article types are available to authors submitting to each section you manage.</message>
+	<message key="article.type.mySections.noneAssigned">You are not currently assigned as editor of any section.</message>
+	<message key="article.type.configureSection">Configure Article Types</message>
 </locale>
