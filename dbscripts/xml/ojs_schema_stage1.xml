@@ -816,6 +816,36 @@
 
 	<!--
 	  *
+	  * TABLE article_type_journal_disabled
+	  *
+	  -->
+	<table name="article_type_journal_disabled">
+		<field name="journal_id" type="I8">
+			<NOTNULL/>
+		</field>
+		<field name="type_code" type="C2" size="50">
+			<NOTNULL/>
+		</field>
+		<descr>Standard article types disabled by the Journal Manager for the whole journal.</descr>
+	</table>
+
+	<!--
+	  *
+	  * TABLE article_type_section_disabled
+	  *
+	  -->
+	<table name="article_type_section_disabled">
+		<field name="section_id" type="I8">
+			<NOTNULL/>
+		</field>
+		<field name="type_code" type="C2" size="50">
+			<NOTNULL/>
+		</field>
+		<descr>Standard article types disabled by the Section Editor for a specific section.</descr>
+	</table>
+
+	<!--
+	  *
 	  * TABLE article_authors
 	  *
 	  -->
