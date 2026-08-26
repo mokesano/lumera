@@ -167,6 +167,7 @@ class Application extends PKPApplication {
             'ArticleDAO' => 'classes.article.ArticleDAO',
             'ArticleFileDAO' => 'classes.article.ArticleFileDAO',
             'ArticleFunderDAO' => 'classes.article.ArticleFunderDAO',
+            'ArticleTypeCustomDAO' => 'classes.article.ArticleTypeCustomDAO',
             'ArticleGalleyDAO' => 'classes.article.ArticleGalleyDAO',
             'ArticleNoteDAO' => 'classes.article.ArticleNoteDAO',
             'ArticleSearchDAO' => 'classes.search.ArticleSearchDAO',
