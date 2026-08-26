@@ -76,56 +76,56 @@
 
     <script type="text/javascript">
     {literal}
-    <!--
-    // Simple and GUARANTEED working validation
-    function validateSearch(event) {
-        var input = document.getElementById('query');
-        var value = input.value.trim();
-        
-        if (value === '') {
-            alert('Please fill out this field.');
-            input.focus();
-            return false;
+        <!--
+        // Simple and GUARANTEED working validation
+        function validateSearch(event) {
+            var input = document.getElementById('query');
+            var value = input.value.trim();
+            
+            if (value === '') {
+                alert('Please fill out this field.');
+                input.focus();
+                return false;
+            }
+            return true;
         }
-        return true;
-    }
 
-    function handleJournalChange(selectElement) {
-        const form = selectElement.closest('form');
-        const journalValue = selectElement.value;
-        const baseUrl = window.location.origin;
-        
-        if (journalValue === 'all') {
-            form.action = baseUrl + '/index/search';
-        } else {
-            form.action = baseUrl + '/' + journalPath + '/search';
+        function handleJournalChange(selectElement) {
+            const form = selectElement.closest('form');
+            const journalValue = selectElement.value;
+            const baseUrl = window.location.origin;
+            
+            if (journalValue === 'all') {
+                form.action = baseUrl + '/index/search';
+            } else {
+                form.action = baseUrl + '/' + journalPath + '/search';
+            }
         }
-    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const journalSelect = document.getElementById('journal');
-        
-        if (journalSelect) {
-            handleJournalChange(journalSelect);
-        }
-    });
+        document.addEventListener('DOMContentLoaded', function() {
+            const journalSelect = document.getElementById('journal');
+            
+            if (journalSelect) {
+                handleJournalChange(journalSelect);
+            }
+        });
 
-    document.addEventListener('DOMContentLoaded', function() {
-        var searchForms = document.querySelectorAll(
-            'form[role="search"], ' +
-            'form.c-header__search-form, ' +
-            'form[data-track-category*="inline search"], ' +
-            '.s-search form'
-        );
-        
-        for (var i = 0; i < searchForms.length; i++) {
-            var form = searchForms[i];
-            form.onsubmit = function() {
-                return validateSearch(this);
-            };
-        }
-    });
-    // -->
+        document.addEventListener('DOMContentLoaded', function() {
+            var searchForms = document.querySelectorAll(
+                'form[role="search"], ' +
+                'form.c-header__search-form, ' +
+                'form[data-track-category*="inline search"], ' +
+                '.s-search form'
+            );
+            
+            for (var i = 0; i < searchForms.length; i++) {
+                var form = searchForms[i];
+                form.onsubmit = function() {
+                    return validateSearch(this);
+                };
+            }
+        });
+        // -->
     {/literal}
     </script>
 
