@@ -5,7 +5,7 @@
  * Copyright (c) 2017-2026 Rochmady and Team
  * Distributed under the GNU GPL v3.
  *
- * Journal Insights
+ * Journal Timeline
  *
  *}
 <div id="__next" class="journal-metrics">
