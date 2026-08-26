@@ -112,6 +112,13 @@ class TinyMCEPlugin extends GenericPlugin {
                 
             case 'author/submit':
             case 'author/saveSubmit':
+                // [WIZDAM] SUDAH TIDAK PERNAH TERCAPAI -- page/op ini
+                // dipakai wizard submit LAMA, sudah dipindah ke
+                // submission/submit (lihat case di bawah) sejak migrasi
+                // routing. LegacySubmitRedirectHandler me-redirect
+                // request ke sini SEBELUM sempat di-render, jadi cabang
+                // ini murni riwayat, dibiarkan apa adanya (tidak
+                // berbahaya, tidak pernah tereksekusi).
                 $request = Application::get()->getRequest();
                 $routerArgs = $request->getRequestedArgs();
                 $step = array_shift($routerArgs);
@@ -126,6 +133,29 @@ class TinyMCEPlugin extends GenericPlugin {
                         $fields[] = "authors-$i-competingInterests";
                     }
                     $fields[] = 'abstract';
+                }
+                break;
+
+            case 'submission/submit':
+            case 'submission/saveSubmit':
+                $request = Application::get()->getRequest();
+                $routerArgs = $request->getRequestedArgs();
+                $step = array_shift($routerArgs);
+
+                if ($step === '1') {
+                    $fields[] = 'abstract';
+                } elseif ($step === '2') {
+                    $authors = $templateMgr->get_template_vars('authors');
+                    $count = max(1, is_array($authors) ? count($authors) : 0);
+                    for ($i = 0; $i < $count; $i++) {
+                        $fields[] = "authors-$i-biography";
+                    }
+                } elseif ($step === '3') {
+                    $fields[] = 'competingInterest';
+                    $fields[] = 'ethicalApproval';
+                    $fields[] = 'generativeAiDeclaration';
+                } elseif ($step === '5') {
+                    $fields[] = 'commentsToEditor';
                 }
                 break;
                 
@@ -203,9 +233,11 @@ class TinyMCEPlugin extends GenericPlugin {
                 $count = max(1, $authorsCount);
                 for ($i = 0; $i < $count; $i++) {
                     $fields[] = "authors-$i-biography";
-                    $fields[] = "authors-$i-competingInterests";
                 }
                 $fields[] = 'abstract';
+                $fields[] = 'competingInterest';
+                $fields[] = 'ethicalApproval';
+                $fields[] = 'generativeAiDeclaration';
                 break;
                 
             case 'manager/payments':
@@ -355,9 +387,11 @@ class TinyMCEPlugin extends GenericPlugin {
                 $count = max(1, is_array($authors) ? count($authors) : 0);
                 for ($i = 0; $i < $count; $i++) {
                     $fields[] = "authors-$i-biography";
-                    $fields[] = "authors-$i-competingInterests";
                 }
                 $fields[] = 'abstract';
+                $fields[] = 'competingInterest';
+                $fields[] = 'ethicalApproval';
+                $fields[] = 'generativeAiDeclaration';
                 break;
                 
             case 'sectionEditor/editSuppFile':

@@ -15,7 +15,7 @@
 {url|assign:"competingInterestGuidelinesUrl" page="information" op="competingInterestGuidelines"}
 
 <form id="metadata" method="post" action="{url op="saveMetadata"}" enctype="multipart/form-data">
-	<input value="{$csrfToken|escape}" name="csrfToken" type="hidden">
+	<input type="hidden" name="csrfToken" value="{$csrfToken|escape}" />
 	<input type="hidden" name="articleId" value="{$articleId|escape}" />
 	{include file="common/formErrors.tpl"}
 
