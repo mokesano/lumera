@@ -41,13 +41,13 @@
 
 {if $issue && $currentJournal->getSetting('publishingMode') != $smarty.const.PUBLISHING_MODE_NONE && ($issue->getIssueProgressStatus() == 'in-progress' || $issue->getIssueProgressStatus() == 'completed')}
 	<section class="area-wrapper u-mt-32">
-	<div class="live-area">
-		<section class="row raw">
-			<div class="column medium-12 editorial-timeline">
-				{include file="common/featured/editorial-timeline.tpl"}
-			</div>
-		</section>
-	</div>
+		<div class="live-area">
+			<section class="row raw">
+				<div class="column medium-12 editorial-timeline">
+					{include file="common/featured/editorial-timeline.tpl"}
+				</div>
+			</section>
+		</div>
 	</section>
 		{include file="common/featured/mostDownloads.tpl"}
 		{** include file="common/featured/mostPopularArticles.tpl" **}
