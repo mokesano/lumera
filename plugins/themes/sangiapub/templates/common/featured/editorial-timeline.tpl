@@ -1,14 +1,13 @@
 {**
- * templates/common/journal-insight.tpl
+ * templates/common/editorial-timeline.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2003-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
- * Journal Insights
+ * Widget Editorial timeline Journal
  *
  *}
-
 <div id="__next" class="journal-metrics">
     <!-- editing -->
     {assign var=currentYear value="now"|date_format:"%Y"}
