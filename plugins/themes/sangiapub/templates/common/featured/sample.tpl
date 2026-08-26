@@ -6,7 +6,7 @@
  * Distributed under the GNU GPL v3.
  *
  * Article Hero Template Implementation - FIXED
- * Contoh lengkap penggunaan dengan PHP proxy dan data yang dihasilkan
+ * 
  *}
 
 {* Hero Article Section *}
