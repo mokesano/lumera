@@ -33,13 +33,13 @@ class Depositor extends ScheduledTask {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      * @param array $args
      */
     public function Depositor($args) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::Depositor(). Please refactor to parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
