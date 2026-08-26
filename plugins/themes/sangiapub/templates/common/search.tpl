@@ -22,7 +22,7 @@
         {url|assign:"searchFormUrl" page="search" op="search" escape=false}
         {$searchFormUrl|parse_url:$smarty.const.PHP_URL_QUERY|parse_str:$formUrlParameters}
         <form action="{$searchFormUrl|strtok:"?"|escape}" method="GET" role="search" autocomplete="off" data-track="submit" data-track-action="search" data-track-label="form" data-track-category="inline search">
-            <input type="hidden" value="{$currentJournal->getLocalizedInitials()|strip_tags|lower|escape}" name="journal">
+            <input type="hidden" value="{$currentJournal->getLocalizedInitials()|strip_tags|lower|escape}" name="journal" />
             <label class="c-search__input-label" for="keywords">Search {$currentJournal->getLocalizedTitle()|strip_tags|escape}</label>
             <div class="c-search__field">
             	{capture assign="queryFilter"}{call_hook name="Templates::Search::SearchResults::FilterInput" filterName="query" filterValue=$query}{/capture}
