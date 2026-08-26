@@ -213,4 +213,27 @@
 	<message key="article.type.standard.corrigendum">Corrigendum</message>
 	<message key="article.type.standard.correction">Koreksi</message>
 	<message key="article.type.standard.retraction">Retraksi</message>
+
+	<message key="article.type.form.name">Nama</message>
+	<message key="article.type.form.nameRequired">Masukkan nama untuk tipe artikel kustom ini.</message>
+	<message key="article.type.customType.description">Tambahkan tipe artikel kustom khusus jurnal ini, mendampingi tipe baku di atas.</message>
+	<message key="article.type.customType.noneCreated">Belum ada tipe artikel kustom yang dibuat.</message>
+	<message key="article.type.customType.create">Buat Tipe Artikel Kustom</message>
+	<message key="article.type.confirmDelete">Yakin ingin menghapus tipe artikel kustom ini?</message>
+
+	<message key="article.type.availability">Ketersediaan</message>
+	<message key="article.type.availability.enabled">Aktif</message>
+	<message key="article.type.availability.public">Bisa dipilih penulis</message>
+	<message key="article.type.availability.editorialOnly">Khusus staf editorial (Journal Manager / Editor / Section Editor)</message>
+	<message key="article.type.availability.journalDescription">Hilangkan centang pada tipe artikel baku yang tidak ingin tersedia bagi penulis yang submit ke jurnal ini. Tipe yang tidak dicentang tidak akan muncul di mana pun di jurnal ini, termasuk di section manapun.</message>
+	<message key="article.type.availability.editorialOnlyReference">Tipe Khusus Editorial (referensi)</message>
+	<message key="article.type.availability.editorialOnlyReference.description">Tipe ini hanya bisa di-assign staf editorial dan tidak pernah ditampilkan ke penulis saat submit.</message>
+	<message key="article.type.availability.sectionDescription">Hilangkan centang pada tipe artikel yang tidak ingin tersedia bagi penulis yang submit ke section khusus ini. Hanya tipe yang sudah aktif di level jurnal yang ditampilkan di sini sebagai checkbox -- tipe yang dinonaktifkan Journal Manager tidak bisa diaktifkan kembali dari sini.</message>
+	<message key="article.type.availability.disabledAtJournalLevel.title">Dinonaktifkan Seluruh Jurnal (referensi)</message>
+	<message key="article.type.availability.disabledAtJournalLevel">Tipe ini dinonaktifkan untuk seluruh jurnal oleh Journal Manager dan tidak bisa diaktifkan kembali untuk section ini dari sini. Untuk mengaktifkannya, tipe itu harus diaktifkan kembali dulu di Journal Manager &gt; Article Types.</message>
+
+	<message key="article.type.mySections">Section Saya</message>
+	<message key="article.type.mySections.description">Atur tipe artikel apa saja yang tersedia bagi penulis yang submit ke masing-masing section yang Anda kelola.</message>
+	<message key="article.type.mySections.noneAssigned">Anda saat ini tidak ditugaskan sebagai editor section manapun.</message>
+	<message key="article.type.configureSection">Atur Tipe Artikel</message>
 </locale>
