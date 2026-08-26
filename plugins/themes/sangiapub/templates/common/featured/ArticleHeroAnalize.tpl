@@ -1,11 +1,11 @@
 {**
- * templates/about/statistics.tpl
+ * templates/common/featured/ArticleHeroAnalize.tpl
  *
  * Copyright (c) 2024-2026 Sangia Lumera Frontedge
  * Copyright (c) 2024-2026 Rochmady and Codecanau
  * Distributed under the GNU GPL v3.
  *
- * Subtemplate defining the statistics table.
+ * Subtemplate defining the Article Hero Analizer.
  *
  *}
 
