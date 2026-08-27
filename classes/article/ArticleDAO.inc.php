@@ -80,7 +80,8 @@ class ArticleDAO extends DAO {
         return array_merge(parent::getLocaleFieldNames(), [
             'title', 'cleanTitle', 'abstract', 'coverPageAltText', 'showCoverPage', 'hideCoverPageToc', 'hideCoverPageAbstract', 'originalFileName', 'fileName', 'width', 'height',
             'discipline', 'subjectClass', 'subject', 'coverageGeo', 'coverageChron', 'coverageSample', 'type', 'sponsor',
-            'copyrightHolder'
+            'copyrightHolder',
+            'competingInterest', 'ethicalApproval', 'generativeAiDeclaration'
         ]);
     }
 

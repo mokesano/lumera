@@ -262,6 +262,7 @@ class AuthorDAO extends PKPAuthorDAO {
     public function getAdditionalFieldNames() {
         $additionalFields = parent::getAdditionalFieldNames();
         $additionalFields[] = 'orcid';
+        $additionalFields[] = 'creditRoles';
         return $additionalFields;
     }
     

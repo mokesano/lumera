@@ -327,6 +327,7 @@ class MetadataForm extends Form {
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);
         $templateMgr->assign('pubIdPlugins', $pubIdPlugins);
         $templateMgr->assign('article', $this->article);
+        $templateMgr->assign('allCreditRoles', Author::getAllCreditRoles());
 
         parent::display();
     }

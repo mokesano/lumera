@@ -842,6 +842,25 @@ class NativeImportDom {
             $article->setSponsor($node->getValue(), $locale);
         }
 
+        $declarationFields = [
+            'competing_interest' => 'CompetingInterest',
+            'ethical_approval' => 'EthicalApproval',
+            'generative_ai_declaration' => 'GenerativeAiDeclaration',
+        ];
+        foreach ($declarationFields as $elementName => $setterSuffix) {
+            for ($index = 0; ($node = $articleNode->getChildByName($elementName, $index)); $index++) {
+                $locale = $node->getAttribute('locale');
+                if ($locale === '') {
+                    $locale = $article->getLocale();
+                } elseif (!in_array($locale, $journalSupportedLocales, true)) {
+                    $errors[] = ['plugins.importexport.native.import.error.articleSponsorLocaleUnsupported', ['articleTitle' => $article->getLocalizedTitle(), 'issueTitle' => $issue->getIssueIdentification(), 'locale' => $locale]];
+                    return false;
+                }
+                $method = 'set' . $setterSuffix;
+                $article->$method($node->getValue(), $locale);
+            }
+        }
+
         if (($node = $articleNode->getChildByName('pages')) !== null) {
             $article->setPages($node->getValue());
         }
@@ -856,6 +875,24 @@ class NativeImportDom {
         }
 
         $articleDao->insertArticle($article);
+        if (($fundersNode = $articleNode->getChildByName('funders')) !== null) {
+            /** @var ArticleFunderDAO $funderDao */
+            $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
+            for ($funderIndex = 0; ($funderNode = $fundersNode->getChildByName('funder', $funderIndex)); $funderIndex++) {
+                $funderNameNode = $funderNode->getChildByName('funder_name');
+                $funderName = $funderNameNode !== null ? trim((string) $funderNameNode->getValue()) : '';
+                if ($funderName === '') continue;
+
+                $funder = $funderDao->newDataObject();
+                $funder->setArticleId((int) $article->getId());
+                $funder->setFunderName($funderName);
+                $awardNumberNode = $funderNode->getChildByName('award_number');
+                $funder->setAwardNumber($awardNumberNode !== null ? trim((string) $awardNumberNode->getValue()) : null);
+                $funder->setSequence($funderIndex + 1);
+                $funderDao->insertArticleFunder($funder);
+                unset($funder);
+            }
+        }
 
         /* --- Handle covers --- */
         $coverErrors = [];
@@ -1047,9 +1084,18 @@ class NativeImportDom {
             }
         }
 
+        if (($creditRolesNode = $authorNode->getChildByName('credit_roles')) !== null) {
+            $creditRoles = [];
+            for ($crIndex = 0; ($creditRoleNode = $creditRolesNode->getChildByName('credit_role', $crIndex)); $crIndex++) {
+                $roleCode = trim((string) $creditRoleNode->getValue());
+                if ($roleCode !== '') $creditRoles[] = $roleCode;
+            }
+            $author->setCreditRolesArray($creditRoles);
+        }
+
         $author->setSubmissionId((int) $article->getId());
         $author->setPrimaryContact($authorNode->getAttribute('primary_contact') === 'true' ? 1 : 0);
-        
+
         /** @var AuthorDAO $authorDao */
         $authorDao = DAORegistry::getDAO('AuthorDAO');
         $authorDao->insertAuthor($author);

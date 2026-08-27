@@ -182,6 +182,8 @@ class QuickSubmitForm extends Form {
         $countryDao = DAORegistry::getDAO('CountryDAO');
         $countries = $countryDao->getCountries();
         $templateMgr->assign('countries', $countries);
+        
+        $templateMgr->assign('allCreditRoles', Author::getAllCreditRoles());
 
         import('classes.issue.IssueAction');
         $templateMgr->assign('issueOptions', IssueAction::getIssueOptions());
