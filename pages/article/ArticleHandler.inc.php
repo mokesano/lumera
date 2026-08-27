@@ -938,7 +938,7 @@ class ArticleHandler extends Handler {
             $request = Application::get()->getRequest();
         }
         
-        AppLocale::requireComponents(LOCALE_COMPONENT_CORE_READER, LOCALE_COMPONENT_CORE_SUBMISSION);
+        AppLocale::requireComponents(LOCALE_COMPONENT_CORE_READER, LOCALE_COMPONENT_APP_AUTHOR, LOCALE_COMPONENT_CORE_SUBMISSION);
         if ($this->article) {
             $templateMgr = TemplateManager::getManager($request);
             $templateMgr->assign('ccLicenseBadge', Application::getCCLicenseBadge($this->article->getLicenseURL()));

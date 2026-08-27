@@ -376,6 +376,28 @@
             </section>
             **}
 
+            {assign var="creditAuthors" value=$article->getAuthors()}
+            {assign var="anyCreditRoles" value=false}
+            {foreach from=$creditAuthors item=creditAuthor}
+                {if $creditAuthor->getCreditRolesArray()}{assign var="anyCreditRoles" value=true}{/if}
+            {/foreach}
+            {if $anyCreditRoles}
+                <section id="s0120" class="section-creditRoles Body u-font-serif">
+                    <h2 id="st0120" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.creditAuthorships"}</h2>
+                    <p id="p0320">
+                    {assign var="creditLinePrinted" value=false}
+                    {foreach from=$creditAuthors item=creditAuthor}
+                        {assign var="creditRoles" value=$creditAuthor->getCreditRolesArray()}
+                        {if $creditRoles}
+                            {if $creditLinePrinted}<br />{/if}
+                            <strong>{$creditAuthor->getFullName()|escape}:</strong> {foreach from=$creditRoles item=roleCode name=creditRolesList}{translate key="author.credit.role.`$roleCode`"}{if !$smarty.foreach.creditRolesList.last}, {/if}{/foreach}
+                            {assign var="creditLinePrinted" value=true}
+                        {/if}
+                    {/foreach}
+                    </p>
+                </section>
+            {/if}
+
             {assign var="articleYear" value=$article->getDatePublished()|date_format:"%Y"}
             {if $articleYear >= 2024}
                 <section id="dGAI0115" class="section-declareGAI Body Declaration u-font-serif">
