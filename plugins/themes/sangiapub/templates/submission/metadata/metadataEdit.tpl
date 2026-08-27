@@ -50,11 +50,6 @@
 						<td width="20%" class="label">{fieldLabel name="formLocale" key="form.formLanguage"}</td>
 						<td width="80%" class="value">
 							{url|assign:"formUrl" path=$articleId escape=false}
-							{* Maintain localized author info across requests --
-							   [WIZDAM] competingInterests per-penulis DIHAPUS dari
-							   sini (field itu sudah tidak ada di struktur data
-							   MetadataForm baru, digantikan competingInterest
-							   level artikel di bawah). *}
 							{foreach from=$authors key=authorIndex item=author}
 								{foreach from=$author.biography key="thisLocale" item="thisBiography"}
 									{if $thisLocale != $formLocale}<input type="hidden" name="authors[{$authorIndex|escape}][biography][{$thisLocale|escape}]" value="{$thisBiography|escape}" />{/if}
@@ -85,7 +80,7 @@
 							<input type="hidden" name="authors[{$authorIndex|escape}][authorId]" value="{$author.authorId|escape}" />
 							<input type="hidden" name="authors[{$authorIndex|escape}][seq]" value="{$authorIndex+1}" />
 							{if $smarty.foreach.authors.total <= 1}
-								<input type="hidden" name="primaryContact" value="{$authorIndex|escape}" />
+								<input type="hidden" name="primaryContact[]" value="{$authorIndex|escape}" />
 							{/if}
 							{fieldLabel name="authors-$authorIndex-firstName" required="true" key="user.firstName"}
 						</td>
@@ -129,10 +124,6 @@
 							</select>
 						</td>
 					</tr>
-					{* [WIZDAM] CRediT -- 14 peran baku, checkbox multi-pilih,
-					   MENGGANTIKAN textarea competingInterests per-penulis
-					   yang lama (sudah dipindah jadi field level artikel,
-					   lihat bagian Deklarasi di bawah). Opsional. *}
 					<tr valign="top">
 						<td width="20%" class="label">{fieldLabel name="authors-$authorIndex-creditRoles" key="author.credit.label"}</td>
 						<td width="80%" class="value">
@@ -163,7 +154,7 @@
 						</tr>
 						<tr valign="top">
 							<td>&nbsp;</td>
-							<td class="label"><input type="radio" name="primaryContact" id="primaryContact-{$authorIndex|escape}" value="{$authorIndex|escape}"{if $primaryContact == $authorIndex} checked="checked"{/if} /> <label for="primaryContact-{$authorIndex|escape}">{translate key="author.submit.selectPrincipalContact"}</label></td>
+							<td class="label"><input type="checkbox" name="primaryContact[]" id="primaryContact-{$authorIndex|escape}" value="{$authorIndex|escape}"{if in_array($authorIndex, (array)$primaryContact)} checked="checked"{/if} /> <label for="primaryContact-{$authorIndex|escape}">{translate key="author.submit.selectPrincipalContact"}</label></td>
 							<td class="labelRightPlain">&nbsp;</td>
 						</tr>
 						<tr valign="top">
@@ -179,7 +170,7 @@
 
 				{foreachelse}
 					<input type="hidden" name="authors[0][authorId]" value="0" />
-					<input type="hidden" name="primaryContact" value="0" />
+					<input type="hidden" name="primaryContact[]" value="0" />
 					<input type="hidden" name="authors[0][seq]" value="1" />
 					<tr valign="top">
 						<td width="20%" class="label">{fieldLabel name="authors-0-firstName" required="true" key="user.firstName"}</td>
@@ -424,11 +415,6 @@
 				<td width="80%" class="value">
 					<input type="text" name="sponsor[{$formLocale|escape}]" id="sponsor" value="{$sponsor[$formLocale]|escape}" size="60" maxlength="255" class="textField" />
 					{if $sponsor[$formLocale]}
-						{* [WIZDAM] KONSOLIDASI DATA LAMA -> BARU -- lihat
-						   Action::saveMetadata() (aksi migrateSponsorToFunder)
-						   untuk detail lengkap. Cuma tampil kalau sponsor
-						   terisi -- tidak ada yang perlu dimigrasi kalau
-						   kosong. *}
 						<br />
 						<input type="submit" name="migrateSponsorToFunder" value="{translate key="author.submit.migrateSponsorToFunder"}" class="button" />
 						<span class="instruct">{translate key="author.submit.migrateSponsorToFunder.description"}</span>
@@ -440,11 +426,6 @@
 
 	<div class="separator"></div>
 
-	{* [WIZDAM] Blok Funders (pendanaan/hibah terstruktur) -- pola sama
-	   persis blok Authors di atas, TAPI TIDAK dibungkus pengecekan
-	   canViewAuthors karena Funders bukan informasi khusus penulis
-	   (tetap perlu tampil untuk reviewer/siapa pun yang membuka
-	   halaman ini). *}
 	<div id="funders" class="block">
 		<h3>{translate key="author.submit.funders"}</h3>
 		<input type="hidden" name="deletedFunders" value="{$deletedFunders|escape}" />
@@ -488,10 +469,6 @@
 
 	<div class="separator"></div>
 
-	{* [WIZDAM] Deklarasi level artikel -- Competing Interest, Ethical
-	   Approval, Declaration of Generative AI. Sekarang bisa diedit di
-	   sini (review/copyediting), tidak lagi terkunci hanya di wizard
-	   submit awal. *}
 	<div id="declarations" class="block">
 		<h3>{translate key="author.submit.declarations"}</h3>
 

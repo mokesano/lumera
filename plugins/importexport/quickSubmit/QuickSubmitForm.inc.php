@@ -252,6 +252,25 @@ class QuickSubmitForm extends Form {
                 break;
             }
         }
+
+        // [WIZDAM] Isi teks default (boilerplate) declarasi supaya editor
+        // tidak perlu menulis pernyataan dari nol saat menambah artikel
+        // lewat QuickSubmit -- pola sama persis
+        // AuthorSubmitStep3Form/MetadataForm. QuickSubmit selalu membuat
+        // artikel baru (tidak ada data lama untuk dibaca), jadi field ini
+        // di sini SELALU kosong sebelum diisi default.
+        $declarationDefaults = [
+            'competingInterest' => 'article.competingInterest.statement',
+            'ethicalApproval' => 'article.ethicalApproval.statement',
+            'generativeAiDeclaration' => 'article.generativeAiDeclaration.statement',
+        ];
+        $declarationLocales = !empty($supportedSubmissionLocales) ? $supportedSubmissionLocales : [$journal->getPrimaryLocale()];
+        foreach ($declarationDefaults as $field => $defaultKey) {
+            $this->_data[$field] = [];
+            foreach ($declarationLocales as $locale) {
+                $this->_data[$field][$locale] = __($defaultKey, [], $locale);
+            }
+        }
     }
 
     /**
@@ -280,6 +299,16 @@ class QuickSubmitForm extends Form {
         if (!is_array($this->_data['funders'])) {
             $this->_data['funders'] = [];
         }
+
+        // [WIZDAM BUGFIX] primaryContact sekarang checkbox multi-pilih
+        // (name="primaryContact[]") -- pola sama persis
+        // AuthorSubmitStep2Form/MetadataForm. Checkbox yang TIDAK
+        // dicentang sama sekali TIDAK ikut terkirim dalam POST, jadi kalau
+        // key-nya hilang berarti tidak ada yang dicentang.
+        if (!isset($this->_data['primaryContact']) || !is_array($this->_data['primaryContact'])) {
+            $this->_data['primaryContact'] = [];
+        }
+        $this->_data['primaryContact'] = array_values(array_unique(array_map('intval', $this->_data['primaryContact'])));
 
         $this->readUserDateVars(['datePublished']);
 
@@ -373,7 +402,10 @@ class QuickSubmitForm extends Form {
         /** @var AuthorDAO $authorDao */
         $authorDao = DAORegistry::getDAO('AuthorDAO');
         $authors = (array) $this->getData('authors');
-        
+        // [WIZDAM BUGFIX] primaryContact sekarang ARRAY (checkbox multi-
+        // pilih) -- lihat penjelasan lengkap di readInputData().
+        $primaryContactIndices = array_map('intval', (array) $this->getData('primaryContact'));
+
         foreach ($authors as $i => $authorData) {
             $authorId = (int) ($authorData['authorId'] ?? 0);
             
@@ -407,7 +439,7 @@ class QuickSubmitForm extends Form {
                     $author->setCreditRolesArray($authorData['creditRoles'] ?? []);
                 }
                 $author->setBiography($authorData['biography'] ?? '', null);
-                $author->setPrimaryContact(((int) $this->getData('primaryContact')) === $i ? 1 : 0);
+                $author->setPrimaryContact(in_array($i, $primaryContactIndices, true) ? 1 : 0);
                 $author->setSequence((int) ($authorData['seq'] ?? 0));
 
                 if (!$isExistingAuthor) {

@@ -176,8 +176,15 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
                     // checkbox multi-pilih di template.
                     'creditRoles' => $authors[$i]->getCreditRolesArray(),
                 ];
-                if ($authors[$i]->getPrimaryContact()) {
-                    $this->setData('primaryContact', $i);
+            }
+            // [WIZDAM BUGFIX] primaryContact SEKARANG ARRAY berisi index
+            // SEMUA penulis yang ditandai principal contact -- lihat
+            // penjelasan lengkap di MetadataForm::initData(). Dibangun di
+            // loop TERPISAH supaya urutannya tetap sesuai urutan penulis.
+            $this->_data['primaryContact'] = [];
+            foreach ($authors as $i => $author) {
+                if ($author->getPrimaryContact()) {
+                    $this->_data['primaryContact'][] = $i;
                 }
             }
 
@@ -244,6 +251,15 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
         if (!is_array($this->_data['funders'])) {
             $this->_data['funders'] = [];
         }
+
+        // [WIZDAM BUGFIX] primaryContact sekarang checkbox multi-pilih
+        // (name="primaryContact[]") -- checkbox yang TIDAK dicentang sama
+        // sekali TIDAK ikut terkirim dalam POST, jadi kalau key-nya hilang
+        // berarti tidak ada yang dicentang (array kosong), bukan error.
+        if (!isset($this->_data['primaryContact']) || !is_array($this->_data['primaryContact'])) {
+            $this->_data['primaryContact'] = [];
+        }
+        $this->_data['primaryContact'] = array_values(array_unique(array_map('intval', $this->_data['primaryContact'])));
     }
 
     /**
@@ -304,6 +320,9 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
 
         // Update authors
         $authors = $this->getData('authors');
+        // [WIZDAM BUGFIX] primaryContact sekarang ARRAY (checkbox multi-
+        // pilih) -- lihat penjelasan lengkap di initData()/readInputData().
+        $primaryContactIndices = array_map('intval', (array) $this->getData('primaryContact'));
         for ($i=0, $count=count($authors); $i < $count; $i++) {
             if ($authors[$i]['authorId'] > 0) {
                 // Update an existing author
@@ -335,7 +354,7 @@ class AuthorSubmitStep2Form extends AuthorSubmitForm {
                 $author->setData('orcid', $authors[$i]['orcid']);
                 $author->setUrl($authors[$i]['url']);
                 $author->setBiography($authors[$i]['biography'], null);
-                $author->setPrimaryContact($this->getData('primaryContact') == $i ? 1 : 0);
+                $author->setPrimaryContact(in_array($i, $primaryContactIndices, true) ? 1 : 0);
                 $author->setSequence($authors[$i]['seq']);
                 // [WIZDAM] CRediT -- array kode peran dari checkbox.
                 $author->setCreditRolesArray($authors[$i]['creditRoles'] ?? []);

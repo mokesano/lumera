@@ -111,10 +111,23 @@ class AuthorSubmitStep3Form extends AuthorSubmitForm {
                 // kali melewati step ini (perilaku sama seperti form lama).
             ];
 
-            foreach (['competingInterest', 'ethicalApproval', 'generativeAiDeclaration'] as $field) {
+            // [WIZDAM] Isi teks default (boilerplate) untuk locale yang
+            // belum punya nilai -- FormValidatorLocale mewajibkan field ini
+            // diisi (lihat constructor), jadi tanpa default penulis harus
+            // menulis pernyataan dari nol setiap kali submit artikel baru.
+            // Teks default memakai locale key yang SAMA dengan fallback
+            // tampilan publik di article.tpl (article.*.statement).
+            $declarationDefaults = [
+                'competingInterest' => 'article.competingInterest.statement',
+                'ethicalApproval' => 'article.ethicalApproval.statement',
+                'generativeAiDeclaration' => 'article.generativeAiDeclaration.statement',
+            ];
+            foreach ($declarationDefaults as $field => $defaultKey) {
                 if (!is_array($this->_data[$field])) $this->_data[$field] = [];
                 foreach ($formLocales as $locale) {
-                    if (!isset($this->_data[$field][$locale])) $this->_data[$field][$locale] = '';
+                    if (trim((string) ($this->_data[$field][$locale] ?? '')) === '') {
+                        $this->_data[$field][$locale] = __($defaultKey, [], $locale);
+                    }
                 }
             }
         }

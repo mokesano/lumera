@@ -18386,6 +18386,11 @@ _fulltextButton a:hover {
 .sangia-content .label label {
  vertical-align:baseline;
 }
+.creditRolesGrid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  grid-column-gap:16px;
+}
 #signinForm .label label {
   vertical-align: baseline;
 }

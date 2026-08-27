@@ -132,9 +132,19 @@ class SubmitHandler extends AuthorHandler {
                         array_splice($authors, $delAuthor, 1);
                         $submitForm->setData('authors', $authors);
 
-                        if ($submitForm->getData('primaryContact') == $delAuthor) {
-                            $submitForm->setData('primaryContact', 0);
+                        // [WIZDAM] primaryContact sekarang ARRAY berisi
+                        // BEBERAPA index penulis (lihat penjelasan lengkap di
+                        // MetadataForm::execute()/initData()) -- bukan lagi
+                        // satu scalar. Buang index yang dihapus, lalu geser
+                        // turun setiap index yang berada SETELAH posisi yang
+                        // dihapus supaya tetap merujuk penulis yang benar.
+                        $primaryContact = [];
+                        foreach ((array) $submitForm->getData('primaryContact') as $idx) {
+                            $idx = (int) $idx;
+                            if ($idx === $delAuthor) continue;
+                            $primaryContact[] = $idx > $delAuthor ? $idx - 1 : $idx;
                         }
+                        $submitForm->setData('primaryContact', $primaryContact);
 
                     } elseif ($request->getUserVar('moveAuthor')) {
                         // Move an author up/down
@@ -146,24 +156,28 @@ class SubmitHandler extends AuthorHandler {
 
                         if (!(($moveAuthorDir == 'u' && $moveAuthorIndex <= 0) || ($moveAuthorDir == 'd' && $moveAuthorIndex >= count($authors) - 1))) {
                             $tmpAuthor = $authors[$moveAuthorIndex];
-                            $primaryContact = $submitForm->getData('primaryContact');
+                            $swapWith = $moveAuthorDir == 'u' ? $moveAuthorIndex - 1 : $moveAuthorIndex + 1;
                             if ($moveAuthorDir == 'u') {
                                 $authors[$moveAuthorIndex] = $authors[$moveAuthorIndex - 1];
                                 $authors[$moveAuthorIndex - 1] = $tmpAuthor;
-                                if ($primaryContact == $moveAuthorIndex) {
-                                    $submitForm->setData('primaryContact', $moveAuthorIndex - 1);
-                                } elseif ($primaryContact == ($moveAuthorIndex - 1)) {
-                                    $submitForm->setData('primaryContact', $moveAuthorIndex);
-                                }
                             } else {
                                 $authors[$moveAuthorIndex] = $authors[$moveAuthorIndex + 1];
                                 $authors[$moveAuthorIndex + 1] = $tmpAuthor;
-                                if ($primaryContact == $moveAuthorIndex) {
-                                    $submitForm->setData('primaryContact', $moveAuthorIndex + 1);
-                                } elseif ($primaryContact == ($moveAuthorIndex + 1)) {
-                                    $submitForm->setData('primaryContact', $moveAuthorIndex);
-                                }
                             }
+                            // [WIZDAM] primaryContact ARRAY -- tukar posisi
+                            // index yang sama seperti penulisnya ditukar,
+                            // biarkan index lain apa adanya.
+                            $primaryContact = [];
+                            foreach ((array) $submitForm->getData('primaryContact') as $idx) {
+                                $idx = (int) $idx;
+                                if ($idx === $moveAuthorIndex) {
+                                    $idx = $swapWith;
+                                } elseif ($idx === $swapWith) {
+                                    $idx = $moveAuthorIndex;
+                                }
+                                $primaryContact[] = $idx;
+                            }
+                            $submitForm->setData('primaryContact', $primaryContact);
                         }
                         $submitForm->setData('authors', $authors);
 

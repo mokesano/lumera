@@ -232,7 +232,7 @@
 				<input type="hidden" name="authors[{$authorIndex|escape}][authorId]" value="{$author.authorId|escape}" />
 				<input type="hidden" name="authors[{$authorIndex|escape}][seq]" value="{$authorIndex+1}" />
 				{if $smarty.foreach.authors.total <= 1}
-					<input type="hidden" name="primaryContact" value="{$authorIndex|escape}" />
+					<input type="hidden" name="primaryContact[]" value="{$authorIndex|escape}" />
 				{/if}
 
 				<table width="100%" class="data">
@@ -304,7 +304,13 @@
 						</td>
 					</tr>
 					<tr valign="top">
-						<td width="70%" class="value" colspan="2"><input type="radio" id="primaryContact" name="primaryContact" value="{$authorIndex|escape}"{if $primaryContact == $authorIndex} checked="checked"{/if} /> {fieldLabel name="primaryContact" key="author.submit.selectPrincipalContact"} <input type="submit" name="delAuthor[{$authorIndex|escape}]" value="{translate key="author.submit.deleteAuthor"}" class="button" /></td>
+						{* [WIZDAM BUGFIX] Diganti dari radio (hanya bisa satu
+					   penulis) jadi checkbox -- Principal contact for
+					   editorial correspondence bisa diberikan ke LEBIH dari
+					   satu penulis sekaligus. id unik per baris ditambahkan
+					   sekalian (sebelumnya id="primaryContact" dobel di
+					   setiap baris). *}
+						<td width="70%" class="value" colspan="2"><input type="checkbox" id="primaryContact-{$authorIndex|escape}" name="primaryContact[]" value="{$authorIndex|escape}"{if in_array($authorIndex, (array)$primaryContact)} checked="checked"{/if} /> {fieldLabel name="primaryContact-$authorIndex" key="author.submit.selectPrincipalContact"} <input type="submit" name="delAuthor[{$authorIndex|escape}]" value="{translate key="author.submit.deleteAuthor"}" class="button" /></td>
 					</tr>
 					<tr>
 						<td colspan="2"><br /></td>
@@ -315,7 +321,7 @@
 				{if !$smarty.foreach.authors.last}<div class="separator" style="width:70%"></div>{/if}
 			{foreachelse}
 				<input type="hidden" name="authors[0][authorId]" value="0" />
-				<input type="hidden" name="primaryContact" value="0" />
+				<input type="hidden" name="primaryContact[]" value="0" />
 				<input type="hidden" name="authors[0][seq]" value="1" />
 				<table width="100%" class="data">
 					<tr valign="top">

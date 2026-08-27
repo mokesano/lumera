@@ -126,9 +126,18 @@ class Action extends PKPAction {
                 array_splice($authors, $delAuthorIndex, 1);
                 $metadataForm->setData('authors', $authors);
 
-                if ($metadataForm->getData('primaryContact') == $delAuthorIndex) {
-                    $metadataForm->setData('primaryContact', 0);
+                // [WIZDAM] primaryContact sekarang ARRAY berisi BEBERAPA
+                // index penulis (lihat penjelasan lengkap di
+                // MetadataForm::execute()/initData()) -- bukan lagi satu
+                // scalar. Buang index yang dihapus, lalu geser turun setiap
+                // index yang berada SETELAH posisi yang dihapus.
+                $primaryContact = [];
+                foreach ((array) $metadataForm->getData('primaryContact') as $idx) {
+                    $idx = (int) $idx;
+                    if ($idx === $delAuthorIndex) continue;
+                    $primaryContact[] = $idx > $delAuthorIndex ? $idx - 1 : $idx;
                 }
+                $metadataForm->setData('primaryContact', $primaryContact);
 
             } else if ($request->getUserVar('moveAuthor')) {
                 // Move an author up/down
@@ -140,24 +149,27 @@ class Action extends PKPAction {
 
                 if (!(($moveAuthorDir == 'u' && $moveAuthorIndex <= 0) || ($moveAuthorDir == 'd' && $moveAuthorIndex >= count($authors) - 1))) {
                     $tmpAuthor = $authors[$moveAuthorIndex];
-                    $primaryContact = $metadataForm->getData('primaryContact');
+                    $swapWith = $moveAuthorDir == 'u' ? $moveAuthorIndex - 1 : $moveAuthorIndex + 1;
                     if ($moveAuthorDir == 'u') {
                         $authors[$moveAuthorIndex] = $authors[$moveAuthorIndex - 1];
                         $authors[$moveAuthorIndex - 1] = $tmpAuthor;
-                        if ($primaryContact == $moveAuthorIndex) {
-                            $metadataForm->setData('primaryContact', $moveAuthorIndex - 1);
-                        } else if ($primaryContact == ($moveAuthorIndex - 1)) {
-                            $metadataForm->setData('primaryContact', $moveAuthorIndex);
-                        }
                     } else {
                         $authors[$moveAuthorIndex] = $authors[$moveAuthorIndex + 1];
                         $authors[$moveAuthorIndex + 1] = $tmpAuthor;
-                        if ($primaryContact == $moveAuthorIndex) {
-                            $metadataForm->setData('primaryContact', $moveAuthorIndex + 1);
-                        } else if ($primaryContact == ($moveAuthorIndex + 1)) {
-                            $metadataForm->setData('primaryContact', $moveAuthorIndex);
-                        }
                     }
+                    // [WIZDAM] primaryContact ARRAY -- tukar posisi index
+                    // yang sama seperti penulisnya ditukar.
+                    $primaryContact = [];
+                    foreach ((array) $metadataForm->getData('primaryContact') as $idx) {
+                        $idx = (int) $idx;
+                        if ($idx === $moveAuthorIndex) {
+                            $idx = $swapWith;
+                        } else if ($idx === $swapWith) {
+                            $idx = $moveAuthorIndex;
+                        }
+                        $primaryContact[] = $idx;
+                    }
+                    $metadataForm->setData('primaryContact', $primaryContact);
                 }
                 $metadataForm->setData('authors', $authors);
             } else if ($request->getUserVar('addFunder')) {

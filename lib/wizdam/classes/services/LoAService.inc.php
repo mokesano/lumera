@@ -104,7 +104,16 @@ class LoAService {
             ];
             $authorsList[] = $authorData;
 
-            if ($author->getPrimaryContact()) {
+            if ($author->getPrimaryContact() && $correspondingAuthor === null) {
+                // [WIZDAM BUGFIX] Sekarang BEBERAPA penulis bisa ditandai
+                // sebagai principal contact sekaligus (lihat
+                // MetadataForm/AuthorSubmitStep2Form) -- surat ini masih
+                // ditujukan ke SATU penerima, jadi ambil yang PERTAMA
+                // ditemukan (urutan penulis), konsisten dengan
+                // InvoiceService::buildInvoiceData() yang memakai pola
+                // "break" yang sama. Sebelumnya loop ini TIDAK berhenti,
+                // jadi kalau ada lebih dari satu correspondance flag,
+                // yang terpakai adalah yang TERAKHIR, bukan yang pertama.
                 $correspondingAuthor = $authorData;
             }
         }

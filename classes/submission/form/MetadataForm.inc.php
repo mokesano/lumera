@@ -218,6 +218,31 @@ class MetadataForm extends Form {
                 'generativeAiDeclaration' => $article->getGenerativeAiDeclaration(null) ?? [],
             ];
 
+            // [WIZDAM] Isi teks default (boilerplate) untuk locale yang
+            // BELUM punya nilai deklarasi sama sekali -- supaya pengguna
+            // tinggal MENGEDIT pernyataan, bukan menulis dari nol. Teks
+            // default memakai locale key yang SAMA dengan fallback
+            // tampilan publik di article.tpl (article.*.statement), jadi
+            // konsisten dengan apa yang akhirnya tampil ke pembaca kalau
+            // field dibiarkan kosong. HANYA berlaku saat form BENAR-BENAR
+            // bisa diedit ($this->canEdit) -- metadataView.tpl (read-only)
+            // TIDAK disentuh, tetap pakai fallback "&mdash;"-nya sendiri.
+            if ($this->canEdit) {
+                $declarationDefaults = [
+                    'competingInterest' => 'article.competingInterest.statement',
+                    'ethicalApproval' => 'article.ethicalApproval.statement',
+                    'generativeAiDeclaration' => 'article.generativeAiDeclaration.statement',
+                ];
+                foreach ($declarationDefaults as $field => $defaultKey) {
+                    if (!is_array($this->_data[$field])) $this->_data[$field] = [];
+                    foreach (array_keys((array) $this->supportedLocales) as $locale) {
+                        if (trim((string) ($this->_data[$field][$locale] ?? '')) === '') {
+                            $this->_data[$field][$locale] = __($defaultKey, [], $locale);
+                        }
+                    }
+                }
+            }
+
             /** @var ArticleFunderDAO $funderDao */
             $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
             foreach ($funderDao->getByArticleId($article->getId())->toArray() as $funder) {
@@ -256,8 +281,20 @@ class MetadataForm extends Form {
                         'biography' => $authors[$i]->getBiography(null) ?? []
                     ]
                 );
-                if ($authors[$i]->getPrimaryContact()) {
-                    $this->setData('primaryContact', $i);
+            }
+            // [WIZDAM BUGFIX] primaryContact SEKARANG ARRAY berisi index
+            // SEMUA penulis yang ditandai "Principal contact for editorial
+            // correspondence" -- sebelumnya cuma menyimpan index TERAKHIR
+            // yang ditemukan (di dalam loop di atas) karena disangka selalu
+            // tunggal, padahal author.primaryContact memang sudah berupa
+            // flag per-baris di database (mendukung banyak penulis
+            // sekaligus) -- pembatasan "hanya satu" murni di radio button
+            // template, bukan di data. Dibangun di loop TERPISAH supaya
+            // urutannya tetap sesuai urutan penulis, bukan urutan ditemukan.
+            $this->_data['primaryContact'] = [];
+            foreach ($authors as $i => $author) {
+                if ($author->getPrimaryContact()) {
+                    $this->_data['primaryContact'][] = $i;
                 }
             }
             if ($this->isEditor) {
@@ -374,6 +411,16 @@ class MetadataForm extends Form {
         if ($this->isEditor) {
             $this->readUserVars(['copyrightHolder', 'copyrightYear', 'licenseURL']);
         }
+
+        // [WIZDAM BUGFIX] primaryContact sekarang checkbox multi-pilih
+        // (name="primaryContact[]"), BUKAN lagi radio button tunggal --
+        // sama seperti creditRoles, checkbox yang TIDAK dicentang sama
+        // sekali TIDAK ikut terkirim dalam POST, jadi kalau key-nya hilang
+        // berarti tidak ada yang dicentang (array kosong), bukan error.
+        if (!isset($this->_data['primaryContact']) || !is_array($this->_data['primaryContact'])) {
+            $this->_data['primaryContact'] = [];
+        }
+        $this->_data['primaryContact'] = array_values(array_unique(array_map('intval', $this->_data['primaryContact'])));
 
         // [WIZDAM] Normalisasi creditRoles per-penulis -- checkbox HTML
         // yang TIDAK dicentang tidak ikut terkirim sama sekali dalam
@@ -543,6 +590,9 @@ class MetadataForm extends Form {
 
         // Update authors
         $authors = $this->getData('authors');
+        // [WIZDAM BUGFIX] primaryContact sekarang ARRAY (checkbox multi-
+        // pilih) -- lihat penjelasan lengkap di initData()/readInputData().
+        $primaryContactIndices = array_map('intval', (array) $this->getData('primaryContact'));
         for ($i=0, $count=count($authors); $i < $count; $i++) {
             if ($authors[$i]['authorId'] > 0) {
                 // Update an existing author
@@ -576,7 +626,7 @@ class MetadataForm extends Form {
                     $author->setCreditRolesArray($authors[$i]['creditRoles']);
                 }
                 $author->setBiography($authors[$i]['biography'], null); // Localized
-                $author->setPrimaryContact($this->getData('primaryContact') == $i ? 1 : 0);
+                $author->setPrimaryContact(in_array($i, $primaryContactIndices, true) ? 1 : 0);
                 $author->setSequence($authors[$i]['seq']);
 
                 HookRegistry::dispatch('Submission::Form::MetadataForm::Execute', [&$author, &$authors[$i]]);
