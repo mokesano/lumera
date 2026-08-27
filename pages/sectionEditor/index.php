@@ -117,7 +117,7 @@ switch ($op) {
 	case 'selectReviewForm':
 	case 'previewReviewForm':
 	case 'viewReviewFormResponse':
-	// Proof Assignment Functions
+	// Proofreader Assignment Functions
 	case 'selectProofreader':
 	case 'notifyAuthorProofreader':
 	case 'thankAuthorProofreader':
@@ -125,6 +125,7 @@ switch ($op) {
 	case 'editorCompleteProofreader':
 	case 'notifyProofreader':
 	case 'thankProofreader':
+	// Layouteditor
 	case 'editorInitiateLayoutEditor':
 	case 'editorCompleteLayoutEditor':
 	case 'notifyLayoutEditorProofreader':
@@ -170,6 +171,16 @@ switch ($op) {
 	case 'instructions':
 		define('HANDLER_CLASS', 'SectionEditorHandler');
 		import('pages.sectionEditor.SectionEditorHandler');
+		break;
+	//
+	// [WIZDAM] Section Editor - pengaturan aktif/nonaktif tipe artikel
+	// untuk Section yang jadi tanggung jawabnya.
+	//
+	case 'mySections':
+	case 'sectionArticleTypes':
+	case 'saveSectionArticleTypes':
+		define('HANDLER_CLASS', 'SectionEditorArticleTypeHandler');
+		import('pages.sectionEditor.SectionEditorArticleTypeHandler');
 		break;
 }
 

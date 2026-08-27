@@ -102,6 +102,7 @@
 	<message key="author.credit.role.writing_original_draft">Penulisan - draf awal</message>
 	<message key="author.credit.role.writing_review_editing">Penulisan - review &amp; penyuntingan</message>
 	
+	<message key="author.submit.declarations">Deklarasi Penulis Artikel</message>
 	<message key="author.submit.competingInterest">Competing Interest</message>
 	<message key="author.submit.competingInterestDescription">Semua penulis wajib menyatakan hubungan finansial atau pribadi apa pun yang bisa dianggap memengaruhi karya yang dilaporkan dalam artikel ini. Kalau tidak ada, nyatakan secara eksplisit.</message>
 	<message key="author.submit.competingInterestLabel">Pernyataan Competing Interest</message>

@@ -65,6 +65,21 @@ switch ($op) {
 		import('pages.manager.SectionHandler');
 		break;
 	//
+	// [WIZDAM] Custom Article Type Management -- terpisah dari Section
+	// Management di atas, konsep berbeda (tipe artikel kustom, bukan
+	// topik/Mini Jurnal).
+	//
+	case 'articleTypes':
+	case 'saveArticleTypeAvailability':
+	case 'createArticleType':
+	case 'editArticleType':
+	case 'updateArticleType':
+	case 'deleteArticleType':
+	case 'moveArticleType':
+		define('HANDLER_CLASS', 'ArticleTypeCustomHandler');
+		import('pages.manager.ArticleTypeCustomHandler');
+		break;
+	//
 	// Review Form Management
 	//
 	case 'reviewForms':

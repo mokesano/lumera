@@ -169,6 +169,31 @@ class SectionEditorsDAO extends DAO {
     }
 
     /**
+     * [WIZDAM] Ambil daftar section_id yang ditugaskan ke SATU user
+     * tertentu (arah kebalikan dari getEditorsBySectionId) -- dipakai
+     * SectionEditorArticleTypeHandler untuk menentukan section mana
+     * saja yang boleh dikonfigurasi Section Editor yang sedang login.
+     * TIDAK ADA method serupa ini sebelumnya di DAO ini.
+     * @param int $userId
+     * @param int $journalId
+     * @return int[]
+     */
+    public function getSectionIdsByUserId($userId, $journalId) {
+        $result = $this->retrieve(
+            'SELECT section_id FROM section_editors WHERE user_id = ? AND journal_id = ?',
+            [(int) $userId, (int) $journalId]
+        );
+        $sectionIds = [];
+        while (!$result->EOF) {
+            $row = $result->GetRowAssoc(false);
+            $sectionIds[] = (int) $row['section_id'];
+            $result->MoveNext();
+        }
+        $result->Close();
+        return $sectionIds;
+    }
+
+    /**
      * Retrieve a list of all section editors not assigned to the specified section.
      * @param int $journalId
      * @param int $sectionId

@@ -102,6 +102,7 @@
 	<message key="author.credit.role.writing_original_draft">Writing – original draft</message>
 	<message key="author.credit.role.writing_review_editing">Writing – review &amp; editing</message>
 	
+	<message key="author.submit.declarations">Article Authors Declarations</message>
 	<message key="author.submit.competingInterest">Competing Interest</message>
 	<message key="author.submit.competingInterestDescription">All authors must declare any financial or personal relationships that could be perceived to influence the work reported in this article. If there are none, state so explicitly.</message>
 	<message key="author.submit.competingInterestLabel">Competing Interest Statement</message>
