@@ -89,6 +89,20 @@
 
 <div class="separator"></div>
 
+{* [WIZDAM] Tipe Artikel -- read-only, lihat MetadataForm::_getArticleTypeDisplayLabel(). *}
+<div id="articleType" class="block">
+	<h3>{translate key="article.type.label"}</h3>
+
+	<table width="100%" class="data">
+		<tr valign="top">
+			<td width="20%" class="label">{translate key="article.type.label"}</td>
+			<td width="80%" class="value">{$articleTypeDisplayLabel|escape|default:"&mdash;"}</td>
+		</tr>
+	</table>
+</div>
+
+<div class="separator"></div>
+
 <div id="cover" class="block">
 	<h3>{translate key="editor.article.cover"}</h3>
 

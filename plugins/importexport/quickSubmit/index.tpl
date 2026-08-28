@@ -1,9 +1,9 @@
 {**
  * plugins/importexport/quickSubmit/index.tpl
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * Template for one-page submission form
  *
@@ -159,6 +159,20 @@
 
 			{/if}{* if count($sectionOptions) == 2 *}
 		</div> <!-- /section -->
+
+		{* [WIZDAM] Tipe Artikel -- lihat ArticleType.inc.php +
+		   ArticleType::buildTypeOptions()/toChoiceValue(). *}
+		<div id="articleType">
+			<h4>{translate key="article.type.label"}</h4>
+			<p>{translate key="article.type.description"}</p>
+
+			<table class="data" width="100%">
+				<tr valign="top">
+					<td width="30%" class="label">{fieldLabel name="articleTypeChoice" key="article.type.label"}</td>
+					<td width="70%" class="value"><select name="articleTypeChoice" id="articleTypeChoice" size="1" class="selectMenu">{html_options options=$articleTypeOptions selected=$articleTypeChoice}</select></td>
+				</tr>
+			</table>
+		</div> <!-- /articleType -->
 
 		{if count($supportedSubmissionLocaleNames) == 1}
 			{* There is only one supported submission locale; choose it invisibly *}

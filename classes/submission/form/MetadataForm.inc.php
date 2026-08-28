@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file classes/submission/form/MetadataForm.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class MetadataForm
  * @ingroup submission_form
@@ -216,6 +216,12 @@ class MetadataForm extends Form {
                 'competingInterest' => $article->getCompetingInterest(null) ?? [],
                 'ethicalApproval' => $article->getEthicalApproval(null) ?? [],
                 'generativeAiDeclaration' => $article->getGenerativeAiDeclaration(null) ?? [],
+                // [WIZDAM] Tipe Artikel -- lihat ArticleType::buildTypeOptions()/
+                // toChoiceValue() di display() di bawah untuk penjelasan
+                // lengkap kenapa disimpan sebagai DUA field tapi diedit
+                // lewat SATU <select> gabungan.
+                'articleTypeCode' => $article->getArticleTypeCode(),
+                'articleTypeCustomId' => $article->getArticleTypeCustomId(),
             ];
 
             // [WIZDAM] Isi teks default (boilerplate) untuk locale yang
@@ -366,6 +372,29 @@ class MetadataForm extends Form {
         $templateMgr->assign('article', $this->article);
         $templateMgr->assign('allCreditRoles', Author::getAllCreditRoles());
 
+        // [WIZDAM] Tipe Artikel -- editor/section editor boleh melihat/
+        // memilih tipe editorial-only (Erratum dkk) juga, penulis TIDAK.
+        // Dipersempit ke Section artikel ini (sudah pasti diketahui di
+        // halaman ini, beda dari wizard submit yang mungkin belum punya
+        // section saat render pertama).
+        import('classes.article.ArticleType');
+        if ($this->article) {
+            $articleTypeOptions = ['' => __('article.type.selectType')] + ArticleType::buildTypeOptions(
+                $journal->getId(),
+                $this->article->getSectionId(),
+                $this->isEditor
+            );
+            $templateMgr->assign('articleTypeOptions', $articleTypeOptions);
+            $templateMgr->assign('articleTypeChoice', ArticleType::toChoiceValue(
+                $this->getData('articleTypeCode'),
+                $this->getData('articleTypeCustomId')
+            ));
+            $templateMgr->assign('articleTypeDisplayLabel', $this->_getArticleTypeDisplayLabel(
+                $this->article->getArticleTypeCode(),
+                $this->article->getArticleTypeCustomId()
+            ));
+        }
+
         parent::display();
     }
 
@@ -405,9 +434,18 @@ class MetadataForm extends Form {
                 'deletedFunders',
                 'competingInterest',
                 'ethicalApproval',
-                'generativeAiDeclaration'
+                'generativeAiDeclaration',
+                'articleTypeChoice',
             ]
         );
+
+        // [WIZDAM] Pecah pilihan gabungan "std:<code>"/"custom:<id>" dari
+        // <select> tunggal articleTypeChoice menjadi dua field aktual di
+        // Article -- lihat ArticleType::parseTypeChoice().
+        import('classes.article.ArticleType');
+        [$articleTypeCode, $articleTypeCustomId] = ArticleType::parseTypeChoice($this->getData('articleTypeChoice'));
+        $this->setData('articleTypeCode', $articleTypeCode);
+        $this->setData('articleTypeCustomId', $articleTypeCustomId);
         if ($this->isEditor) {
             $this->readUserVars(['copyrightHolder', 'copyrightYear', 'licenseURL']);
         }
@@ -580,6 +618,10 @@ class MetadataForm extends Form {
         $article->setEthicalApproval($this->getData('ethicalApproval'), null);
         $article->setGenerativeAiDeclaration($this->getData('generativeAiDeclaration'), null);
         $article->setCitations($this->getData('citations'));
+        // [WIZDAM] Tipe Artikel -- lihat readInputData() untuk penjelasan
+        // pemecahan articleTypeChoice menjadi dua field ini.
+        $article->setArticleTypeCode($this->getData('articleTypeCode'));
+        $article->setArticleTypeCustomId($this->getData('articleTypeCustomId'));
         if ($this->isEditor) {
             $article->setHideAuthor($this->getData('hideAuthor') ? $this->getData('hideAuthor') : 0);
         }
@@ -724,6 +766,29 @@ class MetadataForm extends Form {
      */
     public function getCanEdit() {
         return $this->canEdit;
+    }
+
+    /**
+     * [WIZDAM] Terjemahkan articleTypeCode/articleTypeCustomId artikel
+     * saat ini menjadi label yang bisa ditampilkan langsung -- dipakai
+     * metadataView.tpl (read-only) supaya TIDAK perlu memanggil DAO dari
+     * template. Mengembalikan string kosong kalau belum ada tipe dipilih
+     * sama sekali (belum wajib diisi).
+     * @param string|null $articleTypeCode
+     * @param int|null $articleTypeCustomId
+     * @return string
+     */
+    private function _getArticleTypeDisplayLabel($articleTypeCode, $articleTypeCustomId) {
+        if ($articleTypeCustomId) {
+            /** @var ArticleTypeCustomDAO $customDao */
+            $customDao = DAORegistry::getDAO('ArticleTypeCustomDAO');
+            $customType = $customDao->getById((int) $articleTypeCustomId);
+            return $customType ? $customType->getLocalizedName() : '';
+        }
+        if ($articleTypeCode) {
+            return __('article.type.standard.' . $articleTypeCode);
+        }
+        return '';
     }
 
 }

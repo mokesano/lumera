@@ -190,6 +190,8 @@
 	<message key="article.type.description">Pilih jenis karya ilmiah yang mewakili artikel ini.</message>
 	<message key="article.type.standardType">Tipe Baku</message>
 	<message key="article.type.customType">Tipe Kustom (khusus jurnal ini)</message>
+	<message key="article.type.articleTypes">Tipe Artikel</message>
+	<message key="article.type.selectType">Silakan pilih tipe artikel...</message>
 
 	<!-- Tipe PUBLIK: bisa dipilih penulis saat submit -->
 	<message key="article.type.standard.research-article">Artikel Penelitian Asli</message>

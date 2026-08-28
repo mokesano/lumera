@@ -5,6 +5,7 @@ declare(strict_types=1);
  * @file classes/author/form/submit/AuthorSubmitStep1Form.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
  * Distributed under the GNU GPL v3.
  *
  * @class AuthorSubmitStep1Form
@@ -123,6 +124,25 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
         $isEditor = $roleDao->userHasRole($journal->getId(), $user->getId(), ROLE_ID_EDITOR) || $roleDao->userHasRole($journal->getId(), $user->getId(), ROLE_ID_SECTION_EDITOR);
         $templateMgr->assign('sectionOptions', ['0' => __('author.submit.selectSection')] + $sectionDao->getSectionTitles($journal->getId(), !$isEditor));
 
+        // [WIZDAM] Tipe Artikel -- opsi dipersempit ke Section yang
+        // SUDAH dipilih (kalau sudah ada, mis. sedang mengedit kembali
+        // sebelum lanjut step berikutnya); kalau BELUM ada section
+        // terpilih sama sekali (kunjungan pertama, sebelum submit
+        // pertama form ini), tampilkan yang aktif di level jurnal saja
+        // sebagai pendekatan terbaik -- lihat ArticleType::buildTypeOptions().
+        // TIDAK menyertakan tipe editorial-only (erratum dkk) -- ini
+        // form PENULIS, bukan editorial.
+        import('classes.article.ArticleType');
+        $currentSectionId = (int) ($this->getData('sectionId') ?: 0);
+        $templateMgr->assign(
+            'articleTypeOptions',
+            ['' => __('article.type.selectType')] + ArticleType::buildTypeOptions($journal->getId(), $currentSectionId ?: null, false)
+        );
+        $templateMgr->assign(
+            'articleTypeChoice',
+            ArticleType::toChoiceValue($this->getData('articleTypeCode'), $this->getData('articleTypeCustomId'))
+        );
+
         $supportedSubmissionLocales = $journal->getSetting('supportedSubmissionLocales');
         if (empty($supportedSubmissionLocales)) $supportedSubmissionLocales = [$journal->getPrimaryLocale()];
         $templateMgr->assign(
@@ -163,6 +183,11 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
                 'language' => $article->getLanguage(),
                 'sponsor' => $article->getSponsor(null),
                 'citations' => $article->getCitations(),
+                // [WIZDAM] Tipe Artikel -- lihat ArticleType::buildTypeOptions()/
+                // toChoiceValue() untuk penjelasan lengkap kenapa disimpan
+                // sebagai DUA field terpisah tapi diedit lewat SATU <select>.
+                'articleTypeCode' => $article->getArticleTypeCode(),
+                'articleTypeCustomId' => $article->getArticleTypeCustomId(),
             ];
 
             if (!is_array($this->_data['title'])) $this->_data['title'] = [];
@@ -205,7 +230,16 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
             'title', 'abstract', 'discipline', 'subjectClass', 'subject',
             'coverageGeo', 'coverageChron', 'coverageSample', 'type',
             'language', 'sponsor', 'citations',
+            'articleTypeChoice',
         ]);
+
+        // [WIZDAM] Pecah pilihan gabungan "std:<code>"/"custom:<id>" dari
+        // <select> tunggal articleTypeChoice menjadi dua field aktual di
+        // Article -- lihat ArticleType::parseTypeChoice().
+        import('classes.article.ArticleType');
+        [$articleTypeCode, $articleTypeCustomId] = ArticleType::parseTypeChoice($this->getData('articleTypeChoice'));
+        $this->setData('articleTypeCode', $articleTypeCode);
+        $this->setData('articleTypeCustomId', $articleTypeCustomId);
 
         $formLocales = $this->getSubmissionLocales();
 
@@ -271,6 +305,8 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
             $article->setLanguage($this->getData('language'));
             $article->setSponsor($this->getData('sponsor'), null);
             $article->setCitations($this->getData('citations'));
+            $article->setArticleTypeCode($this->getData('articleTypeCode'));
+            $article->setArticleTypeCustomId($this->getData('articleTypeCustomId'));
 
             if ($article->getSubmissionProgress() <= $this->step) {
                 $article->stampStatusModified();
@@ -310,6 +346,8 @@ class AuthorSubmitStep1Form extends AuthorSubmitForm {
             $this->article->setType($this->getData('type'), null);
             $this->article->setSponsor($this->getData('sponsor'), null);
             $this->article->setCitations($this->getData('citations'));
+            $this->article->setArticleTypeCode($this->getData('articleTypeCode'));
+            $this->article->setArticleTypeCustomId($this->getData('articleTypeCustomId'));
             $this->article->stampStatusModified();
             $this->article->setSubmissionProgress($this->step + 1);
             $this->article->setLanguage(PKPString::substr($this->article->getLocale(), 0, 2));

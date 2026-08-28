@@ -355,6 +355,28 @@ class NativeExportDom {
             }
         }
 
+        // [WIZDAM] Tipe Artikel -- BARU, lihat classes/article/ArticleType.inc.php.
+        // Tipe BAKU diekspor sebagai kode (portable antar instalasi apa
+        // pun). Tipe KUSTOM tidak punya arti lintas-instalasi (custom_type_id
+        // spesifik per jurnal per instalasi), jadi yang diekspor adalah
+        // NAMA-nya (localized) supaya sisi import BISA mencoba mencocokkan
+        // ke tipe kustom bernama sama di jurnal tujuan -- lihat
+        // NativeImportDom::handleArticle() untuk logika pencocokan itu.
+        // Silently tidak diekspor sama sekali kalau belum ada tipe dipilih
+        // (field ini opsional, konsisten dengan Article::getArticleTypeCode()).
+        if ($article->getArticleTypeCode()) {
+            $articleTypeNode = XMLCustomWriter::createChildWithText($doc, $root, 'article_type', $article->getArticleTypeCode(), false);
+            if ($articleTypeNode) XMLCustomWriter::setAttribute($articleTypeNode, 'code', $article->getArticleTypeCode());
+        } elseif ($article->getArticleTypeCustomId()) {
+            /** @var ArticleTypeCustomDAO $articleTypeCustomDao */
+            $articleTypeCustomDao = DAORegistry::getDAO('ArticleTypeCustomDAO');
+            $customType = $articleTypeCustomDao->getById($article->getArticleTypeCustomId());
+            if ($customType && trim((string) $customType->getLocalizedName()) !== '') {
+                $articleTypeNode = XMLCustomWriter::createChildWithText($doc, $root, 'article_type', $customType->getLocalizedName(), false);
+                if ($articleTypeNode) XMLCustomWriter::setAttribute($articleTypeNode, 'custom', 'true');
+            }
+        }
+
         /* --- Authors --- */
 
         foreach ($article->getAuthors() as $author) {

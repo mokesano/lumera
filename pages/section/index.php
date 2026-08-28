@@ -4,10 +4,15 @@ declare(strict_types=1);
 /**
  * @file pages/section/index.php
  *
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Wizdam Team
+ * Distributed under the GNU GPL v3.
+ *
  * [WIZDAM] - Native Route Registry for 'section' pages.
  * Menangani URL: /{context}/section/{section_path}
  */
 
+/** @var string $op */
 switch ($op) {
     case 'index':
     case 'about':
@@ -24,4 +29,5 @@ switch ($op) {
         import('pages.section.SectionHandler');
         break;
 }
+
 ?>

@@ -2,7 +2,7 @@
  * templates/article/article.tpl
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
- * Copyright (c) 2017-2026 Rochmady and Team
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
  * Distributed under the GNU GPL v3.
  *
  * Article View.
@@ -78,12 +78,19 @@
         {foreach name=sections from=$publishedArticles item=section key=sectionId}
             {foreach from=$section.articles item=article}
                 {if $section.title}
-                <span class="tocSectionTitle">{$section.title|escape}</span>
+                    <span class="tocSectionTitle">{$section.title|escape}</span>
                 {/if}
             {/foreach}{* articles *}
         {/foreach}{* sections *}
         {if $section && $section->getLocalizedIdentifyType()}
-        <span>{$section->getLocalizedIdentifyType()|escape}</span>
+            <span>{$section->getLocalizedIdentifyType()|escape}</span>
+        {/if}
+        {* [WIZDAM] Tipe Artikel -- lihat ArticleHandler::view() untuk
+           penjelasan lengkap kenapa label sudah jadi (siap-tampil) di
+           sini, bukan menghitung ulang lewat DAO di template. Opsional,
+           tidak tampil sama sekali kalau belum ada tipe dipilih. *}
+        {if $articleTypeDisplayLabel}
+            <span class="articleTypeBadge">{$articleTypeDisplayLabel|escape}</span>
         {/if}
     </div>
     <span class="title-text u-font-serif">{$article->getLocalizedTitle()|strip_unsafe_html}</span>{if $issue->getShowTitle() && $issue->getLocalizedDescription()}<a rel="noreferrer noopener" name="article-footnote-id1" href="#article-footnote-id1" class="workspace-trigger label">☆</a>{/if}
@@ -459,7 +466,7 @@
                     <p id="p0320">{translate key="article.suppfile.available"}</p>
                 </section>
             {/if}
-            
+
             {if $journalRt->getSupplementaryFiles() && is_a($article, 'PublishedArticle') && $article->getSuppFiles()}
                 <section id="SuppFiles" class="Body u-font-serif">
                     <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.suppfile.appendix"}</h2>
@@ -500,23 +507,25 @@
                     </div>
                     {/foreach}
                 </section>
-                <section id="Declaration" class="Body Declaration u-font-serif">
-                    <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.declare.information"}</h2>        
-                    <div id="copyrightBadge" class="u-hide Body u-margin-s-bottom">
-                        <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.declare.license"}</h2>
-                        <p>{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if} {$article->getLicense()|escape} (<a href="{$article->getLicenseURL()|escape}" rel="license" class="anchor"><span class="anchor-text">{$article->getLicenseURL()|escape}</span></a>), {translate key="submission.license.Statement1"}</p>                
-                    </div>
-                    <div id="PublisherName" class="Body">
-                        <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="rt.metadata.dublinCore.publisher"}'s Note</h2>
-                        <p>{if $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}{$currentJournal->getSetting('publisherInstitution')|escape}{else}Sangia Publishing{/if} remains neutral with regard to jurisdictional claims in published maps and institutional affiliations.</p>
-                    </div>
-                </section>
-            {else}
+            {** {else}
                 <section id="SuppFiles" class="Body u-font-serif">
                     <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="rt.suppFiles"}</h2>
                     <p>{translate key="author.submit.suppFile.noFile"}</p>
-                </section>
+                </section> **}
             {/if}
+
+            <section id="Declaration" class="Body Declaration u-font-serif">
+                <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.declare.information"}</h2>        
+                <div id="PublisherName" class="Body">
+                    <h2 class="section-title u-h3 u-margin-0-top u-margin-xs-bottom">{translate key="rt.metadata.dublinCore.publisher"}'s Note</h2>
+                    <p>{if $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}{$currentJournal->getSetting('publisherInstitution')|escape}{else}Sangia Publishing{/if} remains neutral with regard to jurisdictional claims in published maps and institutional affiliations.</p>
+                </div>
+                <div id="copyrightBadge" class="u-hide Body u-margin-s-bottom">
+                    <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.declare.license"}</h2>
+                    <p>{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if} {$article->getLicense()|escape} (<a href="{$article->getLicenseURL()|escape}" rel="license" class="anchor"><span class="anchor-text">{$article->getLicenseURL()|escape}</span></a>), {translate key="submission.license.Statement1"}</p>                
+                </div>
+            </section>
+
         </div>
         {/if}
     {/if} {* omit authors <!-- end omit authors --> *}

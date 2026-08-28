@@ -447,6 +447,23 @@ class ArticleHandler extends Handler {
         $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
         $templateMgr->assign('articleFunders', $funderDao->getByArticleId($article->getId())->toArray());
 
+        // [WIZDAM] Tipe Artikel -- label siap-tampil untuk halaman
+        // publik (lihat article.tpl, ditampilkan di dochead bareng
+        // judul Section) supaya template TIDAK perlu memanggil DAO
+        // langsung. Kosong kalau belum ada tipe dipilih sama sekali
+        // (field ini opsional).
+        import('classes.article.ArticleType');
+        $articleTypeDisplayLabel = '';
+        if ($article->getArticleTypeCustomId()) {
+            /** @var ArticleTypeCustomDAO $articleTypeCustomDao */
+            $articleTypeCustomDao = DAORegistry::getDAO('ArticleTypeCustomDAO');
+            $articleTypeCustom = $articleTypeCustomDao->getById($article->getArticleTypeCustomId());
+            $articleTypeDisplayLabel = $articleTypeCustom ? $articleTypeCustom->getLocalizedName() : '';
+        } elseif ($article->getArticleTypeCode()) {
+            $articleTypeDisplayLabel = __('article.type.standard.' . $article->getArticleTypeCode());
+        }
+        $templateMgr->assign('articleTypeDisplayLabel', $articleTypeDisplayLabel);
+
         $templateMgr->display('article/article.tpl');
     }
 

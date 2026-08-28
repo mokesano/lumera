@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file plugins/importexport/quickSubmit/QuickSubmitForm.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class QuickSubmitForm
  * @ingroup plugins_importexport_quickSubmit
@@ -185,6 +185,23 @@ class QuickSubmitForm extends Form {
         
         $templateMgr->assign('allCreditRoles', Author::getAllCreditRoles());
 
+        // [WIZDAM] Tipe Artikel -- QuickSubmit dipakai editor, jadi
+        // tipe editorial-only (Erratum dkk) JUGA ditawarkan (parameter
+        // ketiga true), beda dari wizard submit penulis. Section belum
+        // tentu dipilih saat render pertama, sama seperti Step 1 wizard
+        // submit -- pakai section yang sudah terkirim di request kalau
+        // ada, kalau belum tampilkan yang aktif di level jurnal saja.
+        import('classes.article.ArticleType');
+        $currentSectionId = (int) ($this->getData('sectionId') ?: 0);
+        $templateMgr->assign(
+            'articleTypeOptions',
+            ['' => __('article.type.selectType')] + ArticleType::buildTypeOptions($journal->getId(), $currentSectionId ?: null, true)
+        );
+        $templateMgr->assign(
+            'articleTypeChoice',
+            ArticleType::toChoiceValue($this->getData('articleTypeCode'), $this->getData('articleTypeCustomId'))
+        );
+
         import('classes.issue.IssueAction');
         $templateMgr->assign('issueOptions', IssueAction::getIssueOptions());
 
@@ -284,8 +301,16 @@ class QuickSubmitForm extends Form {
             'coverageGeo', 'coverageChron', 'coverageSample', 'type', 'language', 'sponsor',
             'citations', 'locale',
             // [WIZDAM] Funders + Deklarasi
-            'funders', 'deletedFunders', 'competingInterest', 'ethicalApproval', 'generativeAiDeclaration'
+            'funders', 'deletedFunders', 'competingInterest', 'ethicalApproval', 'generativeAiDeclaration',
+            'articleTypeChoice',
         ]);
+
+        // [WIZDAM] Pecah pilihan gabungan "std:<code>"/"custom:<id>" dari
+        // <select> tunggal articleTypeChoice -- lihat ArticleType::parseTypeChoice().
+        import('classes.article.ArticleType');
+        [$articleTypeCode, $articleTypeCustomId] = ArticleType::parseTypeChoice($this->getData('articleTypeChoice'));
+        $this->setData('articleTypeCode', $articleTypeCode);
+        $this->setData('articleTypeCustomId', $articleTypeCustomId);
 
         // [WIZDAM] Normalisasi creditRoles per-penulis dan funders --
         // pola sama persis AuthorSubmitStep2Form/MetadataForm.
@@ -385,6 +410,8 @@ class QuickSubmitForm extends Form {
         $article->setCompetingInterest($this->getData('competingInterest'), null);
         $article->setEthicalApproval($this->getData('ethicalApproval'), null);
         $article->setGenerativeAiDeclaration($this->getData('generativeAiDeclaration'), null);
+        $article->setArticleTypeCode($this->getData('articleTypeCode'));
+        $article->setArticleTypeCustomId($this->getData('articleTypeCustomId'));
 
         $article->setDateSubmitted(Core::getCurrentDate());
         $article->setStatus($this->getData('destination') === 'queue' ? STATUS_QUEUED : STATUS_PUBLISHED);

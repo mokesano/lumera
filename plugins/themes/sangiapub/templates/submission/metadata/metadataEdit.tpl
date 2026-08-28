@@ -255,6 +255,24 @@
 
 	<div class="separator"></div>
 
+	{* [WIZDAM] Tipe Artikel -- lihat ArticleType.inc.php +
+	   ArticleType::buildTypeOptions()/toChoiceValue(). Field ini
+	   TERPISAH dari "type" bebas teks lama di blok Indexing di bawah
+	   (metaType, dikontrol setting jurnal) -- keduanya berdampingan. *}
+	<div id="articleType" class="block">
+		<h3>{translate key="article.type.label"}</h3>
+		<p class="instruct">{translate key="article.type.description"}</p>
+
+		<table width="100%" class="data">
+			<tr valign="top">
+				<td width="20%" class="label">{fieldLabel name="articleTypeChoice" key="article.type.label"}</td>
+				<td width="80%" class="value"><select name="articleTypeChoice" id="articleTypeChoice" size="1" class="selectMenu">{html_options options=$articleTypeOptions selected=$articleTypeChoice}</select></td>
+			</tr>
+		</table>
+	</div>
+
+	<div class="separator"></div>
+
 	<div id="cover" class="block">
 		<h3>{translate key="editor.article.cover"}</h3>
 		<input type="hidden" name="fileName[{$formLocale|escape}]" value="{$fileName[$formLocale]|escape}" />

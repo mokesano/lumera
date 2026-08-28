@@ -2,7 +2,7 @@
  * plugins/themes/sangiapub/templates/author/submit/step1.tpl
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
- * Copyright (c) 2017-2026 Rochmady and Team
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
  * Distributed under the GNU GPL v3.
  *
  * [WIZDAM] Step 1 dari wizard submit yang DIRESTRUKTURISASI --
@@ -66,6 +66,20 @@
 
 		<div class="separator"></div>
 	{/if}{* if count($sectionOptions) == 2 *}
+
+	<div id="articleType" class="block">
+		<h3>{translate key="article.type.label"}</h3>
+		<p class="alert-text">{translate key="article.type.description"}</p>
+
+		<table class="data" width="100%">
+			<tr valign="top">
+				<td width="20%" class="label">{fieldLabel name="articleTypeChoice" key="article.type.label"}</td>
+				<td width="80%" class="value"><select name="articleTypeChoice" id="articleTypeChoice" size="1" class="selectMenu">{html_options options=$articleTypeOptions selected=$articleTypeChoice}</select></td>
+			</tr>
+		</table>
+	</div>{* articleType *}
+
+	<div class="separator"></div>
 
 	{if count($supportedSubmissionLocaleNames) == 1}
 		{* There is only one supported submission locale; choose it invisibly *}

@@ -5,7 +5,8 @@ declare(strict_types=1);
  * @class lib/wizdam/image/AssetRouter.inc.php
  * 
  * Copyright (c) 2017-2026 Sangia Publishing House
- * Copyright (c) 2017-2026 Rochmady
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class ImageRouter
  * @brief Menangani Semantic URL: /assets/images/[MODIFIER]/[TYPE]/[ID]?as=[FORMAT]

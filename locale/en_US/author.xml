@@ -191,6 +191,8 @@
 	<message key="article.type.description">Select the type of scholarly work this article represents.</message>
 	<message key="article.type.standardType">Standard Type</message>
 	<message key="article.type.customType">Custom Type (this journal)</message>
+	<message key="article.type.articleTypes">Article Types</message>
+	<message key="article.type.selectType">Please select an article type...</message>
 
 	<!-- Tipe PUBLIK: bisa dipilih penulis saat submit -->
 	<message key="article.type.standard.research-article">Original Research Article</message>

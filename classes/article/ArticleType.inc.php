@@ -5,6 +5,7 @@ declare(strict_types=1);
  * @file classes/article/ArticleType.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
  * Distributed under the GNU GPL v3.
  *
  * @class ArticleType
@@ -140,6 +141,98 @@ class ArticleType {
      */
     public static function isEditorialOnlyType(string $code): bool {
         return in_array($code, self::getEditorialOnlyTypes(), true);
+    }
+
+    /**
+     * [WIZDAM] Bangun opsi <select> GABUNGAN (tipe BAKU yang efektif
+     * aktif + tipe KUSTOM milik jurnal) -- SATU sumber kebenaran yang
+     * dipakai bersama oleh wizard submit penulis (AuthorSubmitStep1Form),
+     * form metadata editorial (MetadataForm), dan QuickSubmit
+     * (QuickSubmitForm), supaya ketiganya TIDAK saling menyimpang kalau
+     * logikanya berubah nanti -- ini pelajaran langsung dari bug funder/
+     * credit role sebelumnya yang jadi tidak konsisten karena logikanya
+     * disalin manual di banyak tempat.
+     *
+     * Value dikodekan "std:<code>" untuk tipe baku atau "custom:<id>"
+     * untuk tipe kustom, supaya SATU <select> tunggal bisa membedakan
+     * keduanya tanpa perlu dua form terpisah/toggle radio + JS (lihat
+     * parseTypeChoice()/toChoiceValue() sebagai pasangannya).
+     * @param int $journalId
+     * @param int|null $sectionId Kalau diisi, dipersempit ke tipe yang
+     *   efektif aktif untuk SECTION itu (gabungan pembatasan level
+     *   jurnal + level section). Kalau null, tampilkan yang aktif di
+     *   level JURNAL saja (dipakai saat section belum/tidak diketahui,
+     *   mis. render pertama wizard submit sebelum Section dipilih).
+     * @param bool $includeEditorialOnly Sertakan tipe EDITORIAL-ONLY --
+     *   HANYA untuk form yang diakses Journal Manager/Editor/Section
+     *   Editor, TIDAK PERNAH untuk form penulis submit naskah baru.
+     * @return array value => label (localized), siap untuk {html_options}
+     */
+    public static function buildTypeOptions($journalId, $sectionId = null, $includeEditorialOnly = false) {
+        /** @var ArticleTypeAvailabilityDAO $availabilityDao */
+        $availabilityDao = DAORegistry::getDAO('ArticleTypeAvailabilityDAO');
+        $standardCodes = $sectionId
+            ? $availabilityDao->getEffectiveEnabledTypesForSection((int) $journalId, (int) $sectionId)
+            : $availabilityDao->getEnabledTypesForJournal((int) $journalId);
+
+        $options = [];
+        foreach ($standardCodes as $code) {
+            $options['std:' . $code] = __('article.type.standard.' . $code);
+        }
+
+        if ($includeEditorialOnly) {
+            foreach (self::getEditorialOnlyTypes() as $code) {
+                $options['std:' . $code] = __('article.type.standard.' . $code);
+            }
+        }
+
+        import('classes.article.ArticleTypeCustomDAO');
+        /** @var ArticleTypeCustomDAO $customDao */
+        $customDao = DAORegistry::getDAO('ArticleTypeCustomDAO');
+        foreach ($customDao->getByJournalId((int) $journalId)->toArray() as $customType) {
+            $options['custom:' . $customType->getId()] = $customType->getLocalizedName();
+        }
+
+        return $options;
+    }
+
+    /**
+     * [WIZDAM] Pecah value gabungan "std:<code>" / "custom:<id>" hasil
+     * buildTypeOptions() menjadi [articleTypeCode, articleTypeCustomId] --
+     * TEPAT SATU yang terisi, satunya lagi null (lihat penjelasan lengkap
+     * di Article::getArticleTypeCode()/getArticleTypeCustomId()). Kode
+     * yang tidak dikenal/id tidak valid diperlakukan sama seperti "tidak
+     * memilih apa-apa" (silently ignored), BUKAN error -- konsisten
+     * dengan pola guard di ArticleTypeAvailabilityDAO.
+     * @param string|null $choice
+     * @return array{0: string|null, 1: int|null}
+     */
+    public static function parseTypeChoice($choice) {
+        $choice = (string) $choice;
+        if ($choice === '') return [null, null];
+        if (strpos($choice, 'std:') === 0) {
+            $code = substr($choice, 4);
+            return self::isStandardType($code) ? [$code, null] : [null, null];
+        }
+        if (strpos($choice, 'custom:') === 0) {
+            $id = (int) substr($choice, 7);
+            return $id > 0 ? [null, $id] : [null, null];
+        }
+        return [null, null];
+    }
+
+    /**
+     * [WIZDAM] Kebalikan parseTypeChoice() -- bangun kembali value
+     * gabungan dari state Article saat ini, dipakai template untuk
+     * menentukan opsi <select> mana yang harus ter-"selected".
+     * @param string|null $articleTypeCode
+     * @param int|null $articleTypeCustomId
+     * @return string
+     */
+    public static function toChoiceValue($articleTypeCode, $articleTypeCustomId) {
+        if ($articleTypeCustomId) return 'custom:' . (int) $articleTypeCustomId;
+        if ($articleTypeCode) return 'std:' . $articleTypeCode;
+        return '';
     }
 
 }

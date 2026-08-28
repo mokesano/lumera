@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file plugins/importexport/quickSubmit/QuickSubmitPlugin.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class QuickSubmitPlugin
  * @ingroup plugins_importexport_quickSubmit
@@ -138,10 +138,13 @@ class QuickSubmitPlugin extends ImportExportPlugin {
             }
             array_splice($authors, $delAuthorIndex, 1);
             $form->setData('authors', $authors);
-
-            if ($form->getData('primaryContact') == $delAuthorIndex) {
-                $form->setData('primaryContact', 0);
+            $primaryContact = [];
+            foreach ((array) $form->getData('primaryContact') as $idx) {
+                $idx = (int) $idx;
+                if ($idx === $delAuthorIndex) continue;
+                $primaryContact[] = $idx > $delAuthorIndex ? $idx - 1 : $idx;
             }
+            $form->setData('primaryContact', $primaryContact);
         } elseif ($request->getUserVar('moveAuthor')) {
             $editData = true;
             $moveAuthorDir = $request->getUserVar('moveAuthorDir');
@@ -151,24 +154,26 @@ class QuickSubmitPlugin extends ImportExportPlugin {
 
             if (!(($moveAuthorDir == 'u' && $moveAuthorIndex <= 0) || ($moveAuthorDir == 'd' && $moveAuthorIndex >= count($authors) - 1))) {
                 $tmpAuthor = $authors[$moveAuthorIndex];
-                $primaryContact = $form->getData('primaryContact');
+                $swapWith = $moveAuthorDir == 'u' ? $moveAuthorIndex - 1 : $moveAuthorIndex + 1;
                 if ($moveAuthorDir == 'u') {
                     $authors[$moveAuthorIndex] = $authors[$moveAuthorIndex - 1];
                     $authors[$moveAuthorIndex - 1] = $tmpAuthor;
-                    if ($primaryContact == $moveAuthorIndex) {
-                        $form->setData('primaryContact', $moveAuthorIndex - 1);
-                    } elseif ($primaryContact == ($moveAuthorIndex - 1)) {
-                        $form->setData('primaryContact', $moveAuthorIndex);
-                    }
                 } else {
                     $authors[$moveAuthorIndex] = $authors[$moveAuthorIndex + 1];
                     $authors[$moveAuthorIndex + 1] = $tmpAuthor;
-                    if ($primaryContact == $moveAuthorIndex) {
-                        $form->setData('primaryContact', $moveAuthorIndex + 1);
-                    } elseif ($primaryContact == ($moveAuthorIndex + 1)) {
-                        $form->setData('primaryContact', $moveAuthorIndex);
-                    }
                 }
+
+                $primaryContact = [];
+                foreach ((array) $form->getData('primaryContact') as $idx) {
+                    $idx = (int) $idx;
+                    if ($idx === $moveAuthorIndex) {
+                        $idx = $swapWith;
+                    } elseif ($idx === $swapWith) {
+                        $idx = $moveAuthorIndex;
+                    }
+                    $primaryContact[] = $idx;
+                }
+                $form->setData('primaryContact', $primaryContact);
             }
             $form->setData('authors', $authors);
         } elseif ($request->getUserVar('uploadSubmissionFile')) {

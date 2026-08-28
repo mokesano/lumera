@@ -861,6 +861,35 @@ class NativeImportDom {
             }
         }
 
+        // [WIZDAM] Tipe Artikel -- BARU, lihat NativeExportDom::generateArticleDom()
+        // untuk penjelasan lengkap kenapa tipe kustom dicocokkan lewat
+        // NAMA (bukan custom_type_id, yang tidak punya arti lintas
+        // instalasi). Kalau tipe kustom bernama sama TIDAK ditemukan di
+        // jurnal tujuan (mis. import ke instalasi lain yang belum
+        // punya tipe kustom itu), field ini dibiarkan kosong -- BUKAN
+        // error yang menggagalkan seluruh import, konsisten dengan sifat
+        // field ini yang opsional.
+        if (($articleTypeNode = $articleNode->getChildByName('article_type')) !== null) {
+            $typeCodeAttr = $articleTypeNode->getAttribute('code');
+            $isCustomAttr = $articleTypeNode->getAttribute('custom');
+            import('classes.article.ArticleType');
+            if ($typeCodeAttr !== '' && ArticleType::isStandardType($typeCodeAttr)) {
+                $article->setArticleTypeCode($typeCodeAttr);
+            } elseif ($isCustomAttr === 'true') {
+                $customTypeName = trim((string) $articleTypeNode->getValue());
+                if ($customTypeName !== '') {
+                    /** @var ArticleTypeCustomDAO $articleTypeCustomDao */
+                    $articleTypeCustomDao = DAORegistry::getDAO('ArticleTypeCustomDAO');
+                    foreach ($articleTypeCustomDao->getByJournalId((int) $journal->getId())->toArray() as $candidateCustomType) {
+                        if (strcasecmp(trim((string) $candidateCustomType->getLocalizedName()), $customTypeName) === 0) {
+                            $article->setArticleTypeCustomId($candidateCustomType->getId());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         if (($node = $articleNode->getChildByName('pages')) !== null) {
             $article->setPages($node->getValue());
         }

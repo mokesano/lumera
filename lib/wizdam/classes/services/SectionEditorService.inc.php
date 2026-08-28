@@ -5,7 +5,7 @@ declare(strict_types=1);
  * @file lib/wizdam/classes/services/SectionEditorService.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
- * Copyright (c) 2017-2026 Rochmady
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
  * Distributed under the GNU GPL v3.
  *
  * @class SectionEditorService

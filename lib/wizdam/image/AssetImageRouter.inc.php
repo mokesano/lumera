@@ -5,9 +5,10 @@ declare(strict_types=1);
  * @file lib/wizdam/image/AssetImageRouter.inc.php
  * 
  * Copyright (c) 2017-2026 Sangia Publishing House
- * Copyright (c) 2017-2026 Rochmady
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
- * @class ImageRouter
+ * @class AssetImageRouter
  * @brief Menangani Semantic URL: /assets/images/[MODIFIER]/[TYPE]/[ID]?as=[FORMAT]
  *        Contoh: /assets/images/w735h400/issue/59?as=webp
  */
@@ -105,6 +106,23 @@ class AssetImageRouter {
                     $subFolder = 'header';
                 }
                 break;
+
+            case 'profile':
+                // [WIZDAM] Foto profil user/editor TIDAK tersimpan sebagai
+                // field DB (beda dari issue/article/header di atas) --
+                // namanya konvensi tetap "profileImage-{userId}.{ext}",
+                // ekstensi ditentukan lewat pengecekan file mana yang ada
+                // (meniru pola yang sudah dipakai UserDAO/EditorialStaff).
+                // Berlaku SITE-LEVEL, bukan per-jurnal -- $journalId tetap 0.
+                foreach (['jpg', 'jpeg', 'png', 'gif'] as $ext) {
+                    $candidate = 'profileImage-' . $id . '.' . $ext;
+                    if (file_exists((new PublicFileManager())->getSiteFilesPath() . '/' . $candidate)) {
+                        $fileName = $candidate;
+                        break;
+                    }
+                }
+                $subFolder = 'profile';
+                break;
         }
 
         if (!$fileName) {
@@ -113,8 +131,13 @@ class AssetImageRouter {
         }
 
         // Set path sumber asli
+        // [WIZDAM] 'profile' bersumber dari getSiteFilesPath() (site-level),
+        // tipe lain (issue/article/header) tetap getJournalFilesPath()
+        // (per-jurnal, $journalId).
         $pubMgr = new PublicFileManager();
-        $sourcePath = $pubMgr->getJournalFilesPath($journalId) . '/' . $fileName;
+        $sourcePath = ($type === 'profile')
+            ? $pubMgr->getSiteFilesPath() . '/' . $fileName
+            : $pubMgr->getJournalFilesPath($journalId) . '/' . $fileName;
 
         // Tentukan ekstensi output
         $ext = pathinfo($fileName, PATHINFO_EXTENSION);
