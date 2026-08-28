@@ -207,7 +207,7 @@ class SectionEditorArticleTypeHandler extends Handler {
      * @param PKPRequest|null $request
      */
     public function setupTemplate($request = null) {
-        AppLocale::requireComponents(LOCALE_COMPONENT_CORE_SUBMISSION);
+        AppLocale::requireComponents(LOCALE_COMPONENT_CORE_SUBMISSION, LOCALE_COMPONENT_APP_AUTHOR);
         parent::setupTemplate($request);
     }
 

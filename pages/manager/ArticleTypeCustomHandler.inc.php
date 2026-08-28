@@ -237,6 +237,7 @@ class ArticleTypeCustomHandler extends ManagerHandler {
      * @param bool $subclass
      */
     public function setupTemplate($subclass = false) {
+        AppLocale::requireComponents(LOCALE_COMPONENT_APP_AUTHOR);
         parent::setupTemplate(true);
         if ($subclass) {
             $templateMgr = TemplateManager::getManager();
