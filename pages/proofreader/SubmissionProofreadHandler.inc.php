@@ -218,15 +218,17 @@ class SubmissionProofreadHandler extends ProofreaderHandler {
         import('classes.file.ArticleFileManager'); 
         if (isset($galley)) {
             if ($galley->isHTMLGalley()) {
-                $templateMgr = TemplateManager::getManager();
+                /** @var ArticleHTMLGalley $htmlGalley */
+                $htmlGalley = $galley;
+                $templateMgr = TemplateManager::getManager($request);
                 $templateMgr->assign('galley', $galley);
-                if ($galley->isHTMLGalley() && $styleFile = $galley->getStyleFile()) { // Undefined method 'getStyleFile'.
+                
+                if (method_exists($htmlGalley, 'getStyleFile') && $styleFile = $htmlGalley->getStyleFile()) {
                     $templateMgr->addStyleSheet($request->url(null, 'article', 'viewFile', [
                         $articleId, $galleyId, $styleFile->getFileId()
                     ]));
                 }
                 $templateMgr->display('submission/layout/proofGalleyHTML.tpl');
-
             } else {
                 // View non-HTML file inline
                 $this->viewFile([$articleId, $galley->getFileId()], $request);
