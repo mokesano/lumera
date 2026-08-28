@@ -56,6 +56,7 @@ class SubmissionProofreadHandler extends ProofreaderHandler {
 
         $useProofreaders = $journal->getSetting('useProofreaders');
 
+        /** @var AuthorDAO $authorDao */
         $authorDao = DAORegistry::getDAO('AuthorDAO');
         $authors = $authorDao->getAuthorsBySubmissionId($articleId);
 
@@ -70,9 +71,11 @@ class SubmissionProofreadHandler extends ProofreaderHandler {
         $templateMgr->assign('useLayoutEditors', $useLayoutEditors);
         $templateMgr->assign('helpTopicId', 'editorial.proofreadersRole.proofreading');
 
+        /** @var PublishedArticleDAO $publishedArticleDao */
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $publishedArticle = $publishedArticleDao->getPublishedArticleByArticleId($this->submission->getId());
         if ($publishedArticle) {
+            /** @var IssueDAO $issueDao */
             $issueDao = DAORegistry::getDAO('IssueDAO');
             $issue = $issueDao->getIssueById($publishedArticle->getIssueId());
             $templateMgr->assign('publishedArticle', $publishedArticle);
@@ -98,7 +101,6 @@ class SubmissionProofreadHandler extends ProofreaderHandler {
 
         // [WIZDAM FIX] Gunakan '!== null' untuk deteksi tombol
         $sendButtonPressed = ($request->getUserVar('send') !== null);
-
         if (ProofreaderAction::proofreadEmail($articleId, 'PROOFREAD_COMPLETE', $request, $sendButtonPressed ? '' : $request->url(null, 'proofreader', 'completeProofreader'))) {
             $request->redirect(null, null, 'submission', $articleId);
         }
@@ -115,7 +117,9 @@ class SubmissionProofreadHandler extends ProofreaderHandler {
 
         $articleId = (int) array_shift($args);
         $journal = $request->getJournal();
+
         $this->validate($request, $articleId);
+        AppLocale::requireComponents(LOCALE_COMPONENT_APP_AUTHOR);
         $this->setupTemplate(true, $articleId, 'summary');
 
         ProofreaderAction::viewMetadata($this->submission, $journal);
@@ -180,6 +184,8 @@ class SubmissionProofreadHandler extends ProofreaderHandler {
         $galleyId = (int) array_shift($args);
         $this->validate($request, $articleId);
         $submission = $this->submission;
+
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galley = $galleyDao->getGalley($galleyId, $articleId);
 
@@ -205,16 +211,16 @@ class SubmissionProofreadHandler extends ProofreaderHandler {
         $galleyId = (int) array_shift($args);
         $this->validate($request, $articleId);
 
+        /** @var ArticleGalleyDAO $galleyDao */
         $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
         $galley = $galleyDao->getGalley($galleyId, $articleId);
 
         import('classes.file.ArticleFileManager'); 
-
         if (isset($galley)) {
             if ($galley->isHTMLGalley()) {
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->assign('galley', $galley);
-                if ($galley->isHTMLGalley() && $styleFile = $galley->getStyleFile()) {
+                if ($galley->isHTMLGalley() && $styleFile = $galley->getStyleFile()) { // Undefined method 'getStyleFile'.
                     $templateMgr->addStyleSheet($request->url(null, 'article', 'viewFile', [
                         $articleId, $galleyId, $styleFile->getFileId()
                     ]));
@@ -248,5 +254,6 @@ class SubmissionProofreadHandler extends ProofreaderHandler {
             $request->redirect(null, null, 'submission', $articleId);
         }
     }
+
 }
 ?>
