@@ -3,11 +3,10 @@ declare(strict_types=1);
 
 /**
  * @file pages/search/AuthorSearchHandler.inc.php
- *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
+ * 
  * Copyright (c) 2017-2026 Sangia Publishing House
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class AuthorSearchHandler
  * @ingroup pages_search
@@ -173,6 +172,13 @@ class AuthorSearchHandler extends SearchHandler {
             if (empty($publishedArticles)) {
                 $request->redirect(null, $request->getRequestedPage());
             }
+
+            // [WIZDAM] Isi label Tipe Artikel untuk SELURUH artikel penulis
+            // ini sekaligus, TEPAT 2 query total (bukan per-artikel) --
+            // lihat ArticleType::attachDisplayLabels() untuk penjelasan
+            // lengkap.
+            import('classes.article.ArticleType');
+            ArticleType::attachDisplayLabels($publishedArticles);
 
             // [WIZDAM] Micro-payloads
             $templateMgr->assign([

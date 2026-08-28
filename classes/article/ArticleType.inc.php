@@ -235,5 +235,140 @@ class ArticleType {
         return '';
     }
 
+    /**
+     * [WIZDAM] TITIK MASUK TUNGGAL untuk mengisi label tampilan Article
+     * Type ke SEMUA halaman yang menampilkan lebih dari satu artikel
+     * sekaligus (TOC issue, arsip volume, halaman section, hasil
+     * pencarian, dst.) -- TANPA menghasilkan query N+1. Dipanggil SATU
+     * KALI oleh handler SEBELUM template->display(), dengan seluruh
+     * daftar artikel yang akan dirender (bentuk APAPUN -- lihat
+     * penjelasan bentuk yang didukung di bawah).
+     *
+     * Cara kerja (TEPAT 2 query TOTAL untuk seluruh daftar, tidak
+     * peduli berapa banyak artikel di dalamnya):
+     *   1. Daftar diratakan (flatten) dulu ke array 1 dimensi berisi
+     *      objek Article/PublishedArticle -- lihat _flattenArticleList().
+     *   2. Kumpulkan SEMUA article_type_custom_id yang dipakai daftar
+     *      ini ke satu array (tanpa query apapun -- getArticleTypeCustomId()
+     *      murni baca in-memory).
+     *   3. SATU panggilan ArticleTypeCustomDAO::getByIds() (yang sendiri
+     *      sudah dijamin 2 query total, lihat komentar di sana) untuk
+     *      mengambil SEMUA ArticleTypeCustom yang relevan sekaligus.
+     *   4. Iterasi ULANG daftar (tanpa query, murni in-memory) dan
+     *      panggil setCachedArticleTypeDisplayLabel() ke tiap artikel --
+     *      supaya getArticleTypeDisplayLabel() (lihat Article.inc.php)
+     *      langsung memakai cache ini dan TIDAK PERNAH jatuh ke jalur
+     *      lazy-query miliknya sendiri saat template merender daftar ini.
+     *
+     * Bentuk $articles yang didukung (mengakomodasi variasi bentuk
+     * yang SUDAH ADA di codebase ini untuk variabel template yang
+     * sama, mis. 'publishedArticles'/'articles' -- lihat catatan
+     * investigasi IssueHandler/VolumesHandler/IssueManagementHandler/
+     * SectionHandler):
+     *   - array DATAR berisi Article/PublishedArticle
+     *     (mis. SectionHandler::_getSectionArticles()).
+     *   - array BERSARANG per-section, array of array
+     *     (mis. PublishedArticleDAO::getPublishedArticlesInSections()).
+     *   - VirtualArrayIterator (mis. hasil paging SectionHandler
+     *     'articles') -- di-toArray() dulu (getter murni, TIDAK
+     *     merusak state ->next() milik iterator, sudah diverifikasi
+     *     dari kode VirtualArrayIterator::toArray()).
+     *   - kombinasi ketiganya bersarang berapapun dalamnya.
+     *   - SATU objek Article/PublishedArticle tunggal (bukan array)
+     *     juga diterima -- dibungkus otomatis, supaya handler halaman
+     *     artikel tunggal (mis. ArticleHandler) juga bisa memakai
+     *     titik masuk yang SAMA, bukan logika terpisah.
+     * @param mixed $articles
+     */
+    public static function attachDisplayLabels($articles): void {
+        // [WIZDAM] Jaga-jaga -- pastikan class Article & VirtualArrayIterator
+        // SUDAH dimuat sebelum dipakai di instanceof (_flattenArticleList()),
+        // supaya method ini aman dipanggil dari handler manapun tanpa
+        // bergantung urutan import() yang kebetulan sudah terjadi di
+        // tempat lain. import() OJS sendiri idempotent (aman dipanggil
+        // berkali-kali, tidak akan re-include).
+        import('classes.article.Article');
+        import('lib.pkp.classes.core.VirtualArrayIterator');
+
+        $flatArticles = self::_flattenArticleList($articles);
+        if (empty($flatArticles)) return;
+
+        // [WIZDAM] Langkah 2 -- kumpulkan custom_type_id unik, TANPA
+        // query (getArticleTypeCustomId() baca in-memory).
+        $customIds = [];
+        foreach ($flatArticles as $article) {
+            $customId = $article->getArticleTypeCustomId();
+            if ($customId) $customIds[] = (int) $customId;
+        }
+
+        // [WIZDAM] Langkah 3 -- SATU batch-fetch (2 query total,
+        // lihat ArticleTypeCustomDAO::getByIds()), TIDAK PERNAH
+        // dipanggil di dalam loop.
+        $customTypesById = [];
+        if (!empty($customIds)) {
+            import('classes.article.ArticleTypeCustomDAO');
+            /** @var ArticleTypeCustomDAO $customDao */
+            $customDao = DAORegistry::getDAO('ArticleTypeCustomDAO');
+            $customTypesById = $customDao->getByIds($customIds);
+        }
+
+        // [WIZDAM] Langkah 4 -- distribusikan hasil ke cache
+        // masing-masing objek Article, murni in-memory (tidak ada
+        // query lagi di loop ini). __() untuk tipe BAKU adalah
+        // pembacaan file locale yang SUDAH dimuat di memori proses,
+        // BUKAN query DB, jadi aman dipanggil per-artikel di sini.
+        foreach ($flatArticles as $article) {
+            $customId = $article->getArticleTypeCustomId();
+            if ($customId) {
+                $customType = isset($customTypesById[(int) $customId]) ? $customTypesById[(int) $customId] : null;
+                $article->setCachedArticleTypeDisplayLabel($customType ? $customType->getLocalizedName() : '');
+            } elseif ($article->getArticleTypeCode()) {
+                $article->setCachedArticleTypeDisplayLabel(__('article.type.standard.' . $article->getArticleTypeCode()));
+            } else {
+                $article->setCachedArticleTypeDisplayLabel('');
+            }
+        }
+    }
+
+    /**
+     * [WIZDAM] Ratakan (flatten) berbagai bentuk struktur daftar
+     * artikel yang dipakai di codebase ini (lihat daftar bentuk yang
+     * didukung di docblock attachDisplayLabels() di atas) menjadi SATU
+     * array 1 dimensi berisi objek Article/PublishedArticle -- rekursif,
+     * jadi menangani nesting berapapun dalamnya. Murni in-memory, TIDAK
+     * ada query DB di fungsi ini.
+     * @param mixed $articles
+     * @return Article[]
+     */
+    private static function _flattenArticleList($articles): array {
+        // [WIZDAM] Terima SATU objek Article tunggal juga (dibungkus
+        // otomatis) supaya handler halaman artikel tunggal bisa pakai
+        // titik masuk yang sama seperti handler daftar.
+        if ($articles instanceof Article) {
+            return [$articles];
+        }
+        if ($articles instanceof VirtualArrayIterator) {
+            $articles = $articles->toArray();
+        }
+        if (!is_array($articles) && !($articles instanceof Traversable)) {
+            return [];
+        }
+
+        $flat = [];
+        foreach ($articles as $item) {
+            if ($item instanceof Article) {
+                $flat[] = $item;
+            } elseif ($item instanceof VirtualArrayIterator || is_array($item) || $item instanceof Traversable) {
+                foreach (self::_flattenArticleList($item) as $sub) {
+                    $flat[] = $sub;
+                }
+            }
+            // [WIZDAM] Item lain (null, tipe tak dikenal) diabaikan
+            // secara diam-diam -- konsisten dengan pola guard lain di
+            // fitur ini (mis. parseTypeChoice()).
+        }
+        return $flat;
+    }
+
 }
 ?>

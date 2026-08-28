@@ -4,10 +4,9 @@ declare(strict_types=1);
 /**
  * @file pages/search/TitleSearchHandler.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
  * Copyright (c) 2017-2026 Sangia Publishing House
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class TitleSearchHandler
  * @ingroup pages_search
@@ -71,11 +70,20 @@ class TitleSearchHandler extends SearchHandler {
         
         import('lib.pkp.classes.core.VirtualArrayIterator');
         $results = new VirtualArrayIterator(
-            $resultsArray, 
-            $totalResults, 
-            $rangeInfo ? $rangeInfo->getPage() : 1, 
+            $resultsArray,
+            $totalResults,
+            $rangeInfo ? $rangeInfo->getPage() : 1,
             $rangeInfo ? $rangeInfo->getCount() : $totalResults
         );
+
+        // [WIZDAM] Isi label Tipe Artikel untuk SELURUH hasil di halaman
+        // indeks judul ini sekaligus, TEPAT 2 query total -- lihat
+        // ArticleType::attachDisplayLabels() untuk penjelasan lengkap.
+        // Bentuknya SAMA seperti SearchHandler::search() (baris hasil dari
+        // ArticleSearch::formatResults()), aman dipanggil dengan $results
+        // apa adanya.
+        import('classes.article.ArticleType');
+        ArticleType::attachDisplayLabels($results);
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign([

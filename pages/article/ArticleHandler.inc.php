@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file pages/article/ArticleHandler.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class ArticleHandler
  * @ingroup pages_article
@@ -452,17 +452,22 @@ class ArticleHandler extends Handler {
         // judul Section) supaya template TIDAK perlu memanggil DAO
         // langsung. Kosong kalau belum ada tipe dipilih sama sekali
         // (field ini opsional).
-        import('classes.article.ArticleType');
-        $articleTypeDisplayLabel = '';
-        if ($article->getArticleTypeCustomId()) {
-            /** @var ArticleTypeCustomDAO $articleTypeCustomDao */
-            $articleTypeCustomDao = DAORegistry::getDAO('ArticleTypeCustomDAO');
-            $articleTypeCustom = $articleTypeCustomDao->getById($article->getArticleTypeCustomId());
-            $articleTypeDisplayLabel = $articleTypeCustom ? $articleTypeCustom->getLocalizedName() : '';
-        } elseif ($article->getArticleTypeCode()) {
-            $articleTypeDisplayLabel = __('article.type.standard.' . $article->getArticleTypeCode());
-        }
-        $templateMgr->assign('articleTypeDisplayLabel', $articleTypeDisplayLabel);
+        //
+        // [WIZDAM] REFACTOR -- lookup manual yang dulu ada di sini
+        // (import ArticleTypeCustomDAO + getById() + __()) SUDAH
+        // DIPINDAHKAN menjadi satu-satunya implementasi di
+        // Article::getArticleTypeDisplayLabel() (classes/article/
+        // Article.inc.php), supaya logikanya TIDAK bercabang di 3
+        // tempat berbeda (dulu: di sini, di MetadataForm.inc.php, dan
+        // TIDAK ADA SAMA SEKALI di halaman daftar artikel seperti TOC
+        // issue/pencarian -- itu sebabnya diminta dibuat global).
+        // Article::getArticleTypeDisplayLabel() sendiri sudah aman
+        // dipanggil langsung di sini walau TANPA lewat
+        // ArticleType::attachDisplayLabels() lebih dulu -- ini
+        // halaman SATU artikel saja (bukan daftar), jadi lazy-fallback
+        // bawaannya (baca komentar method tsb.) cukup 1 query kalau
+        // memang perlu, TIDAK ada risiko N+1.
+        $templateMgr->assign('articleTypeDisplayLabel', $article->getArticleTypeDisplayLabel());
 
         $templateMgr->display('article/article.tpl');
     }

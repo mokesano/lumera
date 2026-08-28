@@ -755,6 +755,61 @@ class Article extends Submission {
     }
 
     /**
+     * [WIZDAM] Cache in-memory (TIDAK persisten, sama seperti
+     * PublishedArticle::setCachedViews()/'_cachedViews') untuk label
+     * tampilan tipe artikel yang SUDAH DIHITUNG lebih dulu -- dipakai
+     * ArticleType::attachDisplayLabels() untuk membatch pengambilan
+     * nama tipe kustom pada halaman yang menampilkan BANYAK artikel
+     * sekaligus (TOC issue, hasil pencarian, dst.), supaya
+     * getArticleTypeDisplayLabel() di bawah TIDAK perlu query satu-
+     * satu per artikel (N+1) pada halaman itu.
+     * @param string $label
+     * @return void
+     */
+    public function setCachedArticleTypeDisplayLabel(string $label): void {
+        $this->setData('_cachedArticleTypeDisplayLabel', $label);
+    }
+
+    /**
+     * [WIZDAM] Label siap-tampil untuk tipe artikel artikel ini --
+     * BAKU (lewat locale key article.type.standard.<code>) atau
+     * KUSTOM (lewat nama localized ArticleTypeCustom), string kosong
+     * kalau belum ada tipe dipilih sama sekali. Dipakai LANGSUNG oleh
+     * template mana pun yang sudah punya objek Article/PublishedArticle
+     * di scope-nya (mis. {$article->getArticleTypeDisplayLabel()}) --
+     * TIDAK perlu halaman/handler tertentu menghitungnya lebih dulu.
+     *
+     * Kalau sudah di-cache (lihat setCachedArticleTypeDisplayLabel()
+     * di atas, dipanggil ArticleType::attachDisplayLabels() untuk
+     * halaman berisi banyak artikel), langsung pakai nilai cache --
+     * TIDAK query lagi. Kalau belum, hitung SEKALI di sini (aman untuk
+     * halaman satu-artikel: paling banter 1 query tambahan untuk tipe
+     * kustom, BUKAN N+1 karena cuma 1 artikel) lalu simpan ke cache
+     * supaya pemanggilan berikutnya pada request yang sama tidak query
+     * ulang.
+     * @return string
+     */
+    public function getArticleTypeDisplayLabel(): string {
+        $cached = $this->getData('_cachedArticleTypeDisplayLabel');
+        if ($cached !== null) return $cached;
+
+        $label = '';
+        $customId = $this->getArticleTypeCustomId();
+        if ($customId) {
+            import('classes.article.ArticleTypeCustomDAO');
+            /** @var ArticleTypeCustomDAO $articleTypeCustomDao */
+            $articleTypeCustomDao = DAORegistry::getDAO('ArticleTypeCustomDAO');
+            $articleTypeCustom = $articleTypeCustomDao->getById($customId);
+            $label = $articleTypeCustom ? $articleTypeCustom->getLocalizedName() : '';
+        } elseif ($this->getArticleTypeCode()) {
+            $label = __('article.type.standard.' . $this->getArticleTypeCode());
+        }
+
+        $this->setData('_cachedArticleTypeDisplayLabel', $label);
+        return $label;
+    }
+
+    /**
      * Get the localized article cover filename.
      * DEPRECATED in favour of getLocalizedFileName.
      * @return string|null

@@ -6,7 +6,7 @@ declare(strict_types=1);
  *
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Wizdam Team
- * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3.
  *
  * @class VolumesHandler
  * @ingroup pages_volumes
@@ -417,6 +417,14 @@ class VolumesHandler extends Handler {
                     $galley->setCachedViews($galleyViews[(int) $galley->getId()] ?? 0);
                 }
             }
+
+            // [WIZDAM] Isi label Tipe Artikel untuk SELURUH artikel di TOC
+            // issue ini sekaligus, TEPAT 2 query total (bukan per-artikel) --
+            // lihat ArticleType::attachDisplayLabels() untuk penjelasan
+            // lengkap. Pola SAMA seperti [BATCH VIEWS] tepat di atas
+            // (juga sama seperti wiring di IssueHandler::_setupIssueTemplate()).
+            import('classes.article.ArticleType');
+            ArticleType::attachDisplayLabels($publishedArticles);
 
             $templateMgr->assign('publishedArticles', $publishedArticles);
             $showToc = true;

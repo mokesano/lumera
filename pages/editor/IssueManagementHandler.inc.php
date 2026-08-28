@@ -29,16 +29,17 @@ class IssueManagementHandler extends EditorHandler {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function IssueManagementHandler() {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::'" . get_class($this) . "'(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct();
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
@@ -619,6 +620,16 @@ class IssueManagementHandler extends EditorHandler {
         $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
         $publishedArticles = $publishedArticleDao->getPublishedArticles($issueId);
 
+        // [WIZDAM] Isi label Tipe Artikel untuk SELURUH artikel TOC ini
+        // sekaligus, TEPAT 2 query total (bukan per-artikel) -- lihat
+        // ArticleType::attachDisplayLabels() untuk penjelasan lengkap.
+        // Dipanggil di sini (SEBELUM $publishedArticles dipecah ke
+        // struktur $sections di bawah) supaya tetap berupa array datar
+        // sederhana -- objek Article yang sama tetap dipakai/dirujuk
+        // setelah dipecah, jadi cache label tetap ikut ke $sections.
+        import('classes.article.ArticleType');
+        ArticleType::attachDisplayLabels($publishedArticles);
+
         /** @var LayoutEditorSubmissionDAO $layoutEditorSubmissionDao */
         $layoutEditorSubmissionDao = DAORegistry::getDAO('LayoutEditorSubmissionDAO');
         $proofedArticleIds = $layoutEditorSubmissionDao->getProofedArticlesByIssueId($issueId);
@@ -1188,6 +1199,15 @@ class IssueManagementHandler extends EditorHandler {
                 /** @var PublishedArticleDAO $publishedArticleDao */
                 $publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
                 $publishedArticles = $publishedArticleDao->getPublishedArticlesInSections($issue->getId());
+
+                // [WIZDAM] Isi label Tipe Artikel untuk SELURUH artikel TOC
+                // yang disertakan di badan email notifikasi ini sekaligus,
+                // TEPAT 2 query total -- lihat
+                // ArticleType::attachDisplayLabels() untuk penjelasan
+                // lengkap. Bentuknya sama seperti wiring di IssueHandler/
+                // VolumesHandler (nested per-section, key 'articles').
+                import('classes.article.ArticleType');
+                ArticleType::attachDisplayLabels($publishedArticles);
 
                 $templateMgr->assign('journal', $journal);
                 $templateMgr->assign('issue', $issue);

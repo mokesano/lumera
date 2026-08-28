@@ -141,13 +141,20 @@ class SectionHandler extends Handler {
 
         $request = Application::get()->getRequest();
 
+        // [WIZDAM] Isi label Tipe Artikel untuk 4 artikel terbaru section
+        // ini sekaligus, TEPAT 2 query total (bukan per-artikel) -- lihat
+        // ArticleType::attachDisplayLabels() untuk penjelasan lengkap.
+        $recentSectionArticles = $this->_getSectionArticles($section, $journal, 4);
+        import('classes.article.ArticleType');
+        ArticleType::attachDisplayLabels($recentSectionArticles);
+
         $templateMgr->assign('section',             $section);
         $templateMgr->assign('journalTitle',         $journal->getLocalizedTitle());
         $templateMgr->assign('journalInitials',      $journal->getLocalizedSetting('initials'));
         $templateMgr->assign('printIssn',            $journal->getSetting('printIssn'));
         $templateMgr->assign('onlineIssn',           $journal->getSetting('onlineIssn'));
         $templateMgr->assign('sectionEditors',       $this->_getSectionEditors($section, $journal));
-        $templateMgr->assign('publishedArticles',    $this->_getSectionArticles($section, $journal, 4));
+        $templateMgr->assign('publishedArticles',    $recentSectionArticles);
         $templateMgr->assign('totalArticleCount',    $this->_getSectionArticleCount($section));
         $templateMgr->assign('allArticlesUrl',       $request->url(null, 'section', $section->getSectionUrlTitle(), ['articles']));
         $templateMgr->assign('aboutUrl',             $request->url(null, 'section', $section->getSectionUrlTitle(), ['about']));
@@ -201,6 +208,13 @@ class SectionHandler extends Handler {
         $currentPage  = ($rangeInfo && $rangeInfo->isValid()) ? $rangeInfo->getPage() : 1;
         $offset       = ($currentPage - 1) * $itemsPerPage;
         $pageArticles = array_slice($allFiltered, $offset, $itemsPerPage);
+
+        // [WIZDAM] Isi label Tipe Artikel untuk HALAMAN artikel yang
+        // ditampilkan sekarang saja (bukan $allFiltered yang belum
+        // dipaginasi) sekaligus, TEPAT 2 query total -- lihat
+        // ArticleType::attachDisplayLabels() untuk penjelasan lengkap.
+        import('classes.article.ArticleType');
+        ArticleType::attachDisplayLabels($pageArticles);
 
         import('lib.pkp.classes.core.VirtualArrayIterator');
         $articlesIterator = new VirtualArrayIterator(

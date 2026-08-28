@@ -389,10 +389,15 @@ class MetadataForm extends Form {
                 $this->getData('articleTypeCode'),
                 $this->getData('articleTypeCustomId')
             ));
-            $templateMgr->assign('articleTypeDisplayLabel', $this->_getArticleTypeDisplayLabel(
-                $this->article->getArticleTypeCode(),
-                $this->article->getArticleTypeCustomId()
-            ));
+            // [WIZDAM] Dipindahkan ke Article::getArticleTypeDisplayLabel()
+            // (lihat classes/article/Article.inc.php) -- SATU-SATUNYA
+            // implementasi lookup label tipe artikel di seluruh codebase,
+            // dipakai bersama oleh halaman publik (ArticleHandler/
+            // ArticleType::attachDisplayLabels() untuk daftar) dan form
+            // editorial di sini (single-object, aman dipanggil langsung
+            // tanpa risiko N+1). Method privat duplikat
+            // _getArticleTypeDisplayLabel() yang lama sudah DIHAPUS.
+            $templateMgr->assign('articleTypeDisplayLabel', $this->article->getArticleTypeDisplayLabel());
         }
 
         parent::display();
@@ -766,29 +771,6 @@ class MetadataForm extends Form {
      */
     public function getCanEdit() {
         return $this->canEdit;
-    }
-
-    /**
-     * [WIZDAM] Terjemahkan articleTypeCode/articleTypeCustomId artikel
-     * saat ini menjadi label yang bisa ditampilkan langsung -- dipakai
-     * metadataView.tpl (read-only) supaya TIDAK perlu memanggil DAO dari
-     * template. Mengembalikan string kosong kalau belum ada tipe dipilih
-     * sama sekali (belum wajib diisi).
-     * @param string|null $articleTypeCode
-     * @param int|null $articleTypeCustomId
-     * @return string
-     */
-    private function _getArticleTypeDisplayLabel($articleTypeCode, $articleTypeCustomId) {
-        if ($articleTypeCustomId) {
-            /** @var ArticleTypeCustomDAO $customDao */
-            $customDao = DAORegistry::getDAO('ArticleTypeCustomDAO');
-            $customType = $customDao->getById((int) $articleTypeCustomId);
-            return $customType ? $customType->getLocalizedName() : '';
-        }
-        if ($articleTypeCode) {
-            return __('article.type.standard.' . $articleTypeCode);
-        }
-        return '';
     }
 
 }

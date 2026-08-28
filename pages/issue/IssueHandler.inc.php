@@ -694,6 +694,16 @@ class IssueHandler extends Handler {
                     }
                 }
 
+                // [WIZDAM] Isi label Tipe Artikel untuk SELURUH artikel di TOC
+                // issue ini sekaligus, TEPAT 2 query total (bukan per-artikel) --
+                // lihat ArticleType::attachDisplayLabels() untuk penjelasan
+                // lengkap. Ditempatkan di sini (pola SAMA seperti [BATCH VIEWS]
+                // tepat di atas) supaya article.tpl/TOC template bisa langsung
+                // memanggil {$article->getArticleTypeDisplayLabel()} tanpa
+                // pernah jatuh ke jalur lazy-query per-artikel.
+                import('classes.article.ArticleType');
+                ArticleType::attachDisplayLabels($publishedArticles);
+
                 $templateMgr->assign('publishedArticles', $publishedArticles);
                 $showToc = true;
             }

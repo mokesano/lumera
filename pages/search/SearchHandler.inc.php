@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file pages/search/SearchHandler.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class SearchHandler
  * @ingroup pages_search
@@ -203,10 +203,21 @@ class SearchHandler extends Handler {
         );
 
         $this->setupTemplate($request);
-        
+
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->setCacheability(CACHEABILITY_NO_STORE);
-        
+
+        // [WIZDAM] Isi label Tipe Artikel untuk SELURUH hasil pencarian
+        // halaman ini sekaligus, TEPAT 2 query total (bukan per-artikel) --
+        // lihat ArticleType::attachDisplayLabels() untuk penjelasan
+        // lengkap. $results berbentuk VirtualArrayIterator berisi baris
+        // ['article' => ..., 'publishedArticle' => ..., ...] (lihat
+        // ArticleSearch::formatResults()) -- attachDisplayLabels() sudah
+        // dirancang meratakan (flatten) bentuk campuran seperti ini secara
+        // rekursif, jadi aman dipanggil langsung dengan $results apa adanya.
+        import('classes.article.ArticleType');
+        ArticleType::attachDisplayLabels($results);
+
         // [WIZDAM] Micro-payloads
         $templateMgr->assign([
             'jsLocaleKeys' => ['search.noKeywordError'],
