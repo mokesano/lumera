@@ -1,9 +1,9 @@
 {**
  * templates/submission/metadata/metadataEdit.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2003-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * Form for changing metadata of an article (used in MetadataForm)
  *}
@@ -255,10 +255,7 @@
 
 	<div class="separator"></div>
 
-	{* [WIZDAM] Tipe Artikel -- lihat ArticleType.inc.php +
-	   ArticleType::buildTypeOptions()/toChoiceValue(). Field ini
-	   TERPISAH dari "type" bebas teks lama di blok Indexing di bawah
-	   (metaType, dikontrol setting jurnal) -- keduanya berdampingan. *}
+	{* [WIZDAM] Tipe Artikel *}
 	<div id="articleType" class="block">
 		<h3>{translate key="article.type.label"}</h3>
 		<p class="instruct">{translate key="article.type.description"}</p>

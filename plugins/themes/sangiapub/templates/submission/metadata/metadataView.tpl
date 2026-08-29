@@ -1,9 +1,9 @@
 {**
- * metadata_view.tpl
+ * templates/submission/metadata/metadataView.tpl
  *
- * Copyright (c) 2013-2015 Simon Fraser University Library
- * Copyright (c) 2003-2015 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * View (but not edit) metadata of an article. Used by MetadataForm.
  *
@@ -39,10 +39,7 @@
 				<td class="label">{translate key="common.country"}</td>
 				<td class="value">{$author.countryLocalized|escape|default:"&mdash;"}</td>
 			</tr>
-			{* [WIZDAM] CRediT -- MENGGANTIKAN competingInterests per-penulis
-			   yang lama (sudah dipindah jadi field level artikel, lihat
-			   bagian Deklarasi di bawah). Daftar peran dipisah koma,
-			   foreach datar satu tingkat -- tidak ada nested if. *}
+			{* [WIZDAM] CRediT peran penulis *}
 			<tr valign="top">
 				<td class="label">{translate key="author.credit.label"}</td>
 				<td class="value">
@@ -89,7 +86,7 @@
 
 <div class="separator"></div>
 
-{* [WIZDAM] Tipe Artikel -- read-only, lihat MetadataForm::_getArticleTypeDisplayLabel(). *}
+{* [WIZDAM] Tipe Artikel -- read-only *}
 <div id="articleType" class="block">
 	<h3>{translate key="article.type.label"}</h3>
 
@@ -212,8 +209,7 @@
 
 <div class="separator"></div>
 
-{* [WIZDAM] Funders (pendanaan/hibah terstruktur) -- read-only, foreach
-   datar satu tingkat, satu funder per baris. *}
+{* [WIZDAM] Funders (pendanaan/hibah terstruktur) -- read-only *}
 <div id="funders" class="block">
 	<h3>{translate key="author.submit.funders"}</h3>
 
@@ -238,7 +234,7 @@
 
 <div class="separator"></div>
 
-{* [WIZDAM] Deklarasi level artikel -- read-only. *}
+{* [WIZDAM] Deklarasi level artikel -- read-only *}
 <div id="declarations" class="block">
 	<h3>{translate key="author.submit.declarations"}</h3>
 

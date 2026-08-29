@@ -165,12 +165,10 @@ class MetadataForm extends Form {
      * Helps plugins access the protected $article property safely.
      */
     public function getArticle() {
-        // Cek apakah properti $article ada di instance class ini (misal di MetadataForm atau AuthorSubmitForm)
         if (property_exists($this, 'article')) {
             return $this->article;
         }
-        
-        // Fallback: Jika di kelas tersebut menggunakan nama variabel lain atau tidak ada
+
         return null;
     }
 
@@ -203,41 +201,27 @@ class MetadataForm extends Form {
                 'sponsor' => $article->getSponsor(null) ?? [],
                 'citations' => $article->getCitations(),
                 'hideAuthor' => $article->getHideAuthor(),
-                // [WIZDAM] Funders (pendanaan/hibah terstruktur) -- pola
-                // sama persis AuthorSubmitStep2Form, supaya editor bisa
-                // mengelola Funders dari halaman metadata editorial
-                // (review/copyediting), TIDAK cuma dari wizard submit
-                // yang hanya berlaku sekali di awal.
                 'funders' => [],
-                // [WIZDAM] Deklarasi level artikel (SATU pernyataan
-                // mencakup seluruh penulis, sama seperti Step 3 wizard
-                // submit baru) -- lihat Article::getCompetingInterest()
-                // dkk.
                 'competingInterest' => $article->getCompetingInterest(null) ?? [],
                 'ethicalApproval' => $article->getEthicalApproval(null) ?? [],
                 'generativeAiDeclaration' => $article->getGenerativeAiDeclaration(null) ?? [],
-                // [WIZDAM] Tipe Artikel -- lihat ArticleType::buildTypeOptions()/
-                // toChoiceValue() di display() di bawah untuk penjelasan
-                // lengkap kenapa disimpan sebagai DUA field tapi diedit
-                // lewat SATU <select> gabungan.
+                'creditAuthorshipsTitle' => $article->getCreditAuthorshipsTitle(null) ?? [],
+                'generativeAiDeclarationTitle' => $article->getGenerativeAiDeclarationTitle(null) ?? [],
+                'ethicalApprovalTitle' => $article->getEthicalApprovalTitle(null) ?? [],
+                'competingInterestTitle' => $article->getCompetingInterestTitle(null) ?? [],
                 'articleTypeCode' => $article->getArticleTypeCode(),
                 'articleTypeCustomId' => $article->getArticleTypeCustomId(),
             ];
 
-            // [WIZDAM] Isi teks default (boilerplate) untuk locale yang
-            // BELUM punya nilai deklarasi sama sekali -- supaya pengguna
-            // tinggal MENGEDIT pernyataan, bukan menulis dari nol. Teks
-            // default memakai locale key yang SAMA dengan fallback
-            // tampilan publik di article.tpl (article.*.statement), jadi
-            // konsisten dengan apa yang akhirnya tampil ke pembaca kalau
-            // field dibiarkan kosong. HANYA berlaku saat form BENAR-BENAR
-            // bisa diedit ($this->canEdit) -- metadataView.tpl (read-only)
-            // TIDAK disentuh, tetap pakai fallback "&mdash;"-nya sendiri.
             if ($this->canEdit) {
                 $declarationDefaults = [
                     'competingInterest' => 'article.competingInterest.statement',
                     'ethicalApproval' => 'article.ethicalApproval.statement',
                     'generativeAiDeclaration' => 'article.generativeAiDeclaration.statement',
+                    'creditAuthorshipsTitle' => 'article.creditAuthorships',
+                    'generativeAiDeclarationTitle' => 'article.generativeAiDeclaration',
+                    'ethicalApprovalTitle' => 'article.ethicalApproval',
+                    'competingInterestTitle' => 'article.competingInterest',
                 ];
                 foreach ($declarationDefaults as $field => $defaultKey) {
                     if (!is_array($this->_data[$field])) $this->_data[$field] = [];
@@ -278,25 +262,11 @@ class MetadataForm extends Form {
                         'email' => $authors[$i]->getEmail(),
                         'orcid' => $authors[$i]->getData('orcid'),
                         'url' => $authors[$i]->getUrl(),
-                        // [WIZDAM] competingInterests per-penulis DIHAPUS
-                        // dari sini -- digantikan competingInterest LEVEL
-                        // ARTIKEL di atas (konsisten dengan wizard submit
-                        // baru). Digantikan creditRoles (CRediT, BEDA
-                        // kasus -- memang per-penulis, terstruktur).
                         'creditRoles' => $authors[$i]->getCreditRolesArray(),
                         'biography' => $authors[$i]->getBiography(null) ?? []
                     ]
                 );
             }
-            // [WIZDAM BUGFIX] primaryContact SEKARANG ARRAY berisi index
-            // SEMUA penulis yang ditandai "Principal contact for editorial
-            // correspondence" -- sebelumnya cuma menyimpan index TERAKHIR
-            // yang ditemukan (di dalam loop di atas) karena disangka selalu
-            // tunggal, padahal author.primaryContact memang sudah berupa
-            // flag per-baris di database (mendukung banyak penulis
-            // sekaligus) -- pembatasan "hanya satu" murni di radio button
-            // template, bukan di data. Dibangun di loop TERPISAH supaya
-            // urutannya tetap sesuai urutan penulis, bukan urutan ditemukan.
             $this->_data['primaryContact'] = [];
             foreach ($authors as $i => $author) {
                 if ($author->getPrimaryContact()) {
@@ -320,7 +290,8 @@ class MetadataForm extends Form {
         return array_merge(parent::getLocaleFieldNames(), [
             'title', 'abstract', 'coverPageAltText', 'showCoverPage', 'hideCoverPageToc', 'hideCoverPageAbstract', 'originalFileName', 'fileName', 'width', 'height',
             'discipline', 'subjectClass', 'subject', 'coverageGeo', 'coverageChron', 'coverageSample', 'type', 'sponsor', 'citations',
-            'copyrightHolder', 'competingInterest', 'ethicalApproval', 'generativeAiDeclaration'
+            'copyrightHolder', 'competingInterest', 'ethicalApproval', 'generativeAiDeclaration',
+            'creditAuthorshipsTitle', 'generativeAiDeclarationTitle', 'ethicalApprovalTitle', 'competingInterestTitle'
         ]);
     }
 
@@ -372,11 +343,6 @@ class MetadataForm extends Form {
         $templateMgr->assign('article', $this->article);
         $templateMgr->assign('allCreditRoles', Author::getAllCreditRoles());
 
-        // [WIZDAM] Tipe Artikel -- editor/section editor boleh melihat/
-        // memilih tipe editorial-only (Erratum dkk) juga, penulis TIDAK.
-        // Dipersempit ke Section artikel ini (sudah pasti diketahui di
-        // halaman ini, beda dari wizard submit yang mungkin belum punya
-        // section saat render pertama).
         import('classes.article.ArticleType');
         if ($this->article) {
             $articleTypeOptions = ['' => __('article.type.selectType')] + ArticleType::buildTypeOptions(
@@ -389,14 +355,6 @@ class MetadataForm extends Form {
                 $this->getData('articleTypeCode'),
                 $this->getData('articleTypeCustomId')
             ));
-            // [WIZDAM] Dipindahkan ke Article::getArticleTypeDisplayLabel()
-            // (lihat classes/article/Article.inc.php) -- SATU-SATUNYA
-            // implementasi lookup label tipe artikel di seluruh codebase,
-            // dipakai bersama oleh halaman publik (ArticleHandler/
-            // ArticleType::attachDisplayLabels() untuk daftar) dan form
-            // editorial di sini (single-object, aman dipanggil langsung
-            // tanpa risiko N+1). Method privat duplikat
-            // _getArticleTypeDisplayLabel() yang lama sudah DIHAPUS.
             $templateMgr->assign('articleTypeDisplayLabel', $this->article->getArticleTypeDisplayLabel());
         }
 
@@ -440,13 +398,14 @@ class MetadataForm extends Form {
                 'competingInterest',
                 'ethicalApproval',
                 'generativeAiDeclaration',
+                'creditAuthorshipsTitle',
+                'generativeAiDeclarationTitle',
+                'ethicalApprovalTitle',
+                'competingInterestTitle',
                 'articleTypeChoice',
             ]
         );
 
-        // [WIZDAM] Pecah pilihan gabungan "std:<code>"/"custom:<id>" dari
-        // <select> tunggal articleTypeChoice menjadi dua field aktual di
-        // Article -- lihat ArticleType::parseTypeChoice().
         import('classes.article.ArticleType');
         [$articleTypeCode, $articleTypeCustomId] = ArticleType::parseTypeChoice($this->getData('articleTypeChoice'));
         $this->setData('articleTypeCode', $articleTypeCode);
@@ -455,21 +414,12 @@ class MetadataForm extends Form {
             $this->readUserVars(['copyrightHolder', 'copyrightYear', 'licenseURL']);
         }
 
-        // [WIZDAM BUGFIX] primaryContact sekarang checkbox multi-pilih
-        // (name="primaryContact[]"), BUKAN lagi radio button tunggal --
-        // sama seperti creditRoles, checkbox yang TIDAK dicentang sama
-        // sekali TIDAK ikut terkirim dalam POST, jadi kalau key-nya hilang
-        // berarti tidak ada yang dicentang (array kosong), bukan error.
         if (!isset($this->_data['primaryContact']) || !is_array($this->_data['primaryContact'])) {
             $this->_data['primaryContact'] = [];
         }
         $this->_data['primaryContact'] = array_values(array_unique(array_map('intval', $this->_data['primaryContact'])));
 
-        // [WIZDAM] Normalisasi creditRoles per-penulis -- checkbox HTML
-        // yang TIDAK dicentang tidak ikut terkirim sama sekali dalam
-        // POST, jadi kalau key-nya hilang, berarti tidak ada peran
-        // dipilih (array kosong), BUKAN error. Pola sama persis
-        // AuthorSubmitStep2Form::readInputData().
+        // [WIZDAM] Normalisasi creditRoles per-penulis --
         if (is_array($this->_data['authors'])) {
             foreach ($this->_data['authors'] as $i => $author) {
                 if (!isset($this->_data['authors'][$i]['creditRoles']) || !is_array($this->_data['authors'][$i]['creditRoles'])) {
@@ -614,17 +564,16 @@ class MetadataForm extends Form {
         $article->setType($this->getData('type'), null); // Localized
         $article->setLanguage($this->getData('language')); // Localized
         $article->setSponsor($this->getData('sponsor'), null); // Localized
-        // [WIZDAM] Deklarasi level artikel -- pola sama persis
-        // AuthorSubmitStep3Form (wizard submit baru), sekarang JUGA bisa
-        // diedit editor/penulis lewat halaman metadata editorial ini
-        // (review/copyediting), tidak lagi terkunci hanya di wizard
-        // submit awal.
+        // [WIZDAM] Deklarasi level artikel --
         $article->setCompetingInterest($this->getData('competingInterest'), null);
         $article->setEthicalApproval($this->getData('ethicalApproval'), null);
         $article->setGenerativeAiDeclaration($this->getData('generativeAiDeclaration'), null);
+        // [WIZDAM] Judul EDITABLE untuk keempat seksi di atas + CRediT --
+        $article->setCreditAuthorshipsTitle($this->getData('creditAuthorshipsTitle'), null);
+        $article->setGenerativeAiDeclarationTitle($this->getData('generativeAiDeclarationTitle'), null);
+        $article->setEthicalApprovalTitle($this->getData('ethicalApprovalTitle'), null);
+        $article->setCompetingInterestTitle($this->getData('competingInterestTitle'), null);
         $article->setCitations($this->getData('citations'));
-        // [WIZDAM] Tipe Artikel -- lihat readInputData() untuk penjelasan
-        // pemecahan articleTypeChoice menjadi dua field ini.
         $article->setArticleTypeCode($this->getData('articleTypeCode'));
         $article->setArticleTypeCustomId($this->getData('articleTypeCustomId'));
         if ($this->isEditor) {
@@ -637,15 +586,9 @@ class MetadataForm extends Form {
 
         // Update authors
         $authors = $this->getData('authors');
-        // [WIZDAM BUGFIX] primaryContact sekarang ARRAY (checkbox multi-
-        // pilih) -- lihat penjelasan lengkap di initData()/readInputData().
         $primaryContactIndices = array_map('intval', (array) $this->getData('primaryContact'));
         for ($i=0, $count=count($authors); $i < $count; $i++) {
             if ($authors[$i]['authorId'] > 0) {
-                // Update an existing author
-                // [WIZDAM BUGFIX] Lihat penjelasan lengkap di import()
-                // paling atas file ini soal kenapa anotasi ini
-                // diperlukan.
                 /** @var Author $author */
                 $author = $authorDao->getAuthor($authors[$i]['authorId'], $article->getId());
                 $isExistingAuthor = true;
@@ -667,9 +610,6 @@ class MetadataForm extends Form {
                 $author->setData('orcid', $authors[$i]['orcid']);
                 $author->setUrl($authors[$i]['url']);
                 if (array_key_exists('creditRoles', $authors[$i])) {
-                    // [WIZDAM] Menggantikan setCompetingInterests() per-
-                    // penulis yang lama -- lihat penjelasan lengkap di
-                    // initData().
                     $author->setCreditRolesArray($authors[$i]['creditRoles']);
                 }
                 $author->setBiography($authors[$i]['biography'], null); // Localized
@@ -693,9 +633,7 @@ class MetadataForm extends Form {
             $authorDao->deleteAuthorById($deletedAuthors[$i], $article->getId());
         }
 
-        // [WIZDAM] Simpan funders (pendanaan/hibah) -- pola sama persis
-        // AuthorSubmitStep2Form, sekarang JUGA bisa dikelola dari
-        // halaman metadata editorial.
+        // [WIZDAM] Simpan funders (pendanaan/hibah) --
         /** @var ArticleFunderDAO $funderDao */
         $funderDao = DAORegistry::getDAO('ArticleFunderDAO');
         $funders = $this->getData('funders');

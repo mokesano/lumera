@@ -20,55 +20,55 @@
 <div id="publication" class="Publication">
     <div id="SRM-Pub" class="publication-brand u-show-from-sm text-img">
         <a rel="noreferrer noopener" title="Go to Sangia Publishing" href="{$baseUrl}" target="_blank">
-            <img class="lazyload publication-brand-image u-font-sans" src="//assets.sangia.org/img/sangia-mono-branded-72x89-v2.png" height="100%" width="100%" loading="lazy" alt="Sangia Media"/>
+            <img class="lazyload publication-brand-image u-font-sans" src="{$baseUrl}/assets/img/sangia-mono-branded-72x89-v2.png" height="100%" width="100%" loading="lazy" alt="Sangia Media"/>
         </a>
     </div>
     <div class="publication-volume u-text-center">
         <h2 id="publication-title" class="publication-title u-h3"><a rel="noreferrer noopener" class="anchor publication-title-link anchor-navigation" title="Go to {$currentJournal->getLocalizedTitle()|strip_tags|escape}" href="{$currentJournal->getUrl()|escape}"><span class="anchor-text">{$currentJournal->getLocalizedTitle()|strip_tags|escape}</span></a></h2>
         <div class="text-xs"> 
-        {if $issue->getVolume() && $article->getPages() || $status == STATUS_PUBLISHED}
-            <a rel="noreferrer noopener" title="Go to table of contents for this volume/issue" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}" class="anchor anchor-default file"><span class="anchor-text-container"><span class="anchor-text">{translate key="issue.volume"} {$issue->getVolume()|escape}{if $issue->getNumber() != ""}{if $issue->getNumber()|regex_replace:"/[a-zA-Z]/":"" eq $issue->getNumber()}, {translate key="issue.issue"} {$issue->getNumber()|strip_tags|nl2br|escape}{else}, {$issue->getNumber()|strip_tags|nl2br|escape}{/if}{/if}</span></span></a>, {$issue->getDatePublished()|date_format:"%B %Y"}{if $article->getPages()}, Pages {$article->getPages()|escape}{else}, {$article->getId()|escape|string_format:"%07d"}{/if}
-        {else}
-            Available online {$article->getDateStatusModified()|date_format:"%e %B %Y"}, {$article->getId()|escape|string_format:"%07d"}
-            {if !$galley && $galleys|@count == 0}
-                {if $layoutFile != ''}{* CORRECTED PROOF *}
-                <div><span class="size-m publication-aip-text"><a rel="noreferrer noopener" href="{url page="issue" op="view" path="onlineFirst"}">In Press, Corrected Proof</a></span><span><a class="anchor" href="https://service.elsevier.com/app/answers/detail/a_id/22801/supporthub/sciencedirect/" target="_blank" title="What are Corrected Proof articles?"><svg focusable="false" viewBox="0 0 114 128" width="16" height="16" class="icon icon-help"><path d="m57 8c-14.7 0-28.5 5.72-38.9 16.1-10.38 10.4-16.1 24.22-16.1 38.9 0 30.32 24.68 55 55 55 14.68 0 28.5-5.72 38.88-16.1 10.4-10.4 16.12-24.2 16.12-38.9 0-30.32-24.68-55-55-55zm0 1e1c24.82 0 45 20.18 45 45 0 12.02-4.68 23.32-13.18 31.82s-19.8 13.18-31.82 13.18c-24.82 0-45-20.18-45-45 0-12.02 4.68-23.32 13.18-31.82s19.8-13.18 31.82-13.18zm-0.14 14c-11.55 0.26-16.86 8.43-16.86 18v2h1e1v-2c0-4.22 2.22-9.66 8-9.24 5.5 0.4 6.32 5.14 5.78 8.14-1.1 6.16-11.78 9.5-11.78 20.5v6.6h1e1v-5.56c0-8.16 11.22-11.52 12-21.7 0.74-9.86-5.56-16.52-16-16.74-0.39-0.01-0.76-0.01-1.14 0zm-4.86 5e1v1e1h1e1v-1e1h-1e1z"></path></svg></a></span></div>
-                {else}{* ARTICLE IN PRESS (COMING SOON) *}
-                <div><span class="size-m publication-aip-text"><a rel="noreferrer noopener" href="{url page="issue" op="view" path="onlineFirst"}">Article in Press</a></span></div>
+            {if $issue->getVolume() && $article->getPages() || $status == STATUS_PUBLISHED}
+                <a rel="noreferrer noopener" title="Go to table of contents for this volume/issue" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}" class="anchor anchor-default file"><span class="anchor-text-container"><span class="anchor-text">{translate key="issue.volume"} {$issue->getVolume()|escape}{if $issue->getNumber() != ""}{if $issue->getNumber()|regex_replace:"/[a-zA-Z]/":"" eq $issue->getNumber()}, {translate key="issue.issue"} {$issue->getNumber()|strip_tags|nl2br|escape}{else}, {$issue->getNumber()|strip_tags|nl2br|escape}{/if}{/if}</span></span></a>, {$issue->getDatePublished()|date_format:"%B %Y"}{if $article->getPages()}, Pages {$article->getPages()|escape}{else}, {$article->getId()|escape|string_format:"%07d"}{/if}
+            {else}
+                Available online {$article->getDateStatusModified()|date_format:"%e %B %Y"}, {$article->getId()|escape|string_format:"%07d"}
+                {if !$galley && $galleys|@count == 0}
+                    {if $layoutFile != ''}{* CORRECTED PROOF *}
+                    <div><span class="size-m publication-aip-text"><a rel="noreferrer noopener" href="{url page="issue" op="view" path="onlineFirst"}">In Press, Corrected Proof</a></span><span><a class="anchor" href="https://service.elsevier.com/app/answers/detail/a_id/22801/supporthub/sciencedirect/" target="_blank" title="What are Corrected Proof articles?"><svg focusable="false" viewBox="0 0 114 128" width="16" height="16" class="icon icon-help"><path d="m57 8c-14.7 0-28.5 5.72-38.9 16.1-10.38 10.4-16.1 24.22-16.1 38.9 0 30.32 24.68 55 55 55 14.68 0 28.5-5.72 38.88-16.1 10.4-10.4 16.12-24.2 16.12-38.9 0-30.32-24.68-55-55-55zm0 1e1c24.82 0 45 20.18 45 45 0 12.02-4.68 23.32-13.18 31.82s-19.8 13.18-31.82 13.18c-24.82 0-45-20.18-45-45 0-12.02 4.68-23.32 13.18-31.82s19.8-13.18 31.82-13.18zm-0.14 14c-11.55 0.26-16.86 8.43-16.86 18v2h1e1v-2c0-4.22 2.22-9.66 8-9.24 5.5 0.4 6.32 5.14 5.78 8.14-1.1 6.16-11.78 9.5-11.78 20.5v6.6h1e1v-5.56c0-8.16 11.22-11.52 12-21.7 0.74-9.86-5.56-16.52-16-16.74-0.39-0.01-0.76-0.01-1.14 0zm-4.86 5e1v1e1h1e1v-1e1h-1e1z"></path></svg></a></span></div>
+                    {else}{* ARTICLE IN PRESS (COMING SOON) *}
+                    <div><span class="size-m publication-aip-text"><a rel="noreferrer noopener" href="{url page="issue" op="view" path="onlineFirst"}">Article in Press</a></span></div>
+                    {/if}
                 {/if}
             {/if}
-        {/if}
         </div>
             
         {if is_a($article, 'PublishedArticle')}{assign var=galleys value=$article->getGalleys()}{/if}
         {if $galleys && $subscriptionRequired && $showGalleyLinks}
             <div id="accessKey" class="articleType" style="float: center;">
-            {if $purchaseArticleEnabled}{else}{/if}
+                {if $purchaseArticleEnabled}{else}{/if}
             </div>
         {/if}
     </div>
 
     <div class="publication-cover u-show-from-sm journal-page">
         <noscript>
-        {assign var="displayCoverIssue" value=$issue->getShowCoverPage($locale)}
-        {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
-        {if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale)}
-        <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" /></a>
-        {elseif $displayHomepageImage && is_array($displayHomepageImage)}
-        <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" /></a>
-        {else}
-        <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" src="//media.stipwunaraha.ac.id/img/img-default.jpg" alt="Sangia Publishing Group" loading="lazy"/></a>
-        {/if}
+            {assign var="displayCoverIssue" value=$issue->getShowCoverPage($locale)}
+            {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
+            {if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale)}
+                <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" /></a>
+            {elseif $displayHomepageImage && is_array($displayHomepageImage)}
+                <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" /></a>
+            {else}
+                <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" src="//media.stipwunaraha.ac.id/img/img-default.jpg" alt="Sangia Publishing Group" loading="lazy"/></a>
+            {/if}
         </noscript>
         
         {assign var="displayCoverIssue" value=$issue->getShowCoverPage($locale)}
         {assign var="displayHomepageImage" value=$currentJournal->getLocalizedSetting('homepageImage')}
         {if $issue->getLocalizedFileName() && $issue->getShowCoverPage($locale)}
-        <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" /></a>
+            <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$issue->getLocalizedFileName()|escape:"url"}" /></a>
         {elseif $displayHomepageImage && is_array($displayHomepageImage)}
-        <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" /></a>
+            <a rel="noreferrer noopener" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}"><img class="lazyload publication-cover-image" title="{$currentJournal->getLocalizedTitle()|strip_tags|escape}" src="{$publicFilesDir}/{$displayHomepageImage.uploadName|escape:"url"}" /></a>
         {else}
-        <a rel="noreferrer noopener" class="fallback-cover u-bg-grey7 u-clr-white TitlesJournal" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}">{$currentJournal->getLocalizedTitle()|truncate:30:"..."|strip_tags|escape}</a>
+            <a rel="noreferrer noopener" class="fallback-cover u-bg-grey7 u-clr-white TitlesJournal" href="{url page="issue" op="view" path=$issue->getBestIssueId($currentJournal)}">{$currentJournal->getLocalizedTitle()|truncate:30:"..."|strip_tags|escape}</a>
         {/if}
     </div>
 </div>
@@ -97,12 +97,14 @@
 </h1>
 
 {if $article->getLocalizedAbstract()}
-{foreach from=$article->getTitle(null) item=alternate key=metaLocale}
-{if $alternate != $article->getLocalizedTitle()}    
-<h1 id="screen-reader-main-title" class="Head u-font-serif u-h2 u-margin-s-ver">
-    <span class="title-text u-font-serif" lang="{$metaLocale|String_substr:0:2|escape}">{$alternate|strip_unsafe_html}</span>
-</h1>
-{/if}{/foreach}{/if}
+    {foreach from=$article->getTitle(null) item=alternate key=metaLocale}
+        {if $alternate != $article->getLocalizedTitle()}    
+            <h1 id="screen-reader-main-title" class="Head u-font-serif u-h2 u-margin-s-ver">
+                <span class="title-text u-font-serif" lang="{$metaLocale|String_substr:0:2|escape}">{$alternate|strip_unsafe_html}</span>
+            </h1>
+        {/if}
+    {/foreach}
+{/if}
 
 <div id="banner" class="Banner">
     {if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
@@ -111,8 +113,11 @@
             <div id="author-group" class="author-group">
                 <span class="sr-only">{translate key="article.authorLink"}</span>
             </div>
+            {** Genesis article **}
             <p class="text-s">{translate key="article.availableOnline"} {$article->getDateStatusModified()|date_format:"%e %B %Y"}.</p>
-            <button class="button-link crossmark-button button-link-primary button-link-icon-only"><link rel="preload" href="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js" as="script"><script src="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js"></script><img loading="lazy" class="lazyload crossmark-button" title="Check for updates with Crossmark" data-target="crossmark" alt="crossmark-logo" src="https://crossmark-cdn.crossref.org/widget/v2.0/logos/CROSSMARK_Color_horizontal.svg" width="150" />
+            {** Crossmark item **}
+            <button class="button-link crossmark-button button-link-primary button-link-icon-only">
+                <link rel="preload" href="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js" as="script"><script src="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js"></script><img loading="lazy" class="lazyload crossmark-button" title="Check for updates with Crossmark" data-target="crossmark" alt="crossmark-logo" src="https://crossmark-cdn.crossref.org/widget/v2.0/logos/CROSSMARK_Color_horizontal.svg" width="150" />
             </button>
         </div>
     </div>
@@ -143,15 +148,17 @@
                 {foreach from=$affiliationMap.affiliations item=aff}
                 <dl class="affiliation">
                     {if $affiliationMap.affiliations|@count > 1}
-                    <dt><sup>{$aff.index|escape}</sup></dt>
+                        <dt><sup>{$aff.index|escape}</sup></dt>
                     {/if}
                     <dd>{$aff.text|escape}</dd>
                 </dl>
                 {/foreach}
             </div>
-            
+            {** Genesis article **}
             <p class="text-s">{if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}{translate key="article.availableOnline"} {$article->getDateStatusModified()|date_format:"%e %B %Y"}.{else}{if $article->getLocalizedAbstract(null) || $article->getLocalizedSubject(null)}{translate key="article.received"} {$article->getDateSubmitted()|date_format:"%e %B %Y"}{if $revisionDate}, {translate key="article.revised"} {$revisionDate|date_format:"%e %B %Y"}{/if}{if $acceptedDate}, {translate key="article.accepted"} {$acceptedDate|date_format:"%e %B %Y"}{/if}, {translate key="article.published"} {$article->getDatePublished()|date_format:"%e %B %Y"}, {translate key="article.availableOnline"} {$article->getDateStatusModified()|date_format:"%e %B %Y"}, {translate key="article.versionOfRecord"} {$article->getLastModified()|date_format:"%e %B %Y"}.{else}{translate key="article.availableOnline"} {$article->getDateStatusModified()|date_format:"%e %B %Y"}.{/if}{/if}</p>
-            <button class="button-link crossmark-button button-link-primary button-link-icon-only"><link rel="preload" href="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js" as="script"><script src="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js"></script><img loading="lazy" class="lazyload crossmark-button" title="Check for updates with Crossmark" data-target="crossmark" alt="crossmark-logo" src="https://crossmark-cdn.crossref.org/widget/v2.0/logos/CROSSMARK_Color_horizontal.svg" width="150" />
+            {** Crossmark item **}
+            <button class="button-link crossmark-button button-link-primary button-link-icon-only">
+                <link rel="preload" href="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js" as="script"><script src="https://crossmark-cdn.crossref.org/widget/v2.0/widget.js"></script><img loading="lazy" class="lazyload crossmark-button" title="Check for updates with Crossmark" data-target="crossmark" alt="crossmark-logo" src="https://crossmark-cdn.crossref.org/widget/v2.0/logos/CROSSMARK_Color_horizontal.svg" width="150" />
             </button>
         </div>
     </div>
@@ -192,16 +199,16 @@
 
 <div class="DoiLink u-font-sans-sang" id="doi-link">
     {foreach from=$pubIdPlugins item=pubIdPlugin}
-    {if $issue->getPublished()}
-        {assign var=pubId value=$pubIdPlugin->getPubId($pubObject)}
-    {else}
-        {assign var=pubId value=$pubIdPlugin->getPubId($pubObject, true)}{* Preview rather than assign a pubId *}
-    {/if}
-    {if $pubId}
-        {if $pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}<a class="anchor doi anchor-default anchor-external-link" target="_blank" rel="noreferrer noopener" aria-label="Persistent link using digital object identifier" title="Persistent link using digital object identifier" href="{$pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}"><span class="anchor-text">{$pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}</span></a>{else}<a rel="noreferrer noopener" href="javascript:void(0)">{translate key="article.button.DOI.notAvaliable"}</a>{/if}
-    {else}
-    <a href="https://doi.org/{$article->getPubId('doi')}" class="anchor doi anchor-default anchor-external-link" target="_blank" rel="noreferrer noopener" title="Persistent link using digital object identifier"><span class="anchor-text">https://doi.org/{$article->getPubId('doi')}</span></a>
-    {/if}
+        {if $issue->getPublished()}
+            {assign var=pubId value=$pubIdPlugin->getPubId($pubObject)}
+        {else}
+            {assign var=pubId value=$pubIdPlugin->getPubId($pubObject, true)}{* Preview rather than assign a pubId *}
+        {/if}
+        {if $pubId}
+            {if $pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}<a class="anchor doi anchor-default anchor-external-link" target="_blank" rel="noreferrer noopener" aria-label="Persistent link using digital object identifier" title="Persistent link using digital object identifier" href="{$pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}"><span class="anchor-text">{$pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}</span></a>{else}<a rel="noreferrer noopener" href="javascript:void(0)">{translate key="article.button.DOI.notAvaliable"}</a>{/if}
+        {else}
+            <a href="https://doi.org/{$article->getPubId('doi')}" class="anchor doi anchor-default anchor-external-link" target="_blank" rel="noreferrer noopener" title="Persistent link using digital object identifier"><span class="anchor-text">https://doi.org/{$article->getPubId('doi')}</span></a>
+        {/if}
     {/foreach}
     <a class="anchor rights-and-content anchor-default anchor-external-link" rel="noreferrer noopener" href="{url page="about" op="submissions" anchor="copyrightNotice"}" target="_blank"><span class="anchor-text">{translate key="article.button.rightsContent"}</span></a>
 </div>
@@ -218,7 +225,7 @@
 
 {if $article->getLocalizedAbstract(null) && $article->getAbstract(null)}
 <div id="abstracts" class="Abstracts u-font-serif">
-    {if $article->getLocalizedSubject(null)}
+    {if $article->getLocalizedSubject(null)}{** Highlight perlu dipindahkan ke backend **}
     <div id="ab810" class="abstract author-highlights u-js-hide" lang="{$metaLocale|String_substr:0:2|escape}">
         <h2 class="u-fonts-serif u-h4 u-margin-l-top u-margin-xs-bottom">{translate key="article.highlights"}</h2>
         <div id="as710">
@@ -281,7 +288,7 @@
         <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.subject"}</h2>
         {foreach from=$article->getSubject(null) key=metaLocale item=metaValue}{foreach from=$metaValue|explode:"; " item=gsKeyword}
         {if $gsKeyword}<div id="keyword" class="keyword"><span>{$gsKeyword|strip_unsafe_html|nl2br}</span></div>{/if}
-            {/foreach}{/foreach}
+        {/foreach}{/foreach}
     </div>
 </div>
 {/if}
@@ -299,9 +306,9 @@
     {if $galleys}
         {if $hasSubscriptionOrOpenAccess || ($subscriptionRequired && $showGalleyLinks)}
             {foreach from=$article->getGalleys() item=galley name=galleyList}
-            {if $galley->isHTMLGalley()}
-                {$galley->getHTMLContents()} <!-- Begin fulltext HTML -->
-            {/if}
+                {if $galley->isHTMLGalley()}
+                    {$galley->getHTMLContents()} <!-- Begin fulltext HTML -->
+                {/if}
             {/foreach}
         {else}
             &nbsp;<a rel="noreferrer noopener" href="{url page="about" op="subscriptions"}" target="_parent">{translate key="reader.subscribersOnly"}</a>
@@ -314,25 +321,30 @@
         
         {foreach from=$article->getGalleys() item=galley name=galleyList}
         {if $galleys && $hasOpenAccessOrSubscribed || !$galley->isHTMLGalley() || ($subscriptionRequired && !$showGalleyLinks) && $restrictOnlyPdf}
-        {if $galleys && $galley->isPdfGalley()}
-        <div class="PdfEmbed" role="region" aria-label="PDF viewer">
-            {include file="article/pdfViewer.tpl"}
-            <div class="u-margin-s-ver medium-bar"><a class="anchor" href="{url op="viewFile" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}" target="_blank"><svg focusable="false" viewBox="0 0 32 32" width="32" height="32" class="icon icon-pdf-multicolor"><path d="M7 .362h17.875l6.763 6.1V31.64H6.948V16z" stroke="#000" stroke-width=".703" fill="#fff"></path><path d="M.167 2.592H22.39V9.72H.166z" stroke="#aaa" stroke-width=".315" fill="#da0000"></path><path fill="#fff9f9" d="M5.97 3.638h1.62c1.053 0 1.483.677 1.488 1.564.008.96-.6 1.564-1.492 1.564h-.644v1.66h-.977V3.64m.977.897v1.34h.542c.27 0 .596-.068.596-.673-.002-.6-.32-.667-.596-.667h-.542m3.8.036v2.92h.35c.933 0 1.223-.448 1.228-1.462.008-1.06-.316-1.45-1.23-1.45h-.347m-.977-.94h1.03c1.68 0 2.523.586 2.534 2.39.01 1.688-.607 2.4-2.534 2.4h-1.03V3.64m4.305 0h2.63v.934h-1.657v.894H16.6V6.4h-1.56v2.026h-.97V3.638"></path><path d="M19.462 13.46c.348 4.274-6.59 16.72-8.508 15.792-1.82-.85 1.53-3.317 2.92-4.366-2.864.894-5.394 3.252-3.837 3.93 2.113.895 7.048-9.25 9.41-15.394zM14.32 24.874c4.767-1.526 14.735-2.974 15.152-1.407.824-3.157-13.72-.37-15.153 1.407zm5.28-5.043c2.31 3.237 9.816 7.498 9.788 3.82-.306 2.046-6.66-1.097-8.925-4.164-4.087-5.534-2.39-8.772-1.682-8.732.917.047 1.074 1.307.67 2.442-.173-1.406-.58-2.44-1.224-2.415-1.835.067-1.905 4.46 1.37 9.065z" fill="#f91d0a"></path></svg><span class="anchor-text u-font-sans">Download full text in {$galley->getLabel()|escape}</span></a>
+            {if $galleys && $galley->isPdfGalley()}
+            <div class="PdfEmbed" role="region" aria-label="PDF viewer">
+                {include file="article/pdfViewer.tpl"}
+                <div class="u-margin-s-ver medium-bar">
+                    <a class="anchor" href="{url op="viewFile" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}" target="_blank">
+                        <svg focusable="false" viewBox="0 0 32 32" width="32" height="32" class="icon icon-pdf-multicolor"><path d="M7 .362h17.875l6.763 6.1V31.64H6.948V16z" stroke="#000" stroke-width=".703" fill="#fff"></path><path d="M.167 2.592H22.39V9.72H.166z" stroke="#aaa" stroke-width=".315" fill="#da0000"></path><path fill="#fff9f9" d="M5.97 3.638h1.62c1.053 0 1.483.677 1.488 1.564.008.96-.6 1.564-1.492 1.564h-.644v1.66h-.977V3.64m.977.897v1.34h.542c.27 0 .596-.068.596-.673-.002-.6-.32-.667-.596-.667h-.542m3.8.036v2.92h.35c.933 0 1.223-.448 1.228-1.462.008-1.06-.316-1.45-1.23-1.45h-.347m-.977-.94h1.03c1.68 0 2.523.586 2.534 2.39.01 1.688-.607 2.4-2.534 2.4h-1.03V3.64m4.305 0h2.63v.934h-1.657v.894H16.6V6.4h-1.56v2.026h-.97V3.638"></path><path d="M19.462 13.46c.348 4.274-6.59 16.72-8.508 15.792-1.82-.85 1.53-3.317 2.92-4.366-2.864.894-5.394 3.252-3.837 3.93 2.113.895 7.048-9.25 9.41-15.394zM14.32 24.874c4.767-1.526 14.735-2.974 15.152-1.407.824-3.157-13.72-.37-15.153 1.407zm5.28-5.043c2.31 3.237 9.816 7.498 9.788 3.82-.306 2.046-6.66-1.097-8.925-4.164-4.087-5.534-2.39-8.772-1.682-8.732.917.047 1.074 1.307.67 2.442-.173-1.406-.58-2.44-1.224-2.415-1.835.067-1.905 4.46 1.37 9.065z" fill="#f91d0a"></path></svg>
+                        <span class="anchor-text u-font-sans">Download full text in {$galley->getLabel()|escape}</span>
+                    </a>
+                </div>
             </div>
-        </div>
-        {elseif $galleys && !$galley->isHTMLGalley()}
-            <div class="PdfPreview">
-                <h3 class="pdf-preview-heading u-font-sans">First page preview</h3>
-                <a href="{url page="article" op="viewFile" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}" rel="nofollow noreferrer noopener" target="_blank" class="image-pdf-preview-link">
-                    <div class="preview-link-text u-hide-from-lg">Open this preview in {$galley->getLabel()}</div>
-                    <div class="image-preview-container">
-                        <img alt="" src="{url page="article" op="view" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}">
-                        <div class="first-page-hover-overlay"><div class="first-page-overlay-content"><span class="icon svg-search"></span>Click to open first page preview</div></div>
-                    </div>
-                    <div class="preview-link-text u-show-from-lg">Open this preview in {$galley->getLabel()}</div>
-                </a>
-            </div>
-        {/if}{/if}
+            {elseif $galleys && !$galley->isHTMLGalley()}
+                <div class="PdfPreview">
+                    <h3 class="pdf-preview-heading u-font-sans">First page preview</h3>
+                    <a href="{url page="article" op="viewFile" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}" rel="nofollow noreferrer noopener" target="_blank" class="image-pdf-preview-link">
+                        <div class="preview-link-text u-hide-from-lg">Open this preview in {$galley->getLabel()}</div>
+                        <div class="image-preview-container">
+                            <img alt="" src="{url page="article" op="view" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}">
+                            <div class="first-page-hover-overlay"><div class="first-page-overlay-content"><span class="icon svg-search"></span>Click to open first page preview</div></div>
+                        </div>
+                        <div class="preview-link-text u-show-from-lg">Open this preview in {$galley->getLabel()}</div>
+                    </a>
+                </div>
+            {/if}
+        {/if}
         {/foreach}
     
     {else}
@@ -390,17 +402,10 @@
             {/foreach}
             {if $anyCreditRoles}
                 <section id="s0120" class="section-creditRoles Body u-font-serif">
-                    <h2 id="st0120" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.creditAuthorships"}</h2>
+                    {* [WIZDAM] Judul editable dengan fallback locale sebagai default *}
+                    <h2 id="st0120" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{if $article->getLocalizedCreditAuthorshipsTitle()}{$article->getLocalizedCreditAuthorshipsTitle()|escape}{else}{translate key="article.creditAuthorships"}{/if}</h2>
                     <p id="p0320">
-                    {assign var="creditLinePrinted" value=false}
-                    {foreach from=$creditAuthors item=creditAuthor}
-                        {assign var="creditRoles" value=$creditAuthor->getCreditRolesArray()}
-                        {if $creditRoles}
-                            {if $creditLinePrinted}<br />{/if}
-                            <strong>{$creditAuthor->getFullName()|escape}:</strong> {foreach from=$creditRoles item=roleCode name=creditRolesList}{translate key="author.credit.role.`$roleCode`"}{if !$smarty.foreach.creditRolesList.last}, {/if}{/foreach}
-                            {assign var="creditLinePrinted" value=true}
-                        {/if}
-                    {/foreach}
+                        {assign var="creditLinePrinted" value=false}{foreach from=$creditAuthors item=creditAuthor}{assign var="creditRoles" value=$creditAuthor->getCreditRolesArray()}{if $creditRoles}{if $creditLinePrinted} {/if}<strong>{$creditAuthor->getFullName()|escape}</strong>: {foreach from=$creditRoles item=roleCode name=creditRolesList}{translate key="author.credit.role.`$roleCode`"}{if !$smarty.foreach.creditRolesList.last}, {/if}{/foreach}.{assign var="creditLinePrinted" value=true}{/if}{/foreach}
                     </p>
                 </section>
             {/if}
@@ -408,7 +413,16 @@
             {assign var="articleYear" value=$article->getDatePublished()|date_format:"%Y"}
             {if $articleYear >= 2024}
                 <section id="dGAI0115" class="section-declareGAI Body Declaration u-font-serif">
-                    <h2 id="st0115" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.generativeAiDeclaration"}</h2>
+                    {* [WIZDAM] Judul editable dengan fallback locale sebagai default *}
+                    {if $article->getLocalizedGenerativeAiDeclarationTitle()}
+                       <h2 id="st0115" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">
+                            {$article->getLocalizedGenerativeAiDeclarationTitle()|escape}
+                        </h2>
+                    {else}
+                        <h2 id="st0115" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">
+                            {translate key="article.generativeAiDeclaration"}
+                        </h2>
+                    {/if}
                     {if $article->getLocalizedGenerativeAiDeclaration()}
                         <p id="p0310">{$article->getLocalizedGenerativeAiDeclaration()|escape|nl2br}</p>
                     {else}
@@ -416,18 +430,10 @@
                     {/if}
                 </section>
             {/if}
-                
-            {**
-            {if $article->getLocalizedConflictOfInterest()}
-                <section id="scoi0025" class="Body Declaration u-font-serif u-hide">
-                    <h2 id="st0025" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">Conflict of interest</h2>
-                    <p id="p0310">The authors declare that the research was conducted in the absence of any commercial or financial relationships that could be construed as a potential conflict of interest.</p>
-                </section>
-            {/if}
-            **}
 
             <section id="s0135" class="Body Declaration u-font-serif">
-                <h2 id="st0190" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.ethicalApproval"}</h2>
+                {* [WIZDAM] Judul editable dengan fallback locale sebagai default *}
+                <h2 id="st0190" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{if $article->getLocalizedEthicalApprovalTitle()}{$article->getLocalizedEthicalApprovalTitle()|escape}{else}{translate key="article.ethicalApproval"}{/if}</h2>
                 {if $article->getLocalizedEthicalApproval()}
                     <p id="p0310">{$article->getLocalizedEthicalApproval()|escape|nl2br}</p>
                 {else}
@@ -452,7 +458,8 @@
             {/if}
 
             <section id="coi0025" class="section-coi Declaration u-font-serif">
-                <h2 id="st0005" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="article.competingInterest"}</h2>
+                {* [WIZDAM] Judul editable dengan fallback locale sebagai default *}
+                <h2 id="st0005" class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{if $article->getLocalizedCompetingInterestTitle()}{$article->getLocalizedCompetingInterestTitle()|escape}{else}{translate key="article.competingInterest"}{/if}</h2>
                 {if $article->getLocalizedCompetingInterest()}
                     <p id="p0125">{$article->getLocalizedCompetingInterest()|escape|nl2br}</p>
                 {else}
@@ -500,7 +507,7 @@
                                     {/if}
                                 </div>
                                 {if $suppFile->getSuppFileDescription()}
-                                <div class="u-hide supplement-files-value u-font-sans">{$suppFile->getSuppFileDescription()|strip_unsafe_html|nl2br} {if $suppFile->isInlineable() || $suppFile->getRemoteURL()}{/if}{if !$suppFile->getRemoteURL()}{/if}</div>
+                                    <div class="u-hide supplement-files-value u-font-sans">{$suppFile->getSuppFileDescription()|strip_unsafe_html|nl2br} {if $suppFile->isInlineable() || $suppFile->getRemoteURL()}{/if}{if !$suppFile->getRemoteURL()}{/if}</div>
                                 {/if}
                             </span>
                         </div>
@@ -549,20 +556,22 @@
     {else}
 
         {if $section && $section->getLocalizedIdentifyType() == "Erratum" || $section->getLocalizedIdentifyType() == "Retraction notice" || $section->getLocalizedIdentifyType() == "Corrigendum" || $section->getLocalizedIdentifyType() == "Correction"}
-        
             {foreach from=$article->getGalleys() item=galley name=galleyList}
-            {if $galleys && $hasAccess || ($subscriptionRequired && $showGalleyLinks) || $article->getLocalizedAbstract(null) && $article->getLocalizedSubject(null)}
-            <div class="PdfEmbed" role="region" aria-label="PDF viewer">
-                {include file="article/pdfViewer.tpl"}
-                <div class="u-margin-s-ver medium-bar"><a class="anchor" href="{url op="viewFile" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}" target="_blank"><svg focusable="false" viewBox="0 0 32 32" width="24" height="24" class="icon icon-pdf-multicolor"><path d="M7 .362h17.875l6.763 6.1V31.64H6.948V16z" stroke="#000" stroke-width=".703" fill="#fff"></path><path d="M.167 2.592H22.39V9.72H.166z" stroke="#aaa" stroke-width=".315" fill="#da0000"></path><path fill="#fff9f9" d="M5.97 3.638h1.62c1.053 0 1.483.677 1.488 1.564.008.96-.6 1.564-1.492 1.564h-.644v1.66h-.977V3.64m.977.897v1.34h.542c.27 0 .596-.068.596-.673-.002-.6-.32-.667-.596-.667h-.542m3.8.036v2.92h.35c.933 0 1.223-.448 1.228-1.462.008-1.06-.316-1.45-1.23-1.45h-.347m-.977-.94h1.03c1.68 0 2.523.586 2.534 2.39.01 1.688-.607 2.4-2.534 2.4h-1.03V3.64m4.305 0h2.63v.934h-1.657v.894H16.6V6.4h-1.56v2.026h-.97V3.638"></path><path d="M19.462 13.46c.348 4.274-6.59 16.72-8.508 15.792-1.82-.85 1.53-3.317 2.92-4.366-2.864.894-5.394 3.252-3.837 3.93 2.113.895 7.048-9.25 9.41-15.394zM14.32 24.874c4.767-1.526 14.735-2.974 15.152-1.407.824-3.157-13.72-.37-15.153 1.407zm5.28-5.043c2.31 3.237 9.816 7.498 9.788 3.82-.306 2.046-6.66-1.097-8.925-4.164-4.087-5.534-2.39-8.772-1.682-8.732.917.047 1.074 1.307.67 2.442-.173-1.406-.58-2.44-1.224-2.415-1.835.067-1.905 4.46 1.37 9.065z" fill="#f91d0a"></path></svg><span class="anchor-text">Download full text in {$galley->getLabel()|escape}</span></a>
-                </div>
-            </div>
-            {/if}
+                {if $galleys && $hasAccess || ($subscriptionRequired && $showGalleyLinks) || $article->getLocalizedAbstract(null) && $article->getLocalizedSubject(null)}
+                    <div class="PdfEmbed" role="region" aria-label="PDF viewer">
+                        {include file="article/pdfViewer.tpl"}
+                        <div class="u-margin-s-ver medium-bar">
+                            <a class="anchor" href="{url op="viewFile" path=$articleId|to_array:$galley->getBestGalleyId($currentJournal)}" target="_blank">
+                                <svg focusable="false" viewBox="0 0 32 32" width="24" height="24" class="icon icon-pdf-multicolor"><path d="M7 .362h17.875l6.763 6.1V31.64H6.948V16z" stroke="#000" stroke-width=".703" fill="#fff"></path><path d="M.167 2.592H22.39V9.72H.166z" stroke="#aaa" stroke-width=".315" fill="#da0000"></path><path fill="#fff9f9" d="M5.97 3.638h1.62c1.053 0 1.483.677 1.488 1.564.008.96-.6 1.564-1.492 1.564h-.644v1.66h-.977V3.64m.977.897v1.34h.542c.27 0 .596-.068.596-.673-.002-.6-.32-.667-.596-.667h-.542m3.8.036v2.92h.35c.933 0 1.223-.448 1.228-1.462.008-1.06-.316-1.45-1.23-1.45h-.347m-.977-.94h1.03c1.68 0 2.523.586 2.534 2.39.01 1.688-.607 2.4-2.534 2.4h-1.03V3.64m4.305 0h2.63v.934h-1.657v.894H16.6V6.4h-1.56v2.026h-.97V3.638"></path><path d="M19.462 13.46c.348 4.274-6.59 16.72-8.508 15.792-1.82-.85 1.53-3.317 2.92-4.366-2.864.894-5.394 3.252-3.837 3.93 2.113.895 7.048-9.25 9.41-15.394zM14.32 24.874c4.767-1.526 14.735-2.974 15.152-1.407.824-3.157-13.72-.37-15.153 1.407zm5.28-5.043c2.31 3.237 9.816 7.498 9.788 3.82-.306 2.046-6.66-1.097-8.925-4.164-4.087-5.534-2.39-8.772-1.682-8.732.917.047 1.074 1.307.67 2.442-.173-1.406-.58-2.44-1.224-2.415-1.835.067-1.905 4.46 1.37 9.065z" fill="#f91d0a"></path></svg>
+                                <span class="anchor-text">Download full text in {$galley->getLabel()|escape}</span>
+                            </a>
+                        </div>
+                    </div>
+                {/if}
             {/foreach}
         {/if}
     
     {/if}
-    
 {/if}
 
 {if $citationFactory && $citationFactory->getCount() > 0}
@@ -581,16 +590,23 @@
             <div class="notice u-font-sans u-mb-0 u-margin-xl-top">{translate key="article.citations.more"}</div>
             <button class="button-alternative view-more button-alternative-secondary u-margin-xl-top">
                 <svg focusable="false" viewBox="0 0 92 128" height="34" width="34" class="icon icon-navigate-down" style="transform: rotate(0deg);"><path d="m1 51l7-7 38 38 38-38 7 7-45 45z"></path></svg>
-                <span class="button-alternative-text-container text-m">
-                    <span class="button-alternative-text">{translate key="article.button.citations.more"}</span>
-                </span>
+                <span class="button-alternative-text-container text-m"><span class="button-alternative-text">{translate key="article.button.citations.more"}</span></span>
             </button>
         </section>
     </section>
 {/if}
 
 {if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
- <!-- Rectracted article -->
+    
+    {** Pengaturan untuk tampilan halaman Rectracted article
+        perlu dikembangkan dari type artikel yang sudah dibangun
+        agar saat artikel diberi status Rectracted maka otomatis
+        menampilkan opsi memilih artikel yang diretraksi --
+        Namun demikian, syarat menampilkan bagian ini bukan dengan
+        SHOW/HIDE elemen author, elemen show/hide author hanyalah
+        salah satu komponen syarat dari syarat Retraction itu sendiri.
+        <!-- Rectracted article --> **}
+
 {elseif $article->getLocalizedSubject(null) && $article->getLocalizedAbstract(null)}
 <section id="CopyrightNote" class="further-reading">    
     <div class="PageDivider"></div>
@@ -662,12 +678,14 @@
                     <li class="c-bibliographic-information__item Discipline">
                         <h5 class="strong u-font-serif">{translate key="article.discipline"}</h5>
                         <span class="c-bibliographic-information__value u-font-sans">{$article->getLocalizedDiscipline()|escape}</span>
-                    </li>{/if}    
+                    </li>
+                    {/if}    
                     {if $article->getLocalizedSubjectClass()}
                     <li class="c-bibliographic-information__item Subject">
                         <h5 class="strong u-font-serif">Sub-{translate key="article.subjectClassification"}</h5>
                         <span class="c-bibliographic-information__value u-font-sans">{$article->getLocalizedSubjectClass()|escape}</span>
-                    </li>{/if}
+                    </li>
+                    {/if}
                 </ul>        
                     
                 <div class="c-bibliographic-information__list">
@@ -685,10 +703,10 @@
                     <h4 class="c-article__sub-heading u-font-sans-sang">{translate key="article.subject"}</h4>
                     <ul class="c-article-subject-list u-font-sans">
                         {if $article->getSubject(null)}{foreach from=$article->getSubject(null) key=metaLocale item=metaValue}
-                        {foreach from=$metaValue|explode:"; " item=dcSubject}
-                        <li class="c-article-subject-list__subject u-font-sans">
-                            <span itemprop="about">{if $dcSubject}<span class="subjectId--value" title="Go to Google Scholar"><a rel="noreferrer noopener" class="anchor q-gs q-cf" href="//scholar.google.com/scholar?q={$dcSubject|strip_tags|escape}" target="_blank"><span class="anchor-text">{$dcSubject|strip_unsafe_html|nl2br}</span></a></span>{/if}</span></li>
-                        {/foreach}{/foreach}
+                            {foreach from=$metaValue|explode:"; " item=dcSubject}
+                            <li class="c-article-subject-list__subject u-font-sans">
+                                <span itemprop="about">{if $dcSubject}<span class="subjectId--value" title="Go to Google Scholar"><a rel="noreferrer noopener" class="anchor q-gs q-cf" href="//scholar.google.com/scholar?q={$dcSubject|strip_tags|escape}" target="_blank"><span class="anchor-text">{$dcSubject|strip_unsafe_html|nl2br}</span></a></span>{/if}</span></li>
+                            {/foreach}{/foreach}
                         {/if}
                     </ul>
                 </div>
@@ -697,12 +715,14 @@
         </div>
     </div>
 
+    {if $currentJournal->getSetting('includeCopyrightStatement')}
     <div id="copyright" class="Body u-font-serif u-hide">
         <h2 class="section-title u-h3 u-margin-l-top u-margin-xs-bottom">{translate key="submission.copyright"}</h2>
         <div class="Body u-font-serif">
-        {if $currentJournal->getSetting('includeCopyrightStatement')}
-        {translate key="submission.copyrightStatement" copyrightYear=$article->getCopyrightYear()|strip_unsafe_html|nl2br copyrightHolder=$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}{/if}</div>
+            {translate key="submission.copyrightStatement" copyrightYear=$article->getCopyrightYear()|strip_unsafe_html|nl2br copyrightHolder=$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}   
+        </div>
     </div>
+    {/if}
 </section>    
 {/if}
 
@@ -763,7 +783,7 @@
             <div class="article-biography-text">
                 <p id="spar00{$smarty.foreach.authors.index+15}" class="author{if !$hasImage} u-mb-0{/if}">{$authorSalutation|escape}<strong><span class="content">{if $authorFirstName !== $authorLastName}<span class="text given-name">{$authorFirstName|escape}</span>{/if}{if $authorMiddleName}<span class="text middle-name">{$authorMiddleName|escape}</span>{/if}<span class="text surname">{$authorLastName|escape},</span></span></strong>{if $author->getLocalizedBiography()} {$author->getLocalizedBiography()|strip_unsafe_html|nl2br}. {/if} {$authorAffiliation|escape}{if $author->getCountry()}, {$author->getCountryLocalized()|escape}{/if}.</p>
                 {if $hasImage}<p class="author-link external-link">{else}<span class="author-link external-link">{/if}
-                    <a rel="noreferrer noopener" class="anchor icon" title="{$fullname|escape} mail: {$author->getData('email')|escape}"><span class="anchor-text"><svg class="icon icon-envelope" width="14" height="10" viewBox="0.741 0 13 10"><path fill="#7c716a" d="M13.741 0L7.24 5.121.74 0zM.742 1.714L.74 10h6.502l-.001-3.165zm6.501 5.121L7.242 10h6.499V1.714z" alt="mail"></path></svg><span class="anchor-text--mail">{$author->getData('email')|escape}</span></span></a>{if $author->getData('orcid')}<a class="anchor anchor-external-link text-bar" rel="noreferrer noopener" title="Go to view {$fullname|escape} orcid-ID profile" href="{$author->getData('orcid')|escape}" target="_blank" class="icon extern"><span class="anchor-text"><img class="lazyload" src="//assets.sangia.org/img/orcid_16x16.svg" width="14" height="14" alt="orcid" /><span class="anchor-text text">Orcid Profile</span></span></a>{/if}{if $author->getUrl()}<a rel="noreferrer noopener" title="Go to view {$fullname|escape} Google Scholar profile" href="{$author->getUrl()|escape}" target="_blank" class="icon extern anchor anchor-external-link text-bar"><span class="anchor-text"><img class="lazyload" src="//assets.sangia.org/img/scholar.svg" width="16" height="16" alt="scholar"/><span class="anchor-text text">Google Scholar Profile</span></span></a>{/if}{if $author->getData('fax')}<a title="Go to Scopus profile of {$author->getFullName()|escape}" href="https://www.scopus.com/authid/detail.uri?authorId={$author->getData('fax')|escape}" target="_blank" class="scopus anchor anchor-external-link text-bar"><span class="anchor-text"><img class="lazyload" src="//assets.sangia.org/img/scholar.svg" width="20" height="20" alt="scholar" /><span class="anchor-text text">{$author->getData('fax')|escape}</span></span></a>{/if}{if $author->getData('phone')}<a title="Go to Sinta profile of {$author->getFullName()|escape}" href="https://sinta.kemdikbud.go.id/authors/detail?id={$author->getData('phone')|escape}&view=overview" target="_blank" class="sinta anchor anchor-external-link text-bar"><span class="anchor-text"><img class="lazyload" src="//assets.sangia.org/img/scholar.svg" width="20" height="20" alt="scholar" /><span class="anchor-text text">{$author->getData('phone')|escape}</span></span></a>{/if}{if $hasImage}</p>{else}</span>{/if}
+                <a rel="noreferrer noopener" class="anchor icon" title="{$fullname|escape} mail: {$author->getData('email')|escape}"><span class="anchor-text"><svg class="icon icon-envelope" width="14" height="10" viewBox="0.741 0 13 10"><path fill="#7c716a" d="M13.741 0L7.24 5.121.74 0zM.742 1.714L.74 10h6.502l-.001-3.165zm6.501 5.121L7.242 10h6.499V1.714z" alt="mail"></path></svg><span class="anchor-text--mail">{$author->getData('email')|escape}</span></span></a>{if $author->getData('orcid')}<a class="anchor anchor-external-link text-bar" rel="noreferrer noopener" title="Go to view {$fullname|escape} orcid-ID profile" href="{$author->getData('orcid')|escape}" target="_blank" class="icon extern"><span class="anchor-text"><img class="lazyload" src="//assets.sangia.org/img/orcid_16x16.svg" width="14" height="14" alt="orcid" /><span class="anchor-text text">Orcid Profile</span></span></a>{/if}{if $author->getUrl()}<a rel="noreferrer noopener" title="Go to view {$fullname|escape} Google Scholar profile" href="{$author->getUrl()|escape}" target="_blank" class="icon extern anchor anchor-external-link text-bar"><span class="anchor-text"><img class="lazyload" src="//assets.sangia.org/img/scholar.svg" width="16" height="16" alt="scholar"/><span class="anchor-text text">Google Scholar Profile</span></span></a>{/if}{if $author->getData('fax')}<a title="Go to Scopus profile of {$author->getFullName()|escape}" href="https://www.scopus.com/authid/detail.uri?authorId={$author->getData('fax')|escape}" target="_blank" class="scopus anchor anchor-external-link text-bar"><span class="anchor-text"><img class="lazyload" src="//assets.sangia.org/img/scholar.svg" width="20" height="20" alt="scholar" /><span class="anchor-text text">{$author->getData('fax')|escape}</span></span></a>{/if}{if $author->getData('phone')}<a title="Go to Sinta profile of {$author->getFullName()|escape}" href="https://sinta.kemdikbud.go.id/authors/detail?id={$author->getData('phone')|escape}&view=overview" target="_blank" class="sinta anchor anchor-external-link text-bar"><span class="anchor-text"><img class="lazyload" src="//assets.sangia.org/img/scholar.svg" width="20" height="20" alt="scholar" /><span class="anchor-text text">{$author->getData('phone')|escape}</span></span></a>{/if}{if $hasImage}</p>{else}</span>{/if}
             </div>
         </div>
     {/foreach}
@@ -774,63 +794,63 @@
     {if $galley->isHTMLGalley()}
         
         {if $issue->getLocalizedDescription()}
-        <div id="article-footnote-id1" class="Footnotes"><dl class="footnote"><dt class="footnote-label"><sup>{if $issue->getShowTitle()}<a rel="noreferrer noopener" href="#special-issue-articles">☆</a>{else}<a rel="noreferrer noopener" href="#special-issue-articles"></a>{/if}</sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}
-        {if $issue->getShowTitle()}
-        <div id="article-footnote-id1" class="Footnotes u-hide"><dl class="footnote"><dt class="footnote-label"><sup><a rel="noreferrer noopener" href="#special-issue-articles">☆</a></sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}    
-        
-        {if $galley && $galley->isHTMLGalley()}
-        <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans" href="{url page="article" op="view" path=$articleId}" aria-disabled="false" tabindex="1"><span class="anchor-text">View Abstract</span></a>
-        {else}
-        <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans" href="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|to_array:$galley->getBestGalleyId($currentJournal)}" aria-disabled="false" tabindex="1"><span class="anchor-text">View full text</span></a>
+            <div id="article-footnote-id1" class="Footnotes"><dl class="footnote"><dt class="footnote-label"><sup>{if $issue->getShowTitle()}<a rel="noreferrer noopener" href="#special-issue-articles">☆</a>{else}<a rel="noreferrer noopener" href="#special-issue-articles"></a>{/if}</sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>
         {/if}
         
-        {if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
-        {else}    
-        <div id="permission" class="Copyright">
-            <p class="copyright-line u-font-sans-sang">{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}<span class="bold">Copyright</span> {/if}{if $currentJournal->getSetting('includeCopyrightStatement')}© {$article->getCopyrightYear()|strip_unsafe_html|nl2br}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} {$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}.{/if}{/if} {if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Production & hosting by Sangia Publishing on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing LLC"}Published by {$currentJournal->getSetting('publisherInstitution')} on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}Published by {$currentJournal->getSetting('publisherInstitution')} on behalf of Sangia Research Media.{else}{$currentJournal->getSetting('publisherInstitution')}. Production and hosting by Sangia (SRM™).{/if}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} <span class="License" id="copyrightBadge"><span class="anchor-text">{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if}{$article->getLicense()|escape}.</span></span>{/if}
-            </p>
-        </div>
-        <p data-test-id="article-disclaimer-text">{translate key="article.disclaimer"}</p>
+        {if $issue->getShowTitle()}
+            <div id="article-footnote-id1" class="Footnotes u-hide"><dl class="footnote"><dt class="footnote-label"><sup><a rel="noreferrer noopener" href="#special-issue-articles">☆</a></sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>
+        {/if}
+        
+        {if $galley && $galley->isHTMLGalley()}
+            <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans" href="{url page="article" op="view" path=$articleId}" aria-disabled="false" tabindex="1"><span class="anchor-text">View Abstract</span></a>
+        {else}
+            <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans" href="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|to_array:$galley->getBestGalleyId($currentJournal)}" aria-disabled="false" tabindex="1"><span class="anchor-text">View full text</span></a>
+        {/if}
+        
+        {if !(($article->getHideAuthor() != $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW)}
+            <div id="permission" class="Copyright">
+                <p class="copyright-line u-font-sans-sang">{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}<span class="bold">Copyright</span> {/if}{if $currentJournal->getSetting('includeCopyrightStatement')}© {$article->getCopyrightYear()|strip_unsafe_html|nl2br}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} {$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}.{/if}{/if} {if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Production & hosting by Sangia Publishing on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing LLC"}Published by {$currentJournal->getSetting('publisherInstitution')} on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}Published by {$currentJournal->getSetting('publisherInstitution')} on behalf of Sangia Research Media.{else}{$currentJournal->getSetting('publisherInstitution')}. Production and hosting by Sangia (SRM™).{/if}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} <span class="License" id="copyrightBadge"><span class="anchor-text">{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if}{$article->getLicense()|escape}.</span></span>{/if}</p>
+            </div>
+            <p data-test-id="article-disclaimer-text">{translate key="article.disclaimer"}</p>
         {/if}
     
     {else}{** <!-- End to fulltext HTML --> **}         
 
         {if $issue->getLocalizedDescription()}
-        <div id="article-footnote-id1" class="Footnotes"><dl class="footnote"><dt class="footnote-label"><sup>{if $issue->getShowTitle()}<a rel="noreferrer noopener" href="#special-issue-articles">☆</a>{else}<a rel="noreferrer noopener" href="#special-issue-articles"></a>{/if}</sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}
+            <div id="article-footnote-id1" class="Footnotes"><dl class="footnote"><dt class="footnote-label"><sup>{if $issue->getShowTitle()}<a rel="noreferrer noopener" href="#special-issue-articles">☆</a>{else}<a rel="noreferrer noopener" href="#special-issue-articles"></a>{/if}</sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>
+        {/if}
+        
         {if $issue->getShowTitle()}
-        <div id="article-footnote-id1" class="Footnotes u-hide"><dl class="footnote"><dt class="footnote-label"><sup><a rel="noreferrer noopener" href="#special-issue-articles">☆</a></sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>{/if}    
+            <div id="article-footnote-id1" class="Footnotes u-hide"><dl class="footnote"><dt class="footnote-label"><sup><a rel="noreferrer noopener" href="#special-issue-articles">☆</a></sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>
+        {/if}
 
         <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans file-link" {if $galley && $galley->isHTMLGalley()}href="{url page="article" op="view" path=$article->getBestArticleId($currentJournal)|to_array:$galley->getBestGalleyId($currentJournal)|escape}" class="file" {if $galley->getRemoteURL()}target="_blank"{/if} aria-disabled="false" tabindex="1"{elseif $galley && $galley->isPdfGalley()}aria-disabled="true" tabindex="1"{/if}><span class="anchor-text">View full text</span></a>
         
-        {if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
-        {else}            
-        <div id="permission" class="Copyright">
-            <p class="copyright-line u-font-sans-sang">{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}<span class="bold">Copyright</span> {/if}{if $currentJournal->getSetting('includeCopyrightStatement')}© {$article->getCopyrightYear()|strip_unsafe_html|nl2br}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} {$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}.{/if}{/if} {if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Production & hosting by Sangia Publishing on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing LLC"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media.{else}{$currentJournal->getSetting('publisherInstitution')|escape}. Production and hosting by Sangia (SRM™).{/if}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} <span class="License" id="copyrightBadge"><span class="anchor-text">{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if}{$article->getLicense()|escape}.</span></span>{/if}
-            </p>
-        </div>
-        <p data-test-id="article-disclaimer-text">{translate key="article.disclaimer"}</p>
+        {if !(($article->getHideAuthor() != $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW)}
+            <div id="permission" class="Copyright">
+                <p class="copyright-line u-font-sans-sang">{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}<span class="bold">Copyright</span> {/if}{if $currentJournal->getSetting('includeCopyrightStatement')}© {$article->getCopyrightYear()|strip_unsafe_html|nl2br}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} {$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}.{/if}{/if} {if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Production & hosting by Sangia Publishing on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing LLC"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media.{else}{$currentJournal->getSetting('publisherInstitution')|escape}. Production and hosting by Sangia (SRM™).{/if}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} <span class="License" id="copyrightBadge"><span class="anchor-text">{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if}{$article->getLicense()|escape}.</span></span>{/if}</p>
+            </div>
+            <p data-test-id="article-disclaimer-text">{translate key="article.disclaimer"}</p>
         {/if}
 
-    {/if}   <!-- End fulltext with Galley PDF -->
+    {/if}{** <!-- End fulltext with Galley PDF --> **}
 
 {else}{** <!-- Galley not available begin --> **}
     {if $issue->getShowTitle() && $issue->getLocalizedDescription()}
-    <div id="article-footnote-id1" class="Footnotes"><dl class="footnote"><dt class="footnote-label"><sup>{if $issue->getShowTitle()}<a rel="noreferrer noopener" href="#special-issue-articles">☆</a>{else}<a rel="noreferrer noopener" href="#special-issue-articles"></a>{/if}</sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>
+        <div id="article-footnote-id1" class="Footnotes"><dl class="footnote"><dt class="footnote-label"><sup>{if $issue->getShowTitle()}<a rel="noreferrer noopener" href="#special-issue-articles">☆</a>{else}<a rel="noreferrer noopener" href="#special-issue-articles"></a>{/if}</sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>
     {/if}
 
     {if $issue->getShowTitle()}
-    <div id="article-footnote-id1" class="Footnotes u-hide"><dl class="footnote"><dt class="footnote-label"><sup><a rel="noreferrer noopener" href="#special-issue-articles">☆</a></sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>
+        <div id="article-footnote-id1" class="Footnotes u-hide"><dl class="footnote"><dt class="footnote-label"><sup><a rel="noreferrer noopener" href="#special-issue-articles">☆</a></sup></dt><dd class="u-margin-xxl-left"><p id="np005">{$issue->getLocalizedDescription()|strip_unsafe_html|nl2br}</p></dd></dl></div>
     {/if}
 
     <a rel="noreferrer noopener" class="anchor full-text-link u-font-sans file-link" aria-disabled="true" tabindex="-1"><span class="anchor-text">View full text</span></a>
     
-    {if (!$article->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
-    {else}
-    <div id="permission" class="Copyright">
-        <p class="copyright-line u-font-sans-sang">{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}<span class="bold">Copyright</span> {/if}{if $currentJournal->getSetting('includeCopyrightStatement')}© {$article->getCopyrightYear()|strip_unsafe_html|nl2br}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} {$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}.{/if}{/if} {if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Production & hosting by Sangia Publishing on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing LLC"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media.{else}{$currentJournal->getSetting('publisherInstitution')|escape}. Production and hosting by Sangia (SRM™).{/if}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} <span class="License" id="copyrightBadge"><span class="anchor-text">{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if}{$article->getLicense()|escape}.</span></span>{/if}
-        </p>
-    </div>
-    <p data-test-id="article-disclaimer-text">{translate key="article.disclaimer"}</p>
+    {if !(($article->getHideAuthor() != $smarty.const.AUTHOR_TOC_DEFAULT) || $article->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW)}
+        <div id="permission" class="Copyright">
+            <p class="copyright-line u-font-sans-sang">{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}<span class="bold">Copyright</span> {/if}{if $currentJournal->getSetting('includeCopyrightStatement')}© {$article->getCopyrightYear()|strip_unsafe_html|nl2br}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} {$article->getLocalizedCopyrightHolder()|strip_unsafe_html|nl2br}.{/if}{/if} {if $currentJournal->getSetting('publisherInstitution') == "Sekolah Tinggi Ilmu Pertanian Wuna"}Production & hosting by Sangia Publishing on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Research Media and Publishing LLC"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media. {elseif $currentJournal->getSetting('publisherInstitution') == "Sangia Publishing"}Published by {$currentJournal->getSetting('publisherInstitution')|escape} on behalf of Sangia Research Media.{else}{$currentJournal->getSetting('publisherInstitution')|escape}. Production and hosting by Sangia (SRM™).{/if}{if $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN} <span class="License" id="copyrightBadge"><span class="anchor-text">{if $ccLicenseBadge}{$ccLicenseBadge}{elseif $article->getLicenseURL()}{/if}{$article->getLicense()|escape}.</span></span>{/if}</p>
+        </div>
+        <p data-test-id="article-disclaimer-text">{translate key="article.disclaimer"}</p>
     {/if}
 
 {/if}{** -- Galley not available end -- **}

@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file classes/submission/PKPAuthor.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2000-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class PKPAuthor
  * @ingroup submission
@@ -49,11 +49,20 @@ class PKPAuthor extends DataObject {
         $middleName = (string) $this->getData('middleName');
         $lastName = (string) $this->getData('lastName');
         $suffix = (string) $this->getData('suffix');
+        if ($firstName !== '' && $lastName !== '' && strcasecmp($firstName, $lastName) === 0) {
+            $firstName = '';
+        }
 
         if ($lastFirst) {
-            return $lastName . ', ' . $firstName . ($middleName !== '' ? ' ' . $middleName : '');
+            $firstPart = $lastName;
+            $secondPartArray = array_filter([$firstName, $middleName], function($val) { return $val !== ''; });
+            $secondPart = implode(' ', $secondPartArray);
+            return $secondPart !== '' ? "$firstPart, $secondPart" : $firstPart;
         }
-        return $firstName . ' ' . ($middleName !== '' ? $middleName . ' ' : '') . $lastName . ($suffix !== '' ? ', ' . $suffix : '');
+
+        $mainPartArray = array_filter([$firstName, $middleName, $lastName], function($val) { return $val !== ''; });
+        $mainPart = implode(' ', $mainPartArray);
+        return $suffix !== '' ? "$mainPart, $suffix" : $mainPart;
     }
 
     //
@@ -375,24 +384,8 @@ class PKPAuthor extends DataObject {
 
     /**
      * Build a deduplicated affiliation reference map for a set of authors.
-     *
-     * Setiap baris afiliasi (dipisah newline, satu author bisa punya lebih
-     * dari satu afiliasi) dikumpulkan dari seluruh author lalu diberi nomor
-     * referensi unik berurutan sesuai kemunculan pertama; author yang
-     * berbagi teks afiliasi yang sama otomatis berbagi nomor yang sama,
-     * persis seperti superscript referensi pada paper akademik.
-     *
-     * Static: fungsi ini beroperasi atas kumpulan author ($authors), bukan
-     * atas satu instance -- tidak menyentuh $this sama sekali, sehingga
-     * secara arsitektural bukan perilaku milik satu Author, melainkan
-     * utilitas lintas-author. Dipanggil langsung dari template:
-     *   PKPAuthor::buildAffiliationMap($authors)
-     *
      * @param PKPAuthor[] $authors Hasil $article->getAuthors()
-     * @return array{
-     *     affiliations: array<int, array{index:int, text:string}>,
-     *     refsByAuthorId: array<int, int[]>
-     * }
+     * @return array
      */
     public static function buildAffiliationMap($authors) {
         $affiliations = [];

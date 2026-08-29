@@ -81,7 +81,8 @@ class ArticleDAO extends DAO {
             'title', 'cleanTitle', 'abstract', 'coverPageAltText', 'showCoverPage', 'hideCoverPageToc', 'hideCoverPageAbstract', 'originalFileName', 'fileName', 'width', 'height',
             'discipline', 'subjectClass', 'subject', 'coverageGeo', 'coverageChron', 'coverageSample', 'type', 'sponsor',
             'copyrightHolder',
-            'competingInterest', 'ethicalApproval', 'generativeAiDeclaration'
+            'competingInterest', 'ethicalApproval', 'generativeAiDeclaration',
+            'creditAuthorshipsTitle', 'generativeAiDeclarationTitle', 'ethicalApprovalTitle', 'competingInterestTitle'
         ]);
     }
 
@@ -94,7 +95,6 @@ class ArticleDAO extends DAO {
         $additionalFields[] = 'pub-id::publisher-id';
         $additionalFields[] = 'copyrightYear';
         $additionalFields[] = 'licenseURL';
-        
         // [WIZDAM FEATURES] Add custom fields to settings
         $additionalFields[] = 'articleType';
         $additionalFields[] = 'pubScope';
@@ -359,7 +359,6 @@ class ArticleDAO extends DAO {
 
         $this->updateLocaleFields($article);
 
-        // [WIZDAM] Optimasi: Gunakan foreach alih-alih for loop
         if ($this->authorDao) {
             $authors = $article->getAuthors();
             foreach ($authors as $author) {
@@ -385,8 +384,7 @@ class ArticleDAO extends DAO {
     }
 
     /**
-     * Delete an article by ID.
-     * [WIZDAM] Null-safety ditambahkan pada semua DAO calls
+     * Delete an article by ID with Null-safety for all DAO calls.
      * @param int $articleId
      * @return bool
      */
@@ -620,7 +618,6 @@ class ArticleDAO extends DAO {
             [(int) $articleId, (int) $userId, (int) $journalId]
         );
         
-        // [WIZDAM] FIX: Type narrowing
         /** @var array|bool $fields */
         $fields = $result->fields;
         $returner = !$result->EOF && isset($fields[0]) ? (int) $fields[0] : false;

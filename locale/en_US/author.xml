@@ -106,13 +106,17 @@
 	<message key="author.submit.competingInterest">Competing Interest</message>
 	<message key="author.submit.competingInterestDescription">All authors must declare any financial or personal relationships that could be perceived to influence the work reported in this article. If there are none, state so explicitly.</message>
 	<message key="author.submit.competingInterestLabel">Competing Interest Statement</message>
+	<message key="author.submit.competingInterestTitleLabel">Competing Interest Section Title</message>
 	<message key="author.submit.ethicalApproval">Ethical Approval</message>
 	<message key="author.submit.ethicalApprovalDescription">If this work involved human participants, animals, or sensitive data, describe the ethical approval obtained (committee name, approval number). If not applicable, state so explicitly.</message>
 	<message key="author.submit.ethicalApprovalLabel">Ethical Approval Statement</message>
+	<message key="author.submit.ethicalApprovalTitleLabel">Ethical Approval Section Title</message>
 	<message key="author.submit.generativeAiDeclaration">Declaration of Generative AI Use</message>
 	<message key="author.submit.generativeAiDeclarationDescription">Describe any use of generative AI tools (e.g. ChatGPT) in the preparation of this work, including which tool and for what purpose. If none was used, state so explicitly.</message>
 	<message key="author.submit.generativeAiDeclarationLabel">Generative AI Declaration</message>
-	
+	<message key="author.submit.generativeAiDeclarationTitleLabel">Generative AI Declaration Section Title</message>
+	<message key="author.submit.creditAuthorshipsTitleLabel">CRediT Section Title</message>
+
 	<message key="author.submit.overview">Overview</message>
 	<message key="author.submit.saveToDraft">Save to Draft</message>
 	

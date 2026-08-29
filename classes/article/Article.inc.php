@@ -88,7 +88,6 @@ class Article extends Submission {
         return ASSOC_TYPE_ARTICLE;
     }
 
-
     //
     // LUMERA EXTENSION START (Article Type & Scope) ---
     //
@@ -123,7 +122,6 @@ class Article extends Submission {
     public function setPubScope($scope) {
         return $this->setData('pubScope', $scope);
     }
-
 
     //
     // [WIZDAM] - Milestones Genesis Editorial
@@ -609,17 +607,7 @@ class Article extends Submission {
         return $this->getLocalizedSponsor();
     }
 
-    // [WIZDAM] Deklarasi level artikel -- Competing Interest, Ethical
-    // Approval, Declaration of Generative AI. Dikonfirmasi lewat riset
-    // publikasi akademik nyata (Elsevier, Springer, Taylor & Francis,
-    // Cell Press, arXiv): ketiganya SATU pernyataan mencakup SELURUH
-    // penulis ("The authors declare..."), BUKAN entri terpisah per
-    // penulis -- atribusi individual (kalau perlu) dilakukan lewat
-    // inisial DI DALAM teks pernyataan itu sendiri, bukan field
-    // database terpisah. Disimpan lewat mekanisme generic settings
-    // yang sama seperti sponsor (getData/setData -> article_settings
-    // via ArticleDAO::updateLocaleFields()) -- TIDAK perlu kolom
-    // tabel baru sama sekali.
+    // [WIZDAM] Declarations
 
     /**
      * Get localized Competing Interest declaration.
@@ -702,20 +690,119 @@ class Article extends Submission {
         return $this->setData('generativeAiDeclaration', is_array($generativeAiDeclaration) ? $generativeAiDeclaration : (string) $generativeAiDeclaration, $locale);
     }
 
-    // [WIZDAM] Tipe Artikel -- lihat classes/article/ArticleType.inc.php
-    // (11 tipe baku, kode JATS standar) dan
-    // classes/article/ArticleTypeCustom.inc.php (tipe kustom
-    // per-jurnal). Pola generic settings SAMA seperti hideAuthor di
-    // atas -- TIDAK localized (kode/ID, bukan teks bebas), TIDAK perlu
-    // kolom tabel baru. TEPAT SATU dari kedua field ini yang seharusnya
-    // terisi dalam satu waktu (baku ATAU kustom, tidak keduanya
-    // sekaligus) -- pemilihan mana yang dipakai ditentukan di
-    // form/template (radio button "Tipe Baku" vs "Tipe Kustom"), BUKAN
-    // dipaksakan di level data object ini.
-    //
-    // INI BUKAN pengganti Section (topik/Mini Jurnal, konsep terpisah)
-    // ATAU field 'type' bebas teks lama (Submission::getType(),
-    // dikontrol setting 'metaType') -- keduanya TETAP ada berdampingan.
+    // [WIZDAM] CRediT/Declaration editable
+
+    /**
+     * Get localized title for the CRediT authorship contribution
+     * statement section.
+     * @return string
+     */
+    public function getLocalizedCreditAuthorshipsTitle() {
+        return $this->getLocalizedData('creditAuthorshipsTitle');
+    }
+
+    /**
+     * Get title for the CRediT authorship contribution statement section.
+     * @param string|null $locale
+     * @return string
+     */
+    public function getCreditAuthorshipsTitle($locale) {
+        $value = $this->getData('creditAuthorshipsTitle', $locale);
+        return is_array($value) ? $value : (string) $value;
+    }
+
+    /**
+     * Set title for the CRediT authorship contribution statement section.
+     * @param string $creditAuthorshipsTitle
+     * @param string|null $locale
+     */
+    public function setCreditAuthorshipsTitle($creditAuthorshipsTitle, $locale) {
+        return $this->setData('creditAuthorshipsTitle', is_array($creditAuthorshipsTitle) ? $creditAuthorshipsTitle : (string) $creditAuthorshipsTitle, $locale);
+    }
+
+    /**
+     * Get localized title for the Declaration of Generative AI section.
+     * @return string
+     */
+    public function getLocalizedGenerativeAiDeclarationTitle() {
+        return $this->getLocalizedData('generativeAiDeclarationTitle');
+    }
+
+    /**
+     * Get title for the Declaration of Generative AI section.
+     * @param string|null $locale
+     * @return string
+     */
+    public function getGenerativeAiDeclarationTitle($locale) {
+        $value = $this->getData('generativeAiDeclarationTitle', $locale);
+        return is_array($value) ? $value : (string) $value;
+    }
+
+    /**
+     * Set title for the Declaration of Generative AI section.
+     * @param string $generativeAiDeclarationTitle
+     * @param string|null $locale
+     */
+    public function setGenerativeAiDeclarationTitle($generativeAiDeclarationTitle, $locale) {
+        return $this->setData('generativeAiDeclarationTitle', is_array($generativeAiDeclarationTitle) ? $generativeAiDeclarationTitle : (string) $generativeAiDeclarationTitle, $locale);
+    }
+
+    /**
+     * Get localized title for the Ethical Approval acknowledgements
+     * section.
+     * @return string
+     */
+    public function getLocalizedEthicalApprovalTitle() {
+        return $this->getLocalizedData('ethicalApprovalTitle');
+    }
+
+    /**
+     * Get title for the Ethical Approval acknowledgements section.
+     * @param string|null $locale
+     * @return string
+     */
+    public function getEthicalApprovalTitle($locale) {
+        $value = $this->getData('ethicalApprovalTitle', $locale);
+        return is_array($value) ? $value : (string) $value;
+    }
+
+    /**
+     * Set title for the Ethical Approval acknowledgements section.
+     * @param string $ethicalApprovalTitle
+     * @param string|null $locale
+     */
+    public function setEthicalApprovalTitle($ethicalApprovalTitle, $locale) {
+        return $this->setData('ethicalApprovalTitle', is_array($ethicalApprovalTitle) ? $ethicalApprovalTitle : (string) $ethicalApprovalTitle, $locale);
+    }
+
+    /**
+     * Get localized title for the Declaration of Competing Interest section.
+     * @return string
+     */
+    public function getLocalizedCompetingInterestTitle() {
+        return $this->getLocalizedData('competingInterestTitle');
+    }
+
+    /**
+     * Get title for the Declaration of Competing Interest section.
+     * @param string|null $locale
+     * @return string
+     */
+    public function getCompetingInterestTitle($locale) {
+        $value = $this->getData('competingInterestTitle', $locale);
+        return is_array($value) ? $value : (string) $value;
+    }
+
+    /**
+     * Set title for the Declaration of Competing Interest section.
+     * @param string $competingInterestTitle
+     * @param string|null $locale
+     */
+    public function setCompetingInterestTitle($competingInterestTitle, $locale) {
+        return $this->setData('competingInterestTitle', is_array($competingInterestTitle) ? $competingInterestTitle : (string) $competingInterestTitle, $locale);
+    }
+
+    // [WIZDAM] Article Type 
 
     /**
      * Get the standard article type code (ARTICLE_TYPE_* constant
@@ -921,7 +1008,7 @@ class Article extends Submission {
 
 	/**
 	 * Get expedited
-	 * @return boolean
+	 * @return bool
 	 */
     public function getFastTracked() {
         return $this->getData('fastTracked');
@@ -1136,7 +1223,6 @@ class Article extends Submission {
         return $signoff->getUserId();
     }
 
-
     //
     // LUMERA EXTENSION: eLocator & PII ---
     //
@@ -1239,7 +1325,7 @@ class Article extends Submission {
     /**
      * Determines whether or not the license for copyright on this 
      * Article is a Creative Commons license or not.
-	 * @return boolean
+	 * @return bool
 	 */
     public function isCCLicense() {
         if (preg_match('/creativecommons\.org/i', $this->getLicenseURL())) {

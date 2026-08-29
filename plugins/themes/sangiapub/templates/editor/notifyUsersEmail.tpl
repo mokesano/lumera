@@ -13,16 +13,14 @@
 --------
 {literal}{$templateHeader}{/literal}
 {foreach from=$section.articles item=article}
-{$article->getLocalizedTitle()|strip_tags}{if $article->getPages()} ({$article->getPages()}){/if}
+	{$article->getLocalizedTitle()|strip_tags}{if $article->getPages()} ({$article->getPages()}){/if}{if $article->getArticleTypeDisplayLabel()} [{$article->getArticleTypeDisplayLabel()|strip_tags}]{/if}
 
-{if !$section.hideAuthor}
-{foreach from=$article->getAuthors() item=author name=authorList}
-	{$author->getFullName()}{if !$smarty.foreach.authorList.last},{/if}
-{/foreach}
-{/if}
-
+	{if !$section.hideAuthor}
+		{foreach from=$article->getAuthors() item=author name=authorList}
+			{$author->getFullName()}{if !$smarty.foreach.authorList.last},{/if}
+		{/foreach}
+	{/if}
 {/foreach}
 
 {/foreach}
 {literal}{$templateSignature}{/literal}
-

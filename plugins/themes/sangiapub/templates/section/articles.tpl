@@ -34,6 +34,10 @@
 
         {iterate from=articles item=article}
         <div class="article-item">
+            {** Article type **}
+            {if $article->getArticleTypeDisplayLabel()}
+                <span class="articleTypeBadge">{$article->getArticleTypeDisplayLabel()|escape}</span>
+            {/if}
             <h3>
                 <a href="{url page="article" op="view" path=$article->getId()}">
                     {$article->getLocalizedTitle()|escape}

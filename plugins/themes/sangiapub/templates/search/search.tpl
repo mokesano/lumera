@@ -46,15 +46,15 @@
                             {if $showCoverPage}
                             <div class="c-card__image">
                                 <picture>
-                                {if $currentJournal}
-                                {* Konteks jurnal - path sudah benar *}
-                                    <source type="image/webp" srcset="{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 160w,{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 290w">
-                                    <img src="{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}" alt="{$publishedArticle->getLocalizedCoverPageAltText()|escape}" itemprop="image">
-                                {else}
-                                {* Konteks site search - gunakan path journal spesifik *}
-                                    <source type="image/webp" srcset="{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 160w,{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 290w">
-                                    <img src="{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}" alt="{$publishedArticle->getLocalizedCoverPageAltText()|escape}" itemprop="image">
-                                {/if}
+									{if $currentJournal}
+									{* Konteks jurnal - path sudah benar *}
+										<source type="image/webp" srcset="{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 160w,{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 290w">
+										<img src="{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}" alt="{$publishedArticle->getLocalizedCoverPageAltText()|escape}" itemprop="image">
+									{else}
+									{* Konteks site search - gunakan path journal spesifik *}
+										<source type="image/webp" srcset="{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 160w,{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 290w">
+										<img src="{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}" alt="{$publishedArticle->getLocalizedCoverPageAltText()|escape}" itemprop="image">
+									{/if}
                                 </picture>
                             </div>
                             {/if}
@@ -65,58 +65,62 @@
 									<a class="c-card__link u-link-inherit" href="{url journal=$journal->getPath() page="article" op="view" path=$publishedArticle->getBestArticleId()}" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$publishedArticle->getLocalizedTitle()|strip_unsafe_html}</a>
 								</h3>
 								{if $publishedArticle->getLocalizedAbstract()}
-								<div class="c-card__summary u-mb-16 u-hide-sm-max" itemprop="description"><p>{$publishedArticle->getLocalizedAbstract()|nl2br}</p></div>
+									<div class="c-card__summary u-mb-16 u-hide-sm-max" itemprop="description"><p>{$publishedArticle->getLocalizedAbstract()|nl2br}</p></div>
 								{/if}
 								
-								{if (!$publishedArticle->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $publishedArticle->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
-								{else}
-								<ul class="c-author-list c-author-list--compact c-author-list--separated u-mt-auto" data-test="author-list">{foreach from=$publishedArticle->getAuthors() item=authorItem name=authorList}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span class="u-hide" itemprop="name">{$authorItem->getFullName()|escape}</span>{if $authorItem->getFirstName() !== $authorItem->getLastName()}<span itemprop="name">{$authorItem->getFirstName()|escape}</span>{/if}{if $authorItem->getMiddleName()}<span itemprop="name">{$authorItem->getMiddleName()|escape}</span>{/if}<span itemprop="name">{$authorItem->getLastName()|escape}</span></li>{/foreach}</ul>
+								{if !(($publishedArticle->getHideAuthor() != $smarty.const.AUTHOR_TOC_DEFAULT) || $publishedArticle->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW)}
+									<ul class="c-author-list c-author-list--compact c-author-list--separated u-mt-auto" data-test="author-list">{foreach from=$publishedArticle->getAuthors() item=authorItem name=authorList}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span class="u-hide" itemprop="name">{$authorItem->getFullName()|escape}</span>{if $authorItem->getFirstName() !== $authorItem->getLastName()}<span itemprop="name">{$authorItem->getFirstName()|escape}</span>{/if}{if $authorItem->getMiddleName()}<span itemprop="name">{$authorItem->getMiddleName()|escape}</span>{/if}<span itemprop="name">{$authorItem->getLastName()|escape}</span></li>{/foreach}</ul>
 								{/if}
 							</div>
 						</div>
 						<div class="c-card__section c-meta">
+							{** Section digantikan Type article **}
 							<span class="c-meta__item c-meta__item--block-at-lg" data-test="article.type">
 								<span class="c-meta__type">{if $issue->getPublished() && $section && $journal}{$section->getLocalizedTitle()|escape}{else}{if $section && $section->getLocalizedIdentifyType()}{$section->getLocalizedIdentifyType()|escape}{else}{$publishedArticle->getSectionTitle()|strip_tags|escape}{/if}{/if}</span>
 							</span>
-
+							{if $publishedArticle->getArticleTypeDisplayLabel()}
+								<span class="c-meta__item c-meta__item--block-at-lg" data-test="article.type">
+									<span class="c-meta__type articleTypeBadge">{$publishedArticle->getArticleTypeDisplayLabel()|escape}</span>
+								</span>
+							{/if}
                             {* Versi paling sederhana tanpa operator yang bermasalah *}
                             {if $publishedArticle->getAccessStatus() == $smarty.const.ARTICLE_ACCESS_OPEN}
-                            <span class="c-meta__item c-meta__item--block-at-lg 1" itemprop="openAccess" data-test="open-access">
-                                <span class="u-color-open-access">Open Access</span>
-                            </span>
+								<span class="c-meta__item c-meta__item--block-at-lg 1" itemprop="openAccess" data-test="open-access">
+									<span class="u-color-open-access">Open Access</span>
+								</span>
                             {elseif $issue && $issue->getAccessStatus() == $smarty.const.ISSUE_ACCESS_OPEN}
-                            <span class="c-meta__item c-meta__item--block-at-lg 2" itemprop="openAccess" data-test="open-access">
-                                <span class="u-color-open-access">Open Access</span>
-                            </span>
+								<span class="c-meta__item c-meta__item--block-at-lg 2" itemprop="openAccess" data-test="open-access">
+									<span class="u-color-open-access">Open Access</span>
+								</span>
                             {elseif $currentJournal && $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}
-                            <span class="c-meta__item c-meta__item--block-at-lg 3" itemprop="openAccess" data-test="open-access">
-                                <span class="u-color-open-access">Open Access</span>
-                            </span>
+								<span class="c-meta__item c-meta__item--block-at-lg 3" itemprop="openAccess" data-test="open-access">
+									<span class="u-color-open-access">Open Access</span>
+								</span>
                             {/if}
 
 							<time class="c-meta__item c-meta__item--block-at-lg" datetime="{$publishedArticle->getDatePublished()|date_format:"$dateFormatShort"}" itemprop="datePublished">{$publishedArticle->getDatePublished()|date_format:"%d %b %Y"}</time>
 
 							{if !$currentJournal}
-							<div class="c-meta__item c-meta__item--block-at-lg u-text-bold" data-test="journal-title-and-link"><a href="{url journal=$journal->getPath()}">{$journal->getLocalizedTitle()|escape}</a></div>
+								<div class="c-meta__item c-meta__item--block-at-lg u-text-bold" data-test="journal-title-and-link"><a href="{url journal=$journal->getPath()}">{$journal->getLocalizedTitle()|escape}</a></div>
 							{else}
-							<div class="c-meta__item c-meta__item--block-at-lg u-text-bold" data-test="journal-title-and-link"><a href="{url journal=$journal->getPath()}">{$journal->getLocalizedTitle()|escape}</a></div>
+								<div class="c-meta__item c-meta__item--block-at-lg u-text-bold" data-test="journal-title-and-link"><a href="{url journal=$journal->getPath()}">{$journal->getLocalizedTitle()|escape}</a></div>
 							{/if}
 
 							{assign var="doi" value=$publishedArticle->getStoredPubId('doi')}
 							{if $publishedArticle->getPubId('doi')}
-							<div class="u-hide c-meta__item c-meta__item--block-at-lg" data-test="info-DOI"><a title="Permanent link for {$publishedArticle->getLocalizedTitle()|strip_tags|escape}" href="http://doi.org/{$publishedArticle->getPubId('doi')|escape}">{$publishedArticle->getPubId('doi')}</a>{if $publishedArticle->getViews('doi')}{/if}</div>
+								<div class="u-hide c-meta__item c-meta__item--block-at-lg" data-test="info-DOI"><a title="Permanent link for {$publishedArticle->getLocalizedTitle()|strip_tags|escape}" href="http://doi.org/{$publishedArticle->getPubId('doi')|escape}">{$publishedArticle->getPubId('doi')}</a>{if $publishedArticle->getViews('doi')}{/if}</div>
 							{/if}
 
 							{foreach from=$publishedArticle->getGalleys() item=galley name=galleyList}
-                            {if $issueAvailable}
-							<div class="u-hide c-meta__item c-meta__item--block-at-lg" data-test="galley">
-							    {if $galley->isPdfGalley()}
-							    <a class="pdf-galley" title="{$publishedArticle->getLocalizedTitle()|strip_tags|escape}" href="{url journal=$journal->getPath() page="article" op="view" path=$publishedArticle->getBestArticleId($journal)}">{$galley->getGalleyLabel()|escape} <span class="fileSize">({$galley->getNiceFileSize()})</span> <span class="fileView">{$galley->getViews()} views</span></a>
-							    {elseif $galley->isHTMLGalley()}
-							    <a class="html-galley" title="{$publishedArticle->getLocalizedTitle()|strip_tags|escape}" href="{url journal=$journal->getPath() page="article" op="view" path=$publishedArticle->getBestArticleId($journal)}">{$galley->getGalleyLabel()|escape} <span class="fileSize">({$galley->getNiceFileSize()})</span> <span class="fileView">{$galley->getViews()} views</span></a>
-							    {/if}
-							</div>
-                            {/if}
+								{if $issueAvailable}
+									<div class="u-hide c-meta__item c-meta__item--block-at-lg" data-test="galley">
+										{if $galley->isPdfGalley()}
+											<a class="pdf-galley" title="{$publishedArticle->getLocalizedTitle()|strip_tags|escape}" href="{url journal=$journal->getPath() page="article" op="view" path=$publishedArticle->getBestArticleId($journal)}">{$galley->getGalleyLabel()|escape} <span class="fileSize">({$galley->getNiceFileSize()})</span> <span class="fileView">{$galley->getViews()} views</span></a>
+										{elseif $galley->isHTMLGalley()}
+											<a class="html-galley" title="{$publishedArticle->getLocalizedTitle()|strip_tags|escape}" href="{url journal=$journal->getPath() page="article" op="view" path=$publishedArticle->getBestArticleId($journal)}">{$galley->getGalleyLabel()|escape} <span class="fileSize">({$galley->getNiceFileSize()})</span> <span class="fileView">{$galley->getViews()} views</span></a>
+										{/if}
+									</div>
+								{/if}
                             {/foreach}
 							
 							{if !$hasAccess || $hasAbstract}
@@ -144,12 +148,12 @@
                                 <picture>
                                     {if $currentJournal}
                                     {* Konteks jurnal - path sudah benar *}
-                                    <source type="image/webp" srcset="{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 160w,{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 290w">
-                                    <img src="{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}" alt="{$publishedArticle->getLocalizedCoverPageAltText()|escape}" itemprop="image">
+                                    	<source type="image/webp" srcset="{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 160w,{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 290w">
+                                    	<img src="{$publicFilesDir}/{$publishedArticle->getLocalizedFileName()|escape}" alt="{$publishedArticle->getLocalizedCoverPageAltText()|escape}" itemprop="image">
                                     {else}
                                     {* Konteks site search - gunakan path journal spesifik *}
-                                    <source type="image/webp" srcset="{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 160w,{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 290w">
-                                    <img src="{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}" alt="{$publishedArticle->getLocalizedCoverPageAltText()|escape}" itemprop="image">
+                                    	<source type="image/webp" srcset="{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 160w,{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}?as=webp 290w">
+                                    	<img src="{$baseUrl}/public/journals/{$publishedArticle->getJournalId()}/{$publishedArticle->getLocalizedFileName()|escape}" alt="{$publishedArticle->getLocalizedCoverPageAltText()|escape}" itemprop="image">
                                     {/if}
                                 </picture>
                             </div>
@@ -160,37 +164,38 @@
 								<h3 class="c-card__title" itemprop="name headline">
 									<a class="c-card__link u-link-inherit" href="{url journal=$journal->getPath() page="article" op="view" path=$publishedArticle->getBestArticleId()}" itemprop="url" data-track="click" data-track-action="view article" data-track-label="link">{$publishedArticle->getLocalizedTitle()|strip_unsafe_html}</a>
 								</h3>
-
 								{if $publishedArticle->getLocalizedAbstract()}
 									<div class="c-card__summary u-mb-16 u-hide-sm-max" itemprop="description"><p>{$publishedArticle->getLocalizedAbstract()|nl2br}</p></div>
 								{/if}
 								
-								{if (!$publishedArticle->getHideAuthor() == $smarty.const.AUTHOR_TOC_DEFAULT) || $publishedArticle->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW}
-								{else}
+								{if !(($publishedArticle->getHideAuthor() != $smarty.const.AUTHOR_TOC_DEFAULT) || $publishedArticle->getHideAuthor() == $smarty.const.AUTHOR_TOC_SHOW)}
 									<ul class="c-author-list c-author-list--compact c-author-list--separated u-mt-auto" data-test="author-list">{foreach from=$publishedArticle->getAuthors() item=authorItem name=authorList}<li itemprop="creator" itemscope="" itemtype="http://schema.org/Person"><span class="u-hide" itemprop="name">{$authorItem->getFullName()|escape}</span>{if $authorItem->getFirstName() !== $authorItem->getLastName()}<span itemprop="name">{$authorItem->getFirstName()|escape}</span>{/if}{if $authorItem->getMiddleName()}<span itemprop="name">{$authorItem->getMiddleName()|escape}</span>{/if}<span itemprop="name">{$authorItem->getLastName()|escape}</span></li>{/foreach}</ul>
 								{/if}
 							</div>
 						</div>
 						<div class="c-card__section c-meta">
-
+							{** Section digantikan Type article **}
 							<span class="c-meta__item c-meta__item--block-at-lg" data-test="article.type">
-								<span class="c-meta__type">{if $issue->getPublished() && $section && $journal}{$section->getLocalizedTitle()|escape}{else}{if $section && $section->getLocalizedIdentifyType()}{$section->getLocalizedIdentifyType()|escape}{else}{$publishedArticle->getSectionTitle()|strip_tags|escape}{/if}{/if}
-								</span>
+								<span class="c-meta__type">{if $issue->getPublished() && $section && $journal}{$section->getLocalizedTitle()|escape}{else}{if $section && $section->getLocalizedIdentifyType()}{$section->getLocalizedIdentifyType()|escape}{else}{$publishedArticle->getSectionTitle()|strip_tags|escape}{/if}{/if}</span>
 							</span>
-							
+							{if $publishedArticle->getArticleTypeDisplayLabel()}
+								<span class="c-meta__item c-meta__item--block-at-lg" data-test="article.type">
+									<span class="c-meta__type articleTypeBadge">{$publishedArticle->getArticleTypeDisplayLabel()|escape}</span>
+								</span>
+							{/if}
                             {* Versi paling sederhana tanpa operator yang bermasalah *}
                             {if $publishedArticle->getAccessStatus() == $smarty.const.ARTICLE_ACCESS_OPEN}
-                            <span class="c-meta__item c-meta__item--block-at-lg" itemprop="openAccess" data-test="open-access">
-                                <span class="u-color-open-access">Open Access</span>
-                            </span>
+								<span class="c-meta__item c-meta__item--block-at-lg" itemprop="openAccess" data-test="open-access">
+									<span class="u-color-open-access">Open Access</span>
+								</span>
                             {elseif $issue && $issue->getAccessStatus() == $smarty.const.ISSUE_ACCESS_OPEN}
-                            <span class="c-meta__item c-meta__item--block-at-lg" itemprop="openAccess" data-test="open-access">
-                                <span class="u-color-open-access">Open Access</span>
-                            </span>
+								<span class="c-meta__item c-meta__item--block-at-lg" itemprop="openAccess" data-test="open-access">
+									<span class="u-color-open-access">Open Access</span>
+								</span>
                             {elseif $currentJournal && $currentJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}
-                            <span class="c-meta__item c-meta__item--block-at-lg" itemprop="openAccess" data-test="open-access">
-                                <span class="u-color-open-access">Open Access</span>
-                            </span>
+								<span class="c-meta__item c-meta__item--block-at-lg" itemprop="openAccess" data-test="open-access">
+									<span class="u-color-open-access">Open Access</span>
+								</span>
                             {else}
                                 {assign var=articleJournal value=$publishedArticle->getJournal()}
                                 {if $articleJournal && $articleJournal->getSetting('publishingMode') == $smarty.const.PUBLISHING_MODE_OPEN}
@@ -210,11 +215,11 @@
 
 							{assign var="doi" value=$publishedArticle->getStoredPubId('doi')}
 							{if $publishedArticle->getPubId('doi')}
-							<div class="u-hide c-meta__item c-meta__item--block-at-lg" data-test="info-DOI"><a title="Permanent link for {$publishedArticle->getLocalizedTitle()|strip_tags|escape}" href="http://doi.org/{$publishedArticle->getPubId('doi')|escape}">{$publishedArticle->getPubId('doi')}</a>{if $publishedArticle->getViews('doi')}{/if}</div>
+								<div class="u-hide c-meta__item c-meta__item--block-at-lg" data-test="info-DOI"><a title="Permanent link for {$publishedArticle->getLocalizedTitle()|strip_tags|escape}" href="http://doi.org/{$publishedArticle->getPubId('doi')|escape}">{$publishedArticle->getPubId('doi')}</a>{if $publishedArticle->getViews('doi')}{/if}</div>
 							{/if}
 
 							{if !$hasAccess || $hasAbstract}
-							<div class="u-hide c-meta__item c-meta__item--block-at-lg" data-test="nopdf-galley"><a class="abstract-only" href="{url journal=$journal->getPath() page="article" op="view" path=$publishedArticle->getBestArticleId($journal)}">{if $publishedArticle->getLocalizedAbstract()}View {translate key="article.abstract"}{else}View {translate key="article.details"}{/if} <span class="fileView">{$publishedArticle->getViews()} views</span></a></div>
+								<div class="u-hide c-meta__item c-meta__item--block-at-lg" data-test="nopdf-galley"><a class="abstract-only" href="{url journal=$journal->getPath() page="article" op="view" path=$publishedArticle->getBestArticleId($journal)}">{if $publishedArticle->getLocalizedAbstract()}View {translate key="article.abstract"}{else}View {translate key="article.details"}{/if} <span class="fileView">{$publishedArticle->getViews()} views</span></a></div>
 							{/if}
 
 							<div class="c-meta__item c-meta__item--block-at-lg" data-test="volume-and-page-info" >Volume {$issue->getVolume()|strip_tags|escape}{if $issue->getNumber()|escape}, No. {$issue->getNumber()|escape}{/if}{if $publishedArticle->getPages()}, P: {$publishedArticle->getPages()|escape}{else}, {$publishedArticle->getId()}{/if}</div>
@@ -279,9 +284,9 @@
         <div class="c-pagination">View {if $results && is_object($results)}{page_info iterator=$results}{/if}</div>
     </section>
     {if $results->getPageCount() > 1}
-    <section class="u-display-flex u-justify-content-center">
-        <div class="c-pagination">{page_links anchor="results" iterator=$results name="search" query=$query searchJournal=$searchJournal authors=$authors title=$title abstract=$abstract galleyFullText=$galleyFullText suppFiles=$suppFiles discipline=$discipline subject=$subject type=$type coverage=$coverage indexTerms=$indexTerms dateFromMonth=$dateFromMonth dateFromDay=$dateFromDay dateFromYear=$dateFromYear dateToMonth=$dateToMonth dateToDay=$dateToDay dateToYear=$dateToYear orderBy=$orderBy orderDir=$orderDir}</div>
-    </section>
+		<section class="u-display-flex u-justify-content-center">
+			<div class="c-pagination">{page_links anchor="results" iterator=$results name="search" query=$query searchJournal=$searchJournal authors=$authors title=$title abstract=$abstract galleyFullText=$galleyFullText suppFiles=$suppFiles discipline=$discipline subject=$subject type=$type coverage=$coverage indexTerms=$indexTerms dateFromMonth=$dateFromMonth dateFromDay=$dateFromDay dateFromYear=$dateFromYear dateToMonth=$dateToMonth dateToDay=$dateToDay dateToYear=$dateToYear orderBy=$orderBy orderDir=$orderDir}</div>
+		</section>
     {/if}
 </div>
 {/if}
