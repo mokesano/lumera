@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file plugins/importexport/mets/MetsExportDom.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class MetsExportDom
  * @ingroup GatewayPlugin
@@ -722,7 +722,8 @@ class MetsExportDom {
         
         $fileManager = new FileManager();
         $mfile = XMLCustomWriter::createElement($doc, 'METS:file');
-        $filePath = self::getPublicFilePath($imageFile, '/public/', $journal);
+        $publicFilesDir = Config::getVar('files', 'public_files_dir');
+        $filePath = self::getPublicFilePath($imageFile, '/' . $publicFilesDir . '/', $journal);
 
         $chkmd5return = file_exists($filePath) ? md5_file($filePath) : '';
         XMLCustomWriter::setAttribute($mfile, 'ID', 'F' . $imageFile->getFileId() . '-A' . $article->getId());
@@ -769,7 +770,8 @@ class MetsExportDom {
         
         $fileManager = new FileManager();
         $mfile = XMLCustomWriter::createElement($doc, 'METS:file');
-        $filePath = self::getPublicFilePath($galleyFile, '/public/', $journal);
+        $publicFilesDir = Config::getVar('files', 'public_files_dir');
+        $filePath = self::getPublicFilePath($galleyFile, '/' . $publicFilesDir . '/', $journal);
         
         $chkmd5return = file_exists($filePath) ? md5_file($filePath) : '';
         XMLCustomWriter::setAttribute($mfile, 'ID', 'F' . $galleyFile->getFileId() . '-A' . $galleyFile->getArticleId());
@@ -964,7 +966,7 @@ class MetsExportDom {
     }
 
     /**
-     * getPublicFilePath had to be added due to problems in the current
+     * Get Public File Path had to be added due to problems in the current
      * $paperFile->getFilePath(); for Galley Files
      * @param object $file
      * @param string $pathComponent
