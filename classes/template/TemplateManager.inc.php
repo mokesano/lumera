@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file classes/template/TemplateManager.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class TemplateManager
  * @ingroup template
@@ -54,14 +54,32 @@ class TemplateManager extends PKPTemplateManager {
             $site = $this->request->getSite();
 
             $publicFileManager = new PublicFileManager();
-            $siteFilesDir = $this->request->getBaseUrl() . '/' . $publicFileManager->getSiteFilesPath();
+            // [FIX] SEBELUMNYA: $this->request->getBaseUrl() . '/' . $publicFileManager->getSiteFilesPath()
+            // -- ini menempelkan URL ABSOLUT (scheme+host) dan langsung
+            // membocorkan struktur folder public_files_dir (yang sekarang
+            // menunjuk ke storage/uploads/, TIDAK LAGI web-accessible sejak
+            // public/ jadi document root murni) ke dalam URL publik.
+            //
+            // SEKARANG: URL publik yang dikirim ke template SELALU
+            // "/public/site" (root-relative, lewat getBasePath() bukan
+            // getBaseUrl() -- sesuai permintaan: tanpa base URL literal di
+            // markup) dan STABIL, TIDAK PERNAH ikut berubah walau lokasi
+            // penyimpanan sesungguhnya (public_files_dir) dipindah-pindah.
+            // WizdamAssetDispatcher::_serveLegacyPublicFile() di index.php
+            // yang menerjemahkan "/public/..." ini ke lokasi storage yang
+            // sebenarnya -- lihat catatan di file itu.
+            $siteFilesDir = $this->request->getBasePath() . '/public/site';
             
             $this->assign('sitePublicFilesDir', $siteFilesDir);
             $this->assign('publicFilesDir', $siteFilesDir); // May be overridden by journal
 
             $siteStyleFilename = $publicFileManager->getSiteFilesPath() . '/' . $site->getSiteStyleFilename();
             if (file_exists($siteStyleFilename)) {
-                $this->addStyleSheet($this->request->getBaseUrl() . '/' . $siteStyleFilename);
+                // [FIX] Sama seperti di atas -- URL root-relative & stabil,
+                // path filesystem sesungguhnya (kanan $siteStyleFilename,
+                // dipakai HANYA untuk file_exists() check) tidak lagi
+                // dipakai untuk membentuk URL.
+                $this->addStyleSheet($this->request->getBasePath() . '/public/site/' . $site->getSiteStyleFilename());
             }
 
             $this->assign('homeContext', []);
@@ -72,7 +90,8 @@ class TemplateManager extends PKPTemplateManager {
                 
                 $journalTitle = $journal->getLocalizedTitle();
                 $this->assign('siteTitle', $journalTitle);
-                $this->assign('publicFilesDir', $this->request->getBaseUrl() . '/' . $publicFileManager->getJournalFilesPath($journal->getId()));
+                // [FIX] Idem -- "/public/journals/{id}" root-relative & stabil.
+                $this->assign('publicFilesDir', $this->request->getBasePath() . '/public/journals/' . $journal->getId());
 
                 $this->assign('primaryLocale', $journal->getPrimaryLocale());
                 $this->assign('alternateLocales', $journal->getSetting('alternateLocales'));
@@ -87,7 +106,8 @@ class TemplateManager extends PKPTemplateManager {
                 $this->assign('displayPageHeaderTitleAltText', $journal->getLocalizedSetting('pageHeaderTitleImageAltText'));
                 $this->assign('displayPageHeaderLogoAltText', $journal->getLocalizedSetting('pageHeaderLogoImageAltText'));
                 $this->assign('displayFavicon', $journal->getLocalizedFavicon());
-                $this->assign('faviconDir', $this->request->getBaseUrl() . '/' . $publicFileManager->getJournalFilesPath($journal->getId()));
+                // [FIX] Idem -- root-relative & stabil ("/public/journals/{id}").
+                $this->assign('faviconDir', $this->request->getBasePath() . '/public/journals/' . $journal->getId());
                 $this->assign('alternatePageHeader', $journal->getLocalizedSetting('journalPageHeader'));
                 $this->assign('metaSearchDescription', $journal->getLocalizedSetting('searchDescription'));
                 $this->assign('metaSearchKeywords', $journal->getLocalizedSetting('searchKeywords'));
@@ -114,8 +134,9 @@ class TemplateManager extends PKPTemplateManager {
                 // Assign stylesheets and footer
                 $journalStyleSheet = $journal->getSetting('journalStyleSheet');
                 if (is_array($journalStyleSheet) && isset($journalStyleSheet['uploadName'])) {
+                    // [FIX] Idem -- root-relative & stabil.
                     $this->addStyleSheet(
-                        $this->request->getBaseUrl() . '/' . $publicFileManager->getJournalFilesPath($journal->getId()) . '/' . $journalStyleSheet['uploadName']
+                        $this->request->getBasePath() . '/public/journals/' . $journal->getId() . '/' . $journalStyleSheet['uploadName']
                     );
                 }
 
