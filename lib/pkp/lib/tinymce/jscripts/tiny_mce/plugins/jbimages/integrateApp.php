@@ -1,21 +1,32 @@
 <?php
+declare(strict_types=1);
+
 /**
- * @class IntegratePKP
+ * @file tiny_mce/plugins/jbimages/integrateApp.php
+ * 
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
- * Integrates PKP applications with the jbimages image upload utility for TinyMCE
+ * @class IntegrateApp
+ *
+ * Integrates Lumera applications with the jbimages image upload utility for TinyMCE
  */
 
+class IntegrateApp {
+	
+	/* @var string $baseDir Path to the base OxS directory */
+	var $baseDir; // Property $baseDir has no type information available.
 
-class IntegratePKP {
-	/* @var $baseDir string Path to the base OxS directory */
-	var $baseDir;
-
-	/* @var $baseUrl string URL to the public uploads directory */
-	var $baseUrl;
+	/* @var string $baseUrl URL to the public uploads directory */
+	var $baseUrl; // Property $baseUrl has no type information available.
 
 	/* @var imageDir String path to the user's image upload directory */
-	var $imageDir;
+	var $imageDir; // Property $imageDir has no type information available.
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		// Get paths to system base directories
 		$this->baseDir = $_SERVER['SCRIPT_FILENAME'];
@@ -23,7 +34,7 @@ class IntegratePKP {
 
 		// Load and execute initialization code
 		chdir($this->baseDir);
-		define('INDEX_FILE_LOCATION', $this->baseDir . '/index.php');
+		define('INDEX_FILE_LOCATION', $this->baseDir . '/index.php'); // Buat agar lokasi file index.php secara dinamis
 		require($this->baseDir . '/lib/pkp/includes/bootstrap.inc.php');
 
 		$publicDir = Config::getVar('files', 'public_files_dir');
@@ -73,9 +84,9 @@ class IntegratePKP {
 		Registry::get('localeFiles', true, array($locale => array($localeFile)));
 
 		// Load user variables
-		$sessionManager =& SessionManager::getManager();
-		$userSession =& $sessionManager->getUserSession();
-		$user =& $userSession->getUser();
+		$sessionManager = SessionManager::getManager();
+		$userSession = $sessionManager->getUserSession();
+		$user = $userSession->getUser();
 
 		if (isset($user)) {
 			// User is logged in
@@ -125,9 +136,9 @@ class IntegratePKP {
 	 * Get the absolute path to the user's image upload directory
 	 * @return string
 	 */
-	public function getPKPImageUploadPath() {
+	public function getAppImageUploadPath() {
 		if (isset($this->baseDir) && isset($this->imageDir)) {
-			return $this->baseDir . '/' . $this->imageDir;
+			return $this->baseDir . '/' . $this->imageDir; // Expected type 'string|Stringable|null'. Found 'imageDir'.
 		}
 
 		die(__('installer.installFilesDirError'));
@@ -137,14 +148,15 @@ class IntegratePKP {
 	 * Get the URL (minus domain name) for the user's image upload directory
 	 * @return string
 	 */
-	public function getPKPImageUrl() {
+	public function getAppImageUrl() {
 		if (isset($this->baseUrl) && isset($this->imageDir)) {
-			$url = $this->baseUrl . '/' . $this->imageDir;
+			$url = $this->baseUrl . '/' . $this->imageDir; // Expected type 'string|Stringable|null'. Found 'imageDir'.
 			$urlParts = parse_url($url);
 			return $urlParts['path'];
 		}
 
 		die(__('installer.installFilesDirError'));
 	}
+	
 }
 ?>

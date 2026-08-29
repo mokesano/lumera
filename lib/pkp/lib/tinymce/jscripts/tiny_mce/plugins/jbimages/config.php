@@ -14,7 +14,6 @@
 |
 -------------------------------------------------------------------*/
 
-
 /*-------------------------------------------------------------------
 |
 | Path to upload target folder, relative to domain name. NO TRAILING SLASH!
@@ -25,10 +24,10 @@
 -------------------------------------------------------------------*/
 
 	/* PKP Customization, 01/03/2012; Determine img_path from external file */
-	require_once('integratePKP.php');
-	$integratePKP = new IntegratePKP();
+	require_once('integrateApp.php');
+	$integrateApp = new IntegrateApp();
 
-	$config['img_path'] = $integratePKP->getPKPImageUrl();
+	$config['img_path'] = $integrateApp->getAppImageUrl();
 
 
 /*-------------------------------------------------------------------
@@ -127,7 +126,7 @@
 -------------------------------------------------------------------*/
 
 	/* PKP Customization, 01/03/2012; Specify upload path */
-	$config['upload_path'] = $integratePKP->getPKPImageUploadPath();
+	$config['upload_path'] = $integrateApp->getAppImageUploadPath();
 
 
 /*-------------------------------------------------------------------
