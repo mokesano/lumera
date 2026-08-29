@@ -261,7 +261,8 @@ files_dir = files
 ; (This directory should be web-accessible and the specified path
 ; should be relative to the base ScholarWizdam directory)
 ; Windows users should use forward slashes
-public_files_dir = public
+; public_files_dir = public
+public_files_dir = storage/uploads
 
 ; Permissions mask for created files and directories
 umask = 0022
