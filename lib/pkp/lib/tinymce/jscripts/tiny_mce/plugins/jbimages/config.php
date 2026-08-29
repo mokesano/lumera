@@ -23,7 +23,7 @@
 |
 -------------------------------------------------------------------*/
 
-	/* PKP Customization, 01/03/2012; Determine img_path from external file */
+	/* Lumera Customization, 27/03/2017; Determine img_path from external file */
 	require_once('integrateApp.php');
 	$integrateApp = new IntegrateApp();
 
@@ -125,14 +125,14 @@
 |
 -------------------------------------------------------------------*/
 
-	/* PKP Customization, 01/03/2012; Specify upload path */
+	/* Lumera Customization, 27/03/2017; Specify upload path */
 	$config['upload_path'] = $integrateApp->getAppImageUploadPath();
 
 
 /*-------------------------------------------------------------------
 |
 | Maximum size of upload directory in kilobytes (set to 0 for no limit)
-| PKP Customization, 01/03/2012
+| Lumera Customization, 27/03/2017
 |
 -------------------------------------------------------------------*/
 
@@ -142,7 +142,7 @@
 /*-------------------------------------------------------------------
 |
 | Show uploaded images and allow for images to be deleted
-| PKP Customization, 01/03/2012
+| Lumera Customization, 27/03/2017
 |
 -------------------------------------------------------------------*/
 
