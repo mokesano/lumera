@@ -1,3 +1,12 @@
+{**
+ * templates/editor/notifyUsersEmail.tpl
+ *
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
+ *
+ * Notify Users with table of contents.
+ *}
 {literal}{$templateHeader}{/literal}
 
 {$body}
