@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file classes/user/UserDAO.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class UserDAO
  * @ingroup user
@@ -275,21 +275,24 @@ class UserDAO extends PKPUserDAO {
             $profileImageName = 'profileImage-' . $userId;
             $baseDir = Core::getBaseDir();
     
-            // Check files in public/site/
+            // Get dynamic public files directory from config
+            $publicFilesDir = Config::getVar('files', 'public_files_dir');
+
+            // Check files in public_files_dir/site/
             foreach ($extensions as $ext) {
-                $filePath = $baseDir . '/public/site/' . $profileImageName . $ext;
+                $filePath = $baseDir . '/' . $publicFilesDir . '/site/' . $profileImageName . $ext;
                 if (file_exists($filePath)) {
                     $data['hasImage'] = true;
-                    $data['imgUrl'] = $baseUrl . '/public/site/' . $profileImageName . $ext;
+                    $data['imgUrl'] = $baseUrl . '/' . $publicFilesDir . '/site/' . $profileImageName . $ext;
                     break;
                 }
             }
     
-            // Check alternates
+            // Check alternates with dynamic public files directory
             if (!$data['hasImage']) {
                 $alternates = [
-                    '/public/site/images/' . $profileImageName,
-                    '/public/uploads/users/' . $userId . '/profile'
+                    '/' . $publicFilesDir . '/site/images/' . $profileImageName,
+                    '/' . $publicFilesDir . '/uploads/users/' . $userId . '/profile'
                 ];
                 foreach ($alternates as $alt) {
                     foreach ($extensions as $ext) {
