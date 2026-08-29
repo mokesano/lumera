@@ -6,7 +6,7 @@ declare(strict_types=1);
  * 
  * Copyright (c) 2017-2026 Sangia Publishing House
  * Copyright (c) 2017-2026 Rochmady and Codecanau Team
- * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * Distributed under the GNU GPL v3.
  * 
  * @brief Sistem cache data staff jurnal (Manager dan Editor) untuk homepage.
  * Versi core dari skrip tema kustom.
@@ -331,7 +331,8 @@ class EditorialStaff {
         $format = self::profileImageExists($userId);
         if ($format) {
             $baseUrl = Request::getBaseUrl();
-            return $baseUrl . '/public/site/profileImage-' . $userId . '.' . $format;
+            $publicFilesDir = Config::getVar('files', 'public_files_dir');
+            return $baseUrl . '/' . $publicFilesDir . '/site/profileImage-' . $userId . '.' . $format;
         }
         return null;
     }
