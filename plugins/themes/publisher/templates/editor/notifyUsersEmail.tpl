@@ -1,3 +1,12 @@
+{**
+ * templates/editor/notifyUsersEmail.tpl
+ *
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
+ *
+ * Notify Users with table of contents.
+ *}
 {literal}{$templateHeader}{/literal}
 
 {$body}
@@ -13,16 +22,14 @@
 --------
 {literal}{$templateHeader}{/literal}
 {foreach from=$section.articles item=article}
-{$article->getLocalizedTitle()|strip_tags}{if $article->getPages()} ({$article->getPages()}){/if}
+	{$article->getLocalizedTitle()|strip_tags}{if $article->getPages()} ({$article->getPages()}){/if}{if $article->getArticleTypeDisplayLabel()} [{$article->getArticleTypeDisplayLabel()|strip_tags}]{/if}
 
-{if !$section.hideAuthor}
-{foreach from=$article->getAuthors() item=author name=authorList}
-	{$author->getFullName()}{if !$smarty.foreach.authorList.last},{/if}
-{/foreach}
-{/if}
-
+	{if !$section.hideAuthor}
+		{foreach from=$article->getAuthors() item=author name=authorList}
+			{$author->getFullName()}{if !$smarty.foreach.authorList.last},{/if}
+		{/foreach}
+	{/if}
 {/foreach}
 
 {/foreach}
 {literal}{$templateSignature}{/literal}
-
