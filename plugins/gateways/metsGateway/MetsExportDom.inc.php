@@ -8,9 +8,9 @@ declare(strict_types=1);
 /**
  * @file plugins/gateways/metsGateway/MetsExportDom.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class MetsExportDom
  * @ingroup GatewayPlugin
@@ -652,7 +652,7 @@ class MetsExportDom {
 		$journal = $journalDao->getById((int) $article->getJournalId());
 		$journalId = $journal ? (int) $journal->getId() : 0;
 		
-		// [WIZDAM FIX] Resolve "Undefined method/property" by fetching plugin instance dynamically
+		// [WIZDAM] Resolve "Undefined method/property" by fetching plugin instance dynamically
 		$plugin = PluginRegistry::getPlugin('gateways', 'MetsGatewayPlugin');
 		$contentWrapper = 'FLocat';
 		if ($plugin && $journalId) {
@@ -663,7 +663,8 @@ class MetsExportDom {
 		}
 
 		$mfile = XMLCustomWriter::createElement($doc, 'METS:file');
-		$filePath = self::getPublicFilePath($imageFile, '/public/');
+		$publicFilesDir = Config::getVar('files', 'public_files_dir');
+        $filePath = self::getPublicFilePath($imageFile, '/' . $publicFilesDir . '/');
 
 		$chkmd5return = file_exists($filePath) ? md5_file($filePath) : '';
 		XMLCustomWriter::setAttribute($mfile, 'ID', 'F' . (int) $imageFile->getFileId() . '-A' . (int) $article->getId());
@@ -712,7 +713,7 @@ class MetsExportDom {
 		$journal = $journalDao->getById((int) $article->getJournalId());
 		$journalId = $journal ? (int) $journal->getId() : 0;
 		
-		// [WIZDAM FIX] Resolve "Undefined method/property" by fetching plugin instance dynamically
+		// [WIZDAM] Resolve "Undefined method/property" by fetching plugin instance dynamically
 		$plugin = PluginRegistry::getPlugin('gateways', 'MetsGatewayPlugin');
 		$contentWrapper = 'FLocat';
 		if ($plugin && $journalId) {
@@ -723,7 +724,8 @@ class MetsExportDom {
 		}
 
 		$mfile = XMLCustomWriter::createElement($doc, 'METS:file');
-		$filePath = self::getPublicFilePath($galleyFile, '/public/');
+		$publicFilesDir = Config::getVar('files', 'public_files_dir');
+        $filePath = self::getPublicFilePath($galleyFile, '/' . $publicFilesDir . '/');
 		$chkmd5return = file_exists($filePath) ? md5_file($filePath) : '';
 		
 		XMLCustomWriter::setAttribute($mfile, 'ID', 'F' . (int) $galleyFile->getFileId() . '-A' . (int) $galleyFile->getArticleId());
@@ -769,7 +771,7 @@ class MetsExportDom {
 		$journal = $journalDao->getById((int) $article->getJournalId());
 		$journalId = $journal ? (int) $journal->getId() : 0;
 		
-		// [WIZDAM FIX] Resolve "Undefined method/property" by fetching plugin instance dynamically
+		// [WIZDAM] Resolve "Undefined method/property" by fetching plugin instance dynamically
 		$plugin = PluginRegistry::getPlugin('gateways', 'MetsGatewayPlugin');
 		$contentWrapper = 'FLocat';
 		if ($plugin && $journalId) {
@@ -857,7 +859,7 @@ class MetsExportDom {
 		XMLCustomWriter::appendChild($pObject, $objectIdentifier);
 		
 		$journalId = (int) $journal->getId();
-		// [WIZDAM FIX] Resolve "Undefined method/property" by fetching plugin instance dynamically
+		// [WIZDAM] Resolve "Undefined method/property" by fetching plugin instance dynamically
 		$plugin = PluginRegistry::getPlugin('gateways', 'MetsGatewayPlugin');
 		$preservationLevel = '1';
 		if ($plugin) {
@@ -895,7 +897,7 @@ class MetsExportDom {
 		$journal = $request->getJournal();
 		$journalId = $journal ? (int) $journal->getId() : 0;
 		
-		// [WIZDAM FIX] Resolve "Undefined method/property" by fetching plugin instance dynamically
+		// [WIZDAM] Resolve "Undefined method/property" by fetching plugin instance dynamically
 		$plugin = PluginRegistry::getPlugin('gateways', 'MetsGatewayPlugin');
 		$organization = '';
 		if ($plugin && $journalId) {
