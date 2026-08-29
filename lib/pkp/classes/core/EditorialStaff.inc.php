@@ -8,11 +8,11 @@ declare(strict_types=1);
  * Copyright (c) 2017-2026 Rochmady and Codecanau Team
  * Distributed under the GNU GPL v3.
  * 
- * @brief Sistem cache data staff jurnal (Manager dan Editor) untuk homepage.
- * Versi core dari skrip tema kustom.
+ * @class EditorialStaff
+ * @ingroup core
  *
- * @author Rochmady and Wizdam Team
- * @version v1.22.5 (Core Refactor)
+ * @brief Caching system for journal editorial staff (Managers and Editors) 
+ * to optimize homepage rendering performance.
  */
 
 // Import DAO yang dibutuhkan
@@ -21,145 +21,145 @@ declare(strict_types=1);
 // import('classes.user.UserSettingsDAO');
 // import('classes.journal.JournalDAO');
 // import('classes.user.User');
-// import('classes.i18n.CountryDAO'); // Path yang benar
+// import('classes.i18n.CountryDAO');
 
 class EditorialStaff {
 
-    // Role ID - Konstanta Role
-    const ROLE_JOURNAL_MANAGER = 16;
-    const ROLE_EDITOR = 256;
+    const ROLE_JOURNAL_MANAGER = 16; // ROLE_ID_MANAGER
+    const ROLE_EDITOR = 256;         // ROLE_ID_EDITOR
 
     /**
-     * @brief Metode publik utama untuk dipanggil dari handler lain (spt IndexHandler).
+     * Main entry point to fetch and assign staff data to the template manager.
+     * Utilizes a JSON file cache with hash-based invalidation to prevent 
+     * redundant database queries on every homepage load.
      * @param Journal $journal
      * @param TemplateManager $templateMgr
-     * @param $maxDisplayCount int
+     * @param int $maxDisplayCount
+     * @return void
      */
     public static function displayHomepageStaff($journal, $templateMgr, $maxDisplayCount = 3) {
-        if (!$journal) return;
-        $journalId = $journal->getId();
+        if (!$journal) {
+            return;
+        }
+        $journalId = (int) $journal->getId();
 
-        // Konfigurasi cache
-        $cacheEnabled = true; // Anda bisa membuat ini setting jurnal jika mau
+        $cacheEnabled = true;
         $cacheDir = self::getCacheDir();
         $cacheKey = 'journal_staff_' . $journalId . '_' . $maxDisplayCount;
         $cacheFile = $cacheDir . $cacheKey . '.json';
 
-        // Generate hash untuk deteksi perubahan
         $currentDataHash = self::getStaffDataHash($journalId, $maxDisplayCount);
 
-        // Cek apakah data staff berubah
         if ($cacheEnabled && !self::isStaffDataChanged($cacheFile, $currentDataHash)) {
             $cachedData = self::loadFromCache($cacheFile);
             if ($cachedData !== false) {
-                // Load dari cache
                 $templateMgr->assign('journalManagers', $cachedData['managers']);
                 $templateMgr->assign('journalEditors', $cachedData['editors']);
                 return;
             }
         }
 
-        // --- Cache tidak ada atau usang, generate data baru ---
-
         $locale = $journal->getPrimaryLocale();
         if (empty($locale)) {
             $locale = AppLocale::getLocale();
         }
 
-        $managers = array();
-        $editors = array();
-        $managerUserIds = array(); 
+        $managers = [];
+        $editors = [];
+        $managerUserIds = []; 
 
-        $roleDao = DAORegistry::getDAO('RoleDAO'); /** @var RoleDAO $roleDao  */
-        $userDao = DAORegistry::getDAO('UserDAO'); /** @var UserDAO $userDao  */
-        $countryDao = DAORegistry::getDAO('CountryDAO'); /** @var CountryDAO $countryDao  */
+        /** @var RoleDAO $roleDao */
+        $roleDao = DAORegistry::getDAO('RoleDAO');
+        /** @var UserDAO $userDao */
+        $userDao = DAORegistry::getDAO('UserDAO');
+        /** @var CountryDAO $countryDao */
+        $countryDao = DAORegistry::getDAO('CountryDAO');
 
-        // Mendapatkan daftar manager
         $managersObj = $roleDao->getUsersByRoleId(self::ROLE_JOURNAL_MANAGER, $journalId);
         $managerCount = 0;
-        while ($manager = $managersObj->next()) {
-            if ($managerCount >= $maxDisplayCount) break;
+        
+        if ($managersObj) {
+            while ($manager = $managersObj->next()) {
+                if ($managerCount >= $maxDisplayCount) break;
 
-            $userId = $manager->getId();
-            $user = $userDao->getById($userId); // Menggunakan getById
-            if (!$user) continue;
+                $userId = (int) $manager->getId();
+                $user = $userDao->getById($userId);
+                if (!$user) continue;
 
-            $managerUserIds[] = $userId;
-            $managers[] = self::processUserData($user, $locale, $countryDao);
-            $managerCount++;
+                $managerUserIds[] = $userId;
+                $managers[] = self::processUserData($user, $locale, $countryDao);
+                $managerCount++;
+            }
         }
 
-        // Mendapatkan daftar editor
         $editorsObj = $roleDao->getUsersByRoleId(self::ROLE_EDITOR, $journalId);
         $editorCount = 0;
-        while ($editor = $editorsObj->next()) {
-            if ($editorCount >= $maxDisplayCount) break;
+        
+        if ($editorsObj) {
+            while ($editor = $editorsObj->next()) {
+                if ($editorCount >= $maxDisplayCount) break;
 
-            $userId = $editor->getId();
-            // Skip jika user ini juga Journal Manager
-            if (in_array($userId, $managerUserIds)) {
-                continue;
+                $userId = (int) $editor->getId();
+                if (in_array($userId, $managerUserIds, true)) {
+                    continue;
+                }
+
+                $user = $userDao->getById($userId);
+                if (!$user) continue;
+
+                $editors[] = self::processUserData($user, $locale, $countryDao);
+                $editorCount++;
             }
-
-            $user = $userDao->getById($userId); // Menggunakan getById (bukan getUser)
-            if (!$user) continue;
-
-            $editors[] = self::processUserData($user, $locale, $countryDao);
-            $editorCount++;
         }
 
-        // Simpan ke cache dengan hash
         if ($cacheEnabled) {
-            $dataToCache = array(
+            $dataToCache = [
                 'managers' => $managers,
                 'editors' => $editors,
                 'generated_at' => time(),
                 'journal_id' => $journalId,
                 'max_display_count' => $maxDisplayCount,
                 'data_hash' => $currentDataHash
-            );
+            ];
             self::saveToCache($cacheFile, $dataToCache);
         }
 
-        // Menetapkan variabel ke Smarty
         $templateMgr->assign('journalManagers', $managers);
         $templateMgr->assign('journalEditors', $editors);
     }
 
     /**
-     * @brief Memproses objek User menjadi array data yang siap ditampilkan.
-     * @param User $user User 
-     * @param Locale $locale string
+     * Processes a User object into an array of display-ready data.
+     * Handles fallback locales for names and affiliations, and resolves 
+     * profile images via local storage or Gravatar.
+     * @param User $user
+     * @param Locale $locale
      * @param CountryDAO $countryDao
      * @return array
      */
     private static function processUserData($user, $locale, $countryDao) {
-        $userId = $user->getId();
+        $userId = (int) $user->getId();
 
-        // Mendapatkan prefix
         $prefix = self::getUserSetting($userId, 'prefix', $locale);
         if (empty($prefix)) {
-            $prefix = self::getUserSetting($userId, 'prefix', 'en_US'); // Fallback
+            $prefix = self::getUserSetting($userId, 'prefix', 'en_US');
         }
 
-        // Afiliasi
         $originalAffiliation = $user->getAffiliation($locale);
         $affiliation = self::processAffiliation($originalAffiliation);
-        $affiliationWasProcessed = ($originalAffiliation != $affiliation && !empty($originalAffiliation));
+        $affiliationWasProcessed = ($originalAffiliation !== $affiliation && !empty($originalAffiliation));
 
-        // Negara
         $countryCode = $user->getCountry();
         $countryName = '';
         if (!$affiliationWasProcessed && !empty($countryCode)) {
             $countryName = $countryDao->getCountry($countryCode, $locale);
             if (empty($countryName)) {
-                $countryName = $countryDao->getCountry($countryCode, 'en_US'); // Fallback
+                $countryName = $countryDao->getCountry($countryCode, 'en_US');
             }
         }
 
-        // Email & Gambar
         $userEmail = $user->getEmail();
-        $hasProfileImage = self::profileImageExists($userId) ? true : false;
+        $hasProfileImage = self::profileImageExists($userId) !== false;
         $profileImageUrl = self::getProfileImageUrl($userId);
 
         if (!$hasProfileImage && !empty($userEmail)) {
@@ -168,7 +168,7 @@ class EditorialStaff {
             $hasProfileImage = $gravatarInfo['hasProfileImage'];
         }
 
-        return array(
+        return [
             'userId' => $userId,
             'salutation' => $user->getSalutation(),
             'firstName' => $user->getFirstName(),
@@ -181,21 +181,21 @@ class EditorialStaff {
             'email' => $userEmail,
             'imageUrl' => $profileImageUrl,
             'hasProfileImage' => $hasProfileImage
-        );
+        ];
     }
 
     /**
-     * @brief Mendapatkan direktori cache yang standar OJS.
-     * @return string Path ke direktori cache
+     * Get the standard cache directory path.
+     * @return string
      */
     private static function getCacheDir() {
-        // Menggunakan direktori cache standar OJS
         return 'cache/t_wizdam/staff/';
     }
 
     /**
-     * @brief Memastikan direktori cache ada.
-     * @param string $dir string Path
+     * Ensure the cache directory exists.
+     * @param string $dir
+     * @return void
      */
     private static function ensureCacheDir($dir) {
         if (!is_dir($dir)) {
@@ -204,49 +204,59 @@ class EditorialStaff {
     }
 
     /**
-     * @brief Mendapatkan hash dari data staff untuk deteksi perubahan.
+     * Generate an MD5 hash of current staff data for cache invalidation.
+     * Includes a daily refresh trigger to prevent stale gravatar/affiliation data.
      * @param int $journalId
      * @param int $maxDisplayCount
-     * @return string MD5 hash
+     * @return string
      */
     private static function getStaffDataHash($journalId, $maxDisplayCount) {
-        $roleDao = &DAORegistry::getDAO('RoleDAO'); /** @var RoleDAO $roleDao */
-        $userDao = &DAORegistry::getDAO('UserDAO'); /** @var UserDAO $userDao */
-        $hashData = array();
-        $managerIds = array();
+        /** @var RoleDAO $roleDao */
+        $roleDao = DAORegistry::getDAO('RoleDAO');
+        /** @var UserDAO $userDao */
+        $userDao = DAORegistry::getDAO('UserDAO');
+        
+        $hashData = [];
+        $managerIds = [];
 
-        // Get managers
         $managersObj = $roleDao->getUsersByRoleId(self::ROLE_JOURNAL_MANAGER, $journalId);
         $managerCount = 0;
-        while ($manager = $managersObj->next()) {
-            if ($managerCount >= $maxDisplayCount) break;
-            $userId = $manager->getId();
-            $user = $userDao->getById($userId);
-            if (!$user) continue;
-            $managerIds[] = $userId;
-            $hashData[] = array(
-                'id' => $userId, 'role' => 'manager', 'name' => $user->getFullName(),
-                'email' => $user->getEmail(), 'affiliation' => $user->getLocalizedAffiliation(),
-                'country' => $user->getCountry()
-            );
-            $managerCount++;
+        
+        if ($managersObj) {
+            while ($manager = $managersObj->next()) {
+                if ($managerCount >= $maxDisplayCount) break;
+                $userId = (int) $manager->getId();
+                $user = $userDao->getById($userId);
+                if (!$user) continue;
+                
+                $managerIds[] = $userId;
+                $hashData[] = [
+                    'id' => $userId, 'role' => 'manager', 'name' => $user->getFullName(),
+                    'email' => $user->getEmail(), 'affiliation' => $user->getLocalizedAffiliation(),
+                    'country' => $user->getCountry()
+                ];
+                $managerCount++;
+            }
         }
 
-        // Get editors
         $editorsObj = $roleDao->getUsersByRoleId(self::ROLE_EDITOR, $journalId);
         $editorCount = 0;
-        while ($editor = $editorsObj->next()) {
-            if ($editorCount >= $maxDisplayCount) break;
-            $userId = $editor->getId();
-            $user = $userDao->getById($userId);
-            if (!$user) continue;
-            if (in_array($userId, $managerIds)) continue;
-            $hashData[] = array(
-                'id' => $userId, 'role' => 'editor', 'name' => $user->getFullName(),
-                'email' => $user->getEmail(), 'affiliation' => $user->getLocalizedAffiliation(),
-                'country' => $user->getCountry()
-            );
-            $editorCount++;
+        
+        if ($editorsObj) {
+            while ($editor = $editorsObj->next()) {
+                if ($editorCount >= $maxDisplayCount) break;
+                $userId = (int) $editor->getId();
+                $user = $userDao->getById($userId);
+                if (!$user) continue;
+                if (in_array($userId, $managerIds, true)) continue;
+                
+                $hashData[] = [
+                    'id' => $userId, 'role' => 'editor', 'name' => $user->getFullName(),
+                    'email' => $user->getEmail(), 'affiliation' => $user->getLocalizedAffiliation(),
+                    'country' => $user->getCountry()
+                ];
+                $editorCount++;
+            }
         }
 
         $hashData['daily_refresh'] = date('Y-m-d');
@@ -254,7 +264,7 @@ class EditorialStaff {
     }
 
     /**
-     * @brief Cek apakah data staff berubah.
+     * Check if staff data has changed compared to the cached hash.
      * @param string $cacheFile
      * @param string $currentHash
      * @return bool
@@ -267,7 +277,7 @@ class EditorialStaff {
     }
 
     /**
-     * @brief Load data dari cache.
+     * Load data from the JSON cache file.
      * @param string $cacheFile
      * @return array|false
      */
@@ -280,7 +290,7 @@ class EditorialStaff {
     }
 
     /**
-     * @brief Simpan data ke cache.
+     * Save data to the JSON cache file.
      * @param string $cacheFile
      * @param array $data
      * @return bool
@@ -293,11 +303,11 @@ class EditorialStaff {
     }
 
     /**
-     * @brief Helper untuk mendapatkan setting user.
+     * Helper to retrieve a specific user setting.
      * @param int $userId
      * @param string $settingName
      * @param string $locale
-     * @return string
+     * @return string|null
      */
     private static function getUserSetting($userId, $settingName, $locale) {
         /** @var UserSettingsDAO $userSettingsDao */
@@ -306,13 +316,13 @@ class EditorialStaff {
     }
 
     /**
-     * @brief Cek apakah gambar profil ada.
+     * Check if a local profile image exists for the user.
      * @param int $userId
-     * @return string|false
+     * @return string|false Image extension if found, false otherwise.
      */
     private static function profileImageExists($userId) {
         $baseDir = Config::getVar('files', 'public_files_dir') . '/site/';
-        $formats = array('jpg', 'gif', 'png');
+        $formats = ['jpg', 'gif', 'png'];
         foreach ($formats as $format) {
             $filename = 'profileImage-' . $userId . '.' . $format;
             if (file_exists($baseDir . $filename)) {
@@ -323,14 +333,15 @@ class EditorialStaff {
     }
 
     /**
-     * @brief Mendapatkan URL gambar profil.
+     * Get the URL for the user's local profile image.
      * @param int $userId
      * @return string|null
      */
     private static function getProfileImageUrl($userId) {
         $format = self::profileImageExists($userId);
         if ($format) {
-            $baseUrl = Request::getBaseUrl();
+            $request = Application::get()->getRequest();
+            $baseUrl = $request->getBaseUrl();
             $publicFilesDir = Config::getVar('files', 'public_files_dir');
             return $baseUrl . '/' . $publicFilesDir . '/site/profileImage-' . $userId . '.' . $format;
         }
@@ -338,8 +349,8 @@ class EditorialStaff {
     }
 
     /**
-     * @brief Proses afiliasi.
-     * @param string $affiliation
+     * Process affiliation string to extract the primary institution.
+     * @param string|null $affiliation
      * @return string
      */
     private static function processAffiliation($affiliation) {
@@ -349,29 +360,29 @@ class EditorialStaff {
     }
 
     /**
-     * @brief Cek dan generate Gravatar URL.
+     * Check Gravatar availability and generate the image URL.
+     * Uses a HEAD request with a short timeout to prevent blocking the page render.
      * @param string $email
      * @return array
      */
     private static function getGravatarInfo($email) {
         if (empty($email)) {
-            return array('imageUrl' => null, 'hasProfileImage' => false);
+            return ['imageUrl' => null, 'hasProfileImage' => false];
         }
         
         $gravatarUrl = "https://www.gravatar.com/avatar/" . md5(strtolower(trim($email))) . "?s=150&d=404";
 
-        $context = stream_context_create(array(
-            'http' => array('timeout' => 2, 'method' => 'HEAD')
-        ));
+        $context = stream_context_create([
+            'http' => ['timeout' => 2, 'method' => 'HEAD']
+        ]);
 
         $headers = @get_headers($gravatarUrl, false, $context);
 
-        // Pastikan $headers tidak false sebelum mengakses array index 0
         if ($headers && isset($headers[0]) && strpos($headers[0], '200') !== false) {
-            return array('imageUrl' => $gravatarUrl, 'hasProfileImage' => true);
+            return ['imageUrl' => $gravatarUrl, 'hasProfileImage' => true];
         }
         
-        return array('imageUrl' => null, 'hasProfileImage' => false);
+        return ['imageUrl' => null, 'hasProfileImage' => false];
     }
 
 }
