@@ -2,6 +2,10 @@
 declare(strict_types=1);
 
 /**
+ * @defgroup cache
+ */
+
+/**
  * @file classes/cache/MemcacheCache.inc.php
  *
  * Copyright (c) 2017-2026 Sangia Publishing House

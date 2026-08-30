@@ -2,11 +2,15 @@
 declare(strict_types=1);
 
 /**
+ * @defgroup cache
+ */
+
+/**
  * @file classes/cache/APCuCache.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2000-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class APCuCache
  * @ingroup cache
@@ -32,7 +36,7 @@ if (!function_exists('apcu_cache_info')) {
 }
 
 /**
- * Helper class to distinguish cached boolean false from APCu fetch failure.
+ * @brief Helper class to distinguish cached boolean false from APCu fetch failure.
  * APCu returns false on cache miss, so we wrap actual false values in this class.
  */
 class apc_false {}
@@ -40,7 +44,7 @@ class apc_false {}
 class APCuCache extends GenericCache {
     
     /**
-     * Construct
+     * Constructor.
      * @param mixed $context string
      * @param mixed $cacheId string
      * @param mixed $fallback callable
@@ -58,11 +62,12 @@ class APCuCache extends GenericCache {
     public function APCuCache($context, $cacheId, $fallback) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::APCuCache(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($context, $cacheId, $fallback);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
