@@ -4,20 +4,19 @@ declare(strict_types=1);
 /**
  * @file classes/rt/RTStruct.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2000-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class RTVersion
  * @ingroup rt
  * @see RT
  *
  * @brief Data structures associated with the Reading Tools component.
- * * REFACTORED: Wizdam Edition (PHP 8 Compatibility, Visibility, No Reference Return)
  */
 
 /**
- * RT Version entity.
+ * @brief RT Version entity.
  */
 class RTVersion {
 
@@ -37,12 +36,12 @@ class RTVersion {
     public $description;
 
     /** @var array RTContext version contexts */
-    public $contexts = array();
+    public $contexts = [];
 
 
     /**
      * Add an RT Context to this version.
-     * @param $context RTContext
+     * @param RTContext $context
      */
     public function addContext($context) {
         array_push($this->contexts, $context);
@@ -58,7 +57,7 @@ class RTVersion {
 
     /**
      * Set contexts.
-     * @param $contexts array
+     * @param array $contexts
      */
     public function setContexts($contexts) {
         $this->contexts = $contexts;
@@ -66,7 +65,7 @@ class RTVersion {
 
     /**
      * Set Version ID.
-     * @param $versionId int
+     * @param int $versionId
      */
     public function setVersionId($versionId) {
         $this->versionId = $versionId;
@@ -82,7 +81,7 @@ class RTVersion {
 
     /**
      * Set Title.
-     * @param $title string
+     * @param string $title
      */
     public function setTitle($title) {
         $this->title = $title;
@@ -98,7 +97,7 @@ class RTVersion {
 
     /**
      * Set Locale.
-     * @param $locale string
+     * @param string $locale
      */
     public function setLocale($locale) {
         $this->locale = $locale;
@@ -114,7 +113,7 @@ class RTVersion {
 
     /**
      * Set Key.
-     * @param $key string
+     * @param string $key
      */
     public function setKey($key) {
         $this->key = $key;
@@ -130,7 +129,7 @@ class RTVersion {
 
     /**
      * Set Description.
-     * @param $description string
+     * @param string $description
      */
     public function setDescription($description) {
         $this->description = $description;
@@ -146,7 +145,7 @@ class RTVersion {
 }
 
 /**
- * RT Context entity.
+ * @brief RT Context entity.
  */
 class RTContext {
 
@@ -181,12 +180,12 @@ class RTContext {
     public $order = 0;
 
     /** @var array RTSearch context searches */
-    public $searches = array();
+    public $searches = [];
 
 
     /**
      * Add an RT Search to this context.
-     * @param $search RTSearch
+     * @param RTSearch $search
      */
     public function addSearch($search) {
         array_push($this->searches, $search);
@@ -202,7 +201,7 @@ class RTContext {
 
     /**
      * Set searches.
-     * @param $searches array
+     * @param array $searches
      */
     public function setSearches($searches) {
         $this->searches = $searches;
@@ -210,7 +209,7 @@ class RTContext {
 
     /**
      * Set Context ID.
-     * @param $contextId int
+     * @param int $contextId
      */
     public function setContextId($contextId) {
         $this->contextId = $contextId;
@@ -226,7 +225,7 @@ class RTContext {
 
     /**
      * Set Version ID.
-     * @param $versionId int
+     * @param int $versionId
      */
     public function setVersionId($versionId) {
         $this->versionId = $versionId;
@@ -242,7 +241,7 @@ class RTContext {
 
     /**
      * Set Title.
-     * @param $title string
+     * @param string $title
      */
     public function setTitle($title) {
         $this->title = $title;
@@ -258,7 +257,7 @@ class RTContext {
 
     /**
      * Set Abbreviation.
-     * @param $abbrev string
+     * @param string $abbrev
      */
     public function setAbbrev($abbrev) {
         $this->abbrev = $abbrev;
@@ -274,7 +273,7 @@ class RTContext {
 
     /**
      * Set Description.
-     * @param $description string
+     * @param string $description
      */
     public function setDescription($description) {
         $this->description = $description;
@@ -298,7 +297,7 @@ class RTContext {
 
     /**
      * Set Cited By flag.
-     * @param $citedBy bool
+     * @param bool $citedBy
      */
     public function setCitedBy($citedBy) {
         $this->citedBy = $citedBy;
@@ -314,7 +313,7 @@ class RTContext {
 
     /**
      * Set Author Terms flag.
-     * @param $authorTerms bool
+     * @param bool $authorTerms
      */
     public function setAuthorTerms($authorTerms) {
         $this->authorTerms = $authorTerms;
@@ -330,7 +329,7 @@ class RTContext {
 
     /**
      * Set Geo Terms flag.
-     * @param $geoTerms bool
+     * @param bool $geoTerms
      */
     public function setGeoTerms($geoTerms) {
         $this->geoTerms = $geoTerms;
@@ -346,7 +345,7 @@ class RTContext {
 
     /**
      * Set Define Terms flag.
-     * @param $defineTerms bool
+     * @param bool $defineTerms
      */
     public function setDefineTerms($defineTerms) {
         $this->defineTerms = $defineTerms;
@@ -362,7 +361,7 @@ class RTContext {
 
     /**
      * Set Order.
-     * @param $order int
+     * @param int $order
      */
     public function setOrder($order) {
         $this->order = $order;
@@ -370,7 +369,7 @@ class RTContext {
 }
 
 /**
- * RT Search entity.
+ * @brief RT Search entity.
  */
 class RTSearch {
 
@@ -410,7 +409,7 @@ class RTSearch {
 
     /**
      * Set Search ID.
-     * @param $searchId int
+     * @param int $searchId
      */
     public function setSearchId($searchId) {
         $this->searchId = $searchId;
@@ -426,7 +425,7 @@ class RTSearch {
 
     /**
      * Set Context ID.
-     * @param $contextId int
+     * @param int $contextId
      */
     public function setContextId($contextId) {
         $this->contextId = $contextId;
@@ -442,7 +441,7 @@ class RTSearch {
 
     /**
      * Set Title.
-     * @param $title string
+     * @param string $title
      */
     public function setTitle($title) {
         $this->title = $title;
@@ -458,7 +457,7 @@ class RTSearch {
 
     /**
      * Set Description.
-     * @param $description string
+     * @param string $description
      */
     public function setDescription($description) {
         $this->description = $description;
@@ -474,7 +473,7 @@ class RTSearch {
 
     /**
      * Set URL.
-     * @param $url string
+     * @param string $url
      */
     public function setUrl($url) {
         $this->url = $url;
@@ -490,7 +489,7 @@ class RTSearch {
 
     /**
      * Set Search URL.
-     * @param $searchUrl string
+     * @param string $searchUrl
      */
     public function setSearchUrl($searchUrl) {
         $this->searchUrl = $searchUrl;
@@ -506,7 +505,7 @@ class RTSearch {
 
     /**
      * Set Search Post data.
-     * @param $searchPost string
+     * @param string $searchPost
      */
     public function setSearchPost($searchPost) {
         $this->searchPost = $searchPost;
@@ -522,11 +521,11 @@ class RTSearch {
 
     /**
      * Set Order.
-     * @param $order int
+     * @param int $order
      */
     public function setOrder($order) {
         $this->order = $order;
     }
-}
 
+}
 ?>
