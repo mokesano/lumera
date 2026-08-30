@@ -4,25 +4,25 @@ declare(strict_types=1);
 /**
  * @file classes/oai/OAIStruct.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2000-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class OAIConfig
  * @ingroup oai
  * @see OAI
  *
  * @brief Data structures associated with the OAI request handler.
- * * REFACTORED: Wizdam Edition (PHP 7.4 - 8.x Modernization)
  */
 
 define('OAIRECORD_STATUS_DELETED', 0);
 define('OAIRECORD_STATUS_ALIVE', 1);
 
 /**
- * OAI repository configuration.
+ * @brief OAI repository configuration.
  */
 class OAIConfig {
+
     /** @var string URL to the OAI front-end */
     public $baseUrl = '';
 
@@ -46,9 +46,10 @@ class OAIConfig {
     // Must be set to zero if sets not supported by repository
     public $maxSets = 50;
 
-
     /**
      * Constructor.
+     * @param string $baseUrl
+     * @param string $repositoryId
      */
     public function __construct($baseUrl, $repositoryId) {
         $this->baseUrl = $baseUrl;
@@ -59,19 +60,24 @@ class OAIConfig {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $baseUrl
+     * @param string $repositoryId
      */
     public function OAIConfig($baseUrl, $repositoryId) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::OAIConfig(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($baseUrl, $repositoryId);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 }
 
 /**
- * OAI repository information.
+ * @brief OAI repository information.
  */
 class OAIRepository {
 
@@ -102,7 +108,7 @@ class OAIRepository {
 
 
 /**
- * OAI resumption token.
+ * @brief OAI resumption token.
  * Used to resume a record retrieval at the last-retrieved offset.
  */
 class OAIResumptionToken {
@@ -119,9 +125,12 @@ class OAIResumptionToken {
     /** @var int expiration timestamp */
     public $expire;
 
-
     /**
      * Constructor.
+     * @param string $id
+     * @param int $offset
+     * @param mixed $params
+     * @param int $expire
      */
     public function __construct($id, $offset, $params, $expire) {
         $this->id = $id;
@@ -131,20 +140,27 @@ class OAIResumptionToken {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $id
+     * @param int $offset
+     * @param mixed $params
+     * @param int $expire
      */
     public function OAIResumptionToken($id, $offset, $params, $expire) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::OAIResumptionToken(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($id, $offset, $params, $expire);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 }
 
 
 /**
- * OAI metadata format.
+ * @brief OAI metadata format.
  * Used to generated metadata XML according to a specified schema.
  */
 class OAIMetadataFormat {
@@ -160,6 +176,9 @@ class OAIMetadataFormat {
 
     /**
      * Constructor.
+     * @param string $prefix
+     * @param string $schema
+     * @param string $namespace
      */
     public function __construct($prefix, $schema, $namespace) {
         $this->prefix = $prefix;
@@ -168,16 +187,27 @@ class OAIMetadataFormat {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $prefix
+     * @param string $schema
+     * @param string $namespace
      */
     public function OAIMetadataFormat($prefix, $schema, $namespace) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::OAIMetadataFormat(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($prefix, $schema, $namespace);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
+    /**
+     * Get localized data
+     * @param mixed $data
+     * @param mixed $locale
+     */
     public function getLocalizedData($data, $locale) {
         foreach ($data as $element) {
             if (isset($data[$locale])) return $data[$locale];
@@ -197,7 +227,7 @@ class OAIMetadataFormat {
 
     /**
      * Recursively strip HTML from a (multidimensional) array.
-     * @param $values array
+     * @param mixed $values array
      * @return array the cleansed array
      */
     public function stripAssocArray($values) {
@@ -208,7 +238,7 @@ class OAIMetadataFormat {
 
 
 /**
- * OAI set.
+ * @brief OAI set.
  * Identifies a set of related records.
  */
 class OAISet {
@@ -222,9 +252,11 @@ class OAISet {
     /** @var string set description */
     public $description;
 
-
     /**
      * Constructor.
+     * @param string $spec
+     * @param string $name
+     * @param string $description
      */
     public function __construct($spec, $name, $description) {
         $this->spec = $spec;
@@ -233,20 +265,26 @@ class OAISet {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $spec
+     * @param string $name
+     * @param string $description
      */
     public function OAISet($spec, $name, $description) {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::OAISet(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct($spec, $name, $description);
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 }
 
 
 /**
- * OAI identifier.
+ * @brief OAI identifier.
  */
 class OAIIdentifier {
     /** @var string unique OAI record identifier */
@@ -261,6 +299,9 @@ class OAIIdentifier {
     /** @var string if this record is deleted */
     public $status;
 
+    /**
+     * Constructor.
+     */
     public function __construct() {
     }
 
@@ -268,44 +309,62 @@ class OAIIdentifier {
      * [SHIM] Backward Compatibility
      */
     public function OAIIdentifier() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::OAIIdentifier(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 }
 
 
 /**
- * OAI record.
+ * @brief OAI record.
  * Describes metadata for a single record in the repository.
  */
 class OAIRecord extends OAIIdentifier {
+
+    /** @var array $data */
     public $data;
 
+    /**
+     * Constructor.
+     */
     public function __construct() {
         parent::__construct();
-        $this->data = array();
+        $this->data = [];
     }
 
     /**
      * [SHIM] Backward Compatibility
      */
     public function OAIRecord() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::OAIRecord(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
-    // MODERNIZATION: Removed & reference for value
+    /**
+     * Set data
+     * @param string $name
+     * @param mixed $value
+     */
     public function setData($name, $value) {
         $this->data[$name] = $value;
     }
 
-    // MODERNIZATION: Removed & reference for return
+    /**
+     * Get data
+     * @param string $name
+     */
     public function getData($name) {
         if (isset($this->data[$name])) {
             return $this->data[$name];
@@ -313,6 +372,6 @@ class OAIRecord extends OAIIdentifier {
             return null;
         }
     }
-}
 
+}
 ?>
