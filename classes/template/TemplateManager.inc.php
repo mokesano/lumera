@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @ingroup template
  *
  * @brief Class for accessing the underlying template engine.
- * Currently integrated with Smarty (from http://smarty.php.net/).
+ * Currently integrated with Smarty.
  */
 
 import('classes.search.ArticleSearch');
@@ -24,7 +24,6 @@ class TemplateManager extends PKPTemplateManager {
     
     /**
      * Constructor.
-     * Initialize template engine and assign basic template variables.
      * @param PKPRequest|null $request
      */
     public function __construct(?PKPRequest $request = null) {
@@ -34,79 +33,47 @@ class TemplateManager extends PKPTemplateManager {
             $this->request = Registry::get('request');
         }
 
-        // Retrieve the router
         $router = $this->request->getRouter();
         if (!is_a($router, 'PKPRouter')) {
-            // Fallback aman jika router tidak sesuai, mencegah fatal error di baris berikutnya
             $router = $this->request->getRouter(); 
         }
 
-        // Are we using implicit authentication?
         $this->assign('implicitAuth', strtolower((string) Config::getVar('security', 'implicit_auth')));
 
         if (!defined('SESSION_DISABLE_INIT')) {
-            /**
-             * Kludge to make sure no code that tries to connect to
-             * the database is executed (e.g., when loading
-             * installer pages).
-             */
-            $journal = $router->getContext($this->request);
+            $journal = $router ? $router->getContext($this->request) : null;
             $site = $this->request->getSite();
 
             $publicFileManager = new PublicFileManager();
-            // [FIX] SEBELUMNYA: $this->request->getBaseUrl() . '/' . $publicFileManager->getSiteFilesPath()
-            // -- ini menempelkan URL ABSOLUT (scheme+host) dan langsung
-            // membocorkan struktur folder public_files_dir (yang sekarang
-            // menunjuk ke storage/uploads/, TIDAK LAGI web-accessible sejak
-            // public/ jadi document root murni) ke dalam URL publik.
-            //
-            // SEKARANG: URL publik yang dikirim ke template SELALU
-            // "/public/site" (root-relative, lewat getBasePath() bukan
-            // getBaseUrl() -- sesuai permintaan: tanpa base URL literal di
-            // markup) dan STABIL, TIDAK PERNAH ikut berubah walau lokasi
-            // penyimpanan sesungguhnya (public_files_dir) dipindah-pindah.
-            // WizdamAssetDispatcher::_serveLegacyPublicFile() di index.php
-            // yang menerjemahkan "/public/..." ini ke lokasi storage yang
-            // sebenarnya -- lihat catatan di file itu.
+            
+            // Use root-relative paths for public assets
             $siteFilesDir = $this->request->getBasePath() . '/public/site';
             
             $this->assign('sitePublicFilesDir', $siteFilesDir);
-            $this->assign('publicFilesDir', $siteFilesDir); // May be overridden by journal
+            $this->assign('publicFilesDir', $siteFilesDir);
 
             $siteStyleFilename = $publicFileManager->getSiteFilesPath() . '/' . $site->getSiteStyleFilename();
             if (file_exists($siteStyleFilename)) {
-                // [FIX] Sama seperti di atas -- URL root-relative & stabil,
-                // path filesystem sesungguhnya (kanan $siteStyleFilename,
-                // dipakai HANYA untuk file_exists() check) tidak lagi
-                // dipakai untuk membentuk URL.
                 $this->addStyleSheet($this->request->getBasePath() . '/public/site/' . $site->getSiteStyleFilename());
             }
 
             $this->assign('homeContext', []);
             $this->assign('siteCategoriesEnabled', $site->getSetting('categoriesEnabled'));
 
-            if (isset($journal)) {
+            if ($journal) {
                 $this->assign('currentJournal', $journal);
-                
-                $journalTitle = $journal->getLocalizedTitle();
-                $this->assign('siteTitle', $journalTitle);
-                // [FIX] Idem -- "/public/journals/{id}" root-relative & stabil.
+                $this->assign('siteTitle', $journal->getLocalizedTitle());
                 $this->assign('publicFilesDir', $this->request->getBasePath() . '/public/journals/' . $journal->getId());
 
                 $this->assign('primaryLocale', $journal->getPrimaryLocale());
                 $this->assign('alternateLocales', $journal->getSetting('alternateLocales'));
+                $this->assign('navMenuItems', $journal->getLocalizedSetting('navItems'));
 
-                // Assign additional navigation bar items
-                $navMenuItems = $journal->getLocalizedSetting('navItems');
-                $this->assign('navMenuItems', $navMenuItems);
-
-                // Assign journal page header
                 $this->assign('displayPageHeaderTitle', $journal->getLocalizedPageHeaderTitle());
                 $this->assign('displayPageHeaderLogo', $journal->getLocalizedPageHeaderLogo());
                 $this->assign('displayPageHeaderTitleAltText', $journal->getLocalizedSetting('pageHeaderTitleImageAltText'));
                 $this->assign('displayPageHeaderLogoAltText', $journal->getLocalizedSetting('pageHeaderLogoImageAltText'));
                 $this->assign('displayFavicon', $journal->getLocalizedFavicon());
-                // [FIX] Idem -- root-relative & stabil ("/public/journals/{id}").
                 $this->assign('faviconDir', $this->request->getBasePath() . '/public/journals/' . $journal->getId());
                 $this->assign('alternatePageHeader', $journal->getLocalizedSetting('journalPageHeader'));
                 $this->assign('metaSearchDescription', $journal->getLocalizedSetting('searchDescription'));
@@ -122,7 +89,6 @@ class TemplateManager extends PKPTemplateManager {
                     !$journal->getSetting('allowRegAuthor')
                 );
 
-                // Load and apply theme plugin, if chosen
                 $themePluginPath = $journal->getSetting('journalTheme');
                 if (!empty($themePluginPath)) {
                     $themePlugin = PluginRegistry::loadPlugin('themes', $themePluginPath);
@@ -131,10 +97,8 @@ class TemplateManager extends PKPTemplateManager {
                     }
                 }
 
-                // Assign stylesheets and footer
                 $journalStyleSheet = $journal->getSetting('journalStyleSheet');
                 if (is_array($journalStyleSheet) && isset($journalStyleSheet['uploadName'])) {
-                    // [FIX] Idem -- root-relative & stabil.
                     $this->addStyleSheet(
                         $this->request->getBasePath() . '/public/journals/' . $journal->getId() . '/' . $journalStyleSheet['uploadName']
                     );
@@ -146,7 +110,6 @@ class TemplateManager extends PKPTemplateManager {
 
                 $this->assign('pageFooter', $journal->getLocalizedSetting('journalPageFooter'));
             } else {
-                // Add the site-wide logo, if set for this locale or the primary locale
                 $displayPageHeaderTitle = $site->getLocalizedPageHeaderTitle();
                 $this->assign('displayPageHeaderTitle', $displayPageHeaderTitle);
 
@@ -156,7 +119,6 @@ class TemplateManager extends PKPTemplateManager {
 
                 $this->assign('siteTitle', $site->getLocalizedTitle());
 
-                // Load and apply theme plugin, if chosen
                 $themePluginPath = $site->getSetting('siteTheme');
                 if (!empty($themePluginPath)) {
                     $themePlugin = PluginRegistry::loadPlugin('themes', $themePluginPath);
@@ -170,7 +132,6 @@ class TemplateManager extends PKPTemplateManager {
                 $this->assign('hasOtherJournals', true);
             }
 
-            // Add java script for notifications
             $user = $this->request->getUser();
             if ($user) {
                 $this->addJavaScript('lib/pkp/js/lib/jquery/plugins/jquery.pnotify.js');
@@ -179,12 +140,13 @@ class TemplateManager extends PKPTemplateManager {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param PKPRequest|null $request
      */
     public function TemplateManager($request = null) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::" . get_class($this) . "(). Please refactor to use parent::__construct().",
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
@@ -194,7 +156,7 @@ class TemplateManager extends PKPTemplateManager {
 
     /**
      * Return an instance of the TemplateManager.
-     * @param PKPRequest|null $request optional
+     * @param PKPRequest|null $request
      * @return TemplateManager
      */
     public static function getManager(?PKPRequest $request = null): TemplateManager {
@@ -208,10 +170,11 @@ class TemplateManager extends PKPTemplateManager {
     }
 
     /**
-     * Smarty usage: {get_help_id key="(dir)*.page.topic" url="boolean"}
      * Custom Smarty function for retrieving help topic ids.
+     * Usage: {get_help_id key="(dir)*.page.topic" url="boolean"}
      * @param array $params
      * @param Smarty $smarty
+     * @return string
      */
     public function smartyGetHelpId($params, &$smarty) {
         import('classes.help.Help');
@@ -221,7 +184,8 @@ class TemplateManager extends PKPTemplateManager {
             $translatedKey = isset($params['key']) ? $help->translate($params['key']) : $help->translate('');
 
             if (isset($params['url']) && $params['url'] === 'true') {
-                return Request::url(null, 'help', 'view', explode('/', $translatedKey));
+                $request = Application::get()->getRequest();
+                return $request->url(null, 'help', 'view', explode('/', $translatedKey));
             }
             return $translatedKey;
         }
@@ -229,10 +193,11 @@ class TemplateManager extends PKPTemplateManager {
     }
 
     /**
-     * Smarty usage: {help_topic key="(dir)*.page.topic" text="foo"}
-     * Custom Smarty function for creating anchor tags
-     * @param array $params associative array
+     * Custom Smarty function for creating help topic anchor tags.
+     * Usage: {help_topic key="(dir)*.page.topic" text="foo"}
+     * @param array $params
      * @param Smarty $smarty
+     * @return string
      */
     public function smartyHelpTopic($params, &$smarty) {
         import('classes.help.Help');
@@ -240,25 +205,27 @@ class TemplateManager extends PKPTemplateManager {
         
         if (!empty($params)) {
             $translatedKey = isset($params['key']) ? $help->translate($params['key']) : $help->translate('');
-            $link = Request::url(null, 'help', 'view', explode('/', $translatedKey));
+            $request = Application::get()->getRequest();
+            $link = $request->url(null, 'help', 'view', explode('/', $translatedKey));
             $text = $params['text'] ?? '';
             
-            return "<a href=\"$link\">$text</a>";
+            return "<a href=\"{$link}\">{$text}</a>";
         }
         return '';
     }
 
     /**
-     * Display page links for a listing of items that has been
-     * divided onto multiple pages.
+     * Display page links for a listing of items divided onto multiple pages.
      * @param array $params
      * @param Smarty $smarty
+     * @return string
      */
     public function smartyPageLinks($params, &$smarty) {
         if (!isset($params['iterator']) || !isset($params['name'])) {
             return '';
         }
 
+        $request = Application::get()->getRequest();
         $iterator = $params['iterator'];
         $name = $params['name'];
         
@@ -271,22 +238,20 @@ class TemplateManager extends PKPTemplateManager {
         $anchor = $params['anchor'] ?? null;
         unset($params['anchor']);
         
-        $allExtra = isset($params['all_extra']) ? ' ' . $params['all_extra'] : '';
+        $allExtra = !empty($params['all_extra']) ? ' ' . $params['all_extra'] : '';
         unset($params['all_extra']);
 
-        unset($params['iterator']);
-        unset($params['name']);
+        unset($params['iterator'], $params['name']);
 
         $numPageLinks = $smarty->get_template_vars('numPageLinks');
         if (!is_numeric($numPageLinks)) {
             $numPageLinks = 10;
         }
 
-        $page = $iterator->getPage();
-        $pageCount = $iterator->getPageCount();
-        // $itemTotal = $iterator->getCount();
+        $page = (int) $iterator->getPage();
+        $pageCount = (int) $iterator->getPageCount();
 
-        $pageBase = max($page - floor($numPageLinks / 2), 1);
+        $pageBase = max($page - (int) floor($numPageLinks / 2), 1);
         $paramName = $name . 'Page';
 
         if ($pageCount <= 1) {
@@ -294,39 +259,36 @@ class TemplateManager extends PKPTemplateManager {
         }
 
         $value = '';
+        $requestedArgs = $request->getRequestedArgs();
 
         if ($page > 1) {
             $params[$paramName] = 1;
-            $value .= '<a href="' . Request::url(null, null, null, Request::getRequestedArgs(), $params, $anchor, true) . '"' . $allExtra . '>&lt;&lt;</a>&nbsp;';
+            $value .= '<a href="' . $request->url(null, null, null, $requestedArgs, $params, $anchor, true) . '"' . $allExtra . '>&lt;&lt;</a>&nbsp;';
             $params[$paramName] = $page - 1;
-            $value .= '<a href="' . Request::url(null, null, null, Request::getRequestedArgs(), $params, $anchor, true) . '"' . $allExtra . '>&lt;</a>&nbsp;';
+            $value .= '<a href="' . $request->url(null, null, null, $requestedArgs, $params, $anchor, true) . '"' . $allExtra . '>&lt;</a>&nbsp;';
         }
 
         for ($i = $pageBase; $i < min($pageBase + $numPageLinks, $pageCount + 1); $i++) {
-            if ($i == $page) {
+            if ($i === $page) {
                 $value .= "<strong>$i</strong>&nbsp;";
             } else {
                 $params[$paramName] = $i;
-                $value .= '<a href="' . Request::url(null, null, null, Request::getRequestedArgs(), $params, $anchor, true) . '"' . $allExtra . '>' . $i . '</a>&nbsp;';
+                $value .= '<a href="' . $request->url(null, null, null, $requestedArgs, $params, $anchor, true) . '"' . $allExtra . '>' . $i . '</a>&nbsp;';
             }
         }
         
         if ($page < $pageCount) {
             $params[$paramName] = $page + 1;
-            $value .= '<a href="' . Request::url(null, null, null, Request::getRequestedArgs(), $params, $anchor, true) . '"' . $allExtra . '>&gt;</a>&nbsp;';
+            $value .= '<a href="' . $request->url(null, null, null, $requestedArgs, $params, $anchor, true) . '"' . $allExtra . '>&gt;</a>&nbsp;';
             $params[$paramName] = $pageCount;
-            $value .= '<a href="' . Request::url(null, null, null, Request::getRequestedArgs(), $params, $anchor, true) . '"' . $allExtra . '>&gt;&gt;</a>&nbsp;';
+            $value .= '<a href="' . $request->url(null, null, null, $requestedArgs, $params, $anchor, true) . '"' . $allExtra . '>&gt;&gt;</a>&nbsp;';
         }
 
         return $value;
     }
 
     /**
-     * [WIZDAM BUGFIX] PKPTemplateManager::__construct() melakukan
-     * $this->assign('stylesheets', $this->styleSheets) SEKALI SAJA, saat
-     * instance singleton pertama kali dibuat lewat getManager() -- di
-     * titik itu $this->styleSheets MASIH KOSONG. Smarty::assign() memakai
-     * assignment PHP biasa (SALINAN NILAI untuk array, BUKAN referensi).
+     * Display the template.
      * @param string $template
      * @param string|null $sendContentType
      * @param string|null $hookName
@@ -336,25 +298,6 @@ class TemplateManager extends PKPTemplateManager {
     public function display($template, $sendContentType = null, $hookName = null, $display = true) {
         $this->assign('stylesheets', $this->styleSheets);
 
-        // [WIZDAM BUGFIX] navbar.tpl (SELALU dirender di setiap halaman)
-        // membaca {$unreadNotifications} sebagai variabel LANGSUNG --
-        // TIDAK lewat mekanisme {call_hook} block region apa pun.
-        // Satu-satunya tempat variabel ini sebelumnya di-assign adalah
-        // NotificationBlockPlugin::getContents() -- yang HANYA berjalan
-        // kalau block itu diaktifkan untuk region sidebar tertentu
-        // (Templates::Common::LeftSidebar/RightSidebar), dan HASIL
-        // render-nya masuk ke $leftSidebarCode/$rightSidebarCode --
-        // BUKAN ke variabel yang dibaca navbar.tpl. Navbar yang selalu
-        // tampil di semua halaman tidak boleh bergantung status
-        // block plugin opsional.
-        //
-        // Di-assign LANGSUNG di sini -- titik pusat yang sama dengan
-        // perbaikan stylesheets di atas -- supaya berlaku untuk SETIAP
-        // render halaman, terlepas block plugin manapun aktif atau
-        // tidak. NotificationBlockPlugin sendiri TIDAK disentuh/dihapus
-        // -- kalau block itu memang diaktifkan untuk sidebar, assign-nya
-        // di sana cuma jadi redundan (menimpa dengan nilai yang sama),
-        // tidak merusak apa pun.
         $request = Application::get()->getRequest();
         $user = $request->getUser();
         if ($user) {
