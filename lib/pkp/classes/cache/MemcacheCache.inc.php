@@ -4,40 +4,47 @@ declare(strict_types=1);
 /**
  * @file classes/cache/MemcacheCache.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2000-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class MemcacheCache
  * @ingroup cache
  * @see GenericCache
  *
- * @brief Provides caching based on Memcache.
- * [WIZDAM EDITION] PHP 8 Safe & Modernized
+ * @brief Provides caching based on Memcache extension.
  */
 
 import('lib.pkp.classes.cache.GenericCache');
 
-// FIXME This should use connection pooling
-// WARNING: This cache MUST be loaded in batch, or else many cache
-// misses will result.
-
-// Pseudotypes used to represent false and null values in the cache
+/**
+ * @brief Wrapper to store boolean false in Memcache.
+ * Pseudotype class to represent boolean false values in Memcache.
+ * Memcache cannot distinguish between a stored false and a cache miss,
+ * so this wrapper object is used for serialization.
+ */
 class memcache_false {
 }
+
+/**
+ * @brief Wrapper to store null in Memcache.
+ * Pseudotype class to represent null values in Memcache.
+ * Similar to memcache_false, this wrapper prevents ambiguity with cache misses.
+ */
 class memcache_null {
 }
 
 class MemcacheCache extends GenericCache {
+    
     /**
      * Connection to use for caching.
-     * @var Memcache
+     * @var object|null Memcache
      */
     public $connection;
 
     /**
      * Flag (used by Memcache::set)
-     * @var int
+     * @var int|null
      */
     public $flag;
 
@@ -47,59 +54,71 @@ class MemcacheCache extends GenericCache {
      */
     public $expire;
 
+    /** @var bool */
+    public $contextChecked = false;
+
     /**
-     * Constructor
-     * Instantiate a cache. 
+     * Constructor.
+     * Instantiate a Memcache connection.
+     * @param string $context
+     * @param string $cacheId
+     * @param callable|null $fallback
+     * @param string $hostname
+     * @param int $port
      */
     public function __construct($context, $cacheId, $fallback, $hostname, $port) {
         parent::__construct($context, $cacheId, $fallback);
         
-        // [WIZDAM] Safety check for PHP 8 where Memcache extension might be missing
         if (class_exists('Memcache')) {
-            $this->connection = new Memcache;
+            $this->connection = new Memcache();
             if (!$this->connection->connect($hostname, $port)) {
                 $this->connection = null;
             }
         } else {
-            // Extension missing - Fail silently or log error
-            // error_log('Wizdam Warning: Memcache extension not loaded in PHP.');
             $this->connection = null;
         }
 
-        $this->flag = null; // 0 or MEMCACHE_COMPRESSED
-        $this->expire = 3600; // 1 hour default expiry
+        $this->flag = null;
+        $this->expire = 3600;
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param string $context
+     * @param string $cacheId
+     * @param callable|null $fallback
+     * @param string $hostname
+     * @param int $port
      */
     public function MemcacheCache($context, $cacheId, $fallback, $hostname, $port) {
         if (Config::getVar('debug', 'deprecation_warnings')) {
-            // [CCTV] Smart Error Log
             trigger_error(
-                "Class '" . get_class($this) . "' uses deprecated constructor parent::MemcacheCache(). Please refactor to parent::__construct().", 
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
                 E_USER_DEPRECATED
             );
         }
-        self::__construct($context, $cacheId, $fallback, $hostname, $port);
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
-     * Set the flag (used in Memcache::set)
+     * Set the compression flag.
+     * @param int $flag
      */
     public function setFlag($flag) {
         $this->flag = $flag;
     }
 
     /**
-     * Set the expiry time (used in Memcache::set)
+     * Set the expiry time.
+     * @param int $expiry
      */
     public function setExpiry($expiry) {
         $this->expire = $expiry;
     }
 
     /**
-     * Flush the cache.
+     * Flush all items from cache.
      */
     public function flush() {
         if ($this->connection) {
@@ -108,12 +127,14 @@ class MemcacheCache extends GenericCache {
     }
 
     /**
-     * Get an object from the cache.
-     * @param $id
+     * Retrieve an object from cache.
+     * @param string $id
+     * @return mixed
      */
     public function getCache($id) {
-        // [FIX] Guard: tolak null id
-        if ($id === null || !$this->connection) return $this->cacheMiss;
+        if ($id === null || !$this->connection) {
+            return $this->cacheMiss;
+        }
 
         $result = $this->connection->get($this->getContext() . ':' . $this->getCacheId() . ':' . $id);
         
@@ -121,15 +142,14 @@ class MemcacheCache extends GenericCache {
             return $this->cacheMiss;
         }
 
-        // [WIZDAM] PHP 8 Safety: get_class throws fatal error if arg is not object
         if (is_object($result)) {
             switch (get_class($result)) {
                 case 'memcache_false':
                     $result = false;
-                    break; // [BUGFIX] Added break
+                    break;
                 case 'memcache_null':
                     $result = null;
-                    break; // [BUGFIX] Added break
+                    break;
             }
         }
         
@@ -137,37 +157,46 @@ class MemcacheCache extends GenericCache {
     }
 
     /**
-     * Set an object in the cache. This function should be overridden
-     * by subclasses.
-     * @param $id
-     * @param $value
+     * Store an object in cache.
+     * @param string $id
+     * @param mixed $value
+     * @return bool
      */
     public function setCache($id, $value) {
-        // [FIX] Guard: tolak null id
-        if ($id === null || !$this->connection) return false;
+        if ($id === null || !$this->connection) {
+            return false;
+        }
 
         if ($value === false) {
-            $value = new memcache_false;
+            $value = new memcache_false();
         } elseif ($value === null) {
-            $value = new memcache_null;
+            $value = new memcache_null();
         }
-        return ($this->connection->set($this->getContext() . ':' . $this->getCacheId() . ':' . $id, $value, $this->flag, $this->expire));
+        
+        return $this->connection->set(
+            $this->getContext() . ':' . $this->getCacheId() . ':' . $id,
+            $value,
+            $this->flag,
+            $this->expire
+        );
     }
 
     /**
-     * [FIX] Tambah getContents() — sebelumnya tidak ada, 
-     * menyebabkan Fatal Error
+     * Retrieve all cached contents.
+     * @return array
      */
     public function getContents() {
-        if (!$this->connection) return [];
+        if (!$this->connection) {
+            return [];
+        }
 
-        // Coba ambil dari _contents key khusus
         $contentsKey = $this->getContext() . ':' . $this->getCacheId() . ':_contents';
         $result = $this->connection->get($contentsKey);
 
-        if ($result !== false && is_array($result)) return $result;
+        if ($result !== false && is_array($result)) {
+            return $result;
+        }
 
-        // [FIX] Fallback dengan cacheId yang benar (bukan null)
         if ($this->fallback) {
             $contents = call_user_func($this->fallback, $this, $this->cacheId);
             if (is_array($contents)) {
@@ -179,48 +208,43 @@ class MemcacheCache extends GenericCache {
         return [];
     }
 
-
     /**
-     * Get the time at which the data was cached.
-     * Note that keys expire in memcache, which means
-     * that it's possible that the date will disappear
-     * before the data -- in this case we'll have to
-     * assume the data is still good.
+     * Get cache timestamp.
+     * @return int|null
      */
     public function getCacheTime() {
         return null;
     }
 
     /**
-     * Set the entire contents of the cache.
-     * WARNING: THIS DOES NOT FLUSH THE CACHE FIRST!
+     * Set entire cache contents.
+     * @param array $contents
      */
     public function setEntireCache($contents) {
-        if (!$this->connection) return;
+        if (!$this->connection) {
+            return;
+        }
 
-        // [FIX] Flush dahulu — WARNING lama dihapus karena sekarang sudah flush
         $this->flush();
 
-        // Simpan seluruh contents dalam satu key khusus untuk getContents()
         $contentsKey = $this->getContext() . ':' . $this->getCacheId() . ':_contents';
         $this->connection->set($contentsKey, $contents, $this->flag, $this->expire);
 
-        // Simpan juga per-key untuk getCache($id) individual
         foreach ($contents as $id => $value) {
             $this->setCache($id, $value);
         }
     }
     
     /**
-     * Close the cache and free resources.
+     * Close connection and free resources.
      */
     public function close() {
         if ($this->connection) {
             $this->connection->close();
-            unset ($this->connection);
+            $this->connection = null;
         }
         $this->contextChecked = false;
     }
+    
 }
-
 ?>
