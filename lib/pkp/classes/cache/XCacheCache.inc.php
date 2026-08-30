@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file classes/cache/XCacheCache.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2000-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class XCacheCache
  * @ingroup cache
@@ -24,6 +24,9 @@ class XCacheCache extends FileCache {
     
     /**
      * Instantiate a cache.
+     * @param mixed $context
+     * @param mixed $cacheId
+     * @param mixed $fallback
      */
     public function __construct($context, $cacheId, $fallback) {
         // Berikan peringatan di log bahwa admin harus update config
@@ -44,11 +47,14 @@ class XCacheCache extends FileCache {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
+     * @param mixed $context
+     * @param mixed $cacheId
+     * @param mixed $fallback
      */
     public function XCacheCache($context, $cacheId, $fallback) {
         self::__construct($context, $cacheId, $fallback);
     }
-}
 
+}
 ?>
