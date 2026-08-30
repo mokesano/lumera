@@ -4,9 +4,9 @@ declare(strict_types=1);
 /**
  * @file classes/mail/EmailTemplate.inc.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2000-2019 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2017-2026 Sangia Publishing House
+ * Copyright (c) 2017-2026 Rochmady and Lumera Team
+ * Distributed under the GNU GPL v3.
  *
  * @class BaseEmailTemplate
  * @ingroup mail
@@ -16,7 +16,7 @@ declare(strict_types=1);
  */
 
 /**
- * Email template base class.
+ * @brief Email template base class.
  */
 class BaseEmailTemplate extends DataObject {
 
@@ -31,11 +31,14 @@ class BaseEmailTemplate extends DataObject {
      * [SHIM] Backward Compatibility
      */
     public function BaseEmailTemplate() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::BaseEmailTemplate(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     //
@@ -52,7 +55,7 @@ class BaseEmailTemplate extends DataObject {
 
     /**
      * Set association type.
-     * @param $assocType int
+     * @param int $assocType
      */
     public function setAssocType($assocType) {
         return $this->setData('assocType', $assocType);
@@ -68,7 +71,7 @@ class BaseEmailTemplate extends DataObject {
 
     /**
      * Set ID of journal/conference/...
-     * @param $assocId int
+     * @param int $assocId
      */
     public function setAssocId($assocId) {
         return $this->setData('assocId', $assocId);
@@ -94,14 +97,14 @@ class BaseEmailTemplate extends DataObject {
      * Get sender role name.
      */
     public function getFromRoleName() {
-        // Removed & reference
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         return $roleDao->getRoleName($this->getFromRoleId());
     }
 
     /**
      * Set sender role ID.
-     * @param $fromRoleId int
+     * @param int $fromRoleId
      */
     public function setFromRoleId($fromRoleId) {
         $this->setData('fromRoleId', $fromRoleId);
@@ -118,14 +121,14 @@ class BaseEmailTemplate extends DataObject {
      * Get recipient role name.
      */
     public function getToRoleName() {
-        // Removed & reference
+        /** @var RoleDAO $roleDao */
         $roleDao = DAORegistry::getDAO('RoleDAO');
         return $roleDao->getRoleName($this->getToRoleId());
     }
 
     /**
      * Set recipient role ID.
-     * @param $toRoleId int
+     * @param int $toRoleId
      */
     public function setToRoleId($toRoleId) {
         $this->setData('toRoleId', $toRoleId);
@@ -141,7 +144,7 @@ class BaseEmailTemplate extends DataObject {
 
     /**
      * Set ID of email template.
-     * @param $emailId int
+     * @param int $emailId
      */
     public function setEmailId($emailId) {
         return $this->setData('emailId', $emailId);
@@ -157,7 +160,7 @@ class BaseEmailTemplate extends DataObject {
 
     /**
      * Set key of email template.
-     * @param $emailKey string
+     * @param string $emailKey
      */
     public function setEmailKey($emailKey) {
         return $this->setData('emailKey', $emailKey);
@@ -165,7 +168,7 @@ class BaseEmailTemplate extends DataObject {
 
     /**
      * Get the enabled setting of email template.
-     * @return boolean
+     * @return bool
      */
     public function getEnabled() {
         return $this->getData('enabled');
@@ -173,7 +176,7 @@ class BaseEmailTemplate extends DataObject {
 
     /**
      * Set the enabled setting of email template.
-     * @param $enabled boolean
+     * @param bool $enabled
      */
     public function setEnabled($enabled) {
         return $this->setData('enabled', $enabled);
@@ -181,7 +184,7 @@ class BaseEmailTemplate extends DataObject {
 
     /**
      * Check if email template is allowed to be disabled.
-     * @return boolean
+     * @return bool
      */
     public function getCanDisable() {
         return $this->getData('canDisable');
@@ -189,7 +192,7 @@ class BaseEmailTemplate extends DataObject {
 
     /**
      * Set whether or not email template is allowed to be disabled.
-     * @param $canDisable boolean
+     * @param bool $canDisable
      */
     public function setCanDisable($canDisable) {
         return $this->setData('canDisable', $canDisable);
@@ -199,7 +202,7 @@ class BaseEmailTemplate extends DataObject {
 
 
 /**
- * Email template with data for all supported locales.
+ * @brief Email template with data for all supported locales.
  */
 class LocaleEmailTemplate extends BaseEmailTemplate {
 
@@ -221,15 +224,19 @@ class LocaleEmailTemplate extends BaseEmailTemplate {
      * [SHIM] Backward Compatibility
      */
     public function LocaleEmailTemplate() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::LocaleEmailTemplate(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Set whether or not this is a custom template.
+     * @param mixed $isCustomTemplate
      */
     public function setCustomTemplate($isCustomTemplate) {
         $this->isCustomTemplate = $isCustomTemplate;
@@ -246,7 +253,7 @@ class LocaleEmailTemplate extends BaseEmailTemplate {
 
     /**
      * Add a new locale to store data for.
-     * @param $locale string
+     * @param string $locale
      */
     public function addLocale($locale) {
         $this->localeData[$locale] = array();
@@ -266,7 +273,7 @@ class LocaleEmailTemplate extends BaseEmailTemplate {
 
     /**
      * Get description of email template.
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getDescription($locale) {
@@ -275,8 +282,8 @@ class LocaleEmailTemplate extends BaseEmailTemplate {
 
     /**
      * Set description of email template.
-     * @param $locale string
-     * @param $description string
+     * @param string $locale
+     * @param string $description
      */
     public function setDescription($locale, $description) {
         $this->localeData[$locale]['description'] = $description;
@@ -284,7 +291,7 @@ class LocaleEmailTemplate extends BaseEmailTemplate {
 
     /**
      * Get subject of email template.
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getSubject($locale) {
@@ -293,8 +300,8 @@ class LocaleEmailTemplate extends BaseEmailTemplate {
 
     /**
      * Set subject of email template.
-     * @param $locale string
-     * @param $subject string
+     * @param string $locale
+     * @param string $subject
      */
     public function setSubject($locale, $subject) {
         $this->localeData[$locale]['subject'] = $subject;
@@ -302,7 +309,7 @@ class LocaleEmailTemplate extends BaseEmailTemplate {
 
     /**
      * Get body of email template.
-     * @param $locale string
+     * @param string $locale
      * @return string
      */
     public function getBody($locale) {
@@ -311,8 +318,8 @@ class LocaleEmailTemplate extends BaseEmailTemplate {
 
     /**
      * Set body of email template.
-     * @param $locale string
-     * @param $body string
+     * @param string $locale
+     * @param string $body
      */
     public function setBody($locale, $body) {
         $this->localeData[$locale]['body'] = $body;
@@ -321,11 +328,11 @@ class LocaleEmailTemplate extends BaseEmailTemplate {
 
 
 /**
- * Email template for a specific locale.
+ * @brief Email template for a specific locale.
  */
 class EmailTemplate extends BaseEmailTemplate {
 
-    /** @var boolean */
+    /** @var bool */
     public $isCustomTemplate = false; // Added property declaration
 
     /**
@@ -336,18 +343,22 @@ class EmailTemplate extends BaseEmailTemplate {
     }
 
     /**
-     * [SHIM] Backward Compatibility
+     * [SHIM] Backward Compatibility.
      */
     public function EmailTemplate() {
-        trigger_error(
-            "Class '" . get_class($this) . "' uses deprecated constructor parent::EmailTemplate(). Please refactor to use parent::__construct().",
-            E_USER_DEPRECATED
-        );
-        self::__construct();
+        if (Config::getVar('debug', 'deprecation_warnings')) {
+            trigger_error(
+                "Class '" . get_class($this) . "' uses deprecated constructor " . get_class($this) . "(). Please refactor to use __construct().",
+                E_USER_DEPRECATED
+            );
+        }
+        $args = func_get_args();
+        call_user_func_array([$this, '__construct'], $args);
     }
 
     /**
      * Set whether or not this is a custom template.
+     * @param mixed $isCustomTemplate
      */
     public function setCustomTemplate($isCustomTemplate) {
         $this->isCustomTemplate = $isCustomTemplate;
@@ -376,7 +387,7 @@ class EmailTemplate extends BaseEmailTemplate {
 
     /**
      * Set locale of email template.
-     * @param $locale string
+     * @param string $locale
      */
     public function setLocale($locale) {
         return $this->setData('locale', $locale);
@@ -392,7 +403,7 @@ class EmailTemplate extends BaseEmailTemplate {
 
     /**
      * Set subject of email.
-     * @param $subject string
+     * @param string $subject
      */
     public function setSubject($subject) {
         return $this->setData('subject', $subject);
@@ -408,7 +419,7 @@ class EmailTemplate extends BaseEmailTemplate {
 
     /**
      * Set body of email template.
-     * @param $body string
+     * @param string $body
      */
     public function setBody($body) {
         return $this->setData('body', $body);
